@@ -1,0 +1,5 @@
+# Per-user workspace — created locally by bootstrap/init.sh, never committed to the harness repo
+/inputs/
+/guide/
+/.coursewerk/
+node_modules/
