@@ -1,5 +1,12 @@
 # Coursewerk changelog
 
+## v0.3.0 (2026-06-24)
+- **Your own harness (`~/.coursewerk/`)**: a durable, personal layer the agent reads every run and
+  **distills into** as you steer — preferences, styles, templates, and your additional skills. Lives
+  in your home directory, so **Coursewerk updates never overwrite it**; it is shared across all your
+  courses and compounds over time. Created by `bootstrap/init.sh`; driven by `CLAUDE.md §0.6`.
+
+
 ## v0.2.0 (2026-06-24)
 - **Light mode** for single lower-tier ($20) subscriptions: no cross-model critique (quality verified
   by the deterministic QA script + a self-review), and day-paced building (~3 chapters/session,

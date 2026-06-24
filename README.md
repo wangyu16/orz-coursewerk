@@ -46,6 +46,15 @@ Coursewerk has two modes; the agent asks at the start:
 
 Switch anytime by editing `.coursewerk/mode`.
 
+## Your harness gets smarter — and survives updates
+
+Coursewerk keeps **your own harness** in `~/.coursewerk/` (separate from this repo): your standing
+**preferences, styles, templates, and extra skills**. The agent reads it on every run and applies it
+as your defaults, and **distills into it** as you work — when you say "always use IUPAC names" or hand
+it a template/skill, it records that so it applies to every future course. Because it lives in your
+home directory, **Coursewerk updates (`git pull`) never overwrite it.** The harness improves *and*
+your personalization compounds, independently.
+
 ## You stay in control
 
 - **Steer by talking.** Tell the agent "make the slides 50-minute lectures," "emphasize worked

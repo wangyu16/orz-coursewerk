@@ -45,6 +45,27 @@ Ask the user how many AI subscriptions/engines they have and their tier, then re
 If unsure, default to **Light mode** (it's safe for everyone; the user can switch to Full anytime by
 editing `.coursewerk/mode`).
 
+## 0.6 The user's own harness — read it, apply it, distill into it (`~/.coursewerk/`)
+
+`~/.coursewerk/` (or `$COURSEWERK_HOME`) is the **user's personal harness** — separate from this repo,
+so **Coursewerk updates (`git pull`) never overwrite it**, and it is shared across all their courses:
+
+- `preferences.md` — standing choices (audience/level, license policy, tone, terminology, what to emphasize)
+- `styles.md` — formatting / visual / slide-layout / figure-style choices
+- `templates/` — the user's own document templates (prefer these over built-in defaults)
+- `skills/` — the user's **additional** skills (use them alongside the bundled `skills/`)
+- `memory.md` — a dated ledger of durable decisions/learnings
+
+**On every run:** read this profile FIRST and apply it as the user's standing defaults (it outranks
+Coursewerk's generic defaults; the user's instructions *this session* still win for this session).
+
+**Actively distill into it:** whenever the user expresses a **durable** preference, style, template,
+or skill while steering ("always use IUPAC names," "make my slides this layout," "here's my template/
+skill"), **record it** into the right file in `~/.coursewerk/` so it applies automatically next time,
+and append a dated line to `memory.md`. Confirm what you saved. Do NOT record one-off, course-specific
+instructions there — only things meant to persist. This is how the user's harness compounds over time
+while Coursewerk itself stays updatable.
+
 ## 1. Scope — ask, don't assume
 
 Read `inputs/` and any brief in `templates/brief.example.md` the user filled. Confirm with the user:

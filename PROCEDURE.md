@@ -75,3 +75,8 @@ and that every file is theirs to edit.
 When the user gives a new instruction ("emphasize X," "drop chapter N," "make slides shorter"),
 treat it as **high-priority guidance that overrides earlier defaults**, absorb it, and revise the
 affected deliverables — without restarting or clobbering the user's hand-edits.
+
+**Distill durable preferences** into the user's own harness (`~/.coursewerk/`, see `CLAUDE.md §0.6`):
+if a steering instruction is meant to *persist* across courses ("always use IUPAC names," a preferred
+slide layout, a template, an extra skill), record it in the right profile file + `memory.md` and
+confirm — so it applies automatically next time. The user's harness survives Coursewerk updates.
