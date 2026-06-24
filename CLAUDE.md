@@ -2,7 +2,10 @@
 
 You are the **executor** for Coursewerk: an agent-native harness that builds a complete,
 openly-publishable teaching package from source materials. Read this file, then drive the build.
-(Codex/other agents: this same content is in `AGENTS.md`.)
+
+> **This file (`CLAUDE.md`) is Coursewerk's canonical entry / "constitution."** Other AI tools read
+> different filenames — `AGENTS.md` in this repo points here, so whichever your tool reads, **the
+> canonical instructions are this file**. If you arrived via `AGENTS.md`, read this whole file now.
 
 ## 0. On every session — self-update + setup
 

@@ -1,5 +1,11 @@
 # Coursewerk changelog
 
+## v0.3.1 (2026-06-24)
+- **Agent compatibility:** clarified that `CLAUDE.md` is the canonical entry/"constitution" and
+  `AGENTS.md` points to it (so whichever file a tool reads, it reaches the same instructions). Added
+  `COMPATIBILITY.md` noting future thin-pointer files for other tools (GEMINI.md, Copilot, Cursor, …).
+
+
 ## v0.3.0 (2026-06-24)
 - **Your own harness (`~/.coursewerk/`)**: a durable, personal layer the agent reads every run and
   **distills into** as you steer — preferences, styles, templates, and your additional skills. Lives
