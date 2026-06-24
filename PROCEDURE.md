@@ -68,11 +68,23 @@ alt text, leftover `[VERIFY]`/`[NEEDS DATA]`) and **re-run until `criticalTotal 
 non-auto-fixable issue (e.g. a figure/slide layout/positioning judgment) in `guide/qa_report.md`
 for the user — never fabricate a fix.
 
-## Stage 6 — Deliver
-Write `guide/delivery.md` ('# Delivery'): what was produced, the landing page, and the explicit
-list of items still needing the user (open `[VERIFY]`, license/DOI to confirm, layout items to
-hand-fix). **Do not push or publish.** Tell the user how to host it (any static host / GitHub Pages)
-and that every file is theirs to edit.
+## Stage 6 — Honest evaluation report (final stage)
+Write `guide/evaluation.md` — an **honest artifact-quality evaluation** of the package, so the user
+(and, for a test run, reviewers) get a transparent picture. Pull the real numbers from the QA pass:
+**copyright/attribution coverage, accessibility proxies, link/asset-path integrity, orz-syntax,
+format-contract adherence, and the residual-flaw audit** (with counts + rates). Classify each residual
+flaw as *auto-eliminable*, *needs-human-touch* (chiefly the **cosmetic** image/rendering/slide
+layout/positioning/sizing class), or *content* — and report honestly which axes are
+automatically-verified vs which still need a human probe (scientific correctness). **Do not fabricate
+or inflate** any number; if a check was not run, say so. For a **no-intervention test run** (e.g. a new
+domain at ~3 chapters), this report — plus the gate/redo/token counts from `.coursewerk/progress.md` —
+is the deliverable evidence of how the harness performed.
+
+## Stage 7 — Deliver
+Write `guide/delivery.md` ('# Delivery'): what was produced, the landing page, the evaluation summary
+(from Stage 6), and the explicit list of items still needing the user (open `[VERIFY]`, license/DOI to
+confirm, cosmetic layout items to hand-fix). **Do not push or publish.** Tell the user how to host it
+(any static host / GitHub Pages) and that every file is theirs to edit.
 
 ## Steering (any time)
 When the user gives a new instruction ("emphasize X," "drop chapter N," "make slides shorter"),

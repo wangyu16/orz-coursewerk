@@ -98,11 +98,18 @@ steers. If a second engine is available, cross-critique each chapter before movi
 - **The user is in control.** Steer on their spoken instructions (override earlier defaults where
   they conflict); never overwrite a file the user hand-edited without confirming.
 
-## 4. Before finishing — the QA gate (mandatory)
+## 4. Before finishing — QA gate, then an HONEST evaluation report (mandatory)
 
 Run `node scripts/check_oer.mjs --guide guide --report guide/qa_report.md`. **Fix every critical
 issue** it reports (unmanifested/under-attributed assets, broken links/asset paths, orz-syntax
 slips, missing alt text, leftover placeholders) and re-run until `criticalTotal == 0`. Anything not
 auto-fixable (e.g. a figure/slide layout judgment) — flag it in `guide/qa_report.md` for the user;
-never fabricate a fix. Then write `guide/delivery.md` summarizing what was produced and what still
-needs the user. **Do not push or publish** — the user does that.
+never fabricate a fix.
+
+Then write **`guide/evaluation.md`** — an **honest artifact-quality evaluation** (the real QA numbers:
+attribution coverage, accessibility, link/path integrity, orz-syntax, format contracts, and the
+residual-flaw audit classified *auto-eliminable* / *cosmetic-needs-human* / *content*), stating which
+axes are auto-verified vs need a human probe; never inflate a number. This is the final stage — for a
+**no-intervention test run** it is the deliverable evidence of how the harness performed. Finally write
+`guide/delivery.md` summarizing what was produced + the evaluation + what still needs the user. **Do
+not push or publish** — the user does that.

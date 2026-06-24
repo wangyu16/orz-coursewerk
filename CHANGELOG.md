@@ -1,5 +1,13 @@
 # Coursewerk changelog
 
+## v0.5.0 (2026-06-24)
+- **Honest evaluation report as the final stage** (`guide/evaluation.md`): the real artifact-quality
+  numbers (attribution, accessibility, links, orz-syntax, format contracts, residual-flaw audit
+  classified auto-eliminable / cosmetic-needs-human / content) — the deliverable evidence for
+  no-intervention test runs. Stage list is now 1–7 (QA gate → evaluation → deliver).
+- `NOTES.md`: added the clean-evidence validation plan (no-intervention domain runs at ~3 chapters).
+
+
 ## v0.4.0 (2026-06-24)
 - **Focused cross-critique:** Full-mode critique now targets HIGHER-LEVEL quality only (scientific/
   conceptual correctness, pedagogy, coherence, objective coverage); mechanical issues (format, syntax,
