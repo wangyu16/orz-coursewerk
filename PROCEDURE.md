@@ -46,10 +46,13 @@ For each chapter, produce the **five deliverables** (honor `format-contracts/` e
 5. `guide/practice/ch{i}.md` — a **practice question sheet**: ~15 concrete questions instantiated
    from the assessment guide, covering all major objectives, each Q + worked answer in container
    tabs; correct, work shown.
-**Quality per mode:** in **Full** mode, cross-critique each chapter with a second engine, then
-self-check against `courseguide-standards`. In **Light** mode, skip cross-critique — run
-`node scripts/check_oer.mjs --guide guide` after each chapter (or batch) and fix what it flags, plus
-one quick self-check against `courseguide-standards`. **Light-mode pacing:** after ~3 chapters,
+**Quality per mode:** in **Full** mode, cross-critique each chapter with a second engine — but keep
+the critique **focused on HIGHER-LEVEL quality** (scientific/conceptual correctness vs the source,
+pedagogical soundness, coherence across the five deliverables, objective coverage); do **not**
+re-check mechanical issues (format contracts, orz-syntax, links, attribution, spelling) — those are
+the QA script's job. Then self-check against `courseguide-standards`. In **Light** mode, skip
+cross-critique — run `node scripts/check_oer.mjs --guide guide` after each chapter (or batch) and fix
+what it flags, plus one quick higher-level self-check against `courseguide-standards`. **Light-mode pacing:** after ~3 chapters,
 checkpoint `.coursewerk/progress.md` and **stop** — tell the user which chapter to resume from next
 session. Stop at once if an engine returns a rate-limit/quota error.
 

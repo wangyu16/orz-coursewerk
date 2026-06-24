@@ -1,5 +1,13 @@
 # Coursewerk changelog
 
+## v0.4.0 (2026-06-24)
+- **Focused cross-critique:** Full-mode critique now targets HIGHER-LEVEL quality only (scientific/
+  conceptual correctness, pedagogy, coherence, objective coverage); mechanical issues (format, syntax,
+  links, attribution, spelling) are left to the deterministic QA script — lower cost, higher value.
+- Added `NOTES.md` (deferred ideas: study-guide/slides layout redesign — operator to implement;
+  folding the full evaluation + auto-revise into the pipeline).
+
+
 ## v0.3.1 (2026-06-24)
 - **Agent compatibility:** clarified that `CLAUDE.md` is the canonical entry/"constitution" and
   `AGENTS.md` points to it (so whichever file a tool reads, it reaches the same instructions). Added
