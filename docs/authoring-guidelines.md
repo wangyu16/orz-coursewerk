@@ -45,6 +45,12 @@ Alembic cleanly — raster `.png`/`.jpg`/`.pdf` are skipped on a *trial* import 
 charts full-column, inline structures small. In slides, size explicitly (`![alt](../assets/x.svg =520x)`)
 so a figure is readable from the back of a room but doesn't swamp the slide (see `skills/orz-slides`).
 
+**Aim high — a good OER is vivid, not dry.** Generate figures *generously*: a study guide with zero asset
+files and slides that are only bullet lists is a defect, not restraint. Target **several captioned figures
+per chapter**, and anchor each concept in a **relatable everyday example or analogy** (a scuba tank, a
+weather balloon, a car battery, a photo of a real object) so it is concrete and memorable. Restraint applies
+to gratuitous *text* decoration — never to meaningful visuals or real-world grounding.
+
 ---
 
 ## 2. Rich formatting — a semantic palette (clarity, never decoration)

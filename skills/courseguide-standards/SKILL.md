@@ -24,9 +24,21 @@ Two global rules:
   `^[a-z0-9]+(?:-[a-z0-9]+)*$`) — the SAME slug across all five folders, matching that chapter's
   `slug` in `alembic.json` (`chapters[].slug`). Never numeric `ch{i}`, never ad-hoc names, no
   duplicates.
-- **Restrained palette.** Use the small set of devices below *with meaning*, the same way in
-  every chapter. Do NOT decorate: no badges, no colored-text spans, no `==highlight==`, no
-  underline, unless it carries real information. Consistency > flourish.
+- **Restrained palette, but VIVID content.** Restraint applies to *decorative text devices* (don't
+  scatter badges, colored spans, `==highlight==`, or underline unless each carries real meaning).
+  It does **not** mean a dry, all-text guide. **Make the study guide and slides vivid:**
+  - **Real figures, generously.** Every section that benefits gets a *visible* figure — a generated
+    structure/scheme (`oer-figures` RDKit → `assets/`), a real data plot (matplotlib → `assets/`, or an
+    inline `{{chart}}`), a diagram (`{{mermaid}}`, or a hand-authored SVG in `assets/`), or an
+    open-licensed real image (Wikimedia/OpenStax, with attribution). Aim for **several figures per
+    chapter**, captioned, referenced as `![alt](../assets/…)`. Inline `{{smiles}}`/`{{chart}}`/`{{mermaid}}`
+    supplement figures; they don't replace them. (See `skills/oer-figures`.)
+  - **Everyday-life examples.** Anchor each concept in a **relatable real-world example or analogy** (a
+    scuba tank, a weather balloon, cooking, a car battery, a photo of a real object) so it lands and sticks.
+  - **Slides are visual, not bullet dumps.** Use varied rich layouts (`2col`/`main-side`/`quad` splits,
+    `@region`s, `{{mermaid}}`, `{{chart}}`, figures, step reveals, callouts, badges) — see
+    `skills/orz-slides` "Slide design patterns". Most slides should carry a visual, not just a title + bullets.
+  - Consistency > flourish, and *meaning* > decoration — but a memorable OER is **vivid**, not spartan.
 
 ---
 

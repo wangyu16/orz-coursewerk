@@ -68,10 +68,28 @@ Put any **answer keys / full solutions / exam content** in `package/private/…`
 folder). **Optional collection documents** — an exam, quiz, syllabus, or handout — are authored with
 **orz-paged** (`skills/orz-paged`): exams/answer keys go under `private/`, a syllabus or handout is
 student-facing. Follow the cross-cutting quality rules in **`docs/authoring-guidelines.md`** throughout
-(graphics ladder, semantic formatting, accessibility, coherence). **Build carriers to preview** as you go —
-`node scripts/build_carriers.mjs` renders the lean
-sources into `preview/` so you (and the user) can open the real self-contained study guide / slides and
-check them; never edit the carriers, they are throwaway.
+(graphics ladder, semantic formatting, accessibility, coherence).
+
+**Make it vivid (rule).** A study guide is not a wall of text and slides are not a bullet dump.
+- **Figures:** every section that benefits gets a *meaningful, visible* figure — a generated structure or
+  scheme (`oer-figures` RDKit), a real data plot (matplotlib or `{{chart}}`), a clear diagram (`{{mermaid}}`
+  or a hand-authored SVG), or an open-licensed real image (Wikimedia/OpenStax with attribution). Save asset
+  files to `package/assets/` and record them in `metadata/ATTRIBUTION.md`. Inline `{{smiles}}`/`{{chart}}`/
+  `{{mermaid}}` supplement figures; they do **not** replace them. Aim for **several figures per chapter**, not
+  zero. (See `skills/oer-figures` + `docs/authoring-guidelines.md` §1.)
+- **Everyday-life examples:** connect each concept to a **relatable real-world example or analogy** (a scuba
+  tank, a weather balloon, cooking, a car battery) so it is concrete and memorable.
+- **Rich slide layouts:** slides use the full orz-slides vocabulary — `2col`/`3col`/`main-side`/`quad`
+  splits, `@region` markers, floats, `template=` variants, step reveals — and orz-markdown plugins (callout
+  boxes, badges, colored text, highlight, `{{chart}}`, `{{smiles}}`, figures). **Do not default to a title +
+  bullet list; vary the layout across slides.** (See `skills/orz-slides`.)
+
+**Verify the orz-markdown as you go (mandatory step).** After authoring each chapter's rich deliverables
+(study guide, slides, practice), run **`node scripts/build_carriers.mjs`** (every carrier must build,
+`failed: 0`) **and `node scripts/check_oer.mjs --package package`** (its orz-syntax check must be **0** — it
+verifies container **nesting**, not just balance, so a mis-nested `tabs`/`cols`/callout is caught). Open the
+built carrier in `preview/` and eyeball it — a container that renders wrong will not throw, so *look*. Never
+move on with a nonzero orz-syntax count or a build failure. Never edit the carriers; they are throwaway.
 
 **Quality per mode:** in **Full** mode, cross-critique each chapter with a second engine — keep the
 critique **focused on HIGHER-LEVEL quality** (scientific/conceptual correctness vs the source,
