@@ -71,12 +71,17 @@ student-facing. Follow the cross-cutting quality rules in **`docs/authoring-guid
 (graphics ladder, semantic formatting, accessibility, coherence).
 
 **Make it vivid (rule).** A study guide is not a wall of text and slides are not a bullet dump.
-- **Figures:** every section that benefits gets a *meaningful, visible* figure — a generated structure or
-  scheme (`oer-figures` RDKit), a real data plot (matplotlib or `{{chart}}`), a clear diagram (`{{mermaid}}`
-  or a hand-authored SVG), or an open-licensed real image (Wikimedia/OpenStax with attribution). Save asset
-  files to `package/assets/` and record them in `metadata/ATTRIBUTION.md`. Inline `{{smiles}}`/`{{chart}}`/
-  `{{mermaid}}` supplement figures; they do **not** replace them. Aim for **several figures per chapter**, not
-  zero. (See `skills/oer-figures` + `docs/authoring-guidelines.md` §1.)
+- **Figures:** every section that benefits gets a *meaningful, visible* figure — a generated structure
+  (`{{smiles}}` for a single one, `oer-figures` RDKit for a grid/scheme), a real data plot (matplotlib or
+  `{{chart}}`), a clear diagram (`{{mermaid}}` or a hand-authored SVG), **and — do NOT be conservative here —
+  open-licensed REAL images** (photos of the actual substances, apparatus, or phenomena) fetched from
+  Wikimedia Commons / OpenStax / Openverse with `oer-figures` `fetch_open_image.py`. A chapter of only
+  self-generated diagrams is too dry: pull in real photographs (an element sample, a lab instrument, a
+  reaction) where a real image beats a diagram — resize to a web-friendly width and attribute it. Save asset
+  files to `package/assets/`, record every one in `metadata/ATTRIBUTION.md`. Inline `{{smiles}}`/`{{chart}}`/
+  `{{mermaid}}` supplement figures; they do **not** replace them. Aim for **several figures per chapter,
+  including at least one or two fetched real photos**, not zero. (See `skills/oer-figures` +
+  `docs/authoring-guidelines.md` §1.)
 - **Everyday-life examples:** connect each concept to a **relatable real-world example or analogy** (a scuba
   tank, a weather balloon, cooking, a car battery) so it is concrete and memorable.
 - **Rich slide layouts:** slides use the full orz-slides vocabulary — `2col`/`3col`/`main-side`/`quad`

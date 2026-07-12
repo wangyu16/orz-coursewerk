@@ -23,10 +23,15 @@ Alembic cleanly — raster `.png`/`.jpg`/`.pdf` are skipped on a *trial* import 
    - **Complex** plots → **matplotlib** (`oer-figures`) → SVG: multi-series, log scales, annotations,
      subplots, real datasets. Real numbers only — never fabricate data.
    - Flowcharts / dependency / process diagrams → **`{{mermaid}}`**.
-2. **Open-licensed real images — when you need a real photo, micrograph, apparatus, or organism.**
-   Wikimedia Commons, OpenStax, Openverse, NASA/NOAA (public domain). Use `oer-figures`'
-   `fetch_open_image.py`, which **captures the attribution row for you**. Never embed a copyrighted,
-   paywalled, or third-party-credited image.
+2. **Open-licensed real images — use them LIBERALLY, don't be conservative.** Real photos of the actual
+   substances, apparatus, and phenomena (an element sample, an analytical balance, a reaction, a micrograph)
+   make a chapter come alive in a way diagrams can't — a package of only self-generated SVGs is too dry.
+   Fetch from Wikimedia Commons, OpenStax (its own CC-BY figures), Openverse, NASA/NOAA (public domain) with
+   `oer-figures`' `fetch_open_image.py`, which **captures the attribution row for you**; **resize** to a
+   web-friendly width (~800–900 px) so the package stays light. Aim for **at least one or two fetched real
+   photos per chapter**. Record each in `metadata/ATTRIBUTION.md` with its own license (note: a CC-BY-SA image
+   keeps its ShareAlike license — attribute it as such; prefer CC-BY / CC0 / public-domain when you want the
+   package cleanly CC-BY). Never embed a copyrighted, paywalled, or third-party-credited image.
 3. **AI-generated concept illustrations — encouraged for conceptual/schematic art.** Use an image engine
    (the platform's image generation, an image MCP tool, or the copy-as-prompt fallback in `oer-figures`) to
    create engaging conceptual illustrations, analogies, and scene-setting visuals that make an abstract idea
