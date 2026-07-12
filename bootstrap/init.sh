@@ -57,19 +57,40 @@ EOF
 PROFILE="${COURSEWERK_HOME:-$HOME/.coursewerk}"
 mkdir -p "$PROFILE/templates" "$PROFILE/skills"
 [ -f "$PROFILE/preferences.md" ] || cat > "$PROFILE/preferences.md" <<'EOF'
-# Your preferences (Coursewerk reads this every run; it is yours, not Coursewerk's)
+# Your preferences — pedagogy, scope, terminology (Coursewerk reads this every run)
 
-Standing choices that should apply by default to every course you build, e.g.:
-- Default audience / level: <…>
-- Default license policy: <…>
-- Tone & voice: <…>
-- Terminology you prefer / avoid: <…>
-- What to emphasize (worked examples, real-world applications, …): <…>
+These are FLEXIBLE preferences: they OVERRIDE Coursewerk's defaults, but never the hard rules
+(the package contract, orz grammar, copyright, accuracy, accessibility — see docs/rules-vs-preferences.md).
+Fill in what you care about; leave the rest and Coursewerk's default applies. This file lives in your home
+directory, so Coursewerk updates never overwrite it.
+
+- Default audience / level:            <e.g. introductory undergraduate>
+- Tone & voice:                        <e.g. warm, plain, encouraging>
+- Terminology (prefer / avoid):        <e.g. always IUPAC names; avoid jargon X>
+- License policy:                      <e.g. match the source; prefer CC BY>
+- Worked examples per chapter:         <e.g. ~2 per section>
+- Everyday-example flavor:             <e.g. one relatable analogy per section>
+- What to emphasize:                   <e.g. worked examples, real-world applications, safety>
 
 The agent ADDS to this as you steer (e.g. you say "always use IUPAC names" → it records that here).
-Coursewerk updates never overwrite this file.
 EOF
-[ -f "$PROFILE/styles.md" ] || echo "# Your style preferences"$'\n\n'"Formatting / visual / slide-layout / figure-style choices the agent should reuse. The agent distills your repeated style choices here." > "$PROFILE/styles.md"
+[ -f "$PROFILE/styles.md" ] || cat > "$PROFILE/styles.md" <<'EOF'
+# Your style preferences — visual / layout / figure / slide choices (Coursewerk reads this every run)
+
+FLEXIBLE preferences that OVERRIDE Coursewerk's visual defaults (never the hard rules). Leave blank to keep
+the default. Lives in your home directory; survives Coursewerk updates.
+
+- Figure palette / plot colors:        <e.g. muted blues + one accent>
+- Photo vs. diagram balance:           <e.g. prefer real photos where possible>
+- Fetched real photos per chapter:     <e.g. at least 2>
+- Slide theme:                         <e.g. executive | paper | neon … (or "let build time choose")>
+- Deck ratio:                          <16:9 | 4:3>
+- Favored slide layouts:               <e.g. lean on main-side + 2col>
+- Slide density:                       <e.g. ~4 bullets, always a visual>
+- Anything else about look & feel:     <…>
+
+The agent distills your repeated style choices here.
+EOF
 [ -f "$PROFILE/memory.md" ] || echo "# Your harness memory"$'\n\n'"A dated ledger of the durable decisions and learnings the agent distills from how you work. Survives updates." > "$PROFILE/memory.md"
 [ -f "$PROFILE/templates/README.md" ] || echo "# Your templates"$'\n\n'"Drop your own document templates here (a preferred study-guide skeleton, a slide template, …). The agent prefers these over the built-in defaults." > "$PROFILE/templates/README.md"
 [ -f "$PROFILE/skills/README.md" ] || echo "# Your additional skills"$'\n\n'"Drop extra skills here (each a folder with a SKILL.md). The agent uses them alongside Coursewerk's bundled skills. They are yours and survive updates." > "$PROFILE/skills/README.md"

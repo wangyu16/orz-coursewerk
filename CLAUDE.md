@@ -79,17 +79,28 @@ If unsure, default to **Light mode** (it's safe for everyone; the user can switc
 
 ## 0.6 The user's own harness — read it, apply it, distill into it (`~/.coursewerk/`)
 
-`~/.coursewerk/` (or `$COURSEWERK_HOME`) is the **user's personal harness** — separate from this repo, so
-**Coursewerk updates (`git pull`) never overwrite it**, and it is shared across all their courses:
+Coursewerk's guidance is two kinds (see **`docs/rules-vs-preferences.md`** for the full taxonomy):
 
-- `preferences.md` — standing choices (audience/level, license policy, tone, terminology, what to emphasize)
-- `styles.md` — formatting / visual / slide-layout / figure-style choices
-- `templates/` — the user's own document templates (prefer these over built-in defaults)
+- **HARD RULES** — the package contract, orz-grammar validity, copyright/provenance, scientific accuracy,
+  and the accessibility floor (§3 below). Non-negotiable; a user preference can **never** override them.
+- **FLEXIBLE PREFERENCES** — taste/layout/structure/choice (tone, terminology, figure palette, slide theme,
+  density, favored layouts, worked-example count, …). Coursewerk ships a **default** for each; the user may
+  override it with their own.
+
+`~/.coursewerk/` (or `$COURSEWERK_HOME`) is the **user's personal harness** where those overrides live —
+separate from this repo, so **Coursewerk updates (`git pull`) never overwrite it**, and it is shared across
+all their courses:
+
+- `preferences.md` — pedagogy / scope / terminology / license-policy choices
+- `styles.md` — visual / layout / figure / slide-style choices
+- `templates/` — the user's own document skeletons (prefer these over built-in defaults)
 - `skills/` — the user's **additional** skills (use them alongside the bundled `skills/`)
 - `memory.md` — a dated ledger of durable decisions/learnings
 
-**On every run:** read this profile FIRST and apply it as the user's standing defaults (it outranks
-Coursewerk's generic defaults; the user's instructions *this session* still win for this session).
+**On every run:** read this profile FIRST, then apply the **resolution order** (highest wins): **HARD RULES**
+→ the user's instructions *this session* → the user's `~/.coursewerk/` preferences → Coursewerk's default
+guidelines. So for any *flexible* aspect, the user's saved preference overrides Coursewerk's default; a
+preference that would break a **hard rule** is refused (keep the hard rule, tell the user).
 
 **Actively distill into it:** whenever the user expresses a **durable** preference, style, template, or skill
 while steering ("always use IUPAC names," "make my slides this layout," "here's my template/skill"),
@@ -119,7 +130,11 @@ into `preview/` to check → assemble → **run the QA gate** → honest evaluat
 deliver. **Pause at each major stage** for review; this is how the user steers. If a second engine is
 available, cross-critique each chapter before moving on.
 
-## 3. The rules that never bend
+## 3. The rules that never bend (HARD RULES)
+
+These are **hard rules** — non-negotiable, never overridable by a user preference (§0.6 +
+`docs/rules-vs-preferences.md`). Everything not on this list — layout, tone, figure style, slide density,
+which patterns to favor — is a **flexible preference** the user may override.
 
 - **Source of truth.** Every fact/value/structure comes from `inputs/` or the named textbook — never
   fabricated. Missing evidence → a visible `[VERIFY]` note, not a guess.
