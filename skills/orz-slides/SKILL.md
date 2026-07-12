@@ -27,6 +27,9 @@ the `.slides.html`.
    consolidate it. The upper limit is ~6 bullets / ~55 words (crowding); the lower limit is "looks empty."
    **Fill every region you open** — never open a `2col`/`main-side`/`quad` split and leave a region nearly
    blank; each region gets real content (bullets, a figure + caption, a callout, an equation).
+   *(Exception: the **structural** slides — the title, the `template=outline` roadmap, the `template=section`
+   dividers, and the closing — are intentionally minimal. Keep them; don't pad them and don't strip them to
+   chase a slide count.)*
 4. **Every slide is VISUAL — do not default to a title + bullet list.** A deck of bullet slides is a defect.
    Reach for the full layout vocabulary and pick the layout that fits the idea: a `2col`/`main-side` split for
    compare-or-figure-beside-text, a `{{mermaid}}` for a process, a `{{chart}}` for data, a `{{smiles}}` or a
