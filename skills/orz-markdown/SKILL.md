@@ -8,7 +8,15 @@ compatibility:
 
 # orz-markdown
 
-A deeply customized `markdown-it` instance with 10+ plugins, 9 official plugin bundles, and 10 ready-to-use CSS themes. All rendered HTML lives inside `<article class="markdown-body">`.
+A deeply customized `markdown-it` instance with 10+ plugins, official plugin bundles, and ready-to-use CSS themes. All rendered HTML lives inside `<article class="markdown-body">`.
+
+> **This bundled copy is a snapshot and lags the installed library.** After `npm install`, the current,
+> complete reference is at `node_modules/orz-markdown/orz-markdown-skills/` — consult it for the exact,
+> up-to-date grammar. Notably, this snapshot predates the **`{{chart}}`** plugin (inline bar/line/pie/doughnut
+> charts — the "simple plot" tool): `{{chart\ntype: bar\nlabels: A, B, C\nseries: Score = 9, 7, 5\n}}`. See
+> `skills/oer-figures` and `docs/authoring-guidelines.md` §1 for when to use `{{chart}}` vs matplotlib. For
+> the semantic use of the rich elements (boxes, badges, colored text, cols, tabs, spoiler) for *clarity*,
+> see `docs/authoring-guidelines.md` §2.
 
 ## Rendering (Node.js / ESM)
 

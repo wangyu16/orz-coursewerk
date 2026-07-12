@@ -86,10 +86,17 @@ own** figure *if its license permits and it carries no third-party credit line*.
 in `metadata/ATTRIBUTION.md` (asset · source URL · license · attribution). Copyrighted/paywalled or
 third-party-credited assets are **never** embedded. The package license **matches the source's**.
 
-## orz-markdown
-Use the bundled `skills/orz-markdown` style for files 2, 3, 5. Containers use the colon-fence syntax
-(`::::: tabs` / `:::: tab <Label>` / `:::`), never `{{tabs}}`; the outer fence has more colons than
-the inner. The QA gate flags unclosed containers and escaped pipes.
+## Tools & skills per deliverable
+- Study guide + practice (files 2, 5): `skills/orz-markdown` (syntax) + `skills/oer-figures` (figures).
+- Slides (file 3): **`skills/orz-slides`** (deck grammar, layout, one-concept-per-slide pedagogy).
+- Concept maps + assessment (files 1, 4): plain markdown — no tools needed.
+- Optional collection docs (exam / syllabus / handout): **`skills/orz-paged`**.
+- Cross-cutting quality (graphics ladder, semantic formatting, accessibility, coherence, notation):
+  **`docs/authoring-guidelines.md`**.
+
+Containers use the colon-fence syntax (`:::: tabs` / `::: tab <Label>` / `:::`), never `{{tabs}}`; the
+outer fence has more colons than the inner. Simple inline plots use `{{chart}}`; complex plots use
+matplotlib (see `skills/oer-figures`). The QA gate flags unclosed containers and escaped pipes.
 
 ## The framework is a build output, not source — ship lean
 The orz files that read/edit standalone (`.md.html`, `.slides.html`, `.paged.html`) carry a heavy,

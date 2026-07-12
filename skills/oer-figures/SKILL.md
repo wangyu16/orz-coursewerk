@@ -22,12 +22,28 @@ relative paths.
 | You need… | Make it with | Why |
 |---|---|---|
 | A molecule, monomer, **polymer repeat unit**, or **reaction/mechanism scheme** | **RDKit** → SVG (`draw_chem.py`) | Crisp, correct, original, zero license risk. Far better than inline `{{smiles}}` for schemes/labelled structures. |
-| A **chart / plot** (property trends, distributions, comparisons) from real data | **matplotlib** → PNG/SVG | Original; you control accuracy & style. |
+| A **simple chart** (a handful of points: a bar/line/pie comparison) | **`{{chart}}`** inline (orz-markdown) | No asset file — data written in the markdown, editable, lightweight. |
+| A **complex chart / plot** (multi-series, log scale, annotations, real dataset) | **matplotlib** → SVG | Original; full control of accuracy & style. |
 | A **process / dependency / workflow** diagram | **mermaid** (inline, orz-markdown) | Original, text-based, themes with the site. |
 | A **real-world photo / instrument / micrograph / product / application / historical** image | **Fetch open-licensed** (`fetch_open_image.py`) | Some things you cannot draw; pull a CC/PD image and attribute it. |
+| A **conceptual illustration / analogy / scene-setting visual** (no exact data) | **AI image engine** (§3) | Makes an abstract idea land; for schematic art only, with guardrails. |
 
 Prefer self-generated for anything chemical or quantitative. Reserve fetched images for real-world
-things (a centrifuge, an extruder, a recycling plant, a gel, an AFM image, a historical figure).
+things (a centrifuge, an extruder, a recycling plant, a gel, an AFM image, a historical figure), and
+AI illustrations for *conceptual* art only. The full preference ladder is in
+[`docs/authoring-guidelines.md`](../../docs/authoring-guidelines.md) §1.
+
+### Simple plots — the `{{chart}}` plugin (inline, no file)
+```
+{{chart
+type: bar
+title: Bond energy by halogen
+labels: F, Cl, Br, I
+series: kJ/mol = 159, 243, 193, 151
+}}
+```
+`type:` bar/line/pie/doughnut · `labels:` comma-separated · `data:` (single series) or repeatable
+`series: Name = a, b, c`. Real values only. For anything beyond a few points, use matplotlib (§2).
 
 ## 1. Chemistry figures with RDKit — `scripts/draw_chem.py`
 
@@ -86,6 +102,30 @@ uv run --with requests python scripts/fetch_open_image.py get \
   into the guide's `ATTRIBUTION.md` (see §5). No attribution captured ⇒ do not embed.
 - Good open sources to name in searches: Wikimedia Commons, Openverse, OpenStax (CC-BY 4.0),
   Wikipedia. For SVG diagrams, Commons is excellent.
+
+## 3b. AI concept illustrations — conceptual art ONLY, with guardrails
+
+For **conceptual illustrations, analogies, and scene-setting visuals** that make an abstract idea land
+(an "energy landscape as a hilly terrain," a friendly cutaway of a battery, a metaphor image), use an
+**AI image engine** — your platform's image generation, an image-generation MCP tool, or the
+**copy-as-prompt** fallback (emit a detailed image prompt for the user to run and drop the result into
+`assets/`). This is encouraged for engagement — but it is **rung 3** of the ladder, never a substitute for
+rungs 1–2.
+
+**Guardrails (non-negotiable):**
+- **Never for anything exact.** No data/plots, no molecular structures or geometry, no real
+  photos/micrographs, no maps, nothing a student reads values off. Those come from §1–§3.
+- **No text inside the image** — AI-rendered labels/equations come out garbled. Keep the art label-free;
+  put labels in the caption or overlay real text.
+- **Verify accuracy** against the source before using it — an appealing but wrong illustration is worse
+  than none.
+- **Always disclose + attribute.** Label it an AI illustration and add an `ATTRIBUTION.md` row, e.g.
+  license **"AI-generated — released under the package license"**, attribution **"AI illustration
+  (&lt;tool&gt;, &lt;date&gt;); no third-party rights"**. AI-image copyright is unsettled — for an open
+  package, treat it as your own contribution and disclose the tool.
+- **Format:** raster output is fine for the *published* package; on a *trial* Alembic import raster is
+  skipped and re-added after publish (or trace to SVG). Prefer a clean, simple style that reads at figure
+  size.
 
 ## 4. Reusing the operator's `inputs/` images — VET FIRST
 

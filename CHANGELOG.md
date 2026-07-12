@@ -20,6 +20,17 @@
   `bootstrap/init.sh` installs them and creates `package/ preview/ reports/ dist/`. Docs (`CLAUDE.md`,
   `PROCEDURE.md`, `README.md`, `AGENTS.md`, `format-contracts/deliverables.md`, `skills/courseguide-standards`,
   `skills/oer-qa`) rewritten to the new layout + grammars.
+- **Comprehensive authoring guidelines + full tool coverage.** New `docs/authoring-guidelines.md` (the
+  cross-cutting quality rules: graphics preference ladder incl. **AI concept illustrations** with guardrails,
+  the semantic-formatting palette, study-guide→slides, accessibility, coherence, notation). New
+  **`skills/orz-slides`** (course slide decks — layout grammar + one-concept-per-slide pedagogy) and
+  **`skills/orz-paged`** (paginated collection docs — exams with the answer-key toggle, syllabi, handouts),
+  both pointing to the installed tool skills for full grammar. `skills/oer-figures` extended with the
+  `{{chart}}` simple-plot path and the AI-illustration rung; `skills/orz-markdown` snapshot flagged +
+  pointed at the installed current reference (adds the `{{chart}}` plugin).
+- **Any-platform reach.** Pointer entry files for `GEMINI.md`, `.github/copilot-instructions.md`,
+  `.cursorrules` (all → `CLAUDE.md`), plus **`docs/lite-path.md`** for pure chat UIs (no terminal);
+  `COMPATIBILITY.md` updated.
 
 ## v0.5.0 (2026-06-24)
 - **Honest evaluation report as the final stage** (`guide/evaluation.md`): the real artifact-quality

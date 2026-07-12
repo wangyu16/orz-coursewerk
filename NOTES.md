@@ -30,9 +30,16 @@ Tracked here so they aren't lost; not yet implemented.
   quality only (correctness, pedagogy, coherence, objective coverage); mechanical issues are left to
   the deterministic QA script. Keeps critique cost down and value high.
 
-## Broad compatibility — see COMPATIBILITY.md
-- Thin pointer files for other agent tools (GEMINI.md, Copilot, Cursor, …), generated from a single
-  canonical source at release time.
+## Broad compatibility — DONE (v0.6.0), see COMPATIBILITY.md
+- Pointer files shipped: `GEMINI.md`, `.github/copilot-instructions.md`, `.cursorrules` (all → `CLAUDE.md`),
+  plus `docs/lite-path.md` for pure chat UIs. Future: generate them all from a single canonical source at
+  release time so they never drift.
+
+## Alembic-side: current-term syllabus + miscellaneous (NEXT)
+- Add a fixed **syllabus** slot and an instructor-managed **miscellaneous** links list to the Alembic
+  current term, shown on the student site (misc items open in a new tab). Touches package-contract (reserved
+  current-term sections + syllabus), package-ops, the site renderer (`renderCurrentTerm`), and the workspace
+  current-term UI. Confirmed with the owner (2026-07-12).
 
 ## Validation plan (the clean evidence)
 The reference test for Coursewerk's harness is **no-intervention domain runs**: take the distilled,

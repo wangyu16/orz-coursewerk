@@ -48,6 +48,15 @@ The agent will:
    Alembic *and* that it's good, copyright-clean OER — and fix every auto-detectable issue.
 6. **Pack the lean zip** (`scripts/pack.mjs`) into `dist/` — ready to upload to Alembic.
 
+## Use any AI platform you like
+
+Coursewerk runs in **any AI agent with a terminal** — Claude Code, ChatGPT (Codex / Agent mode), Gemini
+CLI, GitHub Copilot CLI, Cursor / Windsurf / Cline. Each reads its own entry file (`CLAUDE.md`,
+`AGENTS.md`, `GEMINI.md`, `.github/copilot-instructions.md`, `.cursorrules`), all pointing to the same
+canonical instructions. On a **pure chat UI** (ChatGPT/Claude/Grok/Gemini in the browser, no terminal) you
+can still use it in **lite mode** — see [`docs/lite-path.md`](docs/lite-path.md) and
+[`COMPATIBILITY.md`](COMPATIBILITY.md).
+
 ## Works on a single $20 subscription (Light mode)
 
 Coursewerk has two modes; the agent asks at the start:

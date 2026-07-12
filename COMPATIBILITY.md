@@ -1,20 +1,29 @@
 # Agent compatibility — entry files
 
 Coursewerk is agent-native: different AI tools auto-read different "instructions" files. The
-**canonical entry / constitution is `CLAUDE.md`**; every other entry file should point to it.
+**canonical entry / constitution is `CLAUDE.md`**; every other entry file points to it. The goal is
+that you can use **any AI platform you like** to run Coursewerk.
 
-## Supported now
+## Full experience — agents with a terminal
+These can clone the repo, install the builders, and run the `check` / `build` / `pack` scripts. Each
+reads a different entry file; all of them point to `CLAUDE.md`:
+
 - **`CLAUDE.md`** — canonical (Claude Code reads it automatically).
-- **`AGENTS.md`** — read by Codex CLI, Cursor, and a growing set of tools; **points to `CLAUDE.md`**
-  and carries a quick orientation, so an agent that reads only `AGENTS.md` still gets the gist + the link.
+- **`AGENTS.md`** — read by Codex / ChatGPT Agent mode, and a growing set of tools.
+- **`GEMINI.md`** — Google Gemini CLI.
+- **`.github/copilot-instructions.md`** — GitHub Copilot.
+- **`.cursorrules`** — Cursor / Windsurf / Cline (and similar).
 
-## Future work (broad compatibility — leave as a note for now)
-Add thin pointer files for the other tools' conventions, each linking to `CLAUDE.md`:
-- `GEMINI.md` (Google Gemini CLI)
-- `.github/copilot-instructions.md` (GitHub Copilot)
-- `.cursor/rules` / `.cursorrules` (Cursor)
-- `.windsurfrules` (Windsurf), `.clinerules` (Cline), etc.
-- a top-of-`README.md` "for AI agents" pointer for tools that read the README.
+An agent that reads only its own file still gets a quick orientation plus the link to the canonical
+instructions, so it can proceed.
 
-Longer term, consider generating all of these from a single canonical source at release time so they
-never drift. Until then, keep `CLAUDE.md` authoritative and `AGENTS.md` as the cross-tool pointer.
+## Lite path — pure chat UIs (no terminal)
+ChatGPT, Claude, Grok, or Gemini in the browser can't run the scripts, but can still author the package.
+See **[`docs/lite-path.md`](docs/lite-path.md)**: the AI writes the lean markdown + manifest following the
+contracts; you assemble the tree and either run the Node helpers locally or let Alembic validate on import.
+The output is identical — the terminal only automates assembly, preview, and packaging.
+
+## Keeping them in sync
+The per-tool files are thin pointers, so drift is low. Longer term, consider generating all of them from a
+single canonical source at release time. Until then, `CLAUDE.md` is authoritative and every other entry
+file is a pointer to it.

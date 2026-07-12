@@ -50,10 +50,11 @@ and `skills/courseguide-standards` exactly):
    source textbook's own figures if its license permits) saved to `package/assets/` and recorded in
    `package/metadata/ATTRIBUTION.md`. Each `## H2` section may carry a stable block id
    `{{attrs[#blk-…]}}`. Follow `courseguide-standards`.
-3. `package/slides/<slug>.md` — the **slide deck source** in **orz-slides deck grammar**: a
-   `<!-- deck … -->` frontmatter block, slides separated by `<!-- slide -->` markers, `## H2` slide
-   titles, `template=title`/`template=closing` for the title/closing slides. One concept per slide;
-   **reuse only the study guide's `../assets/` figures**.
+3. `package/slides/<slug>.md` — the **slide deck source** in **orz-slides deck grammar** (follow
+   `skills/orz-slides`): a `<!-- deck … -->` frontmatter block, slides separated by `<!-- slide -->`
+   markers, `## H2` slide titles, layout splits (`2col`/`main-side`) for compare, `template=title`/`section`/
+   `closing`. **One concept per slide, never crowded**, same logic flow as the study guide; **reuse only the
+   study guide's `../assets/` figures**, sized legible-not-dominating.
 4. `package/assessment-support/<slug>.md` — the **assessment guide**, **plain Markdown, no graphics**:
    per learning objective, *how to design* questions/activities with cognitive level — guidance, **not a
    question bank**. Several parameterized question guides per objective.
@@ -62,7 +63,11 @@ and `skills/courseguide-standards` exactly):
    correct, work shown.
 
 Put any **answer keys / full solutions / exam content** in `package/private/…` (never in a public
-folder). **Build carriers to preview** as you go — `node scripts/build_carriers.mjs` renders the lean
+folder). **Optional collection documents** — an exam, quiz, syllabus, or handout — are authored with
+**orz-paged** (`skills/orz-paged`): exams/answer keys go under `private/`, a syllabus or handout is
+student-facing. Follow the cross-cutting quality rules in **`docs/authoring-guidelines.md`** throughout
+(graphics ladder, semantic formatting, accessibility, coherence). **Build carriers to preview** as you go —
+`node scripts/build_carriers.mjs` renders the lean
 sources into `preview/` so you (and the user) can open the real self-contained study guide / slides and
 check them; never edit the carriers, they are throwaway.
 

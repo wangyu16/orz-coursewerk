@@ -43,10 +43,14 @@ as the source of truth for structure.
    - `dist/` — the packed `.zip`.
    - `.coursewerk/` — a small progress ledger so you can resume.
 3. **Stage the skills.** The `skills/` here are your house skills — read a skill's `SKILL.md` before doing
-   its kind of work: `orz-markdown` (the rich markdown syntax for study guides & practice), `oer-figures`
-   (copyright-clean figures/structures/charts), `courseguide-standards` (the per-chapter quality standard —
-   including the orz-slides **deck grammar** for slides and the study-guide/concept/assessment skeletons),
-   `oer-qa` (the automated quality gate).
+   its kind of work: `orz-markdown` (rich markdown syntax for study guides & practice), `orz-slides`
+   (course slide decks — deck grammar, layout, one-concept-per-slide pedagogy), `orz-paged` (paginated
+   collection docs — exams, syllabi, handouts), `oer-figures` (copyright-clean figures + the graphics
+   ladder incl. AI concept illustrations), `courseguide-standards` (the per-chapter quality skeletons),
+   `oer-qa` (the automated quality gate). Read **`docs/authoring-guidelines.md`** for the cross-cutting
+   quality rules (graphics ladder, the semantic-formatting palette, study-guide→slides, accessibility,
+   coherence, notation). The full grammar for each orz tool is in its installed skill under
+   `node_modules/<tool>/…-skills/` after `npm install`.
 
 ## 0.5 Choose a working mode (ask the user) — Full or Light
 
