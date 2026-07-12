@@ -109,8 +109,13 @@ via orz-slides for preview — you author the lean source, never the HTML).
   runs ~1.5–2× as many slides as a naive deck).
 - **Reuse ONLY the study guide's `../assets/` figures** (same relative paths); introduce no new
   graphics.
-- **Sequence:** title slide → a chapter-logic slide → per-section content slides (one slide per
-  concept) → a synthesis / closing slide.
+- **Sequence:** title → objectives → a **`template=outline` roadmap** of the sections/topics → a
+  chapter-logic slide → for each section (a `template=section` divider + one slide per concept + **at least
+  one worked EXAMPLE QUESTION**: a question slide, then its solution via a `step` reveal or a follow-up
+  slide) → a synthesis / closing slide.
+- **Teach with questions, and use rich layouts** — see `skills/orz-slides` "Slide design patterns". Most
+  slides carry a visual (figure/chart/diagram/split), not just bullets; use `{{smiles}}` for a single
+  structure.
 
 Concrete example (new grammar):
 ```
@@ -274,9 +279,12 @@ every image · NO practice-question section · tabs use container syntax (not `{
 captioned via `../assets/`, grids non-overlapping.
 
 **Slides (`slides/<slug>.md`):** `<!-- deck -->` frontmatter (title + ratio, no theme) · `<!-- slide -->`
-markers between slides · `## H2` content-slide titles · `template=title` / `template=closing` for the
-title/closing slides · ONE concept per slide (split if crowded) · short scannable text · reuses
-`../assets/` figures only · title + chapter-logic + per-section + synthesis/closing.
+markers between slides · `## H2` content-slide titles · `template=title` / `template=outline` (roadmap) /
+`template=section` (dividers) / `template=closing` · ONE concept per slide (split if crowded) · short
+scannable text · **layout variety (most slides carry a figure/chart/diagram/split, not just bullets)** ·
+**≥1 worked example question per section** (question → `step`/follow-up solution) · figures shown
+(`{{smiles}}` for single structures) · title → objectives → outline → chapter-logic → per-section
+(concepts + example) → synthesis/closing.
 
 **Concept map (`concepts/<slug>.md`):** simple markdown only (no mermaid/smiles/images/containers) · Source
 and Scope · Chapter Summary · Prerequisites and Later Payoff table · Core Dependency Chain · Logical Order

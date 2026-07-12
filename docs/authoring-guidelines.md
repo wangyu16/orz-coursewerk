@@ -15,7 +15,9 @@ in `metadata/ATTRIBUTION.md`. Prefer **SVG** everywhere (crisp at any size, text
 Alembic cleanly — raster `.png`/`.jpg`/`.pdf` are skipped on a *trial* import and re-added after publish).
 
 1. **Self-generate — always clean + exact (first choice for anything scientific).**
-   - Chemical structures / schemes → **RDKit** (`oer-figures`): `draw_chem.py` → SVG.
+   - A single compound or a simple reaction → the inline **`{{smiles}}`** plugin (*favored* — no asset
+     file). Reserve **RDKit** (`oer-figures` `draw_chem.py` → SVG) for a *labelled multi-structure grid* or
+     an *annotated scheme*.
    - **Simple** data plots → the **`{{chart}}`** plugin inline (bar / line / pie / doughnut; data written
      right in the markdown — editable, lightweight, no asset file). Use for a handful of points.
    - **Complex** plots → **matplotlib** (`oer-figures`) → SVG: multi-series, log scales, annotations,

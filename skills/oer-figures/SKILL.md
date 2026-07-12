@@ -21,16 +21,19 @@ relative paths.
 
 | You need… | Make it with | Why |
 |---|---|---|
-| A molecule, monomer, **polymer repeat unit**, or **reaction/mechanism scheme** | **RDKit** → SVG (`draw_chem.py`) | Crisp, correct, original, zero license risk. Far better than inline `{{smiles}}` for schemes/labelled structures. |
+| A **single compound**, or a **simple reaction** | **`{{smiles}}`** inline (orz-markdown) — *favored* | No asset file, editable in the source, renders client-side (SmilesDrawer). Use this first for one structure or a simple reaction. e.g. `{{smiles CCO}}` (ethanol), `{{smiles O=C=O}}` (CO₂). |
+| A **labelled multi-structure grid**, a **polymer repeat unit**, or an **annotated reaction/mechanism scheme** | **RDKit** → SVG (`draw_chem.py`) | Reserve RDKit for *collections* and *labelled/laid-out* structures where inline `{{smiles}}` can't place or annotate them (a grid that must not overlap, a scheme with arrows/legends). Not for a single compound — use `{{smiles}}` there. |
 | A **simple chart** (a handful of points: a bar/line/pie comparison) | **`{{chart}}`** inline (orz-markdown) | No asset file — data written in the markdown, editable, lightweight. |
 | A **complex chart / plot** (multi-series, log scale, annotations, real dataset) | **matplotlib** → SVG | Original; full control of accuracy & style. |
 | A **process / dependency / workflow** diagram | **mermaid** (inline, orz-markdown) | Original, text-based, themes with the site. |
 | A **real-world photo / instrument / micrograph / product / application / historical** image | **Fetch open-licensed** (`fetch_open_image.py`) | Some things you cannot draw; pull a CC/PD image and attribute it. |
 | A **conceptual illustration / analogy / scene-setting visual** (no exact data) | **AI image engine** (§3) | Makes an abstract idea land; for schematic art only, with guardrails. |
 
-Prefer self-generated for anything chemical or quantitative. Reserve fetched images for real-world
-things (a centrifuge, an extruder, a recycling plant, a gel, an AFM image, a historical figure), and
-AI illustrations for *conceptual* art only. The full preference ladder is in
+Prefer self-generated for anything chemical or quantitative. **For a single compound or a simple reaction,
+reach for the inline `{{smiles}}` plugin first** — it needs no asset file and edits with the text; only fall
+back to RDKit when you need a *labelled grid* of structures or an *annotated scheme*. Reserve fetched images
+for real-world things (a centrifuge, an extruder, a recycling plant, a gel, an AFM image, a historical
+figure), and AI illustrations for *conceptual* art only. The full preference ladder is in
 [`docs/authoring-guidelines.md`](../../docs/authoring-guidelines.md) §1.
 
 ### Simple plots — the `{{chart}}` plugin (inline, no file)

@@ -31,7 +31,13 @@ the `.slides.html`.
    chart, or split on **most** slides, not a bullet list.
 5. **Show figures — reuse the study guide's, and add slide-only visuals when they help.** Prefer the study
    guide's `../assets/` figures (same paths); a slide may also carry an inline `{{smiles}}`/`{{chart}}`/
-   `{{mermaid}}` of its own. Size figures legible but not dominating (see Images).
+   `{{mermaid}}` of its own (use `{{smiles}}` for a single structure — see `oer-figures`). Size figures
+   legible but not dominating (see Images).
+6. **Give the deck a spine, and teach with questions.** Open with a **`template=outline`** roadmap of the
+   sections/topics so the audience knows the plan, and use `template=section` dividers between sections. And
+   **include worked EXAMPLE QUESTIONS** — at least one per section for a quantitative concept: a question
+   slide, then its solution (a `step` reveal or a follow-up slide). Slides should *teach and practice*, not
+   only present concepts.
 
 ## Deck structure & sequence
 
@@ -51,19 +57,37 @@ footer: <optional — appears on every content slide>
 ## Learning objectives
 - ...
 
+<!-- slide template=outline -->
+# What we'll cover
+- 1.1 …
+- 1.2 …
+- (the sections/topics, as a roadmap)
+
 <!-- slide -->
 ## <Chapter logic — the arc in one picture>
 {{mermaid ...}}
 
-... per section: an optional divider, then one slide per concept ...
+... per section: a `template=section` divider, then one slide per concept, then a worked EXAMPLE QUESTION ...
+
+<!-- slide -->
+## Example — <concept>
+<!-- @main -->
+**Q.** <a concrete question>
+<!-- @side -->
+*(reveal the answer)* → step it out
+<!-- slide step -->
+## Example — solution
+1. …
+2. …  ⟶  **answer**
 
 <!-- slide template=closing -->
 # Summary
 - the through-line in 3 bullets
 ```
 
-Sequence: **title → objectives → chapter-logic → for each section (optional `template=section` divider +
-one slide per concept) → synthesis/closing.**
+Sequence: **title → objectives → `template=outline` roadmap of the sections/topics → chapter-logic → for
+each section (a `template=section` divider + one slide per concept + at least one worked EXAMPLE QUESTION) →
+synthesis/closing.**
 
 ## Grammar essentials
 
@@ -111,6 +135,8 @@ Match the content to a layout. A chapter deck should use a *mix* of these, not t
 | **Build up an argument** | **step reveal** — `<!-- slide step -->` (bullets appear one at a time) | for derivations, "what does each observation tell us?", multi-step reasoning |
 | **A definition / a fact to catch** | a **badge** + bold term + one line | `{{sp[info] Definition}}` **Isotope** — same Z, different A |
 | **Four related items** | `quad` split (tl/tr/bl/br) | e.g. the four states of matter, or four periodic families |
+| **The roadmap / agenda** | `template=outline` — list the sections/topics up front | `<!-- slide template=outline -->` `# What we'll cover` + the section list |
+| **A worked example question** | question slide → solution via `step` reveal or a follow-up slide | `<!-- slide main-side -->` `## Example` `@main` **Q.** … `@side` setup · then `<!-- slide step -->` the steps → answer |
 | **Section change** | `template=section` divider slide | `<!-- slide template=section -->` `# 2.5 The Periodic Table` |
 | **A pitfall / caution** | `:::warning` callout, alone or beside content | mass number vs atomic mass; sig-fig traps |
 
@@ -135,9 +161,12 @@ Leave the theme to build time unless the user picks one.
 ## Before finishing a deck (self-check)
 
 Same logic + full coverage as the study guide · one concept per slide (split the crowded ones) · scannable
-phrasing, within budget · **layout VARIETY — most slides carry a figure, chart, diagram, split, or step
-reveal, not just bullets; the deck uses a mix of the design patterns above** · rich elements used
-semantically (compare→`2col`, process→`{{mermaid}}`, data→`{{chart}}`, pitfall→`:::warning`, key
-term→`==`/`{{sp}}`) · figures shown and sized legible-not-dominating · title → objectives → logic →
-per-section concepts → closing · valid deck grammar (`<!-- deck -->`, `<!-- slide -->`, one `## H2` per
-content slide). The QA gate checks the grammar; you own the pedagogy and the visual richness.
+phrasing, within budget · **opens with a `template=outline` roadmap of the sections/topics; `template=section`
+dividers between sections** · **at least one worked EXAMPLE QUESTION per section** (question → solution via a
+`step` reveal or follow-up slide) · **layout VARIETY — most slides carry a figure, chart, diagram, split, or
+step reveal, not just bullets; the deck uses a mix of the design patterns above** · rich elements used
+semantically (compare→`2col`, process→`{{mermaid}}`, data→`{{chart}}`, single structure→`{{smiles}}`,
+pitfall→`:::warning`, key term→`==`/`{{sp}}`) · figures shown and sized legible-not-dominating · title →
+objectives → outline → logic → per-section (concepts + example question) → closing · valid deck grammar
+(`<!-- deck -->`, `<!-- slide -->`, one `## H2` per content slide). The QA gate checks the grammar; you own
+the pedagogy and the visual richness.
