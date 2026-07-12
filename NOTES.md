@@ -3,10 +3,23 @@
 Tracked here so they aren't lost; not yet implemented.
 
 ## Operator will implement later
-- **Study-guide & slides layout/format design** — the operator has ideas to improve the study-guide
-  and slide-spec layout/format design and will incorporate them into the pipeline later. Leave the
-  current format contracts (`format-contracts/deliverables.md`, the `courseguide-standards` skill,
-  PROCEDURE.md slide rules) as-is until then; this is the place those changes land.
+- **Study-guide & slides visual DESIGN** — the operator has ideas to improve the study-guide and slide
+  *visual/layout design* and will incorporate them later. NOTE (v0.6.0): the underlying **grammars** are now
+  fixed by the orz family (orz-markdown for study guides, the orz-slides deck grammar for slides, orz-paged
+  for print) — that is the stable interchange format Alembic reassembles. The operator's design work layers
+  *on top* of those grammars (themes, slide templates, section styling), and lands in
+  `format-contracts/deliverables.md`, `skills/courseguide-standards`, and PROCEDURE.md slide rules.
+
+## Round-trip: edit-the-carrier → sync-back-to-lean (deferred)
+- Today the agent authors lean `.md` and builds carriers to `preview/` for reading. If a human wants to
+  hand-edit using a carrier's in-file editor, we'd need a `sync-back` step that extracts the embedded lean
+  source from the edited `.md.html`/`.slides.html` back into `package/`. The orz files embed their source
+  (that's how the in-file editor + `#orz-meta` uid work), so it's extractable — not yet wired.
+
+## Alembic-side: first-class print/paged home (small, optional)
+- There is no dedicated `paged/` top-level folder in the Alembic contract; print/handout deliverables live
+  under `practice/` or `assets/` as `.paged.html`. If the operator wants a first-class print home, that's a
+  tiny additive change to the Alembic `layers.ts`/`spaces.ts` allowlist + `scripts/lib/contract.mjs` here.
 
 ## Near-term improvements
 - **Fold the artifact-quality evaluation into the pipeline + auto-revise.** Today the `oer-qa` QA gate

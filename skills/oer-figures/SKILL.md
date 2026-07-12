@@ -14,7 +14,7 @@ high-value figures per section beat a wall of clip-art (see the `impeccable` ski
 
 The two helper scripts below live next to this file (`scripts/`) and run via `uv run --with …`
 so their heavy deps (RDKit, matplotlib, requests) are **ephemeral** — nothing is added to the
-project. Save figures into a per-guide assets folder (e.g. `guide/assets/`) and embed with
+project. Save figures into a per-guide assets folder (e.g. `assets/`) and embed with
 relative paths.
 
 ## Pick the right source for each visual
@@ -34,19 +34,19 @@ things (a centrifuge, an extruder, a recycling plant, a gel, an AFM image, a his
 ```bash
 # single structure (SVG preferred for line art)
 uv run --with rdkit --with cairosvg python scripts/draw_chem.py mol "C=Cc1ccccc1" \
-    --out guide/assets/styrene.svg --legend "Styrene (vinyl monomer)"
+    --out assets/styrene.svg --legend "Styrene (vinyl monomer)"
 # a labelled GRID of structures — each molecule gets its own fixed cell, so they
 # NEVER overlap (do NOT hand-pack several structures onto one mol canvas). Tune
 # --per-row (default 3) and --cell px (default 260); keep ~3-4 per row so cells stay big.
 uv run --with rdkit python scripts/draw_chem.py grid \
     "C=C:Ethylene" "C=CC:Propylene" "C=Cc1ccccc1:Styrene" "C=CC#N:Acrylonitrile" \
-    --out guide/assets/common_monomers.svg --per-row 2 --cell 260
+    --out assets/common_monomers.svg --per-row 2 --cell 260
 # polymer repeat unit — use * for the attachment points
 uv run --with rdkit python scripts/draw_chem.py poly "*CC(*)c1ccccc1" \
-    --out guide/assets/polystyrene_repeat.svg --legend "Polystyrene repeat unit"
+    --out assets/polystyrene_repeat.svg --legend "Polystyrene repeat unit"
 # a reaction / polymerization scheme (monomer >> repeat unit, or A.B>>product)
 uv run --with rdkit python scripts/draw_chem.py rxn "C=Cc1ccccc1>>*CC(*)c1ccccc1" \
-    --out guide/assets/ps_polymerization.svg
+    --out assets/ps_polymerization.svg
 ```
 
 `{{smiles ...}}` (orz-markdown) is still fine for a quick *inline* structure mid-sentence; use
@@ -62,7 +62,7 @@ fig, ax = plt.subplots(figsize=(5,3.2))
 ax.plot([...],[...], marker="o")
 ax.set_xlabel("…(units)"); ax.set_ylabel("…(units)"); ax.set_title("…")
 ax.grid(alpha=.3); fig.tight_layout()
-fig.savefig("guide/assets/tg_vs_mw.svg")   # SVG or PNG@dpi>=150
+fig.savefig("assets/tg_vs_mw.svg")   # SVG or PNG@dpi>=150
 PY
 ```
 Quality rules: label every axis with units, title it, no chartjunk, readable font, `dpi>=150`
@@ -78,7 +78,7 @@ uv run --with requests python scripts/fetch_open_image.py search "isotactic poly
 uv run --with requests python scripts/fetch_open_image.py search "extrusion molding machine" --source openverse
 # download an [OK] result by Commons file title; writes the file + <out>.attrib.json
 uv run --with requests python scripts/fetch_open_image.py get \
-    --title "File:Polypropylene tacticity.svg" --out guide/assets/pp_tacticity.svg
+    --title "File:Polypropylene tacticity.svg" --out assets/pp_tacticity.svg
 ```
 - Only `[OK]` (CC0/PD/CC-BY/CC-BY-SA) results download; `[REVIEW]` (NC/ND/unknown) is refused
   unless you pass `--allow-review` **after** verifying OER-safety yourself.
@@ -119,7 +119,7 @@ Rules:
   third-party credit is OpenStax's own.
 - **Download + attribute.** Fetch the figure image from the textbook page
   (`uv run --with requests python scripts/fetch_open_image.py get --url <figure_img_url>
-  --out guide/assets/ch3_fig_3_4.png --allow-review`, then hand-record the license), or curl it.
+  --out assets/ch3_fig_3_4.png --allow-review`, then hand-record the license), or curl it.
   Attribution line / ATTRIBUTION row license = the matched license, credited e.g.
   **"OpenStax, Chemistry: Atoms First 2e, Fig 3.4, CC BY-NC-SA 4.0"** (use
   "© Rice University, OpenStax, CC BY-NC-SA 4.0" for OpenStax art with no in-text credit).
@@ -133,7 +133,7 @@ Embed with orz-markdown and a caption:
 ![Isotactic vs syndiotactic vs atactic polypropylene](../assets/pp_tacticity.svg)
 *Figure 3.2 — Tacticity of polypropylene. Source: Wikimedia Commons (RicHard-59), CC BY-SA 3.0.*
 ```
-Then record it in `guide/ATTRIBUTION.md` (one row per external/reused asset):
+Then record it in `metadata/ATTRIBUTION.md` (one row per external/reused asset):
 
 | Asset | Local use | Source URL | License | Attribution |
 |---|---|---|---|---|

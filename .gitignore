@@ -1,5 +1,11 @@
 # Per-user workspace — created locally by bootstrap/init.sh, never committed to the harness repo
 /inputs/
+/package/
+/preview/
+/reports/
+/dist/
 /guide/
 /.coursewerk/
 node_modules/
+package-lock.json
+.DS_Store

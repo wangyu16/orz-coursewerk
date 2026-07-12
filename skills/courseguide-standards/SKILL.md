@@ -1,6 +1,6 @@
 ---
 name: courseguide-standards
-description: "The house DOCUMENT STANDARD for course_guide / study_guide teaching packages — the canonical structure, section order, and orz-markdown styling for each of the four per-chapter deliverables (study guide, slides, concept map, assessment guide), plus a self-check checklist. Invoke when AUTHORING or CRITIQUING any chapter of a course/study guide so every chapter is CONSISTENT (same skeleton, same styling palette, same assessment format). Pairs with orz-markdown (syntax) and oer-figures (figures). Derived from the operator's gold-standard chapter (ch4)."
+description: "The house DOCUMENT STANDARD for course_guide / study_guide teaching packages — the canonical structure, section order, and orz-markdown styling for each of the five per-chapter deliverables (study guide, slides, concept map, assessment guide, practice sheet) in the Alembic package layout (study-guide/ slides/ concepts/ assessment-support/ practice/, one <slug>.md per chapter), with slides authored in the orz-slides deck grammar. Includes a self-check checklist. Invoke when AUTHORING or CRITIQUING any chapter of a course/study guide so every chapter is CONSISTENT (same skeleton, same styling palette, same assessment format). Pairs with orz-markdown (syntax) and oer-figures (figures). Derived from the operator's gold-standard chapter."
 ---
 
 # courseguide-standards — one consistent shape for every chapter
@@ -8,17 +8,29 @@ description: "The house DOCUMENT STANDARD for course_guide / study_guide teachin
 Every chapter of a teaching package ships **five** files; each must follow the SAME skeleton
 and the SAME restrained styling so the whole guide reads as one coherent work. Author against
 the templates below, then run the **Checklists** (end of file) before finishing. A reviewer
-flags any chapter that deviates. The exemplar is **ch4** — match it.
+flags any chapter that deviates. Match the exemplar chapter.
+
+The five files land in the Alembic package layout (see `format-contracts/deliverables.md` for the
+authoritative contract):
+
+- study guide → `study-guide/<slug>.md`
+- slides → `slides/<slug>.md`
+- concept map → `concepts/<slug>.md`
+- assessment guide → `assessment-support/<slug>.md`
+- practice sheet → `practice/<slug>.md`
 
 Two global rules:
-- **Filenames** are numeric: `guide/<kind>/ch{i}.md` (ch0, ch1, …) — never slugs, no duplicates.
+- **Filenames** are the chapter **slug**: `<slug>.md` (lowercase, hyphen-joined,
+  `^[a-z0-9]+(?:-[a-z0-9]+)*$`) — the SAME slug across all five folders, matching that chapter's
+  `slug` in `alembic.json` (`chapters[].slug`). Never numeric `ch{i}`, never ad-hoc names, no
+  duplicates.
 - **Restrained palette.** Use the small set of devices below *with meaning*, the same way in
   every chapter. Do NOT decorate: no badges, no colored-text spans, no `==highlight==`, no
   underline, unless it carries real information. Consistency > flourish.
 
 ---
 
-## 1. STUDY GUIDE — `guide/chapters/ch{i}.md` (orz-markdown, rich)
+## 1. STUDY GUIDE — `study-guide/<slug>.md` (orz-markdown, rich)
 
 Ordered sections (exact skeleton):
 
@@ -29,19 +41,25 @@ Ordered sections (exact skeleton):
    **Reference:** <Textbook, Edition>, Chapter N (<license>)
    **Audience:** <one line>
    **Package license:** CC BY-NC-SA 4.0
-   **Note:** <optional — e.g. file is ch{i}.md by zero-based index; content is textbook Chapter N>
+   **Note:** <optional — e.g. slug/indexing note; content is textbook Chapter N>
    :::
    ```
 3. **Chapter Learning Objectives** — a `:::success` container titled `**Chapter Learning Objectives**` + a bullet list (one bullet per objective).
 4. **`## Chapter Logic`** — 2–4 sentences of the chapter's conceptual arc + ONE mermaid flowchart (full ```mermaid``` / `{{mermaid}}` form, not `{{mm}}`) + an optional `:::warning` for a model boundary.
 5. **Sections**, one per textbook section, IN ORDER:
-   - `## N.M <Section Title>`
+   - `## N.M <Section Title>` — the H2 section heading **MAY** carry a stable block ID marker
+     appended to it: `## N.M <Section Title>{{attrs[#blk-a1b2c3d4]}}`, where the id is
+     `#blk-` + 8+ lowercase base36 characters (`[0-9a-z]`), unique within the file. These block
+     ids are **optional but recommended**: they are durable citation/provenance anchors that
+     survive later edits (Alembic and citations resolve to them), so a link to a section keeps
+     pointing at the same content even after the prose around it changes. Omit them and the
+     section still works; add them and the section becomes stably citable.
    - a `:::success` `**Learning Objectives**` container with the section's sub-objectives,
    - prose explaining the concepts along the logic, with figures (`![alt](../assets/..)` + caption), tables, inline `{{smiles}}`/`$\ce{}$` as needed,
    - worked example(s) in `::::: tabs` → `:::: tab Problem` / `:::: tab Solution`,
    - a short **Self-check:** bullet list (prompts only, NO answers).
 6. **`## Synthesis`** — a short integrative section tying the sections together (the single thread through the chapter).
-7. **`## Asset and License Record for This Chapter`** — a table `| Asset | Source URL | License | Attribution |` listing EVERY embedded image (self-generated rows marked "self-generated, CC BY-NC-SA 4.0").
+7. **`## Asset and License Record for This Chapter`** — a table `| Asset | Source URL | License | Attribution |` listing EVERY embedded image (self-generated rows marked "self-generated, CC BY-NC-SA 4.0"). This table feeds attribution (it also mirrors the package's `metadata/ATTRIBUTION.md`).
 8. **NO practice-question section.** The study guide teaches; questions live in the assessment guide.
 
 Styling palette (use exactly this way every chapter):
@@ -49,21 +67,74 @@ Styling palette (use exactly this way every chapter):
 - `::::: tabs` / `:::: tab <Label>` — worked Problem/Solution pairs (outer 5 colons, inner 4, close inner `:::`, close outer `::::`). NEVER `{{tabs}}`.
 - `:::: cols` / `::: col` — side-by-side compare/contrast, sparingly.
 - `**bold**` — a defined term on first use, and key results. KaTeX `$…$`/`$$…$$` + `$\ce{…}$` (mhchem) for all formulae. Tables for data/comparison. mermaid for the chapter-logic flowchart + processes.
-- Figures: from the **oer-figures** skill (RDKit SVG for structures/repeat-units/schemes — use `grid` for multiple structures so they never overlap; matplotlib for charts; openly/NC-licensed real images). Every figure has a caption.
+- Figures: from the **oer-figures** skill (RDKit SVG for structures/repeat-units/schemes — use `grid` for multiple structures so they never overlap; matplotlib for charts; openly/NC-licensed real images). Figures live in the top-level `assets/` folder and are referenced as `../assets/…`. Every figure has a caption.
 
 ---
 
-## 2. SLIDES — `guide/slides/ch{i}.md` (orz-markdown that previews AS the slides)
+## 2. SLIDES — `slides/<slug>.md` (orz-slides deck grammar — deck SOURCE, not HTML)
 
-- `---` separates slides. `# H1` = title/divider slide; `## H2` = content-slide title.
-- Before each slide a `<!-- LAYOUT: <named regions with proportions> -->` comment; anchor each block with `<!-- <region>; <what + size> -->`. All comments are hidden in preview.
-- **ONE CONCEPT PER SLIDE (binding).** Each slide presents a single concept / subtopic / worked idea. If a slide would carry two ideas, or its text overflows its regions, **SPLIT it into two (or more) slides**. Keep on-slide text scannable: a short title, a few short bullets or one figure + a caption — not paragraphs. A crowded slide is a defect; prefer more, lighter slides (the exemplar runs ~1.5–2× as many slides as a naive deck).
-- **Reuse the study guide's `../assets/` figures** (same relative paths); introduce no new graphics.
-- Sequence: title slide → a chapter-logic slide → for each section a divider slide + one slide per concept → a chapter-synthesis slide.
+The slides file is the **deck source** in the **orz-slides deck grammar** (built to `.slides.html`
+via orz-slides for preview — you author the lean source, never the HTML).
+
+- **The file opens with a deck frontmatter block:**
+  ```
+  <!-- deck
+  title: <Chapter Title>
+  ratio: 16:9
+  -->
+  ```
+  Do NOT bake a `theme:` line — the theme is applied at generation time, not in the source.
+- **Slides are separated by the marker `<!-- slide -->`** on its own line (NOT a bare `---`).
+- **Title / divider slide:** `<!-- slide template=title -->` followed by a `# H1` (and an optional
+  `## subtitle`).
+- **Content slide:** a plain `<!-- slide -->` marker followed by `## H2` as the slide title, then
+  short scannable bullets or one figure + caption.
+- **Closing slide:** `<!-- slide template=closing -->`.
+- **ONE CONCEPT PER SLIDE (binding).** Each slide presents a single concept / subtopic / worked
+  idea. If a slide would carry two ideas, or its text overflows, **SPLIT it into two (or more)
+  slides**. Keep on-slide text scannable: a short title, a few short bullets or one figure + a
+  caption — not paragraphs. A crowded slide is a defect; prefer more, lighter slides (the exemplar
+  runs ~1.5–2× as many slides as a naive deck).
+- **Reuse ONLY the study guide's `../assets/` figures** (same relative paths); introduce no new
+  graphics.
+- **Sequence:** title slide → a chapter-logic slide → per-section content slides (one slide per
+  concept) → a synthesis / closing slide.
+
+Concrete example (new grammar):
+```
+<!-- deck
+title: Chapter 5: Gases
+ratio: 16:9
+-->
+
+<!-- slide template=title -->
+# Chapter 5: Gases
+## Pressure, the ideal gas law, and kinetic theory
+
+<!-- slide -->
+## Chapter Logic
+- Macroscopic gas behavior → one equation of state
+- Ideal gas law ties P, V, n, T together
+- Kinetic-molecular theory explains *why*
+
+<!-- slide -->
+## The Ideal Gas Law
+- $PV = nRT$ links all four state variables
+- Solve for any one given the other three
+- $R = 0.082057\ \text{L·atm·mol}^{-1}\text{K}^{-1}$
+
+<!-- slide -->
+## Molar Volume at STP
+![Molar volume of an ideal gas](../assets/molar-volume.svg)
+One mole of an ideal gas occupies 22.4 L at STP.
+
+<!-- slide template=closing -->
+# One thread: state variables never move alone
+```
 
 ---
 
-## 3. CONCEPT MAP — `guide/concept-maps/ch{i}.md` (SIMPLE markdown — NO graphics)
+## 3. CONCEPT MAP — `concepts/<slug>.md` (SIMPLE markdown — NO graphics)
 
 No mermaid, no `{{smiles}}`, no images, no orz containers — plain markdown that renders anywhere.
 Ordered sections:
@@ -78,7 +149,7 @@ Ordered sections:
 
 ---
 
-## 4. ASSESSMENT GUIDE — `guide/assessment/ch{i}.md` (SIMPLE markdown — NO graphics)
+## 4. ASSESSMENT GUIDE — `assessment-support/<slug>.md` (SIMPLE markdown — NO graphics)
 
 Design guidance, NOT a finished question bank, NOT answer keys. Ordered sections:
 1. `# Chapter N Assessment Guide: <Title>`
@@ -150,7 +221,7 @@ objectives → conceptual/comparison/applied/definition that vary the *scenario 
 
 ---
 
-## 5. PRACTICE QUESTION SHEET — `guide/practice/ch{i}.md` (orz-markdown, student-facing)
+## 5. PRACTICE QUESTION SHEET — `practice/<slug>.md` (orz-markdown, student-facing)
 
 A ready-to-use practice set students can self-test on. It is **generated from the chapter's
 assessment-guide question guides** — instantiate the guides into CONCRETE questions (real numbers
@@ -183,26 +254,30 @@ in range, satisfying the stated constraint; a chosen context; a specific format)
 
 ## Checklists (run before finishing a chapter; a reviewer checks the same)
 
-**Study guide:** H1 title · `:::info` reference box (Reference/Audience/Package license) · `:::success`
-Chapter Learning Objectives · `## Chapter Logic` + mermaid · each section = `## N.M` + `:::success`
-section objectives + prose + `::::: tabs` worked example + Self-check · `## Synthesis` · `## Asset and
-License Record` table covering every image · NO practice-question section · tabs use container syntax
-(not `{{tabs}}`) · figures captioned, grids non-overlapping.
+**Study guide (`study-guide/<slug>.md`):** H1 title · `:::info` reference box (Reference/Audience/Package
+license) · `:::success` Chapter Learning Objectives · `## Chapter Logic` + mermaid · each section =
+`## N.M` (optional stable `{{attrs[#blk-…]}}` id) + `:::success` section objectives + prose +
+`::::: tabs` worked example + Self-check · `## Synthesis` · `## Asset and License Record` table covering
+every image · NO practice-question section · tabs use container syntax (not `{{tabs}}`) · figures
+captioned via `../assets/`, grids non-overlapping.
 
-**Slides:** `---` between slides · LAYOUT + region comments · ONE concept per slide (split if crowded) ·
-short scannable text · reuses `../assets/` figures only · title + chapter-logic + per-section + synthesis.
+**Slides (`slides/<slug>.md`):** `<!-- deck -->` frontmatter (title + ratio, no theme) · `<!-- slide -->`
+markers between slides · `## H2` content-slide titles · `template=title` / `template=closing` for the
+title/closing slides · ONE concept per slide (split if crowded) · short scannable text · reuses
+`../assets/` figures only · title + chapter-logic + per-section + synthesis/closing.
 
-**Concept map:** simple markdown only (no mermaid/smiles/images/containers) · Source and Scope ·
-Chapter Summary · Prerequisites and Later Payoff table · Core Dependency Chain · Logical Order for
-Teaching table · Section-Level objectives + concept flow · Common Student Bottlenecks table.
+**Concept map (`concepts/<slug>.md`):** simple markdown only (no mermaid/smiles/images/containers) · Source
+and Scope · Chapter Summary · Prerequisites and Later Payoff table · Core Dependency Chain · Logical Order
+for Teaching table · Section-Level objectives + concept flow · Common Student Bottlenecks table.
 
-**Assessment guide:** simple markdown only · Source and Format · General Assessment Priorities · one
-`## Objective N.Ma` per LO, each with Target understanding + **SEVERAL parameterized Question guides**
-covering the common question modes (forward/inverse/conceptual/graphical/comparison/applied/error/…),
-each with variables+ranges, constraint, contexts, formats MC/short/workout, one worked instantiation +
-Design guidance by purpose table · `## Rubric Themes` table · no finished answer keys.
+**Assessment guide (`assessment-support/<slug>.md`):** simple markdown only · Source and Format · General
+Assessment Priorities · one `## Objective N.Ma` per LO, each with Target understanding + **SEVERAL
+parameterized Question guides** covering the common question modes
+(forward/inverse/conceptual/graphical/comparison/applied/error/…), each with variables+ranges, constraint,
+contexts, formats MC/short/workout, one worked instantiation + Design guidance by purpose table ·
+`## Rubric Themes` table · no finished answer keys.
 
-**Practice sheet:** `guide/practice/ch{i}.md` · ~15 concrete questions instantiated from the
-assessment-guide question guides · covers all major objectives (each tagged with its objective) ·
-mixed modes & formats (MC/short/workout) · each question's body + answer in `::::: tabs` (Q tab /
-Answer tab) · answers correct with work shown · no fabricated values.
+**Practice sheet (`practice/<slug>.md`):** ~15 concrete questions instantiated from the assessment-guide
+question guides · covers all major objectives (each tagged with its objective) · mixed modes & formats
+(MC/short/workout) · each question's body + answer in `::::: tabs` (Q tab / Answer tab) · answers correct
+with work shown · no fabricated values.

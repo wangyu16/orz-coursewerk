@@ -1,5 +1,26 @@
 # Coursewerk changelog
 
+## v0.6.0 (2026-07-12)
+- **Alembic-native output + orz-markdown family incorporated as core.** Coursewerk now builds a valid
+  **Alembic package** (`package/alembic.json` manifest + `study-guide/ concepts/ slides/ practice/
+  assessment-support/ assets/ metadata/ private/`, slug filenames) that uploads with zero friction — no
+  hand-translation. It authors natively with the orz family: study guides & practice in orz-markdown,
+  slides in the **orz-slides deck grammar**, print in orz-paged.
+- **Author-with-framework, ship-lean model.** Lean `.md` is the source of truth; `scripts/build_carriers.mjs`
+  builds the self-contained orz carriers (`.md.html`/`.slides.html`/`.paged.html`) into a throwaway
+  `preview/` for local reading + QA; `scripts/pack.mjs` produces a **lean** upload zip (carriers excluded —
+  Alembic reassembles the framework and assigns permalinks/ids on its side). License is package-level
+  (`alembic.json` + `LICENSE`); identity is minted by Alembic on import; optional `{{attrs[#blk-…]}}` block
+  ids may ship for durable citation.
+- **QA gate rewritten** (`scripts/check_oer.mjs`): now validates the **Alembic contract** (mirrors
+  `validatePackageForImport`/`repoForPath` via `scripts/lib/contract.mjs`) *and* keeps the OER-quality checks
+  (attribution, links, orz-syntax, accessibility, placeholders, per-deliverable format contracts). Reports
+  live in `reports/` (outside the package). Slides format contract now checks the orz-slides deck grammar.
+- **Tooling:** `package.json` depends on `orz-mdhtml`/`orz-slides`/`orz-paged`/`orz-markdown`;
+  `bootstrap/init.sh` installs them and creates `package/ preview/ reports/ dist/`. Docs (`CLAUDE.md`,
+  `PROCEDURE.md`, `README.md`, `AGENTS.md`, `format-contracts/deliverables.md`, `skills/courseguide-standards`,
+  `skills/oer-qa`) rewritten to the new layout + grammars.
+
 ## v0.5.0 (2026-06-24)
 - **Honest evaluation report as the final stage** (`guide/evaluation.md`): the real artifact-quality
   numbers (attribution, accessibility, links, orz-syntax, format contracts, residual-flaw audit
