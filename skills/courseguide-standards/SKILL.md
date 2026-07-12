@@ -56,7 +56,7 @@ Ordered sections (exact skeleton):
      section still works; add them and the section becomes stably citable.
    - a `:::success` `**Learning Objectives**` container with the section's sub-objectives,
    - prose explaining the concepts along the logic, with figures (`![alt](../assets/..)` + caption), tables, inline `{{smiles}}`/`$\ce{}$` as needed,
-   - worked example(s) in `::::: tabs` → `:::: tab Problem` / `:::: tab Solution`,
+   - worked example(s) in `:::: tabs` → `::: tab Problem` / `::: tab Solution`,
    - a short **Self-check:** bullet list (prompts only, NO answers).
 6. **`## Synthesis`** — a short integrative section tying the sections together (the single thread through the chapter).
 7. **`## Asset and License Record for This Chapter`** — a table `| Asset | Source URL | License | Attribution |` listing EVERY embedded image (self-generated rows marked "self-generated, CC BY-NC-SA 4.0"). This table feeds attribution (it also mirrors the package's `metadata/ATTRIBUTION.md`).
@@ -64,7 +64,7 @@ Ordered sections (exact skeleton):
 
 Styling palette (use exactly this way every chapter):
 - `:::info` — the reference box + neutral factual asides. `:::success` — learning objectives (chapter & section) and a key "takeaway" link. `:::warning` — model boundaries, common mistakes, cautions. `:::danger` — only for genuinely critical/safety "do not".
-- `::::: tabs` / `:::: tab <Label>` — worked Problem/Solution pairs (outer 5 colons, inner 4, close inner `:::`, close outer `::::`). NEVER `{{tabs}}`.
+- `:::: tabs` / `::: tab <Label>` — worked Problem/Solution pairs. **Colon counts: outer `tabs` = 4 colons, inner `tab` = 3; close each tab pane with `:::` (3) and close `tabs` with `::::` (4).** The outer fence MUST have more colons than the inner, and each close must match its open's count — otherwise the container silently fails to close. NEVER `{{tabs}}`.
 - `:::: cols` / `::: col` — side-by-side compare/contrast, sparingly.
 - `**bold**` — a defined term on first use, and key results. KaTeX `$…$`/`$$…$$` + `$\ce{…}$` (mhchem) for all formulae. Tables for data/comparison. mermaid for the chapter-logic flowchart + processes.
 - Figures: from the **oer-figures** skill (RDKit SVG for structures/repeat-units/schemes — use `grid` for multiple structures so they never overlap; matplotlib for charts; openly/NC-licensed real images). Figures live in the top-level `assets/` folder and are referenced as `../assets/…`. Every figure has a caption.
@@ -235,15 +235,15 @@ in range, satisfying the stated constraint; a chosen context; a specific format)
 - **Question body + answer in TABS**, exactly like the study guide's worked-example tabs, so the
   answer is hidden until revealed:
   ```
-  ::::: tabs
-  :::: tab Q3
+  :::: tabs
+  ::: tab Q3
   A 2.0 L vessel holds 0.30 mol of an ideal gas at 350 K. What is the pressure (atm)?
-  ::::
-  :::: tab Answer
+  :::
+  ::: tab Answer
   $P = nRT/V = (0.30)(0.082057)(350)/2.0 = 4.3\ \text{atm}$. (workout: list knowns, rearrange
   $PV=nRT$, substitute, carry units.)
+  :::
   ::::
-  :::::
   ```
   For multiple-choice items, put the stem + options in the **Q** tab and the correct letter +
   one-line why in the **Answer** tab.
@@ -257,7 +257,7 @@ in range, satisfying the stated constraint; a chosen context; a specific format)
 **Study guide (`study-guide/<slug>.md`):** H1 title · `:::info` reference box (Reference/Audience/Package
 license) · `:::success` Chapter Learning Objectives · `## Chapter Logic` + mermaid · each section =
 `## N.M` (optional stable `{{attrs[#blk-…]}}` id) + `:::success` section objectives + prose +
-`::::: tabs` worked example + Self-check · `## Synthesis` · `## Asset and License Record` table covering
+`:::: tabs` worked example + Self-check · `## Synthesis` · `## Asset and License Record` table covering
 every image · NO practice-question section · tabs use container syntax (not `{{tabs}}`) · figures
 captioned via `../assets/`, grids non-overlapping.
 
@@ -279,5 +279,5 @@ contexts, formats MC/short/workout, one worked instantiation + Design guidance b
 
 **Practice sheet (`practice/<slug>.md`):** ~15 concrete questions instantiated from the assessment-guide
 question guides · covers all major objectives (each tagged with its objective) · mixed modes & formats
-(MC/short/workout) · each question's body + answer in `::::: tabs` (Q tab / Answer tab) · answers correct
+(MC/short/workout) · each question's body + answer in `:::: tabs` (Q tab / Answer tab) · answers correct
 with work shown · no fabricated values.

@@ -309,14 +309,35 @@ function orzSyntaxAudit() {
   for (const f of deliverableFiles) {
     const text = read(f);
     const lines = text.split(/\r?\n/);
-    const stack = [];
+    // Track container fences WITH their colon count, so mis-nesting is caught:
+    // a close must have at least as many colons as the open it closes, and the
+    // convention is matching counts (outer fences MORE colons than inner). A
+    // close shorter than its open (e.g. `:::` trying to close a `::::` tab) does
+    // not actually close it in markdown-it — a real, silent rendering bug.
+    const stack = []; // { count, line }
     lines.forEach((line, i) => {
-      if (/^(:{3,})\s*$/.test(line)) {
-        if (stack.length === 0) issues.push({ file: rel(f), line: i + 1, issue: "container close without open" });
-        else stack.pop();
-      } else if (/^(:{3,})(?:\s+|\S)/.test(line)) stack.push(i + 1);
+      const close = /^(:{3,})\s*$/.exec(line); // a bare run of colons = a close
+      if (close) {
+        if (stack.length === 0) {
+          issues.push({ file: rel(f), line: i + 1, issue: "container close without open" });
+          return;
+        }
+        const n = close[1].length;
+        const top = stack[stack.length - 1];
+        if (n < top.count) {
+          issues.push({
+            file: rel(f),
+            line: i + 1,
+            issue: `container close (${n} colons) is shorter than its open (${top.count} colons, line ${top.line}) — it will not close the container; nest with MORE colons outside than inside (e.g. :::: tabs / ::: tab / ::: / ::::)`,
+          });
+        }
+        stack.pop();
+        return;
+      }
+      const open = /^(:{3,})(?:\s+\S|\S)/.exec(line); // colons + an info string = an open
+      if (open) stack.push({ count: open[1].length, line: i + 1 });
     });
-    for (const ln of stack) issues.push({ file: rel(f), line: ln, issue: "container open without close" });
+    for (const s of stack) issues.push({ file: rel(f), line: s.line, issue: "container open without close" });
     let m;
     while ((m = pluginOpenRe.exec(text)))
       if (text.indexOf("}}", m.index + 2) === -1)
