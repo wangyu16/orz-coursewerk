@@ -18,12 +18,15 @@ import {
   repoForPath,
   isCarrierPath,
   normalizeLicense,
+  isOpenLicense,
+  ALL_RIGHTS_RESERVED,
   chapterStudyGuidePath,
   SCHEMA_VERSION,
   SLUG_PATTERN,
   ROOT_FILE_ALLOWLIST,
   FOLDER_REPO,
 } from "./lib/contract.mjs";
+import { buildSourceIndex, scanText, VERBATIM } from "./lib/verbatim.mjs";
 
 const args = process.argv.slice(2);
 function opt(name, def = null) {
@@ -34,6 +37,8 @@ function opt(name, def = null) {
 const pkg = path.resolve(opt("--package", opt("--guide", "package")));
 const reportPath = opt("--report");
 const jsonPath = opt("--json");
+const inputsDir = opt("--inputs"); // source materials, for the near-verbatim scan
+const forDiscovery = args.includes("--for-discovery"); // enforce the Discover bar (open license + verified)
 if (!fs.existsSync(pkg)) {
   console.error(`coursewerk-check: package dir not found: ${pkg}`);
   process.exit(2);
@@ -360,10 +365,34 @@ function formatContractAudit() {
   return { filesChecked: deliverableFiles.length, failures: fail, warnings: warn, failureCount: fail.length, warningCount: warn.length };
 }
 
+// near-verbatim scan of deliverable text against the source materials (inputs/)
+function verbatimAudit(dir) {
+  if (!dir || !fs.existsSync(dir)) return { ran: false, reason: dir ? "inputs dir not found" : "no --inputs given", spans: [], filesFlagged: 0, totalSpans: 0 };
+  const TEXT = /\.(md|markdown|txt|csv|json|html?|tex|rtf)$/i;
+  const sourceTexts = walk(dir).filter((f) => TEXT.test(f)).map(read);
+  if (sourceTexts.length === 0) return { ran: false, reason: "no readable source text in inputs/", spans: [], filesFlagged: 0, totalSpans: 0 };
+  const index = buildSourceIndex(sourceTexts);
+  const perFile = [];
+  for (const f of deliverableFiles) {
+    const spans = scanText(read(f), index);
+    if (spans.length) perFile.push({ file: rel(f), spanCount: spans.length, longest: Math.max(...spans.map((s) => s.words)), samples: spans.slice(0, 3) });
+  }
+  return {
+    ran: true,
+    shingle: VERBATIM.SHINGLE,
+    minSpanWords: VERBATIM.MIN_SPAN_WORDS,
+    sourceFiles: sourceTexts.length,
+    filesFlagged: perFile.length,
+    totalSpans: perFile.reduce((a, b) => a + b.spanCount, 0),
+    spans: perFile,
+  };
+}
+
 // ============================ assemble ============================
 
 const manifest = manifestAudit();
 const layout = layoutAudit(manifest.chapters);
+const verbatim = verbatimAudit(inputsDir);
 const r = {
   package: pkg,
   corpus: {
@@ -383,6 +412,29 @@ const r = {
   orzSyntax: orzSyntaxAudit(),
   placeholders: placeholdersAudit(),
   formatContracts: formatContractAudit(),
+  verbatim,
+};
+
+// discoverability — the bar to LIST on Discover: an OPEN license + verified-clean content.
+// (A package may be uploaded/used privately as ALL-RIGHTS-RESERVED; it just can't be listed.)
+const license = normalizeLicense(manifest.manifest?.license);
+const openLicense = isOpenLicense(license);
+const attributionComplete = r.attribution.coveragePercent === 100 &&
+  r.attribution.rowsMissingLicense === 0 && r.attribution.rowsMissingAttribution === 0;
+const verbatimClean = !verbatim.ran || verbatim.totalSpans === 0;
+const discoverBlockers = [];
+if (!openLicense) discoverBlockers.push(`license is ${license === ALL_RIGHTS_RESERVED ? "ALL-RIGHTS-RESERVED (unlicensed)" : "not an open license"} — Discover needs an open license (CC-BY/-SA/-NC/-NC-SA or CC0)`);
+if (!attributionComplete) discoverBlockers.push("asset attribution is incomplete (every figure needs a clean, credited source)");
+if (verbatim.ran && verbatim.totalSpans > 0) discoverBlockers.push(`${verbatim.totalSpans} near-verbatim span(s) match the source — rewrite them in original prose`);
+r.discoverability = {
+  mode: forDiscovery ? "for-discovery (enforced)" : "advisory",
+  license,
+  openLicense,
+  attributionComplete,
+  verbatimScanRan: verbatim.ran,
+  verbatimSpans: verbatim.totalSpans,
+  blockers: discoverBlockers,
+  ready: discoverBlockers.length === 0,
 };
 
 // CRITICAL = release-blocking, auto-detectable (contract first)
@@ -397,6 +449,8 @@ const critical = {
   missingAltText: r.accessibility.markdownImagesMissingAlt,
   bodyPlaceholders: r.placeholders.placeholderCount,
   formatContractFailures: r.formatContracts.failureCount,
+  // near-verbatim text: advisory by default, release-blocking under --for-discovery
+  ...(forDiscovery ? { discoverBlockers: discoverBlockers.length } : {}),
 };
 r.criticalCounts = critical;
 r.criticalTotal = Object.values(critical).reduce((a, b) => a + b, 0);
@@ -420,7 +474,25 @@ if (reportPath) {
   L.push("## Format contracts", `- failures ${r.formatContracts.failureCount} (release-blocking) · warnings ${r.formatContracts.warningCount}`);
   for (const i of r.formatContracts.failures.slice(0, 20)) L.push(`  - FAIL ${i.file} — ${i.issue}`);
   for (const i of r.formatContracts.warnings.slice(0, 15)) L.push(`  - warn ${i.file} — ${i.issue}`);
+  L.push("## Near-verbatim vs source");
+  if (!verbatim.ran) L.push(`- not run (${verbatim.reason}). Pass \`--inputs <dir>\` to scan deliverables against the source materials.`);
+  else {
+    L.push(`- scanned against ${verbatim.sourceFiles} source file(s); flagged **${verbatim.totalSpans}** span(s) in ${verbatim.filesFlagged} file(s) (≥ ${verbatim.minSpanWords} consecutive shared words).`);
+    for (const f of verbatim.spans.slice(0, 10)) {
+      L.push(`  - ${f.file} — ${f.spanCount} span(s), longest ${f.longest} words`);
+      for (const s of f.samples) L.push(`    · “${s.text}”`);
+    }
+  }
+  L.push("## Discoverability (can this be listed on Discover?)");
+  L.push(`- **${r.discoverability.ready ? "READY" : "NOT READY"}** — license \`${r.discoverability.license}\` (${r.discoverability.openLicense ? "open" : "not open"}), mode: ${r.discoverability.mode}.`);
+  if (r.discoverability.blockers.length) for (const b of r.discoverability.blockers) L.push(`  - blocker: ${b}`);
+  else L.push("  - open-licensed, attribution complete, no near-verbatim spans. An educator attestation is still required at listing time.");
   fs.writeFileSync(reportPath, L.join("\n") + "\n");
 }
-console.log(JSON.stringify({ package: r.package, criticalTotal: r.criticalTotal, criticalCounts: critical }, null, 2));
+console.log(JSON.stringify({
+  package: r.package,
+  criticalTotal: r.criticalTotal,
+  criticalCounts: critical,
+  discoverability: { ready: r.discoverability.ready, license: r.discoverability.license, blockers: r.discoverability.blockers },
+}, null, 2));
 process.exit(r.criticalTotal > 0 ? 1 : 0);

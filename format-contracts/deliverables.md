@@ -64,8 +64,10 @@ concepts/ assessment-support/ assets/ metadata/ current/` are **public** (shared
 
 - **Required:** `schemaVersion` (use `2`), `packageId` (a placeholder — Alembic re-stamps it),
   `title`, `license`, `createdAt` (ISO-8601 ending in **`Z`** — a `+00:00` offset is rejected).
-- **`license`** must be one of exactly: `CC-BY-4.0`, `CC-BY-SA-4.0`, `CC-BY-NC-4.0`,
-  `CC-BY-NC-SA-4.0`, `CC0-1.0` — and it **matches the source's** license.
+- **`license`** is either an **open license** — `CC-BY-4.0`, `CC-BY-SA-4.0`, `CC-BY-NC-4.0`,
+  `CC-BY-NC-SA-4.0`, `CC0-1.0` (matching the source; required to list on Discover) — or
+  **`ALL-RIGHTS-RESERVED`** (unlicensed: private / own-class use; uploads and publishes but can't be
+  listed). See `docs/authoring-guidelines.md` §7.
 - **Do NOT set `publicRepo` / `privateRepo`** — Alembic assigns repository coordinates.
 - `chapters` is the ordered chapter list; each declared chapter MUST have `study-guide/<slug>.md`.
 

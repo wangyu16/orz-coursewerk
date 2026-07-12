@@ -43,14 +43,24 @@ export const ROOT_FILE_ALLOWLIST = new Set([
 /** Directories permitted at the root purely for housekeeping. */
 export const ROOT_DIR_ALLOWLIST = new Set([".alembic", ".github"]);
 
-/** The five licenses Alembic accepts (the manifest `license` enum). */
-export const LICENSE_ENUM = [
+/**
+ * The five OPEN licenses — required to LIST a package on Discover (the reuse market).
+ * A package licensed openly grants others reuse rights.
+ */
+export const OPEN_LICENSES = [
   "CC-BY-4.0",
   "CC-BY-SA-4.0",
   "CC-BY-NC-4.0",
   "CC-BY-NC-SA-4.0",
   "CC0-1.0",
 ];
+
+/** "Unlicensed" — default copyright, no reuse granted. Usable privately or for one's own class,
+ *  but NOT discoverable. This is the value to use when the instructor keeps the package to themselves. */
+export const ALL_RIGHTS_RESERVED = "ALL-RIGHTS-RESERVED";
+
+/** Every license value Alembic ACCEPTS on upload = the open set + all-rights-reserved. */
+export const LICENSE_ENUM = [...OPEN_LICENSES, ALL_RIGHTS_RESERVED];
 
 /** Human license strings → the Alembic enum value. Add rows as needed. */
 export const LICENSE_ALIASES = {
@@ -69,7 +79,17 @@ export const LICENSE_ALIASES = {
   "cc0 1.0": "CC0-1.0",
   "cc0-1.0": "CC0-1.0",
   "public domain": "CC0-1.0",
+  "all rights reserved": ALL_RIGHTS_RESERVED,
+  "all-rights-reserved": ALL_RIGHTS_RESERVED,
+  unlicensed: ALL_RIGHTS_RESERVED,
+  none: ALL_RIGHTS_RESERVED,
+  "": ALL_RIGHTS_RESERVED,
 };
+
+/** True if the value is one of the five OPEN licenses (i.e. eligible for Discover). */
+export function isOpenLicense(value) {
+  return OPEN_LICENSES.includes(normalizeLicense(value));
+}
 
 /** Renderable/editable carriers. Must live in a PUBLIC folder; never shipped by coursewerk. */
 export const CARRIER_EXTENSIONS = [

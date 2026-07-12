@@ -92,6 +92,10 @@ The single most important transformation. Full detail in `skills/orz-slides`; th
 
 - **Every fact/value/structure from the source** (`inputs/` or the named textbook) — never fabricated. A gap
   is a visible `[VERIFY]` note, not a guess. Plots use real numbers.
+- **Write in your own words — never reproduce the source's sentences.** Copyright protects *expression*, not
+  facts, so take the facts and re-express them originally. A near-verbatim passage copied from a textbook is
+  a copyright problem (and the QA gate's `--inputs` scan flags it). A **short, attributed** quote (a sentence,
+  cited) is fine as fair use; a paragraph lifted and lightly reworded is not.
 - **Math** in KaTeX (`$…$` / `$$…$$`); **chemistry** in mhchem (`$\ce{H2O}$`, `$\ce{Fe^{2+} + 2e- -> Fe}$`).
 - **IUPAC** naming; **units carried** through every step; **significant figures** respected.
 
@@ -120,7 +124,38 @@ The single most important transformation. Full detail in `skills/orz-slides`; th
 
 ---
 
-## 7. Paged documents & collections
+## 7. Licensing & discoverability
+
+Coursewerk is **optional and non-mandating**: an instructor can build a package and keep it private, or
+publish it, or share it. Two independent axes decide what a package can do — don't conflate them:
+
+- **License** = the terms *you grant others* for *your* content. Set it in `alembic.json`:
+  - An **open license** (`CC-BY-4.0`, `CC-BY-SA-4.0`, `CC-BY-NC-4.0`, `CC-BY-NC-SA-4.0`, `CC0-1.0`) —
+    required to **list on Discover** (others may reuse it). Match the source's license.
+  - **`ALL-RIGHTS-RESERVED`** — *unlicensed*: default copyright, no reuse granted. Use it when the instructor
+    keeps the package to themselves or their own class. It uploads and publishes fine; it just **can't be
+    listed on Discover**. This is the right default when the instructor hasn't chosen to share.
+- **Copyright-cleanliness** = whether the content is *yours to distribute at all*. Enforced by **positive
+  provenance**, not infringement-detection: every figure proves a clean origin (self-generated or
+  open-licensed with a captured source — §1), and no deliverable copies the source's prose (§4). The gate
+  can't *detect* that an image came from a paywalled book — so it requires *proof of a clean source* instead;
+  anything unproven is treated as not-clean.
+
+**The three states** (what each requires):
+
+| State | License | Clean? |
+|---|---|---|
+| **Private** (local zip / workspace only) | none needed (`ALL-RIGHTS-RESERVED`) | your responsibility (fair use) |
+| **Published** to the instructor's own public site | open **or** `ALL-RIGHTS-RESERVED` | clean required (it's public); the instructor attests |
+| **Discoverable** (listed on Discover) | **open license required** | **verified clean + educator attestation** |
+
+**Checking discoverability.** `scripts/check_oer.mjs --inputs inputs/` reports a *Discoverability* section
+(ready, or the blockers: non-open license, incomplete attribution, near-verbatim spans). Add
+`--for-discovery` to make those blockers *release-blocking* when the instructor intends to list publicly. A
+package that isn't discover-ready is still perfectly usable privately or for a class — it just can't go on
+the market.
+
+## 8. Paged documents & collections
 
 `orz-paged` is for **collection** documents — exams, quizzes, handouts, **syllabi**, worksheets, lab sheets
 — not the fixed package items. Exams use the `exam-*` template with the **answer-key toggle** (one source →

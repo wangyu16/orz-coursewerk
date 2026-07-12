@@ -102,8 +102,11 @@ stays updatable.
 
 Read `inputs/` and any brief in `templates/brief.example.md` the user filled. Confirm with the user: the
 **course + source of truth** (a named OPEN textbook, or their own materials), **scope** (which chapters),
-**audience/pedagogy** (level, assessment difficulty, lecture length), and the **license** (it MATCHES the
-source's license, and is one of the five Alembic accepts). Never assume a venue/scope the user didn't give.
+**audience/pedagogy** (level, assessment difficulty, lecture length), and the **license**. The license is a
+deliberate choice: an **open license** (one of the five — matching the source) if the user wants to share or
+list on Discover, or **`ALL-RIGHTS-RESERVED`** if they're keeping the package private / for their own class
+(it uploads and publishes fine, just can't be listed on Discover). If the user hasn't decided, default to
+`ALL-RIGHTS-RESERVED` and tell them they can open it later. Never assume a venue/scope the user didn't give.
 Assign each chapter a **slug**, and write `package/alembic.json` (the manifest) + `package/LICENSE`. **Pause
 for the user's approval before building chapters.**
 
@@ -124,9 +127,12 @@ available, cross-critique each chapter before moving on.
   notes) goes ONLY under `package/private/`. Everything else is public and will be shared with the world.
   Never put private content in a public folder — Alembic refuses such a package, and it's your job to place
   every file correctly.
-- **Copyright-clean.** Every figure is self-generated (RDKit/matplotlib via `oer-figures`) or openly-licensed
-  (CC0/PD/CC-BY/CC-BY-SA, or the source textbook's own figures if its license permits) — recorded in
-  `package/metadata/ATTRIBUTION.md`. Never embed a copyrighted/third-party-credited figure.
+- **Copyright-clean, by positive provenance.** Every figure is self-generated (RDKit/matplotlib via
+  `oer-figures`) or openly-licensed (CC0/PD/CC-BY/CC-BY-SA, or the source textbook's own figures if its
+  license permits) — recorded in `package/metadata/ATTRIBUTION.md`. Never embed a copyrighted/third-party
+  figure. And **write original prose** — take facts from the source but never reproduce its sentences (a
+  near-verbatim paragraph is a copyright problem; a short *attributed* quote is fine). See
+  `docs/authoring-guidelines.md` §1, §4, §7.
 - **Format contracts are exact** (`format-contracts/deliverables.md`): concept maps + assessment guides are
   plain Markdown (no graphics); study guides + practice are rich orz-markdown; slides are the orz-slides deck
   grammar. Ship lean — never commit the framework carriers into `package/`.
@@ -135,11 +141,15 @@ available, cross-critique each chapter before moving on.
 
 ## 4. Before finishing — QA gate, then an HONEST evaluation report (mandatory)
 
-Run `node scripts/check_oer.mjs --package package --report reports/qa_report.md`. It gates on BOTH the
-**Alembic contract** (manifest valid, LICENSE present, every folder/file recognized, each declared chapter's
-`study-guide/<slug>.md` present, no carriers/stray root files, renderable objects public) and **OER quality**
-(attribution, links/asset paths, orz-syntax, accessibility, placeholders, format contracts). **Fix every
-critical issue** and re-run until `criticalTotal == 0`. Also run `node scripts/build_carriers.mjs` and
+Run `node scripts/check_oer.mjs --package package --inputs inputs --report reports/qa_report.md`. It gates on
+BOTH the **Alembic contract** (manifest valid, LICENSE present, every folder/file recognized, each declared
+chapter's `study-guide/<slug>.md` present, no carriers/stray root files, renderable objects public) and **OER
+quality** (attribution, links/asset paths, orz-syntax, accessibility, placeholders, format contracts). The
+`--inputs` flag adds a **near-verbatim scan** against the source materials (flags copied prose to rewrite).
+**Fix every critical issue** and re-run until `criticalTotal == 0`. The report's **Discoverability** section
+says whether the package could be listed on Discover (needs an open license + complete attribution + no
+verbatim spans); if the user intends to list publicly, run with `--for-discovery` to make those blockers
+release-blocking. Also run `node scripts/build_carriers.mjs` and
 confirm `failed: 0` (every lean source reassembles into a valid framework document). Anything not auto-fixable
 (e.g. a figure/slide layout judgment) — flag it in `reports/qa_report.md` for the user; never fabricate a fix.
 

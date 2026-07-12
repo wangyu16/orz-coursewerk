@@ -23,8 +23,10 @@ can resume.
 Read `inputs/` + the user's brief. Identify the **course**, the **source of truth** (a named OPEN
 textbook — fetch its chapter/section structure + learning objectives from the publisher, or read a
 PDF in `inputs/` — or the user's own materials), the **scope** (chapters to keep/merge/skip), the
-**audience/pedagogy**, and the **license** (matches the source; must be one of the five Alembic
-accepts). Assign each chapter a **slug** (lowercase, hyphen-joined, from its title).
+**audience/pedagogy**, and the **license** — an **open license** (one of the five, matching the source) if
+the user wants to share or list on Discover, or **`ALL-RIGHTS-RESERVED`** to keep it private / for their own
+class (default when undecided; it uploads and publishes fine, just isn't listable). Assign each chapter a
+**slug** (lowercase, hyphen-joined, from its title).
 
 Write **`package/alembic.json`** (the manifest — see `format-contracts/deliverables.md`): schemaVersion
 `2`, a placeholder `packageId`, `title`, `license`, `description`, `keywords`, `discipline`,
@@ -88,15 +90,19 @@ attribution) and `package/README.md` (a short landing note listing each chapter'
 sits in a public folder.
 
 ## Stage 5 — QA gate (mandatory, automated)
-Run `node scripts/check_oer.mjs --package package --report reports/qa_report.md`. It checks two things:
+Run `node scripts/check_oer.mjs --package package --inputs inputs --report reports/qa_report.md`. It checks:
 **(A) the Alembic contract** — manifest valid, LICENSE present, every folder/file recognized, each declared
 chapter's `study-guide/<slug>.md` present, no carriers or stray root files, renderable objects public — so
-you know it will **upload with zero friction**; and **(B) OER quality** — attribution completeness,
-link/asset-path integrity, orz-syntax, accessibility proxies, leftover placeholders, and the per-deliverable
-format contracts. **Fix every critical issue** and **re-run until `criticalTotal == 0`**. Also confirm the
-carriers build cleanly: `node scripts/build_carriers.mjs` should report `failed: 0` (proves each lean source
-reassembles into a valid framework document). Flag any non-auto-fixable issue (e.g. a figure/slide layout
-judgment) in `reports/qa_report.md` — never fabricate a fix.
+you know it will **upload with zero friction**; **(B) OER quality** — attribution completeness,
+link/asset-path integrity, orz-syntax, accessibility proxies, leftover placeholders, format contracts; and
+**(C) copyright** — the `--inputs` flag runs a **near-verbatim scan** against the source materials, flagging
+prose copied too closely (rewrite it originally). **Fix every critical issue** and **re-run until
+`criticalTotal == 0`**. Also confirm the carriers build cleanly: `node scripts/build_carriers.mjs` should
+report `failed: 0` (proves each lean source reassembles into a valid framework document). The report's
+**Discoverability** section says whether the package could be listed on Discover; if the user intends to
+list publicly, run with **`--for-discovery`** to make the Discover blockers (non-open license, incomplete
+attribution, near-verbatim spans) release-blocking. Flag any non-auto-fixable issue in `reports/qa_report.md`
+— never fabricate a fix.
 
 ## Stage 6 — Honest evaluation report
 Write `reports/evaluation.md` — an **honest artifact-quality evaluation** of the package, so the user

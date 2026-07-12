@@ -31,6 +31,15 @@
 - **Any-platform reach.** Pointer entry files for `GEMINI.md`, `.github/copilot-instructions.md`,
   `.cursorrules` (all → `CLAUDE.md`), plus **`docs/lite-path.md`** for pure chat UIs (no terminal);
   `COMPATIBILITY.md` updated.
+- **Licensing tiers + copyright verification.** coursewerk is non-mandating: a package can be **private**
+  (license `ALL-RIGHTS-RESERVED` — new value; uploads/publishes but not listable), **published**, or
+  **discoverable** (needs an open license + verified-clean content). The QA gate gained: a **near-verbatim
+  detector** (`scripts/lib/verbatim.mjs`, wired via `--inputs`) that flags prose copied from the source; a
+  **Discoverability** report (open-license + attribution-complete + no verbatim spans) and a
+  **`--for-discovery`** flag that makes those blockers release-blocking; and `isOpenLicense` /
+  `ALL_RIGHTS_RESERVED` in `scripts/lib/contract.mjs`. Guidelines gained the license≠copyright distinction,
+  the positive-provenance principle, and the anti-verbatim authoring rule (`docs/authoring-guidelines.md`
+  §4, §7).
 
 ## v0.5.0 (2026-06-24)
 - **Honest evaluation report as the final stage** (`guide/evaluation.md`): the real artifact-quality
