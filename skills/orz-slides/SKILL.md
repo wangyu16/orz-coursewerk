@@ -17,11 +17,16 @@ the `.slides.html`.
 
 1. **Follow the study guide's logic, cover everything.** The deck walks the same concept order as the study
    guide and hits every concept/subconcept — slides are the study guide made glanceable, not a new outline.
-2. **One concept per slide.** Each slide presents a single concept, subconcept, or worked idea. If a slide
-   would carry two ideas — or its text overflows — **split it into two**. A crowded slide is a defect; a good
-   chapter deck runs ~1.5–2× the slide count of a naive deck.
-3. **Concise + scannable.** A short `## title`, then a few short bullets or one visual + caption — never
-   paragraphs. Budget ≈ ≤6 bullets / ≤55 words per slide. Say it in phrases, not sentences.
+2. **One concept per slide — presented COMPLETELY.** Each slide holds a single concept, but give it enough
+   to stand on its own: its key points *plus* a figure, a worked example, or a callout that fill the slide.
+   Split only when a slide genuinely carries two ideas or overflows — do **not** thin one concept across
+   several near-empty slides. (One well-built slide beats two half-empty ones.)
+3. **Balanced density — not crowded, NOT empty.** This is the Goldilocks rule. Fill the layout grid: a
+   content slide carries about **3–5 short bullets**, OR a visual + 2–4 bullets + a caption/callout — enough
+   to feel *complete*. A slide with just a title and one floating bullet in a sea of whitespace is a defect —
+   consolidate it. The upper limit is ~6 bullets / ~55 words (crowding); the lower limit is "looks empty."
+   **Fill every region you open** — never open a `2col`/`main-side`/`quad` split and leave a region nearly
+   blank; each region gets real content (bullets, a figure + caption, a callout, an equation).
 4. **Every slide is VISUAL — do not default to a title + bullet list.** A deck of bullet slides is a defect.
    Reach for the full layout vocabulary and pick the layout that fits the idea: a `2col`/`main-side` split for
    compare-or-figure-beside-text, a `{{mermaid}}` for a process, a `{{chart}}` for data, a `{{smiles}}` or a
@@ -35,9 +40,9 @@ the `.slides.html`.
    legible but not dominating (see Images).
 6. **Give the deck a spine, and teach with questions.** Open with a **`template=outline`** roadmap of the
    sections/topics so the audience knows the plan, and use `template=section` dividers between sections. And
-   **include worked EXAMPLE QUESTIONS** — at least one per section for a quantitative concept: a question
-   slide, then its solution (a `step` reveal or a follow-up slide). Slides should *teach and practice*, not
-   only present concepts.
+   **include worked EXAMPLE QUESTIONS** — at least one per section for a quantitative concept, *ideally on
+   one filled slide*: the question plus a `step`-revealed solution (split into two only if the solution is
+   long). Slides should *teach and practice*, not only present concepts.
 
 ## Deck structure & sequence
 
@@ -136,7 +141,7 @@ Match the content to a layout. A chapter deck should use a *mix* of these, not t
 | **A definition / a fact to catch** | a **badge** + bold term + one line | `{{sp[info] Definition}}` **Isotope** — same Z, different A |
 | **Four related items** | `quad` split (tl/tr/bl/br) | e.g. the four states of matter, or four periodic families |
 | **The roadmap / agenda** | `template=outline` — list the sections/topics up front | `<!-- slide template=outline -->` `# What we'll cover` + the section list |
-| **A worked example question** | question slide → solution via `step` reveal or a follow-up slide | `<!-- slide main-side -->` `## Example` `@main` **Q.** … `@side` setup · then `<!-- slide step -->` the steps → answer |
+| **A worked example question** | *prefer ONE filled slide*: question + a `step`-revealed solution together | `<!-- slide step -->` `## Example` **Q.** … (given) · then the solution steps as revealed bullets → **answer** + a `:::success` takeaway. Split into two slides only if the solution is genuinely long. Fill the slide — question + full worked steps + answer, not one line floating. |
 | **Section change** | `template=section` divider slide | `<!-- slide template=section -->` `# 2.5 The Periodic Table` |
 | **A pitfall / caution** | `:::warning` callout, alone or beside content | mass number vs atomic mass; sig-fig traps |
 
@@ -160,8 +165,11 @@ Leave the theme to build time unless the user picks one.
 
 ## Before finishing a deck (self-check)
 
-Same logic + full coverage as the study guide · one concept per slide (split the crowded ones) · scannable
-phrasing, within budget · **opens with a `template=outline` roadmap of the sections/topics; `template=section`
+Same logic + full coverage as the study guide · one concept per slide, presented COMPLETELY (don't thin it
+across near-empty slides) · **BALANCED density — every slide fills its grid (≈3–5 bullets or a visual + a few
+bullets + a callout); no crowded slides AND no near-empty ones; every layout region you open carries real
+content** · example questions on one filled slide where they fit · scannable phrasing, within budget · **opens
+with a `template=outline` roadmap of the sections/topics; `template=section`
 dividers between sections** · **at least one worked EXAMPLE QUESTION per section** (question → solution via a
 `step` reveal or follow-up slide) · **layout VARIETY — most slides carry a figure, chart, diagram, split, or
 step reveal, not just bullets; the deck uses a mix of the design patterns above** · rich elements used

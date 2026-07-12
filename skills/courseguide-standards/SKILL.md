@@ -116,6 +116,11 @@ via orz-slides for preview — you author the lean source, never the HTML).
 - **Teach with questions, and use rich layouts** — see `skills/orz-slides` "Slide design patterns". Most
   slides carry a visual (figure/chart/diagram/split), not just bullets; use `{{smiles}}` for a single
   structure.
+- **Balanced density (not crowded, NOT empty).** Each slide fills its layout grid with a *proper amount* —
+  ~3–5 bullets, or a visual + a few bullets + a callout — so it feels complete. A title with one floating
+  bullet is a defect: consolidate it. Fill every region of a split; don't leave a `2col`/`main-side` half
+  blank. Put a worked example on one filled slide (question + `step`-revealed solution) where it fits, rather
+  than two sparse slides.
 
 Concrete example (new grammar):
 ```
