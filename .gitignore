@@ -6,6 +6,9 @@
 /dist/
 /guide/
 /.coursewerk/
+
+# Saved example builds (e.g. examples/openstax_chemistry/) — kept locally for reference, never committed
+/examples/
 node_modules/
 package-lock.json
 .DS_Store
