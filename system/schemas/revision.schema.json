@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schemaVersion", "planId", "baseRef", "baseCommit", "requiredReview", "reviewed", "testResults", "attestation", "generatedIndexHash", "acceptedAt"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "planId": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "baseRef": { "type": "string" },
+    "baseCommit": { "type": ["string", "null"] },
+    "baseTip": { "type": ["string", "null"] },
+    "reviewedHead": { "type": ["string", "null"] },
+    "changed": { "type": "array" },
+    "requiredReview": { "type": "array" },
+    "reviewed": { "type": "array" },
+    "impactedClaims": { "type": "array" },
+    "testResults": { "type": "array" },
+    "attestation": { "type": "string", "minLength": 30 },
+    "generatedIndexHash": { "type": "string" },
+    "acceptedAt": { "type": "string" }
+  }
+}

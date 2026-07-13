@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "chapters": {
+    "chapter-slug": {
+      "realImageDecision": "not-used",
+      "rationale": "A substantive explanation of why diagrams or data graphics teach this chapter better than a real photograph.",
+      "reviewedBy": "REPLACE-WITH-ACCOUNTABLE-AUTHOR",
+      "reviewedAt": "REPLACE-WITH-YYYY-MM-DD"
+    }
+  }
+}

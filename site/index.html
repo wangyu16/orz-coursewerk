@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Coursewerk is an agent-native production and assurance pipeline for coherent, editable open educational resources.">
+  <meta name="theme-color" content="#111827">
+  <title>Coursewerk — coherent courseware, with receipts</title>
+  <link rel="icon" href="assets/orz.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Coursewerk home">
+      <img src="assets/orz.svg" alt="orz" width="90" height="50">
+      <span>coursewerk</span>
+    </a>
+    <nav aria-label="Main navigation">
+      <a href="#system">System</a>
+      <a href="#assurance">Assurance</a>
+      <a href="#outputs">Outputs</a>
+      <a href="#start">Start</a>
+    </nav>
+    <a class="header-cta" href="https://github.com/wangyu16/orz-coursewerk">GitHub <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="status-dot"></span> Agent-native OER production system</p>
+        <h1>From source evidence<br>to <em>coherent</em> courseware.</h1>
+        <p class="lede">Coursewerk coordinates drafting, rich formatting, rights evidence, accessibility checks, cross-document consistency, and packaging—so educators can spend their attention on teaching decisions.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#start">Run the pipeline <span aria-hidden="true">→</span></a>
+          <a class="button ghost" href="https://github.com/wangyu16/orz-coursewerk/blob/main/FEATURES.md">See the evidence model</a>
+        </div>
+        <ul class="hero-facts" aria-label="Key characteristics">
+          <li><strong>5</strong><span>aligned chapter deliverables</span></li>
+          <li><strong>3</strong><span>browser reading shapes</span></li>
+          <li><strong>1</strong><span>traceable source of truth</span></li>
+        </ul>
+      </div>
+
+      <div class="console" aria-label="Coursewerk release console illustration">
+        <div class="console-bar"><span></span><span></span><span></span><b>release / chapter-05</b></div>
+        <div class="console-body">
+          <p class="console-label">ASSURANCE KERNEL</p>
+          <div class="check"><i>01</i><span>rights preflight</span><b>PASS</b></div>
+          <div class="check"><i>02</i><span>source evidence</span><b>BOUND</b></div>
+          <div class="check"><i>03</i><span>attribution</span><b>VERIFIED</b></div>
+          <div class="check"><i>04</i><span>component coherence</span><b>CURRENT</b></div>
+          <div class="check"><i>05</i><span>package contract</span><b>READY</b></div>
+          <div class="console-output"><span>criticalTotal</span><strong>0</strong><small>release permitted</small></div>
+        </div>
+        <div class="stamp">evidence<br>before<br>claims</div>
+      </div>
+    </section>
+
+    <section class="signal-band" aria-label="Coursewerk principles">
+      <span>LEAN MARKDOWN</span><i>◆</i><span>RICH CARRIERS</span><i>◆</i><span>FAIL-CLOSED RIGHTS</span><i>◆</i><span>REVISION GRAPH</span><i>◆</i><span>HONEST RECEIPTS</span>
+    </section>
+
+    <section class="section" id="system">
+      <div class="section-heading">
+        <p class="kicker">01 / THE SYSTEM</p>
+        <h2>One course.<br>Not six disconnected projects.</h2>
+        <p>Coursewerk turns a named source and a concept backbone into a coordinated teaching system. Every downstream artifact retains a declared relationship to what informed it.</p>
+      </div>
+
+      <div class="pipeline" aria-label="Coursewerk production sequence">
+        <article class="pipeline-step"><span>00</span><b>FOUND</b><h3>Intended use &amp; rights</h3><p>Choose private, restricted, or public use. Capture evidence before ingestion.</p></article>
+        <article class="pipeline-step"><span>01</span><b>MAP</b><h3>Concept backbone</h3><p>Sequence concepts, prerequisites, objectives, and scope before prose expands.</p></article>
+        <article class="pipeline-step hot"><span>02</span><b>BUILD</b><h3>Five deliverables</h3><p>Draft instruction, slides, assessment design, and practice from one logic spine.</p></article>
+        <article class="pipeline-step"><span>03</span><b>PROVE</b><h3>QA &amp; coherence</h3><p>Check contracts, accessibility floor, provenance, source comparison, and impact.</p></article>
+        <article class="pipeline-step"><span>04</span><b>SHIP</b><h3>Lean package</h3><p>Rebuild previews, persist receipts, and pack only after hard gates pass.</p></article>
+      </div>
+
+      <div class="pain-grid">
+        <article><span class="icon">↯</span><h3>Blank-page cost</h3><p>Structured first drafts start from explicit scope, objectives, and source evidence—not generic improvisation.</p></article>
+        <article><span class="icon">⌁</span><h3>Format repetition</h3><p>One Markdown-centered family produces web reading, presentation, and paged print experiences.</p></article>
+        <article><span class="icon">⤨</span><h3>Revision drift</h3><p>Git shows what changed; a dependency graph shows every related component that must be revisited.</p></article>
+        <article><span class="icon">◎</span><h3>Invisible risk</h3><p>Rights, attribution, unknown sources, human decisions, and automation limits become durable records.</p></article>
+      </div>
+    </section>
+
+    <section class="section assurance" id="assurance">
+      <div class="section-heading inverse">
+        <p class="kicker">02 / ASSURANCE KERNEL</p>
+        <h2>Hard rules stay hard.<br>Even in Light mode.</h2>
+        <p>Review cost may change. The source identity, process restrictions, license, privacy, authorship, provenance, attribution, and publication-clearance gates do not.</p>
+      </div>
+
+      <div class="assurance-layout">
+        <ol class="rules">
+          <li><span>01</span><div><h3>Preflight before ingestion</h3><p>A deterministic scan captures the authoritative rights page and detects generative-AI or automated-processing notices. An unresolved condition stops the workflow.</p></div></li>
+          <li><span>02</span><div><h3>Evidence, not a remembered label</h3><p>Raw snapshots, hashes, canonical URLs, retrieval metadata, extracted text, and known-source assertions bind each decision to inspectable evidence.</p></div></li>
+          <li><span>03</span><div><h3>Accountable public authorship</h3><p>Public output names a responsible non-AI author or institution. Tools may be disclosed; they cannot masquerade as a rights holder.</p></div></li>
+          <li><span>04</span><div><h3>Fail-closed release</h3><p>Packing refuses unresolved rights, provenance, attribution, source-comparison, accessibility-floor, contract, or coherence failures.</p></div></li>
+        </ol>
+
+        <aside class="boundary-card">
+          <p class="card-label">HONEST BOUNDARY</p>
+          <h3>Coursewerk finds the question.<br>It does not invent the answer.</h3>
+          <p>A publisher’s process-specific notice is not Coursewerk’s policy. The pipeline records and surfaces it before the AI workflow proceeds, then requires permission or an accountable qualified decision.</p>
+          <div class="boundary-row"><span>Automatically checked</span><b>structure · hashes · declared obligations</b></div>
+          <div class="boundary-row"><span>Human judgment</span><b>legal interpretation · subject accuracy · final visual fit</b></div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" id="outputs">
+      <div class="section-heading">
+        <p class="kicker">03 / OUTPUTS</p>
+        <h2>Lean source.<br>Three expressive surfaces.</h2>
+        <p>Coursewerk authors readable Markdown and builds browser-editable carriers with the <a href="https://markdown.orz.how/">orz-markdown family</a>. Generated HTML remains a preview; lean source remains canonical.</p>
+      </div>
+
+      <div class="carrier-grid">
+        <article class="carrier web"><div class="carrier-number">.md.html</div><p class="carrier-type">CONTINUOUS</p><h3>Study guides that read like the web</h3><p>Semantic callouts, tabs, columns, math, chemistry, diagrams, charts, and live browser editing.</p><span>orz-mdhtml ↗</span></article>
+        <article class="carrier slides"><div class="carrier-number">.slides.html</div><p class="carrier-type">PRESENT</p><h3>Decks built around ideas, not bullet dumps</h3><p>Purposeful slide templates, regions, fragments, presenter tools, and coordinated chapter logic.</p><span>orz-slides ↗</span></article>
+        <article class="carrier print"><div class="carrier-number">.paged.html</div><p class="carrier-type">PRINT</p><h3>Print layouts without desktop publishing</h3><p>Page geometry, running furniture, templates, and browser print-to-PDF for collections and handouts.</p><span>orz-paged ↗</span></article>
+      </div>
+
+      <p class="portability-note"><strong>Portability, stated precisely:</strong> the carrier embeds its Markdown and framework. If it references local media, the asset directory travels with it. Every release receipt reports the actual mode instead of promising a single file when dependencies remain.</p>
+
+      <div class="deliverables">
+        <div class="deliverable-intro"><p class="kicker">PER CHAPTER</p><h3>Five views of the same learning design</h3></div>
+        <ol>
+          <li><b>Concept map</b><span>dependency logic &amp; objectives</span></li>
+          <li><b>Study guide</b><span>instruction &amp; worked examples</span></li>
+          <li><b>Slide deck</b><span>presentation logic &amp; visuals</span></li>
+          <li><b>Assessment support</b><span>objective-level design guidance</span></li>
+          <li><b>Practice</b><span>concrete questions &amp; worked answers</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section revision">
+      <div class="section-heading inverse">
+        <p class="kicker">04 / MAINTENANCE</p>
+        <h2>A small edit should not<br>create a large mystery.</h2>
+        <p>Coursewerk indexes the course as a graph, not a folder of unrelated files. Change an explanation and the complete downstream review set becomes visible.</p>
+      </div>
+      <div class="revision-demo">
+        <div class="edit-card"><span>CHANGED</span><code>study-guide/ch05.md</code><p>Updated the sign convention explanation.</p></div>
+        <div class="impact-arrow" aria-hidden="true">→</div>
+        <div class="impact-stack">
+          <p>REVIEW REQUIRED</p>
+          <span>slides/ch05.md</span>
+          <span>assessment-support/ch05.md</span>
+          <span>practice/ch05.md</span>
+          <span>component index &amp; receipts</span>
+        </div>
+      </div>
+      <div class="dual-ledger"><div><strong>git</strong><span>What changed?</span></div><i>+</i><div><strong>graph</strong><span>What else could now disagree?</span></div><i>=</i><div class="result"><strong>trace</strong><span>A reviewable coherent revision</span></div></div>
+    </section>
+
+    <section class="section limits">
+      <div class="section-heading">
+        <p class="kicker">05 / CLAIMS WITH EDGES</p>
+        <h2>Automation is useful.<br>Overclaiming is not.</h2>
+      </div>
+      <div class="limits-grid">
+        <article><span>AUTO</span><h3>Coursewerk can verify</h3><ul><li>Package layout and required files</li><li>Rights evidence and declared obligations</li><li>Hashes, provenance, attribution, and links</li><li>Syntax and defined accessibility proxies</li><li>Structural alignment and revision freshness</li></ul></article>
+        <article><span>HUMAN</span><h3>Educators still decide</h3><ul><li>Factual and calculation correctness</li><li>Pedagogical fit for actual learners</li><li>Legal interpretation and permissions</li><li>Alt-text quality and assistive-tech behavior</li><li>Final browser, print, and projector aesthetics</li></ul></article>
+      </div>
+    </section>
+
+    <section class="start" id="start">
+      <div>
+        <p class="kicker">START A COURSE</p>
+        <h2>Give your agent the harness.<br>Keep your judgment in the loop.</h2>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-top"><span>AGENT PROMPT</span><button type="button" aria-label="Prompt is shown for manual copying" disabled>COPY</button></div>
+        <code>Clone https://github.com/wangyu16/orz-coursewerk, read CLAUDE.md, and help me build a course.</code>
+      </div>
+      <div class="start-links"><a class="button light" href="https://github.com/wangyu16/orz-coursewerk">Open on GitHub <span aria-hidden="true">↗</span></a><a href="https://github.com/wangyu16/orz-coursewerk/blob/main/PROCEDURE.md">Read the pipeline</a><a href="https://markdown.orz.how/">Explore orz-markdown</a></div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-brand"><img src="assets/orz.svg" alt="orz" width="90" height="50"><span>Coursewerk is part of the orz family.</span></div>
+    <p>Open source under MIT. Built for editable, attributable, maintainable teaching.</p>
+    <div><a href="https://github.com/wangyu16/orz-coursewerk">GitHub</a><a href="https://markdown.orz.how/">orz-markdown</a><a href="#top">Back to top ↑</a></div>
+  </footer>
+</body>
+</html>

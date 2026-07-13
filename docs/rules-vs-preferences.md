@@ -30,6 +30,9 @@ So: hard rules bind unconditionally; for every *flexible* aspect, this-session >
 - **Copyright & provenance** — every asset proves a clean origin and is recorded in
   `metadata/ATTRIBUTION.md`; never embed copyrighted / paywalled / third-party-credited content; prose is
   **original** (no near-verbatim copying of the source); the package license **matches the source's**.
+- **Assurance foundation** — intended use, source identity/version/scope, rights basis, license evidence,
+  attribution obligations, privacy, and structured provenance are checked in every review mode. Unknown or
+  private-only items are labelled and block publication.
 - **Scientific accuracy** — every fact/value comes from the source or standard knowledge, **never
   fabricated**; a gap is a visible `[VERIFY]`, not a guess.
 - **Accessibility floor** — alt text on every figure, sensible heading order, **color is never the sole
@@ -46,7 +49,6 @@ So: hard rules bind unconditionally; for every *flexible* aspect, this-session >
 | Terminology | standard (e.g. IUPAC where it matters) | `preferences.md` |
 | Worked examples | several per chapter; ≥1 per slide section | `preferences.md` |
 | Everyday-example flavor | one per section | `preferences.md` |
-| License policy | match the source | `preferences.md` |
 | Figure palette / plot colors | the `oer-figures` default palette | `styles.md` |
 | Photo-vs-diagram balance | ≥1–2 fetched real photos per chapter | `styles.md` |
 | Slide theme | left to build time (Alembic applies) | `styles.md` |
@@ -61,7 +63,8 @@ it's a **preference** — a user may override it. Everything the QA gate flags a
 
 ## Where preferences live — `~/.coursewerk/` (survives updates)
 
-- **`preferences.md`** — pedagogy, scope, terminology, license-policy defaults.
+- **`preferences.md`** — pedagogy, scope, and terminology defaults. Rights and source-license decisions are
+  assurance facts, never preferences.
 - **`styles.md`** — visual / layout / figure / slide-style choices.
 - **`templates/`** — the user's own document skeletons (preferred over the built-in default).
 - **`skills/`** — extra skills, used alongside Coursewerk's bundled ones.

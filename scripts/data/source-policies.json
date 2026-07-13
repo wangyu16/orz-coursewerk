@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "policies": [
+    {
+      "id": "openstax-chemistry-2e",
+      "match": {
+        "publisher": "OpenStax",
+        "titleIncludes": "Chemistry 2e",
+        "canonicalUrlIncludes": "openstax.org/books/chemistry-2e"
+      },
+      "license": "CC-BY-NC-SA-4.0",
+      "licenseEvidenceUrl": "https://openstax.org/books/chemistry-2e/pages/preface",
+      "expectedProcessNoticeIds": ["generative-ai-ingestion"],
+      "requiredAttribution": {
+        "textIncludes": "Access for free at",
+        "url": "https://openstax.org/books/chemistry-2e/pages/1-introduction",
+        "placement": "every-public-deliverable"
+      }
+    }
+  ]
+}

@@ -52,12 +52,12 @@ Ordered sections (exact skeleton):
    :::info
    **Reference:** <Textbook, Edition>, Chapter N (<license>)
    **Audience:** <one line>
-   **Package license:** CC BY-NC-SA 4.0
+   **Package license:** <exact value from verified FOUNDATION.json; never infer or prefer a license>
    **Note:** <optional — e.g. slug/indexing note; content is textbook Chapter N>
    :::
    ```
 3. **Chapter Learning Objectives** — a `:::success` container titled `**Chapter Learning Objectives**` + a bullet list (one bullet per objective).
-4. **`## Chapter Logic`** — 2–4 sentences of the chapter's conceptual arc + ONE mermaid flowchart (full ```mermaid``` / `{{mermaid}}` form, not `{{mm}}`) + an optional `:::warning` for a model boundary.
+4. **`## Chapter Logic`** — 2–4 sentences of the chapter's conceptual arc + ONE mermaid flowchart (full ```mermaid``` / `{{mermaid}}` form, not `{{mm}}`) followed by a visible, substantive `**Visual description:**` + an optional `:::warning` for a model boundary. Every other Mermaid/chart block needs the same visible alternative (`**Data summary:**` for charts).
 5. **Sections**, one per textbook section, IN ORDER:
    - `## N.M <Section Title>` — the H2 section heading **MAY** carry a stable block ID marker
      appended to it: `## N.M <Section Title>{{attrs[#blk-a1b2c3d4]}}`, where the id is
@@ -71,7 +71,7 @@ Ordered sections (exact skeleton):
    - worked example(s) in `:::: tabs` → `::: tab Problem` / `::: tab Solution`,
    - a short **Self-check:** bullet list (prompts only, NO answers).
 6. **`## Synthesis`** — a short integrative section tying the sections together (the single thread through the chapter).
-7. **`## Asset and License Record for This Chapter`** — a table `| Asset | Source URL | License | Attribution |` listing EVERY embedded image (self-generated rows marked "self-generated, CC BY-NC-SA 4.0"). This table feeds attribution (it also mirrors the package's `metadata/ATTRIBUTION.md`).
+7. **`## Asset and License Record for This Chapter`** — a table `| Asset | Source URL | License | Attribution |` listing EVERY embedded image. Self-generated rows use the verified package-license decision where applicable. This table mirrors structured `metadata/PROVENANCE.json` and public `metadata/ATTRIBUTION.md`; never invent a license value.
 8. **NO practice-question section.** The study guide teaches; questions live in the assessment guide.
 
 Styling palette (use exactly this way every chapter):
@@ -275,6 +275,10 @@ in range, satisfying the stated constraint; a chosen context; a specific format)
   answers only — never fabricate a value; show the work for calculations.
 
 ## Checklists (run before finishing a chapter; a reviewer checks the same)
+
+**All five deliverables:** source-grounded and mutually aligned · spelling/grammar/clarity proofread · terminology,
+notation, objective wording, headings, labels, and semantic formatting consistent with the course package · no
+unnecessary repetition · direct user edits preserved.
 
 **Study guide (`study-guide/<slug>.md`):** H1 title · `:::info` reference box (Reference/Audience/Package
 license) · `:::success` Chapter Learning Objectives · `## Chapter Logic` + mermaid · each section =

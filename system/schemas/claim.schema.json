@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["id", "statement", "assuranceLevel", "implementation", "tests", "documentation"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^claim\\." },
+    "statement": { "type": "string", "minLength": 1 },
+    "assuranceLevel": { "enum": ["hard-gate", "automated-check", "agent-workflow", "human-decision", "external-capability"] },
+    "implementation": { "type": "array", "items": { "type": "string" } },
+    "tests": { "type": "array", "items": { "type": "string" } },
+    "documentation": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}

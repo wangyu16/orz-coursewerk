@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "claims": [
+    {
+      "id": "claim.release.fail-closed",
+      "statement": "Public packing refuses unresolved assurance, quality, source-comparison, or coherence failures.",
+      "assuranceLevel": "hard-gate",
+      "implementation": ["scripts/pack.mjs", "scripts/check_oer.mjs"],
+      "tests": ["tests/assurance.test.mjs"],
+      "documentation": ["FEATURES.md", "CLAUDE.md", "PROCEDURE.md"]
+    },
+    {
+      "id": "claim.rights.verified",
+      "statement": "Public sources have identified rights evidence, process-specific notice review, and compatible output licensing.",
+      "assuranceLevel": "hard-gate",
+      "implementation": ["scripts/lib/assurance.mjs", "scripts/lib/rights_preflight.mjs", "scripts/data/source-policies.json", "scripts/capture_rights_evidence.mjs"],
+      "tests": ["tests/assurance.test.mjs", "tests/evidence-tools.test.mjs"],
+      "documentation": ["FEATURES.md", "CLAUDE.md", "PROCEDURE.md", "docs/assurance-kernel.md", "site/index.html"]
+    },
+    {
+      "id": "claim.authorship.accountable",
+      "statement": "Public output identifies an accountable non-AI author or rights holder.",
+      "assuranceLevel": "hard-gate",
+      "implementation": ["scripts/lib/assurance.mjs"],
+      "tests": ["tests/assurance.test.mjs"],
+      "documentation": ["FEATURES.md", "docs/assurance-kernel.md", "format-contracts/deliverables.md", "site/index.html"]
+    },
+    {
+      "id": "claim.provenance.complete",
+      "statement": "Every incorporated media item is traceable to structured provenance and public attribution.",
+      "assuranceLevel": "hard-gate",
+      "implementation": ["scripts/lib/assurance.mjs", "scripts/check_oer.mjs"],
+      "tests": ["tests/assurance.test.mjs"],
+      "documentation": ["FEATURES.md", "docs/assurance-kernel.md"]
+    },
+    {
+      "id": "claim.source.comparison",
+      "statement": "Discovery release binds raw and extracted source evidence and records whether deliverables were compared with it.",
+      "assuranceLevel": "hard-gate",
+      "implementation": ["scripts/check_oer.mjs", "scripts/lib/verbatim.mjs", "scripts/prepare_source_corpus.mjs"],
+      "tests": ["tests/assurance.test.mjs", "tests/evidence-tools.test.mjs"],
+      "documentation": ["FEATURES.md", "docs/assurance-kernel.md"]
+    },
+    {
+      "id": "claim.coherence.revisions",
+      "statement": "Direct edits calculate and gate the complete downstream consistency review set.",
+      "assuranceLevel": "hard-gate",
+      "implementation": ["scripts/lib/coherence.mjs", "scripts/index_components.mjs", "scripts/revision_impact.mjs"],
+      "tests": ["tests/assurance.test.mjs"],
+      "documentation": ["FEATURES.md", "docs/coherence-index.md"]
+    },
+    {
+      "id": "claim.accessibility.floor",
+      "statement": "The defined accessibility floor, including visible alternatives for runtime diagrams and charts, is checked before public release.",
+      "assuranceLevel": "hard-gate",
+      "implementation": ["scripts/check_oer.mjs"],
+      "tests": ["tests/qa.test.mjs"],
+      "documentation": ["FEATURES.md", "docs/authoring-guidelines.md"]
+    },
+    {
+      "id": "claim.format.contracts",
+      "statement": "Every declared chapter has five structurally valid, mutually related deliverables.",
+      "assuranceLevel": "hard-gate",
+      "implementation": ["scripts/check_oer.mjs", "scripts/lib/coherence.mjs"],
+      "tests": ["tests/qa.test.mjs", "tests/assurance.test.mjs"],
+      "documentation": ["FEATURES.md", "format-contracts/deliverables.md"]
+    },
+    {
+      "id": "claim.media.decision",
+      "statement": "A chapter without a rights-cleared real photograph records an accountable, substantive media decision.",
+      "assuranceLevel": "hard-gate",
+      "implementation": ["scripts/check_oer.mjs"],
+      "tests": ["tests/qa.test.mjs"],
+      "documentation": ["PROCEDURE.md", "docs/authoring-guidelines.md", "format-contracts/deliverables.md"]
+    },
+    {
+      "id": "claim.carriers.three-shapes",
+      "statement": "Coursewerk builds editable continuous, slide, and paged preview carriers from declared lean sources.",
+      "assuranceLevel": "automated-check",
+      "implementation": ["scripts/build_carriers.mjs", "scripts/lib/contract.mjs"],
+      "tests": ["tests/carriers.test.mjs"],
+      "documentation": ["FEATURES.md", "README.md"]
+    },
+    {
+      "id": "claim.carriers.honest-portability",
+      "statement": "Carrier receipts persist and distinguish single-file output from carrier-plus-assets output without claiming an unperformed rendered audit.",
+      "assuranceLevel": "automated-check",
+      "implementation": ["scripts/build_carriers.mjs", "scripts/pack.mjs"],
+      "tests": ["tests/carriers.test.mjs", "tests/assurance.test.mjs"],
+      "documentation": ["FEATURES.md", "README.md", "site/index.html"]
+    },
+    {
+      "id": "claim.git.visible-edits",
+      "statement": "Output roots use Git and accepted component hashes so direct edits remain visible.",
+      "assuranceLevel": "hard-gate",
+      "implementation": ["scripts/lib/output_git.mjs", "scripts/lib/coherence.mjs"],
+      "tests": ["tests/assurance.test.mjs"],
+      "documentation": ["FEATURES.md", "docs/coherence-index.md"]
+    },
+    {
+      "id": "claim.language.editorial",
+      "statement": "Language polishing is an agent editorial workflow with human approval, not a deterministic QA result.",
+      "assuranceLevel": "agent-workflow",
+      "implementation": ["PROCEDURE.md", "skills/courseguide-standards/SKILL.md"],
+      "tests": [],
+      "documentation": ["FEATURES.md", "docs/authoring-guidelines.md"]
+    },
+    {
+      "id": "claim.system.branch-coherence",
+      "statement": "Coursewerk repository changes are impact-indexed against their target branch merge base.",
+      "assuranceLevel": "hard-gate",
+      "implementation": ["scripts/lib/system_index.mjs", "scripts/verify_coursewerk.mjs", "scripts/coursewerk_impact.mjs"],
+      "tests": ["tests/system-index.test.mjs"],
+      "documentation": ["docs/coursewerk-system-index.md"]
+    },
+    {
+      "id": "claim.website.published",
+      "statement": "Coursewerk has a structured, accessible, dependency-free product website deployed from the repository through GitHub Pages.",
+      "assuranceLevel": "automated-check",
+      "implementation": ["site/index.html", "site/styles.css", ".github/workflows/pages.yml"],
+      "tests": ["tests/site.test.mjs"],
+      "documentation": ["README.md"]
+    }
+  ]
+}

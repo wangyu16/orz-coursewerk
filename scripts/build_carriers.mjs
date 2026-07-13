@@ -2,19 +2,20 @@
 // build_carriers — assemble the orz framework shells for LOCAL reading/preview + QA.
 //
 // coursewerk authors LEAN markdown (the source of truth) and SHIPS lean. But while
-// authoring you want to see the real, self-contained document — so this builds each
-// lean source into its framework carrier via the orz family, into a throwaway
+// authoring you want to see the real editable carrier — so this builds each lean
+// source via the orz family, into a throwaway
 // `preview/` tree (git-ignored, never uploaded; Alembic rebuilds carriers on its side).
 //
 //   study-guide/*.md , practice/*.md  → *.md.html      (orz-mdhtml)
 //   slides/*.md                        → *.slides.html  (orz-slides)
 //   paged/*.md                         → *.paged.html   (orz-paged)
 //
-// Usage: node build_carriers.mjs --package <dir> --out <dir> [--theme <name>]
+// Usage: node build_carriers.mjs --root <dir> --out <dir> [--theme <name>] [--receipt <json>] [--require-single-file]
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import crypto from "node:crypto";
 import { LEAN_SOURCE } from "./lib/contract.mjs";
 
 const args = process.argv.slice(2);
@@ -22,9 +23,11 @@ const opt = (n, d = null) => {
   const i = args.indexOf(n);
   return i >= 0 ? args[i + 1] : d;
 };
-const pkg = path.resolve(opt("--package", "package"));
+const pkg = path.resolve(opt("--root", opt("--package", "package")));
 const outRoot = path.resolve(opt("--out", "preview"));
+const receiptPath = opt("--receipt");
 const theme = opt("--theme");
+const requireSingleFile = args.includes("--require-single-file");
 if (!fs.existsSync(pkg)) {
   console.error(`build_carriers: package dir not found: ${pkg}`);
   process.exit(2);
@@ -39,8 +42,16 @@ const BUILDER_FOR = {
   "study-guide": LEAN_SOURCE["study-guide"],
   practice: LEAN_SOURCE.practice,
   slides: LEAN_SOURCE.slides,
-  paged: LEAN_SOURCE.paged,
 };
+
+function assertSafeOutput() {
+  const unsafe = [pkg, repoRoot, process.cwd(), path.parse(outRoot).root];
+  if (unsafe.includes(outRoot) || !path.relative(pkg, outRoot).startsWith("..")) {
+    console.error(`build_carriers: refusing unsafe output path: ${outRoot}`);
+    process.exit(2);
+  }
+}
+assertSafeOutput();
 
 function walk(root) {
   const out = [];
@@ -59,7 +70,7 @@ function runBuilder(builder, input, output) {
     console.error(`build_carriers: ${builder} not installed — run \`npm install\` first.`);
     process.exit(2);
   }
-  const cliArgs = [input, "-o", output];
+  const cliArgs = [input, "-o", output, "--inline"];
   if (theme) cliArgs.push("--theme", theme);
   const res = spawnSync(process.execPath, [bin, ...cliArgs], { encoding: "utf8" });
   if (res.status !== 0) {
@@ -75,14 +86,75 @@ fs.mkdirSync(outRoot, { recursive: true });
 
 let built = 0;
 let failed = 0;
+const results = [];
+const digest = (file) => crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+function inspectSource(text) {
+  const images = [...text.matchAll(/!\[([^\]]*)]\(([^)\s]+)(?:\s+=[^)]+)?\)/g)].map((match) => ({ alt: match[1].trim(), target: match[2] }));
+  const localAssetDependencies = images.map((image) => image.target).filter((target) => !/^(?:https?:|data:|#)/i.test(target));
+  const runtimeVisuals = [...text.matchAll(/\{\{\s*(mermaid|chart|smiles)\b/gi)].map((match) => match[1].toLowerCase());
+  return {
+    markdownImages: images.length,
+    imagesMissingAlt: images.filter((image) => !image.alt).length,
+    runtimeVisuals: runtimeVisuals.length,
+    runtimeVisualKinds: [...new Set(runtimeVisuals)].sort(),
+    localAssetDependencies: [...new Set(localAssetDependencies)].sort(),
+  };
+}
+
+function inspectCarrierPortability(html, sourceInspection) {
+  const urls = [...html.matchAll(/https?:\/\/[^\s"'<>\\]+/g)].map((match) => match[0].replace(/[),.;]+$/, ""));
+  const remoteRuntimeDependencies = [...new Set(urls.filter((url) => /(?:cdn\.jsdelivr\.net|unpkg\.com|cdnjs\.cloudflare\.com|fonts\.googleapis\.com)/i.test(url)))].sort();
+  const localAssetDependencies = sourceInspection.localAssetDependencies;
+  return {
+    frameworkInline: true,
+    singleFile: localAssetDependencies.length === 0 && remoteRuntimeDependencies.length === 0,
+    mode: localAssetDependencies.length ? "carrier-plus-assets" : (remoteRuntimeDependencies.length ? "single-html-network-enhanced" : "single-file"),
+    localAssetDependencies,
+    remoteRuntimeDependencies,
+    runtimeVisualReviewRequired: true,
+  };
+}
+
+function buildOne(spec, src) {
+  const relPath = path.relative(pkg, src).replaceAll(path.sep, "/");
+  const outPath = path.join(outRoot, relPath.replace(/\.md$/, spec.carrier));
+  fs.mkdirSync(path.dirname(outPath), { recursive: true });
+  let ok = runBuilder(spec.builder, src, outPath);
+  const sourceInspection = inspectSource(fs.readFileSync(src, "utf8"));
+  let staticCarrierInspection = { shellImages: 0, shellImagesMissingAlt: 0, note: "Static shell only; runtime-rendered content requires visual/DOM review." };
+  let portability = { frameworkInline: false, singleFile: false, mode: "build-failed", localAssetDependencies: sourceInspection.localAssetDependencies, remoteRuntimeDependencies: [], runtimeVisualReviewRequired: true };
+  if (ok) {
+    const html = fs.readFileSync(outPath, "utf8").replace(/<script\b[\s\S]*?<\/script>/gi, "");
+    const images = [...html.matchAll(/<img\b[^>]*>/gi)].map((match) => match[0]);
+    staticCarrierInspection = { shellImages: images.length, shellImagesMissingAlt: images.filter((tag) => !/\balt=["'][^"']+["']/i.test(tag)).length, note: "Static shell only; runtime-rendered content requires visual/DOM review." };
+    portability = inspectCarrierPortability(fs.readFileSync(outPath, "utf8"), sourceInspection);
+    if (sourceInspection.imagesMissingAlt || staticCarrierInspection.shellImagesMissingAlt) ok = false;
+    if (requireSingleFile && !portability.singleFile) ok = false;
+  }
+  if (ok) built += 1; else failed += 1;
+  results.push({ source: relPath, carrier: path.relative(outRoot, outPath).replaceAll(path.sep, "/"), builder: spec.builder, status: ok ? "passed" : "failed", sourceSha256: digest(src), outputSha256: fs.existsSync(outPath) ? digest(outPath) : null, sourceInspection, staticCarrierInspection, portability });
+}
 for (const [top, spec] of Object.entries(BUILDER_FOR)) {
   const srcDir = path.join(pkg, top);
   for (const src of walk(srcDir).filter((f) => f.endsWith(spec.ext))) {
-    const relPath = path.relative(pkg, src).replaceAll(path.sep, "/");
-    const outPath = path.join(outRoot, relPath.replace(/\.md$/, spec.carrier));
-    fs.mkdirSync(path.dirname(outPath), { recursive: true });
-    if (runBuilder(spec.builder, src, outPath)) built += 1;
-    else failed += 1;
+    buildOne(spec, src);
+  }
+}
+
+const documentsFile = path.join(pkg, "metadata", "DOCUMENTS.json");
+if (fs.existsSync(documentsFile)) {
+  let registry;
+  try { registry = JSON.parse(fs.readFileSync(documentsFile, "utf8")); }
+  catch (e) { console.error(`build_carriers: metadata/DOCUMENTS.json is invalid: ${e.message}`); process.exit(2); }
+  for (const doc of registry.documents || []) {
+    const rel = String(doc.source || "").replaceAll("\\", "/");
+    if (!rel || path.isAbsolute(rel) || rel.split("/").includes("..")) { console.error(`build_carriers: invalid declared document source: ${rel}`); process.exit(2); }
+    const src = path.join(pkg, rel);
+    if (!fs.existsSync(src)) { console.error(`build_carriers: declared document source is missing: ${rel}`); process.exit(2); }
+    const specs = { mdhtml: LEAN_SOURCE["study-guide"], slides: LEAN_SOURCE.slides, paged: LEAN_SOURCE.paged };
+    const spec = specs[doc.carrier];
+    if (!spec) { console.error(`build_carriers: unsupported carrier type for ${rel}: ${doc.carrier}`); process.exit(2); }
+    buildOne(spec, src);
   }
 }
 
@@ -92,5 +164,11 @@ if (fs.existsSync(assetsSrc)) {
   fs.cpSync(assetsSrc, path.join(outRoot, "assets"), { recursive: true });
 }
 
-console.log(JSON.stringify({ package: pkg, preview: outRoot, carriersBuilt: built, failed }, null, 2));
+const receipt = { schemaVersion: 2, root: pkg, preview: outRoot, requireSingleFile, carriersBuilt: built, failed, runtimeVisualReviewRequired: results.length > 0, results };
+if (receiptPath) {
+  const file = path.resolve(receiptPath);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(receipt, null, 2) + "\n");
+}
+console.log(JSON.stringify(receipt, null, 2));
 process.exit(failed > 0 ? 1 : 0);

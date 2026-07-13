@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "usageProfile": "personal-private",
+  "audience": "creator-only",
+  "access": "local-device",
+  "redistribution": "none",
+  "jurisdiction": "REPLACE-WITH-JURISDICTION",
+  "outputLicense": null,
+  "privacy": {
+    "containsPersonalData": false,
+    "containsRestrictedContent": false
+  },
+  "sources": [
+    {
+      "id": "source-1",
+      "title": "REPLACE-WITH-EXACT-SOURCE-TITLE",
+      "publisher": "REPLACE-OR-USE-RIGHTS-HOLDER",
+      "canonicalUrl": "REPLACE-WITH-CANONICAL-URL",
+      "role": "primary",
+      "use": "reference",
+      "scope": ["REPLACE-WITH-CHAPTERS-SECTIONS-OR-MATERIAL"],
+      "usedIn": ["study-guide/REPLACE-WITH-FILE.md"],
+      "blockReason": "REPLACE-WITH-WHY-THE-SOURCE-OR-RIGHTS-ARE-UNRESOLVED",
+      "rightsBasis": {
+        "type": "user-asserted-exception",
+        "attestedByUser": true,
+        "evidenceUrl": "REPLACE-WITH-AUTHORITATIVE-RIGHTS-OR-TERMS-PAGE",
+        "evidenceSnapshot": "metadata/evidence/source-1.html",
+        "evidenceSha256": "REPLACE-WITH-SHA256",
+        "evidenceVerifiedBy": "REPLACE-WITH-PERSON-OR-AGENT",
+        "processUseReview": {
+          "schemaVersion": 1,
+          "scannedAt": "REPLACE-WITH-ISO-DATETIME",
+          "status": "no-restriction-detected",
+          "notices": []
+        }
+      }
+    }
+  ]
+}

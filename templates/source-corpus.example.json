@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "sourceId": "source-id-from-foundation",
+      "comparisonMode": "automatic",
+      "originalFile": "source-file.html",
+      "originalPath": ".coursewerk-source-original/source-id-from-foundation.html",
+      "originalSha256": "REPLACE-WITH-RAW-SOURCE-SHA256",
+      "canonicalUrl": "https://publisher.example/source-section",
+      "retrievedAt": "REPLACE-WITH-ISO-DATETIME",
+      "extractor": { "tool": "coursewerk", "schemaVersion": 1, "sourceFormat": ".html" },
+      "textPath": ".coursewerk-source-text/source-id-from-foundation.txt",
+      "sha256": "REPLACE-WITH-SHA256",
+      "minimumWords": 100
+    }
+  ]
+}

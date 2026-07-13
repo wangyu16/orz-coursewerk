@@ -1,0 +1,1393 @@
+{
+  "schemaVersion": 1,
+  "components": [
+    {
+      "id": "repo:.claude/settings.local.json",
+      "path": ".claude/settings.local.json",
+      "type": "repository-support",
+      "hash": "8603f6d4676442a20089d1d2d4f489f37d2c8b0762ec5b711e34697edf093308"
+    },
+    {
+      "id": "repo:.cursorrules",
+      "path": ".cursorrules",
+      "type": "repository-support",
+      "hash": "9e95b0d590c7db8e8c3c08b00695f8fc128b4134e2510867e896fbe5dfd5aa43"
+    },
+    {
+      "id": "repo:.github/copilot-instructions.md",
+      "path": ".github/copilot-instructions.md",
+      "type": "repository-support",
+      "hash": "eae493f06706fcb2219797c6904ee94aa59e6f164b06c693b876c2af2a8e5954"
+    },
+    {
+      "id": "repo:.github/workflows/pages.yml",
+      "path": ".github/workflows/pages.yml",
+      "type": "deployment",
+      "hash": "f9f659fb19eb7053a3070b2ab8c1b8943d6a3511c240c5ba6c106ee2a8ea3270"
+    },
+    {
+      "id": "repo:.github/workflows/system-integrity.yml",
+      "path": ".github/workflows/system-integrity.yml",
+      "type": "deployment",
+      "hash": "aab564338ecfb3dd6dfe7ec28e5de3da0857cd9dec5fd46139753de5f5f7bb68"
+    },
+    {
+      "id": "repo:.gitignore",
+      "path": ".gitignore",
+      "type": "repository-support",
+      "hash": "9a18358f26a4fb539c0ae6205f2c86566a17bf77911c41edb84c04314b9767c9"
+    },
+    {
+      "id": "repo:AGENTS.md",
+      "path": "AGENTS.md",
+      "type": "agent-constitution",
+      "hash": "9ab9835e0d1f45c67d414372074620b762455bab6aefc82be17825edd37d4f87"
+    },
+    {
+      "id": "repo:bootstrap/init.sh",
+      "path": "bootstrap/init.sh",
+      "type": "repository-support",
+      "hash": "f9cacd9ddf0d9c8a0c39edd257886d9b195db4afac8fcca3befc5cc045b919a0"
+    },
+    {
+      "id": "repo:CHANGELOG.md",
+      "path": "CHANGELOG.md",
+      "type": "release-metadata",
+      "hash": "7888df633a501161fcfdfa26c21ee5dbc18585393571db9cb07fb6209d2d49a8"
+    },
+    {
+      "id": "repo:CLAUDE.md",
+      "path": "CLAUDE.md",
+      "type": "agent-constitution",
+      "hash": "1b9061fdc02230e0c7eb5af3b90a3d5fc8a62e2f6df11e1c740d54227658f278"
+    },
+    {
+      "id": "repo:COMPATIBILITY.md",
+      "path": "COMPATIBILITY.md",
+      "type": "agent-constitution",
+      "hash": "8cad17fa1a4eb49ed9fb3ecc56bc217fdcadf818eecb96fec0f1ff41e345f98f"
+    },
+    {
+      "id": "repo:docs/assurance-kernel.md",
+      "path": "docs/assurance-kernel.md",
+      "type": "documentation",
+      "hash": "5482ec706ebcfca0576cfebabd9f09e857070beb4377f709ce2faa0adf682ba0"
+    },
+    {
+      "id": "repo:docs/authoring-guidelines.md",
+      "path": "docs/authoring-guidelines.md",
+      "type": "documentation",
+      "hash": "e7a0241b3dd219613c26a37d43396e3f37cafcdabfd4721760dfb67575686526"
+    },
+    {
+      "id": "repo:docs/coherence-index.md",
+      "path": "docs/coherence-index.md",
+      "type": "documentation",
+      "hash": "73d866627a3f0eb4148be2e582b04f068d28d2e7fffa3ed95dde3e8ba647621b"
+    },
+    {
+      "id": "repo:docs/coursewerk-system-index.md",
+      "path": "docs/coursewerk-system-index.md",
+      "type": "documentation",
+      "hash": "91068cda51af7a3e491d3c2a5d943a63938591e89547669a037e69ca15e5ebf8"
+    },
+    {
+      "id": "repo:docs/lite-path.md",
+      "path": "docs/lite-path.md",
+      "type": "documentation",
+      "hash": "410ec38975ae5bda3f7d5bf9ea7dfb0ede760977b48866a78507da5f0a0c8ac1"
+    },
+    {
+      "id": "repo:docs/rules-vs-preferences.md",
+      "path": "docs/rules-vs-preferences.md",
+      "type": "documentation",
+      "hash": "c4288e3b72e054195cf0e9be280f4f59110b61661e7216a1c9e4633e7ac03146"
+    },
+    {
+      "id": "repo:FEATURES.md",
+      "path": "FEATURES.md",
+      "type": "product-claim",
+      "hash": "8f348ead090c99c704514c512c64c60d35ec4c270093b9d44bcd8f8b8cf8c8b5"
+    },
+    {
+      "id": "repo:format-contracts/deliverables.md",
+      "path": "format-contracts/deliverables.md",
+      "type": "documentation",
+      "hash": "fb42025d427157fe433d779188151cb4772e6d7bb11e5c9492b2741866628167"
+    },
+    {
+      "id": "repo:GEMINI.md",
+      "path": "GEMINI.md",
+      "type": "repository-support",
+      "hash": "d3d0e8c25d87f98aa379d338dca6749e6f087659d0910dddc1a5facd7295701c"
+    },
+    {
+      "id": "repo:LICENSE",
+      "path": "LICENSE",
+      "type": "repository-support",
+      "hash": "165e340eb1eb2296db08b9dbf3cac5276e4d20bda9e0ab7e17c82b6d93a3e276"
+    },
+    {
+      "id": "repo:NOTES.md",
+      "path": "NOTES.md",
+      "type": "repository-support",
+      "hash": "73701f19c9aad0b8963148b313a88eb7c87d6881a75707749cd6b13ab7361720"
+    },
+    {
+      "id": "repo:package.json",
+      "path": "package.json",
+      "type": "release-metadata",
+      "hash": "941d924d164b3eb4867359bc7a4494eb30eebee617ec74628c6d09d5e951c79b"
+    },
+    {
+      "id": "repo:PROCEDURE.md",
+      "path": "PROCEDURE.md",
+      "type": "agent-constitution",
+      "hash": "f595ab248442f7566d83a271cd184334018167614899f7177b224135ec9a9495"
+    },
+    {
+      "id": "repo:README.md",
+      "path": "README.md",
+      "type": "product-claim",
+      "hash": "ff63a691484fc71ea800b2d6852e163069f5f12e56113a95fd1a1f5a7a8a8a91"
+    },
+    {
+      "id": "repo:scripts/accept_coursewerk_revision.mjs",
+      "path": "scripts/accept_coursewerk_revision.mjs",
+      "type": "executable",
+      "hash": "5b6f259b38b8f382948ca0278fcf434ff069dfd48f4e0698c451619c8846a6ae"
+    },
+    {
+      "id": "repo:scripts/build_carriers.mjs",
+      "path": "scripts/build_carriers.mjs",
+      "type": "executable",
+      "hash": "3e72425430b90d111db8257916751885c9f59546f4b3e9baa4bfef69d72985ee"
+    },
+    {
+      "id": "repo:scripts/capture_rights_evidence.mjs",
+      "path": "scripts/capture_rights_evidence.mjs",
+      "type": "executable",
+      "hash": "2b5975c9c7c05d942dcc1b0a3077a96dcee1330d4eb12cf4371483e92bea3c7c"
+    },
+    {
+      "id": "repo:scripts/check_assurance.mjs",
+      "path": "scripts/check_assurance.mjs",
+      "type": "executable",
+      "hash": "588c32dcfe2bd8d50e4b8c2ba42f146655e200dcc6a56dcbe85c7f23edcdbe04"
+    },
+    {
+      "id": "repo:scripts/check_oer.mjs",
+      "path": "scripts/check_oer.mjs",
+      "type": "executable",
+      "hash": "522c5923d889621d5f18b2ff35c917aaa753bc7fc2fec90b2b09e82f38c483f0"
+    },
+    {
+      "id": "repo:scripts/coursewerk_impact.mjs",
+      "path": "scripts/coursewerk_impact.mjs",
+      "type": "executable",
+      "hash": "3842e173b99bd93b259f5cf0601673b97aeac9c950aad5b68a29ed0f34cd1799"
+    },
+    {
+      "id": "repo:scripts/data/license-texts.json",
+      "path": "scripts/data/license-texts.json",
+      "type": "executable",
+      "hash": "888b707b2e1f7668574e555efceebacbc2b1ace72e72830fe586cb3e5a0aa5bd"
+    },
+    {
+      "id": "repo:scripts/data/licenses/CC-BY-4.0.txt",
+      "path": "scripts/data/licenses/CC-BY-4.0.txt",
+      "type": "executable",
+      "hash": "9e5f1b3c610b9c2da5c313bf81d577a7d1acec686bdb0384edefa6df0f90cd94"
+    },
+    {
+      "id": "repo:scripts/data/licenses/CC-BY-NC-4.0.txt",
+      "path": "scripts/data/licenses/CC-BY-NC-4.0.txt",
+      "type": "executable",
+      "hash": "3711f963c05d0be80d53e5923308a6dee31b203da23435c9cfb7c7b6e4dd5e19"
+    },
+    {
+      "id": "repo:scripts/data/licenses/CC-BY-NC-SA-4.0.txt",
+      "path": "scripts/data/licenses/CC-BY-NC-SA-4.0.txt",
+      "type": "executable",
+      "hash": "1349a4b6148492b44f629e64eed676612e234fe9a839e4f3b277c1482c8849f1"
+    },
+    {
+      "id": "repo:scripts/data/licenses/CC-BY-SA-4.0.txt",
+      "path": "scripts/data/licenses/CC-BY-SA-4.0.txt",
+      "type": "executable",
+      "hash": "23ee78c8bae49cf08ea2f0c84945c66b987ebe4520881fb51b3dad4fb43d07c2"
+    },
+    {
+      "id": "repo:scripts/data/licenses/CC0-1.0.txt",
+      "path": "scripts/data/licenses/CC0-1.0.txt",
+      "type": "executable",
+      "hash": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+    },
+    {
+      "id": "repo:scripts/data/source-policies.json",
+      "path": "scripts/data/source-policies.json",
+      "type": "executable",
+      "hash": "23422eb90f099653830fc9c20aa8849399c4dc907b4ed4fa791e89243a103bc6"
+    },
+    {
+      "id": "repo:scripts/generate_attribution.mjs",
+      "path": "scripts/generate_attribution.mjs",
+      "type": "executable",
+      "hash": "b9e0762ed30ea9d34fb4688f7b20629bac4154342eab80f59837a9b1ba4ef7a1"
+    },
+    {
+      "id": "repo:scripts/index_components.mjs",
+      "path": "scripts/index_components.mjs",
+      "type": "executable",
+      "hash": "bf14995e1a61bfbc24013850a29bc48e828cfebbe9620e2054fec64bb2e22abd"
+    },
+    {
+      "id": "repo:scripts/index_coursewerk.mjs",
+      "path": "scripts/index_coursewerk.mjs",
+      "type": "executable",
+      "hash": "ebb77554087d3fe5924f0f0d8f2f3c94d565cc8cc501abd3b8deba8d698a7075"
+    },
+    {
+      "id": "repo:scripts/init_output_git.mjs",
+      "path": "scripts/init_output_git.mjs",
+      "type": "executable",
+      "hash": "8d84ab66127d7236f5f48b0452a1b70530c5bc228b2ac9e37e8fdd9b4279f173"
+    },
+    {
+      "id": "repo:scripts/lib/assurance.mjs",
+      "path": "scripts/lib/assurance.mjs",
+      "type": "kernel",
+      "hash": "1ba608f79bced20dc6228cd8aca27d86413eca96c34a86b0e9da88e3ca6a4c61"
+    },
+    {
+      "id": "repo:scripts/lib/coherence.mjs",
+      "path": "scripts/lib/coherence.mjs",
+      "type": "kernel",
+      "hash": "206b256280ab60ce6a42d10392e486232f1a3d1cdde48e902fcb3d2f3e1479ea"
+    },
+    {
+      "id": "repo:scripts/lib/contract.mjs",
+      "path": "scripts/lib/contract.mjs",
+      "type": "kernel",
+      "hash": "accc3cd10c90a63a34eb9fa8dbd3463edc39cbbb110f25a3597541cc3f9b4968"
+    },
+    {
+      "id": "repo:scripts/lib/output_git.mjs",
+      "path": "scripts/lib/output_git.mjs",
+      "type": "kernel",
+      "hash": "4de30289a1368bf4d5b847374ab398ed070b4ea1c5c5eb82aa1f495ee2c8f955"
+    },
+    {
+      "id": "repo:scripts/lib/rights_preflight.mjs",
+      "path": "scripts/lib/rights_preflight.mjs",
+      "type": "kernel",
+      "hash": "d1eac16b45f8c4ad6daaa745f703cda2bf648fcf1037880756f40aa631ead86d"
+    },
+    {
+      "id": "repo:scripts/lib/slug.mjs",
+      "path": "scripts/lib/slug.mjs",
+      "type": "kernel",
+      "hash": "6ce3bf7675ad157841a1c3480e2551baf9d384f53a3afedf7f7522d457fbe231"
+    },
+    {
+      "id": "repo:scripts/lib/system_index.mjs",
+      "path": "scripts/lib/system_index.mjs",
+      "type": "kernel",
+      "hash": "86dd68d299d66a076c9b5c3cef6a09aae0f1112c9a2f7843d75fce478c18efe0"
+    },
+    {
+      "id": "repo:scripts/lib/verbatim.mjs",
+      "path": "scripts/lib/verbatim.mjs",
+      "type": "kernel",
+      "hash": "06982d0f0a0043873b379de5f2c856246576db49762b14c3097ca8ed717c35ec"
+    },
+    {
+      "id": "repo:scripts/pack.mjs",
+      "path": "scripts/pack.mjs",
+      "type": "executable",
+      "hash": "22e685fdedbd73e968a980a19c932080a3145a5156152cf023bb768cff630e78"
+    },
+    {
+      "id": "repo:scripts/prepare_source_corpus.mjs",
+      "path": "scripts/prepare_source_corpus.mjs",
+      "type": "executable",
+      "hash": "ef4ee78519154552c9bd2c05a53a746c2374659795c54c624f7275a4bfbae8f7"
+    },
+    {
+      "id": "repo:scripts/revision_impact.mjs",
+      "path": "scripts/revision_impact.mjs",
+      "type": "executable",
+      "hash": "e96a1c999f2283b2ea7520fb1b5e2fd81bec4d81fd5e51225ee66b1986937e65"
+    },
+    {
+      "id": "repo:scripts/verify_coursewerk.mjs",
+      "path": "scripts/verify_coursewerk.mjs",
+      "type": "executable",
+      "hash": "941ecccdec953e7992400a22cfd255cb2e6a35029d40022ceee039465d1c9797"
+    },
+    {
+      "id": "repo:site/assets/orz.svg",
+      "path": "site/assets/orz.svg",
+      "type": "product-website",
+      "hash": "9dc6f8be9a33a965ac0f842e7df99592b0232d65257d42e8209e36988d20933b"
+    },
+    {
+      "id": "repo:site/index.html",
+      "path": "site/index.html",
+      "type": "product-website",
+      "hash": "73b5072cda3efb4b71ada5a2349d424bfd1ddd5326943ae06e3153ccaba397c1"
+    },
+    {
+      "id": "repo:site/styles.css",
+      "path": "site/styles.css",
+      "type": "product-website",
+      "hash": "9457e1525255318b3bf9d7581ff156e2b3a98922aeeaa67c44434891520b258f"
+    },
+    {
+      "id": "repo:skills/courseguide-standards/SKILL.md",
+      "path": "skills/courseguide-standards/SKILL.md",
+      "type": "skill",
+      "hash": "7be0796c52783feac15093bd88329edf725c69e5d762b2a8aaf5570ce9546034"
+    },
+    {
+      "id": "repo:skills/oer-figures/scripts/draw_chem.py",
+      "path": "skills/oer-figures/scripts/draw_chem.py",
+      "type": "skill",
+      "hash": "8fc1fa98818b3116c2e0e48af247cf76052cdb51cf91c811e02cd72d16322b7b"
+    },
+    {
+      "id": "repo:skills/oer-figures/scripts/fetch_open_image.py",
+      "path": "skills/oer-figures/scripts/fetch_open_image.py",
+      "type": "skill",
+      "hash": "33563209ff969a3e1e2a6090aa4474694a0d8403113261426967012848051e9e"
+    },
+    {
+      "id": "repo:skills/oer-figures/SKILL.md",
+      "path": "skills/oer-figures/SKILL.md",
+      "type": "skill",
+      "hash": "79a3c005630c7eadbe1b27136e5dc42d06068279e303ecc71fd05d46e73526ef"
+    },
+    {
+      "id": "repo:skills/oer-qa/SKILL.md",
+      "path": "skills/oer-qa/SKILL.md",
+      "type": "skill",
+      "hash": "e11c0642aff8808c6f4b4e1dcd11d1d6d9fab77944a06ba50b6c1ca998821387"
+    },
+    {
+      "id": "repo:skills/orz-markdown/assets/minimal.css",
+      "path": "skills/orz-markdown/assets/minimal.css",
+      "type": "skill",
+      "hash": "44005a52ee7cf2a6d407cb887836e3a920b49827c58ed38c14e7721b2f19516e"
+    },
+    {
+      "id": "repo:skills/orz-markdown/assets/template.html",
+      "path": "skills/orz-markdown/assets/template.html",
+      "type": "skill",
+      "hash": "35b6ede8e4b907ddce7e9cfb445f2648a0ce23a794e6f91cdd6fc45b646aaed5"
+    },
+    {
+      "id": "repo:skills/orz-markdown/references/css-classes.md",
+      "path": "skills/orz-markdown/references/css-classes.md",
+      "type": "skill",
+      "hash": "7370e9c4939a6440012033d95d2cb403bdaf024415e50cf927ba9b2c8d35e981"
+    },
+    {
+      "id": "repo:skills/orz-markdown/references/syntax.md",
+      "path": "skills/orz-markdown/references/syntax.md",
+      "type": "skill",
+      "hash": "e373ba8706998c197dd6e9f2111b09472a0b04141a54ad5000f53f780f4a0e0f"
+    },
+    {
+      "id": "repo:skills/orz-markdown/references/themes.md",
+      "path": "skills/orz-markdown/references/themes.md",
+      "type": "skill",
+      "hash": "9e8c93cea730dd109ae26c13f6cf66ffb45fe73004293c151305c11e018b700c"
+    },
+    {
+      "id": "repo:skills/orz-markdown/SKILL.md",
+      "path": "skills/orz-markdown/SKILL.md",
+      "type": "skill",
+      "hash": "e849c906687ebafba697a77d0e13f9f361dc3e04f893ba34425c976aafe52ffe"
+    },
+    {
+      "id": "repo:skills/orz-paged/SKILL.md",
+      "path": "skills/orz-paged/SKILL.md",
+      "type": "skill",
+      "hash": "e3c2da6eec27afae60129a51c66d83bc0c4019e34121329300513823dc56c08f"
+    },
+    {
+      "id": "repo:skills/orz-slides/SKILL.md",
+      "path": "skills/orz-slides/SKILL.md",
+      "type": "skill",
+      "hash": "491e9a03ac8c5f0bfb4f0228718b76926fae37b0ab7a139c7ac5be3338b0b748"
+    },
+    {
+      "id": "repo:system/CLAIMS.json",
+      "path": "system/CLAIMS.json",
+      "type": "system-governance",
+      "hash": "34d968e2f130f458c503728ddd009eb3ae4c5a4527a98bd3175855833928d8e8"
+    },
+    {
+      "id": "repo:system/COMPONENTS.json",
+      "path": "system/COMPONENTS.json",
+      "type": "system-governance",
+      "hash": "5bab3fff27f43ac984573b06db3d1ca74fa20af23550161e79f0a48a2021cfcf"
+    },
+    {
+      "id": "repo:system/KNOWN_FINDINGS.json",
+      "path": "system/KNOWN_FINDINGS.json",
+      "type": "system-governance",
+      "hash": "2fb2ea6e2c8e826c4e81df4ed7f5b4bfc155263af21328ac4669f3ecf2dde186"
+    },
+    {
+      "id": "repo:system/QUALITY_PROFILES.json",
+      "path": "system/QUALITY_PROFILES.json",
+      "type": "system-governance",
+      "hash": "d7b164b6d882873a98edd5057c4c7e28045c527ee2b15156f16da4d23c840fdc"
+    },
+    {
+      "id": "repo:system/RELATIONSHIPS.json",
+      "path": "system/RELATIONSHIPS.json",
+      "type": "system-governance",
+      "hash": "951b9db2f8a2cdadee13c0328f70ec8316c0a1b1795bb3be0b56bb5aba45d097"
+    },
+    {
+      "id": "repo:system/schemas/claim.schema.json",
+      "path": "system/schemas/claim.schema.json",
+      "type": "system-governance",
+      "hash": "f7ec55607121d73c86c134476166ad29a73d0fad4ccd72448345e16e144862d8"
+    },
+    {
+      "id": "repo:system/schemas/component.schema.json",
+      "path": "system/schemas/component.schema.json",
+      "type": "system-governance",
+      "hash": "7320855190b3122c85f6479d848b42b4e4a5431c312083c4bc0c86adb46722bf"
+    },
+    {
+      "id": "repo:system/schemas/relationship.schema.json",
+      "path": "system/schemas/relationship.schema.json",
+      "type": "system-governance",
+      "hash": "c44edfe5a6001d9e8b9c69b4be4a0ece31a78d9c236c7cf2b303beb181c0f4cd"
+    },
+    {
+      "id": "repo:system/schemas/revision.schema.json",
+      "path": "system/schemas/revision.schema.json",
+      "type": "system-governance",
+      "hash": "8cb4a173bf3006a0777283d0b35429f258ffc146aefbd471800bae6cbb6912bf"
+    },
+    {
+      "id": "repo:templates/brief.example.md",
+      "path": "templates/brief.example.md",
+      "type": "template",
+      "hash": "7d2aa34be4d2299ca85b33bbd22fb4e49049022904059808bf1738022156f8f9"
+    },
+    {
+      "id": "repo:templates/foundation.personal.example.json",
+      "path": "templates/foundation.personal.example.json",
+      "type": "template",
+      "hash": "d2883e77e630a51ffc767c595755e049d15faeb8cd6aea068ae609889c02941d"
+    },
+    {
+      "id": "repo:templates/foundation.public-oer.example.json",
+      "path": "templates/foundation.public-oer.example.json",
+      "type": "template",
+      "hash": "1abdf9dc20bebbba9baf962f722e554a3b6a1ae6a962b67b5388c12f06b2c496"
+    },
+    {
+      "id": "repo:templates/foundation.restricted.example.json",
+      "path": "templates/foundation.restricted.example.json",
+      "type": "template",
+      "hash": "c25c11fef96c4c74768e962d92ae939fe7d5ab899d61e5aca280e36c46b9084e"
+    },
+    {
+      "id": "repo:templates/media-plan.example.json",
+      "path": "templates/media-plan.example.json",
+      "type": "template",
+      "hash": "a68094fd0eaca2f098da0a9db5ca8022bd29bc3a9b152663f09b5f74f8922df9"
+    },
+    {
+      "id": "repo:templates/provenance.example.json",
+      "path": "templates/provenance.example.json",
+      "type": "template",
+      "hash": "4bc8c21270a831d1e95da73273788462e6ca744b2ba986849de5e18d1122698b"
+    },
+    {
+      "id": "repo:templates/source-corpus.example.json",
+      "path": "templates/source-corpus.example.json",
+      "type": "template",
+      "hash": "0983147cbccd574983cbd1f1840bfa124f624e535f44c708998c9cd37440f7b5"
+    },
+    {
+      "id": "repo:tests/assurance.test.mjs",
+      "path": "tests/assurance.test.mjs",
+      "type": "test",
+      "hash": "7d2334ef4a28e5247f744a5d8406db6d1209537d48c1320d7f586695daa0d2e8"
+    },
+    {
+      "id": "repo:tests/carriers.test.mjs",
+      "path": "tests/carriers.test.mjs",
+      "type": "test",
+      "hash": "6cb3ccb73d2c7d199f88a13d69825aeb5c56ea6d11845f362c4e1c9dd2590be3"
+    },
+    {
+      "id": "repo:tests/contract.test.mjs",
+      "path": "tests/contract.test.mjs",
+      "type": "test",
+      "hash": "4b0bd12d91496334aeb0da77c4649b006fe870095f557658e0687867639d1f06"
+    },
+    {
+      "id": "repo:tests/evidence-tools.test.mjs",
+      "path": "tests/evidence-tools.test.mjs",
+      "type": "test",
+      "hash": "caf53f643081807d782b74f9b5e25d1899555b9ee75503263671e25006284778"
+    },
+    {
+      "id": "repo:tests/qa.test.mjs",
+      "path": "tests/qa.test.mjs",
+      "type": "test",
+      "hash": "0ff780736cacc1b43a87e4dbb9643f887c7c4f71c235b8307faa7ec7143eac70"
+    },
+    {
+      "id": "repo:tests/site.test.mjs",
+      "path": "tests/site.test.mjs",
+      "type": "test",
+      "hash": "cf5d9f80e5f260230a839244dc103b6c369362a21ecfa354b16e3a72cf40748b"
+    },
+    {
+      "id": "repo:tests/system-index.test.mjs",
+      "path": "tests/system-index.test.mjs",
+      "type": "test",
+      "hash": "526ba70f38fed4e6a599716e1c306e3cb3ce6d0eb764ea46d92446e3051e17c8"
+    },
+    {
+      "id": "repo:VERSION",
+      "path": "VERSION",
+      "type": "release-metadata",
+      "hash": "0dd2699139f70a122fd0aa23b5bb38a86db7ee822bf5cdc6798d0159ee1efd24"
+    }
+  ],
+  "relationships": [
+    {
+      "from": "CLAUDE.md",
+      "to": "AGENTS.md",
+      "reason": "agent entries share one constitution",
+      "impact": "both"
+    },
+    {
+      "from": "CLAUDE.md",
+      "to": "PROCEDURE.md",
+      "reason": "constitution and procedure must agree",
+      "impact": "both"
+    },
+    {
+      "from": "FEATURES.md",
+      "to": "README.md",
+      "reason": "README summarizes product claims",
+      "impact": "both"
+    },
+    {
+      "from": "package.json",
+      "to": "FEATURES.md",
+      "reason": "dependency capabilities constrain claims",
+      "impact": "forward"
+    },
+    {
+      "from": "package.json",
+      "to": "scripts/build_carriers.mjs",
+      "reason": "builder versions constrain carrier behavior",
+      "impact": "forward"
+    },
+    {
+      "from": "scripts/build_carriers.mjs",
+      "to": "FEATURES.md",
+      "reason": "carrier implementation supports product claims",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/build_carriers.mjs",
+      "to": "scripts/pack.mjs",
+      "reason": "packing persists and binds the exact carrier receipt",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/build_carriers.mjs",
+      "to": "tests/carriers.test.mjs",
+      "reason": "carrier behavior requires integration evidence",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/capture_rights_evidence.mjs",
+      "to": "templates/foundation.public-oer.example.json",
+      "reason": "evidence capture updates foundation rights fields",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/capture_rights_evidence.mjs",
+      "to": "tests/evidence-tools.test.mjs",
+      "reason": "rights evidence capture requires regression evidence",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/check_oer.mjs",
+      "to": "FEATURES.md",
+      "reason": "QA implementation supports product claims",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/check_oer.mjs",
+      "to": "skills/oer-qa/SKILL.md",
+      "reason": "QA skill mirrors implemented checks",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/check_oer.mjs",
+      "to": "templates/media-plan.example.json",
+      "reason": "media-decision template must satisfy the chapter format gate",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/check_oer.mjs",
+      "to": "tests/qa.test.mjs",
+      "reason": "QA behavior requires adversarial evidence",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/assurance.mjs",
+      "to": "scripts/check_assurance.mjs",
+      "reason": "private QA embeds assurance",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/assurance.mjs",
+      "to": "scripts/check_oer.mjs",
+      "reason": "public QA embeds assurance",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/assurance.mjs",
+      "to": "scripts/data/license-texts.json",
+      "reason": "canonical license registry drives assurance",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/assurance.mjs",
+      "to": "scripts/generate_attribution.mjs",
+      "reason": "attribution renderer is shared with assurance",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/assurance.mjs",
+      "to": "templates/foundation.personal.example.json",
+      "reason": "private foundation template must satisfy the mode-independent kernel",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/assurance.mjs",
+      "to": "templates/foundation.public-oer.example.json",
+      "reason": "template must satisfy kernel",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/assurance.mjs",
+      "to": "templates/foundation.restricted.example.json",
+      "reason": "restricted foundation template must satisfy the mode-independent kernel",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/assurance.mjs",
+      "to": "templates/provenance.example.json",
+      "reason": "template must satisfy kernel",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/assurance.mjs",
+      "to": "tests/assurance.test.mjs",
+      "reason": "assurance behavior requires regression evidence",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/coherence.mjs",
+      "to": "docs/coherence-index.md",
+      "reason": "coherence documentation mirrors code",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/coherence.mjs",
+      "to": "scripts/index_components.mjs",
+      "reason": "index CLI implements coherence protocol",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/coherence.mjs",
+      "to": "scripts/revision_impact.mjs",
+      "reason": "impact CLI implements coherence protocol",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/contract.mjs",
+      "to": "format-contracts/deliverables.md",
+      "reason": "contract documentation mirrors code",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/contract.mjs",
+      "to": "scripts/check_oer.mjs",
+      "reason": "package contract drives QA",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/rights_preflight.mjs",
+      "to": "scripts/capture_rights_evidence.mjs",
+      "reason": "capture performs the deterministic process-rights preflight",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/rights_preflight.mjs",
+      "to": "scripts/lib/assurance.mjs",
+      "reason": "release assurance independently rechecks process notices",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/rights_preflight.mjs",
+      "to": "scripts/prepare_source_corpus.mjs",
+      "reason": "source preparation refuses unresolved process restrictions",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/system_index.mjs",
+      "to": ".github/workflows/system-integrity.yml",
+      "reason": "CI enforces the system index",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/system_index.mjs",
+      "to": "docs/coursewerk-system-index.md",
+      "reason": "self-index documentation mirrors implementation",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/system_index.mjs",
+      "to": "tests/system-index.test.mjs",
+      "reason": "self-index behavior requires branch simulation",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/pack.mjs",
+      "to": "PROCEDURE.md",
+      "reason": "release procedure mirrors pack behavior",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/pack.mjs",
+      "to": "tests/assurance.test.mjs",
+      "reason": "release behavior requires integration evidence",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/prepare_source_corpus.mjs",
+      "to": "templates/source-corpus.example.json",
+      "reason": "source preparation produces the corpus contract",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/prepare_source_corpus.mjs",
+      "to": "tests/evidence-tools.test.mjs",
+      "reason": "source preparation requires regression evidence",
+      "impact": "both"
+    },
+    {
+      "from": "site/index.html",
+      "to": ".github/workflows/pages.yml",
+      "reason": "GitHub Pages deploys the static site artifact",
+      "impact": "both"
+    },
+    {
+      "from": "site/index.html",
+      "to": "FEATURES.md",
+      "reason": "website product claims must remain synchronized with the detailed feature record",
+      "impact": "both"
+    },
+    {
+      "from": "site/index.html",
+      "to": "site/assets/orz.svg",
+      "reason": "Coursewerk reuses the shared orz family mark",
+      "impact": "both"
+    },
+    {
+      "from": "site/index.html",
+      "to": "site/styles.css",
+      "reason": "website structure and visual system form one artifact",
+      "impact": "both"
+    },
+    {
+      "from": "site/index.html",
+      "to": "tests/site.test.mjs",
+      "reason": "website information architecture and critical claims require regression evidence",
+      "impact": "both"
+    },
+    {
+      "from": "system/CLAIMS.json",
+      "to": "FEATURES.md",
+      "reason": "claim registry and feature record must agree",
+      "impact": "both"
+    },
+    {
+      "from": "system/COMPONENTS.json",
+      "to": "scripts/lib/system_index.mjs",
+      "reason": "component policy defines repository indexing",
+      "impact": "both"
+    },
+    {
+      "from": "system/QUALITY_PROFILES.json",
+      "to": "FEATURES.md",
+      "reason": "quality profiles constrain product assurance claims",
+      "impact": "both"
+    },
+    {
+      "from": "VERSION",
+      "to": "CHANGELOG.md",
+      "reason": "version changes require release notes",
+      "impact": "both"
+    },
+    {
+      "from": "VERSION",
+      "to": "package.json",
+      "reason": "release versions must agree",
+      "impact": "both"
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim.accessibility.floor",
+      "statement": "The defined accessibility floor, including visible alternatives for runtime diagrams and charts, is checked before public release.",
+      "assuranceLevel": "hard-gate",
+      "implementation": [
+        "scripts/check_oer.mjs"
+      ],
+      "tests": [
+        "tests/qa.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "docs/authoring-guidelines.md"
+      ]
+    },
+    {
+      "id": "claim.authorship.accountable",
+      "statement": "Public output identifies an accountable non-AI author or rights holder.",
+      "assuranceLevel": "hard-gate",
+      "implementation": [
+        "scripts/lib/assurance.mjs"
+      ],
+      "tests": [
+        "tests/assurance.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "docs/assurance-kernel.md",
+        "format-contracts/deliverables.md",
+        "site/index.html"
+      ]
+    },
+    {
+      "id": "claim.carriers.honest-portability",
+      "statement": "Carrier receipts persist and distinguish single-file output from carrier-plus-assets output without claiming an unperformed rendered audit.",
+      "assuranceLevel": "automated-check",
+      "implementation": [
+        "scripts/build_carriers.mjs",
+        "scripts/pack.mjs"
+      ],
+      "tests": [
+        "tests/carriers.test.mjs",
+        "tests/assurance.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "README.md",
+        "site/index.html"
+      ]
+    },
+    {
+      "id": "claim.carriers.three-shapes",
+      "statement": "Coursewerk builds editable continuous, slide, and paged preview carriers from declared lean sources.",
+      "assuranceLevel": "automated-check",
+      "implementation": [
+        "scripts/build_carriers.mjs",
+        "scripts/lib/contract.mjs"
+      ],
+      "tests": [
+        "tests/carriers.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "claim.coherence.revisions",
+      "statement": "Direct edits calculate and gate the complete downstream consistency review set.",
+      "assuranceLevel": "hard-gate",
+      "implementation": [
+        "scripts/lib/coherence.mjs",
+        "scripts/index_components.mjs",
+        "scripts/revision_impact.mjs"
+      ],
+      "tests": [
+        "tests/assurance.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "docs/coherence-index.md"
+      ]
+    },
+    {
+      "id": "claim.format.contracts",
+      "statement": "Every declared chapter has five structurally valid, mutually related deliverables.",
+      "assuranceLevel": "hard-gate",
+      "implementation": [
+        "scripts/check_oer.mjs",
+        "scripts/lib/coherence.mjs"
+      ],
+      "tests": [
+        "tests/qa.test.mjs",
+        "tests/assurance.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "format-contracts/deliverables.md"
+      ]
+    },
+    {
+      "id": "claim.git.visible-edits",
+      "statement": "Output roots use Git and accepted component hashes so direct edits remain visible.",
+      "assuranceLevel": "hard-gate",
+      "implementation": [
+        "scripts/lib/output_git.mjs",
+        "scripts/lib/coherence.mjs"
+      ],
+      "tests": [
+        "tests/assurance.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "docs/coherence-index.md"
+      ]
+    },
+    {
+      "id": "claim.language.editorial",
+      "statement": "Language polishing is an agent editorial workflow with human approval, not a deterministic QA result.",
+      "assuranceLevel": "agent-workflow",
+      "implementation": [
+        "PROCEDURE.md",
+        "skills/courseguide-standards/SKILL.md"
+      ],
+      "tests": [],
+      "documentation": [
+        "FEATURES.md",
+        "docs/authoring-guidelines.md"
+      ]
+    },
+    {
+      "id": "claim.media.decision",
+      "statement": "A chapter without a rights-cleared real photograph records an accountable, substantive media decision.",
+      "assuranceLevel": "hard-gate",
+      "implementation": [
+        "scripts/check_oer.mjs"
+      ],
+      "tests": [
+        "tests/qa.test.mjs"
+      ],
+      "documentation": [
+        "PROCEDURE.md",
+        "docs/authoring-guidelines.md",
+        "format-contracts/deliverables.md"
+      ]
+    },
+    {
+      "id": "claim.provenance.complete",
+      "statement": "Every incorporated media item is traceable to structured provenance and public attribution.",
+      "assuranceLevel": "hard-gate",
+      "implementation": [
+        "scripts/lib/assurance.mjs",
+        "scripts/check_oer.mjs"
+      ],
+      "tests": [
+        "tests/assurance.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "docs/assurance-kernel.md"
+      ]
+    },
+    {
+      "id": "claim.release.fail-closed",
+      "statement": "Public packing refuses unresolved assurance, quality, source-comparison, or coherence failures.",
+      "assuranceLevel": "hard-gate",
+      "implementation": [
+        "scripts/pack.mjs",
+        "scripts/check_oer.mjs"
+      ],
+      "tests": [
+        "tests/assurance.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "CLAUDE.md",
+        "PROCEDURE.md"
+      ]
+    },
+    {
+      "id": "claim.rights.verified",
+      "statement": "Public sources have identified rights evidence, process-specific notice review, and compatible output licensing.",
+      "assuranceLevel": "hard-gate",
+      "implementation": [
+        "scripts/lib/assurance.mjs",
+        "scripts/lib/rights_preflight.mjs",
+        "scripts/data/source-policies.json",
+        "scripts/capture_rights_evidence.mjs"
+      ],
+      "tests": [
+        "tests/assurance.test.mjs",
+        "tests/evidence-tools.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "CLAUDE.md",
+        "PROCEDURE.md",
+        "docs/assurance-kernel.md",
+        "site/index.html"
+      ]
+    },
+    {
+      "id": "claim.source.comparison",
+      "statement": "Discovery release binds raw and extracted source evidence and records whether deliverables were compared with it.",
+      "assuranceLevel": "hard-gate",
+      "implementation": [
+        "scripts/check_oer.mjs",
+        "scripts/lib/verbatim.mjs",
+        "scripts/prepare_source_corpus.mjs"
+      ],
+      "tests": [
+        "tests/assurance.test.mjs",
+        "tests/evidence-tools.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "docs/assurance-kernel.md"
+      ]
+    },
+    {
+      "id": "claim.system.branch-coherence",
+      "statement": "Coursewerk repository changes are impact-indexed against their target branch merge base.",
+      "assuranceLevel": "hard-gate",
+      "implementation": [
+        "scripts/lib/system_index.mjs",
+        "scripts/verify_coursewerk.mjs",
+        "scripts/coursewerk_impact.mjs"
+      ],
+      "tests": [
+        "tests/system-index.test.mjs"
+      ],
+      "documentation": [
+        "docs/coursewerk-system-index.md"
+      ]
+    },
+    {
+      "id": "claim.website.published",
+      "statement": "Coursewerk has a structured, accessible, dependency-free product website deployed from the repository through GitHub Pages.",
+      "assuranceLevel": "automated-check",
+      "implementation": [
+        "site/index.html",
+        "site/styles.css",
+        ".github/workflows/pages.yml"
+      ],
+      "tests": [
+        "tests/site.test.mjs"
+      ],
+      "documentation": [
+        "README.md"
+      ]
+    }
+  ],
+  "knownFindings": [
+    {
+      "id": "AUDIT-A11Y-001",
+      "severity": "P1",
+      "status": "resolved",
+      "summary": "Some accessibility-floor findings do not block release.",
+      "resolution": "Alt text, diagram/chart text alternatives, heading starts/jumps/empties, and descriptive links are release-blocking; post-render behavior remains explicitly human-reviewed."
+    },
+    {
+      "id": "AUDIT-AUTHORSHIP-001",
+      "severity": "P1",
+      "status": "resolved",
+      "summary": "Public output and original assets can identify an AI agent instead of an accountable rights holder.",
+      "resolution": "Public foundations require a named non-AI author/rightsholder and self-generated/user-owned creators must match an accountable author."
+    },
+    {
+      "id": "AUDIT-CARRIER-EVIDENCE-001",
+      "severity": "P1",
+      "status": "resolved",
+      "summary": "Static carrier shells report a misleading zero rendered-image accessibility count.",
+      "resolution": "Receipts now label source and static-shell inspections precisely and require a separate runtime visual review instead of claiming rendered coverage."
+    },
+    {
+      "id": "AUDIT-CARRIER-PORTABILITY-001",
+      "severity": "P1",
+      "status": "resolved",
+      "summary": "Media-bearing carriers are described as self-contained although local assets remain external.",
+      "resolution": "Receipts classify single-file versus carrier-plus-assets modes, expose dependencies, and support strict --require-single-file enforcement; product wording was corrected."
+    },
+    {
+      "id": "AUDIT-CARRIER-RECEIPT-001",
+      "severity": "P2",
+      "status": "resolved",
+      "summary": "The carrier receipt hash cannot be reproduced because the exact receipt is not delivered.",
+      "resolution": "Packing persists and hash-binds the canonical .carriers.json beside the release receipt."
+    },
+    {
+      "id": "AUDIT-DIAGRAM-A11Y-001",
+      "severity": "P1",
+      "status": "resolved",
+      "summary": "Runtime Mermaid/chart meaning can disappear offline without a visible alternative.",
+      "resolution": "Public QA requires a substantive adjacent Visual description or Data summary for every Mermaid/chart block."
+    },
+    {
+      "id": "AUDIT-FORMAT-001",
+      "severity": "P1",
+      "status": "resolved",
+      "summary": "Deliverable format checks are incomplete.",
+      "resolution": "Chapter skeleton, objective propagation, slide templates, assessment sections, and practice counts are validated."
+    },
+    {
+      "id": "AUDIT-INDEX-001",
+      "severity": "P0",
+      "status": "resolved",
+      "summary": "Content and component index can be replaced together.",
+      "resolution": "An external accepted-state ledger anchors the accepted component-index hash."
+    },
+    {
+      "id": "AUDIT-LICENSE-001",
+      "severity": "P0",
+      "status": "resolved",
+      "summary": "General rights evidence and license text are only weakly asserted.",
+      "resolution": "Hashed local evidence snapshots and exact official legal-text hashes are required."
+    },
+    {
+      "id": "AUDIT-MEDIA-001",
+      "severity": "P0",
+      "status": "resolved",
+      "summary": "Remote media can bypass provenance.",
+      "resolution": "Markdown and HTML remote media are release-blocking; local assets require structured provenance."
+    },
+    {
+      "id": "AUDIT-MEDIA-PLAN-001",
+      "severity": "P2",
+      "status": "resolved",
+      "summary": "A chapter can silently omit the real-photo expectation in Coursewerk authoring guidance.",
+      "resolution": "Each chapter either includes a rights-cleared photo or records a substantive accountable not-used decision in MEDIA_PLAN.json."
+    },
+    {
+      "id": "AUDIT-ORZ-001",
+      "severity": "P1",
+      "status": "resolved",
+      "summary": "Regex syntax checks miss plugins and invalid nesting.",
+      "resolution": "The real parser runs and generic plugin balance plus nested fence direction are enforced."
+    },
+    {
+      "id": "AUDIT-PAGED-001",
+      "severity": "P1",
+      "status": "resolved",
+      "summary": "Paged source routing conflicts with the package contract.",
+      "resolution": "DOCUMENTS.json declares carrier type for sources in valid public/private/personal paths."
+    },
+    {
+      "id": "AUDIT-PROCESS-RIGHTS-001",
+      "severity": "P0",
+      "status": "resolved",
+      "summary": "A process-specific generative-AI ingestion notice can be present while the AI workflow and release gate continue.",
+      "resolution": "Deterministic capture scans before source preparation; unresolved notices stop every use profile and known OpenStax policy requires its expected notice."
+    },
+    {
+      "id": "AUDIT-PROVENANCE-001",
+      "severity": "P1",
+      "status": "resolved",
+      "summary": "Provenance, usedIn, and attribution are not fully cross-validated.",
+      "resolution": "Paths and usedIn are required, duplicates/orphans fail, and attribution is generated exactly."
+    },
+    {
+      "id": "AUDIT-RAW-SOURCE-001",
+      "severity": "P2",
+      "status": "resolved",
+      "summary": "Extracted source text is hashed but the raw source and retrieval context are not digest-bound.",
+      "resolution": "Automatic corpus entries include raw snapshot path/hash, canonical URL, retrieval timestamp, extractor metadata, and extracted-text hash."
+    },
+    {
+      "id": "AUDIT-RELEASE-001",
+      "severity": "P1",
+      "status": "resolved",
+      "summary": "Pack does not require carrier-build and evaluation receipts.",
+      "resolution": "Packing reruns carriers and emits evaluation, archive hash, and structured release receipt."
+    },
+    {
+      "id": "AUDIT-SOURCE-001",
+      "severity": "P0",
+      "status": "resolved",
+      "summary": "Scaffold input can falsely satisfy source comparison.",
+      "resolution": "SOURCE_CORPUS binds primary IDs to hashed text or explicit attestation; scaffold paths are rejected."
+    }
+  ],
+  "componentPolicy": {
+    "schemaVersion": 1,
+    "identity": "one stable repo:<path> component per indexed file",
+    "classifiers": [
+      {
+        "type": "product-claim",
+        "paths": [
+          "FEATURES.md",
+          "README.md"
+        ]
+      },
+      {
+        "type": "product-website",
+        "prefixes": [
+          "site/"
+        ]
+      },
+      {
+        "type": "deployment",
+        "prefixes": [
+          ".github/workflows/"
+        ]
+      },
+      {
+        "type": "agent-constitution",
+        "paths": [
+          "CLAUDE.md",
+          "AGENTS.md",
+          "PROCEDURE.md",
+          "COMPATIBILITY.md"
+        ]
+      },
+      {
+        "type": "kernel",
+        "prefixes": [
+          "scripts/lib/"
+        ]
+      },
+      {
+        "type": "executable",
+        "prefixes": [
+          "scripts/"
+        ]
+      },
+      {
+        "type": "test",
+        "prefixes": [
+          "tests/"
+        ]
+      },
+      {
+        "type": "template",
+        "prefixes": [
+          "templates/"
+        ]
+      },
+      {
+        "type": "skill",
+        "prefixes": [
+          "skills/"
+        ]
+      },
+      {
+        "type": "documentation",
+        "prefixes": [
+          "docs/",
+          "format-contracts/"
+        ]
+      },
+      {
+        "type": "system-governance",
+        "prefixes": [
+          "system/"
+        ]
+      },
+      {
+        "type": "release-metadata",
+        "paths": [
+          "package.json",
+          "VERSION",
+          "CHANGELOG.md"
+        ]
+      }
+    ],
+    "excludedDirectories": [
+      ".git",
+      "node_modules",
+      "package",
+      "personal",
+      "inputs",
+      "preview",
+      "reports",
+      "dist",
+      "examples",
+      ".coursewerk"
+    ],
+    "excludedGenerated": [
+      "system/COURSEWERK_INDEX.json",
+      "system/revisions/",
+      "package-lock.json",
+      ".DS_Store"
+    ]
+  },
+  "qualityProfiles": {
+    "schemaVersion": 1,
+    "profiles": {
+      "personal-private": {
+        "hard": [
+          "foundation",
+          "process-rights-preflight",
+          "provenance",
+          "visible-unknown-labels",
+          "coherence"
+        ],
+        "publication": "forbidden"
+      },
+      "restricted-teaching": {
+        "hard": [
+          "foundation",
+          "rights-basis",
+          "process-rights-preflight",
+          "provenance",
+          "privacy",
+          "coherence"
+        ],
+        "publication": "access-controlled-only"
+      },
+      "public-oer": {
+        "hard": [
+          "foundation",
+          "accountable-authorship",
+          "rights-evidence",
+          "process-rights-preflight",
+          "canonical-license",
+          "raw-source-evidence",
+          "source-corpus",
+          "provenance",
+          "generated-attribution",
+          "no-remote-media",
+          "privacy",
+          "diagram-text-alternatives",
+          "accessibility-floor",
+          "media-decision",
+          "format-contracts",
+          "carrier-builds",
+          "coherence",
+          "release-receipt"
+        ],
+        "publication": "open-license"
+      }
+    }
+  },
+  "validationFailures": []
+}

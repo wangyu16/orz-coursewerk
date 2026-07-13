@@ -102,7 +102,9 @@ uv run --with requests python scripts/fetch_open_image.py get \
 - Only `[OK]` (CC0/PD/CC-BY/CC-BY-SA) results download; `[REVIEW]` (NC/ND/unknown) is refused
   unless you pass `--allow-review` **after** verifying OER-safety yourself.
 - `get` prints an `ATTRIBUTION ROW ->` line and writes a sidecar `*.attrib.json`. Copy that row
-  into the guide's `ATTRIBUTION.md` (see §5). No attribution captured ⇒ do not embed.
+  into the guide's `ATTRIBUTION.md` and structured `PROVENANCE.json` (see §5). For public work, no attribution
+  captured means do not embed. For explicitly private work, an unresolved item may be embedded only with an
+  `unknown`/`blocked` provenance record and a visible `SOURCE-UNKNOWN` label.
 - Good open sources to name in searches: Wikimedia Commons, Openverse, OpenStax (CC-BY 4.0),
   Wikipedia. For SVG diagrams, Commons is excellent.
 

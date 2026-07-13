@@ -32,7 +32,8 @@ fi
 #    reports/  — qa_report / evaluation / delivery (live OUTSIDE the package, never shipped)
 #    dist/     — the packed .zip
 mkdir -p inputs .coursewerk reports \
-  package/{study-guide,concepts,slides,practice,assessment-support,assets,metadata,private}
+  package/{study-guide,concepts,slides,practice,assessment-support,assets,metadata,private} \
+  personal/{study-guide,concepts,slides,practice,assessment-support,assets,metadata}
 [ -f inputs/README.md ] || cat > inputs/README.md <<'EOF'
 # inputs/ — put your source materials here
 
@@ -41,11 +42,21 @@ lecture notes / prior study guide, a syllabus, data, figures. If you are using a
 textbook* fetched from the web, you may leave this empty and just tell the agent the textbook name.
 Everything the package contains is sourced from here (or the named textbook) — never fabricated.
 EOF
+[ -f personal/README.md ] || cat > personal/README.md <<'EOF'
+# personal/ — private working materials, not cleared for distribution
+
+Use this tree only for creator-only or genuinely restricted work. Keep structured source and item records in
+`metadata/FOUNDATION.json` and `metadata/PROVENANCE.json`; use the examples under `templates/`. Unknown or
+private-only material must be visibly labelled and remains a publication blocker. This tree is never packed as
+an Alembic package. Run `node scripts/check_assurance.mjs --root personal` to check it. After first assembly,
+initialize `metadata/COMPONENT_INDEX.json`; use the revision-impact workflow for every later edit.
+EOF
 [ -f package/private/README.md ] || cat > package/private/README.md <<'EOF'
 # private/ — instructor-only (NEVER shared with students)
 
-Answer keys, full solutions, exam content, teaching notes. Everything here stays on the
+Summative exam keys, instructor-only solution sets, unreleased questions, and teaching notes stay on the
 private side. Alembic keeps a separate private repository for it and refuses to publish it.
+Worked solutions that belong to the intentionally public practice sheet remain under `practice/`.
 Use subfolders like `answer-keys/`, `exams/`, `notes/`. Never place a shared figure or a
 renderable document here — those are public.
 EOF
@@ -67,7 +78,6 @@ directory, so Coursewerk updates never overwrite it.
 - Default audience / level:            <e.g. introductory undergraduate>
 - Tone & voice:                        <e.g. warm, plain, encouraging>
 - Terminology (prefer / avoid):        <e.g. always IUPAC names; avoid jargon X>
-- License policy:                      <e.g. match the source; prefer CC BY>
 - Worked examples per chapter:         <e.g. ~2 per section>
 - Everyday-example flavor:             <e.g. one relatable analogy per section>
 - What to emphasize:                   <e.g. worked examples, real-world applications, safety>
@@ -94,6 +104,16 @@ EOF
 [ -f "$PROFILE/memory.md" ] || echo "# Your harness memory"$'\n\n'"A dated ledger of the durable decisions and learnings the agent distills from how you work. Survives updates." > "$PROFILE/memory.md"
 [ -f "$PROFILE/templates/README.md" ] || echo "# Your templates"$'\n\n'"Drop your own document templates here (a preferred study-guide skeleton, a slide template, …). The agent prefers these over the built-in defaults." > "$PROFILE/templates/README.md"
 [ -f "$PROFILE/skills/README.md" ] || echo "# Your additional skills"$'\n\n'"Drop extra skills here (each a folder with a SKILL.md). The agent uses them alongside Coursewerk's bundled skills. They are yours and survive updates." > "$PROFILE/skills/README.md"
+
+# 5) Each output root is its own Git repository. The harness repo ignores these
+#    workspace folders, so nested repositories give users a clean, independent
+#    history of every direct edit without polluting Coursewerk's own history.
+node scripts/init_output_git.mjs --root package >/dev/null 2>&1 \
+  && echo "Output Git ready: package/" \
+  || echo "(could not initialize package/ Git; run node scripts/init_output_git.mjs --root package)"
+node scripts/init_output_git.mjs --root personal >/dev/null 2>&1 \
+  && echo "Output Git ready: personal/" \
+  || echo "(could not initialize personal/ Git; run node scripts/init_output_git.mjs --root personal)"
 
 echo "Your personal harness: $PROFILE  (survives Coursewerk updates; the agent reads + distills into it)"
 echo "Ready. Put source materials in ./inputs/ , then tell your AI agent to follow PROCEDURE.md."

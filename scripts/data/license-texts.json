@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "licenses": {
+    "CC-BY-4.0": {
+      "file": "licenses/CC-BY-4.0.txt",
+      "canonicalUrl": "https://creativecommons.org/licenses/by/4.0/legalcode.txt",
+      "normalizedSha256": "9e5f1b3c610b9c2da5c313bf81d577a7d1acec686bdb0384edefa6df0f90cd94"
+    },
+    "CC-BY-SA-4.0": {
+      "file": "licenses/CC-BY-SA-4.0.txt",
+      "canonicalUrl": "https://creativecommons.org/licenses/by-sa/4.0/legalcode.txt",
+      "normalizedSha256": "23ee78c8bae49cf08ea2f0c84945c66b987ebe4520881fb51b3dad4fb43d07c2"
+    },
+    "CC-BY-NC-4.0": {
+      "file": "licenses/CC-BY-NC-4.0.txt",
+      "canonicalUrl": "https://creativecommons.org/licenses/by-nc/4.0/legalcode.txt",
+      "normalizedSha256": "3711f963c05d0be80d53e5923308a6dee31b203da23435c9cfb7c7b6e4dd5e19"
+    },
+    "CC-BY-NC-SA-4.0": {
+      "file": "licenses/CC-BY-NC-SA-4.0.txt",
+      "canonicalUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.txt",
+      "normalizedSha256": "1349a4b6148492b44f629e64eed676612e234fe9a839e4f3b277c1482c8849f1"
+    },
+    "CC0-1.0": {
+      "file": "licenses/CC0-1.0.txt",
+      "canonicalUrl": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+      "normalizedSha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["id", "path", "type", "hash"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^repo:" },
+    "path": { "type": "string", "minLength": 1 },
+    "type": { "type": "string", "minLength": 1 },
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  },
+  "additionalProperties": false
+}

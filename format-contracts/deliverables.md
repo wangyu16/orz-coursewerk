@@ -21,7 +21,13 @@ package/
   practice/<slug>.md           # per chapter — practice sheet (orz-markdown)
   assessment-support/<slug>.md # per chapter — assessment guide (plain markdown, no graphics)
   assets/…                     # figures/structures/plots/media (self-generated or open-licensed)
+  metadata/FOUNDATION.json     # intended use · sources · rights/license evidence · privacy (required)
+  metadata/PROVENANCE.json     # structured record for every incorporated asset/item (required)
+  metadata/MEDIA_PLAN.json     # reviewed decision for chapters without a real photograph
+  metadata/COMPONENT_INDEX.json # generated hashes + dependency graph (required before final QA)
   metadata/ATTRIBUTION.md      # asset · source · license · attribution  (NOT at root — see note)
+  metadata/DOCUMENTS.json      # optional declared mdhtml/slides/paged collection sources
+  metadata/evidence/…          # local source-rights evidence snapshots
   private/…                    # instructor-only: answer keys, exams, notes (NEVER shared)
 ```
 
@@ -64,17 +70,19 @@ concepts/ assessment-support/ assets/ metadata/ current/` are **public** (shared
 
 - **Required:** `schemaVersion` (use `2`), `packageId` (a placeholder — Alembic re-stamps it),
   `title`, `license`, `createdAt` (ISO-8601 ending in **`Z`** — a `+00:00` offset is rejected).
-- **`license`** is either an **open license** — `CC-BY-4.0`, `CC-BY-SA-4.0`, `CC-BY-NC-4.0`,
-  `CC-BY-NC-SA-4.0`, `CC0-1.0` (matching the source; required to list on Discover) — or
-  **`ALL-RIGHTS-RESERVED`** (unlicensed: private / own-class use; uploads and publishes but can't be
-  listed). See `docs/authoring-guidelines.md` §7.
+- **`license`** for a Coursewerk public OER is an **open license** — `CC-BY-4.0`, `CC-BY-SA-4.0`,
+  `CC-BY-NC-4.0`, `CC-BY-NC-SA-4.0`, or `CC0-1.0` — compatible with the verified source decision.
+  Alembic's lower-level contract also recognizes `ALL-RIGHTS-RESERVED`, but the Coursewerk public-OER profile
+  intentionally fails closed to open, cleared output. Personal/restricted work has no Alembic manifest and
+  lives under `personal/`. See
+  `docs/authoring-guidelines.md` §7.
 - **Do NOT set `publicRepo` / `privateRepo`** — Alembic assigns repository coordinates.
 - `chapters` is the ordered chapter list; each declared chapter MUST have `study-guide/<slug>.md`.
 
 | # | File | Format | Contract |
 |---|------|--------|----------|
 | 1 | `concepts/<slug>.md` | **Plain Markdown, NO graphics** (any parser, readable raw) | Concept/topic dependency logic + per-section objectives. Headings, nested lists, tables, text arrows (→) only — no mermaid, no images, no `{{plugins}}`. |
-| 2 | `study-guide/<slug>.md` | **orz-markdown**, visually rich | Concise study guide derived from the concept map; opens with objectives; figures + worked **example questions** (container tabs); full orz feature use (KaTeX/mhchem, `{{smiles}}`, mermaid, `:::info/:::success`, columns). Each `## H2` section MAY carry a stable block ID `{{attrs[#blk-…]}}`. Built to `.md.html` via **orz-mdhtml** for preview. |
+| 2 | `study-guide/<slug>.md` | **orz-markdown**, visually rich | Concise study guide derived from the concept map; opens with objectives; figures + worked **example questions** (container tabs); full orz feature use (KaTeX/mhchem, `{{smiles}}`, mermaid, `:::info/:::success`, columns). Every Mermaid/chart block has a nearby visible `**Visual description:**`/`**Data summary:**`. Each `## H2` section MAY carry a stable block ID `{{attrs[#blk-…]}}`. Built to `.md.html` via **orz-mdhtml** for preview. |
 | 3 | `slides/<slug>.md` | **orz-slides deck grammar** | Deck SOURCE, not HTML. Opens with a `<!-- deck\ntitle: …\nratio: 16:9\n-->` block; slides separated by the `<!-- slide -->` marker (NOT bare `---`); `# H1` on a `<!-- slide template=title -->` = title slide; `## H2` = content-slide title; `<!-- slide template=closing -->` for the closing slide. One concept per slide. **Reuse only the study guide's `../assets/` figures.** Built to `.slides.html` via **orz-slides** for preview. |
 | 4 | `assessment-support/<slug>.md` | **Plain Markdown, NO graphics** | Per objective, **how to design** questions/activities (assignments, discussion, quizzes, exams, projects) at the right cognitive level — guidance, **NOT a question bank**. Several parameterized question guides per objective. |
 | 5 | `practice/<slug>.md` | **orz-markdown** | ~15 concrete questions instantiated from the assessment guide, covering all major objectives; each Q + worked answer in container tabs (`:::: tabs` / `::: tab`); correct, work shown. Built to `.md.html` via **orz-mdhtml** for preview. |
@@ -85,8 +93,20 @@ concepts/ assessment-support/ assets/ metadata/ current/` are **public** (shared
 Every visual is **self-generated** (RDKit/matplotlib via `oer-figures`) or **openly-licensed**
 (CC0 / Public Domain / CC-BY / CC-BY-SA — Wikimedia Commons, Openverse) or the **source textbook's
 own** figure *if its license permits and it carries no third-party credit line*. Each is recorded
-in `metadata/ATTRIBUTION.md` (asset · source URL · license · attribution). Copyrighted/paywalled or
-third-party-credited assets are **never** embedded. The package license **matches the source's**.
+in structured `metadata/PROVENANCE.json` and public `metadata/ATTRIBUTION.md` (asset · source URL · license · attribution). Copyrighted/paywalled or
+third-party-credited assets are **never** embedded. The package license follows the explicit supported
+compatibility matrix for every adapted source; ShareAlike sources remain ShareAlike, while public domain is not
+mislabelled as CC0.
+Remote hot-linked media is release-blocking: fetch it into `assets/` and record it, so the package cannot lose
+its evidence, accessibility text, or media when an external URL changes.
+The mode-independent assurance contract is defined in `docs/assurance-kernel.md`. A public package must have
+`usageProfile: public-oer`, verified source/license evidence, matching manifest/LICENSE, complete structured
+provenance, required attribution in every applicable deliverable, and zero publication blockers.
+Public output also identifies at least one accountable non-AI author/rightsholder. A source's authoritative
+rights evidence is deterministically scanned before substantive source ingestion; process-specific restrictions
+remain blocking until permission or a qualified, referenced decision is recorded.
+Cross-deliverable coherence is defined in `docs/coherence-index.md`; every final package must have a current
+generated component index, and every revision must complete the impact-review/attested-refresh protocol.
 
 ## Tools & skills per deliverable
 - Study guide + practice (files 2, 5): `skills/orz-markdown` (syntax) + `skills/oer-figures` (figures).

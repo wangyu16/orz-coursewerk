@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "usageProfile": "public-oer",
+  "audience": "public",
+  "access": "public-web",
+  "redistribution": "open-license",
+  "jurisdiction": "international",
+  "outputLicense": "CC-BY-NC-SA-4.0",
+  "outputAuthors": [
+    {
+      "name": "REPLACE-WITH-ACCOUNTABLE-PERSON-OR-INSTITUTION",
+      "role": "author and adapter",
+      "rightsHolder": true,
+      "aiAssistanceDisclosure": "Drafting and production assistance provided by an AI agent using Coursewerk."
+    }
+  ],
+  "privacy": {
+    "containsPersonalData": false,
+    "containsRestrictedContent": false
+  },
+  "sources": [
+    {
+      "id": "openstax-chemistry-2e",
+      "title": "Chemistry 2e",
+      "edition": "2e",
+      "publisher": "OpenStax",
+      "canonicalUrl": "https://openstax.org/books/chemistry-2e/pages/preface",
+      "role": "primary",
+      "use": "adaptation",
+      "scope": ["REPLACE-WITH-CHAPTERS-AND-SECTIONS"],
+      "rightsBasis": {
+        "type": "open-license",
+        "license": "CC-BY-NC-SA-4.0",
+        "evidenceType": "official-publisher-page",
+        "evidenceUrl": "https://openstax.org/books/chemistry-2e/pages/preface",
+        "verifiedAt": "REPLACE-WITH-YYYY-MM-DD",
+        "evidenceSnapshot": "metadata/evidence/openstax-chemistry-2e.txt",
+        "evidenceSha256": "REPLACE-WITH-SHA256",
+        "evidenceVerifiedBy": "REPLACE-WITH-PERSON-OR-AGENT",
+        "processUseReview": {
+          "schemaVersion": 1,
+          "scannedAt": "REPLACE-WITH-ISO-DATETIME",
+          "status": "blocked-pending-decision",
+          "notices": [
+            {
+              "id": "generative-ai-ingestion",
+              "summary": "The authoritative page contains a process-specific generative-AI ingestion notice.",
+              "excerpt": "REPLACE-WITH-SHORT-EVIDENCE-EXCERPT"
+            }
+          ]
+        }
+      },
+      "requiredAttribution": {
+        "textIncludes": "Access for free at",
+        "url": "https://openstax.org/books/chemistry-2e/pages/1-introduction",
+        "placement": "every-public-deliverable"
+      }
+    }
+  ]
+}

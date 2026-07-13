@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "profiles": {
+    "personal-private": {
+      "hard": ["foundation", "process-rights-preflight", "provenance", "visible-unknown-labels", "coherence"],
+      "publication": "forbidden"
+    },
+    "restricted-teaching": {
+      "hard": ["foundation", "rights-basis", "process-rights-preflight", "provenance", "privacy", "coherence"],
+      "publication": "access-controlled-only"
+    },
+    "public-oer": {
+      "hard": ["foundation", "accountable-authorship", "rights-evidence", "process-rights-preflight", "canonical-license", "raw-source-evidence", "source-corpus", "provenance", "generated-attribution", "no-remote-media", "privacy", "diagram-text-alternatives", "accessibility-floor", "media-decision", "format-contracts", "carrier-builds", "coherence", "release-receipt"],
+      "publication": "open-license"
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "relationships": [
+    { "from": "scripts/lib/contract.mjs", "to": "scripts/check_oer.mjs", "reason": "package contract drives QA", "impact": "both" },
+    { "from": "scripts/lib/contract.mjs", "to": "format-contracts/deliverables.md", "reason": "contract documentation mirrors code", "impact": "both" },
+    { "from": "scripts/lib/assurance.mjs", "to": "scripts/check_oer.mjs", "reason": "public QA embeds assurance", "impact": "both" },
+    { "from": "scripts/lib/assurance.mjs", "to": "scripts/check_assurance.mjs", "reason": "private QA embeds assurance", "impact": "both" },
+    { "from": "scripts/lib/assurance.mjs", "to": "templates/foundation.public-oer.example.json", "reason": "template must satisfy kernel", "impact": "both" },
+    { "from": "scripts/lib/assurance.mjs", "to": "templates/provenance.example.json", "reason": "template must satisfy kernel", "impact": "both" },
+    { "from": "scripts/lib/assurance.mjs", "to": "scripts/data/license-texts.json", "reason": "canonical license registry drives assurance", "impact": "both" },
+    { "from": "scripts/lib/assurance.mjs", "to": "scripts/generate_attribution.mjs", "reason": "attribution renderer is shared with assurance", "impact": "both" },
+    { "from": "scripts/lib/assurance.mjs", "to": "tests/assurance.test.mjs", "reason": "assurance behavior requires regression evidence", "impact": "both" },
+    { "from": "scripts/lib/coherence.mjs", "to": "scripts/index_components.mjs", "reason": "index CLI implements coherence protocol", "impact": "both" },
+    { "from": "scripts/lib/coherence.mjs", "to": "scripts/revision_impact.mjs", "reason": "impact CLI implements coherence protocol", "impact": "both" },
+    { "from": "scripts/lib/coherence.mjs", "to": "docs/coherence-index.md", "reason": "coherence documentation mirrors code", "impact": "both" },
+    { "from": "scripts/build_carriers.mjs", "to": "FEATURES.md", "reason": "carrier implementation supports product claims", "impact": "both" },
+    { "from": "scripts/build_carriers.mjs", "to": "tests/carriers.test.mjs", "reason": "carrier behavior requires integration evidence", "impact": "both" },
+    { "from": "scripts/check_oer.mjs", "to": "FEATURES.md", "reason": "QA implementation supports product claims", "impact": "both" },
+    { "from": "scripts/check_oer.mjs", "to": "tests/qa.test.mjs", "reason": "QA behavior requires adversarial evidence", "impact": "both" },
+    { "from": "scripts/check_oer.mjs", "to": "skills/oer-qa/SKILL.md", "reason": "QA skill mirrors implemented checks", "impact": "both" },
+    { "from": "scripts/pack.mjs", "to": "PROCEDURE.md", "reason": "release procedure mirrors pack behavior", "impact": "both" },
+    { "from": "scripts/pack.mjs", "to": "tests/assurance.test.mjs", "reason": "release behavior requires integration evidence", "impact": "both" },
+    { "from": "package.json", "to": "scripts/build_carriers.mjs", "reason": "builder versions constrain carrier behavior", "impact": "forward" },
+    { "from": "package.json", "to": "FEATURES.md", "reason": "dependency capabilities constrain claims", "impact": "forward" },
+    { "from": "FEATURES.md", "to": "README.md", "reason": "README summarizes product claims", "impact": "both" },
+    { "from": "CLAUDE.md", "to": "AGENTS.md", "reason": "agent entries share one constitution", "impact": "both" },
+    { "from": "CLAUDE.md", "to": "PROCEDURE.md", "reason": "constitution and procedure must agree", "impact": "both" },
+    { "from": "system/CLAIMS.json", "to": "FEATURES.md", "reason": "claim registry and feature record must agree", "impact": "both" },
+    { "from": "scripts/lib/system_index.mjs", "to": "docs/coursewerk-system-index.md", "reason": "self-index documentation mirrors implementation", "impact": "both" }
+    ,{ "from": "scripts/lib/system_index.mjs", "to": "tests/system-index.test.mjs", "reason": "self-index behavior requires branch simulation", "impact": "both" }
+    ,{ "from": "scripts/lib/system_index.mjs", "to": ".github/workflows/system-integrity.yml", "reason": "CI enforces the system index", "impact": "both" }
+    ,{ "from": "VERSION", "to": "package.json", "reason": "release versions must agree", "impact": "both" }
+    ,{ "from": "VERSION", "to": "CHANGELOG.md", "reason": "version changes require release notes", "impact": "both" }
+    ,{ "from": "system/COMPONENTS.json", "to": "scripts/lib/system_index.mjs", "reason": "component policy defines repository indexing", "impact": "both" }
+    ,{ "from": "system/QUALITY_PROFILES.json", "to": "FEATURES.md", "reason": "quality profiles constrain product assurance claims", "impact": "both" }
+    ,{ "from": "scripts/prepare_source_corpus.mjs", "to": "templates/source-corpus.example.json", "reason": "source preparation produces the corpus contract", "impact": "both" }
+    ,{ "from": "scripts/prepare_source_corpus.mjs", "to": "tests/evidence-tools.test.mjs", "reason": "source preparation requires regression evidence", "impact": "both" }
+    ,{ "from": "scripts/capture_rights_evidence.mjs", "to": "templates/foundation.public-oer.example.json", "reason": "evidence capture updates foundation rights fields", "impact": "both" }
+    ,{ "from": "scripts/capture_rights_evidence.mjs", "to": "tests/evidence-tools.test.mjs", "reason": "rights evidence capture requires regression evidence", "impact": "both" }
+    ,{ "from": "scripts/lib/rights_preflight.mjs", "to": "scripts/capture_rights_evidence.mjs", "reason": "capture performs the deterministic process-rights preflight", "impact": "both" }
+    ,{ "from": "scripts/lib/rights_preflight.mjs", "to": "scripts/prepare_source_corpus.mjs", "reason": "source preparation refuses unresolved process restrictions", "impact": "both" }
+    ,{ "from": "scripts/lib/rights_preflight.mjs", "to": "scripts/lib/assurance.mjs", "reason": "release assurance independently rechecks process notices", "impact": "both" }
+    ,{ "from": "scripts/lib/assurance.mjs", "to": "templates/foundation.personal.example.json", "reason": "private foundation template must satisfy the mode-independent kernel", "impact": "both" }
+    ,{ "from": "scripts/lib/assurance.mjs", "to": "templates/foundation.restricted.example.json", "reason": "restricted foundation template must satisfy the mode-independent kernel", "impact": "both" }
+    ,{ "from": "scripts/check_oer.mjs", "to": "templates/media-plan.example.json", "reason": "media-decision template must satisfy the chapter format gate", "impact": "both" }
+    ,{ "from": "scripts/build_carriers.mjs", "to": "scripts/pack.mjs", "reason": "packing persists and binds the exact carrier receipt", "impact": "both" }
+    ,{ "from": "site/index.html", "to": "FEATURES.md", "reason": "website product claims must remain synchronized with the detailed feature record", "impact": "both" }
+    ,{ "from": "site/index.html", "to": "tests/site.test.mjs", "reason": "website information architecture and critical claims require regression evidence", "impact": "both" }
+    ,{ "from": "site/index.html", "to": ".github/workflows/pages.yml", "reason": "GitHub Pages deploys the static site artifact", "impact": "both" }
+    ,{ "from": "site/index.html", "to": "site/styles.css", "reason": "website structure and visual system form one artifact", "impact": "both" }
+    ,{ "from": "site/index.html", "to": "site/assets/orz.svg", "reason": "Coursewerk reuses the shared orz family mark", "impact": "both" }
+  ]
+}

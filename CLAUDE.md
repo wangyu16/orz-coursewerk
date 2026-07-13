@@ -16,7 +16,7 @@ public/private set of GitHub repositories and a published course website. You au
 - **Lean source is the truth.** Study guides and practice are **orz-markdown** (`.md`); slides are the
   **orz-slides** deck grammar (`.md`); concept maps and assessment guides are **plain markdown**. This
   `.md` is what ships.
-- **The framework is a build output, not source.** The self-contained files that read/edit standalone —
+- **The framework is a build output, not source.** The browser-readable/editable carrier files —
   `.md.html` (orz-mdhtml), `.slides.html` (orz-slides), `.paged.html` (orz-paged) — carry a heavy,
   identical framework shell. You **build them into `preview/`** for local reading/QA, but you **ship
   lean**: the upload zip excludes them, and **Alembic reassembles the framework on its side** (and
@@ -42,6 +42,10 @@ as the source of truth for structure.
    - `reports/` — QA report / evaluation / delivery note (outside the package; never shipped).
    - `dist/` — the packed `.zip`.
    - `.coursewerk/` — a small progress ledger so you can resume.
+   Bootstrap also initializes `package/` and `personal/` as independent Git repositories. At the start of
+   every resumed session, inspect `git -C <root> status --short` and `git -C <root> diff` before editing. If a
+   component index exists, immediately run the revision-impact workflow. Direct user edits and user-authored
+   commits are inputs to preserve, never changes to overwrite or silently absorb.
 3. **Stage the skills.** The `skills/` here are your house skills — read a skill's `SKILL.md` before doing
    its kind of work: `orz-markdown` (rich markdown syntax for study guides & practice), `orz-slides`
    (course slide decks — deck grammar, layout, one-concept-per-slide pedagogy), `orz-paged` (paginated
@@ -51,6 +55,35 @@ as the source of truth for structure.
    quality rules (graphics ladder, the semantic-formatting palette, study-guide→slides, accessibility,
    coherence, notation). The full grammar for each orz tool is in its installed skill under
    `node_modules/<tool>/…-skills/` after `npm install`.
+
+## 0.4 Choose the intended-use profile FIRST (mandatory)
+
+Ask how the materials will be used before asking about an output license. Record the answer in
+`metadata/FOUNDATION.json` using `docs/assurance-kernel.md`:
+
+- **Personal-private** — creator-only, local, never shared/uploaded/published. Work under `personal/`, not
+  `package/`; no output license is needed. Provenance is still mandatory, and every unknown/private-only item
+  is visibly labelled and blocks future publication.
+- **Restricted-teaching** — genuinely access-controlled teaching. Record jurisdiction plus the user's explicit
+  rights basis; do not treat Alembic's public student-facing package as a restricted LMS.
+- **Public-OER** — public repository/site/Alembic/Discover. Work under `package/`; verify source license and all
+  obligations from authoritative evidence, require compatible output licensing, and clear every blocker.
+
+This use profile is independent of Full/Light review mode. Never infer that educational purpose automatically
+establishes fair use/fair dealing. An asserted copyright exception never clears publication.
+
+For every non-owned primary source, in every intended-use profile, run the deterministic rights capture/preflight before exposing substantive
+source content to the AI authoring process. A detected generative-AI, automated-processing, or similar
+process-specific notice is a stop condition until affirmative permission or a documented qualified decision is
+recorded. Coursewerk does not adjudicate the publisher's condition; it must find it, preserve the evidence, and
+fail closed. See `PROCEDURE.md` Stage 0 and `docs/assurance-kernel.md`.
+
+## 0.45 When changing Coursewerk itself
+
+If the user asks to modify this harness rather than create a course, follow `docs/coursewerk-system-index.md`.
+Generate branch impact from the target Git merge base, update every required claim/code/test/document/template/
+skill component, run the required tests, accept the revision record, and verify the canonical system index.
+Never regenerate `system/COURSEWERK_INDEX.json` alone to hide an unreviewed repository change.
 
 ## 0.5 Choose a working mode (ask the user) — Full or Light
 
@@ -91,7 +124,7 @@ Coursewerk's guidance is two kinds (see **`docs/rules-vs-preferences.md`** for t
 separate from this repo, so **Coursewerk updates (`git pull`) never overwrite it**, and it is shared across
 all their courses:
 
-- `preferences.md` — pedagogy / scope / terminology / license-policy choices
+- `preferences.md` — pedagogy / scope / terminology choices
 - `styles.md` — visual / layout / figure / slide-style choices
 - `templates/` — the user's own document skeletons (prefer these over built-in defaults)
 - `skills/` — the user's **additional** skills (use them alongside the bundled `skills/`)
@@ -113,13 +146,13 @@ stays updatable.
 
 Read `inputs/` and any brief in `templates/brief.example.md` the user filled. Confirm with the user: the
 **course + source of truth** (a named OPEN textbook, or their own materials), **scope** (which chapters),
-**audience/pedagogy** (level, assessment difficulty, lecture length), and the **license**. The license is a
-deliberate choice: an **open license** (one of the five — matching the source) if the user wants to share or
-list on Discover, or **`ALL-RIGHTS-RESERVED`** if they're keeping the package private / for their own class
-(it uploads and publishes fine, just can't be listed on Discover). If the user hasn't decided, default to
-`ALL-RIGHTS-RESERVED` and tell them they can open it later. Never assume a venue/scope the user didn't give.
-Assign each chapter a **slug**, and write `package/alembic.json` (the manifest) + `package/LICENSE`. **Pause
-for the user's approval before building chapters.**
+**audience/pedagogy** (level, assessment difficulty, lecture length), intended-use profile, exact source
+identity, rights basis, and—only for distributable work—the **output license**. A public OER uses an open
+license compatible with every adapted source. Personal-private work has no output license and never enters
+`package/`. `ALL-RIGHTS-RESERVED` cannot cure missing source rights. Never assume a venue/scope or rights basis.
+Assign each chapter a **slug**. On the public-OER path, write `package/alembic.json` + `package/LICENSE`;
+on private/restricted paths, keep the material under `personal/` with no Alembic manifest. **Pause for the
+user's approval before building chapters.**
 
 ## 2. Follow `PROCEDURE.md`
 
@@ -138,8 +171,21 @@ which patterns to favor — is a **flexible preference** the user may override.
 
 - **Source of truth.** Every fact/value/structure comes from `inputs/` or the named textbook — never
   fabricated. Missing evidence → a visible `[VERIFY]` note, not a guess.
-- **Two-repo invariant.** Instructor-only material (answer keys, full solutions, exam content, private
+- **Assurance kernel.** Intended use, exact source identity/version/scope, rights basis, source-license
+  evidence, attribution obligations, privacy, structured provenance, and publication clearance are
+  mode-independent. Unknown/private-only items must be visibly labelled and block publication.
+- **Revision coherence.** Every output component is hashed and dependency-indexed in
+  `metadata/COMPONENT_INDEX.json`. After any edit, run the revision-impact workflow in
+  `docs/coherence-index.md`, review/revise every downstream component against its upstream context, and complete
+  an attested refresh. The output root's Git history records exactly what changed; the component graph determines
+  what else must be reviewed. Never update one document in isolation or reset the index to hide changes.
+- **Source corpus and remote media.** Public work binds every primary source to hashed comparison text or a
+  dated human attestation in `inputs/SOURCE_CORPUS.json`. Scaffold files never count. Remote hot-linked media is
+  forbidden; fetch it locally, record provenance and use locations, then regenerate attribution.
+- **Two-repo invariant.** Instructor-only material (summative answer keys, instructor-only solution sets, exam content, private
   notes) goes ONLY under `package/private/`. Everything else is public and will be shared with the world.
+  Worked solutions intentionally belonging to the public practice sheet remain public; do not confuse them with
+  private summative keys.
   Never put private content in a public folder — Alembic refuses such a package, and it's your job to place
   every file correctly.
 - **Copyright-clean, by positive provenance.** Every figure is self-generated (RDKit/matplotlib via
@@ -156,15 +202,15 @@ which patterns to favor — is a **flexible preference** the user may override.
 
 ## 4. Before finishing — QA gate, then an HONEST evaluation report (mandatory)
 
-Run `node scripts/check_oer.mjs --package package --inputs inputs --report reports/qa_report.md`. It gates on
+Run `node scripts/check_oer.mjs --package package --inputs inputs --for-discovery --report reports/qa_report.md`. It gates on
 BOTH the **Alembic contract** (manifest valid, LICENSE present, every folder/file recognized, each declared
 chapter's `study-guide/<slug>.md` present, no carriers/stray root files, renderable objects public) and **OER
-quality** (attribution, links/asset paths, orz-syntax, accessibility, placeholders, format contracts). The
+quality** (the assurance kernel, source/license/provenance/publication clearance, attribution, links/asset
+paths, orz-syntax, accessibility, placeholders, format contracts). The
 `--inputs` flag adds a **near-verbatim scan** against the source materials (flags copied prose to rewrite).
-**Fix every critical issue** and re-run until `criticalTotal == 0`. The report's **Discoverability** section
-says whether the package could be listed on Discover (needs an open license + complete attribution + no
-verbatim spans); if the user intends to list publicly, run with `--for-discovery` to make those blockers
-release-blocking. Also run `node scripts/build_carriers.mjs` and
+**Fix every critical issue** and re-run until `criticalTotal == 0`. The public-OER path enforces the report's
+**Discoverability** bar (open compatible license + complete provenance/attribution + source comparison with no
+near-verbatim spans). Also run `node scripts/build_carriers.mjs` and
 confirm `failed: 0` (every lean source reassembles into a valid framework document). Anything not auto-fixable
 (e.g. a figure/slide layout judgment) — flag it in `reports/qa_report.md` for the user; never fabricate a fix.
 

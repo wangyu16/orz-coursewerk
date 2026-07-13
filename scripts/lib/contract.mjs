@@ -78,7 +78,6 @@ export const LICENSE_ALIASES = {
   cc0: "CC0-1.0",
   "cc0 1.0": "CC0-1.0",
   "cc0-1.0": "CC0-1.0",
-  "public domain": "CC0-1.0",
   "all rights reserved": ALL_RIGHTS_RESERVED,
   "all-rights-reserved": ALL_RIGHTS_RESERVED,
   unlicensed: ALL_RIGHTS_RESERVED,

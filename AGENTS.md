@@ -6,11 +6,16 @@ apply to any AI CLI agent, not only Claude). **Read `CLAUDE.md` first, then `PRO
 Quick orientation:
 - You are the **executor**; Coursewerk is the harness you follow.
 - On each session: `git pull --ff-only` (auto-update), then `bash bootstrap/init.sh` (installs the
-  orz-family builders + creates the workspace: `package/`, `preview/`, `reports/`, `dist/`).
-- Build the five-deliverable teaching package into `package/` (an **Alembic package**, lean `.md`) per
-  `PROCEDURE.md`, pausing at each ⏸ gate for the user. Author with the orz-markdown family; ship lean.
-- Never fabricate facts or figures; keep everything copyright-clean and recorded in
-  `package/metadata/ATTRIBUTION.md`.
-- Before finishing, run the QA gate: `node scripts/check_oer.mjs --package package --report reports/qa_report.md`
-  (it checks both Alembic-upload readiness and OER quality) and fix every critical issue until it passes,
-  then `node scripts/pack.mjs` to produce the lean upload zip in `dist/`.
+  orz-family builders + creates `personal/`, `package/`, `preview/`, `reports/`, `dist/`).
+- Ask intended use first. Personal/restricted work stays under `personal/`; only cleared public OER enters
+  `package/`. Both paths require `FOUNDATION.json` + `PROVENANCE.json` and the mode-independent assurance kernel.
+- Build the five deliverables per `PROCEDURE.md`, pausing at each ⏸ gate. Never fabricate facts or figures;
+  keep provenance complete. Unknown/private-only material is visibly labelled and blocks publication.
+- Maintain `metadata/COMPONENT_INDEX.json`. After any edit, run the revision-impact workflow and review/revise
+  every affected dependent before an attested refresh; never revise one carrier in isolation.
+- `package/` and `personal/` are independent Git repositories. On every resumed run, inspect status/diff first;
+  preserve user edits. Git identifies changes, while the component graph identifies all consistency work.
+- When changing Coursewerk itself, use `docs/coursewerk-system-index.md`: compute merge-base impact, review every
+  correlated claim/code/test/doc/template/skill, accept the revision, and verify the canonical system index.
+- Run `check_assurance.mjs` for private work or `check_oer.mjs` for public packages. `pack.mjs` is public-OER
+  only and reruns the hard gate before producing a lean ZIP.

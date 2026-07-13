@@ -1,6 +1,6 @@
 ---
 name: oer-qa
-description: Automated quality gate for an assembled Alembic course package — checks BOTH that the package will upload to Alembic with zero friction (manifest valid, LICENSE present, every folder/file recognized, each declared chapter's study guide present, no framework carriers or stray root files, renderable objects public) AND that it is good, copyright-clean OER (attribution completeness, broken links/asset paths, orz-markdown syntax, accessibility proxies, leftover placeholders, per-deliverable format contracts). Invoke in the QA step before delivery, or any time you need to verify a package is clean and uploadable.
+description: Automated quality gate for an assembled Alembic course package — checks BOTH that the package will upload to Alembic with zero friction (manifest valid, LICENSE present, every folder/file recognized, each declared chapter's study guide present, no framework carriers or stray root files, renderable objects public) AND that it meets Coursewerk's defined OER floor (attribution completeness, broken links/asset paths, orz-markdown syntax, accessibility-floor checks, leftover placeholders, per-deliverable format contracts). Invoke in the QA step before delivery, or any time you need to verify a package is clean and uploadable.
 ---
 
 # oer-qa — automated package quality gate
@@ -11,7 +11,7 @@ layers of checks so a package that passes is both **uploadable** and **good OER*
 ## Run it
 
 ```bash
-node scripts/check_oer.mjs --package package --report reports/qa_report.md --json /tmp/qa.json
+node scripts/check_oer.mjs --package package --inputs inputs --report reports/qa_report.md --json /tmp/qa.json
 ```
 
 - `--package` (required): the assembled Alembic package directory (`package/`). `--guide` is accepted as a
@@ -33,15 +33,25 @@ node scripts/check_oer.mjs --package package --report reports/qa_report.md --jso
   public; **no framework carriers** (`.md.html`/`.slides.html`/`.paged.html`) shipped in the package.
 
 **B. OER quality:**
-- **Attribution completeness** — every media asset on disk appears in `metadata/ATTRIBUTION.md` with a
-  license + attribution; lists `unmanifestedMedia`.
+- **Mode-independent assurance kernel** — intended-use profile, exact source/right/license evidence,
+  manifest/LICENSE consistency, privacy assertions, structured provenance, required attribution, and zero
+  public-release blockers. Full/Light mode never changes these checks.
+- **Component coherence** — `COMPONENT_INDEX.json` covers every output component; content hashes, dependency
+  snapshots, and graph relationships are current. Any revision remains blocking until its complete impact set
+  is reviewed and an attested index refresh succeeds.
+- **Source corpus** — `inputs/SOURCE_CORPUS.json` binds every primary source to a raw snapshot/hash, canonical
+  URL, retrieval and extractor metadata, hashed comparison text, or a dated human attestation. Scaffolding never
+  counts.
+- **Attribution completeness** — every media asset has an existing local path and `usedIn` locations in
+  structured provenance; public attribution is generated exactly from it. Remote hot-linked media is blocked.
 - **Link / path integrity** — local Markdown links + asset references all resolve on disk.
-- **orz-markdown syntax** — unclosed `:::` containers, unclosed `{{plugin}}`, escaped pipes in tables.
-- **Accessibility proxies** — images missing alt text, empty headings, heading-level jumps,
-  first-heading-not-H1, non-descriptive link text.
+- **orz-markdown syntax** — real-parser rendering, plugin balance, nested fence direction, escaped pipes.
+- **Accessibility floor** — images missing alt text, Mermaid/chart blocks without visible text alternatives,
+  empty headings, heading-level jumps, first-heading-not-H1, and non-descriptive link text are release-blocking.
 - **Body placeholders** — leftover `[VERIFY]` / `[NEEDS DATA]`.
 - **Format contracts** — graphics-free concept maps + assessment guides; slides in orz-slides deck grammar;
-  practice with Q/A tabs; every deliverable has an H1.
+  practice with Q/A tabs; every deliverable has an H1; a chapter without a photograph has a reviewed decision
+  in `metadata/MEDIA_PLAN.json`.
 
 `criticalCounts` aggregates the release-blocking subset; `criticalTotal == 0` ⇒ the package passes the gate.
 
@@ -53,8 +63,8 @@ node scripts/check_oer.mjs --package package --report reports/qa_report.md --jso
    under `preview/` instead); add unmanifested assets to `metadata/ATTRIBUTION.md`; close unclosed orz
    containers / fix escaped pipes; repair broken asset paths; add missing alt text.
 3. **Re-run** until `criticalTotal == 0`.
-4. Also run `node scripts/build_carriers.mjs` and confirm `failed: 0` — proof every lean source reassembles
-   into a valid framework document.
+4. Run `npm run generate:attribution` after provenance changes. `pack.mjs` reruns every declared carrier and
+   emits an evaluation plus `.release.json` receipt beside the ZIP.
 5. Anything not auto-fixable (e.g. a layout/positioning judgement) is flagged in the report for human review
    — never fabricate a fix.
 

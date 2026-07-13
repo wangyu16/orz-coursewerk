@@ -18,10 +18,15 @@ An agent that reads only its own file still gets a quick orientation plus the li
 instructions, so it can proceed.
 
 ## Lite path — pure chat UIs (no terminal)
-ChatGPT, Claude, Grok, or Gemini in the browser can't run the scripts, but can still author the package.
-See **[`docs/lite-path.md`](docs/lite-path.md)**: the AI writes the lean markdown + manifest following the
-contracts; you assemble the tree and either run the Node helpers locally or let Alembic validate on import.
-The output is identical — the terminal only automates assembly, preview, and packaging.
+ChatGPT, Claude, Grok, or Gemini in the browser can't run the scripts, but can still author materials.
+See **[`docs/lite-path.md`](docs/lite-path.md)**: intended use first selects `personal/` or `package/`, and the
+AI writes lean Markdown plus structured foundation/provenance records. Public packaging still requires the
+terminal assurance gate; structural Alembic import alone is not source-rights clearance.
+Subsequent revisions also require the terminal component-index impact/attestation workflow; otherwise the
+package remains intentionally stale and unpackable. Running bootstrap initializes the same output-root Git
+history used by full terminal agents, so Light mode does not weaken edit visibility or coherence enforcement.
+Repository maintainers use the branch-aware Coursewerk system index in every terminal-capable agent; pure chat
+cannot accept or verify a Coursewerk harness revision by itself.
 
 ## Keeping them in sync
 The per-tool files are thin pointers, so drift is low. Longer term, consider generating all of them from a

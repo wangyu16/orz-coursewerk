@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "identity": "one stable repo:<path> component per indexed file",
+  "classifiers": [
+    { "type": "product-claim", "paths": ["FEATURES.md", "README.md"] },
+    { "type": "product-website", "prefixes": ["site/"] },
+    { "type": "deployment", "prefixes": [".github/workflows/"] },
+    { "type": "agent-constitution", "paths": ["CLAUDE.md", "AGENTS.md", "PROCEDURE.md", "COMPATIBILITY.md"] },
+    { "type": "kernel", "prefixes": ["scripts/lib/"] },
+    { "type": "executable", "prefixes": ["scripts/"] },
+    { "type": "test", "prefixes": ["tests/"] },
+    { "type": "template", "prefixes": ["templates/"] },
+    { "type": "skill", "prefixes": ["skills/"] },
+    { "type": "documentation", "prefixes": ["docs/", "format-contracts/"] },
+    { "type": "system-governance", "prefixes": ["system/"] },
+    { "type": "release-metadata", "paths": ["package.json", "VERSION", "CHANGELOG.md"] }
+  ],
+  "excludedDirectories": [".git", "node_modules", "package", "personal", "inputs", "preview", "reports", "dist", "examples", ".coursewerk"],
+  "excludedGenerated": ["system/COURSEWERK_INDEX.json", "system/revisions/", "package-lock.json", ".DS_Store"]
+}

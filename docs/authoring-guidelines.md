@@ -11,7 +11,7 @@ that apply across all of them.
 ## 1. Graphics — the preference ladder
 
 Pick the highest rung that fits; every figure gets a **caption**, **alt text**, and an **attribution row**
-in `metadata/ATTRIBUTION.md`. Prefer **SVG** everywhere (crisp at any size, text-based, and it imports to
+in structured `metadata/PROVENANCE.json` and, for public work, `metadata/ATTRIBUTION.md`. Prefer **SVG** everywhere (crisp at any size, text-based, and it imports to
 Alembic cleanly — raster `.png`/`.jpg`/`.pdf` are skipped on a *trial* import and re-added after publish).
 
 1. **Self-generate — always clean + exact (first choice for anything scientific).**
@@ -22,16 +22,21 @@ Alembic cleanly — raster `.png`/`.jpg`/`.pdf` are skipped on a *trial* import 
      right in the markdown — editable, lightweight, no asset file). Use for a handful of points.
    - **Complex** plots → **matplotlib** (`oer-figures`) → SVG: multi-series, log scales, annotations,
      subplots, real datasets. Real numbers only — never fabricate data.
-   - Flowcharts / dependency / process diagrams → **`{{mermaid}}`**.
+   - Flowcharts / dependency / process diagrams → **`{{mermaid}}`**. Follow every Mermaid block with a visible
+     `**Visual description:**` that communicates its relationships without requiring the runtime diagram.
+     Follow every chart with a `**Data summary:**` stating its important pattern and values.
 2. **Open-licensed real images — use them LIBERALLY, don't be conservative.** Real photos of the actual
    substances, apparatus, and phenomena (an element sample, an analytical balance, a reaction, a micrograph)
    make a chapter come alive in a way diagrams can't — a package of only self-generated SVGs is too dry.
    Fetch from Wikimedia Commons, OpenStax (its own CC-BY figures), Openverse, NASA/NOAA (public domain) with
    `oer-figures`' `fetch_open_image.py`, which **captures the attribution row for you**; **resize** to a
    web-friendly width (~800–900 px) so the package stays light. Aim for **at least one or two fetched real
-   photos per chapter**. Record each in `metadata/ATTRIBUTION.md` with its own license (note: a CC-BY-SA image
+   photos per chapter**. If a real photograph would not improve a chapter, record that accountable decision and
+   a substantive rationale in `metadata/MEDIA_PLAN.json`; silence is not a decision. Record each included photo
+   in `metadata/PROVENANCE.json` and public `ATTRIBUTION.md` with its own license (note: a CC-BY-SA image
    keeps its ShareAlike license — attribute it as such; prefer CC-BY / CC0 / public-domain when you want the
-   package cleanly CC-BY). Never embed a copyrighted, paywalled, or third-party-credited image.
+   package cleanly CC-BY). Never embed a copyrighted, paywalled, or third-party-credited image. Never hot-link
+   media in public work: fetch it into `assets/` so rights, accessibility, and availability remain inspectable.
 3. **AI-generated concept illustrations — encouraged for conceptual/schematic art.** Use an image engine
    (the platform's image generation, an image MCP tool, or the copy-as-prompt fallback in `oer-figures`) to
    create engaging conceptual illustrations, analogies, and scene-setting visuals that make an abstract idea
@@ -40,7 +45,7 @@ Alembic cleanly — raster `.png`/`.jpg`/`.pdf` are skipped on a *trial* import 
      photos/micrographs, maps, or any figure a student would read values off. Those come from rungs 1–2.
    - **No text inside the image** — AI-rendered labels/equations are usually garbled. Put labels in the
      caption or overlay them as real text; keep generated art label-free.
-   - **Always disclose:** label the figure as an AI illustration and record it in `metadata/ATTRIBUTION.md`
+   - **Always disclose:** label the figure as an AI illustration and record it in structured provenance plus public `metadata/ATTRIBUTION.md`
      (e.g. `AI-generated illustration (<tool>, <date>) — no third-party rights; released under the package
      license`). AI-image copyright is unsettled; for an open package, treat it as your own contribution and
      disclose the tool.
@@ -123,6 +128,10 @@ The single most important transformation. Full detail in `skills/orz-slides`; th
   student never re-learns how to read the material.
 - **Cross-deliverable check:** concept map ↔ study guide ↔ slides ↔ assessment ↔ practice all cover the same
   concepts in the same order. A concept in one but missing from another is a coherence gap.
+- **Editorial pass:** proofread every chapter for spelling, grammar, clarity, repeated wording, terminology,
+  tone, notation, and internal references. Then compare chapters as a set so headings, objective verbs, labels,
+  semantic formatting, and figure/slide conventions form one design system. This is an agent/editor review;
+  do not report it as a deterministic QA result unless a dedicated checker was actually run.
 
 ---
 
@@ -131,42 +140,38 @@ The single most important transformation. Full detail in `skills/orz-slides`; th
 - **Color is never the sole signal.** A colored box or colored word must *also* carry a label or bold —
   color-blind readers and printouts lose the hue. (This is why the palette above pairs color with meaning.)
 - **Real alt text** on every figure (describe what it shows, not "image").
+- **Visible text alternatives** immediately after every runtime Mermaid/chart block. Source-level alt and
+  descriptions are gated; final post-render behavior and overflow still require a browser/human visual probe.
 - **Heading order** with no level jumps; one H1 per document; descriptive link text (never "click here");
   table headers on data tables.
 - The QA gate (`skills/oer-qa`) checks these as proxies — but write for them from the start.
 
 ---
 
-## 7. Licensing & discoverability
+## 7. Intended use, rights, licensing & discoverability
 
-Coursewerk is **optional and non-mandating**: an instructor can build a package and keep it private, or
-publish it, or share it. Two independent axes decide what a package can do — don't conflate them:
+Choose `personal-private`, `restricted-teaching`, or `public-oer` before authoring; see
+`docs/assurance-kernel.md`. Input rights (why a source may be used), distribution conditions, and output
+licensing (permissions granted over material the user controls) are independent.
 
-- **License** = the terms *you grant others* for *your* content. Set it in `alembic.json`:
-  - An **open license** (`CC-BY-4.0`, `CC-BY-SA-4.0`, `CC-BY-NC-4.0`, `CC-BY-NC-SA-4.0`, `CC0-1.0`) —
-    required to **list on Discover** (others may reuse it). Match the source's license.
-  - **`ALL-RIGHTS-RESERVED`** — *unlicensed*: default copyright, no reuse granted. Use it when the instructor
-    keeps the package to themselves or their own class. It uploads and publishes fine; it just **can't be
-    listed on Discover**. This is the right default when the instructor hasn't chosen to share.
-- **Copyright-cleanliness** = whether the content is *yours to distribute at all*. Enforced by **positive
-  provenance**, not infringement-detection: every figure proves a clean origin (self-generated or
-  open-licensed with a captured source — §1), and no deliverable copies the source's prose (§4). The gate
-  can't *detect* that an image came from a paywalled book — so it requires *proof of a clean source* instead;
-  anything unproven is treated as not-clean.
+- Personal/restricted work lives under `personal/`, carries complete provenance, and has no open output license.
+  Unknown/private-only items are visibly labelled and block promotion. Educational purpose is not assumed to
+  establish a copyright exception.
+- Public OER lives under `package/`. Every source/asset must have verified distribution rights; the manifest and
+  full LICENSE must agree with the foundation decision and adapted-source obligations.
+- `ALL-RIGHTS-RESERVED` grants no reuse but does not cure unauthorized inputs.
+- Discover requires an open compatible license, complete attribution/provenance, no near-verbatim source prose,
+  and educator attestation.
 
-**The three states** (what each requires):
+The mode-independent assurance kernel is release-blocking in every review mode. `pack.mjs` refuses all
+private/restricted profiles and every unresolved publication blocker.
 
-| State | License | Clean? |
-|---|---|---|
-| **Private** (local zip / workspace only) | none needed (`ALL-RIGHTS-RESERVED`) | your responsibility (fair use) |
-| **Published** to the instructor's own public site | open **or** `ALL-RIGHTS-RESERVED` | clean required (it's public); the instructor attests |
-| **Discoverable** (listed on Discover) | **open license required** | **verified clean + educator attestation** |
-
-**Checking discoverability.** `scripts/check_oer.mjs --inputs inputs/` reports a *Discoverability* section
-(ready, or the blockers: non-open license, incomplete attribution, near-verbatim spans). Add
-`--for-discovery` to make those blockers *release-blocking* when the instructor intends to list publicly. A
-package that isn't discover-ready is still perfectly usable privately or for a class — it just can't go on
-the market.
+Public sources require a hashed rights-evidence snapshot under `metadata/evidence/` and
+`inputs/SOURCE_CORPUS.json` binding each primary source ID to a hash-bound raw snapshot, canonical URL,
+retrieval/extractor metadata, hashed extracted text, or an explicit dated human comparison attestation. Capture
+and deterministically scan the authoritative rights page before any substantive source ingestion; an unresolved
+process-specific AI/automated-processing notice is a stop condition, not an evaluation footnote. Attribution is
+generated from `PROVENANCE.json`; never maintain the two independently.
 
 ## 8. Paged documents & collections
 
