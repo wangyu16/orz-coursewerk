@@ -1,6 +1,6 @@
 # Coursewerk
 
-**Website:** [wangyu16.github.io/orz-coursewerk](https://wangyu16.github.io/orz-coursewerk/)
+**Website:** [coursewerk.orz.how](https://coursewerk.orz.how/)
 
 **An AI agent that does the coursework of building your course** — it turns a textbook or your own source
 materials into private teaching workspaces or complete, openly-publishable teaching packages: per-chapter **concept maps, study guides,

@@ -143,7 +143,7 @@
       "id": "repo:README.md",
       "path": "README.md",
       "type": "product-claim",
-      "hash": "ff63a691484fc71ea800b2d6852e163069f5f12e56113a95fd1a1f5a7a8a8a91"
+      "hash": "6c708ea7e88cdd9e3ba911d20b0811965d36fbb036bbd241ba16224609537ceb"
     },
     {
       "id": "repo:scripts/accept_coursewerk_revision.mjs",
