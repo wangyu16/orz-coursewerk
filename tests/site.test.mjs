@@ -14,6 +14,8 @@ test("Coursewerk site is a self-contained static information architecture", () =
   assert.match(html, /<h1>From source evidence/);
   for (const id of ["system", "assurance", "outputs", "start"]) assert.match(html, new RegExp(`id="${id}"`));
   assert.match(html, /assets\/orz\.svg/);
+  assert.match(html, /rel="icon" href="assets\/coursewerk-favicon\.svg"/);
+  assert.doesNotMatch(html, /rel="icon" href="assets\/orz\.svg"/);
   assert.match(html, /alt="orz"/);
   assert.match(html, /Preflight before ingestion/);
   assert.match(html, /A publisher’s process-specific notice is not Coursewerk’s policy/);
@@ -22,6 +24,7 @@ test("Coursewerk site is a self-contained static information architecture", () =
   assert.doesNotMatch(html, /(?:src|href)="https?:\/\/(?!github\.com|markdown\.orz\.how)/i);
   assert.ok(css.length > 10000, "the designed theme should not collapse to an unstyled placeholder");
   assert.ok(fs.existsSync(path.join(repo, "site", "assets", "orz.svg")));
+  assert.ok(fs.existsSync(path.join(repo, "site", "assets", "coursewerk-favicon.svg")));
   assert.equal(cname, "coursewerk.orz.how\n");
 });
 

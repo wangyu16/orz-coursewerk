@@ -320,6 +320,12 @@
       "hash": "941ecccdec953e7992400a22cfd255cb2e6a35029d40022ceee039465d1c9797"
     },
     {
+      "id": "repo:site/assets/coursewerk-favicon.svg",
+      "path": "site/assets/coursewerk-favicon.svg",
+      "type": "product-website",
+      "hash": "bb7c495be6bf47081bb6c336fb4baadf65d640e094ec3e2783f894f1c8e70f6c"
+    },
+    {
       "id": "repo:site/assets/orz.svg",
       "path": "site/assets/orz.svg",
       "type": "product-website",
@@ -335,7 +341,7 @@
       "id": "repo:site/index.html",
       "path": "site/index.html",
       "type": "product-website",
-      "hash": "9252b6be747edd824fcafca8d3020ceccdf59996d118f129be0683d1fe4a8681"
+      "hash": "33a7d2731bebb9c2334625b2de885277998b6fc6a034391fcd704bf8fe20c567"
     },
     {
       "id": "repo:site/styles.css",
@@ -551,7 +557,7 @@
       "id": "repo:tests/site.test.mjs",
       "path": "tests/site.test.mjs",
       "type": "test",
-      "hash": "fe50337e4a0c0b469b4498578dfff9a1294b5792cdd164db2298cd2b5e3fe59b"
+      "hash": "64ff6b7186171dd65d4a1648add6100fa8b5496f7c49dcdb3375c56295f25777"
     },
     {
       "id": "repo:tests/system-index.test.mjs",
