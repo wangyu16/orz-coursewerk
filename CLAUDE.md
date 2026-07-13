@@ -182,6 +182,10 @@ which patterns to favor — is a **flexible preference** the user may override.
 - **Source corpus and remote media.** Public work binds every primary source to hashed comparison text or a
   dated human attestation in `inputs/SOURCE_CORPUS.json`. Scaffold files never count. Remote hot-linked media is
   forbidden; fetch it locally, record provenance and use locations, then regenerate attribution.
+- **Pre-ingestion clearance receipt.** Every non-owned source must have a current, cleared, hash-bound receipt
+  under `metadata/preflight/` before source preparation. The receipt binds source identity, authoritative evidence,
+  retrieval/operator metadata, known-source expectations, process notices, and any qualified decision. Missing,
+  blocked, or stale receipts stop every intended-use profile before substantive source content is read.
 - **Two-repo invariant.** Instructor-only material (summative answer keys, instructor-only solution sets, exam content, private
   notes) goes ONLY under `package/private/`. Everything else is public and will be shared with the world.
   Worked solutions intentionally belonging to the public practice sheet remain public; do not confuse them with

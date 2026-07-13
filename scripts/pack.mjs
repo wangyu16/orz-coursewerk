@@ -129,6 +129,9 @@ const releaseReceipt = {
   schemaVersion: 1,
   packageTreeHash,
   sourceCorpusHash: qa.verbatim?.corpus?.corpusSha256 || null,
+  sourceCorpusManifestSha256: fs.existsSync(path.join(inputsDir, "SOURCE_CORPUS.json"))
+    ? crypto.createHash("sha256").update(fs.readFileSync(path.join(inputsDir, "SOURCE_CORPUS.json"))).digest("hex")
+    : null,
   sourceCorpus: qa.verbatim?.corpus || null,
   componentIndexHash: qa.coherence?.index ? digestJson(qa.coherence.index) : null,
   carrierReceipt: path.basename(persistedCarrierReceipt),

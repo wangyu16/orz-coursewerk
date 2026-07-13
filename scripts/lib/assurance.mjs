@@ -10,6 +10,7 @@ import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { isOpenLicense, normalizeLicense, ALL_RIGHTS_RESERVED } from "./contract.mjs";
 import { processDecisionResolves, scanProcessRestrictions } from "./rights_preflight.mjs";
+import { auditIngestionReadiness, sourcePolicyFor } from "./pre_ingestion.mjs";
 
 export const USAGE_PROFILES = ["personal-private", "restricted-teaching", "public-oer"];
 export const RIGHTS_BASES = [
@@ -23,8 +24,6 @@ export const RIGHTS_BASES = [
 ];
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const policiesFile = path.resolve(here, "../data/source-policies.json");
-const sourcePolicies = JSON.parse(fs.readFileSync(policiesFile, "utf8")).policies || [];
 const licenseTextsFile = path.resolve(here, "../data/license-texts.json");
 const licenseTexts = JSON.parse(fs.readFileSync(licenseTextsFile, "utf8")).licenses || {};
 const PUBLIC_TOPS = new Set(["study-guide", "slides", "practice", "concepts", "assessment-support"]);
@@ -60,18 +59,6 @@ function parseJson(file, failures, label) {
     failures.push(`${label} is not valid JSON: ${e.message}`);
     return null;
   }
-}
-
-function policyFor(source) {
-  return sourcePolicies.find((p) => {
-    const publisher = String(source?.publisher || "").toLowerCase();
-    const title = String(source?.title || "").toLowerCase();
-    const url = String(source?.canonicalUrl || "").toLowerCase();
-    const urlMatch = p.match.canonicalUrlIncludes && url.includes(p.match.canonicalUrlIncludes.toLowerCase());
-    const identityMatch = (!p.match.publisher || publisher === p.match.publisher.toLowerCase()) &&
-      (!p.match.titleIncludes || title.includes(p.match.titleIncludes.toLowerCase()));
-    return Boolean(urlMatch || identityMatch);
-  });
 }
 
 function licenseFileAudit(root, expected, blockers) {
@@ -113,7 +100,22 @@ function evidenceSnapshotAudit(root, source, basis, label, publicationBlockers) 
   const digest = sha256(fs.readFileSync(file));
   if (!/^[a-f0-9]{64}$/.test(String(basis.evidenceSha256 || "")) || digest !== basis.evidenceSha256)
     publicationBlockers.push(`${label}: evidenceSnapshot sha256 does not match the recorded evidenceSha256.`);
-  if (!nonempty(basis.evidenceVerifiedBy)) publicationBlockers.push(`${label}: evidenceVerifiedBy is required.`);
+  const capture = basis.evidenceCapture;
+  if (!capture || !["automation", "human"].includes(capture.operator?.type) || !nonempty(capture.operator?.name) ||
+      !nonempty(capture.capturedAt) || !nonempty(capture.tool?.name) || !nonempty(capture.tool?.version))
+    publicationBlockers.push(`${label}: structured evidenceCapture operator, timestamp, and tool/version are required.`);
+  const retrieval = basis.evidenceRetrieval;
+  if (!retrieval || !["network", "local-file"].includes(retrieval.captureMode) ||
+      !nonempty(retrieval.retrievedAt) || !Number.isInteger(retrieval.byteLength) || retrieval.byteLength < 1 ||
+      !nonempty(retrieval.tool?.name) || !nonempty(retrieval.tool?.version))
+    publicationBlockers.push(`${label}: structured evidenceRetrieval mode, timestamp, byte length, and tool/version are required.`);
+  if (retrieval?.captureMode === "network" &&
+      (!nonempty(retrieval.requestedUrl) || !nonempty(retrieval.finalUrl) || !Number.isInteger(retrieval.httpStatus) || !nonempty(retrieval.contentType)))
+    publicationBlockers.push(`${label}: network evidenceRetrieval requires requested/final URL, HTTP status, and content type.`);
+  if (retrieval?.captureMode === "local-file" && !nonempty(retrieval.localFileName))
+    publicationBlockers.push(`${label}: local-file evidenceRetrieval requires localFileName.`);
+  if (retrieval && Number.isInteger(retrieval.byteLength) && retrieval.byteLength !== fs.statSync(file).size)
+    publicationBlockers.push(`${label}: evidenceRetrieval byteLength does not match the retained snapshot.`);
   const snapshot = read(file).toLowerCase();
   const processNotices = scanProcessRestrictions(snapshot);
   if (processNotices.length) {
@@ -155,7 +157,8 @@ function processPreflightAudit(root, basis, label, blockers) {
   const bytes = fs.readFileSync(file);
   if (sha256(bytes) !== basis.evidenceSha256)
     blockers.push(`${label}: process-preflight evidenceSnapshot sha256 does not match evidenceSha256.`);
-  if (!nonempty(basis.evidenceVerifiedBy)) blockers.push(`${label}: evidenceVerifiedBy is required for process preflight.`);
+  if (!["automation", "human"].includes(basis.evidenceCapture?.operator?.type) || !nonempty(basis.evidenceCapture?.operator?.name))
+    blockers.push(`${label}: structured evidenceCapture operator is required for process preflight.`);
   const notices = scanProcessRestrictions(bytes.toString("utf8"));
   const recorded = basis.processUseReview?.notices || [];
   for (const notice of notices) {
@@ -208,7 +211,9 @@ function requireAttributionEverywhere(root, required, blockers) {
     const text = read(file);
     const missingText = required.textIncludes && !text.includes(required.textIncludes);
     const missingUrl = required.url && !text.includes(required.url);
-    if (missingText || missingUrl) {
+    const missingLicenseUrl = required.licenseUrl && !text.includes(required.licenseUrl);
+    const missingChangeNotice = required.modificationNotice && !text.includes(required.modificationNotice);
+    if (missingText || missingUrl || missingLicenseUrl || missingChangeNotice) {
       blockers.push(`${norm(path.relative(root, file))}: missing source-required attribution for every public deliverable.`);
     }
   }
@@ -293,7 +298,7 @@ function auditSource(source, index, foundation, manifestLicense, privateFailures
     }
   }
 
-  const policy = policyFor(source);
+  const policy = sourcePolicyFor(source);
   if (policy) {
     const actual = normalizeLicense(basis.license);
     if (actual !== policy.license)
@@ -303,6 +308,12 @@ function auditSource(source, index, foundation, manifestLicense, privateFailures
     for (const noticeId of policy.expectedProcessNoticeIds || []) {
       if (!(basis.processUseReview?.notices || []).some((notice) => notice.id === noticeId))
         publicationBlockers.push(`${label}: known-source policy ${policy.id} expects process notice ${noticeId}; refresh and preflight the authoritative evidence before ingestion.`);
+    }
+    if (policy.attributionMode === "wikipedia-page-link-change-notice") {
+      const required = source.requiredAttribution || {};
+      if (required.url !== source.canonicalUrl || !/Wikipedia contributors/i.test(String(required.textIncludes || "")) ||
+          required.licenseUrl !== "https://creativecommons.org/licenses/by-sa/4.0/" || !nonempty(required.modificationNotice))
+        publicationBlockers.push(`${label}: Wikipedia reuse requires contributor credit, the reused page URL, CC BY-SA 4.0 link, and a modification notice.`);
     }
     requireAttributionEverywhere(foundation.__root, policy.requiredAttribution, publicationBlockers);
   }
@@ -445,8 +456,9 @@ export function auditAssurance({ root, manifest = null }) {
   const provenanceFile = path.join(root, "metadata", "PROVENANCE.json");
   const foundation = parseJson(foundationFile, privateFailures, "metadata/FOUNDATION.json");
   const provenance = parseJson(provenanceFile, privateFailures, "metadata/PROVENANCE.json");
-  if (!foundation) return { usageProfile: null, privateFailures, publicationBlockers, warnings, hardFailures: privateFailures, canPack: false };
+  if (!foundation) return { usageProfile: null, ingestionFailures: privateFailures, ingestionReady: false, authoringReady: false, privateFailures, publicationBlockers, warnings, hardFailures: privateFailures, canPack: false };
   foundation.__root = root;
+  const ingestion = auditIngestionReadiness(root, foundation);
 
   if (foundation.schemaVersion !== 1) privateFailures.push("FOUNDATION.json: schemaVersion must be 1.");
   if (!USAGE_PROFILES.includes(foundation.usageProfile)) privateFailures.push("FOUNDATION.json: invalid usageProfile.");
@@ -521,9 +533,12 @@ export function auditAssurance({ root, manifest = null }) {
   attributionMirrorAudit(root, provenance, foundation.usageProfile, privateFailures, publicationBlockers);
   delete foundation.__root;
 
-  const hardFailures = [...privateFailures, ...(isPublic ? publicationBlockers : [])];
+  const hardFailures = [...new Set([...ingestion.failures, ...privateFailures, ...(isPublic ? publicationBlockers : [])])];
   return {
     usageProfile: foundation.usageProfile,
+    ingestionFailures: ingestion.failures,
+    ingestionReady: ingestion.ready,
+    authoringReady: ingestion.ready && privateFailures.length === 0,
     privateFailures,
     publicationBlockers,
     warnings,

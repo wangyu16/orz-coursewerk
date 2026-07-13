@@ -33,14 +33,14 @@ node scripts/check_oer.mjs --package package --inputs inputs --report reports/qa
   public; **no framework carriers** (`.md.html`/`.slides.html`/`.paged.html`) shipped in the package.
 
 **B. OER quality:**
-- **Mode-independent assurance kernel** — intended-use profile, exact source/right/license evidence,
+- **Mode-independent assurance kernel** — intended-use profile, hash-bound pre-ingestion receipts, exact source/right/license evidence,
   manifest/LICENSE consistency, privacy assertions, structured provenance, required attribution, and zero
   public-release blockers. Full/Light mode never changes these checks.
 - **Component coherence** — `COMPONENT_INDEX.json` covers every output component; content hashes, dependency
   snapshots, and graph relationships are current. Any revision remains blocking until its complete impact set
   is reviewed and an attested index refresh succeeds.
 - **Source corpus** — `inputs/SOURCE_CORPUS.json` binds every primary source to a raw snapshot/hash, canonical
-  URL, retrieval and extractor metadata, hashed comparison text, or a dated human attestation. Scaffolding never
+  URL, retrieval and versioned extractor metadata, hashed comparison text, or a dated human attestation. Scaffolding never
   counts.
 - **Attribution completeness** — every media asset has an existing local path and `usedIn` locations in
   structured provenance; public attribution is generated exactly from it. Remote hot-linked media is blocked.

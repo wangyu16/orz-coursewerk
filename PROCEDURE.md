@@ -36,13 +36,16 @@ primary source, in every intended-use profile, perform these steps in order befo
 substantive source content:
 
 1. Identify the authoritative publisher rights page and record its URL/type/date.
-2. Run `npm run capture:rights -- --root <package-or-personal> --source-id <id> --verified-by <reviewer>`. This deterministic
-   helper saves and hashes the evidence, scans it for process-specific reservations (including generative-AI or
-   automated-processing notices), and exits nonzero when a notice is unresolved.
+2. Run `npm run capture:rights -- --root <package-or-personal> --source-id <id> --operator-name <name> --operator-type <automation|human> --contact <email-or-project-url>`. This deterministic
+   helper saves and hashes the evidence, records retrieval/operator metadata, checks known-source expectations,
+   scans for process-specific reservations (including generative-AI or automated-processing notices), and emits
+   a hash-bound pre-ingestion receipt. It exits nonzero unless that receipt is cleared.
 3. If blocked, stop source ingestion. Continue only after the foundation records affirmative permission or a
    qualified institutional/legal determination with decision maker, date, reference, and rationale. Coursewerk
    detects and preserves the provider's condition; it does not decide its legal effect.
-4. Only after that preflight clears, prepare `inputs/SOURCE_CORPUS.json`. Automatic entries must bind the raw
+4. Run `node scripts/check_assurance.mjs --root <package-or-personal> --phase pre-ingestion`. Only after every
+   receipt remains cleared may source preparation begin. `prepare:source` independently re-verifies the receipt,
+   current source record, evidence hash, and known-source policy before reading the supplied source. Automatic entries must bind the raw
    snapshot, raw hash, canonical URL, retrieval time, extractor metadata, extracted text, and text hash. The
    scaffold `inputs/README.md` never counts as source evidence.
 
@@ -52,8 +55,12 @@ substantive source content:
 - Provenance is mandatory in every profile. Unknown/incomplete/private-only items must be visibly labelled and
   remain future-publication blockers.
 
-Run `node scripts/check_assurance.mjs --root personal` for private/restricted work. Gate: confirm the recorded
+Run `node scripts/check_assurance.mjs --root personal --phase authoring` for private/restricted work. Gate: confirm the recorded
 use condition and foundation facts before authoring.
+
+For future chapter-sized public science trials, prefer a multi-page English Wikipedia corpus instead of a source
+whose process terms prohibit AI-assisted ingestion. Follow `docs/wikipedia-science-topic.md`: one anchor article,
+three to seven supporting pages, serial Wikimedia API retrieval, and approximately 6,000–25,000 extracted words.
 
 ## Stage 1 — Scope + manifest ⏸
 Read `inputs/` + the user's brief. Identify the **course**, the **source of truth** (a named OPEN
@@ -114,7 +121,7 @@ student-facing under an Alembic-supported public path. Declare every collection 
   (`{{smiles}}` for a single one, `oer-figures` RDKit for a grid/scheme), a real data plot (matplotlib or
   `{{chart}}`), a clear diagram (`{{mermaid}}` or a hand-authored SVG), **and — do NOT be conservative here —
   open-licensed REAL images** (photos of the actual substances, apparatus, or phenomena) fetched from
-  Wikimedia Commons / OpenStax / Openverse with `oer-figures` `fetch_open_image.py`. A chapter of only
+  Wikimedia Commons / Openverse / NASA / NOAA with `oer-figures` `fetch_open_image.py`. A chapter of only
   self-generated diagrams is too dry: pull in real photographs (an element sample, a lab instrument, a
   reaction) where a real image beats a diagram — resize to a web-friendly width and attribute it. Save asset
   files to `package/assets/`, record every one in structured `metadata/PROVENANCE.json` and public
@@ -135,7 +142,7 @@ student-facing under an Alembic-supported public path. Declare every collection 
 **Verify the orz-markdown as you go (mandatory step).** After authoring each chapter's rich deliverables
 (study guide, slides, practice), run **`node scripts/build_carriers.mjs --root <root> --out preview`** (every carrier must build,
 `failed: 0`) and run `node scripts/check_oer.mjs --package package` for public work or
-`node scripts/check_assurance.mjs --root personal` for private/restricted work. The public orz-syntax check must be **0** — it
+`node scripts/check_assurance.mjs --root personal --phase authoring` for private/restricted work. The public orz-syntax check must be **0** — it
 verifies container **nesting**, not just balance, so a mis-nested `tabs`/`cols`/callout is caught). Open the
 built carrier in `preview/` and eyeball it — a container that renders wrong will not throw, so *look*. Never
 move on with a nonzero orz-syntax count or a build failure. Never edit the carriers; they are throwaway.

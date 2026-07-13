@@ -47,13 +47,13 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "7888df633a501161fcfdfa26c21ee5dbc18585393571db9cb07fb6209d2d49a8"
+      "hash": "9e6eaa5b01fb5590974f0bef2841403563724519c1b5f39b1c41644f30afad9d"
     },
     {
       "id": "repo:CLAUDE.md",
       "path": "CLAUDE.md",
       "type": "agent-constitution",
-      "hash": "1b9061fdc02230e0c7eb5af3b90a3d5fc8a62e2f6df11e1c740d54227658f278"
+      "hash": "0c5eb5721a16fd31a2f9ed9e842d4ce41f17280f735192c293665d060c992aa5"
     },
     {
       "id": "repo:COMPATIBILITY.md",
@@ -65,13 +65,13 @@
       "id": "repo:docs/assurance-kernel.md",
       "path": "docs/assurance-kernel.md",
       "type": "documentation",
-      "hash": "5482ec706ebcfca0576cfebabd9f09e857070beb4377f709ce2faa0adf682ba0"
+      "hash": "15e902412fe120f0726b679a5d179bd158a9ecd87183355fea219b2e5473682a"
     },
     {
       "id": "repo:docs/authoring-guidelines.md",
       "path": "docs/authoring-guidelines.md",
       "type": "documentation",
-      "hash": "e7a0241b3dd219613c26a37d43396e3f37cafcdabfd4721760dfb67575686526"
+      "hash": "4b5d44fe7a9223da2ab5a05e22f6c7056a1ae8559a8289398193d11a4eab14f5"
     },
     {
       "id": "repo:docs/coherence-index.md",
@@ -89,7 +89,7 @@
       "id": "repo:docs/lite-path.md",
       "path": "docs/lite-path.md",
       "type": "documentation",
-      "hash": "410ec38975ae5bda3f7d5bf9ea7dfb0ede760977b48866a78507da5f0a0c8ac1"
+      "hash": "91b8f9f1209274ad05ddbeedbbbfa6a9747ce84d1597eb902a19c239f33532e0"
     },
     {
       "id": "repo:docs/rules-vs-preferences.md",
@@ -98,16 +98,22 @@
       "hash": "c4288e3b72e054195cf0e9be280f4f59110b61661e7216a1c9e4633e7ac03146"
     },
     {
+      "id": "repo:docs/wikipedia-science-topic.md",
+      "path": "docs/wikipedia-science-topic.md",
+      "type": "documentation",
+      "hash": "ea810631002ccef232fe3551fd1f6bb89c54ec3e63750add5fa7c469c01fa48d"
+    },
+    {
       "id": "repo:FEATURES.md",
       "path": "FEATURES.md",
       "type": "product-claim",
-      "hash": "8f348ead090c99c704514c512c64c60d35ec4c270093b9d44bcd8f8b8cf8c8b5"
+      "hash": "fdde0f1e576ed9aa375899bb0ecc10e117f940e2ae57705c0292d448bd5a6962"
     },
     {
       "id": "repo:format-contracts/deliverables.md",
       "path": "format-contracts/deliverables.md",
       "type": "documentation",
-      "hash": "fb42025d427157fe433d779188151cb4772e6d7bb11e5c9492b2741866628167"
+      "hash": "112412edec91c09f55f88c4bbab1f6254e32db483e97cfdc6bdb6c43a59b1152"
     },
     {
       "id": "repo:GEMINI.md",
@@ -131,19 +137,19 @@
       "id": "repo:package.json",
       "path": "package.json",
       "type": "release-metadata",
-      "hash": "941d924d164b3eb4867359bc7a4494eb30eebee617ec74628c6d09d5e951c79b"
+      "hash": "8ad74f2ec300ca9555bdf880c0f1a41361d387a6b07bcbbb656033916ce8bf2f"
     },
     {
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "f595ab248442f7566d83a271cd184334018167614899f7177b224135ec9a9495"
+      "hash": "b4bc23dc24738fe2fba87e2dfa3c4f4bb43dc46b375202e769cb37f885a934de"
     },
     {
       "id": "repo:README.md",
       "path": "README.md",
       "type": "product-claim",
-      "hash": "6c708ea7e88cdd9e3ba911d20b0811965d36fbb036bbd241ba16224609537ceb"
+      "hash": "b45ac422e8ef785cf46e4616d6ac248b1d90c9c446a072d49792a09f9b0b6bc1"
     },
     {
       "id": "repo:scripts/accept_coursewerk_revision.mjs",
@@ -161,19 +167,19 @@
       "id": "repo:scripts/capture_rights_evidence.mjs",
       "path": "scripts/capture_rights_evidence.mjs",
       "type": "executable",
-      "hash": "2b5975c9c7c05d942dcc1b0a3077a96dcee1330d4eb12cf4371483e92bea3c7c"
+      "hash": "d58e03c727321830ac71e9e2491fcaf474267bb41515670c2182ade95d006939"
     },
     {
       "id": "repo:scripts/check_assurance.mjs",
       "path": "scripts/check_assurance.mjs",
       "type": "executable",
-      "hash": "588c32dcfe2bd8d50e4b8c2ba42f146655e200dcc6a56dcbe85c7f23edcdbe04"
+      "hash": "ed2a129fc590b2391733e0ea6c0410f857830b73701e7930c9d6e5e4f59bf9de"
     },
     {
       "id": "repo:scripts/check_oer.mjs",
       "path": "scripts/check_oer.mjs",
       "type": "executable",
-      "hash": "522c5923d889621d5f18b2ff35c917aaa753bc7fc2fec90b2b09e82f38c483f0"
+      "hash": "e33dae64ea9ca26d0dcc43a371d06147af7c86c79fb704a86560773dda5d2393"
     },
     {
       "id": "repo:scripts/coursewerk_impact.mjs",
@@ -221,7 +227,7 @@
       "id": "repo:scripts/data/source-policies.json",
       "path": "scripts/data/source-policies.json",
       "type": "executable",
-      "hash": "23422eb90f099653830fc9c20aa8849399c4dc907b4ed4fa791e89243a103bc6"
+      "hash": "9d2bb5ccee49aa76d9588a7158ee644a3461acbfca5f1e785ab358eddcdfc0de"
     },
     {
       "id": "repo:scripts/generate_attribution.mjs",
@@ -251,7 +257,7 @@
       "id": "repo:scripts/lib/assurance.mjs",
       "path": "scripts/lib/assurance.mjs",
       "type": "kernel",
-      "hash": "1ba608f79bced20dc6228cd8aca27d86413eca96c34a86b0e9da88e3ca6a4c61"
+      "hash": "c6af7418a9fbe5f4fbcf2fdeb23f4ee987f0be3ceb5e093c338af53bd04b71ae"
     },
     {
       "id": "repo:scripts/lib/coherence.mjs",
@@ -272,10 +278,16 @@
       "hash": "4de30289a1368bf4d5b847374ab398ed070b4ea1c5c5eb82aa1f495ee2c8f955"
     },
     {
+      "id": "repo:scripts/lib/pre_ingestion.mjs",
+      "path": "scripts/lib/pre_ingestion.mjs",
+      "type": "kernel",
+      "hash": "4fba5db92e099dc82d2eba0ed35948742bf4b9a4032321a87ba270b8e5523322"
+    },
+    {
       "id": "repo:scripts/lib/rights_preflight.mjs",
       "path": "scripts/lib/rights_preflight.mjs",
       "type": "kernel",
-      "hash": "d1eac16b45f8c4ad6daaa745f703cda2bf648fcf1037880756f40aa631ead86d"
+      "hash": "9c7aebd8dc09809fcc9f0493da5cb03623d6ef7808b65fc2daa380f5ca420fe0"
     },
     {
       "id": "repo:scripts/lib/slug.mjs",
@@ -299,13 +311,19 @@
       "id": "repo:scripts/pack.mjs",
       "path": "scripts/pack.mjs",
       "type": "executable",
-      "hash": "22e685fdedbd73e968a980a19c932080a3145a5156152cf023bb768cff630e78"
+      "hash": "add310cd9869269ee89411172ef0c76c6772d8e2c79b928835241b0884cbfdbb"
     },
     {
       "id": "repo:scripts/prepare_source_corpus.mjs",
       "path": "scripts/prepare_source_corpus.mjs",
       "type": "executable",
-      "hash": "ef4ee78519154552c9bd2c05a53a746c2374659795c54c624f7275a4bfbae8f7"
+      "hash": "bddc8c33142fe39957732c65bc422fe5219470827b4457c6f582c2c5f32a12a3"
+    },
+    {
+      "id": "repo:scripts/prepare_wikipedia_topic.mjs",
+      "path": "scripts/prepare_wikipedia_topic.mjs",
+      "type": "executable",
+      "hash": "33f7c690132b0c3b073adf4d4e079e19f0969f6e750d2db27fcf0a622d86082b"
     },
     {
       "id": "repo:scripts/revision_impact.mjs",
@@ -341,7 +359,7 @@
       "id": "repo:site/index.html",
       "path": "site/index.html",
       "type": "product-website",
-      "hash": "33a7d2731bebb9c2334625b2de885277998b6fc6a034391fcd704bf8fe20c567"
+      "hash": "f6e6f9b98789d665c928800f9b18cff30a0415d75183101f783bc1044f460053"
     },
     {
       "id": "repo:site/styles.css",
@@ -353,7 +371,7 @@
       "id": "repo:skills/courseguide-standards/SKILL.md",
       "path": "skills/courseguide-standards/SKILL.md",
       "type": "skill",
-      "hash": "7be0796c52783feac15093bd88329edf725c69e5d762b2a8aaf5570ce9546034"
+      "hash": "f9ee5982c84640e990b2f3b00b36a5a331684b6e8554203c1bc2f04676e54934"
     },
     {
       "id": "repo:skills/oer-figures/scripts/draw_chem.py",
@@ -371,13 +389,13 @@
       "id": "repo:skills/oer-figures/SKILL.md",
       "path": "skills/oer-figures/SKILL.md",
       "type": "skill",
-      "hash": "79a3c005630c7eadbe1b27136e5dc42d06068279e303ecc71fd05d46e73526ef"
+      "hash": "5c55b74a45ca88d53e465115dc845ab62474917d2252be9d0482519ea399d8a8"
     },
     {
       "id": "repo:skills/oer-qa/SKILL.md",
       "path": "skills/oer-qa/SKILL.md",
       "type": "skill",
-      "hash": "e11c0642aff8808c6f4b4e1dcd11d1d6d9fab77944a06ba50b6c1ca998821387"
+      "hash": "d6749c109f058cbddc8d8e4042018ff4e1bc48e8425ce17ad7cfd7ab702fcca1"
     },
     {
       "id": "repo:skills/orz-markdown/assets/minimal.css",
@@ -431,7 +449,7 @@
       "id": "repo:system/CLAIMS.json",
       "path": "system/CLAIMS.json",
       "type": "system-governance",
-      "hash": "34d968e2f130f458c503728ddd009eb3ae4c5a4527a98bd3175855833928d8e8"
+      "hash": "0e7d6998ac6a269f4d623776fee0661a36e77af0e002f0918a5928b1bfa06527"
     },
     {
       "id": "repo:system/COMPONENTS.json",
@@ -443,7 +461,7 @@
       "id": "repo:system/KNOWN_FINDINGS.json",
       "path": "system/KNOWN_FINDINGS.json",
       "type": "system-governance",
-      "hash": "2fb2ea6e2c8e826c4e81df4ed7f5b4bfc155263af21328ac4669f3ecf2dde186"
+      "hash": "6818909c1a40e51f020e4f4e254ca4980c3c13dd17faf6bb38798b54abfebda0"
     },
     {
       "id": "repo:system/QUALITY_PROFILES.json",
@@ -485,25 +503,31 @@
       "id": "repo:templates/brief.example.md",
       "path": "templates/brief.example.md",
       "type": "template",
-      "hash": "7d2aa34be4d2299ca85b33bbd22fb4e49049022904059808bf1738022156f8f9"
+      "hash": "903cf3368fd7226d3d65208264289e7ca8dfb7ecc3618e3784b7650f5b06e543"
     },
     {
       "id": "repo:templates/foundation.personal.example.json",
       "path": "templates/foundation.personal.example.json",
       "type": "template",
-      "hash": "d2883e77e630a51ffc767c595755e049d15faeb8cd6aea068ae609889c02941d"
+      "hash": "7f4bd640fda97f306c75f80cdef22189b48384ec3c7281fdd96b92ff7e53ec0b"
     },
     {
       "id": "repo:templates/foundation.public-oer.example.json",
       "path": "templates/foundation.public-oer.example.json",
       "type": "template",
-      "hash": "1abdf9dc20bebbba9baf962f722e554a3b6a1ae6a962b67b5388c12f06b2c496"
+      "hash": "5b8397ebd4ebf0d3d5953bc6097ccdaa564b7d2cd81880133a04c7934c25737e"
     },
     {
       "id": "repo:templates/foundation.restricted.example.json",
       "path": "templates/foundation.restricted.example.json",
       "type": "template",
-      "hash": "c25c11fef96c4c74768e962d92ae939fe7d5ab899d61e5aca280e36c46b9084e"
+      "hash": "f3617931c9653ece7c76885ce39ee785a17e64bcde44e366da7c6bc170f8dc90"
+    },
+    {
+      "id": "repo:templates/foundation.wikipedia-science.example.json",
+      "path": "templates/foundation.wikipedia-science.example.json",
+      "type": "template",
+      "hash": "dca0af4348e70bf160abe1c5660dc4ce86fe2440e9198b6f0103ffdb23fdc992"
     },
     {
       "id": "repo:templates/media-plan.example.json",
@@ -521,13 +545,13 @@
       "id": "repo:templates/source-corpus.example.json",
       "path": "templates/source-corpus.example.json",
       "type": "template",
-      "hash": "0983147cbccd574983cbd1f1840bfa124f624e535f44c708998c9cd37440f7b5"
+      "hash": "5f37f8d8cc2aae2ebee07a2508b2888e36809fa95cdb645019d3879429c7b7ac"
     },
     {
       "id": "repo:tests/assurance.test.mjs",
       "path": "tests/assurance.test.mjs",
       "type": "test",
-      "hash": "7d2334ef4a28e5247f744a5d8406db6d1209537d48c1320d7f586695daa0d2e8"
+      "hash": "1c2ae037520ae24a66ee2c7fa8f2363457060c0723d0c9286ec2210f11929620"
     },
     {
       "id": "repo:tests/carriers.test.mjs",
@@ -545,13 +569,13 @@
       "id": "repo:tests/evidence-tools.test.mjs",
       "path": "tests/evidence-tools.test.mjs",
       "type": "test",
-      "hash": "caf53f643081807d782b74f9b5e25d1899555b9ee75503263671e25006284778"
+      "hash": "96f9acfe73cefc848be667ea3853400edda5825d88490e263c0f367d96bb08de"
     },
     {
       "id": "repo:tests/qa.test.mjs",
       "path": "tests/qa.test.mjs",
       "type": "test",
-      "hash": "0ff780736cacc1b43a87e4dbb9643f887c7c4f71c235b8307faa7ec7143eac70"
+      "hash": "27b57d9148270e600e523834cca6d5cf7a472f24ea996c75f467cce6674f5560"
     },
     {
       "id": "repo:tests/site.test.mjs",
@@ -569,7 +593,7 @@
       "id": "repo:VERSION",
       "path": "VERSION",
       "type": "release-metadata",
-      "hash": "0dd2699139f70a122fd0aa23b5bb38a86db7ee822bf5cdc6798d0159ee1efd24"
+      "hash": "57394e83d68850661c8045e30fcbb180480026871302a588d2aff7c1b0b64531"
     }
   ],
   "relationships": [
@@ -1044,13 +1068,15 @@
     },
     {
       "id": "claim.rights.verified",
-      "statement": "Public sources have identified rights evidence, process-specific notice review, and compatible output licensing.",
+      "statement": "Every non-owned source has a hash-bound, known-policy-aware pre-ingestion clearance receipt; public sources also have compatible output licensing.",
       "assuranceLevel": "hard-gate",
       "implementation": [
         "scripts/lib/assurance.mjs",
+        "scripts/lib/pre_ingestion.mjs",
         "scripts/lib/rights_preflight.mjs",
         "scripts/data/source-policies.json",
-        "scripts/capture_rights_evidence.mjs"
+        "scripts/capture_rights_evidence.mjs",
+        "scripts/prepare_source_corpus.mjs"
       ],
       "tests": [
         "tests/assurance.test.mjs",
@@ -1061,6 +1087,7 @@
         "CLAUDE.md",
         "PROCEDURE.md",
         "docs/assurance-kernel.md",
+        "docs/wikipedia-science-topic.md",
         "site/index.html"
       ]
     },
@@ -1071,7 +1098,8 @@
       "implementation": [
         "scripts/check_oer.mjs",
         "scripts/lib/verbatim.mjs",
-        "scripts/prepare_source_corpus.mjs"
+        "scripts/prepare_source_corpus.mjs",
+        "scripts/prepare_wikipedia_topic.mjs"
       ],
       "tests": [
         "tests/assurance.test.mjs",
@@ -1159,6 +1187,20 @@
       "resolution": "Public QA requires a substantive adjacent Visual description or Data summary for every Mermaid/chart block."
     },
     {
+      "id": "AUDIT-EVIDENCE-EXCERPT-001",
+      "severity": "P3",
+      "status": "resolved",
+      "summary": "Detected process-notice excerpts contain raw HTML fragments.",
+      "resolution": "Process scanning and excerpts operate on decoded visible text while preserving the raw snapshot separately."
+    },
+    {
+      "id": "AUDIT-EVIDENCE-METADATA-001",
+      "severity": "P2",
+      "status": "resolved",
+      "summary": "Rights snapshots omit retrieval and capture provenance needed to interpret the evidence.",
+      "resolution": "Capture records mode, URLs/redirects, HTTP metadata, bytes, timestamp, tool version, and structured operator identity."
+    },
+    {
       "id": "AUDIT-FORMAT-001",
       "severity": "P1",
       "status": "resolved",
@@ -1208,11 +1250,18 @@
       "resolution": "DOCUMENTS.json declares carrier type for sources in valid public/private/personal paths."
     },
     {
+      "id": "AUDIT-PREFLIGHT-POLICY-001",
+      "severity": "P0",
+      "status": "resolved",
+      "summary": "A known source can clear capture and preparation when its expected process notice is absent.",
+      "resolution": "Known-source expectations are enforced during capture and rechecked from a hash-bound receipt before preparation reads the source."
+    },
+    {
       "id": "AUDIT-PROCESS-RIGHTS-001",
       "severity": "P0",
       "status": "resolved",
       "summary": "A process-specific generative-AI ingestion notice can be present while the AI workflow and release gate continue.",
-      "resolution": "Deterministic capture scans before source preparation; unresolved notices stop every use profile and known OpenStax policy requires its expected notice."
+      "resolution": "Capture emits a hash-bound clearance receipt; preparation re-verifies it, and unresolved notices stop every use profile."
     },
     {
       "id": "AUDIT-PROVENANCE-001",
@@ -1226,7 +1275,14 @@
       "severity": "P2",
       "status": "resolved",
       "summary": "Extracted source text is hashed but the raw source and retrieval context are not digest-bound.",
-      "resolution": "Automatic corpus entries include raw snapshot path/hash, canonical URL, retrieval timestamp, extractor metadata, and extracted-text hash."
+      "resolution": "Automatic corpus entries include raw snapshot path/hash, canonical URL, retrieval timestamp, versioned extractor metadata, extracted-text hash, and an exact manifest hash in the release receipt."
+    },
+    {
+      "id": "AUDIT-READINESS-001",
+      "severity": "P1",
+      "status": "resolved",
+      "summary": "A public source with an unresolved process restriction can report privateUseReady true.",
+      "resolution": "Universal ingestionReady and stage-aware readiness require cleared receipts in every intended-use profile."
     },
     {
       "id": "AUDIT-RELEASE-001",
@@ -1234,6 +1290,13 @@
       "status": "resolved",
       "summary": "Pack does not require carrier-build and evaluation receipts.",
       "resolution": "Packing reruns carriers and emits evaluation, archive hash, and structured release receipt."
+    },
+    {
+      "id": "AUDIT-REPORT-PATH-001",
+      "severity": "P2",
+      "status": "resolved",
+      "summary": "Report commands fail when the report parent directory does not exist.",
+      "resolution": "Assurance and QA commands create report/JSON parent directories before writing."
     },
     {
       "id": "AUDIT-SOURCE-001",

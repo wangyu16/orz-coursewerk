@@ -3,7 +3,7 @@
 Copy this to `inputs/brief.md` and fill what you know — or simply say it to your AI agent.
 
 - **Course / level:** <e.g. Introductory College General Chemistry>
-- **Source of truth:** <a named OPEN textbook + edition + license, e.g. OpenStax Chemistry: Atoms
+- **Source of truth:** <a verified open source or a chapter-sized multi-page Wikipedia science corpus, e.g. one anchor article plus supporting pages
   First 2e (CC BY-NC-SA 4.0)> — OR — <my own materials in inputs/>
 - **Intended use:** <personal-private / restricted-teaching / public-OER>
 - **Access and redistribution:** <creator-only local / access-controlled class / public web>

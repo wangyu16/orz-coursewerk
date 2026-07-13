@@ -5,7 +5,7 @@
   "access": "public-web",
   "redistribution": "open-license",
   "jurisdiction": "international",
-  "outputLicense": "CC-BY-NC-SA-4.0",
+  "outputLicense": "CC-BY-SA-4.0",
   "outputAuthors": [
     {
       "name": "REPLACE-WITH-ACCOUNTABLE-PERSON-OR-INSTITUTION",
@@ -20,39 +20,26 @@
   },
   "sources": [
     {
-      "id": "openstax-chemistry-2e",
-      "title": "Chemistry 2e",
-      "edition": "2e",
-      "publisher": "OpenStax",
-      "canonicalUrl": "https://openstax.org/books/chemistry-2e/pages/preface",
+      "id": "wikipedia-science-anchor",
+      "title": "REPLACE-WITH-ENGLISH-WIKIPEDIA-ARTICLE-TITLE",
+      "version": "live page; revision captured in SOURCE_CORPUS.json",
+      "publisher": "Wikipedia contributors",
+      "canonicalUrl": "https://en.wikipedia.org/wiki/REPLACE_WITH_ARTICLE",
       "role": "primary",
       "use": "adaptation",
-      "scope": ["REPLACE-WITH-CHAPTERS-AND-SECTIONS"],
+      "scope": ["sections used for the selected science topic, excluding separately licensed media"],
       "rightsBasis": {
         "type": "open-license",
-        "license": "CC-BY-NC-SA-4.0",
+        "license": "CC-BY-SA-4.0",
         "evidenceType": "official-publisher-page",
-        "evidenceUrl": "https://openstax.org/books/chemistry-2e/pages/preface",
-        "verifiedAt": "REPLACE-WITH-YYYY-MM-DD",
-        "evidenceSnapshot": "metadata/evidence/openstax-chemistry-2e.txt",
-        "evidenceSha256": "REPLACE-WITH-SHA256",
-        "evidenceVerifiedBy": "REPLACE-WITH-PERSON-OR-AGENT",
-        "processUseReview": {
-          "schemaVersion": 1,
-          "scannedAt": "REPLACE-WITH-ISO-DATETIME",
-          "status": "blocked-pending-decision",
-          "notices": [
-            {
-              "id": "generative-ai-ingestion",
-              "summary": "The authoritative page contains a process-specific generative-AI ingestion notice.",
-              "excerpt": "REPLACE-WITH-SHORT-EVIDENCE-EXCERPT"
-            }
-          ]
-        }
+        "evidenceUrl": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use",
+        "verifiedAt": "REPLACE-WITH-YYYY-MM-DD"
       },
       "requiredAttribution": {
-        "textIncludes": "Access for free at",
-        "url": "https://openstax.org/books/chemistry-2e/pages/1-introduction",
+        "textIncludes": "Wikipedia contributors",
+        "url": "https://en.wikipedia.org/wiki/REPLACE_WITH_ARTICLE",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "modificationNotice": "Adapted and reorganized for this teaching resource.",
         "placement": "every-public-deliverable"
       }
     }

@@ -28,7 +28,7 @@ Alembic cleanly — raster `.png`/`.jpg`/`.pdf` are skipped on a *trial* import 
 2. **Open-licensed real images — use them LIBERALLY, don't be conservative.** Real photos of the actual
    substances, apparatus, and phenomena (an element sample, an analytical balance, a reaction, a micrograph)
    make a chapter come alive in a way diagrams can't — a package of only self-generated SVGs is too dry.
-   Fetch from Wikimedia Commons, OpenStax (its own CC-BY figures), Openverse, NASA/NOAA (public domain) with
+   Fetch from Wikimedia Commons, Openverse, NASA/NOAA (public domain) with
    `oer-figures`' `fetch_open_image.py`, which **captures the attribution row for you**; **resize** to a
    web-friendly width (~800–900 px) so the package stays light. Aim for **at least one or two fetched real
    photos per chapter**. If a real photograph would not improve a chapter, record that accountable decision and

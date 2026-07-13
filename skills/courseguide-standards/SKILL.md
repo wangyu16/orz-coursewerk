@@ -30,7 +30,7 @@ Two global rules:
   - **Real figures, generously.** Every section that benefits gets a *visible* figure — a generated
     structure/scheme (`oer-figures` RDKit → `assets/`), a real data plot (matplotlib → `assets/`, or an
     inline `{{chart}}`), a diagram (`{{mermaid}}`, or a hand-authored SVG in `assets/`), or an
-    open-licensed real image (Wikimedia/OpenStax, with attribution). Aim for **several figures per
+    open-licensed real image (Wikimedia Commons/Openverse, with attribution). Aim for **several figures per
     chapter**, captioned, referenced as `![alt](../assets/…)`. Inline `{{smiles}}`/`{{chart}}`/`{{mermaid}}`
     supplement figures; they don't replace them. (See `skills/oer-figures`.)
   - **Everyday-life examples.** Anchor each concept in a **relatable real-world example or analogy** (a

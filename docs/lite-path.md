@@ -19,11 +19,13 @@ steps it can't. The intended-use profile still determines whether output belongs
    Ask the AI to follow `PROCEDURE.md`, pausing at each gate. It produces lean Markdown as chat output or
    downloadable files. Save files under the selected root. Only public OER receives `alembic.json` and may
    enter the `package/` tree.
-   Public work also needs a local rights-evidence snapshot and `inputs/SOURCE_CORPUS.json`; when comparison text
+   Every non-owned source also needs a cleared hash-bound `metadata/preflight/` receipt before the AI reads it.
+   Public work needs a local rights-evidence snapshot and `inputs/SOURCE_CORPUS.json`; when comparison text
    is unavailable, record an explicit dated human attestation instead of claiming an automated scan.
 3. **Validate + package.** You run the three helper steps once (they need Node.js, not an AI):
    ```bash
    bash bootstrap/init.sh            # installs builders + initializes output Git
+   node scripts/check_assurance.mjs --root package --phase pre-ingestion
    node scripts/check_oer.mjs --package package --report reports/qa_report.md
    npm run generate:attribution      # regenerate the public attribution view
    node scripts/build_carriers.mjs --root package --out preview

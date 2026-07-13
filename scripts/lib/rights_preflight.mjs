@@ -3,19 +3,45 @@ const RESTRICTION_RULES = [
     id: "generative-ai-ingestion",
     summary: "Source notice restricts training or ingestion into LLM/generative-AI systems.",
     patterns: [
-      /may\s+not\s+be\s+used[\s\S]{0,180}(?:training|ingest(?:ed|ion)?)[\s\S]{0,180}(?:large\s+language\s+models?|generative\s+AI)[\s\S]{0,120}(?:without|unless)[\s\S]{0,80}permission/i,
-      /may\s+not\s+be\s+(?:ingested|used)[\s\S]{0,180}(?:large\s+language\s+models?|generative\s+AI)[\s\S]{0,120}(?:without|unless)[\s\S]{0,80}permission/i,
-      /(?:no|prohibit(?:ed|s)?|forbid(?:den|s)?)[\s\S]{0,100}(?:AI|artificial\s+intelligence|large\s+language\s+model)[\s\S]{0,120}(?:training|ingest|use)/i,
+      /\bmay\s+not\s+be\s+used\b[\s\S]{0,180}\b(?:training|ingest(?:ed|ion)?)\b[\s\S]{0,180}\b(?:large\s+language\s+models?|generative\s+AI)\b[\s\S]{0,120}\b(?:without|unless)\b[\s\S]{0,80}\bpermission\b/i,
+      /\bmay\s+not\s+be\s+(?:ingested|used)\b[\s\S]{0,180}\b(?:large\s+language\s+models?|generative\s+AI)\b[\s\S]{0,120}\b(?:without|unless)\b[\s\S]{0,80}\bpermission\b/i,
+      /\b(?:no|prohibit(?:ed|s)?|forbid(?:den|s)?)\b[\s\S]{0,100}\b(?:AI|artificial\s+intelligence|large\s+language\s+model)\b[\s\S]{0,120}\b(?:training|ingest(?:ed|ion)?|use)\b/i,
     ],
   },
   {
     id: "automated-processing-restriction",
     summary: "Source notice restricts automated, machine-learning, or text/data-mining processing.",
     patterns: [
-      /(?:may\s+not|prohibit(?:ed|s)?|forbid(?:den|s)?)[\s\S]{0,100}(?:automated\s+processing|machine\s+learning|text\s+and\s+data\s+mining|text\s+or\s+data\s+mining)/i,
+      /\b(?:may\s+not|prohibit(?:ed|s)?|forbid(?:den|s)?)\b[\s\S]{0,100}\b(?:automated\s+processing|machine\s+learning|text\s+and\s+data\s+mining|text\s+or\s+data\s+mining)\b/i,
     ],
   },
 ];
+
+const HTML_ENTITIES = {
+  amp: "&",
+  apos: "'",
+  gt: ">",
+  lt: "<",
+  nbsp: " ",
+  quot: '"',
+};
+
+export function normalizeEvidenceText(value) {
+  return String(value)
+    .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (_, entity) => {
+      if (entity[0] === "#") {
+        const hex = entity[1]?.toLowerCase() === "x";
+        const point = Number.parseInt(entity.slice(hex ? 2 : 1), hex ? 16 : 10);
+        return Number.isFinite(point) ? String.fromCodePoint(point) : " ";
+      }
+      return HTML_ENTITIES[entity.toLowerCase()] ?? " ";
+    })
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 function excerpt(text, index, length = 320) {
   const start = Math.max(0, index - 60);
@@ -23,12 +49,13 @@ function excerpt(text, index, length = 320) {
 }
 
 export function scanProcessRestrictions(text) {
+  const visibleText = normalizeEvidenceText(text);
   const notices = [];
   for (const rule of RESTRICTION_RULES) {
     for (const pattern of rule.patterns) {
-      const match = pattern.exec(String(text));
+      const match = pattern.exec(visibleText);
       if (match) {
-        notices.push({ id: rule.id, summary: rule.summary, excerpt: excerpt(text, match.index) });
+        notices.push({ id: rule.id, summary: rule.summary, excerpt: excerpt(visibleText, match.index) });
         break;
       }
     }

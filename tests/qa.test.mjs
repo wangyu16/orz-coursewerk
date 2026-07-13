@@ -7,6 +7,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { renderAttribution } from "../scripts/lib/assurance.mjs";
+import { buildPreflightReceipt, writePreflightReceipt } from "../scripts/lib/pre_ingestion.mjs";
 import { computeComponentGraph, makeComponentIndex, recordAcceptedCoherence, writeComponentIndex } from "../scripts/lib/coherence.mjs";
 import { commitOutput, ensureOutputGit } from "../scripts/lib/output_git.mjs";
 
@@ -34,8 +35,10 @@ function cleanFixture() {
     schemaVersion: 1, usageProfile: "public-oer", audience: "public", access: "public-web", redistribution: "open-license", jurisdiction: "international", outputLicense: "CC-BY-4.0",
     outputAuthors: [{ name: "QA Course Author", role: "author", rightsHolder: true }],
     privacy: { containsPersonalData: false, containsRestrictedContent: false },
-    sources: [{ id: "source-1", title: "Example Source", edition: "1", publisher: "Example", canonicalUrl: "https://example.org/source", role: "primary", use: "reference", scope: ["chapter 1"], rightsBasis: { type: "open-license", license: "CC-BY-4.0", evidenceType: "official-publisher-page", evidenceUrl: "https://example.org/license", verifiedAt: "2026-07-13", evidenceSnapshot: "metadata/evidence/source-1.txt", evidenceSha256: sha(evidence), evidenceVerifiedBy: "fixture", processUseReview: { schemaVersion: 1, scannedAt: "2026-07-13T00:00:00Z", status: "no-restriction-detected", notices: [] } }, requiredAttribution: { textIncludes: "Source:", url: "https://example.org/source", placement: "every-public-deliverable" } }],
+    sources: [{ id: "source-1", title: "Example Source", edition: "1", publisher: "Example", canonicalUrl: "https://example.org/source", role: "primary", use: "reference", scope: ["chapter 1"], rightsBasis: { type: "open-license", license: "CC-BY-4.0", evidenceType: "official-publisher-page", evidenceUrl: "https://example.org/license", verifiedAt: "2026-07-13", evidenceSnapshot: "metadata/evidence/source-1.txt", evidenceSha256: sha(evidence), evidenceRetrieval: { captureMode: "local-file", claimedEvidenceUrl: "https://example.org/license", localFileName: "source-1.txt", retrievedAt: "2026-07-13T00:00:00Z", byteLength: Buffer.byteLength(evidence), contentType: "text/plain", tool: { name: "coursewerk", version: "test" } }, evidenceCapture: { operator: { type: "automation", name: "fixture" }, capturedAt: "2026-07-13T00:00:00Z", tool: { name: "coursewerk", version: "test" } }, processUseReview: { schemaVersion: 1, scannedAt: "2026-07-13T00:00:00Z", status: "no-restriction-detected", notices: [] } }, requiredAttribution: { textIncludes: "Source:", url: "https://example.org/source", placement: "every-public-deliverable" } }],
   };
+  const receipt = buildPreflightReceipt({ source: foundation.sources[0], evidenceBytes: Buffer.from(evidence), retrieval: foundation.sources[0].rightsBasis.evidenceRetrieval, operator: foundation.sources[0].rightsBasis.evidenceCapture.operator, generatedAt: "2026-07-13T00:00:00Z" });
+  writePreflightReceipt(root, foundation.sources[0], receipt);
   const manifest = { schemaVersion: 2, packageId: "pending", title: "QA Fixture", license: "CC-BY-4.0", description: "A complete fixture for testing Coursewerk quality and release behavior.", keywords: ["quality", "course", "fixture"], discipline: "testing", unitTerm: "chapter", courseContext: { courseName: "QA Course", level: "introductory" }, createdAt: "2026-07-13T00:00:00Z", chapters: [{ slug: "ch1", title: "Chapter 1" }] };
   const provenance = { schemaVersion: 1, items: [] };
   writeJson(path.join(root, "alembic.json"), manifest);
@@ -59,7 +62,7 @@ function cleanFixture() {
   fs.mkdirSync(path.join(inputs, ".coursewerk-source-original"), { recursive: true });
   fs.writeFileSync(path.join(inputs, ".coursewerk-source-original", "source-1.txt"), sourceText);
   fs.writeFileSync(path.join(inputs, "source.txt"), sourceText);
-  writeJson(path.join(inputs, "SOURCE_CORPUS.json"), { schemaVersion: 1, sources: [{ sourceId: "source-1", comparisonMode: "automatic", originalPath: ".coursewerk-source-original/source-1.txt", originalSha256: sha(sourceText), canonicalUrl: "https://example.org/source", retrievedAt: "2026-07-13T00:00:00Z", extractor: { tool: "coursewerk", schemaVersion: 1, sourceFormat: ".txt" }, textPath: "source.txt", sha256: sha(sourceText), minimumWords: 100 }] });
+  writeJson(path.join(inputs, "SOURCE_CORPUS.json"), { schemaVersion: 1, sources: [{ sourceId: "source-1", comparisonMode: "automatic", originalPath: ".coursewerk-source-original/source-1.txt", originalSha256: sha(sourceText), canonicalUrl: "https://example.org/source", retrievedAt: "2026-07-13T00:00:00Z", extractor: { tool: "coursewerk", version: "test", schemaVersion: 1, sourceFormat: ".txt" }, textPath: "source.txt", sha256: sha(sourceText), minimumWords: 100 }] });
   accept(root);
   return { parent, root, inputs };
 }

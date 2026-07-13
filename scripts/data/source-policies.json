@@ -11,11 +11,26 @@
       "license": "CC-BY-NC-SA-4.0",
       "licenseEvidenceUrl": "https://openstax.org/books/chemistry-2e/pages/preface",
       "expectedProcessNoticeIds": ["generative-ai-ingestion"],
+      "requiredEvidenceTextIncludes": ["Attribution-NonCommercial-ShareAlike 4.0"],
       "requiredAttribution": {
         "textIncludes": "Access for free at",
         "url": "https://openstax.org/books/chemistry-2e/pages/1-introduction",
         "placement": "every-public-deliverable"
       }
+    },
+    {
+      "id": "english-wikipedia-text",
+      "match": {
+        "canonicalUrlIncludes": "en.wikipedia.org/wiki/"
+      },
+      "license": "CC-BY-SA-4.0",
+      "licenseEvidenceUrl": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use",
+      "expectedProcessNoticeIds": [],
+      "requiredEvidenceTextIncludes": [
+        "Creative Commons Attribution-ShareAlike 4.0",
+        "When you reuse or redistribute a text page"
+      ],
+      "attributionMode": "wikipedia-page-link-change-notice"
     }
   ]
 }

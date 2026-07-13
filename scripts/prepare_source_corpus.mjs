@@ -3,7 +3,8 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { processDecisionResolves, scanProcessRestrictions } from "./lib/rights_preflight.mjs";
+import { fileURLToPath } from "node:url";
+import { auditIngestionReadiness } from "./lib/pre_ingestion.mjs";
 
 const args = process.argv.slice(2);
 const opt = (name, fallback = null) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -16,30 +17,13 @@ if (!fs.existsSync(foundationFile)) { console.error("prepare-source-corpus: --ro
 const foundation = JSON.parse(fs.readFileSync(foundationFile, "utf8"));
 const sourceRecord = (foundation.sources || []).find((item) => item.id === sourceId);
 if (!sourceRecord) { console.error(`prepare-source-corpus: source ${sourceId} is not declared in FOUNDATION.json`); process.exit(3); }
-const basis = sourceRecord.rightsBasis || {};
-if (basis.type !== "owned" && basis.type !== "unknown") {
-  const snapshot = path.resolve(root, String(basis.evidenceSnapshot || ""));
-  const inside = path.relative(root, snapshot);
-  if (!basis.evidenceSnapshot || inside.startsWith("..") || path.isAbsolute(inside) || !fs.existsSync(snapshot)) {
-    console.error("prepare-source-corpus: authoritative rights evidence must be captured before source preparation");
-    process.exit(3);
-  }
-  const evidence = fs.readFileSync(snapshot);
-  const evidenceHash = crypto.createHash("sha256").update(evidence).digest("hex");
-  if (evidenceHash !== basis.evidenceSha256) {
-    console.error("prepare-source-corpus: rights evidence hash is missing or stale; recapture evidence before source preparation");
-    process.exit(3);
-  }
-  const notices = scanProcessRestrictions(evidence.toString("utf8"));
-  if (notices.length && !processDecisionResolves(notices, basis.processUseDecision)) {
-    console.error(`prepare-source-corpus: process-specific restriction (${notices.map((item) => item.id).join(", ")}) is unresolved; source preparation is blocked`);
-    process.exit(3);
-  }
-  if (!notices.length && basis.processUseReview?.status !== "no-restriction-detected") {
-    console.error("prepare-source-corpus: deterministic processUseReview is missing; run capture:rights first");
-    process.exit(3);
-  }
+const ingestion = auditIngestionReadiness(root, foundation);
+if (!ingestion.ready) {
+  console.error(`prepare-source-corpus: pre-ingestion clearance is missing, stale, or blocked: ${ingestion.failures.join("; ")}`);
+  process.exit(3);
 }
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const coursewerkVersion = fs.readFileSync(path.join(repoRoot, "VERSION"), "utf8").trim();
 fs.mkdirSync(inputs, { recursive: true });
 const manifestFile = path.join(inputs, "SOURCE_CORPUS.json");
 let manifest = { schemaVersion: 1, sources: [] };
@@ -94,7 +78,7 @@ if (args.includes("--human-attested")) {
     originalSha256: crypto.createHash("sha256").update(rawBytes).digest("hex"),
     canonicalUrl,
     retrievedAt,
-    extractor: { tool: "coursewerk", schemaVersion: 1, sourceFormat: ext || "unknown" },
+    extractor: { tool: "coursewerk", version: coursewerkVersion, schemaVersion: 1, sourceFormat: ext || "unknown" },
     textPath: rel,
     sha256: crypto.createHash("sha256").update(text).digest("hex"),
     minimumWords: 100,

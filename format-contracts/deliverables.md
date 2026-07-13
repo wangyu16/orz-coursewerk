@@ -28,6 +28,7 @@ package/
   metadata/ATTRIBUTION.md      # asset · source · license · attribution  (NOT at root — see note)
   metadata/DOCUMENTS.json      # optional declared mdhtml/slides/paged collection sources
   metadata/evidence/…          # local source-rights evidence snapshots
+  metadata/preflight/…         # hash-bound source clearance receipts required before ingestion
   private/…                    # instructor-only: answer keys, exams, notes (NEVER shared)
 ```
 

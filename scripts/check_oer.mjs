@@ -524,8 +524,8 @@ function verbatimAudit(dir, foundation) {
     if (!entry.canonicalUrl || entry.canonicalUrl !== source?.canonicalUrl)
       corpusFailures.push(`${sourceId}: corpus canonicalUrl must match FOUNDATION.json`);
     if (!entry.retrievedAt || Number.isNaN(Date.parse(entry.retrievedAt))) corpusFailures.push(`${sourceId}: retrievedAt must be a valid date-time`);
-    if (entry.extractor?.tool !== "coursewerk" || entry.extractor?.schemaVersion !== 1 || !entry.extractor?.sourceFormat)
-      corpusFailures.push(`${sourceId}: extractor tool/schemaVersion/sourceFormat are required`);
+    if (!new Set(["coursewerk", "wikipedia-action-api"]).has(entry.extractor?.tool) || !entry.extractor?.version || entry.extractor?.schemaVersion !== 1 || !entry.extractor?.sourceFormat)
+      corpusFailures.push(`${sourceId}: a supported extractor tool plus version/schemaVersion/sourceFormat are required`);
     const relText = String(entry.textPath || "").replaceAll("\\", "/");
     if (!relText || path.isAbsolute(relText) || relText.split("/").includes("..") || /^readme\.md$/i.test(relText)) {
       corpusFailures.push(`${sourceId}: automatic comparison requires a non-scaffold textPath inside inputs`);
@@ -653,8 +653,12 @@ const critical = {
 r.criticalCounts = critical;
 r.criticalTotal = Object.values(critical).reduce((a, b) => a + b, 0);
 
-if (jsonPath) fs.writeFileSync(jsonPath, JSON.stringify(r, null, 2));
+if (jsonPath) {
+  fs.mkdirSync(path.dirname(path.resolve(jsonPath)), { recursive: true });
+  fs.writeFileSync(jsonPath, JSON.stringify(r, null, 2));
+}
 if (reportPath) {
+  fs.mkdirSync(path.dirname(path.resolve(reportPath)), { recursive: true });
   const L = [];
   L.push("# Coursewerk QA Report", "", `Package: \`${rel(pkg) || pkg}\`  ·  ${r.corpus.deliverableFiles} deliverables · ${r.corpus.mediaAssets} assets`, "");
   L.push(`**Critical issues: ${r.criticalTotal}** (release-blocking, auto-detectable)`, "");

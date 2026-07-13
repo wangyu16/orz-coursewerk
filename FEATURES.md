@@ -227,8 +227,10 @@ Coursewerk is deliberately explicit about assurance boundaries:
 ## Main evidence artifacts
 
 - `metadata/FOUNDATION.json` — intended use, exact source identity, rights evidence, output license, and privacy.
-- `metadata/evidence/…` — hashed local snapshots of authoritative source-rights evidence.
-- `inputs/SOURCE_CORPUS.json` — source IDs bound to raw and extracted hashes, canonical retrieval evidence, or explicit attestation.
+- `metadata/evidence/…` — hashed local snapshots plus structured retrieval/capture metadata for authoritative source-rights evidence.
+- `metadata/preflight/…` — hash-bound source-policy receipts; source preparation refuses missing, blocked, or stale clearance.
+- `inputs/SOURCE_CORPUS.json` — source IDs bound to raw and extracted hashes, canonical retrieval evidence, versioned extractors, or explicit attestation.
+- `scripts/prepare_wikipedia_topic.mjs` — serialized, revision-aware collection of several cleared English Wikipedia pages into a chapter-sized science corpus.
 - `metadata/PROVENANCE.json` and `metadata/ATTRIBUTION.md` — item-level origin, status, use, and public credit.
 - `metadata/COMPONENT_INDEX.json` — accepted component hashes and dependency snapshots.
 - Output-root Git history — visible edit history and coherent baseline/revision commits.

@@ -7,6 +7,7 @@ import crypto from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { auditAssurance, renderAttribution } from "../scripts/lib/assurance.mjs";
+import { buildPreflightReceipt, writePreflightReceipt } from "../scripts/lib/pre_ingestion.mjs";
 import {
   auditCoherence,
   computeComponentGraph,
@@ -96,8 +97,11 @@ function attachEvidence(root, foundation) {
     fs.writeFileSync(path.join(root, rel), text);
     source.rightsBasis.evidenceSnapshot = rel;
     source.rightsBasis.evidenceSha256 = crypto.createHash("sha256").update(text).digest("hex");
-    source.rightsBasis.evidenceVerifiedBy = "test fixture";
+    source.rightsBasis.evidenceRetrieval = { captureMode: "local-file", claimedEvidenceUrl: source.rightsBasis.evidenceUrl, localFileName: `${source.id}.txt`, retrievedAt: "2026-07-13T00:00:00Z", byteLength: Buffer.byteLength(text), contentType: "text/plain", tool: { name: "coursewerk", version: "test" } };
+    source.rightsBasis.evidenceCapture = { operator: { type: "automation", name: "test fixture" }, capturedAt: "2026-07-13T00:00:00Z", tool: { name: "coursewerk", version: "test" } };
     source.rightsBasis.processUseReview = { schemaVersion: 1, scannedAt: "2026-07-13T00:00:00Z", status: "no-restriction-detected", notices: [] };
+    const receipt = buildPreflightReceipt({ source, evidenceBytes: Buffer.from(text), retrieval: source.rightsBasis.evidenceRetrieval, operator: source.rightsBasis.evidenceCapture.operator, generatedAt: "2026-07-13T00:00:00Z" });
+    writePreflightReceipt(root, source, receipt);
   }
   return foundation;
 }
@@ -110,9 +114,12 @@ function attachOpenStaxRestriction(root, foundation) {
     fs.writeFileSync(path.join(root, rel), text);
     source.rightsBasis.evidenceSnapshot = rel;
     source.rightsBasis.evidenceSha256 = crypto.createHash("sha256").update(text).digest("hex");
-    source.rightsBasis.evidenceVerifiedBy = "test fixture";
+    source.rightsBasis.evidenceRetrieval = { captureMode: "local-file", claimedEvidenceUrl: source.rightsBasis.evidenceUrl, localFileName: `${source.id}.txt`, retrievedAt: "2026-07-13T00:00:00Z", byteLength: Buffer.byteLength(text), contentType: "text/plain", tool: { name: "coursewerk", version: "test" } };
+    source.rightsBasis.evidenceCapture = { operator: { type: "automation", name: "test fixture" }, capturedAt: "2026-07-13T00:00:00Z", tool: { name: "coursewerk", version: "test" } };
     source.rightsBasis.processUseReview = { schemaVersion: 1, scannedAt: "2026-07-13T00:00:00Z", status: "blocked-pending-decision", notices: [{ id: "generative-ai-ingestion", summary: "AI ingestion restriction", excerpt: "test" }] };
     source.rightsBasis.processUseDecision = { status: "permitted", basis: "qualified-review", decidedBy: "Example Course Author", decidedAt: "2026-07-13", reference: "institutional-review-1", rationale: "A qualified institutional reviewer approved this specific noncommercial AI-assisted adaptation workflow." };
+    const receipt = buildPreflightReceipt({ source, evidenceBytes: Buffer.from(text), retrieval: source.rightsBasis.evidenceRetrieval, operator: source.rightsBasis.evidenceCapture.operator, generatedAt: "2026-07-13T00:00:00Z" });
+    writePreflightReceipt(root, source, receipt);
   }
   return foundation;
 }
@@ -274,6 +281,9 @@ test("an AI-ingestion restriction in authoritative evidence blocks every public 
     reference: "permission-record-2026-07-13",
     rationale: "The publisher granted written permission for this specific AI-assisted course adaptation.",
   };
+  source.rightsBasis.evidenceRetrieval.byteLength = Buffer.byteLength(evidence);
+  const receipt = buildPreflightReceipt({ source, evidenceBytes: Buffer.from(evidence), retrieval: source.rightsBasis.evidenceRetrieval, operator: source.rightsBasis.evidenceCapture.operator, generatedAt: "2026-07-13T00:00:00Z" });
+  writePreflightReceipt(f.root, source, receipt);
   writeJson(path.join(f.root, "metadata", "FOUNDATION.json"), foundation);
   const cleared = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.equal(cleared.canPack, true, cleared.hardFailures.join("\n"));
@@ -462,7 +472,7 @@ test("pack succeeds only after a valid public assurance pass", () => {
       textPath: "source.txt",
       sha256: sourceHash,
       minimumWords: 100,
-      extractor: { tool: "coursewerk", schemaVersion: 1, sourceFormat: ".txt" },
+      extractor: { tool: "coursewerk", version: "test", schemaVersion: 1, sourceFormat: ".txt" },
     }],
   });
   const run = spawnSync(process.execPath, [path.join(repo, "scripts", "pack.mjs"), "--package", f.root, "--out", out, "--inputs", inputs], { encoding: "utf8" });
@@ -477,6 +487,7 @@ test("pack succeeds only after a valid public assurance pass", () => {
   const receipt = JSON.parse(fs.readFileSync(path.join(out, receiptFile), "utf8"));
   assert.match(receipt.packageTreeHash, /^[a-f0-9]{64}$/);
   assert.match(receipt.sourceCorpusHash, /^[a-f0-9]{64}$/);
+  assert.equal(receipt.sourceCorpusManifestSha256, crypto.createHash("sha256").update(fs.readFileSync(path.join(inputs, "SOURCE_CORPUS.json"))).digest("hex"));
   assert.match(receipt.archiveSha256, /^[a-f0-9]{64}$/);
   assert.equal(receipt.carrierReceipt, carrierReceiptFile);
   assert.equal(receipt.carrierReceiptHash, crypto.createHash("sha256").update(fs.readFileSync(path.join(out, carrierReceiptFile))).digest("hex"));

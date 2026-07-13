@@ -105,7 +105,7 @@ uv run --with requests python scripts/fetch_open_image.py get \
   into the guide's `ATTRIBUTION.md` and structured `PROVENANCE.json` (see §5). For public work, no attribution
   captured means do not embed. For explicitly private work, an unresolved item may be embedded only with an
   `unknown`/`blocked` provenance record and a visible `SOURCE-UNKNOWN` label.
-- Good open sources to name in searches: Wikimedia Commons, Openverse, OpenStax (CC-BY 4.0),
+- Good open sources to name in searches: Wikimedia Commons, Openverse, NASA, NOAA,
   Wikipedia. For SVG diagrams, Commons is excellent.
 
 ## 3b. AI concept illustrations — conceptual art ONLY, with guardrails
@@ -145,7 +145,7 @@ reports and are NOT the author's to relicense.** For each candidate:
 
 ## 4b. Source-textbook figures (when the guide INHERITS the textbook's license)
 
-Some guides are built from ONE named open textbook (e.g. an OpenStax book) and are
+Some guides are built from one named open source and are
 licensed to **match that textbook's license**. When that is the case (the project's
 scope/LICENSE says so), you MAY embed the **textbook's OWN figures** — its real
 illustrations, photos, schemes, and charts — under the matched license, with attribution.
@@ -153,21 +153,18 @@ This is the high-value path when the textbook's figure is clearly better than an
 could self-generate (real photographs, micrographs, apparatus, polished diagrams).
 
 Rules:
-- **Only if the guide's own license already matches.** OpenStax *Chemistry / Atoms First*
-  books are **CC BY-NC-SA 4.0** (NonCommercial-ShareAlike). You may embed their figures ONLY
-  because the guide itself is licensed CC BY-NC-SA 4.0 (ShareAlike is satisfied; NC is
-  accepted because the guide is also NC). If the guide is plain CC BY, you may NOT — regenerate
-  instead (§1–2).
+- **Only after pre-ingestion clearance.** A permissive copyright license does not override a publisher's
+  separate process-specific terms. The source's Coursewerk receipt must be cleared before an agent reads,
+  fetches, or adapts its figures.
+- **Only if the guide's own license is compatible.** If a source figure is ShareAlike or NonCommercial,
+  the package must satisfy those conditions; otherwise regenerate instead (§1–2).
 - **Textbook's OWN art only — vet every figure for third-party credit.** Skip any figure whose
   in-book caption/credit names an outside source it merely "used with permission," a journal,
-  or a company logo — those are not the textbook's to relicense. OpenStax art **without** a
-  third-party credit is OpenStax's own.
+  or a company logo — those are not the textbook's to relicense.
 - **Download + attribute.** Fetch the figure image from the textbook page
   (`uv run --with requests python scripts/fetch_open_image.py get --url <figure_img_url>
-  --out assets/ch3_fig_3_4.png --allow-review`, then hand-record the license), or curl it.
-  Attribution line / ATTRIBUTION row license = the matched license, credited e.g.
-  **"OpenStax, Chemistry: Atoms First 2e, Fig 3.4, CC BY-NC-SA 4.0"** (use
-  "© Rice University, OpenStax, CC BY-NC-SA 4.0" for OpenStax art with no in-text credit).
+  --out assets/source_figure.png --allow-review`, then hand-record the license), or curl it.
+  Attribution must name the actual creator/source, exact work or figure, source URL, and license.
 - Still prefer **self-generated** structures/schemes (§1) and **charts** (§2) where they are as
   good or better; use textbook figures for the things you cannot draw.
 

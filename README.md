@@ -31,6 +31,10 @@ branch's merge base, preventing concurrent branches from silently drifting apart
 See [FEATURES.md](FEATURES.md) for the OER authoring pain points Coursewerk addresses and the assurance boundary
 behind each product claim.
 
+For future chapter-sized science trials, Coursewerk includes a
+[multi-page Wikipedia workflow](docs/wikipedia-science-topic.md): one anchor article plus supporting pages,
+hash-bound pre-ingestion clearance, revision-aware API capture, and a 6,000–25,000-word source-corpus target.
+
 An **Alembic package** — the exact tree Alembic ingests with zero friction, then turns into a published
 course website with paired public/private repositories. The trick is a **lean, framework-free** package:
 
@@ -129,6 +133,7 @@ scripts/check_oer.mjs          # automated quality gate (Alembic contract + OER 
 scripts/check_assurance.mjs    # foundation/provenance gate for private/restricted work
 scripts/capture_rights_evidence.mjs # snapshot/hash rights evidence and preflight process restrictions
 scripts/prepare_source_corpus.mjs   # bind raw/extracted source evidence or human comparison attestation
+scripts/prepare_wikipedia_topic.mjs # collect cleared, revision-pinned pages into a chapter-sized science corpus
 scripts/generate_attribution.mjs    # render attribution deterministically from structured provenance
 scripts/init_output_git.mjs    # initialize an independent Git ledger for an output root
 scripts/index_components.mjs   # initialize/refresh the output dependency index
@@ -137,6 +142,7 @@ scripts/build_carriers.mjs     # build the orz framework carriers into preview/ 
 scripts/pack.mjs               # produce the lean Alembic upload zip in dist/
 scripts/lib/contract.mjs       # local mirror of the Alembic package contract
 scripts/lib/assurance.mjs      # mode-independent hard-rule assurance kernel
+scripts/lib/pre_ingestion.mjs  # hash-bound source-policy clearance receipts
 scripts/lib/coherence.mjs      # hashes, dependency graph, impact + stale-index checks
 scripts/coursewerk_impact.mjs  # compute branch-aware impact for Coursewerk itself
 scripts/verify_coursewerk.mjs  # verify canonical self-index and accepted revision evidence
@@ -146,5 +152,5 @@ system/                        # Coursewerk claims, correlations, accepted index
 ## License
 
 Coursewerk (the harness) is released under the MIT License. Teaching packages use an output license compatible
-with every adapted source and incorporated item (for example, OpenStax Chemistry 2e requires CC BY-NC-SA 4.0).
+with every adapted source and incorporated item (for example, an English Wikipedia text adaptation uses CC BY-SA 4.0).
 Public-domain status remains distinct from CC0. Coursewerk records and enforces the supported compatibility paths.

@@ -11,11 +11,11 @@
     },
     {
       "id": "claim.rights.verified",
-      "statement": "Public sources have identified rights evidence, process-specific notice review, and compatible output licensing.",
+      "statement": "Every non-owned source has a hash-bound, known-policy-aware pre-ingestion clearance receipt; public sources also have compatible output licensing.",
       "assuranceLevel": "hard-gate",
-      "implementation": ["scripts/lib/assurance.mjs", "scripts/lib/rights_preflight.mjs", "scripts/data/source-policies.json", "scripts/capture_rights_evidence.mjs"],
+      "implementation": ["scripts/lib/assurance.mjs", "scripts/lib/pre_ingestion.mjs", "scripts/lib/rights_preflight.mjs", "scripts/data/source-policies.json", "scripts/capture_rights_evidence.mjs", "scripts/prepare_source_corpus.mjs"],
       "tests": ["tests/assurance.test.mjs", "tests/evidence-tools.test.mjs"],
-      "documentation": ["FEATURES.md", "CLAUDE.md", "PROCEDURE.md", "docs/assurance-kernel.md", "site/index.html"]
+      "documentation": ["FEATURES.md", "CLAUDE.md", "PROCEDURE.md", "docs/assurance-kernel.md", "docs/wikipedia-science-topic.md", "site/index.html"]
     },
     {
       "id": "claim.authorship.accountable",
@@ -37,7 +37,7 @@
       "id": "claim.source.comparison",
       "statement": "Discovery release binds raw and extracted source evidence and records whether deliverables were compared with it.",
       "assuranceLevel": "hard-gate",
-      "implementation": ["scripts/check_oer.mjs", "scripts/lib/verbatim.mjs", "scripts/prepare_source_corpus.mjs"],
+      "implementation": ["scripts/check_oer.mjs", "scripts/lib/verbatim.mjs", "scripts/prepare_source_corpus.mjs", "scripts/prepare_wikipedia_topic.mjs"],
       "tests": ["tests/assurance.test.mjs", "tests/evidence-tools.test.mjs"],
       "documentation": ["FEATURES.md", "docs/assurance-kernel.md"]
     },

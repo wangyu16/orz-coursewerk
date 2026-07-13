@@ -46,7 +46,9 @@ the current generative-AI-ingestion notice to be captured and will fail closed i
 - `metadata/ATTRIBUTION.md` — human-readable attribution for a public Alembic package. It complements rather
   than replaces structured provenance and is generated deterministically from it.
 - `metadata/evidence/<source-id>.*` — a local snapshot of the authoritative rights evidence, with its SHA-256
-  and verifier recorded in the source's rights basis.
+  and structured retrieval/capture operator record in the source's rights basis.
+- `metadata/preflight/<source-id>.json` — the clearance decision bound to the source record, policy, evidence
+  hash, process review, retrieval record, and operator. Source preparation re-verifies it before reading content.
 - `inputs/SOURCE_CORPUS.json` — binds each primary source ID to a raw snapshot and hash, canonical URL,
   retrieval timestamp, extractor/version, hashed extracted text, or an explicit human comparison attestation.
   IDs must be unique and declared in the foundation; scaffold instructions never satisfy source comparison.
@@ -85,21 +87,26 @@ capture a supplied evidence page or let the helper fetch the recorded URL:
 
 ```bash
 npm run capture:rights -- --root package --source-id <foundation-source-id> \
-  --verified-by <reviewer> [--file <saved-authoritative-page>]
+  --operator-name <agent-or-person> --operator-type <automation|human> \
+  --contact <email-or-project-url> [--file <saved-authoritative-page>]
 ```
 
-The helper stores and hashes the local snapshot. It exits with status 3 when a process-specific notice remains
-unresolved; do not prepare or expose the source corpus after that result. The assurance kernel still verifies
-that the snapshot contains the expected license/public-domain identifier and that any expected process notice is
-present; capture alone is not clearance.
+The helper stores and hashes the local snapshot, records structured retrieval/capture metadata, asserts known-source
+policy expectations, and writes a hash-bound receipt under `metadata/preflight/`. It exits with status 3 when a
+notice remains unresolved or an expected policy fact is absent. Do not prepare or expose the source corpus after
+that result. Source preparation independently re-verifies the receipt, evidence hash, source binding, and policy.
 
 For a private workspace:
 
 ```bash
-node scripts/check_assurance.mjs --root personal --report reports/assurance_report.md
+node scripts/check_assurance.mjs --root personal --phase authoring --report reports/assurance_report.md
 ```
 
 Private readiness may pass while the report still lists future-publication blockers.
+
+Use `--phase pre-ingestion` before any non-owned source is read, `--phase authoring` while developing private or
+restricted materials, and `--phase release` for final public packaging. A phase report omits irrelevant later-stage
+noise, and its exit status reflects that phase's actual readiness.
 
 For a public package:
 

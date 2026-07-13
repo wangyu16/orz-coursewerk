@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "usageProfile": "public-oer",
+  "audience": "introductory science learners",
+  "access": "public-web",
+  "redistribution": "open-license",
+  "jurisdiction": "international",
+  "outputLicense": "CC-BY-SA-4.0",
+  "outputAuthors": [
+    {
+      "name": "REPLACE-WITH-ACCOUNTABLE-PERSON-OR-INSTITUTION",
+      "role": "author and adapter",
+      "rightsHolder": true,
+      "aiAssistanceDisclosure": "Drafting and production assistance provided by an AI agent using Coursewerk."
+    }
+  ],
+  "privacy": {
+    "containsPersonalData": false,
+    "containsRestrictedContent": false
+  },
+  "sourcePrecedence": ["wikipedia-anchor", "wikipedia-support-1", "wikipedia-support-2", "wikipedia-support-3"],
+  "sources": [
+    {
+      "id": "wikipedia-anchor",
+      "title": "REPLACE-WITH-ANCHOR-ARTICLE-TITLE",
+      "version": "live page; revision captured in SOURCE_CORPUS.json",
+      "publisher": "Wikipedia contributors",
+      "canonicalUrl": "https://en.wikipedia.org/wiki/REPLACE_WITH_ANCHOR_ARTICLE",
+      "role": "primary",
+      "use": "adaptation",
+      "scope": ["whole article, excluding separately licensed media"],
+      "rightsBasis": {
+        "type": "open-license",
+        "license": "CC-BY-SA-4.0",
+        "evidenceType": "official-publisher-page",
+        "evidenceUrl": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use",
+        "verifiedAt": "REPLACE-WITH-YYYY-MM-DD"
+      },
+      "requiredAttribution": {
+        "textIncludes": "Wikipedia contributors",
+        "url": "https://en.wikipedia.org/wiki/REPLACE_WITH_ANCHOR_ARTICLE",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "modificationNotice": "Adapted and reorganized for this teaching resource.",
+        "placement": "every-public-deliverable"
+      }
+    },
+    {
+      "id": "wikipedia-support-1",
+      "title": "REPLACE-WITH-SUPPORTING-ARTICLE-1",
+      "version": "live page; revision captured in SOURCE_CORPUS.json",
+      "publisher": "Wikipedia contributors",
+      "canonicalUrl": "https://en.wikipedia.org/wiki/REPLACE_WITH_SUPPORTING_ARTICLE_1",
+      "role": "primary",
+      "use": "adaptation",
+      "scope": ["sections relevant to the selected science topic, excluding separately licensed media"],
+      "rightsBasis": {
+        "type": "open-license",
+        "license": "CC-BY-SA-4.0",
+        "evidenceType": "official-publisher-page",
+        "evidenceUrl": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use",
+        "verifiedAt": "REPLACE-WITH-YYYY-MM-DD"
+      },
+      "requiredAttribution": {
+        "textIncludes": "Wikipedia contributors",
+        "url": "https://en.wikipedia.org/wiki/REPLACE_WITH_SUPPORTING_ARTICLE_1",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "modificationNotice": "Adapted and reorganized for this teaching resource.",
+        "placement": "every-public-deliverable"
+      }
+    },
+    {
+      "id": "wikipedia-support-2",
+      "title": "REPLACE-WITH-SUPPORTING-ARTICLE-2",
+      "version": "live page; revision captured in SOURCE_CORPUS.json",
+      "publisher": "Wikipedia contributors",
+      "canonicalUrl": "https://en.wikipedia.org/wiki/REPLACE_WITH_SUPPORTING_ARTICLE_2",
+      "role": "primary",
+      "use": "adaptation",
+      "scope": ["sections relevant to the selected science topic, excluding separately licensed media"],
+      "rightsBasis": {
+        "type": "open-license",
+        "license": "CC-BY-SA-4.0",
+        "evidenceType": "official-publisher-page",
+        "evidenceUrl": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use",
+        "verifiedAt": "REPLACE-WITH-YYYY-MM-DD"
+      },
+      "requiredAttribution": {
+        "textIncludes": "Wikipedia contributors",
+        "url": "https://en.wikipedia.org/wiki/REPLACE_WITH_SUPPORTING_ARTICLE_2",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "modificationNotice": "Adapted and reorganized for this teaching resource.",
+        "placement": "every-public-deliverable"
+      }
+    },
+    {
+      "id": "wikipedia-support-3",
+      "title": "REPLACE-WITH-SUPPORTING-ARTICLE-3",
+      "version": "live page; revision captured in SOURCE_CORPUS.json",
+      "publisher": "Wikipedia contributors",
+      "canonicalUrl": "https://en.wikipedia.org/wiki/REPLACE_WITH_SUPPORTING_ARTICLE_3",
+      "role": "primary",
+      "use": "adaptation",
+      "scope": ["sections relevant to the selected science topic, excluding separately licensed media"],
+      "rightsBasis": {
+        "type": "open-license",
+        "license": "CC-BY-SA-4.0",
+        "evidenceType": "official-publisher-page",
+        "evidenceUrl": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use",
+        "verifiedAt": "REPLACE-WITH-YYYY-MM-DD"
+      },
+      "requiredAttribution": {
+        "textIncludes": "Wikipedia contributors",
+        "url": "https://en.wikipedia.org/wiki/REPLACE_WITH_SUPPORTING_ARTICLE_3",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "modificationNotice": "Adapted and reorganized for this teaching resource.",
+        "placement": "every-public-deliverable"
+      }
+    }
+  ]
+}

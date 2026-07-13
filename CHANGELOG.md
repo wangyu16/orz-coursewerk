@@ -1,5 +1,20 @@
 # Coursewerk changelog
 
+## v0.10.0 (2026-07-13)
+- **Hash-bound pre-ingestion clearance.** Rights capture now asserts known-source expectations and records
+  structured retrieval/operator evidence in a separate receipt. Source preparation rechecks the receipt,
+  source binding, evidence hash, process decision, and policy before reading any non-owned source.
+- **Stage-aware assurance.** Pre-ingestion, authoring, and release phases report only relevant readiness;
+  unresolved process conditions cannot appear private-ready, and report/JSON parents are created automatically.
+- **Wikipedia science-topic workflow.** A verified CC BY-SA 4.0 policy, template, guide, and serialized Wikimedia
+  API collector assemble several revision-pinned English Wikipedia pages into a 6,000–25,000-word chapter corpus
+  with a meaningful User-Agent and page-level attribution/change obligations.
+- **Stronger evidence receipts.** Human-facing process excerpts use normalized visible text, retrieval records
+  include redirects/HTTP metadata/bytes/tool version, source extractors are versioned, and releases hash the exact
+  source-corpus manifest.
+- **Adversarial regression coverage.** Tests prove that a known OpenStax identity missing its expected notice
+  cannot clear capture or source preparation, and that valid Wikipedia evidence does clear the same hard kernel.
+
 ## v0.9.0 (2026-07-13)
 - **Process-rights preflight before source ingestion.** Authoritative rights evidence is deterministically
   scanned for generative-AI, model-training, and automated-processing reservations. OpenStax Chemistry 2e's

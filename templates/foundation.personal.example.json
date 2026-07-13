@@ -24,16 +24,7 @@
       "rightsBasis": {
         "type": "user-asserted-exception",
         "attestedByUser": true,
-        "evidenceUrl": "REPLACE-WITH-AUTHORITATIVE-RIGHTS-OR-TERMS-PAGE",
-        "evidenceSnapshot": "metadata/evidence/source-1.html",
-        "evidenceSha256": "REPLACE-WITH-SHA256",
-        "evidenceVerifiedBy": "REPLACE-WITH-PERSON-OR-AGENT",
-        "processUseReview": {
-          "schemaVersion": 1,
-          "scannedAt": "REPLACE-WITH-ISO-DATETIME",
-          "status": "no-restriction-detected",
-          "notices": []
-        }
+        "evidenceUrl": "REPLACE-WITH-AUTHORITATIVE-RIGHTS-OR-TERMS-PAGE"
       }
     }
   ]
