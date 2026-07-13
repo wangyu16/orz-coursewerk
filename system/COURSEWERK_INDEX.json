@@ -23,13 +23,13 @@
       "id": "repo:.github/workflows/pages.yml",
       "path": ".github/workflows/pages.yml",
       "type": "deployment",
-      "hash": "f9f659fb19eb7053a3070b2ab8c1b8943d6a3511c240c5ba6c106ee2a8ea3270"
+      "hash": "f6638edc05c223fc143a5507eebaa74c1277587428742f319f86e91030f70366"
     },
     {
       "id": "repo:.github/workflows/system-integrity.yml",
       "path": ".github/workflows/system-integrity.yml",
       "type": "deployment",
-      "hash": "aab564338ecfb3dd6dfe7ec28e5de3da0857cd9dec5fd46139753de5f5f7bb68"
+      "hash": "ca5893784c0c81acce1f117bd86939ccaca246c6ecd432907ae573b4f21f8f37"
     },
     {
       "id": "repo:.gitignore",
@@ -551,7 +551,7 @@
       "id": "repo:tests/site.test.mjs",
       "path": "tests/site.test.mjs",
       "type": "test",
-      "hash": "cf5d9f80e5f260230a839244dc103b6c369362a21ecfa354b16e3a72cf40748b"
+      "hash": "653489655da5708a546364115d3cba758b17a15a028cdf2ad04bbee96b71f679"
     },
     {
       "id": "repo:tests/system-index.test.mjs",

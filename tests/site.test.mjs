@@ -25,6 +25,7 @@ test("Coursewerk site is a self-contained static information architecture", () =
 
 test("GitHub Pages workflow deploys only the site artifact", () => {
   assert.match(workflow, /actions\/configure-pages@v5/);
+  assert.match(workflow, /enablement: true/);
   assert.match(workflow, /actions\/upload-pages-artifact@v3/);
   assert.match(workflow, /actions\/deploy-pages@v4/);
   assert.match(workflow, /path: site/);
