@@ -8,6 +8,7 @@ const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const html = fs.readFileSync(path.join(repo, "site", "index.html"), "utf8");
 const css = fs.readFileSync(path.join(repo, "site", "styles.css"), "utf8");
 const workflow = fs.readFileSync(path.join(repo, ".github", "workflows", "pages.yml"), "utf8");
+const cname = fs.readFileSync(path.join(repo, "site", "CNAME"), "utf8");
 
 test("Coursewerk site is a self-contained static information architecture", () => {
   assert.match(html, /<h1>From source evidence/);
@@ -21,6 +22,7 @@ test("Coursewerk site is a self-contained static information architecture", () =
   assert.doesNotMatch(html, /(?:src|href)="https?:\/\/(?!github\.com|markdown\.orz\.how)/i);
   assert.ok(css.length > 10000, "the designed theme should not collapse to an unstyled placeholder");
   assert.ok(fs.existsSync(path.join(repo, "site", "assets", "orz.svg")));
+  assert.equal(cname, "coursewerk.orz.how\n");
 });
 
 test("GitHub Pages workflow deploys only the site artifact", () => {

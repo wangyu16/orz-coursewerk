@@ -326,6 +326,12 @@
       "hash": "9dc6f8be9a33a965ac0f842e7df99592b0232d65257d42e8209e36988d20933b"
     },
     {
+      "id": "repo:site/CNAME",
+      "path": "site/CNAME",
+      "type": "product-website",
+      "hash": "3e29d42b8f2b7ee67b6238e0d6d3ec71c28af2a9f062a2547f899002771cacdd"
+    },
+    {
       "id": "repo:site/index.html",
       "path": "site/index.html",
       "type": "product-website",
@@ -545,7 +551,7 @@
       "id": "repo:tests/site.test.mjs",
       "path": "tests/site.test.mjs",
       "type": "test",
-      "hash": "653489655da5708a546364115d3cba758b17a15a028cdf2ad04bbee96b71f679"
+      "hash": "fe50337e4a0c0b469b4498578dfff9a1294b5792cdd164db2298cd2b5e3fe59b"
     },
     {
       "id": "repo:tests/system-index.test.mjs",
