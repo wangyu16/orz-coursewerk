@@ -22,9 +22,7 @@
       "usedIn": ["study-guide/REPLACE-WITH-FILE.md"],
       "blockReason": "REPLACE-WITH-WHY-THE-SOURCE-OR-RIGHTS-ARE-UNRESOLVED",
       "rightsBasis": {
-        "type": "user-asserted-exception",
-        "attestedByUser": true,
-        "evidenceUrl": "REPLACE-WITH-AUTHORITATIVE-RIGHTS-OR-TERMS-PAGE"
+        "type": "unknown"
       }
     }
   ]

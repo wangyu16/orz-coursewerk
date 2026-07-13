@@ -168,7 +168,8 @@ The labels in the last column matter:
 | Pain point | How Coursewerk addresses it | Assurance level |
 |---|---|---|
 | An agent guesses or misstates the source license | Requires exact source identity/version/scope, authoritative evidence URL/type/date, a hashed local evidence snapshot and verifier, and known-source policy assertions | Hard assurance gate |
-| A license page also contains a process-specific AI/automated-use notice | Deterministically scans the authoritative rights snapshot before source ingestion and stops until permission or a qualified decision is recorded | Hard assurance gate + accountable human/legal decision |
+| A license page also contains an AI/automated-use notice | Captures the exact notice separately from the copyright license, records that Coursewerk has not determined its legal effect, and presents a nonblocking publication warning for the instructor's decision | Evidence hard gate + transparent advisory |
+| Private teaching is blocked by publication-grade rights review | Allows any source for personal-private or restricted non-published authoring while retaining identity, provenance, unknown-source labels, and future-publication warnings | Nonblocking private workflow + traceable promotion path |
 | “Educational use” is mistaken for permission to publish | Selects personal-private, restricted-teaching, or public-OER use before choosing an output license | Hard assurance gate |
 | Fair use/fair dealing is treated as universal or permanent | Records jurisdiction and asserted basis; an exception never clears public release automatically | Hard assurance gate + human legal decision |
 | Private materials later need publication but their origins are lost | Requires provenance even without an output license; unknown/private-only items stay visibly labelled | Hard private-readiness rule + future-publication blocker |
@@ -228,7 +229,7 @@ Coursewerk is deliberately explicit about assurance boundaries:
 
 - `metadata/FOUNDATION.json` — intended use, exact source identity, rights evidence, output license, and privacy.
 - `metadata/evidence/…` — hashed local snapshots plus structured retrieval/capture metadata for authoritative source-rights evidence.
-- `metadata/preflight/…` — hash-bound source-policy receipts; source preparation refuses missing, blocked, or stale clearance.
+- `metadata/preflight/…` — hash-bound public-source receipts; non-published authoring records missing/stale evidence as advisory.
 - `inputs/SOURCE_CORPUS.json` — source IDs bound to raw and extracted hashes, canonical retrieval evidence, versioned extractors, or explicit attestation.
 - `scripts/prepare_wikipedia_topic.mjs` — serialized, revision-aware collection of several cleared English Wikipedia pages into a chapter-sized science corpus.
 - `metadata/PROVENANCE.json` and `metadata/ATTRIBUTION.md` — item-level origin, status, use, and public credit.

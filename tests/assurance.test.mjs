@@ -99,7 +99,7 @@ function attachEvidence(root, foundation) {
     source.rightsBasis.evidenceSha256 = crypto.createHash("sha256").update(text).digest("hex");
     source.rightsBasis.evidenceRetrieval = { captureMode: "local-file", claimedEvidenceUrl: source.rightsBasis.evidenceUrl, localFileName: `${source.id}.txt`, retrievedAt: "2026-07-13T00:00:00Z", byteLength: Buffer.byteLength(text), contentType: "text/plain", tool: { name: "coursewerk", version: "test" } };
     source.rightsBasis.evidenceCapture = { operator: { type: "automation", name: "test fixture" }, capturedAt: "2026-07-13T00:00:00Z", tool: { name: "coursewerk", version: "test" } };
-    source.rightsBasis.processUseReview = { schemaVersion: 1, scannedAt: "2026-07-13T00:00:00Z", status: "no-restriction-detected", notices: [] };
+    source.rightsBasis.processUseReview = { schemaVersion: 1, scannedAt: "2026-07-13T00:00:00Z", status: "no-notice-detected", legalEffectDetermined: false, notices: [] };
     const receipt = buildPreflightReceipt({ source, evidenceBytes: Buffer.from(text), retrieval: source.rightsBasis.evidenceRetrieval, operator: source.rightsBasis.evidenceCapture.operator, generatedAt: "2026-07-13T00:00:00Z" });
     writePreflightReceipt(root, source, receipt);
   }
@@ -116,8 +116,7 @@ function attachOpenStaxRestriction(root, foundation) {
     source.rightsBasis.evidenceSha256 = crypto.createHash("sha256").update(text).digest("hex");
     source.rightsBasis.evidenceRetrieval = { captureMode: "local-file", claimedEvidenceUrl: source.rightsBasis.evidenceUrl, localFileName: `${source.id}.txt`, retrievedAt: "2026-07-13T00:00:00Z", byteLength: Buffer.byteLength(text), contentType: "text/plain", tool: { name: "coursewerk", version: "test" } };
     source.rightsBasis.evidenceCapture = { operator: { type: "automation", name: "test fixture" }, capturedAt: "2026-07-13T00:00:00Z", tool: { name: "coursewerk", version: "test" } };
-    source.rightsBasis.processUseReview = { schemaVersion: 1, scannedAt: "2026-07-13T00:00:00Z", status: "blocked-pending-decision", notices: [{ id: "generative-ai-ingestion", summary: "AI ingestion restriction", excerpt: "test" }] };
-    source.rightsBasis.processUseDecision = { status: "permitted", basis: "qualified-review", decidedBy: "Example Course Author", decidedAt: "2026-07-13", reference: "institutional-review-1", rationale: "A qualified institutional reviewer approved this specific noncommercial AI-assisted adaptation workflow." };
+    source.rightsBasis.processUseReview = { schemaVersion: 1, scannedAt: "2026-07-13T00:00:00Z", status: "notice-recorded", legalEffectDetermined: false, notices: [{ id: "generative-ai-ingestion", summary: "AI-use notice", excerpt: "test" }] };
     const receipt = buildPreflightReceipt({ source, evidenceBytes: Buffer.from(text), retrieval: source.rightsBasis.evidenceRetrieval, operator: source.rightsBasis.evidenceCapture.operator, generatedAt: "2026-07-13T00:00:00Z" });
     writePreflightReceipt(root, source, receipt);
   }
@@ -214,7 +213,7 @@ test("known OpenStax attribution is required in every public deliverable", () =>
   assert.match(result.hardFailures.join("\n"), /missing source-required attribution/);
 });
 
-test("known OpenStax Chemistry 2e passes with canonical license and per-deliverable attribution", () => {
+test("known OpenStax Chemistry 2e produces a nonblocking source-preference warning", () => {
   const f = publicFixture({ sourceLicense: "CC-BY-NC-SA-4.0" });
   const foundation = publicFoundation("CC-BY-NC-SA-4.0", "CC-BY-NC-SA-4.0");
   foundation.sources[0] = {
@@ -242,6 +241,8 @@ test("known OpenStax Chemistry 2e passes with canonical license and per-delivera
   fs.writeFileSync(path.join(f.root, "study-guide", "ch1.md"), "# Chapter 1\nAccess for free at https://openstax.org/books/chemistry-2e/pages/1-introduction\n");
   const result = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.equal(result.canPack, true, result.hardFailures.join("\n"));
+  assert.match(result.warnings.join("\n"), /leaving lawful-use and publication decisions to the instructor/);
+  assert.match(result.warnings.join("\n"), /does not block private use or publication/);
 });
 
 test("public source requires an authoritative evidence type", () => {
@@ -260,7 +261,7 @@ test("rights evidence snapshot hash is release-blocking", () => {
   assert.match(result.hardFailures.join("\n"), /evidenceSnapshot sha256/);
 });
 
-test("an AI-ingestion restriction in authoritative evidence blocks every public release until resolved", () => {
+test("a generic AI-use notice is recorded but does not amend the copyright license", () => {
   const f = publicFixture();
   const foundation = JSON.parse(fs.readFileSync(path.join(f.root, "metadata", "FOUNDATION.json"), "utf8"));
   const source = foundation.sources[0];
@@ -268,28 +269,17 @@ test("an AI-ingestion restriction in authoritative evidence blocks every public 
   const file = path.join(f.root, source.rightsBasis.evidenceSnapshot);
   fs.writeFileSync(file, evidence);
   source.rightsBasis.evidenceSha256 = crypto.createHash("sha256").update(evidence).digest("hex");
-  source.rightsBasis.processUseReview = { schemaVersion: 1, scannedAt: "2026-07-13T00:00:00Z", status: "blocked-pending-decision", notices: [{ id: "generative-ai-ingestion" }] };
-  writeJson(path.join(f.root, "metadata", "FOUNDATION.json"), foundation);
-  const blocked = auditAssurance({ root: f.root, manifest: f.manifest });
-  assert.match(blocked.hardFailures.join("\n"), /process-specific restriction .* blocks AI-assisted ingestion/);
-
-  source.rightsBasis.processUseDecision = {
-    status: "permitted",
-    basis: "permission",
-    decidedBy: "Example Course Author",
-    decidedAt: "2026-07-13",
-    reference: "permission-record-2026-07-13",
-    rationale: "The publisher granted written permission for this specific AI-assisted course adaptation.",
-  };
+  source.rightsBasis.processUseReview = { schemaVersion: 1, scannedAt: "2026-07-13T00:00:00Z", status: "notice-recorded", legalEffectDetermined: false, notices: [{ id: "generative-ai-ingestion" }] };
   source.rightsBasis.evidenceRetrieval.byteLength = Buffer.byteLength(evidence);
   const receipt = buildPreflightReceipt({ source, evidenceBytes: Buffer.from(evidence), retrieval: source.rightsBasis.evidenceRetrieval, operator: source.rightsBasis.evidenceCapture.operator, generatedAt: "2026-07-13T00:00:00Z" });
   writePreflightReceipt(f.root, source, receipt);
   writeJson(path.join(f.root, "metadata", "FOUNDATION.json"), foundation);
-  const cleared = auditAssurance({ root: f.root, manifest: f.manifest });
-  assert.equal(cleared.canPack, true, cleared.hardFailures.join("\n"));
+  const result = auditAssurance({ root: f.root, manifest: f.manifest });
+  assert.equal(result.canPack, true, result.hardFailures.join("\n"));
+  assert.match(result.warnings.join("\n"), /legal effect is not determined by Coursewerk/);
 });
 
-test("process-specific source restrictions also block private AI authoring readiness", () => {
+test("a generic AI-use notice does not block private authoring readiness", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-private-process-"));
   const foundation = publicFoundation();
   foundation.usageProfile = "personal-private";
@@ -306,13 +296,36 @@ test("process-specific source restrictions also block private AI authoring readi
   source.rightsBasis.processUseReview = {
     schemaVersion: 1,
     scannedAt: "2026-07-13T00:00:00Z",
-    status: "blocked-pending-decision",
-    notices: [{ id: "generative-ai-ingestion", summary: "AI ingestion restriction", excerpt: "test" }],
+    status: "notice-recorded",
+    legalEffectDetermined: false,
+    notices: [{ id: "generative-ai-ingestion", summary: "AI-use notice", excerpt: "test" }],
   };
+  source.rightsBasis.evidenceRetrieval.byteLength = Buffer.byteLength(evidence);
+  const receipt = buildPreflightReceipt({ source, evidenceBytes: Buffer.from(evidence), retrieval: source.rightsBasis.evidenceRetrieval, operator: source.rightsBasis.evidenceCapture.operator, generatedAt: "2026-07-13T00:00:00Z" });
+  writePreflightReceipt(root, source, receipt);
   writeJson(path.join(root, "metadata", "FOUNDATION.json"), foundation);
   writeJson(path.join(root, "metadata", "PROVENANCE.json"), { schemaVersion: 1, items: [] });
   const result = auditAssurance({ root });
-  assert.match(result.privateFailures.join("\n"), /blocks AI-assisted ingestion/);
+  assert.equal(result.authoringReady, true, result.privateFailures.join("\n"));
+  assert.match(result.warnings.join("\n"), /legal effect is not determined by Coursewerk/);
+});
+
+test("private authoring does not require source-rights evidence", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-private-no-rights-receipt-"));
+  const foundation = publicFoundation();
+  foundation.usageProfile = "personal-private";
+  foundation.audience = "creator-only";
+  foundation.access = "local-device";
+  foundation.redistribution = "none";
+  delete foundation.outputLicense;
+  delete foundation.outputAuthors;
+  foundation.sources[0].rightsBasis = { type: "open-license", license: "CC-BY-4.0" };
+  writeJson(path.join(root, "metadata", "FOUNDATION.json"), foundation);
+  writeJson(path.join(root, "metadata", "PROVENANCE.json"), { schemaVersion: 1, items: [] });
+  const result = auditAssurance({ root });
+  assert.equal(result.authoringReady, true, result.privateFailures.join("\n"));
+  assert.match(result.warnings.join("\n"), /no rights receipt; permitted for non-published authoring/);
+  assert.ok(result.publicationBlockers.length > 0);
 });
 
 test("public OER requires accountable authorship and rejects an AI agent as asset creator", () => {
@@ -492,6 +505,7 @@ test("pack succeeds only after a valid public assurance pass", () => {
   assert.equal(receipt.carrierReceipt, carrierReceiptFile);
   assert.equal(receipt.carrierReceiptHash, crypto.createHash("sha256").update(fs.readFileSync(path.join(out, carrierReceiptFile))).digest("hex"));
   assert.equal(receipt.criticalTotal, 0);
+  assert.deepEqual(receipt.assuranceWarnings, []);
 });
 
 function coherentChapterFixture() {

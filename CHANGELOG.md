@@ -1,5 +1,16 @@
 # Coursewerk changelog
 
+## v0.10.1 (2026-07-13)
+- **License and access assertions separated.** AI/automated-use notices are retained as evidence with their legal
+  effect explicitly undetermined; they no longer masquerade as amendments to a Creative Commons license or
+  automatic copyright prohibitions.
+- **Private authoring remains open.** Personal-private and restricted-teaching work may use any source without a
+  rights receipt; Coursewerk retains identity, provenance, and future-publication warnings instead of blocking.
+- **OpenStax policy made honest.** OpenStax is an avoid-when-practical preference, not a prohibition. Its notice is
+  visible while lawful-use and publication decisions remain with the instructor.
+- **Regression semantics corrected.** Generic AI-use notices can clear pre-ingestion while remaining visible;
+  verified public license claims, attribution, source-expression handling, and evidence integrity remain gated.
+
 ## v0.10.0 (2026-07-13)
 - **Hash-bound pre-ingestion clearance.** Rights capture now asserts known-source expectations and records
   structured retrieval/operator evidence in a separate receipt. Source preparation rechecks the receipt,

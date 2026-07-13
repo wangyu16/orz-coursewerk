@@ -11,7 +11,7 @@
     },
     {
       "id": "claim.rights.verified",
-      "statement": "Every non-owned source has a hash-bound, known-policy-aware pre-ingestion clearance receipt; public sources also have compatible output licensing.",
+      "statement": "Public sources have hash-bound, known-policy-aware receipts separating verified copyright-license facts from access/AI-use notices; non-published source use remains advisory and public outputs enforce honest attribution and compatible licensing of copied or adapted expression.",
       "assuranceLevel": "hard-gate",
       "implementation": ["scripts/lib/assurance.mjs", "scripts/lib/pre_ingestion.mjs", "scripts/lib/rights_preflight.mjs", "scripts/data/source-policies.json", "scripts/capture_rights_evidence.mjs", "scripts/prepare_source_corpus.mjs"],
       "tests": ["tests/assurance.test.mjs", "tests/evidence-tools.test.mjs"],

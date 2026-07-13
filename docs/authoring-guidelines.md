@@ -169,8 +169,10 @@ private/restricted profiles and every unresolved publication blocker.
 Public sources require a hashed rights-evidence snapshot under `metadata/evidence/` and
 `inputs/SOURCE_CORPUS.json` binding each primary source ID to a hash-bound raw snapshot, canonical URL,
 retrieval/extractor metadata, hashed extracted text, or an explicit dated human comparison attestation. Capture
-and deterministically scan the authoritative rights page before any substantive source ingestion; an unresolved
-process-specific AI/automated-processing notice is a stop condition, not an evaluation footnote. Attribution is
+and, for public preparation, deterministically scan the authoritative rights page before substantive source ingestion; an unresolved
+license/evidence conflict is a public-release stop condition. Non-published authoring may continue with any source;
+AI/automated-use notices are retained
+as separate access/use assertions and do not automatically amend the source's copyright license. Attribution is
 generated from `PROVENANCE.json`; never maintain the two independently.
 
 ## 8. Paged documents & collections

@@ -115,9 +115,10 @@ console.log(JSON.stringify({
   preflightReceiptSha256: source.rightsBasis.preflightReceiptSha256,
   policyId: receipt.policyId,
   processUseReview: receipt.processUseReview,
-  processUseResolved: receipt.processUseResolved,
+  noticeReviewComplete: receipt.noticeReviewComplete,
   policyChecksPassed: receipt.policyChecksPassed,
   status: receipt.status,
+  warnings: receipt.warnings,
   blockers: receipt.blockers,
 }, null, 2));
 

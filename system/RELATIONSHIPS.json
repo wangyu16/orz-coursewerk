@@ -37,9 +37,9 @@
     ,{ "from": "scripts/prepare_source_corpus.mjs", "to": "tests/evidence-tools.test.mjs", "reason": "source preparation requires regression evidence", "impact": "both" }
     ,{ "from": "scripts/capture_rights_evidence.mjs", "to": "templates/foundation.public-oer.example.json", "reason": "evidence capture updates foundation rights fields", "impact": "both" }
     ,{ "from": "scripts/capture_rights_evidence.mjs", "to": "tests/evidence-tools.test.mjs", "reason": "rights evidence capture requires regression evidence", "impact": "both" }
-    ,{ "from": "scripts/lib/rights_preflight.mjs", "to": "scripts/capture_rights_evidence.mjs", "reason": "capture performs the deterministic process-rights preflight", "impact": "both" }
-    ,{ "from": "scripts/lib/rights_preflight.mjs", "to": "scripts/prepare_source_corpus.mjs", "reason": "source preparation refuses unresolved process restrictions", "impact": "both" }
-    ,{ "from": "scripts/lib/rights_preflight.mjs", "to": "scripts/lib/assurance.mjs", "reason": "release assurance independently rechecks process notices", "impact": "both" }
+    ,{ "from": "scripts/lib/rights_preflight.mjs", "to": "scripts/capture_rights_evidence.mjs", "reason": "capture deterministically records separate access and AI-use notices", "impact": "both" }
+    ,{ "from": "scripts/lib/rights_preflight.mjs", "to": "scripts/prepare_source_corpus.mjs", "reason": "source preparation requires a current evidence-bound source-policy receipt", "impact": "both" }
+    ,{ "from": "scripts/lib/rights_preflight.mjs", "to": "scripts/lib/assurance.mjs", "reason": "release assurance preserves notices without treating them as copyright-license terms", "impact": "both" }
     ,{ "from": "scripts/lib/assurance.mjs", "to": "templates/foundation.personal.example.json", "reason": "private foundation template must satisfy the mode-independent kernel", "impact": "both" }
     ,{ "from": "scripts/lib/assurance.mjs", "to": "templates/foundation.restricted.example.json", "reason": "restricted foundation template must satisfy the mode-independent kernel", "impact": "both" }
     ,{ "from": "scripts/check_oer.mjs", "to": "templates/media-plan.example.json", "reason": "media-decision template must satisfy the chapter format gate", "impact": "both" }

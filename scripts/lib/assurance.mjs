@@ -9,7 +9,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { isOpenLicense, normalizeLicense, ALL_RIGHTS_RESERVED } from "./contract.mjs";
-import { processDecisionResolves, scanProcessRestrictions } from "./rights_preflight.mjs";
+import { scanProcessRestrictions } from "./rights_preflight.mjs";
 import { auditIngestionReadiness, sourcePolicyFor } from "./pre_ingestion.mjs";
 
 export const USAGE_PROFILES = ["personal-private", "restricted-teaching", "public-oer"];
@@ -82,7 +82,7 @@ function licenseFileAudit(root, expected, blockers) {
     blockers.push(`LICENSE is not the exact bundled canonical ${expected} legal text (expected sha256 ${canonical.normalizedSha256}, found ${actualHash}).`);
 }
 
-function evidenceSnapshotAudit(root, source, basis, label, publicationBlockers) {
+function evidenceSnapshotAudit(root, source, basis, label, publicationBlockers, warnings) {
   if (!nonempty(basis.evidenceSnapshot)) {
     publicationBlockers.push(`${label}: a local evidenceSnapshot is required for public source-rights verification.`);
     return;
@@ -124,10 +124,11 @@ function evidenceSnapshotAudit(root, source, basis, label, publicationBlockers) 
       if (!recorded.some((item) => item.id === notice.id))
         publicationBlockers.push(`${label}: evidenceSnapshot contains unrecorded process restriction ${notice.id}.`);
     }
-    if (!processDecisionResolves(processNotices, basis.processUseDecision))
-      publicationBlockers.push(`${label}: process-specific restriction (${processNotices.map((item) => item.id).join(", ")}) blocks AI-assisted ingestion until permission or a qualified decision is recorded.`);
-  } else if (basis.processUseReview?.status !== "no-restriction-detected") {
-    publicationBlockers.push(`${label}: processUseReview must record no-restriction-detected after deterministic evidence preflight.`);
+    warnings.push(`${label}: separate AI/automated-use notice recorded (${processNotices.map((item) => item.id).join(", ")}); its legal effect is not determined by Coursewerk.`);
+    if (!['notice-recorded', 'blocked-pending-decision'].includes(basis.processUseReview?.status))
+      publicationBlockers.push(`${label}: processUseReview must record notice-recorded after deterministic evidence preflight.`);
+  } else if (!['no-notice-detected', 'no-restriction-detected'].includes(basis.processUseReview?.status)) {
+    publicationBlockers.push(`${label}: processUseReview must record no-notice-detected after deterministic evidence preflight.`);
   }
   const normalized = normalizeLicense(basis.license);
   const needles = {
@@ -143,7 +144,7 @@ function evidenceSnapshotAudit(root, source, basis, label, publicationBlockers) 
     publicationBlockers.push(`${label}: public-domain evidenceSnapshot does not state a public-domain basis.`);
 }
 
-function processPreflightAudit(root, basis, label, blockers) {
+function processPreflightAudit(root, basis, label, blockers, warnings) {
   if (!nonempty(basis.evidenceSnapshot) || !nonempty(basis.evidenceSha256)) {
     blockers.push(`${label}: process preflight requires a local evidenceSnapshot and evidenceSha256 before AI-assisted ingestion.`);
     return;
@@ -165,10 +166,13 @@ function processPreflightAudit(root, basis, label, blockers) {
     if (!recorded.some((item) => item.id === notice.id))
       blockers.push(`${label}: evidenceSnapshot contains unrecorded process restriction ${notice.id}.`);
   }
-  if (notices.length && !processDecisionResolves(notices, basis.processUseDecision))
-    blockers.push(`${label}: process-specific restriction (${notices.map((item) => item.id).join(", ")}) blocks AI-assisted ingestion until permission or a qualified decision is recorded.`);
-  if (!notices.length && basis.processUseReview?.status !== "no-restriction-detected")
-    blockers.push(`${label}: processUseReview must record no-restriction-detected after deterministic evidence preflight.`);
+  if (notices.length) {
+    warnings.push(`${label}: separate AI/automated-use notice recorded (${notices.map((item) => item.id).join(", ")}); its legal effect is not determined by Coursewerk.`);
+    if (!['notice-recorded', 'blocked-pending-decision'].includes(basis.processUseReview?.status))
+      blockers.push(`${label}: processUseReview must record notice-recorded after deterministic evidence preflight.`);
+  }
+  if (!notices.length && !['no-notice-detected', 'no-restriction-detected'].includes(basis.processUseReview?.status))
+    blockers.push(`${label}: processUseReview must record no-notice-detected after deterministic evidence preflight.`);
 }
 
 export function compatibleOutputLicenses(sourceLicense) {
@@ -238,13 +242,15 @@ function auditSource(source, index, foundation, manifestLicense, privateFailures
     publicationBlockers.push(`${label}: exact edition, version, or publicationDate is required for a public primary source.`);
 
   const basis = source?.rightsBasis || {};
-  if (!RIGHTS_BASES.includes(basis.type)) privateFailures.push(`${label}: valid rightsBasis.type is required.`);
+  const nonPublished = foundation.usageProfile !== "public-oer";
+  const rightsReadiness = nonPublished ? warnings : privateFailures;
+  if (!RIGHTS_BASES.includes(basis.type)) rightsReadiness.push(`${label}: valid rightsBasis.type is unrecorded.`);
   if (["owned", "user-asserted-exception", "institutional-authorization"].includes(basis.type) && basis.attestedByUser !== true)
-    privateFailures.push(`${label}: ${basis.type} requires explicit user attestation.`);
+    rightsReadiness.push(`${label}: ${basis.type} lacks explicit user attestation.`);
   if (basis.type === "user-asserted-exception" && !nonempty(foundation.jurisdiction))
-    privateFailures.push(`${label}: a jurisdiction is required when relying on a copyright exception.`);
+    rightsReadiness.push(`${label}: a jurisdiction is unrecorded for the asserted copyright exception.`);
   if (basis.type === "permission" && !nonempty(basis.permissionReference))
-    privateFailures.push(`${label}: permissionReference is required.`);
+    rightsReadiness.push(`${label}: permissionReference is unrecorded.`);
   if (["permission", "institutional-authorization"].includes(basis.type) && foundation.usageProfile === "public-oer") {
     if (basis.allowsPublicDistribution !== true)
       publicationBlockers.push(`${label}: ${basis.type} must explicitly allow public distribution.`);
@@ -269,7 +275,8 @@ function auditSource(source, index, foundation, manifestLicense, privateFailures
       source,
       basis,
       label,
-      foundation.usageProfile === "public-oer" ? publicationBlockers : privateFailures,
+      foundation.usageProfile === "public-oer" ? publicationBlockers : warnings,
+      warnings,
     );
     if (basis.type === "open-license" && !normalizeLicense(basis.license))
       publicationBlockers.push(`${label}: source license ${basis.license || "unknown"} is not yet supported by the compatibility registry.`);
@@ -277,7 +284,7 @@ function auditSource(source, index, foundation, manifestLicense, privateFailures
       publicationBlockers.push(`${label}: public-domain rights must use license/status PUBLIC-DOMAIN, not CC0.`);
   }
   if (["permission", "institutional-authorization", "user-asserted-exception"].includes(basis.type))
-    processPreflightAudit(foundation.__root, basis, label, privateFailures);
+    processPreflightAudit(foundation.__root, basis, label, nonPublished ? warnings : privateFailures, warnings);
   if (["unknown", "user-asserted-exception"].includes(basis.type))
     publicationBlockers.push(`${label}: rights basis ${basis.type} is not cleared for public distribution.`);
   if (basis.type === "unknown") {
@@ -309,6 +316,8 @@ function auditSource(source, index, foundation, manifestLicense, privateFailures
       if (!(basis.processUseReview?.notices || []).some((notice) => notice.id === noticeId))
         publicationBlockers.push(`${label}: known-source policy ${policy.id} expects process notice ${noticeId}; refresh and preflight the authoritative evidence before ingestion.`);
     }
+    if (policy.authoringPreference === "avoid")
+      warnings.push(`${label}: Coursewerk prefers another source (${policy.id}) when practical: ${policy.authoringPreferenceRationale || "access/use risk"} This does not block private use or publication.`);
     if (policy.attributionMode === "wikipedia-page-link-change-notice") {
       const required = source.requiredAttribution || {};
       if (required.url !== source.canonicalUrl || !/Wikipedia contributors/i.test(String(required.textIncludes || "")) ||
@@ -459,6 +468,7 @@ export function auditAssurance({ root, manifest = null }) {
   if (!foundation) return { usageProfile: null, ingestionFailures: privateFailures, ingestionReady: false, authoringReady: false, privateFailures, publicationBlockers, warnings, hardFailures: privateFailures, canPack: false };
   foundation.__root = root;
   const ingestion = auditIngestionReadiness(root, foundation);
+  warnings.push(...(ingestion.warnings || []));
 
   if (foundation.schemaVersion !== 1) privateFailures.push("FOUNDATION.json: schemaVersion must be 1.");
   if (!USAGE_PROFILES.includes(foundation.usageProfile)) privateFailures.push("FOUNDATION.json: invalid usageProfile.");

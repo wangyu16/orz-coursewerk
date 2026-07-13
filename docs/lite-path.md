@@ -19,8 +19,8 @@ steps it can't. The intended-use profile still determines whether output belongs
    Ask the AI to follow `PROCEDURE.md`, pausing at each gate. It produces lean Markdown as chat output or
    downloadable files. Save files under the selected root. Only public OER receives `alembic.json` and may
    enter the `package/` tree.
-   Every non-owned source also needs a cleared hash-bound `metadata/preflight/` receipt before the AI reads it.
-   Public work needs a local rights-evidence snapshot and `inputs/SOURCE_CORPUS.json`; when comparison text
+   Non-published authoring may use any source without a rights receipt while retaining identity/provenance and
+   publication warnings. Public work needs a cleared hash-bound `metadata/preflight/` receipt, a local rights-evidence snapshot, and `inputs/SOURCE_CORPUS.json`; when comparison text
    is unavailable, record an explicit dated human attestation instead of claiming an automated scan.
 3. **Validate + package.** You run the three helper steps once (they need Node.js, not an AI):
    ```bash

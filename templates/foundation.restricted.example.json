@@ -20,10 +20,10 @@
       "role": "primary",
       "use": "reference",
       "scope": ["REPLACE-WITH-EXACT-SCOPE"],
+      "usedIn": ["study-guide/REPLACE-WITH-FILE.md"],
+      "blockReason": "REPLACE-WITH-WHY-PUBLICATION-RIGHTS-HAVE-NOT-BEEN-REVIEWED",
       "rightsBasis": {
-        "type": "institutional-authorization",
-        "attestedByUser": true,
-        "evidenceUrl": "REPLACE-WITH-AUTHORITATIVE-RIGHTS-OR-TERMS-PAGE"
+        "type": "unknown"
       }
     }
   ]

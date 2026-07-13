@@ -72,11 +72,12 @@ Ask how the materials will be used before asking about an output license. Record
 This use profile is independent of Full/Light review mode. Never infer that educational purpose automatically
 establishes fair use/fair dealing. An asserted copyright exception never clears publication.
 
-For every non-owned primary source, in every intended-use profile, run the deterministic rights capture/preflight before exposing substantive
-source content to the AI authoring process. A detected generative-AI, automated-processing, or similar
-process-specific notice is a stop condition until affirmative permission or a documented qualified decision is
-recorded. Coursewerk does not adjudicate the publisher's condition; it must find it, preserve the evidence, and
-fail closed. See `PROCEDURE.md` Stage 0 and `docs/assurance-kernel.md`.
+For public-source preparation, run the deterministic rights capture/preflight before exposing substantive source
+content to the AI authoring process. A detected generative-AI, automated-processing, or similar access/use notice
+must be found and preserved separately from the copyright license; Coursewerk does not infer its legal effect.
+Fail closed on missing or conflicting public-release facts or stale receipts—not on the mere existence of the
+notice. Non-published profiles may proceed without a receipt; retain provenance and warnings so later publication
+review is possible. See `PROCEDURE.md` Stage 0 and `docs/assurance-kernel.md`.
 
 ## 0.45 When changing Coursewerk itself
 
@@ -182,10 +183,11 @@ which patterns to favor — is a **flexible preference** the user may override.
 - **Source corpus and remote media.** Public work binds every primary source to hashed comparison text or a
   dated human attestation in `inputs/SOURCE_CORPUS.json`. Scaffold files never count. Remote hot-linked media is
   forbidden; fetch it locally, record provenance and use locations, then regenerate attribution.
-- **Pre-ingestion clearance receipt.** Every non-owned source must have a current, cleared, hash-bound receipt
-  under `metadata/preflight/` before source preparation. The receipt binds source identity, authoritative evidence,
-  retrieval/operator metadata, known-source expectations, process notices, and any qualified decision. Missing,
-  blocked, or stale receipts stop every intended-use profile before substantive source content is read.
+- **Pre-ingestion evidence receipt.** Public-source preparation requires a current, cleared, hash-bound receipt
+  under `metadata/preflight/`. Non-published authoring never blocks merely because source rights are unverified;
+  it retains source identity/provenance and an advisory for future publication. A receipt binds authoritative evidence,
+  retrieval/operator metadata, known-source expectations, and separately classified access/AI-use notices. A
+  notice does not amend the copyright license and Coursewerk does not determine its legal effect.
 - **Two-repo invariant.** Instructor-only material (summative answer keys, instructor-only solution sets, exam content, private
   notes) goes ONLY under `package/private/`. Everything else is public and will be shared with the world.
   Worked solutions intentionally belonging to the public practice sheet remain public; do not confuse them with

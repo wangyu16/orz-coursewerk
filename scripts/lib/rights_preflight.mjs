@@ -1,7 +1,7 @@
 const RESTRICTION_RULES = [
   {
     id: "generative-ai-ingestion",
-    summary: "Source notice restricts training or ingestion into LLM/generative-AI systems.",
+    summary: "Source contains a notice addressing training or ingestion into LLM/generative-AI systems.",
     patterns: [
       /\bmay\s+not\s+be\s+used\b[\s\S]{0,180}\b(?:training|ingest(?:ed|ion)?)\b[\s\S]{0,180}\b(?:large\s+language\s+models?|generative\s+AI)\b[\s\S]{0,120}\b(?:without|unless)\b[\s\S]{0,80}\bpermission\b/i,
       /\bmay\s+not\s+be\s+(?:ingested|used)\b[\s\S]{0,180}\b(?:large\s+language\s+models?|generative\s+AI)\b[\s\S]{0,120}\b(?:without|unless)\b[\s\S]{0,80}\bpermission\b/i,
@@ -10,7 +10,7 @@ const RESTRICTION_RULES = [
   },
   {
     id: "automated-processing-restriction",
-    summary: "Source notice restricts automated, machine-learning, or text/data-mining processing.",
+    summary: "Source contains a notice addressing automated, machine-learning, or text/data-mining processing.",
     patterns: [
       /\b(?:may\s+not|prohibit(?:ed|s)?|forbid(?:den|s)?)\b[\s\S]{0,100}\b(?:automated\s+processing|machine\s+learning|text\s+and\s+data\s+mining|text\s+or\s+data\s+mining)\b/i,
     ],
@@ -63,22 +63,13 @@ export function scanProcessRestrictions(text) {
   return notices;
 }
 
-export function processDecisionResolves(notices, decision) {
-  if (!notices.length) return true;
-  return decision?.status === "permitted" &&
-    ["permission", "qualified-review"].includes(decision?.basis) &&
-    typeof decision?.decidedBy === "string" && decision.decidedBy.trim().length > 0 &&
-    /^\d{4}-\d{2}-\d{2}$/.test(decision?.decidedAt || "") &&
-    typeof decision?.reference === "string" && decision.reference.trim().length > 0 &&
-    typeof decision?.rationale === "string" && decision.rationale.trim().length >= 30;
-}
-
 export function makeProcessReview(text, scannedAt = new Date().toISOString()) {
   const notices = scanProcessRestrictions(text);
   return {
     schemaVersion: 1,
     scannedAt,
-    status: notices.length ? "blocked-pending-decision" : "no-restriction-detected",
+    status: notices.length ? "notice-recorded" : "no-notice-detected",
+    legalEffectDetermined: false,
     notices,
   };
 }

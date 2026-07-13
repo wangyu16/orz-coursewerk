@@ -17,8 +17,8 @@ test("Coursewerk site is a self-contained static information architecture", () =
   assert.match(html, /rel="icon" href="assets\/coursewerk-favicon\.svg"/);
   assert.doesNotMatch(html, /rel="icon" href="assets\/orz\.svg"/);
   assert.match(html, /alt="orz"/);
-  assert.match(html, /Preflight before ingestion/);
-  assert.match(html, /A publisher’s process-specific notice is not Coursewerk’s policy/);
+  assert.match(html, /Preflight before public use/);
+  assert.match(html, /A publisher’s AI-use notice is not automatically a copyright-license term/);
   assert.match(html, /asset directory travels with it/);
   assert.doesNotMatch(html, /<(?:script|iframe)\b/i);
   assert.doesNotMatch(html, /(?:src|href)="https?:\/\/(?!github\.com|markdown\.orz\.how)/i);

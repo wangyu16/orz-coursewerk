@@ -153,9 +153,9 @@ This is the high-value path when the textbook's figure is clearly better than an
 could self-generate (real photographs, micrographs, apparatus, polished diagrams).
 
 Rules:
-- **Only after pre-ingestion clearance.** A permissive copyright license does not override a publisher's
-  separate process-specific terms. The source's Coursewerk receipt must be cleared before an agent reads,
-  fetches, or adapts its figures.
+- **Public use only after pre-ingestion clearance.** The receipt verifies copyright-license evidence while
+  preserving any separate access/AI-use notice without determining its legal effect. Non-published work may use
+  a source without a receipt; public figure reuse needs a cleared receipt.
 - **Only if the guide's own license is compatible.** If a source figure is ShareAlike or NonCommercial,
   the package must satisfy those conditions; otherwise regenerate instead (§1–2).
 - **Textbook's OWN art only — vet every figure for third-party credit.** Skip any figure whose

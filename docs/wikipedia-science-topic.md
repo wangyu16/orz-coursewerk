@@ -1,6 +1,8 @@
 # Wikipedia science-topic workflow
 
-Use this path for future public trial packages when a textbook publisher's process terms do not permit AI-assisted ingestion.
+Use this path for future public science packages. Coursewerk prefers Wikipedia over OpenStax to reduce avoidable
+disputes, but that preference does not restrict private use or publication and does not treat a separate AI-use
+statement as an amendment to a Creative Commons license.
 
 ## Scope
 

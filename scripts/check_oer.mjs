@@ -705,7 +705,7 @@ console.log(JSON.stringify({
   criticalTotal: r.criticalTotal,
   criticalCounts: critical,
   discoverability: { ready: r.discoverability.ready, license: r.discoverability.license, blockers: r.discoverability.blockers },
-  assurance: { usageProfile: assurance.usageProfile, canPack: assurance.canPack, hardFailures: assurance.hardFailures.length, publicationBlockers: assurance.publicationBlockers.length },
+  assurance: { usageProfile: assurance.usageProfile, canPack: assurance.canPack, hardFailures: assurance.hardFailures.length, publicationBlockers: assurance.publicationBlockers.length, warnings: assurance.warnings },
   coherence: { ready: coherence.hardFailures.length === 0, failures: coherence.hardFailures.length, changed: coherence.changed.length, staleDependents: coherence.staleDependents.length },
 }, null, 2));
 process.exit(r.criticalTotal > 0 ? 1 : 0);

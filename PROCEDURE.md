@@ -31,20 +31,21 @@ it never changes the assurance kernel.
 
 Ask who will receive the materials, how access is controlled, whether redistribution/publication is possible,
 the applicable jurisdiction/institution when an exception is asserted, and the rights basis for every primary
-source. Create `metadata/FOUNDATION.json` and `metadata/PROVENANCE.json` from the templates. For every non-owned
-primary source, in every intended-use profile, perform these steps in order before an AI agent reads or receives
-substantive source content:
+source. Create `metadata/FOUNDATION.json` and `metadata/PROVENANCE.json` from the templates. Non-published private
+or restricted authoring may use any source without a rights receipt; record its identity and provenance, retain
+warnings, and do not claim that publication has been cleared. For public authoring, perform these steps in order:
 
 1. Identify the authoritative publisher rights page and record its URL/type/date.
 2. Run `npm run capture:rights -- --root <package-or-personal> --source-id <id> --operator-name <name> --operator-type <automation|human> --contact <email-or-project-url>`. This deterministic
    helper saves and hashes the evidence, records retrieval/operator metadata, checks known-source expectations,
-   scans for process-specific reservations (including generative-AI or automated-processing notices), and emits
+   scans and separately records AI/automated-use notices without treating them as copyright-license terms, and emits
    a hash-bound pre-ingestion receipt. It exits nonzero unless that receipt is cleared.
-3. If blocked, stop source ingestion. Continue only after the foundation records affirmative permission or a
-   qualified institutional/legal determination with decision maker, date, reference, and rationale. Coursewerk
-   detects and preserves the provider's condition; it does not decide its legal effect.
-4. Run `node scripts/check_assurance.mjs --root <package-or-personal> --phase pre-ingestion`. Only after every
-   receipt remains cleared may source preparation begin. `prepare:source` independently re-verifies the receipt,
+3. If blocked, stop public-source ingestion and inspect the stated reason: missing/stale evidence, a verified
+   license or attribution conflict, or another foundation failure.
+   Coursewerk records separate access/use notices but does not decide that they modify a CC license or establish
+   a copyright prohibition. The instructor makes the publication decision after reviewing warnings.
+4. Run `node scripts/check_assurance.mjs --root package --phase pre-ingestion` for public work. Only after every
+   public-source receipt remains cleared may public source preparation begin. `prepare:source` independently re-verifies the receipt,
    current source record, evidence hash, and known-source policy before reading the supplied source. Automatic entries must bind the raw
    snapshot, raw hash, canonical URL, retrieval time, extractor metadata, extracted text, and text hash. The
    scaffold `inputs/README.md` never counts as source evidence.
@@ -58,8 +59,8 @@ substantive source content:
 Run `node scripts/check_assurance.mjs --root personal --phase authoring` for private/restricted work. Gate: confirm the recorded
 use condition and foundation facts before authoring.
 
-For future chapter-sized public science trials, prefer a multi-page English Wikipedia corpus instead of a source
-whose process terms prohibit AI-assisted ingestion. Follow `docs/wikipedia-science-topic.md`: one anchor article,
+For future chapter-sized public science trials, use a multi-page English Wikipedia corpus. Prefer not to use
+OpenStax to reduce avoidable disputes, but treat that as advice rather than a restriction. Follow `docs/wikipedia-science-topic.md`: one anchor article,
 three to seven supporting pages, serial Wikimedia API retrieval, and approximately 6,000–25,000 extracted words.
 
 ## Stage 1 — Scope + manifest ⏸

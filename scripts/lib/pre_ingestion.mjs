@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { normalizeLicense } from "./contract.mjs";
-import { makeProcessReview, normalizeEvidenceText, processDecisionResolves } from "./rights_preflight.mjs";
+import { makeProcessReview, normalizeEvidenceText } from "./rights_preflight.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const policiesFile = path.resolve(here, "../data/source-policies.json");
@@ -53,6 +53,9 @@ export function evaluatePreIngestionEvidence(source, evidenceBytes, scannedAt = 
   const evidenceText = normalizeEvidenceText(evidenceBytes.toString("utf8"));
   const processUseReview = makeProcessReview(evidenceText, scannedAt);
   const blockers = [];
+  const warnings = processUseReview.notices.length
+    ? ["A separate AI/automated-use notice was recorded. Coursewerk does not treat the notice as part of the copyright license or determine its legal effect."]
+    : [];
 
   if (policy) {
     if (basis.evidenceUrl !== policy.licenseEvidenceUrl)
@@ -67,17 +70,16 @@ export function evaluatePreIngestionEvidence(source, evidenceBytes, scannedAt = 
       if (!evidenceText.toLowerCase().includes(String(marker).toLowerCase()))
         blockers.push(`known-source policy ${policy.id} evidence is missing required marker: ${marker}`);
     }
+    if (policy.authoringPreference === "avoid")
+      warnings.push(`Coursewerk source preference ${policy.id}: ${policy.authoringPreferenceRationale || "prefer another source when practical"}`);
   }
-
-  const processUseResolved = processDecisionResolves(processUseReview.notices, basis.processUseDecision);
-  if (!processUseResolved)
-    blockers.push(`process-specific restriction (${processUseReview.notices.map((notice) => notice.id).join(", ")}) requires permission or a recorded qualified decision before source ingestion`);
 
   return {
     policy,
     policyChecksPassed: blockers.filter((item) => item.startsWith("known-source policy")).length === 0,
     processUseReview,
-    processUseResolved,
+    noticeReviewComplete: true,
+    warnings,
     blockers,
     status: blockers.length ? "blocked" : "cleared",
   };
@@ -86,7 +88,7 @@ export function evaluatePreIngestionEvidence(source, evidenceBytes, scannedAt = 
 export function buildPreflightReceipt({ source, evidenceBytes, retrieval, operator, generatedAt = new Date().toISOString() }) {
   const evaluation = evaluatePreIngestionEvidence(source, evidenceBytes, generatedAt);
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     sourceId: source.id,
     sourceBindingSha256: sourceBindingSha256(source),
     policyId: evaluation.policy?.id || null,
@@ -98,9 +100,10 @@ export function buildPreflightReceipt({ source, evidenceBytes, retrieval, operat
     },
     operator,
     processUseReview: evaluation.processUseReview,
-    processUseResolved: evaluation.processUseResolved,
+    noticeReviewComplete: evaluation.noticeReviewComplete,
     policyChecksPassed: evaluation.policyChecksPassed,
     status: evaluation.status,
+    warnings: evaluation.warnings,
     blockers: evaluation.blockers,
     generatedAt,
   };
@@ -131,7 +134,7 @@ export function verifyPreflightReceipt(root, source) {
   let receipt;
   try { receipt = JSON.parse(bytes); }
   catch (error) { return { ready: false, failures: [...failures, `source ${source.id}: preflight receipt is invalid JSON: ${error.message}`], receipt: null }; }
-  if (receipt.schemaVersion !== 1 || receipt.sourceId !== source.id) failures.push(`source ${source.id}: preflight receipt identity is invalid`);
+  if (receipt.schemaVersion !== 2 || receipt.sourceId !== source.id) failures.push(`source ${source.id}: preflight receipt identity/schema is invalid; recapture rights evidence with the current Coursewerk version`);
   if (receipt.sourceBindingSha256 !== sourceBindingSha256(source)) failures.push(`source ${source.id}: preflight receipt does not match the current source/rights record`);
   const evidenceRel = norm(basis.evidenceSnapshot);
   const evidenceFile = path.join(root, evidenceRel);
@@ -142,7 +145,7 @@ export function verifyPreflightReceipt(root, source) {
       failures.push(`source ${source.id}: preflight evidence hash is missing or stale`);
     const current = evaluatePreIngestionEvidence(source, evidenceBytes, receipt.generatedAt);
     if (current.status !== "cleared") failures.push(...current.blockers.map((item) => `source ${source.id}: ${item}`));
-    if (receipt.status !== "cleared" || receipt.processUseResolved !== true || receipt.policyChecksPassed !== true)
+    if (receipt.status !== "cleared" || receipt.noticeReviewComplete !== true || receipt.policyChecksPassed !== true)
       failures.push(`source ${source.id}: preflight receipt is not cleared`);
     if (receipt.policyId !== current.policy?.id && (receipt.policyId || current.policy))
       failures.push(`source ${source.id}: preflight policy binding is stale`);
@@ -152,13 +155,31 @@ export function verifyPreflightReceipt(root, source) {
 
 export function auditIngestionReadiness(root, foundation) {
   const failures = [];
-  if (!foundation || foundation.schemaVersion !== 1) return { ready: false, failures: ["FOUNDATION.json schemaVersion 1 is required before ingestion"], sources: [] };
+  const warnings = [];
+  if (!foundation || foundation.schemaVersion !== 1) return { ready: false, failures: ["FOUNDATION.json schemaVersion 1 is required before ingestion"], warnings, sources: [] };
   if (!Array.isArray(foundation.sources) || foundation.sources.length === 0)
-    return { ready: false, failures: ["At least one source must be declared before ingestion"], sources: [] };
+    return { ready: false, failures: ["At least one source must be declared before ingestion"], warnings, sources: [] };
+  const nonPublished = ["personal-private", "restricted-teaching"].includes(foundation.usageProfile);
   const sources = [];
   for (const source of foundation.sources) {
-    if (!source?.id || !source?.rightsBasis?.type) {
-      failures.push("Every source requires an id and rightsBasis.type before ingestion");
+    if (!source?.id) {
+      failures.push("Every source requires an id before ingestion so its provenance can be tracked");
+      continue;
+    }
+    if (nonPublished) {
+      if (!source?.rightsBasis?.type)
+        warnings.push(`source ${source.id}: rights basis is unrecorded; non-published authoring may continue, but record it before considering publication`);
+      if (source?.rightsBasis?.preflightReceipt) {
+        const result = verifyPreflightReceipt(root, source);
+        if (!result.ready) warnings.push(...result.failures.map((item) => `${item} (advisory for non-published use)`));
+      } else {
+        warnings.push(`source ${source.id}: no rights receipt; permitted for non-published authoring and must be reviewed before publication`);
+      }
+      sources.push({ sourceId: source.id, ready: true, receipt: source?.rightsBasis?.preflightReceipt || null, advisoryOnly: true });
+      continue;
+    }
+    if (!source?.rightsBasis?.type) {
+      failures.push(`source ${source.id}: rightsBasis.type is required before public-source ingestion`);
       continue;
     }
     if (source.rightsBasis.type === "owned") {
@@ -179,5 +200,5 @@ export function auditIngestionReadiness(root, foundation) {
     failures.push(...result.failures);
     sources.push({ sourceId: source.id, ready: result.ready, receipt: source.rightsBasis.preflightReceipt || null });
   }
-  return { ready: failures.length === 0, failures: [...new Set(failures)], sources };
+  return { ready: failures.length === 0, failures: [...new Set(failures)], warnings: [...new Set(warnings)], sources };
 }

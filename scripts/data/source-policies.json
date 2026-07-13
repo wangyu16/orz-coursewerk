@@ -10,6 +10,8 @@
       },
       "license": "CC-BY-NC-SA-4.0",
       "licenseEvidenceUrl": "https://openstax.org/books/chemistry-2e/pages/preface",
+      "authoringPreference": "avoid",
+      "authoringPreferenceRationale": "Prefer other sources to reduce access-terms disputes, while leaving lawful-use and publication decisions to the instructor.",
       "expectedProcessNoticeIds": ["generative-ai-ingestion"],
       "requiredEvidenceTextIncludes": ["Attribution-NonCommercial-ShareAlike 4.0"],
       "requiredAttribution": {
@@ -25,6 +27,7 @@
       },
       "license": "CC-BY-SA-4.0",
       "licenseEvidenceUrl": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use",
+      "ingestionSupport": "supported",
       "expectedProcessNoticeIds": [],
       "requiredEvidenceTextIncludes": [
         "Creative Commons Attribution-ShareAlike 4.0",

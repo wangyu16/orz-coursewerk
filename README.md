@@ -68,9 +68,10 @@ The agent will:
 1. **Set up a workspace** (`init` installs the orz-family builders and creates `inputs/`, `personal/`, `package/`,
    `preview/`, `reports/`, `dist/`; output roots get independent Git repositories).
 2. **Check for updates** (pulls the latest Coursewerk so you always get improvements).
-3. **Ask you** for intended use, source/rights evidence, scope, and pedagogy. Before AI ingestion it
-   deterministically scans the authoritative rights page for process-specific restrictions and stops on any
-   unresolved notice. It writes a private workspace or, only when publication is cleared, the package manifest.
+3. **Ask you** for intended use, source/rights evidence, scope, and pedagogy. Private and restricted authoring may
+   use any source with provenance and future-publication warnings. For public preparation it deterministically
+   captures the authoritative rights page, verifies license facts, and separately records any AI/automated-use
+   notice without treating it as an amendment to the copyright license.
 4. **Build the package** stage by stage, pausing at each major stage for your review and steering,
    previewing the real documents as it goes.
 5. **Run the quality gate** (`scripts/check_oer.mjs`) — including source-corpus identity, exact license text,
@@ -131,7 +132,7 @@ bootstrap/init.sh              # installs builders + creates the workspace folde
 skills/                        # bundled harness skills (orz-markdown, oer-figures, oer-qa, courseguide-standards)
 scripts/check_oer.mjs          # automated quality gate (Alembic contract + OER quality)
 scripts/check_assurance.mjs    # foundation/provenance gate for private/restricted work
-scripts/capture_rights_evidence.mjs # snapshot/hash rights evidence and preflight process restrictions
+scripts/capture_rights_evidence.mjs # snapshot/hash rights evidence and classify separate access/AI-use notices
 scripts/prepare_source_corpus.mjs   # bind raw/extracted source evidence or human comparison attestation
 scripts/prepare_wikipedia_topic.mjs # collect cleared, revision-pinned pages into a chapter-sized science corpus
 scripts/generate_attribution.mjs    # render attribution deterministically from structured provenance

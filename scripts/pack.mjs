@@ -105,6 +105,7 @@ if (res.status !== 0) {
 const size = fs.statSync(zipPath).size;
 const qa = JSON.parse(fs.readFileSync(qaJson, "utf8"));
 const carriers = JSON.parse(fs.readFileSync(carrierReceipt, "utf8"));
+const assuranceWarnings = qa.assurance?.warnings || [];
 const persistedCarrierReceipt = path.join(outDir, `${base}.carriers.json`);
 fs.copyFileSync(carrierReceipt, persistedCarrierReceipt);
 const archiveSha256 = crypto.createHash("sha256").update(fs.readFileSync(zipPath)).digest("hex");
@@ -121,6 +122,8 @@ const evaluation = [
   `- Accessibility findings: missing alt ${qa.accessibility.markdownImagesMissingAlt}, missing diagram/chart alternatives ${qa.accessibility.missingDiagramAlternatives}, heading jumps ${qa.accessibility.headingLevelJumps}, non-descriptive links ${qa.accessibility.nonDescriptiveLinks}`,
   `- Carrier portability: ${carriers.results.every((result) => result.portability.singleFile) ? "single-file" : "some carriers require local assets and/or network runtime enhancements"}`,
   `- Runtime visual review: required and not proven by the static carrier build alone.`,
+  `- Source/publication warnings: ${assuranceWarnings.length}`,
+  ...assuranceWarnings.map((warning) => `  - ${warning}`),
   `- Automated verification does not replace subject-matter, pedagogical, legal, or final visual review.`,
   "",
 ].join("\n");
@@ -139,6 +142,7 @@ const releaseReceipt = {
   carrierBuilds: carriers.results,
   runtimeVisualReviewRequired: carriers.runtimeVisualReviewRequired,
   criticalTotal: qa.criticalTotal,
+  assuranceWarnings,
   archive: path.basename(zipPath),
   archiveSha256,
   evaluation: path.basename(evaluationPath),
@@ -148,4 +152,4 @@ const releaseReceipt = {
 const receiptPath = path.join(outDir, `${base}.release.json`);
 fs.writeFileSync(receiptPath, JSON.stringify(releaseReceipt, null, 2) + "\n");
 fs.rmSync(work, { recursive: true, force: true });
-console.log(JSON.stringify({ zip: zipPath, releaseReceipt: receiptPath, carrierReceipt: persistedCarrierReceipt, evaluation: evaluationPath, filesPacked: files, carriersDropped: dropped, bytes: size, archiveSha256 }, null, 2));
+console.log(JSON.stringify({ zip: zipPath, releaseReceipt: receiptPath, carrierReceipt: persistedCarrierReceipt, evaluation: evaluationPath, filesPacked: files, carriersDropped: dropped, bytes: size, archiveSha256, warnings: assuranceWarnings }, null, 2));

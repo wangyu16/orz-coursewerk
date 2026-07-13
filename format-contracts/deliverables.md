@@ -28,7 +28,7 @@ package/
   metadata/ATTRIBUTION.md      # asset · source · license · attribution  (NOT at root — see note)
   metadata/DOCUMENTS.json      # optional declared mdhtml/slides/paged collection sources
   metadata/evidence/…          # local source-rights evidence snapshots
-  metadata/preflight/…         # hash-bound source clearance receipts required before ingestion
+  metadata/preflight/…         # hash-bound public-source receipts; optional/advisory for non-published work
   private/…                    # instructor-only: answer keys, exams, notes (NEVER shared)
 ```
 
@@ -104,8 +104,9 @@ The mode-independent assurance contract is defined in `docs/assurance-kernel.md`
 `usageProfile: public-oer`, verified source/license evidence, matching manifest/LICENSE, complete structured
 provenance, required attribution in every applicable deliverable, and zero publication blockers.
 Public output also identifies at least one accountable non-AI author/rightsholder. A source's authoritative
-rights evidence is deterministically scanned before substantive source ingestion; process-specific restrictions
-remain blocking until permission or a qualified, referenced decision is recorded.
+rights evidence is deterministically scanned before substantive source ingestion. Separate AI/automated-use
+notices are preserved with legal effect undetermined; verified license/evidence conflicts and incompatible public
+license claims remain blocking. Non-published source use remains advisory rather than blocked.
 Cross-deliverable coherence is defined in `docs/coherence-index.md`; every final package must have a current
 generated component index, and every revision must complete the impact-review/attested-refresh protocol.
 

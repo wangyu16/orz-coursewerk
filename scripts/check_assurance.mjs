@@ -82,6 +82,7 @@ console.log(JSON.stringify({
   usageProfile: result.usageProfile,
   ingestionReady: result.ingestionReady,
   ingestionFailures: result.ingestionFailures.length,
+  warnings: result.warnings,
   ...(phase !== "pre-ingestion" ? {
     authoringReady: result.authoringReady,
     privateUseReady: result.ingestionReady && result.privateFailures.length === 0,

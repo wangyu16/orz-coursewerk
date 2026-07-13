@@ -22,20 +22,27 @@ Before authoring, ask the user which condition applies and record it in `metadat
 Input rights and output licensing are different. `ALL-RIGHTS-RESERVED` does not repair an unauthorized source
 use. A user-asserted copyright exception is not a public-release clearance.
 
-## Process-specific rights preflight
+## License facts, access notices, and source-support policy
 
-The source license is not the entire source-use decision. Before any substantive source text is sent to an AI
-agent, a non-generative helper must capture and scan the authoritative rights page. It records
-`rightsBasis.processUseReview` and detects explicit reservations about generative-AI ingestion, model training,
-or automated processing. A known-source policy may also require that an expected notice be present, preventing a
-stale or incomplete snapshot from silently passing.
+Before any substantive source text is sent to an AI agent, a non-generative helper captures and scans the
+authoritative rights page. It verifies the declared copyright license and records any separate statement about
+generative-AI ingestion, model training, or automated processing in `rightsBasis.processUseReview`. A known-source
+policy may require an expected notice to be present so a stale or incomplete snapshot cannot silently pass.
 
-If a notice is found, the helper exits nonzero and authoring stops. The notice can be resolved only by a
-`processUseDecision` recording `status: permitted`, basis `permission` or `qualified-review`, the responsible
-decision maker, date, evidence/reference, and a substantive rationale. Coursewerk does not determine whether a
-publisher notice is enforceable or overrides another right; it makes the condition impossible to overlook and
-requires an accountable decision outside the model. For example, the known OpenStax Chemistry 2e policy expects
-the current generative-AI-ingestion notice to be captured and will fail closed if it is absent or unresolved.
+A detected notice is evidence, not a legal conclusion. Coursewerk does not treat it as an amendment to a Creative
+Commons license, does not infer that distilled facts or knowledge are protected expression, and does not decide
+whether copyright permission, a contractual access term, or an exception applies in a jurisdiction. The receipt
+may therefore clear while retaining the notice and `legalEffectDetermined: false`.
+
+Source preference is a separate product judgment. Coursewerk advises using alternatives to OpenStax to reduce
+access-terms disputes, but that advice does not block private authoring or publication and is not a determination
+that copyright law or the declared CC license forbids AI processing.
+
+For `personal-private` and `restricted-teaching`, source-rights checks are advisory: any source may be used without
+a receipt, while identity, provenance, unknown-source labels, and warnings are retained for a possible later
+publication review. For `public-oer`, verified license statements, attribution, compatible licensing of copied or
+adapted expression, and honest provenance remain hard factual checks. Separate AI-use notices remain warnings; the
+instructor decides whether to publish.
 
 ## Required structured records
 
@@ -47,8 +54,9 @@ the current generative-AI-ingestion notice to be captured and will fail closed i
   than replaces structured provenance and is generated deterministically from it.
 - `metadata/evidence/<source-id>.*` — a local snapshot of the authoritative rights evidence, with its SHA-256
   and structured retrieval/capture operator record in the source's rights basis.
-- `metadata/preflight/<source-id>.json` — the clearance decision bound to the source record, policy, evidence
-  hash, process review, retrieval record, and operator. Source preparation re-verifies it before reading content.
+- `metadata/preflight/<source-id>.json` — the clearance decision bound to the source record, source-support policy,
+  evidence hash, separate notice review, retrieval record, and operator. Source preparation re-verifies it before
+  reading content.
 - `inputs/SOURCE_CORPUS.json` — binds each primary source ID to a raw snapshot and hash, canonical URL,
   retrieval timestamp, extractor/version, hashed extracted text, or an explicit human comparison attestation.
   IDs must be unique and declared in the foundation; scaffold instructions never satisfy source comparison.
@@ -92,9 +100,10 @@ npm run capture:rights -- --root package --source-id <foundation-source-id> \
 ```
 
 The helper stores and hashes the local snapshot, records structured retrieval/capture metadata, asserts known-source
-policy expectations, and writes a hash-bound receipt under `metadata/preflight/`. It exits with status 3 when a
-notice remains unresolved or an expected policy fact is absent. Do not prepare or expose the source corpus after
-that result. Source preparation independently re-verifies the receipt, evidence hash, source binding, and policy.
+policy expectations, and writes a hash-bound receipt under `metadata/preflight/`. A generic AI-use notice and an
+OpenStax source-preference advisory do not cause status 3. Public preparation exits with status 3 when a verified
+fact is missing or conflicting. Non-published preparation may proceed without a receipt. Public preparation
+independently re-verifies the receipt, evidence hash, source binding, and policy.
 
 For a private workspace:
 
@@ -104,7 +113,7 @@ node scripts/check_assurance.mjs --root personal --phase authoring --report repo
 
 Private readiness may pass while the report still lists future-publication blockers.
 
-Use `--phase pre-ingestion` before any non-owned source is read, `--phase authoring` while developing private or
+Use `--phase pre-ingestion` before public-source preparation, `--phase authoring` while developing private or
 restricted materials, and `--phase release` for final public packaging. A phase report omits irrelevant later-stage
 noise, and its exit status reflects that phase's actual readiness.
 

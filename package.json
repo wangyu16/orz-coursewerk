@@ -1,6 +1,6 @@
 {
   "name": "orz-coursewerk",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "private": true,
   "type": "module",
   "description": "Agent-native harness that builds a complete, Alembic-ready OER course package from source materials, natively using the orz-markdown family (orz-mdhtml / orz-slides / orz-paged).",

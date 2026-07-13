@@ -79,7 +79,23 @@ test("source preparation records an explicit human attestation", () => {
   });
 });
 
-test("source preparation fails before reading when process restrictions are unresolved", () => {
+test("non-published authoring permits a source without a rights receipt", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-private-unrestricted-source-"));
+  const inputs = path.join(root, "inputs");
+  const source = path.join(root, "source.txt");
+  fs.writeFileSync(source, "scientific fact ".repeat(120));
+  fs.mkdirSync(path.join(root, "metadata"), { recursive: true });
+  fs.writeFileSync(path.join(root, "metadata", "FOUNDATION.json"), JSON.stringify({
+    schemaVersion: 1,
+    usageProfile: "personal-private",
+    sources: [{ id: "unverified-private-source" }],
+  }));
+  const result = run("prepare_source_corpus.mjs", ["--root", root, "--inputs", inputs, "--source-id", "unverified-private-source", "--file", source]);
+  assert.equal(result.status, 0, result.stderr);
+  assert.ok(fs.existsSync(path.join(inputs, "SOURCE_CORPUS.json")));
+});
+
+test("source preparation fails before reading when a current preflight receipt is missing", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-source-preflight-"));
   const inputs = path.join(root, "inputs");
   const source = path.join(root, "source.md");
@@ -95,7 +111,7 @@ test("source preparation fails before reading when process restrictions are unre
         type: "open-license",
         evidenceSnapshot: "metadata/evidence/restricted.html",
         evidenceSha256: crypto.createHash("sha256").update(evidence).digest("hex"),
-        processUseReview: { status: "blocked-pending-decision", notices: [{ id: "generative-ai-ingestion" }] },
+        processUseReview: { status: "notice-recorded", legalEffectDetermined: false, notices: [{ id: "generative-ai-ingestion" }] },
       },
     }],
   }));
@@ -129,25 +145,28 @@ test("rights evidence capture stores a snapshot and updates the foundation", () 
   assert.equal(rights.evidenceRetrieval.captureMode, "local-file");
   assert.ok(rights.preflightReceipt);
   assert.ok(fs.existsSync(path.join(root, rights.preflightReceipt)));
-  assert.equal(rights.processUseReview.status, "no-restriction-detected");
+  assert.equal(rights.processUseReview.status, "no-notice-detected");
   assert.equal(rights.evidenceSha256, crypto.createHash("sha256").update(bytes).digest("hex"));
   assert.deepEqual(fs.readFileSync(path.join(root, rights.evidenceSnapshot)), bytes);
 });
 
-test("rights capture records and blocks an explicit AI-ingestion restriction", () => {
+test("rights capture records an AI-use notice without treating it as copyright law", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-rights-restriction-"));
   fs.mkdirSync(path.join(root, "metadata"), { recursive: true });
   fs.writeFileSync(path.join(root, "metadata", "FOUNDATION.json"), JSON.stringify({ schemaVersion: 1, sources: [{ id: "restricted", rightsBasis: { evidenceUrl: "https://example.org/restricted" } }] }));
   const evidence = path.join(root, "restriction.html");
   fs.writeFileSync(evidence, "This book may not be used in the training of large language models or otherwise be ingested into large language models or generative AI offerings without Example Publisher's permission.");
   const result = run("capture_rights_evidence.mjs", ["--root", root, "--source-id", "restricted", "--operator-name", "Course author", "--operator-type", "human", "--file", evidence]);
-  assert.equal(result.status, 3);
-  assert.match(result.stderr, /requires permission or a recorded qualified decision/);
+  assert.equal(result.status, 0, result.stderr);
+  const summary = JSON.parse(result.stdout);
+  assert.match(summary.warnings.join("\n"), /does not treat the notice as part of the copyright license/);
   const updated = JSON.parse(fs.readFileSync(path.join(root, "metadata", "FOUNDATION.json"), "utf8"));
-  assert.equal(updated.sources[0].rightsBasis.processUseReview.status, "blocked-pending-decision");
+  assert.equal(updated.sources[0].rightsBasis.processUseReview.status, "notice-recorded");
+  assert.equal(updated.sources[0].rightsBasis.processUseReview.legalEffectDetermined, false);
   assert.equal(updated.sources[0].rightsBasis.processUseReview.notices[0].id, "generative-ai-ingestion");
   const receipt = JSON.parse(fs.readFileSync(path.join(root, updated.sources[0].rightsBasis.preflightReceipt), "utf8"));
-  assert.equal(receipt.status, "blocked");
+  assert.equal(receipt.status, "cleared");
+  assert.equal(receipt.schemaVersion, 2);
 });
 
 test("known-source expected notice is enforced before source preparation", () => {
@@ -177,19 +196,26 @@ test("known-source expected notice is enforced before source preparation", () =>
   assert.equal(capture.status, 3);
   assert.match(capture.stderr, /expected process notice generative-ai-ingestion/);
 
+  fs.writeFileSync(evidence, "<p>Attribution-NonCommercial-ShareAlike 4.0</p><p>This book may not be used in the training of large language models or otherwise be ingested into large language models or generative AI offerings without OpenStax's permission.</p>");
+  const completeCapture = run("capture_rights_evidence.mjs", ["--root", root, "--source-id", "openstax-chemistry-2e", "--operator-name", "test automation", "--operator-type", "automation", "--file", evidence]);
+  assert.equal(completeCapture.status, 0, completeCapture.stderr);
+  const completeSummary = JSON.parse(completeCapture.stdout);
+  assert.match(completeSummary.warnings.join("\n"), /leaving lawful-use and publication decisions to the instructor/);
+
   const source = path.join(root, "source.txt");
   fs.writeFileSync(source, "word ".repeat(150));
   const prepare = run("prepare_source_corpus.mjs", ["--root", root, "--inputs", inputs, "--source-id", "openstax-chemistry-2e", "--file", source]);
-  assert.equal(prepare.status, 3);
-  assert.equal(fs.existsSync(path.join(inputs, "SOURCE_CORPUS.json")), false);
+  assert.equal(prepare.status, 0, prepare.stderr);
+  assert.equal(fs.existsSync(path.join(inputs, "SOURCE_CORPUS.json")), true);
 
   const report = path.join(root, "new", "reports", "preflight.md");
   const assurance = run("check_assurance.mjs", ["--root", root, "--phase", "pre-ingestion", "--report", report]);
-  assert.equal(assurance.status, 1);
+  assert.equal(assurance.status, 0, assurance.stderr);
   const summary = JSON.parse(assurance.stdout);
-  assert.equal(summary.ingestionReady, false);
+  assert.equal(summary.ingestionReady, true);
+  assert.match(summary.warnings.join("\n"), /leaving lawful-use and publication decisions to the instructor/);
   assert.equal("privateUseReady" in summary, false);
-  assert.equal(summary.phaseReady, false);
+  assert.equal(summary.phaseReady, true);
   assert.ok(fs.existsSync(report));
   assert.doesNotMatch(fs.readFileSync(report, "utf8"), /## Publication blockers/);
 });
