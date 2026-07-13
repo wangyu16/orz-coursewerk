@@ -2,12 +2,6 @@
   "schemaVersion": 1,
   "components": [
     {
-      "id": "repo:.claude/settings.local.json",
-      "path": ".claude/settings.local.json",
-      "type": "repository-support",
-      "hash": "8603f6d4676442a20089d1d2d4f489f37d2c8b0762ec5b711e34697edf093308"
-    },
-    {
       "id": "repo:.cursorrules",
       "path": ".cursorrules",
       "type": "repository-support",
@@ -293,7 +287,7 @@
       "id": "repo:scripts/lib/system_index.mjs",
       "path": "scripts/lib/system_index.mjs",
       "type": "kernel",
-      "hash": "86dd68d299d66a076c9b5c3cef6a09aae0f1112c9a2f7843d75fce478c18efe0"
+      "hash": "5241698bafbbde43fbacb6abe70c1669ebc0d36d5e2f2920ad40208ff74d1aa3"
     },
     {
       "id": "repo:scripts/lib/verbatim.mjs",
@@ -431,7 +425,7 @@
       "id": "repo:system/COMPONENTS.json",
       "path": "system/COMPONENTS.json",
       "type": "system-governance",
-      "hash": "5bab3fff27f43ac984573b06db3d1ca74fa20af23550161e79f0a48a2021cfcf"
+      "hash": "ff90baa69ab76c303a285647bc28c309d6010b4fdda2c7e02364c9b3f97e25d5"
     },
     {
       "id": "repo:system/KNOWN_FINDINGS.json",
@@ -557,7 +551,7 @@
       "id": "repo:tests/system-index.test.mjs",
       "path": "tests/system-index.test.mjs",
       "type": "test",
-      "hash": "526ba70f38fed4e6a599716e1c306e3cb3ce6d0eb764ea46d92446e3051e17c8"
+      "hash": "d8cece363b125adb0b809baf24714c44fcfe516f33f86acac30b02921878fd40"
     },
     {
       "id": "repo:VERSION",
@@ -1323,6 +1317,7 @@
     ],
     "excludedDirectories": [
       ".git",
+      ".claude",
       "node_modules",
       "package",
       "personal",

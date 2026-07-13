@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "planId": "f9a28dd26d56dcdc864c515ca1ece6065ced132c6649334b070920dd5e0da6d7",
+  "baseRef": "HEAD",
+  "baseTip": "f37209d85e3e75020bf2d47ea9576f0138c06abb",
+  "baseCommit": "f37209d85e3e75020bf2d47ea9576f0138c06abb",
+  "reviewedHead": "f37209d85e3e75020bf2d47ea9576f0138c06abb",
+  "changed": [
+    ".claude/settings.local.json",
+    "scripts/lib/system_index.mjs",
+    "system/COMPONENTS.json",
+    "tests/system-index.test.mjs"
+  ],
+  "requiredReview": [
+    ".claude/settings.local.json",
+    ".github/workflows/system-integrity.yml",
+    "docs/coursewerk-system-index.md",
+    "scripts/lib/system_index.mjs",
+    "system/COMPONENTS.json",
+    "tests/system-index.test.mjs"
+  ],
+  "reviewed": [
+    ".claude/settings.local.json",
+    ".github/workflows/system-integrity.yml",
+    "docs/coursewerk-system-index.md",
+    "scripts/lib/system_index.mjs",
+    "system/COMPONENTS.json",
+    "tests/system-index.test.mjs"
+  ],
+  "impactedClaims": [
+    "claim.system.branch-coherence"
+  ],
+  "testResults": [
+    {
+      "path": "tests/system-index.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "Reviewed the self-index exclusion boundary and confirmed that machine-local .claude settings are removed from the canonical component universe while tracked repository components, integrity CI, documentation, and branch-impact behavior remain coherent.",
+  "generatedIndexHash": "705eb7bdbf4cb31b3abb417f45e6df9382fcd9a967c953e9562de435355720a6",
+  "acceptedAt": "2026-07-13T04:15:55.735Z"
+}

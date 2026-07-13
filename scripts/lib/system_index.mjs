@@ -4,7 +4,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 
 export const SYSTEM_INDEX_PATH = "system/COURSEWERK_INDEX.json";
-const EXCLUDED_DIRS = new Set([".git", "node_modules", "package", "personal", "inputs", "preview", "reports", "dist", "examples", ".coursewerk"]);
+const EXCLUDED_DIRS = new Set([".git", ".claude", "node_modules", "package", "personal", "inputs", "preview", "reports", "dist", "examples", ".coursewerk"]);
 const EXCLUDED_FILES = new Set([SYSTEM_INDEX_PATH, ".DS_Store", "package-lock.json"]);
 const hash = (value) => crypto.createHash("sha256").update(value).digest("hex");
 const norm = (value) => String(value).replaceAll("\\", "/").replace(/^\.\//, "");

@@ -30,6 +30,7 @@ function git(root, args) {
 test("Coursewerk system registry has valid claim evidence and canonical output", () => {
   const index = computeCoursewerkIndex(repo);
   assert.deepEqual(index.validationFailures, []);
+  assert.equal(index.components.some((component) => component.path.startsWith(".claude/")), false);
   assert.deepEqual(verifyCoursewerkIndex(repo).failures, []);
 });
 

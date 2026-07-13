@@ -15,6 +15,6 @@
     { "type": "system-governance", "prefixes": ["system/"] },
     { "type": "release-metadata", "paths": ["package.json", "VERSION", "CHANGELOG.md"] }
   ],
-  "excludedDirectories": [".git", "node_modules", "package", "personal", "inputs", "preview", "reports", "dist", "examples", ".coursewerk"],
+  "excludedDirectories": [".git", ".claude", "node_modules", "package", "personal", "inputs", "preview", "reports", "dist", "examples", ".coursewerk"],
   "excludedGenerated": ["system/COURSEWERK_INDEX.json", "system/revisions/", "package-lock.json", ".DS_Store"]
 }
