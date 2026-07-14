@@ -10,6 +10,8 @@ import { renderAttribution } from "../scripts/lib/assurance.mjs";
 import { buildPreflightReceipt, writePreflightReceipt } from "../scripts/lib/pre_ingestion.mjs";
 import { computeComponentGraph, makeComponentIndex, recordAcceptedCoherence, writeComponentIndex } from "../scripts/lib/coherence.mjs";
 import { commitOutput, ensureOutputGit } from "../scripts/lib/output_git.mjs";
+import { writeSourceRecord } from "../scripts/lib/source_record.mjs";
+import { makeKeyFactBindings } from "../scripts/lib/key_fact_review.mjs";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sha = (value) => crypto.createHash("sha256").update(value).digest("hex");
@@ -23,6 +25,39 @@ function accept(root) {
   recordAcceptedCoherence(root, index, commit.head, { action: "test" });
 }
 
+function addReleaseReviews(root, foundation) {
+  const carrierSources = ["practice/ch1.md", "slides/ch1.md", "study-guide/ch1.md"].sort();
+  writeJson(path.join(root, "metadata", "VISUAL_REVIEW.json"), {
+    schemaVersion: 1,
+    status: "passed",
+    reviewer: { type: "human", name: "QA Human Reviewer" },
+    reviewedAt: "2026-07-13",
+    inspectionMethod: "browser-visual-dom",
+    attestation: "I inspected every generated carrier in a browser for layout, readability, interaction, and visible overflow.",
+    carriers: carrierSources.map((source) => ({
+      source,
+      carrier: source.startsWith("slides/") ? source.replace(/\.md$/, ".slides.html") : source.replace(/\.md$/, ".md.html"),
+      builder: source.startsWith("slides/") ? "orz-slides" : "orz-mdhtml",
+      sourceSha256: sha(fs.readFileSync(path.join(root, source))),
+      outputFingerprint: { algorithm: "sha256", normalization: "coursewerk-carrier-v1", value: "a".repeat(64) },
+      localAssetDigests: [],
+    })),
+  });
+  writeJson(path.join(root, "metadata", "KEY_FACT_REVIEW.json"), {
+    schemaVersion: 1,
+    mode: "light",
+    reviewKind: "same-model-independent-pass",
+    authoringSystem: "QA fixture model",
+    authoringModelId: "qa-fixture-model-v1",
+    reviewer: { type: "ai", name: "QA fixture model", modelId: "qa-fixture-model-v1" },
+    independence: { separatePass: true, contextReset: true, approach: "A fresh review context examined the completed fixture after the drafting pass had ended." },
+    reviewedAt: "2026-07-13",
+    bindings: makeKeyFactBindings(root),
+    checks: ["accountable-identity", "source-identity-version", "source-license-evidence", "external-media-rights", "output-license-compatibility", "attribution-obligations", "scientific-key-facts"].map((id) => ({ id, status: "passed", note: `Independently reviewed ${id} against the bound fixture records and found it internally consistent.` })),
+    keyFacts: [{ id: "fact-1", claim: "Concept A precedes concept B in the fixture process.", status: "verified", evidenceSourceIds: ["source-1"], usedIn: ["study-guide/ch1.md"], note: "The claim is deliberately simple and is supported by the declared fixture source and diagram description." }],
+  });
+}
+
 function cleanFixture() {
   const parent = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-qa-"));
   const root = path.join(parent, "package");
@@ -33,7 +68,7 @@ function cleanFixture() {
   fs.writeFileSync(path.join(root, "metadata", "evidence", "source-1.txt"), evidence);
   const foundation = {
     schemaVersion: 1, usageProfile: "public-oer", audience: "public", access: "public-web", redistribution: "open-license", jurisdiction: "international", outputLicense: "CC-BY-4.0",
-    outputAuthors: [{ name: "QA Course Author", role: "author", rightsHolder: true }],
+    outputAuthors: [{ name: "QA Course Author", role: "author", rightsHolder: true, accountabilityConfirmedByUser: true }],
     privacy: { containsPersonalData: false, containsRestrictedContent: false },
     sources: [{ id: "source-1", title: "Example Source", edition: "1", publisher: "Example", canonicalUrl: "https://example.org/source", role: "primary", use: "reference", scope: ["chapter 1"], rightsBasis: { type: "open-license", license: "CC-BY-4.0", evidenceType: "official-publisher-page", evidenceUrl: "https://example.org/license", verifiedAt: "2026-07-13", evidenceSnapshot: "metadata/evidence/source-1.txt", evidenceSha256: sha(evidence), evidenceRetrieval: { captureMode: "local-file", claimedEvidenceUrl: "https://example.org/license", localFileName: "source-1.txt", retrievedAt: "2026-07-13T00:00:00Z", byteLength: Buffer.byteLength(evidence), contentType: "text/plain", tool: { name: "coursewerk", version: "test" } }, evidenceCapture: { operator: { type: "automation", name: "fixture" }, capturedAt: "2026-07-13T00:00:00Z", tool: { name: "coursewerk", version: "test" } }, processUseReview: { schemaVersion: 1, scannedAt: "2026-07-13T00:00:00Z", status: "no-notice-detected", legalEffectDetermined: false, notices: [] } }, requiredAttribution: { textIncludes: "Source:", url: "https://example.org/source", placement: "every-public-deliverable" } }],
   };
@@ -62,7 +97,10 @@ function cleanFixture() {
   fs.mkdirSync(path.join(inputs, ".coursewerk-source-original"), { recursive: true });
   fs.writeFileSync(path.join(inputs, ".coursewerk-source-original", "source-1.txt"), sourceText);
   fs.writeFileSync(path.join(inputs, "source.txt"), sourceText);
-  writeJson(path.join(inputs, "SOURCE_CORPUS.json"), { schemaVersion: 1, sources: [{ sourceId: "source-1", comparisonMode: "automatic", originalPath: ".coursewerk-source-original/source-1.txt", originalSha256: sha(sourceText), canonicalUrl: "https://example.org/source", retrievedAt: "2026-07-13T00:00:00Z", extractor: { tool: "coursewerk", version: "test", schemaVersion: 1, sourceFormat: ".txt" }, textPath: "source.txt", sha256: sha(sourceText), minimumWords: 100 }] });
+  const corpus = { schemaVersion: 1, sources: [{ sourceId: "source-1", comparisonMode: "automatic", originalPath: ".coursewerk-source-original/source-1.txt", originalSha256: sha(sourceText), canonicalUrl: "https://example.org/source", retrievedAt: "2026-07-13T00:00:00Z", retrieval: { captureMode: "local-file", localFileName: "source-1.txt", retrievedAt: "2026-07-13T00:00:00Z", byteLength: Buffer.byteLength(sourceText), tool: { name: "coursewerk", version: "test" } }, extractor: { tool: "coursewerk", version: "test", schemaVersion: 1, sourceFormat: ".txt" }, textPath: "source.txt", sha256: sha(sourceText), minimumWords: 100, wordCount: 300 }] };
+  writeJson(path.join(inputs, "SOURCE_CORPUS.json"), corpus);
+  writeSourceRecord(root, corpus);
+  addReleaseReviews(root, foundation);
   accept(root);
   return { parent, root, inputs };
 }
@@ -78,6 +116,26 @@ test("clean public fixture passes the complete QA gate", () => {
   const { run, report } = runQa(f);
   assert.equal(run.status, 0, `${run.stdout}\n${run.stderr}`);
   assert.equal(report.criticalTotal, 0);
+});
+
+test("public release requires the mode-appropriate key-fact critique", () => {
+  const f = cleanFixture();
+  fs.rmSync(path.join(f.root, "metadata", "KEY_FACT_REVIEW.json"));
+  accept(f.root);
+  const { run, report } = runQa(f);
+  assert.notEqual(run.status, 0);
+  assert.ok(report.criticalCounts.keyFactReviewFailures > 0);
+  assert.match(report.keyFactReview.failures.join("\n"), /KEY_FACT_REVIEW\.json is required/);
+});
+
+test("Light-mode same-model critique is invalidated by a later teaching-content edit", () => {
+  const f = cleanFixture();
+  fs.appendFileSync(path.join(f.root, "study-guide", "ch1.md"), "\nA later factual explanation changes the reviewed teaching content.\n");
+  accept(f.root);
+  const { run, report } = runQa(f);
+  assert.notEqual(run.status, 0);
+  assert.ok(report.criticalCounts.keyFactReviewFailures > 0);
+  assert.match(report.keyFactReview.failures.join("\n"), /bindings are stale/);
 });
 
 test("scaffold-only inputs cannot satisfy source comparison", () => {

@@ -9,6 +9,9 @@ Quick orientation:
   orz-family builders + creates `personal/`, `package/`, `preview/`, `reports/`, `dist/`).
 - Ask intended use first. Personal/restricted work stays under `personal/`; only cleared public OER enters
   `package/`. Both paths require `FOUNDATION.json` + `PROVENANCE.json` and the mode-independent assurance kernel.
+- Light mode still requires a separate context-reset same-model critique of identity, licenses, media rights,
+  attribution, and key facts; Full records cross-model review. Public release also requires an identified human
+  browser/DOM carrier attestation. Both records are hash-bound and stale after related edits.
 - Build the five deliverables per `PROCEDURE.md`, pausing at each ⏸ gate. Never fabricate facts or figures;
   keep provenance complete. Unknown/private-only material is visibly labelled and blocks publication.
 - Maintain `metadata/COMPONENT_INDEX.json`. After any edit, run the revision-impact workflow and review/revise

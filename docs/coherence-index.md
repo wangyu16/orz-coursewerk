@@ -17,7 +17,8 @@ anchored in a sibling `.coursewerk` ledger, so replacing content and the index i
 
 `metadata/COMPONENT_INDEX.json` is generated from all files under the selected output root, including:
 
-- manifest, LICENSE, README, foundation, provenance, and attribution records;
+- manifest, LICENSE, README, foundation, provenance, attribution, compact source record, focused key-fact
+  critique, and human visual-review records;
 - course and chapter concept maps;
 - study guides, slides, assessment support, and practice;
 - assets and the documents that reference them;
@@ -35,7 +36,13 @@ study guide → slides + assessment + practice
 assessment → practice
 asset → every document that references it
 PROVENANCE → ATTRIBUTION
+manifest + LICENSE + FOUNDATION + PROVENANCE + ATTRIBUTION + SOURCE_RECORD + deliverables → KEY_FACT_REVIEW
+carrier sources + local assets → VISUAL_REVIEW
 ```
+
+The two review records add a second safety layer to ordinary dependency review. Their own validators also bind
+the exact manifest/license/evidence/deliverable tree and carrier fingerprints, so replacing an index cannot make
+a stale critique or visual attestation current.
 
 ## Initial indexing
 

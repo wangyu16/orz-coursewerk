@@ -3,9 +3,9 @@
   "claims": [
     {
       "id": "claim.release.fail-closed",
-      "statement": "Public packing refuses unresolved assurance, quality, source-comparison, or coherence failures.",
+      "statement": "Public packing refuses unresolved assurance, quality, source-comparison, key-fact critique, human carrier-review, or coherence failures and binds the accepted evidence to its receipt.",
       "assuranceLevel": "hard-gate",
-      "implementation": ["scripts/pack.mjs", "scripts/check_oer.mjs"],
+      "implementation": ["scripts/pack.mjs", "scripts/check_oer.mjs", "scripts/lib/key_fact_review.mjs", "scripts/lib/visual_review.mjs"],
       "tests": ["tests/assurance.test.mjs"],
       "documentation": ["FEATURES.md", "CLAUDE.md", "PROCEDURE.md"]
     },
@@ -19,7 +19,7 @@
     },
     {
       "id": "claim.authorship.accountable",
-      "statement": "Public output identifies an accountable non-AI author or rights holder.",
+      "statement": "Public output identifies a final accountable non-AI person or institution with explicit rights-holder status and user confirmation; placeholders are rejected.",
       "assuranceLevel": "hard-gate",
       "implementation": ["scripts/lib/assurance.mjs"],
       "tests": ["tests/assurance.test.mjs"],
@@ -27,19 +27,27 @@
     },
     {
       "id": "claim.provenance.complete",
-      "statement": "Every incorporated media item is traceable to structured provenance and public attribution.",
+      "statement": "Every incorporated media item is traceable to structured provenance and public attribution, and verified external media retains hash-bound authoritative rights evidence.",
       "assuranceLevel": "hard-gate",
-      "implementation": ["scripts/lib/assurance.mjs", "scripts/check_oer.mjs"],
-      "tests": ["tests/assurance.test.mjs"],
+      "implementation": ["scripts/lib/assurance.mjs", "scripts/check_oer.mjs", "scripts/capture_media_evidence.mjs"],
+      "tests": ["tests/assurance.test.mjs", "tests/evidence-tools.test.mjs"],
       "documentation": ["FEATURES.md", "docs/assurance-kernel.md"]
     },
     {
       "id": "claim.source.comparison",
-      "statement": "Discovery release binds raw and extracted source evidence and records whether deliverables were compared with it.",
+      "statement": "Discovery release binds raw and extracted source evidence with structured retrieval metadata, rejects duplicate source identities/content, and retains an exact compact source revision record in the package.",
       "assuranceLevel": "hard-gate",
-      "implementation": ["scripts/check_oer.mjs", "scripts/lib/verbatim.mjs", "scripts/prepare_source_corpus.mjs", "scripts/prepare_wikipedia_topic.mjs"],
+      "implementation": ["scripts/check_oer.mjs", "scripts/lib/verbatim.mjs", "scripts/lib/source_record.mjs", "scripts/prepare_source_corpus.mjs", "scripts/prepare_wikipedia_topic.mjs"],
       "tests": ["tests/assurance.test.mjs", "tests/evidence-tools.test.mjs"],
       "documentation": ["FEATURES.md", "docs/assurance-kernel.md"]
+    },
+    {
+      "id": "claim.review.key-facts",
+      "statement": "Every completed teaching package receives a hash-bound focused critique of identity, source/version, licenses, media rights, attribution, and chapter key facts; Light uses a context-reset same-model pass and Full uses cross-model review.",
+      "assuranceLevel": "hard-gate",
+      "implementation": ["scripts/lib/key_fact_review.mjs", "scripts/bind_key_fact_review.mjs", "scripts/check_oer.mjs", "scripts/check_assurance.mjs"],
+      "tests": ["tests/reviews.test.mjs", "tests/qa.test.mjs", "tests/assurance.test.mjs"],
+      "documentation": ["FEATURES.md", "README.md", "CLAUDE.md", "PROCEDURE.md", "docs/assurance-kernel.md", "docs/lite-path.md", "site/index.html"]
     },
     {
       "id": "claim.coherence.revisions",
@@ -83,10 +91,10 @@
     },
     {
       "id": "claim.carriers.honest-portability",
-      "statement": "Carrier receipts persist and distinguish single-file output from carrier-plus-assets output without claiming an unperformed rendered audit.",
+      "statement": "Carrier receipts persist, distinguish single-file output from carrier-plus-assets output, retain local-asset digests, and public release verifies rebuilt stable carrier fingerprints against an identified human browser/DOM review.",
       "assuranceLevel": "automated-check",
-      "implementation": ["scripts/build_carriers.mjs", "scripts/pack.mjs"],
-      "tests": ["tests/carriers.test.mjs", "tests/assurance.test.mjs"],
+      "implementation": ["scripts/build_carriers.mjs", "scripts/lib/visual_review.mjs", "scripts/attest_visual_review.mjs", "scripts/pack.mjs"],
+      "tests": ["tests/carriers.test.mjs", "tests/reviews.test.mjs", "tests/assurance.test.mjs"],
       "documentation": ["FEATURES.md", "README.md", "site/index.html"]
     },
     {
@@ -120,6 +128,20 @@
       "implementation": ["site/index.html", "site/styles.css", ".github/workflows/pages.yml"],
       "tests": ["tests/site.test.mjs"],
       "documentation": ["README.md"]
+    },
+    {
+      "id": "claim.website.showcase",
+      "statement": "The Coursewerk website presents authentic local screenshots and a clearly labelled link to a published AI-generated demonstration, while stating that it was built from revision-bound Wikipedia pages and is not intended for classroom use.",
+      "assuranceLevel": "automated-check",
+      "implementation": [
+        "site/index.html",
+        "site/styles.css",
+        "site/assets/showcase-plate-tectonics-course.png",
+        "site/assets/showcase-plate-tectonics-study-guide.png",
+        "site/assets/showcase-plate-tectonics-slides.png"
+      ],
+      "tests": ["tests/site.test.mjs"],
+      "documentation": ["README.md", "FEATURES.md"]
     }
   ]
 }

@@ -14,6 +14,7 @@ import { fileURLToPath } from "node:url";
 import os from "node:os";
 import crypto from "node:crypto";
 import { isCarrierPath } from "./lib/contract.mjs";
+import { verifyVisualReviewAgainstCarrierReceipt } from "./lib/visual_review.mjs";
 
 const args = process.argv.slice(2);
 const opt = (n, d = null) => {
@@ -54,6 +55,14 @@ const build = spawnSync(process.execPath, [buildScript, "--package", pkg, "--out
 if (build.status !== 0) {
   console.error("pack: carrier build verification failed; no archive was created.");
   console.error(build.stdout || build.stderr);
+  fs.rmSync(work, { recursive: true, force: true });
+  process.exit(2);
+}
+const rebuiltCarriers = JSON.parse(fs.readFileSync(carrierReceipt, "utf8"));
+const visualVerification = verifyVisualReviewAgainstCarrierReceipt(pkg, rebuiltCarriers);
+if (!visualVerification.ready) {
+  console.error("pack: rebuilt carriers do not match the human visual-review attestation; no archive was created.");
+  console.error(visualVerification.failures.join("\n"));
   fs.rmSync(work, { recursive: true, force: true });
   process.exit(2);
 }
@@ -104,7 +113,7 @@ if (res.status !== 0) {
 
 const size = fs.statSync(zipPath).size;
 const qa = JSON.parse(fs.readFileSync(qaJson, "utf8"));
-const carriers = JSON.parse(fs.readFileSync(carrierReceipt, "utf8"));
+const carriers = rebuiltCarriers;
 const assuranceWarnings = qa.assurance?.warnings || [];
 const persistedCarrierReceipt = path.join(outDir, `${base}.carriers.json`);
 fs.copyFileSync(carrierReceipt, persistedCarrierReceipt);
@@ -121,22 +130,29 @@ const evaluation = [
   `- Source corpus: ${qa.verbatim?.corpus?.ready ? "ready" : "not ready"}`,
   `- Accessibility findings: missing alt ${qa.accessibility.markdownImagesMissingAlt}, missing diagram/chart alternatives ${qa.accessibility.missingDiagramAlternatives}, heading jumps ${qa.accessibility.headingLevelJumps}, non-descriptive links ${qa.accessibility.nonDescriptiveLinks}`,
   `- Carrier portability: ${carriers.results.every((result) => result.portability.singleFile) ? "single-file" : "some carriers require local assets and/or network runtime enhancements"}`,
-  `- Runtime visual review: required and not proven by the static carrier build alone.`,
+  `- Human browser/DOM carrier review: verified against ${qa.visualReview?.review?.reviewer?.name || "the recorded reviewer"}'s current hash-bound attestation.`,
   `- Source/publication warnings: ${assuranceWarnings.length}`,
   ...assuranceWarnings.map((warning) => `  - ${warning}`),
-  `- Automated verification does not replace subject-matter, pedagogical, legal, or final visual review.`,
+  `- Automated checks and the recorded visual attestation do not replace subject-matter, pedagogical, legal, or assistive-technology review.`,
   "",
 ].join("\n");
 fs.writeFileSync(evaluationPath, evaluation);
 const releaseReceipt = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   packageTreeHash,
+  acceptedGitHead: qa.coherence?.acceptedState?.acceptedHead || null,
+  currentGitHead: qa.coherence?.git?.head || null,
   sourceCorpusHash: qa.verbatim?.corpus?.corpusSha256 || null,
   sourceCorpusManifestSha256: fs.existsSync(path.join(inputsDir, "SOURCE_CORPUS.json"))
     ? crypto.createHash("sha256").update(fs.readFileSync(path.join(inputsDir, "SOURCE_CORPUS.json"))).digest("hex")
     : null,
+  sourceRecordSha256: fs.existsSync(path.join(pkg, "metadata", "SOURCE_RECORD.json"))
+    ? crypto.createHash("sha256").update(fs.readFileSync(path.join(pkg, "metadata", "SOURCE_RECORD.json"))).digest("hex")
+    : null,
   sourceCorpus: qa.verbatim?.corpus || null,
   componentIndexHash: qa.coherence?.index ? digestJson(qa.coherence.index) : null,
+  keyFactReviewSha256: crypto.createHash("sha256").update(fs.readFileSync(path.join(pkg, "metadata", "KEY_FACT_REVIEW.json"))).digest("hex"),
+  visualReviewSha256: crypto.createHash("sha256").update(fs.readFileSync(path.join(pkg, "metadata", "VISUAL_REVIEW.json"))).digest("hex"),
   carrierReceipt: path.basename(persistedCarrierReceipt),
   carrierReceiptHash: crypto.createHash("sha256").update(fs.readFileSync(persistedCarrierReceipt)).digest("hex"),
   carrierBuilds: carriers.results,

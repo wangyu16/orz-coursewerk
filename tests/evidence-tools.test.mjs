@@ -7,6 +7,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { scanProcessRestrictions } from "../scripts/lib/rights_preflight.mjs";
+import { findDuplicateSourceEntry } from "../scripts/lib/source_record.mjs";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -15,6 +16,13 @@ test("process notice excerpts use normalized visible text", () => {
   assert.equal(notices.length, 1);
   assert.doesNotMatch(notices[0].excerpt, /class=|<p>|<div/);
   assert.match(notices[0].excerpt, /This book may not be used/);
+});
+
+test("Wikipedia aliases are duplicate identities even when source IDs differ", () => {
+  const existing = [{ sourceId: "anchor", sha256: "a".repeat(64), retrieval: { pageId: 42, revisionId: 99 } }];
+  assert.deepEqual(findDuplicateSourceEntry(existing, { sourceId: "redirect", sha256: "b".repeat(64), retrieval: { pageId: 42, revisionId: 100 } }), { sourceId: "anchor", match: "wikipedia-page-id" });
+  assert.deepEqual(findDuplicateSourceEntry(existing, { sourceId: "alias", sha256: "b".repeat(64), retrieval: { pageId: 43, revisionId: 99 } }), { sourceId: "anchor", match: "wikipedia-revision-id" });
+  assert.deepEqual(findDuplicateSourceEntry(existing, { sourceId: "copy", sha256: "a".repeat(64), retrieval: { pageId: 43, revisionId: 100 } }), { sourceId: "anchor", match: "text-sha256" });
 });
 
 function run(script, args) {
@@ -53,6 +61,10 @@ test("source preparation extracts normalized text and records its digest", () =>
   assert.equal(entry.extractor.tool, "coursewerk");
   assert.ok(entry.extractor.version);
   assert.match(extracted, /^# Source/);
+  const publicRecord = JSON.parse(fs.readFileSync(path.join(root, "metadata", "SOURCE_RECORD.json"), "utf8"));
+  assert.equal(publicRecord.sources[0].sourceId, "primary");
+  assert.equal(publicRecord.sources[0].textSha256, entry.sha256);
+  assert.equal(publicRecord.sources[0].originalSha256, entry.originalSha256);
 });
 
 test("source preparation records an explicit human attestation", () => {
@@ -77,6 +89,44 @@ test("source preparation records an explicit human attestation", () => {
     attestedAt: "2026-07-13",
     reason: "The licensed print source has no extractable digital text.",
   });
+  const publicRecord = JSON.parse(fs.readFileSync(path.join(root, "metadata", "SOURCE_RECORD.json"), "utf8"));
+  assert.equal(publicRecord.sources[0].comparisonMode, "human-attested");
+  assert.equal(publicRecord.sources[0].reason, "The licensed print source has no extractable digital text.");
+});
+
+test("rights evidence snapshots are content-address deduplicated", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-rights-dedup-"));
+  fs.mkdirSync(path.join(root, "metadata"), { recursive: true });
+  fs.writeFileSync(path.join(root, "metadata", "FOUNDATION.json"), JSON.stringify({
+    schemaVersion: 1,
+    sources: ["source-a", "source-b"].map((id) => ({ id, rightsBasis: { evidenceUrl: "https://example.org/license" } })),
+  }));
+  const evidence = path.join(root, "official-license.html");
+  fs.writeFileSync(evidence, "<p>Creative Commons Attribution 4.0</p>\n");
+  for (const id of ["source-a", "source-b"]) {
+    const result = run("capture_rights_evidence.mjs", ["--root", root, "--source-id", id, "--operator-name", "Course author", "--operator-type", "human", "--file", evidence]);
+    assert.equal(result.status, 0, result.stderr);
+  }
+  const updated = JSON.parse(fs.readFileSync(path.join(root, "metadata", "FOUNDATION.json"), "utf8"));
+  assert.equal(updated.sources[0].rightsBasis.evidenceSnapshot, updated.sources[1].rightsBasis.evidenceSnapshot);
+});
+
+test("media evidence capture retains a hashed authoritative snapshot", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-media-evidence-"));
+  fs.mkdirSync(path.join(root, "metadata"), { recursive: true });
+  fs.writeFileSync(path.join(root, "metadata", "PROVENANCE.json"), JSON.stringify({
+    schemaVersion: 1,
+    items: [{ id: "photo-1", provenanceStatus: "verified", sourceUrl: "https://example.org/photo", license: "CC-BY-4.0" }],
+  }));
+  const evidence = path.join(root, "photo-description.html");
+  const bytes = Buffer.from("<p>Official image record. Creative Commons Attribution 4.0.</p>\n");
+  fs.writeFileSync(evidence, bytes);
+  const result = run("capture_media_evidence.mjs", ["--root", root, "--item-id", "photo-1", "--operator-name", "Course author", "--operator-type", "human", "--file", evidence]);
+  assert.equal(result.status, 0, result.stderr);
+  const item = JSON.parse(fs.readFileSync(path.join(root, "metadata", "PROVENANCE.json"), "utf8")).items[0];
+  assert.equal(item.rightsEvidence.evidenceUrl, item.sourceUrl);
+  assert.equal(item.rightsEvidence.evidenceSha256, crypto.createHash("sha256").update(bytes).digest("hex"));
+  assert.deepEqual(fs.readFileSync(path.join(root, item.rightsEvidence.evidenceSnapshot)), bytes);
 });
 
 test("non-published authoring permits a source without a rights receipt", () => {

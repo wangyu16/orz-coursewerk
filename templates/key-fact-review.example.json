@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "mode": "light",
+  "reviewKind": "same-model-independent-pass",
+  "authoringSystem": "REPLACE-WITH-AUTHORING-MODEL-OR-SYSTEM",
+  "authoringModelId": "REPLACE-WITH-EXACT-MODEL-ID",
+  "reviewer": {
+    "type": "ai",
+    "name": "REPLACE-WITH-REVIEWER-MODEL-OR-SYSTEM",
+    "modelId": "REPLACE-WITH-EXACT-MODEL-ID"
+  },
+  "independence": {
+    "separatePass": true,
+    "contextReset": true,
+    "approach": "REPLACE-WITH-HOW-THE-REVIEW-WAS-RUN-SEPARATELY-FROM-DRAFTING"
+  },
+  "reviewedAt": "REPLACE-WITH-YYYY-MM-DD",
+  "bindings": {
+    "manifestSha256": "GENERATED-BY-bind-key-fact-review",
+    "licenseSha256": "GENERATED-BY-bind-key-fact-review",
+    "foundationSha256": "GENERATED-BY-bind-key-fact-review",
+    "provenanceSha256": "GENERATED-BY-bind-key-fact-review",
+    "attributionSha256": "GENERATED-BY-bind-key-fact-review",
+    "sourceRecordSha256": "GENERATED-BY-bind-key-fact-review",
+    "deliverableTreeSha256": "GENERATED-BY-bind-key-fact-review"
+  },
+  "checks": [
+    { "id": "accountable-identity", "status": "passed", "note": "REPLACE-WITH-SUBSTANTIVE-INDEPENDENT-REVIEW-NOTE" },
+    { "id": "source-identity-version", "status": "passed", "note": "REPLACE-WITH-SUBSTANTIVE-INDEPENDENT-REVIEW-NOTE" },
+    { "id": "source-license-evidence", "status": "passed", "note": "REPLACE-WITH-SUBSTANTIVE-INDEPENDENT-REVIEW-NOTE" },
+    { "id": "external-media-rights", "status": "passed", "note": "REPLACE-WITH-SUBSTANTIVE-INDEPENDENT-REVIEW-NOTE" },
+    { "id": "output-license-compatibility", "status": "passed", "note": "REPLACE-WITH-SUBSTANTIVE-INDEPENDENT-REVIEW-NOTE" },
+    { "id": "attribution-obligations", "status": "passed", "note": "REPLACE-WITH-SUBSTANTIVE-INDEPENDENT-REVIEW-NOTE" },
+    { "id": "scientific-key-facts", "status": "passed", "note": "REPLACE-WITH-SUBSTANTIVE-INDEPENDENT-REVIEW-NOTE" }
+  ],
+  "keyFacts": [
+    {
+      "id": "fact-1",
+      "claim": "REPLACE-WITH-A-CHAPTER-LEVEL-KEY-FACT",
+      "status": "verified",
+      "evidenceSourceIds": ["source-id-from-foundation"],
+      "usedIn": ["study-guide/example.md"],
+      "note": "REPLACE-WITH-SUBSTANTIVE-TRACE-AND-CRITIQUE-NOTE"
+    }
+  ]
+}

@@ -9,6 +9,15 @@ Its purpose is not to remove educators from authorship. It moves their effort aw
 work and toward the decisions that benefit most from human judgment: learning priorities, factual and pedagogical
 review, local context, inclusive teaching choices, and final approval.
 
+## Published demonstration
+
+The [(Demo) Plate Tectonics course](https://yuwang-cmu.github.io/demo-plate-tectonics-3nm44xwx-oer/) shows the
+assembled result: two chapters with coordinated study guides, slides, practice, print views, media, rights
+records, and attribution. It is a pipeline demonstration, not material intended for direct classroom use. An AI
+agent following Coursewerk generated it automatically from a revision-bound collection of Wikipedia pages, with
+no human-authored lesson content or subject-matter editing. Human involvement was limited to commissioning,
+pipeline audit, consistency and rendered-output review, and publication oversight.
+
 ## The product promise
 
 Coursewerk helps an author:
@@ -144,7 +153,7 @@ The labels in the last column matter:
 | An agent overwrites careful human edits | Entry instructions require status/diff inspection and preservation of direct user edits | Agent hard rule + Git recovery |
 | Terminology, notation, structure, or visual style drifts between chapters | Shared contracts, user preferences, chapter skeletons, component dependencies, and whole-package review keep one course voice | Agent workflow + automated structure checks |
 | A new agent lacks prior context | Foundation, provenance, component index, Git history, progress ledger, and user harness externalize durable decisions | Recorded evidence |
-| Repeated requests consume too much model quota | Light mode uses bounded chapter batches and deterministic gates; Full mode adds cross-model critique | Workflow choice; hard rules unchanged |
+| Repeated requests consume too much model quota | Light mode uses bounded batches and deterministic gates, spending one additional same-model pass only on identity, licenses, media rights, attribution, and key facts; Full mode adds broad cross-model critique | Workflow choice; hard rules unchanged |
 
 ### Proofreading, accessibility, and quality assurance
 
@@ -161,21 +170,21 @@ The labels in the last column matter:
 | Broken files, links, and asset references appear only after publication | QA resolves local links, asset paths, allowed folders, and renderable package objects | Automated check |
 | Every chapter has a different outline or missing deliverable | Manifest-aware structural checks require the five components for every declared chapter | Hard release gate |
 | Automated scores create false confidence | Evaluation distinguishes auto-verified dimensions, residual defects, cosmetic human checks, and unverified subject expertise | Mandatory honest report |
-| Scientific and pedagogical quality cannot be reduced to syntax | Full mode adds independent critique; every mode retains educator review and explicit `[VERIFY]` markers | Human decision; never claimed as fully automated |
+| Scientific and pedagogical quality cannot be reduced to syntax | Full mode adds broad cross-model critique; Light still requires a separate same-model critique of representative scientific key facts, with source/use traces and hash bindings; every mode retains educator review and `[VERIFY]` markers | Structured review gate + human decision; never claimed as expert proof |
 
 ### Copyright, licensing, provenance, and privacy
 
 | Pain point | How Coursewerk addresses it | Assurance level |
 |---|---|---|
-| An agent guesses or misstates the source license | Requires exact source identity/version/scope, authoritative evidence URL/type/date, a hashed local evidence snapshot and verifier, and known-source policy assertions | Hard assurance gate |
+| An agent guesses or misstates the source license | Requires exact source identity/version/scope, authoritative evidence URL/type/date, a hashed local evidence snapshot and verifier, known-source policy assertions, and a mode-appropriate independent critique bound to the current records | Hard assurance gate |
 | A license page also contains an AI/automated-use notice | Captures the exact notice separately from the copyright license, records that Coursewerk has not determined its legal effect, and presents a nonblocking publication warning for the instructor's decision | Evidence hard gate + transparent advisory |
 | Private teaching is blocked by publication-grade rights review | Allows any source for personal-private or restricted non-published authoring while retaining identity, provenance, unknown-source labels, and future-publication warnings | Nonblocking private workflow + traceable promotion path |
 | “Educational use” is mistaken for permission to publish | Selects personal-private, restricted-teaching, or public-OER use before choosing an output license | Hard assurance gate |
 | Fair use/fair dealing is treated as universal or permanent | Records jurisdiction and asserted basis; an exception never clears public release automatically | Hard assurance gate + human legal decision |
 | Private materials later need publication but their origins are lost | Requires provenance even without an output license; unknown/private-only items stay visibly labelled | Hard private-readiness rule + future-publication blocker |
-| Public output has no accountable author or licensor | Requires a named non-AI author/rightsholder and rejects AI/tool identities as the creator of purportedly original assets | Hard assurance gate |
+| Public output has no accountable author or licensor | Requires a final named non-AI person/institution, explicit rights-holder status, and user confirmation; placeholder/temporary identities and AI/tool authors are rejected | Hard assurance gate |
 | Output licensing conflicts with an adapted source | Cross-checks source obligations, `FOUNDATION.json`, `alembic.json`, and the full `LICENSE` text | Hard assurance gate |
-| Figures and media lose attribution | Verifies local paths and use locations, blocks hot-linked media, and generates public attribution from structured provenance | Hard assurance gate |
+| Figures and media lose attribution or rely on an unverified license label | Verifies local paths/use locations, blocks hot-linking, retains a hashed authoritative media description/license snapshot with retrieval metadata, and generates public attribution from structured provenance | Hard assurance gate |
 | Text is copied too closely from a textbook | Binds primary source IDs to hashed comparison text; unavailable comparisons require explicit dated human attestation | Automated discovery gate + human review |
 | Instructor answers or restricted content leak into public folders | Enforces public/private paths and refuses invalid package layouts | Hard package gate |
 | Personal or restricted information is accidentally published | Foundation privacy assertions and item publication status are checked before packing | Hard assurance gate + human data review |
@@ -218,10 +227,10 @@ Coursewerk is deliberately explicit about assurance boundaries:
 
 | Dimension | Coursewerk can verify automatically | Still needs human judgment |
 |---|---|---|
-| Package and format | Required files, manifest structure, allowed paths, syntax, links, asset references, carrier builds | Whether the final visual hierarchy and density work for the actual learners |
+| Package and format | Required files, manifest structure, allowed paths, syntax, links, asset references, carrier builds, and whether a current human visual attestation covers every carrier/source/asset fingerprint | Whether the attested visual hierarchy, interaction, and density actually work for the learners |
 | Accessibility | Missing alt attributes, diagram/chart text alternatives, heading jumps, weak link text, and rule compliance proxies | Post-render DOM behavior, quality of alternatives, cognitive accessibility, captions/transcripts, assistive-technology testing, accommodation fit |
 | Language | Placeholders and structural issues; agent passes can proofread | Nuance, disciplinary voice, inclusive language, and final editorial acceptance |
-| Accuracy | Source identity and `[VERIFY]` discipline; Full mode can add critique | Expert confirmation of facts, calculations, examples, and pedagogy |
+| Accuracy | Source identity and `[VERIFY]` discipline; every mode requires a structured critique of representative key facts, with same-model review in Light and cross-model review in Full | Expert confirmation of facts, calculations, examples, and pedagogy |
 | Rights | Recorded source evidence, license agreement, attribution completeness, publication blockers | Jurisdiction-specific legal interpretation and authority to disclose private data |
 | Coherence | Changed hashes, dependency impact, structural completeness, stale plans | Whether a reviewed dependent is substantively aligned and educationally effective |
 
@@ -231,8 +240,11 @@ Coursewerk is deliberately explicit about assurance boundaries:
 - `metadata/evidence/…` — hashed local snapshots plus structured retrieval/capture metadata for authoritative source-rights evidence.
 - `metadata/preflight/…` — hash-bound public-source receipts; non-published authoring records missing/stale evidence as advisory.
 - `inputs/SOURCE_CORPUS.json` — source IDs bound to raw and extracted hashes, canonical retrieval evidence, versioned extractors, or explicit attestation.
+- `metadata/SOURCE_RECORD.json` — compact deterministic mirror of the exact revisions, retrieval metadata, and hashes retained in the published package.
 - `scripts/prepare_wikipedia_topic.mjs` — serialized, revision-aware collection of several cleared English Wikipedia pages into a chapter-sized science corpus.
 - `metadata/PROVENANCE.json` and `metadata/ATTRIBUTION.md` — item-level origin, status, use, and public credit.
+- `metadata/KEY_FACT_REVIEW.json` — mode-appropriate independent identity/license/key-fact critique, bound to current evidence and teaching files.
+- `metadata/VISUAL_REVIEW.json` — identified human browser/DOM attestation bound to carrier-source, local-asset, and stable carrier fingerprints.
 - `metadata/COMPONENT_INDEX.json` — accepted component hashes and dependency snapshots.
 - Output-root Git history — visible edit history and coherent baseline/revision commits.
 - `reports/revision-impact.json` — exact changed, downstream-review, and upstream-context sets.
@@ -240,8 +252,8 @@ Coursewerk is deliberately explicit about assurance boundaries:
   views generated from lean source; their receipts declare whether local assets must accompany them.
 - `reports/qa_report.md` and `reports/evaluation.md` — release results and honest quality boundaries.
 - `dist/*.alembic.zip` — lean public output, produced only after all hard gates pass.
-- `dist/*.release.json` plus `dist/*.carriers.json` — archive hash, corpus state, component-index hash, exact
-  persisted carrier results, and portability/runtime-review status.
+- `dist/*.release.json` plus `dist/*.carriers.json` — archive hash, accepted Git head, source/review hashes,
+  corpus state, component-index hash, exact persisted carrier results, and portability/runtime-review status.
 - `system/COURSEWERK_INDEX.json` and `system/revisions/` — Coursewerk's branch-aware consistency evidence.
 
 For the complete rendering syntax and current carrier capabilities, see the

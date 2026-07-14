@@ -93,12 +93,15 @@ Ask the user how many AI subscriptions/engines they have and their tier, then re
 
 - **Full mode** — the user has a higher tier and/or a **second engine**. Cross-model critique each
   authoring stage (a different engine reviews the deliverable against the format contract + source, the
-  author revises). Normal pace.
+  author revises). The final key-fact/license review is recorded as `reviewKind: cross-model`. Normal pace.
 - **Light mode** — the user has a **single, lower-tier ($20) subscription** (one engine, tight
   daily/5-hour rate limits). Optimize for cost and pacing:
-  1. **No cross-model critique.** Replace it with the **QA gate** (it checks the Alembic contract + format
-     contracts) plus **one quick self-review** of each chapter against `format-contracts/` and
-     `skills/courseguide-standards`. Let the script — not extra LLM calls — carry the quality verification.
+  1. **No broad cross-model critique.** Replace it with the **QA gate** plus one quick self-review of each
+     chapter. A separate same-model pass is still mandatory for the small high-risk set: accountable identity,
+     exact source/version, source and media rights evidence, output-license compatibility, attribution, and
+     chapter-level scientific key facts. Record it in `metadata/KEY_FACT_REVIEW.json` as
+     `reviewKind: same-model-independent-pass`; the release gate binds it to the current evidence and teaching
+     files. Let scripts carry mechanical verification and spend the extra model pass only on these key facts.
   2. **Pace across days.** Build only a **bounded batch of chapters per session** (default **3**; fewer if
      the chapters are figure-heavy). After each chapter, checkpoint progress to `.coursewerk/progress.md`.
      Up front, estimate the total: "~N chapters → ~⌈N/3⌉ sessions."
@@ -174,15 +177,24 @@ which patterns to favor — is a **flexible preference** the user may override.
   fabricated. Missing evidence → a visible `[VERIFY]` note, not a guess.
 - **Assurance kernel.** Intended use, exact source identity/version/scope, rights basis, source-license
   evidence, attribution obligations, privacy, structured provenance, and publication clearance are
-  mode-independent. Unknown/private-only items must be visibly labelled and block publication.
+  mode-independent. Public authorship must name a final accountable person/institution, explicitly record
+  rights-holder status, and be user-confirmed. Unknown/private-only items must be visibly labelled and block
+  publication.
+- **Mode-independent key-fact critique.** Full mode uses a different reviewer/model; Light mode uses a separate
+  independent pass by the same model. Both must examine identity, source/version, licenses, media rights,
+  attribution, output-license compatibility, and scientific key facts. The structured review is hash-bound to
+  the manifest/LICENSE, `FOUNDATION.json`, `PROVENANCE.json`, `ATTRIBUTION.md`, `SOURCE_RECORD.json`, and all
+  deliverables; any later edit invalidates it.
 - **Revision coherence.** Every output component is hashed and dependency-indexed in
   `metadata/COMPONENT_INDEX.json`. After any edit, run the revision-impact workflow in
   `docs/coherence-index.md`, review/revise every downstream component against its upstream context, and complete
   an attested refresh. The output root's Git history records exactly what changed; the component graph determines
   what else must be reviewed. Never update one document in isolation or reset the index to hide changes.
 - **Source corpus and remote media.** Public work binds every primary source to hashed comparison text or a
-  dated human attestation in `inputs/SOURCE_CORPUS.json`. Scaffold files never count. Remote hot-linked media is
-  forbidden; fetch it locally, record provenance and use locations, then regenerate attribution.
+  dated human attestation in `inputs/SOURCE_CORPUS.json`, with the compact exact revision record retained as
+  `metadata/SOURCE_RECORD.json`. Duplicate text and duplicate Wikipedia page/revision identities are rejected.
+  Scaffold files never count. Remote hot-linked media is forbidden; fetch it locally, record provenance and use
+  locations, retain a hashed authoritative media-rights snapshot, then regenerate attribution.
 - **Pre-ingestion evidence receipt.** Public-source preparation requires a current, cleared, hash-bound receipt
   under `metadata/preflight/`. Non-published authoring never blocks merely because source rights are unverified;
   it retains source identity/provenance and an advisory for future publication. A receipt binds authoritative evidence,
@@ -200,6 +212,9 @@ which patterns to favor — is a **flexible preference** the user may override.
   figure. And **write original prose** — take facts from the source but never reproduce its sentences (a
   near-verbatim paragraph is a copyright problem; a short *attributed* quote is fine). See
   `docs/authoring-guidelines.md` §1, §4, §7.
+- **Rendered-carrier review.** Public packing requires a human browser/DOM review of every generated carrier.
+  Its attestation is bound to current source hashes, local-asset hashes, and a stable carrier fingerprint;
+  rebuilding after an unreviewed source, asset, or meaningful carrier change blocks release.
 - **Format contracts are exact** (`format-contracts/deliverables.md`): concept maps + assessment guides are
   plain Markdown (no graphics); study guides + practice are rich orz-markdown; slides are the orz-slides deck
   grammar. Ship lean — never commit the framework carriers into `package/`.
@@ -217,8 +232,9 @@ paths, orz-syntax, accessibility, placeholders, format contracts). The
 **Fix every critical issue** and re-run until `criticalTotal == 0`. The public-OER path enforces the report's
 **Discoverability** bar (open compatible license + complete provenance/attribution + source comparison with no
 near-verbatim spans). Also run `node scripts/build_carriers.mjs` and
-confirm `failed: 0` (every lean source reassembles into a valid framework document). Anything not auto-fixable
-(e.g. a figure/slide layout judgment) — flag it in `reports/qa_report.md` for the user; never fabricate a fix.
+confirm `failed: 0` (every lean source reassembles into a valid framework document). Complete the required
+same-model/cross-model key-fact record and human carrier review described in `PROCEDURE.md`; these are release
+gates, not optional report notes. Never fabricate a review or human attestation.
 
 Then write **`reports/evaluation.md`** — an **honest artifact-quality evaluation** (the real QA numbers:
 Alembic-contract readiness, attribution coverage, accessibility, link/path integrity, orz-syntax, format

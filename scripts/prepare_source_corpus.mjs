@@ -5,6 +5,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { auditIngestionReadiness } from "./lib/pre_ingestion.mjs";
+import { writeSourceRecord } from "./lib/source_record.mjs";
 
 const args = process.argv.slice(2);
 const opt = (name, fallback = null) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -68,7 +69,7 @@ if (args.includes("--human-attested")) {
   const out = path.join(inputs, rel);
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, text);
-  const canonicalUrl = opt("--canonical-url");
+  const canonicalUrl = opt("--canonical-url", sourceRecord.canonicalUrl || null);
   const retrievedAt = opt("--retrieved-at", new Date().toISOString());
   entry = {
     sourceId,
@@ -78,6 +79,13 @@ if (args.includes("--human-attested")) {
     originalSha256: crypto.createHash("sha256").update(rawBytes).digest("hex"),
     canonicalUrl,
     retrievedAt,
+    retrieval: {
+      captureMode: "local-file",
+      localFileName: path.basename(sourceFile),
+      retrievedAt,
+      byteLength: rawBytes.length,
+      tool: { name: "coursewerk", version: coursewerkVersion },
+    },
     extractor: { tool: "coursewerk", version: coursewerkVersion, schemaVersion: 1, sourceFormat: ext || "unknown" },
     textPath: rel,
     sha256: crypto.createHash("sha256").update(text).digest("hex"),
@@ -87,4 +95,5 @@ if (args.includes("--human-attested")) {
 }
 manifest.sources = manifest.sources.filter((item) => item.sourceId !== sourceId).concat(entry).sort((a, b) => a.sourceId.localeCompare(b.sourceId));
 fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 2) + "\n");
-console.log(JSON.stringify({ manifestFile, entry }, null, 2));
+const publicRecordFile = writeSourceRecord(root, manifest);
+console.log(JSON.stringify({ manifestFile, publicRecordFile, entry }, null, 2));

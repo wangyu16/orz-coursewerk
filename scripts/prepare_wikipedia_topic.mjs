@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { auditIngestionReadiness, sourcePolicyFor } from "./lib/pre_ingestion.mjs";
+import { findDuplicateSourceEntry, writeSourceRecord } from "./lib/source_record.mjs";
 
 const args = process.argv.slice(2);
 const opt = (name, fallback = null) => { const index = args.indexOf(name); return index >= 0 ? args[index + 1] : fallback; };
@@ -48,6 +49,7 @@ try { manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8")); } catch { /*
 manifest.schemaVersion = 1;
 manifest.sources = Array.isArray(manifest.sources) ? manifest.sources : [];
 const prepared = [];
+const fetched = [];
 
 for (const source of sources) {
   const pageUrl = new URL(source.canonicalUrl);
@@ -85,13 +87,24 @@ for (const source of sources) {
     console.error(`prepare-wikipedia-topic: ${source.id} returned a missing or too-short article (${wordCount} words)`);
     process.exit(2);
   }
+  const revision = page.revisions?.[0] || {};
+  const textSha256 = sha256(text);
+  const duplicate = findDuplicateSourceEntry([...manifest.sources, ...fetched.map((item) => item.entry)], {
+    sourceId: source.id,
+    sha256: textSha256,
+    retrieval: { pageId: page.pageid, revisionId: revision.revid },
+  });
+  if (duplicate) {
+    console.error(`prepare-wikipedia-topic: ${source.id} resolves to the same Wikipedia article/content as ${duplicate.sourceId} (${duplicate.match}); remove the redirect or duplicate source declaration`);
+    process.exit(3);
+  }
   const rawRel = `.coursewerk-source-original/${source.id}.wikipedia.json`;
   const textRel = `.coursewerk-source-text/${source.id}.txt`;
-  fs.mkdirSync(path.join(inputs, ".coursewerk-source-original"), { recursive: true });
-  fs.mkdirSync(path.join(inputs, ".coursewerk-source-text"), { recursive: true });
-  fs.writeFileSync(path.join(inputs, rawRel), rawBytes);
-  fs.writeFileSync(path.join(inputs, textRel), text);
-  const revision = page.revisions?.[0] || {};
+  const resolvedTitle = String(page.title || title);
+  const resolvedUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(resolvedTitle.replaceAll(" ", "_"))}`;
+  const permanentUrl = Number.isInteger(revision.revid)
+    ? `https://en.wikipedia.org/w/index.php?title=${encodeURIComponent(resolvedTitle.replaceAll(" ", "_"))}&oldid=${revision.revid}`
+    : null;
   const entry = {
     sourceId: source.id,
     comparisonMode: "automatic",
@@ -101,31 +114,46 @@ for (const source of sources) {
     canonicalUrl: source.canonicalUrl,
     retrievedAt,
     retrieval: {
+      captureMode: "network",
       apiEndpoint: endpoint.origin + endpoint.pathname,
+      requestedUrl: endpoint.href,
       finalUrl: response.url,
       httpStatus: response.status,
       contentType: response.headers.get("content-type") || "application/json",
+      retrievedAt,
+      byteLength: rawBytes.length,
+      tool: { name: "coursewerk", version: coursewerkVersion },
       pageId: page.pageid,
       revisionId: revision.revid,
       revisionTimestamp: revision.timestamp,
       title: page.title,
+      resolvedUrl,
+      permanentUrl,
     },
     extractor: { tool: "wikipedia-action-api", version: coursewerkVersion, schemaVersion: 1, sourceFormat: "mediawiki-json-extract" },
     textPath: textRel,
-    sha256: sha256(text),
+    sha256: textSha256,
     minimumWords: 300,
     wordCount,
   };
-  manifest.sources = manifest.sources.filter((item) => item.sourceId !== source.id).concat(entry);
+  fetched.push({ source, rawRel, textRel, rawBytes, text, entry });
   prepared.push({ sourceId: source.id, title: page.title, wordCount, revisionId: revision.revid });
 }
 
+for (const item of fetched) {
+  fs.mkdirSync(path.join(inputs, ".coursewerk-source-original"), { recursive: true });
+  fs.mkdirSync(path.join(inputs, ".coursewerk-source-text"), { recursive: true });
+  fs.writeFileSync(path.join(inputs, item.rawRel), item.rawBytes);
+  fs.writeFileSync(path.join(inputs, item.textRel), item.text);
+  manifest.sources = manifest.sources.filter((existing) => existing.sourceId !== item.source.id).concat(item.entry);
+}
 manifest.sources.sort((a, b) => a.sourceId.localeCompare(b.sourceId));
 fs.mkdirSync(inputs, { recursive: true });
 fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 2) + "\n");
+const publicRecordFile = writeSourceRecord(root, manifest);
 const totalWords = prepared.reduce((sum, item) => sum + item.wordCount, 0);
 const chapterSized = totalWords >= minTotalWords && totalWords <= maxTotalWords;
-console.log(JSON.stringify({ manifestFile, sourcesPrepared: prepared.length, totalWords, minTotalWords, maxTotalWords, chapterSized, prepared }, null, 2));
+console.log(JSON.stringify({ manifestFile, publicRecordFile, sourcesPrepared: prepared.length, totalWords, minTotalWords, maxTotalWords, chapterSized, prepared }, null, 2));
 if (!chapterSized) {
   console.error(`prepare-wikipedia-topic: topic corpus is not chapter-sized (${totalWords} words; expected ${minTotalWords}-${maxTotalWords})`);
   process.exit(3);

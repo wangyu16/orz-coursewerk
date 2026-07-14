@@ -17,7 +17,8 @@ production work; you steer, approve, and hand-edit anything.
 Coursewerk first asks how the material will be used. Personal-private and genuinely restricted work stays in
 `personal/`, keeps complete provenance, and is never packaged for publication. Public OER goes into `package/`
 only after the mode-independent assurance kernel verifies source rights, license compatibility, attribution,
-privacy, and publication clearance. Full/Light review mode never weakens these checks.
+privacy, accountable authorship, a focused key-fact critique, and publication clearance. Full/Light review mode
+never weakens these checks: Light uses a separate same-model pass for the high-risk facts; Full uses cross-model review.
 
 Each output root is automatically its own Git repository, so direct edits have visible history and diff. Every
 output file is also indexed in a dependency graph. Git identifies what changed; the graph computes the transitive
@@ -30,6 +31,14 @@ branch's merge base, preventing concurrent branches from silently drifting apart
 
 See [FEATURES.md](FEATURES.md) for the OER authoring pain points Coursewerk addresses and the assurance boundary
 behind each product claim.
+
+## Published demonstration
+
+See the [(Demo) Plate Tectonics course](https://yuwang-cmu.github.io/demo-plate-tectonics-3nm44xwx-oer/) for a
+complete two-chapter example. It is a product demonstration, not material intended for direct classroom use. An
+AI agent following Coursewerk generated it automatically from a revision-bound collection of Wikipedia pages;
+there was no human-authored lesson content or subject-matter editing. Human involvement was limited to
+commissioning the run, auditing the pipeline, checking consistency and rendered output, and overseeing publication.
 
 For future chapter-sized science trials, Coursewerk includes a
 [multi-page Wikipedia workflow](docs/wikipedia-science-topic.md): one anchor article plus supporting pages,
@@ -74,10 +83,11 @@ The agent will:
    notice without treating it as an amendment to the copyright license.
 4. **Build the package** stage by stage, pausing at each major stage for your review and steering,
    previewing the real documents as it goes.
-5. **Run the quality gate** (`scripts/check_oer.mjs`) — including source-corpus identity, exact license text,
-   provenance/attribution, accessibility, format, and coherence — and fix every detected hard issue.
-6. **Pack the lean zip** (`scripts/pack.mjs`) into `dist/`; packing rebuilds declared carriers and emits an
-   evaluation plus hash-bound release and persistent carrier receipts.
+5. **Run the quality gate** (`scripts/check_oer.mjs`) — including the retained source revision record, exact
+   license evidence, media-rights receipts, accountable identity, the mode-appropriate key-fact critique,
+   provenance/attribution, accessibility, format, coherence, and a human browser/DOM carrier attestation.
+6. **Pack the lean zip** (`scripts/pack.mjs`) into `dist/`; packing rebuilds declared carriers, verifies them
+   against the human review, and emits an evaluation plus hash-bound release and persistent carrier receipts.
 
 ## Use any AI platform you like
 
@@ -92,13 +102,14 @@ can still use it in **lite mode** — see [`docs/lite-path.md`](docs/lite-path.m
 
 Coursewerk has two modes; the agent asks at the start:
 
-- **Light mode** (default — for one lower-tier subscription): **no** expensive cross-model critique; quality
-  is verified by the **deterministic QA script** (Alembic contract, attribution, links, orz-syntax,
-  accessibility, format contracts) plus a quick self-review. The agent builds **~3 chapters per session,
+- **Light mode** (default — for one lower-tier subscription): no expensive broad cross-model critique; quality
+  uses the deterministic QA script plus a quick self-review and one focused same-model independent pass on
+  accountable identity, sources/versions, licenses, media rights, attribution, and scientific key facts. The
+  resulting hash-bound review becomes stale after any related edit. The agent builds **~3 chapters per session,
   checkpoints, and stops** so you don't blow through your daily/5-hour rate limits — resume the next day with
   the same command. It stops immediately if it hits a rate-limit.
-- **Full mode** (a higher tier and/or a second engine): adds cross-model critique on each chapter for extra
-  polish, at higher cost.
+- **Full mode** (a higher tier and/or a second engine): adds cross-model critique on each chapter and records the
+  final high-risk review as cross-model, at higher cost.
 
 Switch anytime by editing `.coursewerk/mode`.
 
@@ -133,8 +144,11 @@ skills/                        # bundled harness skills (orz-markdown, oer-figur
 scripts/check_oer.mjs          # automated quality gate (Alembic contract + OER quality)
 scripts/check_assurance.mjs    # foundation/provenance gate for private/restricted work
 scripts/capture_rights_evidence.mjs # snapshot/hash rights evidence and classify separate access/AI-use notices
+scripts/capture_media_evidence.mjs  # retain/hash authoritative rights evidence for external media
 scripts/prepare_source_corpus.mjs   # bind raw/extracted source evidence or human comparison attestation
 scripts/prepare_wikipedia_topic.mjs # collect cleared, revision-pinned pages into a chapter-sized science corpus
+scripts/bind_key_fact_review.mjs    # hash-bind the Light/Full focused critique to current outputs/evidence
+scripts/attest_visual_review.mjs    # record an identified human review of built carrier fingerprints
 scripts/generate_attribution.mjs    # render attribution deterministically from structured provenance
 scripts/init_output_git.mjs    # initialize an independent Git ledger for an output root
 scripts/index_components.mjs   # initialize/refresh the output dependency index

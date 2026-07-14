@@ -11,7 +11,7 @@ layers of checks so a package that passes is both **uploadable** and **good OER*
 ## Run it
 
 ```bash
-node scripts/check_oer.mjs --package package --inputs inputs --report reports/qa_report.md --json /tmp/qa.json
+node scripts/check_oer.mjs --package package --inputs inputs --for-discovery --report reports/qa_report.md --json /tmp/qa.json
 ```
 
 - `--package` (required): the assembled Alembic package directory (`package/`). `--guide` is accepted as a
@@ -34,14 +34,21 @@ node scripts/check_oer.mjs --package package --inputs inputs --report reports/qa
 
 **B. OER quality:**
 - **Mode-independent assurance kernel** — intended-use profile, hash-bound pre-ingestion receipts, exact source/right/license evidence,
-  manifest/LICENSE consistency, privacy assertions, structured provenance, required attribution, and zero
-  public-release blockers. Full/Light mode never changes these checks.
+  manifest/LICENSE consistency, final accountable authorship, privacy assertions, structured provenance,
+  retained media-rights evidence, required attribution, and zero public-release blockers. Full/Light mode never
+  changes these checks.
 - **Component coherence** — `COMPONENT_INDEX.json` covers every output component; content hashes, dependency
   snapshots, and graph relationships are current. Any revision remains blocking until its complete impact set
   is reviewed and an attested index refresh succeeds.
 - **Source corpus** — `inputs/SOURCE_CORPUS.json` binds every primary source to a raw snapshot/hash, canonical
-  URL, retrieval and versioned extractor metadata, hashed comparison text, or a dated human attestation. Scaffolding never
-  counts.
+  URL, structured retrieval/byte metadata, versioned extractor, hashed comparison text/word count, or a dated
+  human attestation. Duplicate text and Wikipedia page/revision identities fail. The exact compact mirror in
+  `metadata/SOURCE_RECORD.json` must be current. Scaffolding never counts.
+- **Focused key-fact critique** — `metadata/KEY_FACT_REVIEW.json` covers identity, source/version, licenses,
+  media rights, attribution, and at least one traced key fact per chapter. Light requires a context-reset
+  same-model pass; Full requires cross-model review; evidence or teaching edits invalidate its hashes.
+- **Human carrier review** — `metadata/VISUAL_REVIEW.json` identifies the human who inspected every browser
+  carrier and binds current source/local-asset hashes plus stable carrier fingerprints.
 - **Attribution completeness** — every media asset has an existing local path and `usedIn` locations in
   structured provenance; public attribution is generated exactly from it. Remote hot-linked media is blocked.
 - **Link / path integrity** — local Markdown links + asset references all resolve on disk.
@@ -63,10 +70,10 @@ node scripts/check_oer.mjs --package package --inputs inputs --report reports/qa
    under `preview/` instead); add unmanifested assets to `metadata/ATTRIBUTION.md`; close unclosed orz
    containers / fix escaped pipes; repair broken asset paths; add missing alt text.
 3. **Re-run** until `criticalTotal == 0`.
-4. Run `npm run generate:attribution` after provenance changes. `pack.mjs` reruns every declared carrier and
-   emits an evaluation plus `.release.json` receipt beside the ZIP.
-5. Anything not auto-fixable (e.g. a layout/positioning judgement) is flagged in the report for human review
-   — never fabricate a fix.
+4. Run `npm run generate:attribution` after provenance changes. Complete and bind the mode-appropriate focused
+   critique; build carrier receipts; have the named human inspect them and run `attest:visual-review`.
+5. `pack.mjs` reruns every declared carrier against that attestation and emits an evaluation plus release and
+   carrier receipts beside the ZIP. Never fabricate critique notes, a human identity, or an attestation.
 
 It is subject-agnostic: chapter count and structure come from the manifest + folders; it makes no
 chemistry- or subject-specific assumptions.

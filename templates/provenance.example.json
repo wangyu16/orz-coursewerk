@@ -14,6 +14,24 @@
       "attribution": "Complete attribution, or an explicit unknown-source statement",
       "provenanceStatus": "verified",
       "publicationStatus": "cleared",
+      "rightsEvidence": {
+        "evidenceType": "official-media-description-page",
+        "evidenceUrl": "https://example.org/or-null-when-unknown",
+        "verifiedAt": "REPLACE-WITH-YYYY-MM-DD",
+        "evidenceSnapshot": "metadata/evidence/media-asset-example-1.html",
+        "evidenceSha256": "REPLACE-WITH-SHA256",
+        "evidenceRetrieval": {
+          "captureMode": "network-or-local-file",
+          "retrievedAt": "REPLACE-WITH-ISO-DATETIME",
+          "byteLength": 0,
+          "tool": { "name": "coursewerk", "version": "REPLACE-WITH-VERSION" }
+        },
+        "evidenceCapture": {
+          "operator": { "type": "automation-or-human", "name": "REPLACE-WITH-NAME" },
+          "capturedAt": "REPLACE-WITH-ISO-DATETIME",
+          "tool": { "name": "coursewerk", "version": "REPLACE-WITH-VERSION" }
+        }
+      },
       "blockReason": null
     }
   ]

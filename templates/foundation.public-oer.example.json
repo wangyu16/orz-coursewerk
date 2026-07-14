@@ -11,6 +11,7 @@
       "name": "REPLACE-WITH-ACCOUNTABLE-PERSON-OR-INSTITUTION",
       "role": "author and adapter",
       "rightsHolder": true,
+      "accountabilityConfirmedByUser": false,
       "aiAssistanceDisclosure": "Drafting and production assistance provided by an AI agent using Coursewerk."
     }
   ],

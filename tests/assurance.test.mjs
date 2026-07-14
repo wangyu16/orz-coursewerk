@@ -18,6 +18,8 @@ import {
   writeComponentIndex,
 } from "../scripts/lib/coherence.mjs";
 import { commitOutput, ensureOutputGit, outputGitState } from "../scripts/lib/output_git.mjs";
+import { writeSourceRecord } from "../scripts/lib/source_record.mjs";
+import { makeKeyFactBindings } from "../scripts/lib/key_fact_review.mjs";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -46,7 +48,7 @@ function publicFoundation(sourceLicense = "CC-BY-4.0", outputLicense = sourceLic
     redistribution: "open-license",
     jurisdiction: "international",
     outputLicense,
-    outputAuthors: [{ name: "Example Course Author", role: "author", rightsHolder: true }],
+    outputAuthors: [{ name: "Example Course Author", role: "author", rightsHolder: true, accountabilityConfirmedByUser: true }],
     privacy: { containsPersonalData: false, containsRestrictedContent: false },
     sources: [{
       id: "source-1",
@@ -336,7 +338,7 @@ test("public OER requires accountable authorship and rejects an AI agent as asse
   let result = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.match(result.hardFailures.join("\n"), /accountable output author/);
 
-  foundation.outputAuthors = [{ name: "Example Course Author", role: "author", rightsHolder: true }];
+  foundation.outputAuthors = [{ name: "Example Course Author", role: "author", rightsHolder: true, accountabilityConfirmedByUser: true }];
   writeJson(path.join(f.root, "metadata", "FOUNDATION.json"), foundation);
   fs.mkdirSync(path.join(f.root, "assets"), { recursive: true });
   fs.mkdirSync(path.join(f.root, "study-guide"), { recursive: true });
@@ -347,6 +349,51 @@ test("public OER requires accountable authorship and rejects an AI agent as asse
   fs.writeFileSync(path.join(f.root, "metadata", "ATTRIBUTION.md"), renderAttribution(provenance));
   result = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.match(result.hardFailures.join("\n"), /original asset creator must match an accountable outputAuthors name/);
+});
+
+test("public author identity must be final, explicit, and user-confirmed", () => {
+  const f = publicFixture();
+  const foundation = JSON.parse(fs.readFileSync(path.join(f.root, "metadata", "FOUNDATION.json"), "utf8"));
+  foundation.outputAuthors = [{ name: "Temporary course maintainer", role: "author", rightsHolder: true, accountabilityConfirmedByUser: true }];
+  writeJson(path.join(f.root, "metadata", "FOUNDATION.json"), foundation);
+  let result = auditAssurance({ root: f.root, manifest: f.manifest });
+  assert.match(result.hardFailures.join("\n"), /placeholder or temporary public identities/);
+
+  foundation.outputAuthors = [{ name: "Named Course Author", role: "author", rightsHolder: true, accountabilityConfirmedByUser: false }];
+  writeJson(path.join(f.root, "metadata", "FOUNDATION.json"), foundation);
+  result = auditAssurance({ root: f.root, manifest: f.manifest });
+  assert.match(result.hardFailures.join("\n"), /accountabilityConfirmedByUser=true/);
+
+  delete foundation.outputAuthors[0].rightsHolder;
+  foundation.outputAuthors[0].accountabilityConfirmedByUser = true;
+  writeJson(path.join(f.root, "metadata", "FOUNDATION.json"), foundation);
+  result = auditAssurance({ root: f.root, manifest: f.manifest });
+  assert.match(result.hardFailures.join("\n"), /rightsHolder must be recorded explicitly/);
+});
+
+test("verified external media requires retained rights evidence", () => {
+  const f = publicFixture();
+  fs.mkdirSync(path.join(f.root, "assets"), { recursive: true });
+  fs.mkdirSync(path.join(f.root, "study-guide"), { recursive: true });
+  fs.writeFileSync(path.join(f.root, "assets", "photo.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>\n");
+  fs.writeFileSync(path.join(f.root, "study-guide", "chapter.md"), "# Chapter\n\nSource: https://example.org/book\n\n![Licensed photo](../assets/photo.svg)\n");
+  const provenance = { schemaVersion: 1, items: [{ id: "photo-1", type: "image", localPath: "assets/photo.svg", usedIn: ["study-guide/chapter.md"], title: "Licensed photo", creator: "Example Photographer", sourceUrl: "https://example.org/photo", attribution: "Example Photographer, CC BY 4.0", license: "CC-BY-4.0", provenanceStatus: "verified", publicationStatus: "cleared" }] };
+  writeJson(path.join(f.root, "metadata", "PROVENANCE.json"), provenance);
+  fs.writeFileSync(path.join(f.root, "metadata", "ATTRIBUTION.md"), renderAttribution(provenance));
+  let result = auditAssurance({ root: f.root, manifest: f.manifest });
+  assert.match(result.hardFailures.join("\n"), /verified external media requires an authoritative rightsEvidence/);
+
+  const evidence = path.join(f.root, "official-photo-record.html");
+  fs.writeFileSync(evidence, "<p>Official media record: Creative Commons Attribution 4.0.</p>\n");
+  const capture = spawnSync(process.execPath, [path.join(repo, "scripts", "capture_media_evidence.mjs"), "--root", f.root, "--item-id", "photo-1", "--operator-name", "Course author", "--operator-type", "human", "--file", evidence], { encoding: "utf8" });
+  assert.equal(capture.status, 0, capture.stderr);
+  result = auditAssurance({ root: f.root, manifest: f.manifest });
+  assert.equal(result.canPack, true, result.hardFailures.join("\n"));
+
+  const updated = JSON.parse(fs.readFileSync(path.join(f.root, "metadata", "PROVENANCE.json"), "utf8"));
+  fs.appendFileSync(path.join(f.root, updated.items[0].rightsEvidence.evidenceSnapshot), "tampered");
+  result = auditAssurance({ root: f.root, manifest: f.manifest });
+  assert.match(result.hardFailures.join("\n"), /media rights-evidence snapshot sha256 is missing or stale/);
 });
 
 test("CC BY adaptation can use the explicit compatible CC BY-SA output", () => {
@@ -473,21 +520,57 @@ test("pack succeeds only after a valid public assurance pass", () => {
   fs.mkdirSync(path.join(inputs, ".coursewerk-source-original"), { recursive: true });
   fs.writeFileSync(path.join(inputs, ".coursewerk-source-original", "source-1.txt"), sourceText);
   const sourceHash = crypto.createHash("sha256").update(sourceText).digest("hex");
-  writeJson(path.join(inputs, "SOURCE_CORPUS.json"), {
+  const corpus = {
     schemaVersion: 1,
     sources: [{
       sourceId: "source-1",
       comparisonMode: "automatic",
       canonicalUrl: "https://example.org/book",
       retrievedAt: "2026-07-13T00:00:00Z",
+      retrieval: { captureMode: "local-file", localFileName: "source-1.txt", retrievedAt: "2026-07-13T00:00:00Z", byteLength: Buffer.byteLength(sourceText), tool: { name: "coursewerk", version: "test" } },
       originalPath: ".coursewerk-source-original/source-1.txt",
       originalSha256: sourceHash,
       textPath: "source.txt",
       sha256: sourceHash,
       minimumWords: 100,
+      wordCount: 300,
       extractor: { tool: "coursewerk", version: "test", schemaVersion: 1, sourceFormat: ".txt" },
     }],
+  };
+  writeJson(path.join(inputs, "SOURCE_CORPUS.json"), corpus);
+  writeSourceRecord(f.root, corpus);
+  const foundation = JSON.parse(fs.readFileSync(path.join(f.root, "metadata", "FOUNDATION.json"), "utf8"));
+  writeJson(path.join(f.root, "metadata", "KEY_FACT_REVIEW.json"), {
+    schemaVersion: 1,
+    mode: "light",
+    reviewKind: "same-model-independent-pass",
+    authoringSystem: "test authoring model",
+    authoringModelId: "fixture-model-v1",
+    reviewer: { type: "ai", name: "test authoring model", modelId: "fixture-model-v1" },
+    independence: { separatePass: true, contextReset: true, approach: "A fresh review context checked the completed fixture only after drafting had ended." },
+    reviewedAt: "2026-07-13",
+    bindings: makeKeyFactBindings(f.root),
+    checks: ["accountable-identity", "source-identity-version", "source-license-evidence", "external-media-rights", "output-license-compatibility", "attribution-obligations", "scientific-key-facts"].map((id) => ({
+      id,
+      status: "passed",
+      note: `The independent release pass checked ${id} against the bound package evidence and found it consistent.`,
+    })),
+    keyFacts: [{
+      id: "fact-1",
+      claim: "Concept A precedes concept B in the fixture process.",
+      status: "verified",
+      evidenceSourceIds: [foundation.sources[0].id],
+      usedIn: ["study-guide/ch1.md"],
+      note: "The independent pass traced this fixture claim to the declared source and its use in the study guide.",
+    }],
   });
+  const preview = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-pack-preview-"));
+  const carrierReceipt = path.join(preview, "carriers.json");
+  const carriers = spawnSync(process.execPath, [path.join(repo, "scripts", "build_carriers.mjs"), "--root", f.root, "--out", path.join(preview, "rendered"), "--receipt", carrierReceipt], { encoding: "utf8" });
+  assert.equal(carriers.status, 0, `${carriers.stdout}\n${carriers.stderr}`);
+  const visual = spawnSync(process.execPath, [path.join(repo, "scripts", "attest_visual_review.mjs"), "--root", f.root, "--receipt", carrierReceipt, "--reviewer", "Test Human Reviewer", "--reviewed-at", "2026-07-13", "--attestation", "I inspected every generated carrier in a browser for layout, readable content, interaction behavior, and visible overflow."], { encoding: "utf8" });
+  assert.equal(visual.status, 0, `${visual.stdout}\n${visual.stderr}`);
+  acceptCoherentState(f.root, "test: accept release reviews");
   const run = spawnSync(process.execPath, [path.join(repo, "scripts", "pack.mjs"), "--package", f.root, "--out", out, "--inputs", inputs], { encoding: "utf8" });
   assert.equal(run.status, 0, `${run.stdout}\n${run.stderr}`);
   assert.equal(fs.readdirSync(out).some((x) => x.endsWith(".alembic.zip")), true);
@@ -498,6 +581,12 @@ test("pack succeeds only after a valid public assurance pass", () => {
   assert.ok(carrierReceiptFile);
   assert.ok(evaluationFile);
   const receipt = JSON.parse(fs.readFileSync(path.join(out, receiptFile), "utf8"));
+  assert.equal(receipt.schemaVersion, 2);
+  assert.match(receipt.acceptedGitHead, /^[a-f0-9]{40}$/);
+  assert.match(receipt.currentGitHead, /^[a-f0-9]{40}$/);
+  assert.match(receipt.sourceRecordSha256, /^[a-f0-9]{64}$/);
+  assert.match(receipt.keyFactReviewSha256, /^[a-f0-9]{64}$/);
+  assert.match(receipt.visualReviewSha256, /^[a-f0-9]{64}$/);
   assert.match(receipt.packageTreeHash, /^[a-f0-9]{64}$/);
   assert.match(receipt.sourceCorpusHash, /^[a-f0-9]{64}$/);
   assert.equal(receipt.sourceCorpusManifestSha256, crypto.createHash("sha256").update(fs.readFileSync(path.join(inputs, "SOURCE_CORPUS.json"))).digest("hex"));

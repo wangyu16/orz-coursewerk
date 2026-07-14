@@ -57,6 +57,8 @@ function componentType(rel) {
   if (rel === "metadata/FOUNDATION.json") return "foundation";
   if (rel === "metadata/PROVENANCE.json") return "provenance";
   if (rel === "metadata/ATTRIBUTION.md") return "attribution";
+  if (rel === "metadata/SOURCE_RECORD.json") return "source-record";
+  if (["metadata/KEY_FACT_REVIEW.json", "metadata/VISUAL_REVIEW.json"].includes(rel)) return "review";
   if (rel.startsWith("assets/")) return "asset";
   if (rel.startsWith("private/")) return "private";
   const top = rel.split("/")[0];
@@ -116,6 +118,11 @@ export function computeComponentGraph(root) {
       addEdge(edges, byPath, "alembic.json", c.path, "manifest identity/scope/license constrains component");
   }
   addEdge(edges, byPath, "metadata/PROVENANCE.json", "metadata/ATTRIBUTION.md", "human attribution mirrors provenance");
+  addEdge(edges, byPath, "alembic.json", "metadata/KEY_FACT_REVIEW.json", "output-license declaration is rechecked in the key-fact critique");
+  addEdge(edges, byPath, "LICENSE", "metadata/KEY_FACT_REVIEW.json", "canonical output-license text is rechecked in the key-fact critique");
+  addEdge(edges, byPath, "metadata/PROVENANCE.json", "metadata/KEY_FACT_REVIEW.json", "media provenance is rechecked in the key-fact critique");
+  addEdge(edges, byPath, "metadata/ATTRIBUTION.md", "metadata/KEY_FACT_REVIEW.json", "public attribution obligations are rechecked in the key-fact critique");
+  addEdge(edges, byPath, "metadata/SOURCE_RECORD.json", "metadata/KEY_FACT_REVIEW.json", "source revisions are rechecked in the key-fact critique");
   const provenanceFile = path.join(root, "metadata", "PROVENANCE.json");
   if (fs.existsSync(provenanceFile)) {
     try {
@@ -135,6 +142,15 @@ export function computeComponentGraph(root) {
     addEdge(edges, byPath, `study-guide/${slug}.md`, `practice/${slug}.md`, "practice must remain consistent with teaching content");
     addEdge(edges, byPath, `assessment-support/${slug}.md`, `practice/${slug}.md`, "practice instantiates assessment design");
   }
+
+  for (const component of components.filter((item) => DELIVERABLE_TOPS.has(item.type))) {
+    addEdge(edges, byPath, "metadata/SOURCE_RECORD.json", component.path, "revision-bound sources constrain teaching content");
+    addEdge(edges, byPath, component.path, "metadata/KEY_FACT_REVIEW.json", "teaching content must be rechecked in the key-fact critique");
+  }
+  for (const component of components.filter((item) => ["study-guide", "practice", "slides"].includes(item.type)))
+    addEdge(edges, byPath, component.path, "metadata/VISUAL_REVIEW.json", "carrier source must be visually re-reviewed after change");
+  for (const component of components.filter((item) => item.type === "asset"))
+    addEdge(edges, byPath, component.path, "metadata/VISUAL_REVIEW.json", "visual asset must be re-reviewed after change");
 
   // Asset edges are derived from actual references, including reuse across chapters.
   for (const c of components.filter((x) => x.path.endsWith(".md"))) {

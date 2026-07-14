@@ -48,10 +48,14 @@ in `PROVENANCE.json`.
    ```
 
    The command uses a meaningful User-Agent, records exact page/revision/retrieval metadata, preserves raw API
-   snapshots and extracted text hashes, and rejects a corpus outside the configured chapter-size range.
+   snapshots and extracted text hashes, rejects redirects/aliases that duplicate a page ID, revision ID, or
+   extracted text, writes the exact compact release record to `metadata/SOURCE_RECORD.json`, and rejects a corpus
+   outside the configured chapter-size range.
 
-5. Only after the command succeeds may the agent read the extracted corpus and author the chapter. Run normal
-   near-verbatim, assurance, coherence, carrier, and release gates afterward.
+5. Only after the command succeeds may the agent read the extracted corpus and author the chapter. Run the
+   mode-appropriate key-fact critique (same-model independent pass in Light; cross-model in Full), capture
+   separate evidence for every selected Wikipedia/Commons image, complete human carrier review, and run normal
+   near-verbatim, assurance, coherence, and release gates afterward.
 
 Official basis: Wikimedia's Terms of Use require attribution to reused pages/authors, indication of changes, and
 CC BY-SA 4.0-compatible distribution for adapted text. Wikimedia API guidance requires a meaningful User-Agent

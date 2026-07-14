@@ -37,6 +37,8 @@ Alembic cleanly — raster `.png`/`.jpg`/`.pdf` are skipped on a *trial* import 
    keeps its ShareAlike license — attribute it as such; prefer CC-BY / CC0 / public-domain when you want the
    package cleanly CC-BY). Never embed a copyrighted, paywalled, or third-party-credited image. Never hot-link
    media in public work: fetch it into `assets/` so rights, accessibility, and availability remain inspectable.
+   Before marking external media cleared, run `capture:media` to retain and hash its authoritative description
+   or license page; the asset file and a remembered credit line are not sufficient rights evidence.
 3. **AI-generated concept illustrations — encouraged for conceptual/schematic art.** Use an image engine
    (the platform's image generation, an image MCP tool, or the copy-as-prompt fallback in `oer-figures`) to
    create engaging conceptual illustrations, analogies, and scene-setting visuals that make an abstract idea
@@ -141,7 +143,8 @@ The single most important transformation. Full detail in `skills/orz-slides`; th
   color-blind readers and printouts lose the hue. (This is why the palette above pairs color with meaning.)
 - **Real alt text** on every figure (describe what it shows, not "image").
 - **Visible text alternatives** immediately after every runtime Mermaid/chart block. Source-level alt and
-  descriptions are gated; final post-render behavior and overflow still require a browser/human visual probe.
+  descriptions are gated; final post-render behavior and overflow require an identified human browser/DOM
+  review bound to source, local-asset, and stable carrier fingerprints.
 - **Heading order** with no level jumps; one H1 per document; descriptive link text (never "click here");
   table headers on data tables.
 - The QA gate (`skills/oer-qa`) checks these as proxies — but write for them from the start.
@@ -158,13 +161,19 @@ licensing (permissions granted over material the user controls) are independent.
   Unknown/private-only items are visibly labelled and block promotion. Educational purpose is not assumed to
   establish a copyright exception.
 - Public OER lives under `package/`. Every source/asset must have verified distribution rights; the manifest and
-  full LICENSE must agree with the foundation decision and adapted-source obligations.
+  full LICENSE must agree with the foundation decision and adapted-source obligations. The public author must be
+  final and user-confirmed, with explicit rights-holder status; placeholders do not clear release.
 - `ALL-RIGHTS-RESERVED` grants no reuse but does not cure unauthorized inputs.
 - Discover requires an open compatible license, complete attribution/provenance, no near-verbatim source prose,
   and educator attestation.
 
 The mode-independent assurance kernel is release-blocking in every review mode. `pack.mjs` refuses all
 private/restricted profiles and every unresolved publication blocker.
+
+Every completed package receives a focused critique of accountable identity, sources/versions, license evidence,
+media rights, attribution, output-license compatibility, and chapter key facts. Light mode uses a separate
+context-reset same-model pass; Full uses cross-model review. Bind the structured record only after the actual
+review—later evidence, license, attribution, or teaching-file edits make it stale.
 
 Public sources require a hashed rights-evidence snapshot under `metadata/evidence/` and
 `inputs/SOURCE_CORPUS.json` binding each primary source ID to a hash-bound raw snapshot, canonical URL,

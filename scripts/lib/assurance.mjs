@@ -175,6 +175,56 @@ function processPreflightAudit(root, basis, label, blockers, warnings) {
     blockers.push(`${label}: processUseReview must record no-notice-detected after deterministic evidence preflight.`);
 }
 
+function mediaEvidenceAudit(root, item, label, publicationBlockers) {
+  const evidence = item.rightsEvidence || {};
+  if (!["official-media-description-page", "publisher-supplied-license-file", "official-license-metadata"].includes(evidence.evidenceType))
+    publicationBlockers.push(`${label}: verified external media requires an authoritative rightsEvidence.evidenceType.`);
+  if (!nonempty(evidence.evidenceUrl) || evidence.evidenceUrl !== item.sourceUrl)
+    publicationBlockers.push(`${label}: rightsEvidence.evidenceUrl must match the external media sourceUrl.`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(evidence.verifiedAt || "")))
+    publicationBlockers.push(`${label}: rightsEvidence.verifiedAt must be YYYY-MM-DD.`);
+  const rel = norm(evidence.evidenceSnapshot);
+  if (!rel || path.isAbsolute(rel) || rel.split("/").includes("..") || !rel.startsWith("metadata/evidence/")) {
+    publicationBlockers.push(`${label}: verified external media requires a local rights-evidence snapshot under metadata/evidence/.`);
+    return;
+  }
+  const file = path.join(root, rel);
+  if (!exists(file)) {
+    publicationBlockers.push(`${label}: media rights-evidence snapshot does not exist: ${rel}.`);
+    return;
+  }
+  const bytes = fs.readFileSync(file);
+  if (!/^[a-f0-9]{64}$/.test(String(evidence.evidenceSha256 || "")) || sha256(bytes) !== evidence.evidenceSha256)
+    publicationBlockers.push(`${label}: media rights-evidence snapshot sha256 is missing or stale.`);
+  const capture = evidence.evidenceCapture;
+  if (!capture || !["automation", "human"].includes(capture.operator?.type) || !nonempty(capture.operator?.name) ||
+      !nonempty(capture.capturedAt) || !nonempty(capture.tool?.name) || !nonempty(capture.tool?.version))
+    publicationBlockers.push(`${label}: media rightsEvidence requires capture operator, timestamp, and tool/version.`);
+  const retrieval = evidence.evidenceRetrieval;
+  if (!retrieval || !["network", "local-file"].includes(retrieval.captureMode) || !nonempty(retrieval.retrievedAt) ||
+      !Number.isInteger(retrieval.byteLength) || retrieval.byteLength !== bytes.length ||
+      !nonempty(retrieval.tool?.name) || !nonempty(retrieval.tool?.version))
+    publicationBlockers.push(`${label}: media rightsEvidence requires valid retrieval mode, timestamp, byte length, and tool/version.`);
+  if (retrieval?.captureMode === "network" &&
+      (retrieval.requestedUrl !== evidence.evidenceUrl || !nonempty(retrieval.finalUrl) || !Number.isInteger(retrieval.httpStatus) || !nonempty(retrieval.contentType)))
+    publicationBlockers.push(`${label}: network media evidence requires requested/final URL, HTTP status, and content type.`);
+  if (retrieval?.captureMode === "local-file" && (!nonempty(retrieval.localFileName) || retrieval.claimedEvidenceUrl !== evidence.evidenceUrl))
+    publicationBlockers.push(`${label}: local-file media evidence requires localFileName and a matching claimedEvidenceUrl.`);
+  const snapshot = bytes.toString("utf8").toLowerCase();
+  const normalized = normalizeLicense(item.license);
+  const markers = {
+    "CC-BY-4.0": ["attribution 4.0", "creativecommons.org/licenses/by/4.0"],
+    "CC-BY-SA-4.0": ["attribution-sharealike 4.0", "attribution-share alike 4.0", "creativecommons.org/licenses/by-sa/4.0"],
+    "CC-BY-NC-4.0": ["attribution-noncommercial 4.0", "creativecommons.org/licenses/by-nc/4.0"],
+    "CC-BY-NC-SA-4.0": ["attribution-noncommercial-sharealike 4.0", "creativecommons.org/licenses/by-nc-sa/4.0"],
+    "CC0-1.0": ["cc0 1.0", "creativecommons.org/publicdomain/zero/1.0"],
+  };
+  if (normalized && markers[normalized] && !markers[normalized].some((marker) => snapshot.includes(marker)))
+    publicationBlockers.push(`${label}: media evidence does not contain an expected ${normalized} identifier.`);
+  if (/public[ -]?domain/i.test(String(item.license || "")) && !/public domain|work of the .*government|no known copyright/i.test(snapshot))
+    publicationBlockers.push(`${label}: media evidence does not state the recorded public-domain basis.`);
+}
+
 export function compatibleOutputLicenses(sourceLicense) {
   const matrix = {
     "CC-BY-4.0": ["CC-BY-4.0", "CC-BY-SA-4.0"],
@@ -405,6 +455,8 @@ function auditProvenance(root, provenance, usageProfile, privateFailures, public
         privateFailures.push(`${label}: verified external items require sourceUrl.`);
       if (item.provenanceStatus === "verified" && item.publicationStatus === "cleared" && !nonempty(item.license))
         publicationBlockers.push(`${label}: externally sourced items marked cleared require an explicit license/public-domain status.`);
+      if (item.provenanceStatus === "verified" && item.publicationStatus === "cleared" && usageProfile === "public-oer")
+        mediaEvidenceAudit(root, item, label, publicationBlockers);
     }
   }
 
@@ -502,6 +554,12 @@ export function auditAssurance({ root, manifest = null }) {
       if (!nonempty(author?.name) || !nonempty(author?.role)) publicationBlockers.push(`outputAuthors[${index}] requires name and role.`);
       if (/\b(?:coursewerk|AI|agent|language model)\b/i.test(String(author?.name || "")))
         publicationBlockers.push(`outputAuthors[${index}]: an AI/tool name cannot be the accountable public author or rights holder.`);
+      if (/\b(?:replace(?:-with)?|placeholder|temporary|trial maintainer|pending|unassigned|tbd|unknown)\b/i.test(`${author?.name || ""} ${author?.role || ""}`))
+        publicationBlockers.push(`outputAuthors[${index}]: placeholder or temporary public identities are not releaseable.`);
+      if (author?.accountabilityConfirmedByUser !== true)
+        publicationBlockers.push(`outputAuthors[${index}]: accountabilityConfirmedByUser=true is required for the named public author or institution.`);
+      if (typeof author?.rightsHolder !== "boolean")
+        publicationBlockers.push(`outputAuthors[${index}]: rightsHolder must be recorded explicitly as true or false.`);
     }
   }
 

@@ -1,5 +1,24 @@
 # Coursewerk changelog
 
+## v0.11.0 (2026-07-14)
+- **Focused critique survives Light mode.** Every completed package now carries a hash-bound review of accountable
+  identity, source/version, licenses, external-media rights, attribution, output-license compatibility, and
+  scientific key facts. Light requires a separate context-reset same-model pass; Full requires cross-model review;
+  every public chapter has a traced key fact and related edits invalidate the record.
+- **Source evidence ships with the course.** Source preparation writes an exact compact `SOURCE_RECORD.json` with
+  raw/text hashes, word counts, extractor and retrieval metadata. Public QA verifies raw byte counts, rejects
+  duplicate text and Wikipedia page/revision identities, and the release receipt hashes the retained record.
+- **Media rights are evidence-backed.** Verified external media requires a hashed authoritative description/license
+  snapshot with capture/retrieval metadata. A new capture command creates it, and repeated source-license pages are
+  content-address deduplicated without collapsing source-specific receipts.
+- **Public identity is genuinely accountable.** Temporary/placeholder public authors fail; the named person or
+  institution must have explicit rights-holder status and user-confirmed accountability.
+- **Human carrier review is release-bound.** Carrier receipts include local-asset digests and stable fingerprints
+  that normalize only the builders' random document UUID. Packing rebuilds every carrier and refuses release unless
+  it matches an identified human browser/DOM attestation; source, asset, or meaningful carrier changes make it stale.
+- **Honest staged reporting and receipts.** Authoring reports disclose deferred final gates, release counts focused
+  critique and visual-review failures, and receipts retain the accepted Git head plus hashes of all new evidence.
+
 ## v0.10.1 (2026-07-13)
 - **License and access assertions separated.** AI/automated-use notices are retained as evidence with their legal
   effect explicitly undetermined; they no longer masquerade as amendments to a Creative Commons license or

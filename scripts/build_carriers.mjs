@@ -88,9 +88,26 @@ let built = 0;
 let failed = 0;
 const results = [];
 const digest = (file) => crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
-function inspectSource(text) {
+function reviewFingerprint(file) {
+  if (!fs.existsSync(file)) return null;
+  // orz builders intentionally assign a fresh document UUID on every build.
+  // Remove only that syntactic UUID class so a review can bind to stable carrier
+  // content while the raw outputSha256 remains available in the build receipt.
+  const normalized = fs.readFileSync(file, "utf8").replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, "<COURSEWERK-DOCUMENT-UUID>");
+  return crypto.createHash("sha256").update(normalized).digest("hex");
+}
+function inspectSource(text, sourceRel) {
   const images = [...text.matchAll(/!\[([^\]]*)]\(([^)\s]+)(?:\s+=[^)]+)?\)/g)].map((match) => ({ alt: match[1].trim(), target: match[2] }));
   const localAssetDependencies = images.map((image) => image.target).filter((target) => !/^(?:https?:|data:|#)/i.test(target));
+  const localAssetDigests = [...new Set(localAssetDependencies)].map((reference) => {
+    const file = path.resolve(pkg, path.posix.dirname(sourceRel), decodeURI(reference));
+    const inside = path.relative(pkg, file);
+    return {
+      reference,
+      path: inside.startsWith("..") || path.isAbsolute(inside) ? null : inside.replaceAll(path.sep, "/"),
+      sha256: inside.startsWith("..") || path.isAbsolute(inside) || !fs.existsSync(file) ? null : digest(file),
+    };
+  }).sort((a, b) => a.reference.localeCompare(b.reference));
   const runtimeVisuals = [...text.matchAll(/\{\{\s*(mermaid|chart|smiles)\b/gi)].map((match) => match[1].toLowerCase());
   return {
     markdownImages: images.length,
@@ -98,6 +115,7 @@ function inspectSource(text) {
     runtimeVisuals: runtimeVisuals.length,
     runtimeVisualKinds: [...new Set(runtimeVisuals)].sort(),
     localAssetDependencies: [...new Set(localAssetDependencies)].sort(),
+    localAssetDigests,
   };
 }
 
@@ -120,7 +138,7 @@ function buildOne(spec, src) {
   const outPath = path.join(outRoot, relPath.replace(/\.md$/, spec.carrier));
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   let ok = runBuilder(spec.builder, src, outPath);
-  const sourceInspection = inspectSource(fs.readFileSync(src, "utf8"));
+  const sourceInspection = inspectSource(fs.readFileSync(src, "utf8"), relPath);
   let staticCarrierInspection = { shellImages: 0, shellImagesMissingAlt: 0, note: "Static shell only; runtime-rendered content requires visual/DOM review." };
   let portability = { frameworkInline: false, singleFile: false, mode: "build-failed", localAssetDependencies: sourceInspection.localAssetDependencies, remoteRuntimeDependencies: [], runtimeVisualReviewRequired: true };
   if (ok) {
@@ -132,7 +150,7 @@ function buildOne(spec, src) {
     if (requireSingleFile && !portability.singleFile) ok = false;
   }
   if (ok) built += 1; else failed += 1;
-  results.push({ source: relPath, carrier: path.relative(outRoot, outPath).replaceAll(path.sep, "/"), builder: spec.builder, status: ok ? "passed" : "failed", sourceSha256: digest(src), outputSha256: fs.existsSync(outPath) ? digest(outPath) : null, sourceInspection, staticCarrierInspection, portability });
+  results.push({ source: relPath, carrier: path.relative(outRoot, outPath).replaceAll(path.sep, "/"), builder: spec.builder, status: ok ? "passed" : "failed", sourceSha256: digest(src), outputSha256: fs.existsSync(outPath) ? digest(outPath) : null, reviewFingerprint: fs.existsSync(outPath) ? { algorithm: "sha256", normalization: "coursewerk-carrier-v1", value: reviewFingerprint(outPath) } : null, sourceInspection, staticCarrierInspection, portability });
 }
 for (const [top, spec] of Object.entries(BUILDER_FOR)) {
   const srcDir = path.join(pkg, top);

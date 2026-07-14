@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "reviewer": { "type": "human", "name": "REPLACE-WITH-HUMAN-REVIEWER" },
+  "reviewedAt": "REPLACE-WITH-YYYY-MM-DD",
+  "inspectionMethod": "browser-visual-dom",
+  "attestation": "REPLACE-WITH-A-SUBSTANTIVE-ATTESTATION-OF-LAYOUT-INTERACTION-ACCESSIBILITY-AND-OVERFLOW-REVIEW",
+  "carriers": [
+    {
+      "source": "study-guide/example.md",
+      "carrier": "study-guide/example.md.html",
+      "builder": "orz-mdhtml",
+      "sourceSha256": "GENERATED-BY-attest-visual-review",
+      "outputFingerprint": {
+        "algorithm": "sha256",
+        "normalization": "coursewerk-carrier-v1",
+        "value": "GENERATED-BY-attest-visual-review"
+      },
+      "localAssetDigests": []
+    }
+  ]
+}

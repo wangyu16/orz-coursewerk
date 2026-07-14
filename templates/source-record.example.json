@@ -4,23 +4,24 @@
     {
       "sourceId": "source-id-from-foundation",
       "comparisonMode": "automatic",
-      "originalFile": "source-file.html",
-      "originalPath": ".coursewerk-source-original/source-id-from-foundation.html",
-      "originalSha256": "REPLACE-WITH-RAW-SOURCE-SHA256",
       "canonicalUrl": "https://publisher.example/source-section",
       "retrievedAt": "REPLACE-WITH-ISO-DATETIME",
+      "extractor": {
+        "tool": "coursewerk",
+        "version": "REPLACE-WITH-COURSEWERK-VERSION",
+        "schemaVersion": 1,
+        "sourceFormat": ".html"
+      },
+      "originalSha256": "REPLACE-WITH-RAW-SOURCE-SHA256",
+      "textSha256": "REPLACE-WITH-EXTRACTED-TEXT-SHA256",
+      "wordCount": 0,
       "retrieval": {
         "captureMode": "local-file",
         "localFileName": "source-file.html",
         "retrievedAt": "REPLACE-WITH-ISO-DATETIME",
         "byteLength": 0,
         "tool": { "name": "coursewerk", "version": "REPLACE-WITH-COURSEWERK-VERSION" }
-      },
-      "extractor": { "tool": "coursewerk", "version": "REPLACE-WITH-COURSEWERK-VERSION", "schemaVersion": 1, "sourceFormat": ".html" },
-      "textPath": ".coursewerk-source-text/source-id-from-foundation.txt",
-      "sha256": "REPLACE-WITH-SHA256",
-      "minimumWords": 100,
-      "wordCount": 0
+      }
     }
   ]
 }

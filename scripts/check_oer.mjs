@@ -30,6 +30,9 @@ import {
 import { buildSourceIndex, scanText, VERBATIM } from "./lib/verbatim.mjs";
 import { auditAssurance } from "./lib/assurance.mjs";
 import { auditCoherence } from "./lib/coherence.mjs";
+import { auditSourceRecord } from "./lib/source_record.mjs";
+import { auditKeyFactReview } from "./lib/key_fact_review.mjs";
+import { auditVisualReview } from "./lib/visual_review.mjs";
 import { md as orzMarkdown } from "orz-markdown";
 
 const args = process.argv.slice(2);
@@ -490,12 +493,34 @@ function verbatimAudit(dir, foundation) {
   const declaredSourceIds = new Set((foundation?.sources || []).map((s) => s.id).filter(Boolean));
   const entries = Array.isArray(corpusManifest.sources) ? corpusManifest.sources : [];
   const seenSourceIds = new Set();
+  const seenTextHashes = new Map();
+  const seenWikipediaPageIds = new Map();
+  const seenWikipediaRevisionIds = new Map();
   for (const entry of entries) {
     if (!entry?.sourceId) corpusFailures.push("every source-corpus entry requires sourceId");
     else if (seenSourceIds.has(entry.sourceId)) corpusFailures.push(`duplicate source-corpus entry for ${entry.sourceId}`);
     else if (!declaredSourceIds.has(entry.sourceId)) corpusFailures.push(`source-corpus entry ${entry.sourceId} is not declared in FOUNDATION.json`);
     seenSourceIds.add(entry?.sourceId);
+    if (entry?.comparisonMode === "automatic" && /^[a-f0-9]{64}$/.test(String(entry.sha256 || ""))) {
+      const prior = seenTextHashes.get(entry.sha256);
+      if (prior && prior !== entry.sourceId) corpusFailures.push(`${entry.sourceId}: source text duplicates ${prior}; redirects or duplicate sources must be removed`);
+      else seenTextHashes.set(entry.sha256, entry.sourceId);
+    }
+    if (entry?.extractor?.tool === "wikipedia-action-api") {
+      for (const [field, seen] of [["pageId", seenWikipediaPageIds], ["revisionId", seenWikipediaRevisionIds]]) {
+        const value = entry.retrieval?.[field];
+        if (!Number.isInteger(value)) corpusFailures.push(`${entry.sourceId}: Wikipedia retrieval requires integer ${field}`);
+        else if (seen.has(value) && seen.get(value) !== entry.sourceId)
+          corpusFailures.push(`${entry.sourceId}: Wikipedia ${field} duplicates ${seen.get(value)}; redirects or duplicate sources must be removed`);
+        else seen.set(value, entry.sourceId);
+      }
+      if (!entry.retrieval?.title || !entry.retrieval?.resolvedUrl || !entry.retrieval?.permanentUrl ||
+          Number.isNaN(Date.parse(entry.retrieval?.revisionTimestamp || "")))
+        corpusFailures.push(`${entry.sourceId}: Wikipedia retrieval requires title, resolvedUrl, permanentUrl, and revisionTimestamp`);
+    }
   }
+  const sourceRecord = auditSourceRecord(pkg, corpusManifest);
+  corpusFailures.push(...sourceRecord.failures);
   const byId = new Map(entries.map((entry) => [entry.sourceId, entry]));
   const sourceTexts = [];
   const automaticSourceIds = [];
@@ -520,10 +545,22 @@ function verbatimAudit(dir, foundation) {
       if (!fs.existsSync(originalFile)) corpusFailures.push(`${sourceId}: raw source snapshot does not exist: ${originalRel}`);
       else if (!/^[a-f0-9]{64}$/.test(String(entry.originalSha256 || "")) || sha256(fs.readFileSync(originalFile)) !== entry.originalSha256)
         corpusFailures.push(`${sourceId}: raw source snapshot sha256 mismatch`);
+      else if (entry.retrieval?.byteLength !== fs.statSync(originalFile).size)
+        corpusFailures.push(`${sourceId}: retrieval byteLength does not match the raw source snapshot`);
     }
     if (!entry.canonicalUrl || entry.canonicalUrl !== source?.canonicalUrl)
       corpusFailures.push(`${sourceId}: corpus canonicalUrl must match FOUNDATION.json`);
     if (!entry.retrievedAt || Number.isNaN(Date.parse(entry.retrievedAt))) corpusFailures.push(`${sourceId}: retrievedAt must be a valid date-time`);
+    if (!entry.retrieval || !["local-file", "network"].includes(entry.retrieval.captureMode) ||
+        !entry.retrieval.retrievedAt || Number.isNaN(Date.parse(entry.retrieval.retrievedAt)) ||
+        !Number.isInteger(entry.retrieval.byteLength) || entry.retrieval.byteLength < 1 ||
+        !entry.retrieval.tool?.name || !entry.retrieval.tool?.version)
+      corpusFailures.push(`${sourceId}: structured raw-snapshot retrieval metadata is required`);
+    if (entry.retrieval?.captureMode === "local-file" && !entry.retrieval.localFileName)
+      corpusFailures.push(`${sourceId}: local-file retrieval requires localFileName`);
+    if (entry.retrieval?.captureMode === "network" &&
+        (!entry.retrieval.requestedUrl || !entry.retrieval.finalUrl || !Number.isInteger(entry.retrieval.httpStatus) || !entry.retrieval.contentType))
+      corpusFailures.push(`${sourceId}: network retrieval requires requested/final URL, HTTP status, and content type`);
     if (!new Set(["coursewerk", "wikipedia-action-api"]).has(entry.extractor?.tool) || !entry.extractor?.version || entry.extractor?.schemaVersion !== 1 || !entry.extractor?.sourceFormat)
       corpusFailures.push(`${sourceId}: a supported extractor tool plus version/schemaVersion/sourceFormat are required`);
     const relText = String(entry.textPath || "").replaceAll("\\", "/");
@@ -537,13 +574,14 @@ function verbatimAudit(dir, foundation) {
     const digest = sha256(fs.readFileSync(textFile));
     if (!/^[a-f0-9]{64}$/.test(String(entry.sha256 || "")) || digest !== entry.sha256) corpusFailures.push(`${sourceId}: source text sha256 mismatch`);
     const words = (text.match(/[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*/g) || []).length;
+    if (entry.wordCount !== words) corpusFailures.push(`${sourceId}: recorded wordCount does not match extracted source text`);
     const minimumWords = Math.max(100, Number(entry.minimumWords) || 100);
     if (words < minimumWords) corpusFailures.push(`${sourceId}: source text has ${words} words; minimum is ${minimumWords}`);
     sourceTexts.push(text);
     automaticSourceIds.push(sourceId);
   }
-  const corpusEvidence = entries.filter((entry) => primaryIds.includes(entry.sourceId)).map((entry) => ({ sourceId: entry.sourceId, comparisonMode: entry.comparisonMode, originalPath: entry.originalPath || null, originalSha256: entry.originalSha256 || null, canonicalUrl: entry.canonicalUrl || null, retrievedAt: entry.retrievedAt || null, extractor: entry.extractor || null, textPath: entry.textPath || null, sha256: entry.sha256 || null, attestedBy: entry.attestedBy || null, attestedAt: entry.attestedAt || null })).sort((a, b) => a.sourceId.localeCompare(b.sourceId));
-  const corpus = { ready: corpusFailures.length === 0 && primaryIds.length > 0, failures: corpusFailures, primarySourceIds: primaryIds, automaticSourceIds, attestedSourceIds, evidence: corpusEvidence, corpusSha256: sha256(JSON.stringify(corpusEvidence)), manifest: "SOURCE_CORPUS.json" };
+  const corpusEvidence = entries.filter((entry) => primaryIds.includes(entry.sourceId)).map((entry) => ({ sourceId: entry.sourceId, comparisonMode: entry.comparisonMode, originalPath: entry.originalPath || null, originalSha256: entry.originalSha256 || null, canonicalUrl: entry.canonicalUrl || null, retrievedAt: entry.retrievedAt || null, retrieval: entry.retrieval || null, extractor: entry.extractor || null, textPath: entry.textPath || null, sha256: entry.sha256 || null, attestedBy: entry.attestedBy || null, attestedAt: entry.attestedAt || null, reason: entry.reason || null })).sort((a, b) => a.sourceId.localeCompare(b.sourceId));
+  const corpus = { ready: corpusFailures.length === 0 && primaryIds.length > 0, failures: [...new Set(corpusFailures)], primarySourceIds: primaryIds, automaticSourceIds, attestedSourceIds, evidence: corpusEvidence, corpusSha256: sha256(JSON.stringify(corpusEvidence)), manifest: "SOURCE_CORPUS.json", publicRecord: "metadata/SOURCE_RECORD.json" };
   if (!corpus.ready) return empty("source corpus is incomplete", corpus);
   if (sourceTexts.length === 0) return empty("all source comparisons are human-attested", corpus);
   const TEXT = /\.(md|markdown|txt|csv|json|html?|tex|rtf)$/i;
@@ -574,6 +612,8 @@ const layout = layoutAudit(manifest.chapters);
 const assurance = auditAssurance({ root: pkg, manifest: manifest.manifest });
 const verbatim = verbatimAudit(inputsDir, assurance.foundation);
 const coherence = auditCoherence(pkg);
+const keyFactReview = auditKeyFactReview(pkg, assurance.foundation);
+const visualReview = auditVisualReview(pkg);
 // During first-pass chapter authoring, the index may not exist yet. Once it
 // exists, every edit is always enforced. Final/public QA (--for-discovery) also
 // requires the index, so deletion can never bypass release assurance.
@@ -600,6 +640,8 @@ const r = {
   verbatim,
   assurance,
   coherence,
+  keyFactReview,
+  visualReview,
 };
 
 // discoverability — the bar to LIST on Discover: an OPEN license + verified-clean content.
@@ -616,6 +658,8 @@ if (forDiscovery && !verbatim.corpus?.ready) discoverBlockers.push(`source corpu
 if (verbatim.ran && verbatim.totalSpans > 0) discoverBlockers.push(`${verbatim.totalSpans} near-verbatim span(s) match the source — rewrite them in original prose`);
 if (!assurance.canPack) discoverBlockers.push(`assurance kernel has ${assurance.hardFailures.length} unresolved hard failure(s)`);
 if (coherence.hardFailures.length) discoverBlockers.push(`component coherence index has ${coherence.hardFailures.length} unresolved failure(s)`);
+if (!keyFactReview.ready) discoverBlockers.push(`key-fact critique has ${keyFactReview.failures.length} unresolved failure(s)`);
+if (!visualReview.ready) discoverBlockers.push(`visual review has ${visualReview.failures.length} unresolved failure(s)`);
 r.discoverability = {
   mode: forDiscovery ? "for-discovery (enforced)" : "advisory",
   license,
@@ -647,8 +691,10 @@ const critical = {
   formatContractFailures: r.formatContracts.failureCount,
   assuranceHardFailures: assurance.hardFailures.length,
   coherenceFailures: coherenceCritical.length,
+  keyFactReviewFailures: forDiscovery ? keyFactReview.failures.length : 0,
+  visualReviewFailures: forDiscovery ? visualReview.failures.length : 0,
   // near-verbatim text: advisory by default, release-blocking under --for-discovery
-  ...(forDiscovery ? { additionalDiscoverBlockers: discoverBlockers.filter((b) => !b.startsWith("assurance kernel") && !b.startsWith("component coherence")).length } : {}),
+  ...(forDiscovery ? { additionalDiscoverBlockers: discoverBlockers.filter((b) => !b.startsWith("assurance kernel") && !b.startsWith("component coherence") && !b.startsWith("key-fact critique") && !b.startsWith("visual review")).length } : {}),
 };
 r.criticalCounts = critical;
 r.criticalTotal = Object.values(critical).reduce((a, b) => a + b, 0);
@@ -661,7 +707,8 @@ if (reportPath) {
   fs.mkdirSync(path.dirname(path.resolve(reportPath)), { recursive: true });
   const L = [];
   L.push("# Coursewerk QA Report", "", `Package: \`${rel(pkg) || pkg}\`  ·  ${r.corpus.deliverableFiles} deliverables · ${r.corpus.mediaAssets} assets`, "");
-  L.push(`**Critical issues: ${r.criticalTotal}** (release-blocking, auto-detectable)`, "");
+  L.push(`**Critical issues for this ${forDiscovery ? "release" : "authoring"} run: ${r.criticalTotal}** (auto-detectable)`, "");
+  if (!forDiscovery) L.push("This is an authoring-stage report; final source, coherence, key-fact, and visual-review release gates are not counted until `--for-discovery`.", "");
   L.push("| Check | Count |", "|---|---:|");
   for (const [k, v] of Object.entries(critical)) L.push(`| ${k} | ${v} |`);
   L.push("", "## Contract (will it upload to Alembic?)");
@@ -684,6 +731,12 @@ if (reportPath) {
   L.push("## Component coherence (mode-independent)");
   L.push(`- failures: ${coherence.hardFailures.length} · changed components: ${coherence.changed.length} · stale dependents: ${coherence.staleDependents.length}`);
   for (const i of coherence.hardFailures.slice(0, 40)) L.push(`  - FAIL ${i}`);
+  L.push("## Key-fact critique (mode-independent release gate)");
+  L.push(`- status: ${keyFactReview.ready ? "passed" : "not passed"} · failures: ${keyFactReview.failures.length}`);
+  for (const i of keyFactReview.failures.slice(0, 30)) L.push(`  - FAIL ${i}`);
+  L.push("## Human visual/DOM review (release gate)");
+  L.push(`- status: ${visualReview.ready ? "passed" : "not passed"} · failures: ${visualReview.failures.length}`);
+  for (const i of visualReview.failures.slice(0, 30)) L.push(`  - FAIL ${i}`);
   L.push("## Near-verbatim vs source");
   L.push(`- source corpus: ${verbatim.corpus?.ready ? "ready" : "not ready"}; automatic: ${(verbatim.corpus?.automaticSourceIds || []).join(", ") || "none"}; human-attested: ${(verbatim.corpus?.attestedSourceIds || []).join(", ") || "none"}`);
   if (!verbatim.ran) L.push(`- not run (${verbatim.reason}). Pass \`--inputs <dir>\` to scan deliverables against the source materials.`);
@@ -707,5 +760,7 @@ console.log(JSON.stringify({
   discoverability: { ready: r.discoverability.ready, license: r.discoverability.license, blockers: r.discoverability.blockers },
   assurance: { usageProfile: assurance.usageProfile, canPack: assurance.canPack, hardFailures: assurance.hardFailures.length, publicationBlockers: assurance.publicationBlockers.length, warnings: assurance.warnings },
   coherence: { ready: coherence.hardFailures.length === 0, failures: coherence.hardFailures.length, changed: coherence.changed.length, staleDependents: coherence.staleDependents.length },
+  keyFactReview: { ready: keyFactReview.ready, failures: keyFactReview.failures.length },
+  visualReview: { ready: visualReview.ready, failures: visualReview.failures.length },
 }, null, 2));
 process.exit(r.criticalTotal > 0 ? 1 : 0);

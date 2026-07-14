@@ -24,6 +24,9 @@ package/
   metadata/FOUNDATION.json     # intended use · sources · rights/license evidence · privacy (required)
   metadata/PROVENANCE.json     # structured record for every incorporated asset/item (required)
   metadata/MEDIA_PLAN.json     # reviewed decision for chapters without a real photograph
+  metadata/SOURCE_RECORD.json  # exact compact source revision/retrieval/digest record (required)
+  metadata/KEY_FACT_REVIEW.json # mode-appropriate focused identity/license/fact critique (required)
+  metadata/VISUAL_REVIEW.json  # hash-bound human browser/DOM carrier review (required)
   metadata/COMPONENT_INDEX.json # generated hashes + dependency graph (required before final QA)
   metadata/ATTRIBUTION.md      # asset · source · license · attribution  (NOT at root — see note)
   metadata/DOCUMENTS.json      # optional declared mdhtml/slides/paged collection sources
@@ -94,7 +97,9 @@ concepts/ assessment-support/ assets/ metadata/ current/` are **public** (shared
 Every visual is **self-generated** (RDKit/matplotlib via `oer-figures`) or **openly-licensed**
 (CC0 / Public Domain / CC-BY / CC-BY-SA — Wikimedia Commons, Openverse) or the **source textbook's
 own** figure *if its license permits and it carries no third-party credit line*. Each is recorded
-in structured `metadata/PROVENANCE.json` and public `metadata/ATTRIBUTION.md` (asset · source URL · license · attribution). Copyrighted/paywalled or
+in structured `metadata/PROVENANCE.json` and public `metadata/ATTRIBUTION.md` (asset · source URL · license · attribution). Verified external media also retains an authoritative description/license-page snapshot and
+structured capture/retrieval metadata under `metadata/evidence/`; a remembered URL/license label is insufficient.
+Copyrighted/paywalled or
 third-party-credited assets are **never** embedded. The package license follows the explicit supported
 compatibility matrix for every adapted source; ShareAlike sources remain ShareAlike, while public domain is not
 mislabelled as CC0.
@@ -103,10 +108,14 @@ its evidence, accessibility text, or media when an external URL changes.
 The mode-independent assurance contract is defined in `docs/assurance-kernel.md`. A public package must have
 `usageProfile: public-oer`, verified source/license evidence, matching manifest/LICENSE, complete structured
 provenance, required attribution in every applicable deliverable, and zero publication blockers.
-Public output also identifies at least one accountable non-AI author/rightsholder. A source's authoritative
+Public output also identifies at least one final accountable non-AI person/institution, with explicit
+rights-holder status and user confirmation. A source's authoritative
 rights evidence is deterministically scanned before substantive source ingestion. Separate AI/automated-use
 notices are preserved with legal effect undetermined; verified license/evidence conflicts and incompatible public
 license claims remain blocking. Non-published source use remains advisory rather than blocked.
+Light and Full modes both require the focused identity/license/key-fact critique: Light uses a separate
+context-reset same-model pass and Full uses cross-model review. The record and human carrier review are bound to
+current evidence, source, asset, and deliverable hashes; stale reviews block release.
 Cross-deliverable coherence is defined in `docs/coherence-index.md`; every final package must have a current
 generated component index, and every revision must complete the impact-review/attested-refresh protocol.
 

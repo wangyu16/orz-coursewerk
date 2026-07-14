@@ -35,7 +35,7 @@
       "id": "repo:AGENTS.md",
       "path": "AGENTS.md",
       "type": "agent-constitution",
-      "hash": "9ab9835e0d1f45c67d414372074620b762455bab6aefc82be17825edd37d4f87"
+      "hash": "a148d4e0990a28be547273caa030c52178f5fbddb8a4e409fd582f66de4c9b16"
     },
     {
       "id": "repo:bootstrap/init.sh",
@@ -47,13 +47,13 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "68133d8aeac95155b9ae9d49ebc92e027c309b8e33fb16e7e5d3fe34566aa0d9"
+      "hash": "c19ee16356a9d9ce9f90f143101abf529263549abcfbc4f635f8af4d9cd622b2"
     },
     {
       "id": "repo:CLAUDE.md",
       "path": "CLAUDE.md",
       "type": "agent-constitution",
-      "hash": "6eb81d8c9cd7c7d068815c503cdd0462caec4b96cd8a63cc7399e3c9bbde781e"
+      "hash": "34c78022718ec6dc343489f0a81466cdf1bfdf021594ac6cb635ab07c9f6ca9c"
     },
     {
       "id": "repo:COMPATIBILITY.md",
@@ -65,19 +65,19 @@
       "id": "repo:docs/assurance-kernel.md",
       "path": "docs/assurance-kernel.md",
       "type": "documentation",
-      "hash": "6b2a8fbb65ac8f98c9cad74d4c26d8094ea810e6039e51c8ea8639ac55a22588"
+      "hash": "ee98fa88a7284acce51e1bfb31e7c4708a97fe12f32c24f7077e98aac7d8eefa"
     },
     {
       "id": "repo:docs/authoring-guidelines.md",
       "path": "docs/authoring-guidelines.md",
       "type": "documentation",
-      "hash": "879540ac7d08db885f2b91b86da4b15cc784b51280428e2b3f858e20d6de3b38"
+      "hash": "9b5fdf3916240b680727765a983ad009079038f8e95234540527b309d2b090d8"
     },
     {
       "id": "repo:docs/coherence-index.md",
       "path": "docs/coherence-index.md",
       "type": "documentation",
-      "hash": "73d866627a3f0eb4148be2e582b04f068d28d2e7fffa3ed95dde3e8ba647621b"
+      "hash": "c31816c23b2a45564a614187b7b90f1a23bf2ae852a4483aaae734a04df89c9c"
     },
     {
       "id": "repo:docs/coursewerk-system-index.md",
@@ -89,7 +89,7 @@
       "id": "repo:docs/lite-path.md",
       "path": "docs/lite-path.md",
       "type": "documentation",
-      "hash": "0852859bcf10a4129b623fa5d3aae5f75840fafae782e620f926dfa8bb4ea76b"
+      "hash": "85c521108cef2d0fbe0cf0683e9d57f7fa91b08cc04373589801792d48e4f5b1"
     },
     {
       "id": "repo:docs/rules-vs-preferences.md",
@@ -101,19 +101,19 @@
       "id": "repo:docs/wikipedia-science-topic.md",
       "path": "docs/wikipedia-science-topic.md",
       "type": "documentation",
-      "hash": "f9762062c6b8a2a99d32c16610aa59c314bc8d491ee891c5abbaa6308d47c282"
+      "hash": "bc5a451fa9b68c730b72b3940b47b8440319ec14ddc2492246b72187bac1e4a6"
     },
     {
       "id": "repo:FEATURES.md",
       "path": "FEATURES.md",
       "type": "product-claim",
-      "hash": "abc197ae58deb2ea36d501b29ba406c21fe17ba984f2468ad7bf8043e6b85895"
+      "hash": "14af71457d9872d1b3239b11a146ef74914a34d47bbc636e2bc5ff1ca178c8eb"
     },
     {
       "id": "repo:format-contracts/deliverables.md",
       "path": "format-contracts/deliverables.md",
       "type": "documentation",
-      "hash": "b413463491e648c9c7d945f64d886ebcdd8275ca452e76a963a6ba7c7f0c9492"
+      "hash": "2a59600ae3412b5eb9b166ac40d07d41f7d993c10845ca73a3b187390c4ac9c1"
     },
     {
       "id": "repo:GEMINI.md",
@@ -137,19 +137,19 @@
       "id": "repo:package.json",
       "path": "package.json",
       "type": "release-metadata",
-      "hash": "10f9bb516595ca1ee6485aa0a35df21cc911647d8062de0d262dad8352cf09a4"
+      "hash": "8e54bdc8c6ceee07389f3679f3eb7ea7d4b701b4cb384394a4ceac05f08a4a99"
     },
     {
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "5b9b88b914c04f958da5a73bf9561dff2e957af00603c819073941274e0c198a"
+      "hash": "3c6fed9245bcb6819ae72b937033000a89e5340519efbf8923ce95dc993902c3"
     },
     {
       "id": "repo:README.md",
       "path": "README.md",
       "type": "product-claim",
-      "hash": "76f37c1d511e60529dd9f6a064577a929738acfb722a3ba2b1021ad96bfa9440"
+      "hash": "fab8308adf7c4a48c34116c952e7d8ec4893e67f4e7bc796c1b8764d7fdaac01"
     },
     {
       "id": "repo:scripts/accept_coursewerk_revision.mjs",
@@ -158,28 +158,46 @@
       "hash": "5b6f259b38b8f382948ca0278fcf434ff069dfd48f4e0698c451619c8846a6ae"
     },
     {
+      "id": "repo:scripts/attest_visual_review.mjs",
+      "path": "scripts/attest_visual_review.mjs",
+      "type": "executable",
+      "hash": "9af56a129d78cb471c5b339944557eb5e42fb373c2e8ba7b941eeb928d6d9e68"
+    },
+    {
+      "id": "repo:scripts/bind_key_fact_review.mjs",
+      "path": "scripts/bind_key_fact_review.mjs",
+      "type": "executable",
+      "hash": "75effef542d56ffe5bd2d179b60e64ea1f1a0f9ebcf1627e3eac24329756f3d7"
+    },
+    {
       "id": "repo:scripts/build_carriers.mjs",
       "path": "scripts/build_carriers.mjs",
       "type": "executable",
-      "hash": "3e72425430b90d111db8257916751885c9f59546f4b3e9baa4bfef69d72985ee"
+      "hash": "e2d575a69aa22e215e9a085585a82a3382ed1656bf7034dc24ee61c70628d92f"
+    },
+    {
+      "id": "repo:scripts/capture_media_evidence.mjs",
+      "path": "scripts/capture_media_evidence.mjs",
+      "type": "executable",
+      "hash": "7a0c0f9cfffc896b662448b00260bd1de8f71901f6b3429eb8110c580d670c72"
     },
     {
       "id": "repo:scripts/capture_rights_evidence.mjs",
       "path": "scripts/capture_rights_evidence.mjs",
       "type": "executable",
-      "hash": "9d2c8e424e74e85e99db0606c540785b1c3c142e1e0bad85c2d42b2b586e5fd2"
+      "hash": "fd08687c0902f5e8c0679aaf7ee0523b9a2e2650dd3c5e47e0b041ea1e247986"
     },
     {
       "id": "repo:scripts/check_assurance.mjs",
       "path": "scripts/check_assurance.mjs",
       "type": "executable",
-      "hash": "a525b6138c56a5b6d23d6092f551042a3f9e17b2c15bd6e19b810be154d99d61"
+      "hash": "dfbb08f9113a9aae757e371047c5bff84285f5f16ff1f00a1ced5f6b6bafa973"
     },
     {
       "id": "repo:scripts/check_oer.mjs",
       "path": "scripts/check_oer.mjs",
       "type": "executable",
-      "hash": "907f26d61752fc2c02d759af50735cfa25bad11b615e04521b9140929c4204b6"
+      "hash": "8e3802b6601294c60a9cef980427e0155730ec3edbecb25141964b65122f4f5a"
     },
     {
       "id": "repo:scripts/coursewerk_impact.mjs",
@@ -236,6 +254,12 @@
       "hash": "b9e0762ed30ea9d34fb4688f7b20629bac4154342eab80f59837a9b1ba4ef7a1"
     },
     {
+      "id": "repo:scripts/generate_source_record.mjs",
+      "path": "scripts/generate_source_record.mjs",
+      "type": "executable",
+      "hash": "c8285b471d78871f8735ca1511559fb0c6041b00d18e052d97119fa09c60a90d"
+    },
+    {
       "id": "repo:scripts/index_components.mjs",
       "path": "scripts/index_components.mjs",
       "type": "executable",
@@ -257,19 +281,25 @@
       "id": "repo:scripts/lib/assurance.mjs",
       "path": "scripts/lib/assurance.mjs",
       "type": "kernel",
-      "hash": "c51b0c879fc38502c8d1ab6f9ff52786fb6f7e86a5ba391596db3fbe89285ec1"
+      "hash": "fc5531431ddf5e58c4bf3004eae22b57c80810b2b6e47abfd447c26c06f0bdfe"
     },
     {
       "id": "repo:scripts/lib/coherence.mjs",
       "path": "scripts/lib/coherence.mjs",
       "type": "kernel",
-      "hash": "206b256280ab60ce6a42d10392e486232f1a3d1cdde48e902fcb3d2f3e1479ea"
+      "hash": "f88886e1a66b999ec72bacc1dd6c0e2f2f5df4a683eb6c4fc41df5b2f9ea6c77"
     },
     {
       "id": "repo:scripts/lib/contract.mjs",
       "path": "scripts/lib/contract.mjs",
       "type": "kernel",
       "hash": "accc3cd10c90a63a34eb9fa8dbd3463edc39cbbb110f25a3597541cc3f9b4968"
+    },
+    {
+      "id": "repo:scripts/lib/key_fact_review.mjs",
+      "path": "scripts/lib/key_fact_review.mjs",
+      "type": "kernel",
+      "hash": "e1526f4cc3573e5163810a91c7ad383c2916e42ac9b64ff7d0e77059046a7883"
     },
     {
       "id": "repo:scripts/lib/output_git.mjs",
@@ -296,6 +326,12 @@
       "hash": "6ce3bf7675ad157841a1c3480e2551baf9d384f53a3afedf7f7522d457fbe231"
     },
     {
+      "id": "repo:scripts/lib/source_record.mjs",
+      "path": "scripts/lib/source_record.mjs",
+      "type": "kernel",
+      "hash": "c438ee9d7e71532d0dab86c11c943c64e6b86529696f9535d32379a480cc588e"
+    },
+    {
       "id": "repo:scripts/lib/system_index.mjs",
       "path": "scripts/lib/system_index.mjs",
       "type": "kernel",
@@ -308,22 +344,28 @@
       "hash": "06982d0f0a0043873b379de5f2c856246576db49762b14c3097ca8ed717c35ec"
     },
     {
+      "id": "repo:scripts/lib/visual_review.mjs",
+      "path": "scripts/lib/visual_review.mjs",
+      "type": "kernel",
+      "hash": "d79597590d3c4de9a11170d11a1d8ba8942ff52aff1c55e707552dce37ef3c59"
+    },
+    {
       "id": "repo:scripts/pack.mjs",
       "path": "scripts/pack.mjs",
       "type": "executable",
-      "hash": "6142ce518ad62ce24b7d28966846ec39dee47b06b169d9aa5c97ab37cd05a16f"
+      "hash": "d4a4aafda2c7aa28eccce10f5ca6ccd9c596cdce728b0b62d1b881341a01b097"
     },
     {
       "id": "repo:scripts/prepare_source_corpus.mjs",
       "path": "scripts/prepare_source_corpus.mjs",
       "type": "executable",
-      "hash": "bddc8c33142fe39957732c65bc422fe5219470827b4457c6f582c2c5f32a12a3"
+      "hash": "0b704eec081230f4471b80bbfa99a04904f19ec7ea30cb70e125eb4b875538ae"
     },
     {
       "id": "repo:scripts/prepare_wikipedia_topic.mjs",
       "path": "scripts/prepare_wikipedia_topic.mjs",
       "type": "executable",
-      "hash": "33f7c690132b0c3b073adf4d4e079e19f0969f6e750d2db27fcf0a622d86082b"
+      "hash": "a887bd6fc9e06a92b08961af7dda8b78c8fbb2628e58529902e5af923d4d9ac6"
     },
     {
       "id": "repo:scripts/revision_impact.mjs",
@@ -350,6 +392,24 @@
       "hash": "9dc6f8be9a33a965ac0f842e7df99592b0232d65257d42e8209e36988d20933b"
     },
     {
+      "id": "repo:site/assets/showcase-plate-tectonics-course.png",
+      "path": "site/assets/showcase-plate-tectonics-course.png",
+      "type": "product-website",
+      "hash": "01996387b33a9f73944c6e74484ebf95a47551b1f7b09618ee1f434fe690fb95"
+    },
+    {
+      "id": "repo:site/assets/showcase-plate-tectonics-slides.png",
+      "path": "site/assets/showcase-plate-tectonics-slides.png",
+      "type": "product-website",
+      "hash": "0f38f2bd71895f5ffe1dadef1f134906e7d0a9da39e8a7b5f5b70316bd9de30f"
+    },
+    {
+      "id": "repo:site/assets/showcase-plate-tectonics-study-guide.png",
+      "path": "site/assets/showcase-plate-tectonics-study-guide.png",
+      "type": "product-website",
+      "hash": "5fb1f0091bb640faa25eed3ce894e3ba6df520941bcbb1b2023904f99c43f10d"
+    },
+    {
       "id": "repo:site/CNAME",
       "path": "site/CNAME",
       "type": "product-website",
@@ -359,13 +419,13 @@
       "id": "repo:site/index.html",
       "path": "site/index.html",
       "type": "product-website",
-      "hash": "f3cd23e1ecbfcaecec2eb61c987f73b0f3f9fae9ed3f82ba64cff44c7eac43f1"
+      "hash": "ddd64a38a2371ba2ed8b2cb85f7b3e9b720a4f50b73fa70206986d0fe04c071a"
     },
     {
       "id": "repo:site/styles.css",
       "path": "site/styles.css",
       "type": "product-website",
-      "hash": "9457e1525255318b3bf9d7581ff156e2b3a98922aeeaa67c44434891520b258f"
+      "hash": "b3005d7d663464d47b2d1195d64ceb5ae3e3124ec350b2c3d49226eb062fb7d3"
     },
     {
       "id": "repo:skills/courseguide-standards/SKILL.md",
@@ -395,7 +455,7 @@
       "id": "repo:skills/oer-qa/SKILL.md",
       "path": "skills/oer-qa/SKILL.md",
       "type": "skill",
-      "hash": "d6749c109f058cbddc8d8e4042018ff4e1bc48e8425ce17ad7cfd7ab702fcca1"
+      "hash": "f92a67d829f0db9683a43ae99cb3e3ddc7917eadb81f915d76a019c0ccdb5474"
     },
     {
       "id": "repo:skills/orz-markdown/assets/minimal.css",
@@ -449,7 +509,7 @@
       "id": "repo:system/CLAIMS.json",
       "path": "system/CLAIMS.json",
       "type": "system-governance",
-      "hash": "857d33748228e75768981e47fda8576e20cb6fcd144ee6c3ae9d358d2466f192"
+      "hash": "172a70b6b78e15f8013972cfdbc01b9383c823eb8937ea1371a5c09a5b664566"
     },
     {
       "id": "repo:system/COMPONENTS.json",
@@ -461,19 +521,19 @@
       "id": "repo:system/KNOWN_FINDINGS.json",
       "path": "system/KNOWN_FINDINGS.json",
       "type": "system-governance",
-      "hash": "01f3ed62dbc72f66f2e8b2eb4a38ac8e01eaa7047474e08293d13a1016ff65a6"
+      "hash": "c6eeca0d48ade76acb7fe02d1522a4be51f652ce48d9040aa910e868813ce46d"
     },
     {
       "id": "repo:system/QUALITY_PROFILES.json",
       "path": "system/QUALITY_PROFILES.json",
       "type": "system-governance",
-      "hash": "d7b164b6d882873a98edd5057c4c7e28045c527ee2b15156f16da4d23c840fdc"
+      "hash": "3dcef753e7d0ccc89c9ed654e4cdeabb3ffce483f7b8a253c9516eea4a7fe0c6"
     },
     {
       "id": "repo:system/RELATIONSHIPS.json",
       "path": "system/RELATIONSHIPS.json",
       "type": "system-governance",
-      "hash": "bd80e65a40176b351b286e1aca1b565c059b16ce57af0664fa61aaaffefed781"
+      "hash": "d8acf15f3af2f48886023356c2cfab4cc2e20c4e578424fb9db28962ced7d643"
     },
     {
       "id": "repo:system/schemas/claim.schema.json",
@@ -515,7 +575,7 @@
       "id": "repo:templates/foundation.public-oer.example.json",
       "path": "templates/foundation.public-oer.example.json",
       "type": "template",
-      "hash": "5b8397ebd4ebf0d3d5953bc6097ccdaa564b7d2cd81880133a04c7934c25737e"
+      "hash": "fec56c9bd8d9b30ec24e1843e3bfd5e06ce82869b1741f6209ca794c1e39f52c"
     },
     {
       "id": "repo:templates/foundation.restricted.example.json",
@@ -527,7 +587,13 @@
       "id": "repo:templates/foundation.wikipedia-science.example.json",
       "path": "templates/foundation.wikipedia-science.example.json",
       "type": "template",
-      "hash": "dca0af4348e70bf160abe1c5660dc4ce86fe2440e9198b6f0103ffdb23fdc992"
+      "hash": "183bce0db6ff64de89c9236ebf3443de13e03b755c810a04bc40e31ae516ca70"
+    },
+    {
+      "id": "repo:templates/key-fact-review.example.json",
+      "path": "templates/key-fact-review.example.json",
+      "type": "template",
+      "hash": "43e466e8bc8040d38b1a03d230bee26d4bebb17296e8e747a58fde63357d53e9"
     },
     {
       "id": "repo:templates/media-plan.example.json",
@@ -539,25 +605,37 @@
       "id": "repo:templates/provenance.example.json",
       "path": "templates/provenance.example.json",
       "type": "template",
-      "hash": "4bc8c21270a831d1e95da73273788462e6ca744b2ba986849de5e18d1122698b"
+      "hash": "1ee3c5a82a16c4d9a87f615a28cf6517ab1a0f48c2a6bd97127d67eaeac7a503"
     },
     {
       "id": "repo:templates/source-corpus.example.json",
       "path": "templates/source-corpus.example.json",
       "type": "template",
-      "hash": "5f37f8d8cc2aae2ebee07a2508b2888e36809fa95cdb645019d3879429c7b7ac"
+      "hash": "30d6cf4205ee683ca74279e7d0cda98694ca4055cf24d6a6c500dbb2ba81a93b"
+    },
+    {
+      "id": "repo:templates/source-record.example.json",
+      "path": "templates/source-record.example.json",
+      "type": "template",
+      "hash": "721663ceba6eec1614d9bef7caa49f280540738abcc5fb522872150b2e303880"
+    },
+    {
+      "id": "repo:templates/visual-review.example.json",
+      "path": "templates/visual-review.example.json",
+      "type": "template",
+      "hash": "2c7afd5d5423364c1a414bc0c73b1c0d905af8aa851f257c4a2a6436bac43552"
     },
     {
       "id": "repo:tests/assurance.test.mjs",
       "path": "tests/assurance.test.mjs",
       "type": "test",
-      "hash": "fb6531c47d17118140fffce1d28b132835811260b2a2614fec998e4fd7e33afa"
+      "hash": "73924142bf67db20a0cd1cd67fcd14e75d74fa8d2f8c1e03da8dd1ef7434d387"
     },
     {
       "id": "repo:tests/carriers.test.mjs",
       "path": "tests/carriers.test.mjs",
       "type": "test",
-      "hash": "6cb3ccb73d2c7d199f88a13d69825aeb5c56ea6d11845f362c4e1c9dd2590be3"
+      "hash": "1afeb2968b64ef48ec436982ea5c70cfb5cccd6dff72bad8833441a8d89d2f1b"
     },
     {
       "id": "repo:tests/contract.test.mjs",
@@ -569,19 +647,25 @@
       "id": "repo:tests/evidence-tools.test.mjs",
       "path": "tests/evidence-tools.test.mjs",
       "type": "test",
-      "hash": "083b11e7d7aaaa9fa1fb369d282589dac62fd5c380adf7159b51487b7ff206b9"
+      "hash": "3a3bce8ade7e96ebdb0cab3344abafe4abf90268396770ade8fded19a62e4593"
     },
     {
       "id": "repo:tests/qa.test.mjs",
       "path": "tests/qa.test.mjs",
       "type": "test",
-      "hash": "aceac0fbf7a6de8514bfa49991b309cb564a790f3dba020704ae561096fc3f9b"
+      "hash": "97ec863a5d74a4b21dd955e09f04c9335a00cb93ff6bbd7679c03f65a3ef351f"
+    },
+    {
+      "id": "repo:tests/reviews.test.mjs",
+      "path": "tests/reviews.test.mjs",
+      "type": "test",
+      "hash": "af664d0659d4205570ded337805606dd1b42c8ddde87303b70bbc752a27097ca"
     },
     {
       "id": "repo:tests/site.test.mjs",
       "path": "tests/site.test.mjs",
       "type": "test",
-      "hash": "87cdd027a796ecc564e1a235a6a2857862f09a1d7fc59dfa0523008255ce6fae"
+      "hash": "b1b58a8088d517b779723e76be14dfc9cc6b3dbc8047c3e4fc7949a23c03d2de"
     },
     {
       "id": "repo:tests/system-index.test.mjs",
@@ -593,7 +677,7 @@
       "id": "repo:VERSION",
       "path": "VERSION",
       "type": "release-metadata",
-      "hash": "5dbe9732cca3054b676ed62519985f53f7fe1b17d4546d42979a1207a7cf75d0"
+      "hash": "9ccb2326fed99f74bb391024235c8ed68bd67b8d478f2e27975b2786a05d3f16"
     }
   ],
   "relationships": [
@@ -635,6 +719,12 @@
     },
     {
       "from": "scripts/build_carriers.mjs",
+      "to": "scripts/lib/visual_review.mjs",
+      "reason": "carrier receipts provide stable fingerprints and local-asset digests",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/build_carriers.mjs",
       "to": "scripts/pack.mjs",
       "reason": "packing persists and binds the exact carrier receipt",
       "impact": "both"
@@ -643,6 +733,24 @@
       "from": "scripts/build_carriers.mjs",
       "to": "tests/carriers.test.mjs",
       "reason": "carrier behavior requires integration evidence",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/capture_media_evidence.mjs",
+      "to": "scripts/lib/assurance.mjs",
+      "reason": "media capture supplies the evidence fields enforced by assurance",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/capture_media_evidence.mjs",
+      "to": "templates/provenance.example.json",
+      "reason": "provenance template documents retained media-rights evidence",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/capture_media_evidence.mjs",
+      "to": "tests/evidence-tools.test.mjs",
+      "reason": "media evidence capture requires regression evidence",
       "impact": "both"
     },
     {
@@ -749,6 +857,18 @@
     },
     {
       "from": "scripts/lib/coherence.mjs",
+      "to": "scripts/lib/key_fact_review.mjs",
+      "reason": "component impact propagates evidence and deliverable changes to focused review",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/coherence.mjs",
+      "to": "scripts/lib/visual_review.mjs",
+      "reason": "component impact propagates source and asset changes to visual review",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/coherence.mjs",
       "to": "scripts/revision_impact.mjs",
       "reason": "impact CLI implements coherence protocol",
       "impact": "both"
@@ -763,6 +883,42 @@
       "from": "scripts/lib/contract.mjs",
       "to": "scripts/check_oer.mjs",
       "reason": "package contract drives QA",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/key_fact_review.mjs",
+      "to": "scripts/bind_key_fact_review.mjs",
+      "reason": "binding CLI materializes and validates the focused critique contract",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/key_fact_review.mjs",
+      "to": "scripts/check_assurance.mjs",
+      "reason": "private and restricted completion enforce the focused critique",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/key_fact_review.mjs",
+      "to": "scripts/check_oer.mjs",
+      "reason": "public release QA enforces the mode-appropriate focused critique",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/key_fact_review.mjs",
+      "to": "templates/key-fact-review.example.json",
+      "reason": "review template mirrors the enforced schema",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/key_fact_review.mjs",
+      "to": "tests/qa.test.mjs",
+      "reason": "review presence and stale bindings require regression evidence",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/key_fact_review.mjs",
+      "to": "tests/reviews.test.mjs",
+      "reason": "mode identity, chapter coverage, independence, and license bindings require focused tests",
       "impact": "both"
     },
     {
@@ -784,6 +940,30 @@
       "impact": "both"
     },
     {
+      "from": "scripts/lib/source_record.mjs",
+      "to": "scripts/check_oer.mjs",
+      "reason": "public QA requires an exact current source record",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/source_record.mjs",
+      "to": "scripts/prepare_source_corpus.mjs",
+      "reason": "generic source preparation emits the compact release record",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/source_record.mjs",
+      "to": "scripts/prepare_wikipedia_topic.mjs",
+      "reason": "Wikipedia collection emits the compact revision record",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/source_record.mjs",
+      "to": "templates/source-record.example.json",
+      "reason": "source-record template mirrors the generated public contract",
+      "impact": "both"
+    },
+    {
       "from": "scripts/lib/system_index.mjs",
       "to": ".github/workflows/system-integrity.yml",
       "reason": "CI enforces the system index",
@@ -799,6 +979,30 @@
       "from": "scripts/lib/system_index.mjs",
       "to": "tests/system-index.test.mjs",
       "reason": "self-index behavior requires branch simulation",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/visual_review.mjs",
+      "to": "scripts/attest_visual_review.mjs",
+      "reason": "attestation CLI records carrier review fingerprints",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/visual_review.mjs",
+      "to": "scripts/pack.mjs",
+      "reason": "packing verifies rebuilt carriers against the human review",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/visual_review.mjs",
+      "to": "templates/visual-review.example.json",
+      "reason": "visual-review template mirrors the enforced schema",
+      "impact": "both"
+    },
+    {
+      "from": "scripts/lib/visual_review.mjs",
+      "to": "tests/reviews.test.mjs",
+      "reason": "source, asset, and carrier fingerprint bindings require focused tests",
       "impact": "both"
     },
     {
@@ -841,6 +1045,24 @@
       "from": "site/index.html",
       "to": "site/assets/orz.svg",
       "reason": "Coursewerk reuses the shared orz family mark",
+      "impact": "both"
+    },
+    {
+      "from": "site/index.html",
+      "to": "site/assets/showcase-plate-tectonics-course.png",
+      "reason": "published-demo overview screenshot must remain synchronized with its showcase copy",
+      "impact": "both"
+    },
+    {
+      "from": "site/index.html",
+      "to": "site/assets/showcase-plate-tectonics-slides.png",
+      "reason": "published-demo slide screenshot must remain synchronized with its showcase copy",
+      "impact": "both"
+    },
+    {
+      "from": "site/index.html",
+      "to": "site/assets/showcase-plate-tectonics-study-guide.png",
+      "reason": "published-demo study-guide screenshot must remain synchronized with its showcase copy",
       "impact": "both"
     },
     {
@@ -904,7 +1126,7 @@
     },
     {
       "id": "claim.authorship.accountable",
-      "statement": "Public output identifies an accountable non-AI author or rights holder.",
+      "statement": "Public output identifies a final accountable non-AI person or institution with explicit rights-holder status and user confirmation; placeholders are rejected.",
       "assuranceLevel": "hard-gate",
       "implementation": [
         "scripts/lib/assurance.mjs"
@@ -921,14 +1143,17 @@
     },
     {
       "id": "claim.carriers.honest-portability",
-      "statement": "Carrier receipts persist and distinguish single-file output from carrier-plus-assets output without claiming an unperformed rendered audit.",
+      "statement": "Carrier receipts persist, distinguish single-file output from carrier-plus-assets output, retain local-asset digests, and public release verifies rebuilt stable carrier fingerprints against an identified human browser/DOM review.",
       "assuranceLevel": "automated-check",
       "implementation": [
         "scripts/build_carriers.mjs",
+        "scripts/lib/visual_review.mjs",
+        "scripts/attest_visual_review.mjs",
         "scripts/pack.mjs"
       ],
       "tests": [
         "tests/carriers.test.mjs",
+        "tests/reviews.test.mjs",
         "tests/assurance.test.mjs"
       ],
       "documentation": [
@@ -1035,14 +1260,16 @@
     },
     {
       "id": "claim.provenance.complete",
-      "statement": "Every incorporated media item is traceable to structured provenance and public attribution.",
+      "statement": "Every incorporated media item is traceable to structured provenance and public attribution, and verified external media retains hash-bound authoritative rights evidence.",
       "assuranceLevel": "hard-gate",
       "implementation": [
         "scripts/lib/assurance.mjs",
-        "scripts/check_oer.mjs"
+        "scripts/check_oer.mjs",
+        "scripts/capture_media_evidence.mjs"
       ],
       "tests": [
-        "tests/assurance.test.mjs"
+        "tests/assurance.test.mjs",
+        "tests/evidence-tools.test.mjs"
       ],
       "documentation": [
         "FEATURES.md",
@@ -1051,11 +1278,13 @@
     },
     {
       "id": "claim.release.fail-closed",
-      "statement": "Public packing refuses unresolved assurance, quality, source-comparison, or coherence failures.",
+      "statement": "Public packing refuses unresolved assurance, quality, source-comparison, key-fact critique, human carrier-review, or coherence failures and binds the accepted evidence to its receipt.",
       "assuranceLevel": "hard-gate",
       "implementation": [
         "scripts/pack.mjs",
-        "scripts/check_oer.mjs"
+        "scripts/check_oer.mjs",
+        "scripts/lib/key_fact_review.mjs",
+        "scripts/lib/visual_review.mjs"
       ],
       "tests": [
         "tests/assurance.test.mjs"
@@ -1064,6 +1293,31 @@
         "FEATURES.md",
         "CLAUDE.md",
         "PROCEDURE.md"
+      ]
+    },
+    {
+      "id": "claim.review.key-facts",
+      "statement": "Every completed teaching package receives a hash-bound focused critique of identity, source/version, licenses, media rights, attribution, and chapter key facts; Light uses a context-reset same-model pass and Full uses cross-model review.",
+      "assuranceLevel": "hard-gate",
+      "implementation": [
+        "scripts/lib/key_fact_review.mjs",
+        "scripts/bind_key_fact_review.mjs",
+        "scripts/check_oer.mjs",
+        "scripts/check_assurance.mjs"
+      ],
+      "tests": [
+        "tests/reviews.test.mjs",
+        "tests/qa.test.mjs",
+        "tests/assurance.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "README.md",
+        "CLAUDE.md",
+        "PROCEDURE.md",
+        "docs/assurance-kernel.md",
+        "docs/lite-path.md",
+        "site/index.html"
       ]
     },
     {
@@ -1093,11 +1347,12 @@
     },
     {
       "id": "claim.source.comparison",
-      "statement": "Discovery release binds raw and extracted source evidence and records whether deliverables were compared with it.",
+      "statement": "Discovery release binds raw and extracted source evidence with structured retrieval metadata, rejects duplicate source identities/content, and retains an exact compact source revision record in the package.",
       "assuranceLevel": "hard-gate",
       "implementation": [
         "scripts/check_oer.mjs",
         "scripts/lib/verbatim.mjs",
+        "scripts/lib/source_record.mjs",
         "scripts/prepare_source_corpus.mjs",
         "scripts/prepare_wikipedia_topic.mjs"
       ],
@@ -1141,6 +1396,25 @@
       "documentation": [
         "README.md"
       ]
+    },
+    {
+      "id": "claim.website.showcase",
+      "statement": "The Coursewerk website presents authentic local screenshots and a clearly labelled link to a published AI-generated demonstration, while stating that it was built from revision-bound Wikipedia pages and is not intended for classroom use.",
+      "assuranceLevel": "automated-check",
+      "implementation": [
+        "site/index.html",
+        "site/styles.css",
+        "site/assets/showcase-plate-tectonics-course.png",
+        "site/assets/showcase-plate-tectonics-study-guide.png",
+        "site/assets/showcase-plate-tectonics-slides.png"
+      ],
+      "tests": [
+        "tests/site.test.mjs"
+      ],
+      "documentation": [
+        "README.md",
+        "FEATURES.md"
+      ]
     }
   ],
   "knownFindings": [
@@ -1155,15 +1429,15 @@
       "id": "AUDIT-AUTHORSHIP-001",
       "severity": "P1",
       "status": "resolved",
-      "summary": "Public output and original assets can identify an AI agent instead of an accountable rights holder.",
-      "resolution": "Public foundations require a named non-AI author/rightsholder and self-generated/user-owned creators must match an accountable author."
+      "summary": "Public output and original assets can identify an AI agent or temporary placeholder instead of an accountable rights holder.",
+      "resolution": "Public foundations require a final named non-AI person/institution, explicit rights-holder status, and user confirmation; self-generated/user-owned creators must match an accountable author."
     },
     {
       "id": "AUDIT-CARRIER-EVIDENCE-001",
       "severity": "P1",
       "status": "resolved",
       "summary": "Static carrier shells report a misleading zero rendered-image accessibility count.",
-      "resolution": "Receipts now label source and static-shell inspections precisely and require a separate runtime visual review instead of claiming rendered coverage."
+      "resolution": "Receipts label source and static-shell inspections precisely; release requires an identified human browser/DOM attestation bound to current sources, local assets, and stable carrier fingerprints."
     },
     {
       "id": "AUDIT-CARRIER-PORTABILITY-001",
@@ -1185,6 +1459,13 @@
       "status": "resolved",
       "summary": "Runtime Mermaid/chart meaning can disappear offline without a visible alternative.",
       "resolution": "Public QA requires a substantive adjacent Visual description or Data summary for every Mermaid/chart block."
+    },
+    {
+      "id": "AUDIT-EVIDENCE-DUPLICATION-001",
+      "severity": "P3",
+      "status": "resolved",
+      "summary": "Identical authoritative rights pages are stored repeatedly for several sources.",
+      "resolution": "Rights capture content-address deduplicates identical evidence snapshots while preserving source-specific retrieval and preflight records."
     },
     {
       "id": "AUDIT-EVIDENCE-EXCERPT-001",
@@ -1222,6 +1503,13 @@
       "resolution": "Hashed local evidence snapshots and exact official legal-text hashes are required."
     },
     {
+      "id": "AUDIT-LITE-CRITIQUE-001",
+      "severity": "P0",
+      "status": "resolved",
+      "summary": "Light mode can omit independent examination of source/license facts and scientific key claims.",
+      "resolution": "Every completed package requires a structured, hash-bound focused critique; Light uses a separate context-reset same-model pass and Full uses cross-model review, with at least one traced key fact per public chapter."
+    },
+    {
       "id": "AUDIT-MEDIA-001",
       "severity": "P0",
       "status": "resolved",
@@ -1234,6 +1522,13 @@
       "status": "resolved",
       "summary": "A chapter can silently omit the real-photo expectation in Coursewerk authoring guidance.",
       "resolution": "Each chapter either includes a rights-cleared photo or records a substantive accountable not-used decision in MEDIA_PLAN.json."
+    },
+    {
+      "id": "AUDIT-MEDIA-RIGHTS-001",
+      "severity": "P0",
+      "status": "resolved",
+      "summary": "A verified external media item can rely on an unretained license claim.",
+      "resolution": "Public clearance requires an authoritative media description/license snapshot, hash, verification date, and structured retrieval/capture metadata; a capture helper creates the evidence."
     },
     {
       "id": "AUDIT-ORZ-001",
@@ -1271,11 +1566,18 @@
       "resolution": "Paths and usedIn are required, duplicates/orphans fail, and attribution is generated exactly."
     },
     {
+      "id": "AUDIT-QA-STAGE-001",
+      "severity": "P2",
+      "status": "resolved",
+      "summary": "An authoring-stage QA report can show zero critical issues while final source/review gates are deferred.",
+      "resolution": "Reports label authoring versus release runs explicitly and disclose deferred final gates; --for-discovery counts source, key-fact, visual, and coherence blockers."
+    },
+    {
       "id": "AUDIT-RAW-SOURCE-001",
       "severity": "P2",
       "status": "resolved",
       "summary": "Extracted source text is hashed but the raw source and retrieval context are not digest-bound.",
-      "resolution": "Automatic corpus entries include raw snapshot path/hash, canonical URL, retrieval timestamp, versioned extractor metadata, extracted-text hash, and an exact manifest hash in the release receipt."
+      "resolution": "Automatic corpus entries include raw snapshot path/hash/byte count, structured retrieval metadata, canonical URL, versioned extractor, extracted-text hash/word count, and an exact compact revision record retained in the package."
     },
     {
       "id": "AUDIT-READINESS-001",
@@ -1304,6 +1606,20 @@
       "status": "resolved",
       "summary": "Scaffold input can falsely satisfy source comparison.",
       "resolution": "SOURCE_CORPUS binds primary IDs to hashed text or explicit attestation; scaffold paths are rejected."
+    },
+    {
+      "id": "AUDIT-SOURCE-RECORD-001",
+      "severity": "P1",
+      "status": "resolved",
+      "summary": "Exact source revision metadata is available only outside the released package.",
+      "resolution": "Source preparation emits metadata/SOURCE_RECORD.json; QA requires an exact deterministic mirror and the release receipt hashes it."
+    },
+    {
+      "id": "AUDIT-WIKIPEDIA-DUPLICATE-001",
+      "severity": "P1",
+      "status": "resolved",
+      "summary": "Wikipedia redirects or aliases can be counted as distinct source pages.",
+      "resolution": "Preparation and public QA reject duplicate page IDs, revision IDs, and extracted-text hashes before authoring or release."
     }
   ],
   "componentPolicy": {
@@ -1419,6 +1735,7 @@
           "process-rights-preflight",
           "provenance",
           "visible-unknown-labels",
+          "key-fact-review",
           "coherence"
         ],
         "publication": "forbidden"
@@ -1430,6 +1747,7 @@
           "process-rights-preflight",
           "provenance",
           "privacy",
+          "key-fact-review",
           "coherence"
         ],
         "publication": "access-controlled-only"
@@ -1443,15 +1761,19 @@
           "canonical-license",
           "raw-source-evidence",
           "source-corpus",
+          "source-record",
           "provenance",
+          "media-rights-evidence",
           "generated-attribution",
           "no-remote-media",
           "privacy",
+          "key-fact-review",
           "diagram-text-alternatives",
           "accessibility-floor",
           "media-decision",
           "format-contracts",
           "carrier-builds",
+          "human-visual-review",
           "coherence",
           "release-receipt"
         ],

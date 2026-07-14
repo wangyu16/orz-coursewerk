@@ -49,5 +49,28 @@
     ,{ "from": "site/index.html", "to": ".github/workflows/pages.yml", "reason": "GitHub Pages deploys the static site artifact", "impact": "both" }
     ,{ "from": "site/index.html", "to": "site/styles.css", "reason": "website structure and visual system form one artifact", "impact": "both" }
     ,{ "from": "site/index.html", "to": "site/assets/orz.svg", "reason": "Coursewerk reuses the shared orz family mark", "impact": "both" }
+    ,{ "from": "site/index.html", "to": "site/assets/showcase-plate-tectonics-course.png", "reason": "published-demo overview screenshot must remain synchronized with its showcase copy", "impact": "both" }
+    ,{ "from": "site/index.html", "to": "site/assets/showcase-plate-tectonics-study-guide.png", "reason": "published-demo study-guide screenshot must remain synchronized with its showcase copy", "impact": "both" }
+    ,{ "from": "site/index.html", "to": "site/assets/showcase-plate-tectonics-slides.png", "reason": "published-demo slide screenshot must remain synchronized with its showcase copy", "impact": "both" }
+    ,{ "from": "scripts/lib/key_fact_review.mjs", "to": "scripts/bind_key_fact_review.mjs", "reason": "binding CLI materializes and validates the focused critique contract", "impact": "both" }
+    ,{ "from": "scripts/lib/key_fact_review.mjs", "to": "scripts/check_oer.mjs", "reason": "public release QA enforces the mode-appropriate focused critique", "impact": "both" }
+    ,{ "from": "scripts/lib/key_fact_review.mjs", "to": "scripts/check_assurance.mjs", "reason": "private and restricted completion enforce the focused critique", "impact": "both" }
+    ,{ "from": "scripts/lib/key_fact_review.mjs", "to": "templates/key-fact-review.example.json", "reason": "review template mirrors the enforced schema", "impact": "both" }
+    ,{ "from": "scripts/lib/key_fact_review.mjs", "to": "tests/qa.test.mjs", "reason": "review presence and stale bindings require regression evidence", "impact": "both" }
+    ,{ "from": "scripts/lib/key_fact_review.mjs", "to": "tests/reviews.test.mjs", "reason": "mode identity, chapter coverage, independence, and license bindings require focused tests", "impact": "both" }
+    ,{ "from": "scripts/lib/source_record.mjs", "to": "scripts/prepare_source_corpus.mjs", "reason": "generic source preparation emits the compact release record", "impact": "both" }
+    ,{ "from": "scripts/lib/source_record.mjs", "to": "scripts/prepare_wikipedia_topic.mjs", "reason": "Wikipedia collection emits the compact revision record", "impact": "both" }
+    ,{ "from": "scripts/lib/source_record.mjs", "to": "scripts/check_oer.mjs", "reason": "public QA requires an exact current source record", "impact": "both" }
+    ,{ "from": "scripts/lib/source_record.mjs", "to": "templates/source-record.example.json", "reason": "source-record template mirrors the generated public contract", "impact": "both" }
+    ,{ "from": "scripts/capture_media_evidence.mjs", "to": "scripts/lib/assurance.mjs", "reason": "media capture supplies the evidence fields enforced by assurance", "impact": "both" }
+    ,{ "from": "scripts/capture_media_evidence.mjs", "to": "templates/provenance.example.json", "reason": "provenance template documents retained media-rights evidence", "impact": "both" }
+    ,{ "from": "scripts/capture_media_evidence.mjs", "to": "tests/evidence-tools.test.mjs", "reason": "media evidence capture requires regression evidence", "impact": "both" }
+    ,{ "from": "scripts/lib/visual_review.mjs", "to": "scripts/attest_visual_review.mjs", "reason": "attestation CLI records carrier review fingerprints", "impact": "both" }
+    ,{ "from": "scripts/lib/visual_review.mjs", "to": "scripts/pack.mjs", "reason": "packing verifies rebuilt carriers against the human review", "impact": "both" }
+    ,{ "from": "scripts/lib/visual_review.mjs", "to": "templates/visual-review.example.json", "reason": "visual-review template mirrors the enforced schema", "impact": "both" }
+    ,{ "from": "scripts/lib/visual_review.mjs", "to": "tests/reviews.test.mjs", "reason": "source, asset, and carrier fingerprint bindings require focused tests", "impact": "both" }
+    ,{ "from": "scripts/build_carriers.mjs", "to": "scripts/lib/visual_review.mjs", "reason": "carrier receipts provide stable fingerprints and local-asset digests", "impact": "both" }
+    ,{ "from": "scripts/lib/coherence.mjs", "to": "scripts/lib/key_fact_review.mjs", "reason": "component impact propagates evidence and deliverable changes to focused review", "impact": "both" }
+    ,{ "from": "scripts/lib/coherence.mjs", "to": "scripts/lib/visual_review.mjs", "reason": "component impact propagates source and asset changes to visual review", "impact": "both" }
   ]
 }

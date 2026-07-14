@@ -18,9 +18,10 @@ the full consistency impact; a clean Git tree alone does not mean the package is
 
 **Mode matters** (set in §0.5 of `CLAUDE.md`):
 - **Full** — cross-critique each authoring stage with a second engine before moving on.
-- **Light** (single $20-tier engine) — **no cross-critique**; verify with the **QA gate**
-  (`scripts/check_oer.mjs`, which checks the Alembic contract + format contracts) + one quick
-  self-review; **build only ~3 chapters per session, checkpoint, and stop** to respect the
+- **Light** (single $20-tier engine) — no broad cross-model critique; verify mechanical requirements with the
+  QA gate and one quick self-review, but always run a separate same-model independent pass on accountable
+  identity, source/version, license evidence, external-media rights, attribution/output-license compatibility,
+  and scientific key facts. **Build only ~3 chapters per session, checkpoint, and stop** to respect the
   subscription's daily/5-hour limits (resume another day). Stop immediately on any rate-limit error.
 
 **Intended use matters independently of mode.** Before authoring, select `personal-private`,
@@ -49,6 +50,9 @@ warnings, and do not claim that publication has been cleared. For public authori
    current source record, evidence hash, and known-source policy before reading the supplied source. Automatic entries must bind the raw
    snapshot, raw hash, canonical URL, retrieval time, extractor metadata, extracted text, and text hash. The
    scaffold `inputs/README.md` never counts as source evidence.
+   Source preparation also writes `metadata/SOURCE_RECORD.json`, a compact exact mirror of the public revision,
+   retrieval, extractor, and digest facts that must ship with the package. Wikipedia preparation rejects two
+   declarations that resolve to the same page ID, revision ID, or extracted text.
 
 - Personal/restricted work lives under `personal/`, has no open output license, and is never packed for Alembic.
 - Public OER lives under `package/`; verify the exact source license from authoritative evidence before writing
@@ -97,6 +101,10 @@ and `skills/courseguide-standards` exactly):
    source textbook's own figures if its license permits) saved to `package/assets/` and recorded in structured
    `PROVENANCE.json` plus public `ATTRIBUTION.md`. Each `## H2` section may carry a stable block id
    `{{attrs[#blk-…]}}`. Follow `courseguide-standards`.
+   Every verified external media item marked cleared must also retain authoritative description/license-page
+   evidence. Run `npm run capture:media -- --root package --item-id <id> --operator-name <name>
+   --operator-type <automation|human> [--file <saved-description-page>]`; a URL and claimed license alone are
+   insufficient for release.
 3. `package/slides/<slug>.md` — the **slide deck source** in **orz-slides deck grammar** (follow
    `skills/orz-slides`): a `<!-- deck … -->` frontmatter block, slides separated by `<!-- slide -->`
    markers, `## H2` slide titles, layout splits (`2col`/`main-side`) for compare, `template=title`/`section`/
@@ -154,9 +162,9 @@ pedagogical soundness, coherence across the five deliverables, objective coverag
 script-detectable mechanical issues (format contracts, orz-syntax, links, attribution) — those are the QA
 gate's job. Then self-check against `courseguide-standards` and run an editorial pass for spelling, grammar,
 clarity, terminology, tone, and repetition. The editorial pass is agent review, not a deterministic QA claim.
-In **Light** mode, skip cross-critique —
-run `node scripts/check_oer.mjs --package package` after each chapter (or batch) and fix what it flags,
-plus one quick higher-level and editorial self-check. **Light-mode pacing:** after ~3 chapters, checkpoint
+In **Light** mode, skip broad cross-model critique — run `node scripts/check_oer.mjs --package package` after
+each chapter (or batch) and fix what it flags, plus one quick higher-level and editorial self-check. The final
+focused same-model key-fact/license critique in Stage 4 is still mandatory. **Light-mode pacing:** after ~3 chapters, checkpoint
 `.coursewerk/progress.md` and **stop** — tell the user which chapter to resume from next session. Stop
 at once if an engine returns a rate-limit/quota error.
 
@@ -167,6 +175,37 @@ Complete structured `package/metadata/PROVENANCE.json`, mirror cleared public en
 sits in a public folder. Perform a whole-package editorial and design-system pass: compare chapter outlines,
 heading hierarchy, objective wording, terminology, notation, semantic formatting, figure treatment, slide
 structure, assessment labels, and spelling/grammar. Resolve accidental drift before accepting the baseline.
+
+Complete the mode-independent release reviews before indexing the accepted baseline:
+
+1. Draft `package/metadata/KEY_FACT_REVIEW.json` from `templates/key-fact-review.example.json`. In Light mode,
+   make a fresh, context-separated same-model pass and use `mode: light` plus
+   `reviewKind: same-model-independent-pass`. In Full mode, use the different reviewer/model and record
+   `mode: full` plus `reviewKind: cross-model`. Examine every required check and trace representative
+   chapter-level scientific facts to declared source IDs and every listed use. Light mode must use a genuine
+   context reset/fresh review pass and record matching exact author/reviewer model IDs; Full must record different
+   exact model IDs. Describe that separation; every declared chapter needs at least one key fact traced to its
+   study guide. Then bind and validate it:
+
+   ```bash
+   npm run bind:key-fact-review -- --root package
+   ```
+
+   Do not pre-fill “passed” mechanically; the review notes are evidence of an actual critique. Any later change
+   to foundation, provenance, source record, or a teaching deliverable makes the binding stale.
+2. Build all carriers with a receipt, open every carrier in a browser, inspect visible rendering and DOM behavior
+   including runtime diagrams, local images, layout, interaction, overflow, and readable alternatives, then let
+   the identified human record the attestation:
+
+   ```bash
+   node scripts/build_carriers.mjs --root package --out preview --receipt reports/carriers.json
+   npm run attest:visual-review -- --root package --receipt reports/carriers.json \
+     --reviewer "<human name>" --reviewed-at YYYY-MM-DD \
+     --attestation "<what was inspected and confirmed>"
+   ```
+
+   The record binds source and local-asset hashes plus a stable carrier fingerprint. Never have an agent invent
+   the human name or attestation. Rebuild/review after a meaningful source, asset, or carrier change.
 
 After the first complete cross-deliverable coherence pass, initialize the component graph:
 
@@ -181,14 +220,20 @@ commit. User commits remain welcome, but do not replace the attested refresh. A 
 release-blocking.
 
 ## Stage 5 — QA gate (mandatory, automated)
+For personal/restricted teaching materials, complete the same mode-appropriate key-fact critique under
+`personal/`, bind it, accept the component-index refresh, and run
+`node scripts/check_assurance.mjs --root personal --phase release`. This is a teaching-material completion gate,
+not permission to publish; future-publication blockers remain visible.
+
 Run `node scripts/check_oer.mjs --package package --inputs inputs --for-discovery --report reports/qa_report.md`. It checks:
 **(A) the Alembic contract** — manifest valid, LICENSE present, every folder/file recognized, each declared
 chapter's `study-guide/<slug>.md` present, no carriers or stray root files, renderable objects public — so
 you know it will **upload with zero friction**; **(B) OER quality** — attribution completeness,
 link/asset-path integrity, orz-syntax, the defined accessibility floor, leftover placeholders, format contracts; and
-**(C) copyright** — the `--inputs` flag runs a **near-verbatim scan** against the source materials, flagging
+**(C) copyright and high-risk factual assurance** — the `--inputs` flag runs a **near-verbatim scan** against the source materials, flagging
 prose copied too closely (rewrite it originally). **Fix every critical issue** and **re-run until
-`criticalTotal == 0`**. Also confirm the carriers build cleanly: `node scripts/build_carriers.mjs` should
+`criticalTotal == 0`**. It also requires the current compact source record, mode-appropriate key-fact critique,
+accountable final author identity, media-rights receipts, and human visual-review record. Also confirm the carriers build cleanly: `node scripts/build_carriers.mjs` should
 report `failed: 0` (proves each lean source reassembles into a valid framework document). The report's
 **Discoverability** bar is enforced for public OER: incompatible licensing, incomplete provenance/attribution,
 a missing source scan, or near-verbatim spans are release-blocking. Flag any non-auto-fixable issue in `reports/qa_report.md`
@@ -206,7 +251,7 @@ check was not run, say so. For a **no-intervention test run**, this report — p
 counts from `.coursewerk/progress.md` — is the deliverable evidence of how the harness performed.
 
 ## Stage 7 — Pack + deliver
-For public OER only, run `node scripts/pack.mjs --package package --out dist` to produce the **lean upload zip** in `dist/`
+For public OER only, run `node scripts/pack.mjs --package package --out dist --inputs inputs` to produce the **lean upload zip** in `dist/`
 (`alembic.json` at the archive root; framework carriers excluded — Alembic rebuilds them). Write
 `reports/delivery.md` ('# Delivery'): what was produced, the evaluation summary (Stage 6), and the
 explicit list of items still needing the user (open `[VERIFY]`, license/DOI to confirm, cosmetic layout
@@ -215,8 +260,10 @@ where it becomes an editable course they preview and publish — Alembic reassem
 the permalinks, and creates the paired public/private repositories. Every file remains theirs to edit.
 **Do not push or publish** — the user does that.
 
-`pack.mjs` reruns QA and the assurance kernel and refuses private/restricted profiles or any unresolved
-publication blocker. Never manually zip `personal/` as an Alembic package.
+`pack.mjs` reruns QA, rebuilds carriers, verifies them against the human review, and refuses private/restricted
+profiles or any unresolved publication blocker. The release receipt hashes the source record, key-fact review,
+visual review, accepted Git head, exact carrier receipt, and archive. Never manually zip `personal/` as an
+Alembic package.
 
 > **One heads-up to include in `reports/delivery.md`:** a *trial* import in Alembic is text-only, so
 > **raster** assets (`.png`/`.jpg`/`.pdf`) are skipped on import and re-added after the package is published;

@@ -1,6 +1,6 @@
 {
   "name": "orz-coursewerk",
-  "version": "0.10.1",
+  "version": "0.11.0",
   "private": true,
   "type": "module",
   "description": "Agent-native harness that builds a complete, Alembic-ready OER course package from source materials, natively using the orz-markdown family (orz-mdhtml / orz-slides / orz-paged).",
@@ -15,6 +15,10 @@
     "prepare:source": "node scripts/prepare_source_corpus.mjs",
     "prepare:wikipedia-topic": "node scripts/prepare_wikipedia_topic.mjs",
     "capture:rights": "node scripts/capture_rights_evidence.mjs",
+    "capture:media": "node scripts/capture_media_evidence.mjs",
+    "bind:key-fact-review": "node scripts/bind_key_fact_review.mjs",
+    "attest:visual-review": "node scripts/attest_visual_review.mjs",
+    "generate:source-record": "node scripts/generate_source_record.mjs --root package --inputs inputs",
     "init:output-git": "node scripts/init_output_git.mjs --root package",
     "index:components": "node scripts/index_components.mjs --root package --initialize",
     "revision:impact": "node scripts/revision_impact.mjs --root package",

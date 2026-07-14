@@ -35,6 +35,8 @@ test("carrier builder produces mdhtml, slides, and declared paged documents", ()
   assert.equal("renderedAccessibility" in receipt.results[0], false);
   assert.match(receipt.results[0].staticCarrierInspection.note, /Static shell only/);
   assert.equal(typeof receipt.results[0].portability.singleFile, "boolean");
+  assert.equal(receipt.results[0].reviewFingerprint.normalization, "coursewerk-carrier-v1");
+  assert.match(receipt.results[0].reviewFingerprint.value, /^[a-f0-9]{64}$/);
   assert.ok(fs.existsSync(path.join(f.out, "study-guide", "ch.md.html")));
   assert.ok(fs.existsSync(path.join(f.out, "slides", "ch.slides.html")));
   assert.ok(fs.existsSync(path.join(f.out, "private", "exams", "midterm.paged.html")));

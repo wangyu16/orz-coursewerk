@@ -6,6 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { auditAssurance } from "./lib/assurance.mjs";
 import { auditCoherence } from "./lib/coherence.mjs";
+import { auditKeyFactReview } from "./lib/key_fact_review.mjs";
 
 const args = process.argv.slice(2);
 const opt = (n, d = null) => {
@@ -28,16 +29,19 @@ if (fs.existsSync(manifestFile)) {
 const result = auditAssurance({ root, manifest });
 const shouldAuditCoherence = phase === "release" || fs.existsSync(path.join(root, "metadata", "COMPONENT_INDEX.json"));
 const coherence = shouldAuditCoherence ? auditCoherence(root) : { hardFailures: [], skipped: true };
+const keyFactReview = phase === "release"
+  ? auditKeyFactReview(root, result.foundation)
+  : { ready: true, failures: [], skipped: true };
 const phaseFailures = phase === "pre-ingestion"
   ? result.ingestionFailures
   : phase === "authoring"
     ? [...new Set([...result.ingestionFailures, ...result.privateFailures])]
-    : result.hardFailures;
+    : [...new Set([...result.hardFailures, ...keyFactReview.failures])];
 const coherenceFailures = phase === "pre-ingestion" ? [] : coherence.hardFailures;
 const phaseReady = phaseFailures.length === 0 && coherenceFailures.length === 0;
 if (json) {
   fs.mkdirSync(path.dirname(path.resolve(json)), { recursive: true });
-  fs.writeFileSync(json, JSON.stringify({ phase, phaseReady, phaseFailures, assurance: result, coherence }, null, 2));
+  fs.writeFileSync(json, JSON.stringify({ phase, phaseReady, phaseFailures, assurance: result, coherence, keyFactReview }, null, 2));
 }
 if (report) {
   const lines = [
@@ -58,6 +62,7 @@ if (report) {
     ...(phase === "release" ? [
       `Future-publication blockers: **${result.publicationBlockers.length}**`,
       `Public packaging permitted: **${result.canPack ? "yes" : "no"}**`,
+      `Key-fact critique ready: **${keyFactReview.ready ? "yes" : "no"}**`,
     ] : []),
     "",
     "## Failures",
@@ -70,6 +75,8 @@ if (report) {
     "",
     "## Component coherence",
     ...coherence.hardFailures.map((x) => `- ${x}`),
+    "",
+    ...(phase === "release" ? ["## Key-fact critique", ...keyFactReview.failures.map((x) => `- ${x}`)] : []),
     "",
   ];
   fs.mkdirSync(path.dirname(path.resolve(report)), { recursive: true });
@@ -93,6 +100,7 @@ console.log(JSON.stringify({
   ...(phase === "release" ? {
     publicUseReady: result.ingestionReady && result.canPack && coherenceFailures.length === 0,
     publicationBlockers: result.publicationBlockers.length,
+    keyFactReviewFailures: keyFactReview.failures.length,
   } : {}),
 }, null, 2));
 process.exit(phaseReady ? 0 : 1);

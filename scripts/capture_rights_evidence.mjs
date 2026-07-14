@@ -82,15 +82,24 @@ if (inputFile) {
 
 const safeId = sourceId.replace(/[^a-z0-9._-]+/gi, "-");
 const extension = /html/i.test(retrieval.contentType || "") ? "html" : "txt";
-const rel = `metadata/evidence/${safeId}.${extension}`;
+const digest = crypto.createHash("sha256").update(bytes).digest("hex");
+const evidenceDir = path.join(root, "metadata", "evidence");
+fs.mkdirSync(evidenceDir, { recursive: true });
+const shared = fs.readdirSync(evidenceDir, { withFileTypes: true })
+  .filter((entry) => entry.isFile())
+  .map((entry) => path.join(evidenceDir, entry.name))
+  .find((file) => crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex") === digest);
+const rel = shared
+  ? path.relative(root, shared).replaceAll(path.sep, "/")
+  : `metadata/evidence/${safeId}.${extension}`;
 const out = path.join(root, rel);
 fs.mkdirSync(path.dirname(out), { recursive: true });
-fs.writeFileSync(out, bytes);
+if (!shared) fs.writeFileSync(out, bytes);
 
 const operator = { type: operatorType, name: operatorName };
 const evaluation = evaluatePreIngestionEvidence(source, bytes, capturedAt);
 source.rightsBasis.evidenceSnapshot = rel;
-source.rightsBasis.evidenceSha256 = crypto.createHash("sha256").update(bytes).digest("hex");
+source.rightsBasis.evidenceSha256 = digest;
 source.rightsBasis.evidenceRetrieval = retrieval;
 source.rightsBasis.evidenceCapture = {
   operator,
