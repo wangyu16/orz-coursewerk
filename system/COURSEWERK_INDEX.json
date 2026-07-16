@@ -101,7 +101,7 @@
       "id": "repo:docs/semantic-index-interfaces.md",
       "path": "docs/semantic-index-interfaces.md",
       "type": "documentation",
-      "hash": "f2920c21ebe3254e79bbc81e23a2cb53b680011655cfde989b2b20ce6ab64057"
+      "hash": "e761320054e21c05a8038832bdf5e14bf9bfd158c26ffff17faf3edca3f1221d"
     },
     {
       "id": "repo:docs/semantic-index-spec.md",
@@ -308,16 +308,34 @@
       "hash": "f88886e1a66b999ec72bacc1dd6c0e2f2f5df4a683eb6c4fc41df5b2f9ea6c77"
     },
     {
+      "id": "repo:scripts/lib/consistency.mjs",
+      "path": "scripts/lib/consistency.mjs",
+      "type": "kernel",
+      "hash": "02935dc21c638ca9befc07c87bb8f45cd5de22f9241a9f2624af3e311633233e"
+    },
+    {
       "id": "repo:scripts/lib/contract.mjs",
       "path": "scripts/lib/contract.mjs",
       "type": "kernel",
       "hash": "accc3cd10c90a63a34eb9fa8dbd3463edc39cbbb110f25a3597541cc3f9b4968"
     },
     {
+      "id": "repo:scripts/lib/escalation.mjs",
+      "path": "scripts/lib/escalation.mjs",
+      "type": "kernel",
+      "hash": "37274e7aa29db1bcddf5e80b73eba57d6e30e9064339f36698b6d00442d31d8a"
+    },
+    {
+      "id": "repo:scripts/lib/fingerprint.mjs",
+      "path": "scripts/lib/fingerprint.mjs",
+      "type": "kernel",
+      "hash": "8fbaffaf8c3c0099174d48123ae15fe1cc9ac2404e9ae55b0184e392bbd2a17d"
+    },
+    {
       "id": "repo:scripts/lib/immutable.mjs",
       "path": "scripts/lib/immutable.mjs",
       "type": "kernel",
-      "hash": "16c3c61314341c09cab6a59b9d46fdcaf752f8bb757258f0d5b81d3adfc8ee78"
+      "hash": "f88b03fc038dd52ee279ba8117b80f4b2bfd82aefa7a8ee197aaed8f7a0baa7e"
     },
     {
       "id": "repo:scripts/lib/key_fact_review.mjs",
@@ -335,7 +353,7 @@
       "id": "repo:scripts/lib/overrides.mjs",
       "path": "scripts/lib/overrides.mjs",
       "type": "kernel",
-      "hash": "4a5c3ab956029ffddfdd448002c17d78842448209c092531c2e3b0ec0bb89dd5"
+      "hash": "e1e3d8f4391e271d9d998c3df67cccd2dac14d736279a846fec094fd68b17d65"
     },
     {
       "id": "repo:scripts/lib/pre_ingestion.mjs",
@@ -680,16 +698,34 @@
       "hash": "216d424096bc52751f3eee604afc043121d8c20faf8cf71bc8213f793f8bb9cd"
     },
     {
+      "id": "repo:tests/consistency.test.mjs",
+      "path": "tests/consistency.test.mjs",
+      "type": "test",
+      "hash": "397deda358a263834511fa0cb13af81665be0fb64b0a334fbef5bf2285eec465"
+    },
+    {
       "id": "repo:tests/contract.test.mjs",
       "path": "tests/contract.test.mjs",
       "type": "test",
       "hash": "4b0bd12d91496334aeb0da77c4649b006fe870095f557658e0687867639d1f06"
     },
     {
+      "id": "repo:tests/escalation.test.mjs",
+      "path": "tests/escalation.test.mjs",
+      "type": "test",
+      "hash": "02c5f1a24b9c9224b3e590bbc3a8ece6136e7e83eba254b5199b7ad7ec447b0a"
+    },
+    {
       "id": "repo:tests/evidence-tools.test.mjs",
       "path": "tests/evidence-tools.test.mjs",
       "type": "test",
       "hash": "3a3bce8ade7e96ebdb0cab3344abafe4abf90268396770ade8fded19a62e4593"
+    },
+    {
+      "id": "repo:tests/fingerprint.test.mjs",
+      "path": "tests/fingerprint.test.mjs",
+      "type": "test",
+      "hash": "46e82364edccf60886e10c3219f7adf30e154cadfd964ea0448f671cc9a7d9f2"
     },
     {
       "id": "repo:tests/fixtures/mini-package/assessment-support/phase-change.md",
@@ -731,13 +767,13 @@
       "id": "repo:tests/immutable.test.mjs",
       "path": "tests/immutable.test.mjs",
       "type": "test",
-      "hash": "0e1e81a73906de462b08e095c33ecd0cfa1a8bc08d31438d1cb0800f1b3776be"
+      "hash": "ea9ab653038e9da5b2f31a1eb69e9dce44d7410739a03f65e1afc1fd6d428e06"
     },
     {
       "id": "repo:tests/overrides.test.mjs",
       "path": "tests/overrides.test.mjs",
       "type": "test",
-      "hash": "8ac4c09b05b7ba7aa7c78b302bfeb9b5036d7ca7ddc6dd0c28c735bc8fb8634d"
+      "hash": "922281b84c68345a73e22fb9ad45ec19053a7b3879c0ea2d8b836b89bc79230b"
     },
     {
       "id": "repo:tests/qa.test.mjs",
@@ -756,6 +792,12 @@
       "path": "tests/site.test.mjs",
       "type": "test",
       "hash": "b1b58a8088d517b779723e76be14dfc9cc6b3dbc8047c3e4fc7949a23c03d2de"
+    },
+    {
+      "id": "repo:tests/source-hygiene.test.mjs",
+      "path": "tests/source-hygiene.test.mjs",
+      "type": "test",
+      "hash": "4495456f2107bb45b67b79399ee0c7e3a68a0f01c21676f92e1a8d7330521904"
     },
     {
       "id": "repo:tests/system-index.test.mjs",

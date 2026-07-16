@@ -1,21 +1,74 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "metadata/REVIEW_QUEUE.json — the escalation artifact (the recovery step)",
+  "title": "metadata/REVIEW_QUEUE.json \u2014 the escalation artifact (the recovery step)",
   "type": "object",
-  "required": ["schemaVersion", "items", "burden"],
+  "required": [
+    "schemaVersion",
+    "items",
+    "burden"
+  ],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": {
+      "const": 1
+    },
     "items": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["kind", "severity", "evidence"],
+        "required": [
+          "kind",
+          "severity",
+          "evidence"
+        ],
         "properties": {
-          "kind": { "enum": ["suspected-error", "source-conflict", "internal-inconsistency", "sanity-check", "orphan-claim", "misconception-asserted", "term-proposal", "derived-diff", "upstream-drift"] },
-          "claimId": { "type": "string" },
-          "severity": { "enum": ["blocking", "review", "info"] },
-          "evidence": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "why this is flagged — source says X, others say Y, check failed" },
-          "proposal": { "type": "string", "description": "for term-proposal: the suggested concept-map placement (placement, not yes/no)" }
+          "kind": {
+            "enum": [
+              "suspected-error",
+              "source-conflict",
+              "internal-inconsistency",
+              "sanity-check",
+              "orphan-claim",
+              "misconception-asserted",
+              "term-proposal",
+              "derived-diff",
+              "upstream-drift"
+            ]
+          },
+          "claimIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^claim\\."
+            },
+            "description": "ALL claims this finding is about. A value-disagreement is inherently BETWEEN 2+ claims \u2014 a single claimId could not express it, and the other participants would survive only as prose that nothing downstream can index (a 'show me every flag touching claim X' query would miss them). Single-claim findings carry one element. Sorted; claimIds[0] is the primary handle for display/ordering."
+          },
+          "detectorKinds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "description": "Sorted, deduped DETECTOR kinds that produced this item (e.g. value-disagreement, definition-drift). `kind` above is the DECISION the human is asked, and is part of the dedupe key so that one decision = one item; this field preserves WHAT WAS OBSERVED, which that fold would otherwise destroy (interfaces §5c). Unioned on merge; NOT in the dedupe key. This is what lets S-F report detection recall PER LAYER."
+          },
+          "severity": {
+            "enum": [
+              "blocking",
+              "review",
+              "info"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "description": "why this is flagged \u2014 source says X, others say Y, check failed"
+          },
+          "proposal": {
+            "type": "string",
+            "description": "for term-proposal: the suggested concept-map placement (placement, not yes/no)"
+          }
         },
         "additionalProperties": false
       }
@@ -23,10 +76,20 @@
     "burden": {
       "type": "object",
       "description": "alarm-fatigue is measured, not assumed",
-      "required": ["flagCount", "artifactCount"],
+      "required": [
+        "flagCount",
+        "artifactCount"
+      ],
       "properties": {
-        "flagCount": { "type": "integer" }, "artifactCount": { "type": "integer" },
-        "flagsPerArtifact": { "type": "number" }
+        "flagCount": {
+          "type": "integer"
+        },
+        "artifactCount": {
+          "type": "integer"
+        },
+        "flagsPerArtifact": {
+          "type": "number"
+        }
       },
       "additionalProperties": false
     }

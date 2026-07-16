@@ -1,43 +1,145 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "metadata/CLAIMS.json — claim/assertion nodes (granularity fix; additive to COMPONENT_INDEX.json)",
+  "title": "metadata/CLAIMS.json \u2014 claim/assertion nodes (granularity fix; additive to COMPONENT_INDEX.json)",
   "type": "object",
-  "required": ["schemaVersion", "claims"],
+  "required": [
+    "schemaVersion",
+    "claims"
+  ],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": {
+      "const": 1
+    },
     "claims": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "type", "fingerprints", "locations", "provenanceDeclared"],
+        "required": [
+          "id",
+          "type",
+          "fingerprints",
+          "locations",
+          "provenanceDeclared",
+          "text",
+          "scope"
+        ],
         "properties": {
-          "id": { "type": "string", "pattern": "^claim\\." },
-          "type": { "enum": ["fact", "objective", "answer-key", "definition", "derived", "procedure"] },
+          "id": {
+            "type": "string",
+            "pattern": "^claim\\."
+          },
+          "type": {
+            "enum": [
+              "fact",
+              "objective",
+              "answer-key",
+              "definition",
+              "derived",
+              "procedure"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "description": "The claim's asserted prose \u2014 the input to the `content` fingerprint. REQUIRED in practice: without it a schema-valid claim carries no content to fingerprint."
+          },
+          "scope": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The chapter scope this claim's terms resolve in; null = package-wide. DERIVED ONCE, BY M2, AND STORED \u2014 consumers (M3, M6, \u2026) MUST read this field and MUST NOT re-derive it. Rationale: scope selects which term an ambiguous label resolves to, so two modules deriving it two ways (M6 from spineRefs, M3 from locations[0].file) would silently disagree about what a claim is ABOUT \u2014 the exact defect class this index exists to catch. Frozen derivation (interfaces \u00a74): first spineRefs entry matching ^(concept|objective)\\.(?<scope>[^.]+)\\. wins; else locations[0].file mapped via the concept-map file convention; else null."
+          },
           "fingerprints": {
             "type": "object",
-            "required": ["format", "label", "content", "spine", "provenance"],
+            "required": [
+              "format",
+              "label",
+              "content",
+              "spine",
+              "provenance"
+            ],
             "properties": {
-              "format": { "type": "string" }, "label": { "type": "string" },
-              "content": { "type": "string" }, "spine": { "type": "string" },
-              "provenance": { "type": "string" }
+              "format": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              },
+              "spine": {
+                "type": "string"
+              },
+              "provenance": {
+                "type": "string"
+              }
             },
             "additionalProperties": false
           },
-          "spineRefs": { "type": "array", "items": { "type": "string" } },
-          "sourceRefs": { "type": "array", "items": { "type": "string" } },
-          "termRefs": { "type": "array", "items": { "type": "string" } },
-          "derivedFrom": { "type": "array", "items": { "type": "string" } },
-          "locations": {
-            "type": "array", "minItems": 1,
+          "spineRefs": {
+            "type": "array",
             "items": {
-              "type": "object", "required": ["file"],
-              "properties": { "file": { "type": "string" }, "anchor": { "type": "string" } },
+              "type": "string"
+            }
+          },
+          "sourceRefs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "termRefs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "derivedFrom": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "locations": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": [
+                "file"
+              ],
+              "properties": {
+                "file": {
+                  "type": "string"
+                },
+                "anchor": {
+                  "type": "string"
+                }
+              },
               "additionalProperties": false
             }
           },
-          "immutable": { "type": "boolean", "default": false },
-          "provenanceDeclared": { "type": "boolean", "description": "true = declared by the generator per contract; false = found by the deterministic scan backstop (indexed + WARN, never hard-fail)" },
-          "status": { "enum": ["active", "overridden", "deprecated"], "default": "active" }
+          "immutable": {
+            "type": "boolean",
+            "default": false
+          },
+          "provenanceDeclared": {
+            "type": "boolean",
+            "description": "true = declared by the generator per contract; false = found by the deterministic scan backstop (indexed + WARN, never hard-fail)"
+          },
+          "overrideId": {
+            "type": "string",
+            "description": "Id of the OVERRIDES.json entry authorizing this claim's divergence, if any. The `provenance` fingerprint hashes sourceRefs + this. (status:'overridden' is a flag, not an id.)"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "overridden",
+              "deprecated"
+            ],
+            "default": "active"
+          }
         },
         "additionalProperties": false
       }
