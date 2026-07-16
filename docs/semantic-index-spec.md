@@ -268,5 +268,22 @@ Each slice: code + tests green + a commit on `feat/semantic-index`. **No push** 
      a recorded decision. (M7 override-manager implements the ask-once lifecycle: propose -> confirm/source ->
      recorded -> silent thereafter; M9 propagation and the decoupled reviewer both consult OVERRIDES before
      challenging.)
-3. **Terms not in the concept map** — auto-propose additions to TERMS for instructor approval, or ignore?
+3. **Terms not in the concept map — DECIDED (2026-07-16): the CONCEPT MAP is the living, single source of
+   truth; off-map terms are proposed INTO IT, never into a side authority.**
+   The concept map is built by the instructor WITH the agent's help and UPDATES along the road. Flow:
+   (a) generation-time: an unknown domain term is auto-registered as `status:"candidate"` — immediately usable
+   by fingerprints and the consistency scan (detection from day one) but marked not-instructor-authorized;
+   (b) resolution = a PROPOSED CONCEPT-MAP REVISION, batched at existing review gates: the agent DISCUSSES
+   placement with the instructor ("9 supporting terms; 7 as terms under existing concepts, 2 possibly new
+   sub-concepts — approve/re-place/reject?") — placement, not yes/no;
+   (c) approved -> the CONCEPT MAP is revised -> `TERMS.json` is REGENERATED FROM the map (TERMS is always a
+   derived artifact, never a second authority — no drift possible);
+   (d) rejected -> the term AND the claims using it are flagged (scope creep or error, surfaced).
+   Detector status-split stands: orphan-claim analysis trusts only confirmed (in-map) links; the consistency
+   scan works on both; the "candidate accumulating claims across artifacts" tripwire flags a possible NEW
+   CONCEPT (a spine change through the spine's own gate — the registry is not a side door into pedagogy).
+   **Spine-change subtypes (required consequence):** ADDITIVE ENRICHMENT (add term/alias under an existing
+   concept) = registry regeneration only, NO propagation cascade; STRUCTURAL change (add/remove/move a
+   concept/objective) = the full RECHECK/REGENERATE path from the change taxonomy. Registering supporting
+   vocabulary must never RECHECK the whole package.
 4. **Override authority** — does an override require a cited `justifiedBy`, or is instructor assertion enough?
