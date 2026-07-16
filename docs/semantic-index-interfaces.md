@@ -130,7 +130,20 @@ export function extractClaims(root, terms)     // -> CLAIMS (declared-first + de
 export function matchClaims(oldClaims, newClaims) // -> {matched, added, removed, split, merged}  (§4)
 
 // M5 lib/coherence.mjs  (EXTEND — additive, backward compatible)
-export function claimImpact(root, oldClaims, newClaims, terms) // -> {affected:[claimId], actions:[], silentRisk:[], cycles:[]}
+export function claimImpact(root, oldClaims, newClaims, terms, ctx)
+  // -> {affected:[claimId], actions:[], silentRisk:[], cycles:[]}
+  // [AMENDED 2026-07-16 — M5 implementation exposed two gaps]
+  // `ctx` ADDED (optional, additive — breaks no caller). Without it M5 must pass M4 no context, so
+  // EVERY `content` move classifies ESCALATE and every `spine` move structural RECHECK. Safe
+  // direction, but `actions` is then systematically more alarming than the package deserves — and
+  // **§10 decision 2's ask-once rule cannot be honoured from this seam at all**: M7 owns `authorized`
+  // and M5 had no parameter to receive it. Alarm fatigue is the failure M10 exists to prevent,
+  // arriving one module earlier. M5 must NOT read OVERRIDES itself — that derives authorization in a
+  // second place (§5d); M7 owns it and the caller passes it down.
+  // `root` is VESTIGIAL: this layer needs no I/O and never did. Kept only for signature stability.
+  // It is §5c's worst instance in a mirror — there a parameter made a check that COULDN'T run look
+  // implemented; here it makes a pure function look file-dependent, holding a door open for the next
+  // author to walk through. Do not "use it since it's there".
 
 // M6 lib/consistency.mjs
 export function scanConsistency(claims, terms) // -> [{kind:"value-disagreement"|"definition-drift", claimIds, evidence}]
@@ -170,7 +183,60 @@ export function buildQueue(findings, claims)   // -> REVIEW_QUEUE (schema) incl.
   // an unknown kind into a generic bucket would hide it — the same defect as trapping it in prose.
 
 // M12 lib/contract.mjs (EXTEND)
-export function declaredProvenance(fileText)   // -> [{type, spineRefs, sourceRefs, anchor}] from front-matter/sidecar
+export function declaredProvenanceReport(fileText)
+  // -> {declarations:[{type, spineRefs, sourceRefs, termRefs, derivedFrom, anchor}],
+  //     refusals:[{index, reason}]}
+  // `index` is the entry's DOCUMENT POSITION, and **`index: null` means the document ITSELF** —
+  // not-JSON, or no `claims` list. Frozen per M12: §3 named the field without saying what it is when
+  // there IS no entry, and dropping document-level failures would have re-opened the very silence
+  // this channel closes, one level up (YAML front matter; a broken sidecar). `null` is an answer, and
+  // it is the same discipline as `scope: null` — consumers branch on presence, never truthiness.
+  //
+  // **M11 MUST CALL `artifactDeclarationReport`, NOT THIS.** [M12, accepted] A refusal requires
+  // knowing somebody INTENDED to declare, and intent is not always in the text: a `---` fence is
+  // intent and is visible here, but a SIDECAR's intent is *the file existing*, which only the caller
+  // can see. So `{ not json` in a sidecar is indistinguishable from a paragraph from inside this
+  // one-arg signature, and refusing on every un-declared artifact is not an option — a warning that
+  // fires on the whole package is one nobody reads, which is alarm fatigue wearing a gate's badge.
+  // `artifactDeclarationReport` knows its carrier, so it knows intent, AND it is the only function
+  // that applies precedence — a gate reporting refusals from a front matter that LOST to a sidecar
+  // would tell an author to fix a file the index never reads.
+  // [ADDED 2026-07-16 — M12 exposed the dangling anchor's TWIN: a REFUSED declaration is silent]
+  // `declaredProvenance` returns SURVIVORS, so a refusal is reported by ABSENCE — and an absence is
+  // indistinguishable from "never declared". The author writes a high-stakes declaration, gets one
+  // field wrong, the block falls to the scan, and the WARN they receive names the WRONG PROBLEM
+  // ("you did not declare this") for an author who did. The refusal is correct; its SILENCE is the
+  // defect. This is the same shape as the dangling anchor (§5b) and as every "looks implemented,
+  // isn't" defect this project has found. ONE parse: `declaredProvenance` is a PROJECTION of this.
+  // M11 reports `refusals` beside "every declared anchor resolves" — the same question, one step
+  // earlier.
+
+export function declaredProvenance(fileText)
+  // -> [{type, spineRefs, sourceRefs, termRefs, derivedFrom, anchor}]  — survivors projection of the above
+  // [AMENDED 2026-07-16 — M5 found `derivedFrom` HAD NO PRODUCER]
+  // `derivedFrom` ADDED for the same reason as `termRefs`. It was defined in claims.schema.json and
+  // designed in spec §2.2, and §3 makes it the PRIMARY edge `claimImpact` traverses — but it existed
+  // in exactly those places plus M5's consumer and M5's hand-built test fixtures. **NO PACKAGE IN
+  // EXISTENCE COULD CARRY ONE.** So the strongest edge in the graph was dead, and looked implemented.
+  // §5c in its most expensive costume yet: not a producer carrying more structure than the field can
+  // hold, but **a field with NO PRODUCER AT ALL, sitting in a consumer's contract.**
+  // It is DECLARED-ONLY and must never be inferred: derivation is an AUTHORED assertion. Inferring it
+  // from prose, anchor adjacency, or "the answer key sits under the question" would fabricate an
+  // authored dependency — the §1 no-guessed-spineRef rule wearing a third hat. A guess here is worse
+  // than co-mention, which reaches the same claim while honestly saying WHY (`via: ["shared-term"]`).
+  // [AMENDED 2026-07-16 — M2 exposed two gaps]
+  // `termRefs` ADDED: a declaration that cannot name its terms forces the consumer to re-resolve
+  // them, which is §5d (the fact would be derived twice and could disagree).
+  // `text` deliberately NOT added: the prose lives in the file at `locations[].offset`, and storing
+  // it a second time in the declaration is a licence for the two to disagree — M2 tried exactly that
+  // tolerance and removed it, because a quotation could sit at the offset while the declared text
+  // looked rewritable, i.e. the failure `offset` exists to prevent, delivered by the field meant to
+  // prevent it. One fact, one home.
+  // M2 MUST CONSUME THIS rather than parse declarations itself — otherwise the declaration grammar
+  // is implemented twice (§5d again, and the unit table is the cautionary tale).
+  // A DANGLING declared anchor (names a location that does not exist) is M11's to flag, beside
+  // §5b's "spineRef target exists" — silently yielding no claim is the fabrication-adjacent failure:
+  // the declaration LOOKS honoured and nothing was indexed.
 ```
 
 ---
@@ -241,6 +307,9 @@ purpose, under two names — and a comment must say why, or someone will dutiful
 |---|---|---|
 | **spineRef target exists** (`[concept.crispr.5]` parses fine whether or not concept 5 exists) | **M11 gate** (may share code with M5 orphan analysis) | M1 has only the term side; validating term→spine needs BOTH node sets. **A typo'd bracket becomes a dangling link that LOOKS authorized** — the same fabrication risk the absent-spineRef rule exists to prevent, wearing a badge. Dangling spineRef ⇒ flag. |
 | **claim.spineRefs target exists** | **M11 gate** | same reason; orphan analysis must distinguish "no parent" from "parent that doesn't exist". |
+| **declared anchor resolves** (a declaration naming a block that doesn't exist) | **M11 gate** | M12 parses the declaration but cannot see the artifact's blocks; M2 mints them. Silently yielding no claim means the declaration LOOKS honoured and nothing was indexed. **M2 must EXPORT its anchor set** — if M11 re-derives it, that is two block parsers answering "does this anchor exist" (§5d). |
+| **declaration refusals** (`declaredProvenanceReport().refusals`) | **M11 gate** | M12 refuses correctly but reports by absence; only the gate can tell the author "your declaration was malformed" instead of "you didn't declare". |
+| **`derivedFrom` target exists** | **M11 gate** | M5 correctly mints no edge for a dangling ref (inventing a ghost node would be worse), so the dependency the author asserted vanishes SILENTLY. Same family as the three rows above: it looks honoured and isn't. |
 
 ## 5c. A recurring defect to watch for: STRUCTURED INFO TRAPPED IN PROSE
 Four modules independently hit the same failure during implementation, so it is called out as a standing rule:
@@ -298,6 +367,14 @@ reproducing the defect class it exists to catch. **Convergent need across two mo
 the DATA, not to either consumer**: derive once at the producer, store it, and have consumers READ it. When the
 stored value is nullable, consumers must branch on *presence* (`'scope' in claim`), never on truthiness — `null`
 is an answer, and `??` would silently re-derive it.
+
+**How to TEST a §5d fix — M12's pattern, promoted, because it is the only test that works.** After deleting a
+duplicated implementation, assert **mechanically that it is gone**: grep the consumer's own source for the second
+implementation's signature (a `JSON.parse`, the fence regex, a copied enum) and fail if it comes back. Behavior
+tests **cannot** see a duplicate that *currently agrees* — and "currently agrees" is the entire lifespan of every
+duplicate, right up until the day it doesn't. The unit table passed every behavior test in the suite while drifted
+three ways, minting a blind spot that made the package report zero flags it had not earned. **A §5d fix defended
+only by behavior tests is a §5d fix with a timer on it.**
 
 ## 6. Non-negotiables for every module
 1. **Pure/deterministic** (M3–M6, M4): same input → same output. No LLM, no network, no clock in the index path.

@@ -144,6 +144,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { slugify } from "./slug.mjs";
+import { artifactDeclarations, claimSidecarPath, frontMatterLength } from "./contract.mjs";
 import { resolve as resolveTerm } from "./terms.mjs";
 import { fingerprints } from "./fingerprint.mjs";
 import { scanProjection } from "./units.mjs";
@@ -164,9 +165,6 @@ const CONCEPTS_DIR = "concepts";
 
 /** `concepts/course.md` is the COURSE map, not a chapter map (interfaces §1). */
 const COURSE_MAP = "course";
-
-/** claims.schema.json's closed `type` enum. An unknown type is skipped, never coerced. */
-const CLAIM_TYPES = new Set(["fact", "objective", "answer-key", "definition", "derived", "procedure"]);
 
 /** The section (slug) whose list items are objective-coverage claims. */
 const OBJECTIVES_SECTION = "objectives";
@@ -253,96 +251,34 @@ function chapterSlugs(root) {
   );
 }
 
-// --- declarations (M12's half of the seam) --------------------------------------------------
-
-/**
- * Front matter: a `---` fenced block at the very top, whose body is JSON. Structural, stripped by
- * every markdown pipeline, and therefore never student-facing (spec §10 decision 1 forbids inline
- * declaration in prose). JSON rather than YAML because there is no YAML parser here and no new npm
- * dependency is permitted (interfaces §6) — and hand-rolling a YAML subset would be a parser that
- * silently disagrees with every other YAML parser about the one input that matters.
- */
-const FRONT_MATTER_RE = /^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/;
-
-/** The artifact's front matter body, or null. */
-function frontMatterOf(fileText) {
-  const m = FRONT_MATTER_RE.exec(String(fileText ?? ""));
-  return m ? m[1] : null;
-}
-
-/**
- * How many characters of front matter precede the artifact's body.
- *
- * Blocks are parsed from the body (a declaration is not an assertion, and must never be indexed as
- * one), but `offset` must address the file EXACTLY AS READ — that is the string M8 is handed, and
- * an offset in a different frame of reference is worse than none: it points confidently at the
- * wrong text. So the body is parsed at a known base and every block offset is rebased by it.
- */
-function frontMatterLength(fileText) {
-  const m = FRONT_MATTER_RE.exec(String(fileText ?? ""));
-  return m ? m[0].length : 0;
-}
-
-/** A declaration sidecar mirrors the artifact's path under `metadata/claims/` (spec §2: the new
- *  metadata files all live under `metadata/`). */
-function sidecarPath(rel) {
-  return `metadata/claims/${rel.replace(/\.md$/, "")}.json`;
-}
-
-/**
- * Normalize one declaration entry to interfaces §3's frozen M12 shape,
- * `{type, spineRefs, sourceRefs, anchor}`, plus ONE optional field we accept if present:
- * `termRefs`. Optional-and-tolerated is the house extension pattern (unknown keys are ignored; an
- * added optional field is cheap) and it lets a generator that knows a claim's vocabulary say so
- * instead of making us recognize it. Absent, it is derived — see CONTRACT CONCERNS #2.
- *
- * A declaration may NOT supply its own `text`: the claim's prose is whatever stands at its
- * `offset`, always (see the header's invariant and CONTRACT CONCERNS #4). An `anchor` that names
- * no block yields no claim, rather than a claim whose two location facts describe different strings.
- * @returns {object|null} null when the entry is not a usable declaration (no guessing).
- */
-function normalizeDeclaration(entry) {
-  if (!entry || typeof entry !== "object") return null;
-  const type = String(entry.type ?? "");
-  if (!CLAIM_TYPES.has(type)) return null; // unknown type: skipped, never coerced
-  const anchor = String(entry.anchor ?? "").trim();
-  if (!anchor) return null; // nothing to locate: not a declaration
-  return {
-    type,
-    anchor,
-    spineRefs: strSet(entry.spineRefs),
-    sourceRefs: strSet(entry.sourceRefs),
-    termRefs: Array.isArray(entry.termRefs) ? strSet(entry.termRefs) : null,
-  };
-}
-
-/** Parse a declaration body: `{claims:[…]}` or a bare array. Malformed => [] (tolerant by
- *  contract, interfaces §1: a half-written package yields fewer nodes, never a crash). */
-function parseDeclarationBody(raw) {
-  let data;
-  try {
-    data = JSON.parse(raw);
-  } catch {
-    return []; // not JSON: we will not guess at what was meant
-  }
-  const list = Array.isArray(data) ? data : Array.isArray(data?.claims) ? data.claims : [];
-  return list.map(normalizeDeclaration).filter(Boolean);
-}
-
-/**
- * The declarations for one artifact.
- *
- * PRECEDENCE, declared up front so it is a RULE and not a tie-break: a sidecar, if present, is the
- * artifact's declaration — front matter is not merged into it. One artifact, one declaration
- * authority; unioning two sources would let them disagree about a single anchor and leave this
- * module picking a winner, which is the thing it may never do.
- */
-function declarationsFor(root, rel, fileText) {
-  const sidecar = readText(root, sidecarPath(rel));
-  if (sidecar != null) return parseDeclarationBody(sidecar);
-  const fm = frontMatterOf(fileText);
-  return fm == null ? [] : parseDeclarationBody(fm);
-}
+// --- declarations: NOT PARSED HERE. M12 (`lib/contract.mjs`) owns the grammar ----------------
+//
+// This module used to parse front matter and sidecars itself — the front-matter fence, the JSON
+// document shape, the entry normalizer, and the sidecar-beats-front-matter rule all lived here. They
+// are GONE, and this comment stands where they were so nobody helpfully puts them back.
+//
+// A declaration is a FORMAT CONTRACT: `format-contracts/deliverables.md` tells the generating agent
+// how to write one, and `lib/contract.mjs` is where the enforceable half of every format contract
+// already lives. Two parsers for one grammar is interfaces §5d — "is this fact derived in more than
+// one place?" — whose own worked example, the unit table, drifted three ways and made a package
+// report ZERO FLAGS IT HAD NOT EARNED. The drift here would be worse than a missed flag: a
+// declaration this extractor honours but the M11 gate refuses (or the reverse) is a high-stakes
+// fact that one half of the system believes is covered while the other does not.
+//
+// So this module keeps exactly what M12 cannot have — the I/O — and nothing else. It reads the two
+// carriers and hands their TEXT to `artifactDeclarations`, which resolves the precedence rule (a
+// sidecar, if present, IS the artifact's declaration; front matter is not merged into it) and
+// returns `{type, spineRefs, sourceRefs, termRefs, derivedFrom, anchor}` entries in document order.
+//
+// What M12 gives back, and what this module still owes each declaration:
+//   * `termRefs: null` means NOT DECLARED (recognize the vocabulary), `[]` means DECLARED EMPTY
+//     (the generator says this claim names no registered term, and it stands). `finalizeDraft`
+//     branches on the null, which is why it uses `??` and not a truthiness test.
+//   * `derivedFrom` is DECLARED-ONLY and `finalizeDraft` is its ONLY PRODUCER IN THE SYSTEM — the
+//     field was defined, designed, and consumed (it is M5's primary edge) while nothing wrote it,
+//     so no package could carry one. Same null/[] discipline; never inferred, by anyone.
+//   * there is NO `text`, deliberately (interfaces §3, and this file's header). The prose is the
+//     block at the anchor, always. Do not re-add it here either.
 
 // --- blocks and anchors --------------------------------------------------------------------
 
@@ -601,6 +537,14 @@ function finalizeDraft(draft, terms, chapters, takenIds) {
     spineRefs: draft.spineRefs,
     sourceRefs: draft.sourceRefs,
     termRefs,
+    // `derivedFrom` — DECLARED-ONLY, and this line is the field's ONLY PRODUCER IN THE SYSTEM.
+    // It is defined in claims.schema.json, designed in spec §2.2, and is the PRIMARY edge M5's
+    // `claimImpact` traverses — and until now it was written by nothing, so no package could carry
+    // one and the strongest edge in the graph was dead while looking fully implemented. Emitted ONLY
+    // when declared: `null` (not declared) omits the field, `[]` is an authoritative "this claim
+    // derives from nothing" and is emitted as such. The branch is on `null`, never on truthiness —
+    // `[]` is a declared answer, and `??`/`||` would silently discard it (§5d).
+    ...(draft.derivedFrom === null ? {} : { derivedFrom: draft.derivedFrom }),
     // `offset` accompanies every location that points at real file text — a consumer cannot tell
     // "no offset" from "offset 0", and the safe reading of a missing one is to REFUSE the edit, so
     // omitting it would silently degrade M9 into never auto-applying anything.
@@ -646,15 +590,20 @@ export function extractClaims(root, terms) {
     if (fileText == null) continue;
 
     // Parsed from the body (a declaration is not an assertion), but offset-based at the file.
-    const blocks = parseBlocks(
-      fileText.slice(frontMatterLength(fileText)),
-      frontMatterLength(fileText),
-    );
+    // `frontMatterLength` is M12's — the fence that hides the declaration is the declaration's
+    // grammar, so the same module must define where it ends and the assertions begin.
+    const base = frontMatterLength(fileText);
+    const blocks = parseBlocks(fileText.slice(base), base);
     const blockByAnchor = new Map(blocks.map((b) => [b.anchor, b]));
     const claimedAnchors = new Set();
 
-    // 1. DECLARED — authoritative.
-    for (const decl of declarationsFor(root, rel, fileText)) {
+    // 1. DECLARED — authoritative. The grammar and the sidecar-beats-front-matter precedence rule
+    //    are M12's (`lib/contract.mjs`); this module supplies only the two carriers' text.
+    const declarations = artifactDeclarations({
+      fileText,
+      sidecarText: readText(root, claimSidecarPath(rel)),
+    });
+    for (const decl of declarations) {
       // Two declarations for one anchor is a conflict, not a merge: the first in document order
       // stands. Deterministic, and it refuses to fabricate a reconciliation nobody authored.
       if (claimedAnchors.has(decl.anchor)) continue;
@@ -670,6 +619,7 @@ export function extractClaims(root, terms) {
         spineRefs: decl.spineRefs,
         sourceRefs: decl.sourceRefs,
         termRefs: decl.termRefs,
+        derivedFrom: decl.derivedFrom,
         provenanceDeclared: true,
       });
     }
@@ -688,6 +638,11 @@ export function extractClaims(root, terms) {
         spineRefs: [], // NEVER invented — see the header's refusal 1
         sourceRefs: [],
         termRefs: null,
+        // DECLARED-ONLY (interfaces §3). The scan mints NO derivation, ever: "the answer key sits
+        // under the question" is adjacency, not authorship, and a guessed `derivedFrom` asserts a
+        // dependency the author never stated — refusal 1 wearing a third hat, and worse than the
+        // honest alternative (M5's co-mention reaches the same claim while saying WHY).
+        derivedFrom: null,
         provenanceDeclared: false,
       });
     }
@@ -831,21 +786,22 @@ export function matchClaims(oldClaims, newClaims) {
 //   * `text` vs `offset` describing different strings → closed by making `text` non-overridable;
 //     the rule and the reason are in this file's header, where the temptation to re-add it lives.
 // Read those sections rather than re-deriving them here. What follows is what is still OPEN.
-// A. **OPEN, owner M11 — a DANGLING declared anchor is silent.** §3's `declaredProvenance(fileText)
-//    -> [{type, spineRefs, sourceRefs, anchor}]` cannot build a claim on its own: `text` is
-//    required and is the sole input to M3's `content` fingerprint, and `termRefs` is what the
-//    `label` layer and §4's `identityLabel` are computed from. Neither is in the shape, so this
-//    module recovers both by re-reading the artifact the generator had already read — §5c's check
-//    failing in its usual costume, a producer's signature carrying less structure than the consumer
-//    needs. Survivable, but with a real cost: an anchor naming a block that does not exist
+// A. **OPEN, owner M11 — a DANGLING declared anchor is silent.** (`termRefs` is no longer part of
+//    this concern: §3 was amended and M12 now carries it, so a generator that knows its claim's
+//    vocabulary states it instead of making this module recognize it. `text` remains correctly
+//    ABSENT from the shape — see the header; that door is closed for a good reason, and the prose is
+//    always the block at the anchor.) What is left is the cost of that last rule: an anchor naming a
+//    block that does not exist
 //    (typically because prose was restructured after it was declared) yields NO claim. The
 //    generator declared a high-stakes fact and the index contains nothing about it — not flagged,
 //    ABSENT, which reads as "nothing to review". `extractClaims`'s frozen return is
 //    `{schemaVersion, claims}` and claims.schema.json is `additionalProperties:false`, so this
 //    module has nowhere to say so. It is §5b's "spineRef target exists" one level down and belongs
 //    with the same owner: **M11 should gate "every declared anchor resolves"** — it has both the
-//    declarations and the artifact. Suggested §3 edit: add `termRefs` (M12 is writing the block and
-//    knows its vocabulary). **NOT `text`** — see the header; that door is closed for a good reason.
+//    declarations (`declaredProvenance`, which returns each `anchor`) and the artifact. To do it
+//    WITHOUT re-deriving the anchor set (§5d again: two block parsers = two answers to "does this
+//    anchor exist"), this module should export its anchors when M11 asks. M12 reports the twin of
+//    this gap — a REFUSED declaration is silent the same way — in `lib/contract.mjs`, CONCERN A.
 // B. **OPEN, owner: the coordinator's `lib/units.mjs` task — NOT this module.** Do not "fix" it
 //    here by reaching into M3 or M6.
 //    **The unit table is DERIVED IN THREE PLACES** — §5d's own check, failing on §5d's own

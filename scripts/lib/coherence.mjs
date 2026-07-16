@@ -8,6 +8,9 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { outputGitState } from "./output_git.mjs";
+import { matchClaims } from "./claims.mjs";
+import { classify } from "./classify.mjs";
+import { resolve as resolveTerm } from "./terms.mjs";
 
 export const COMPONENT_INDEX_PATH = "metadata/COMPONENT_INDEX.json";
 const EXCLUDE = new Set([COMPONENT_INDEX_PATH, ".gitignore", ".DS_Store"]);
@@ -370,3 +373,582 @@ export function validateRevisionReview(root, review) {
     failures.push("revision review requires a substantive consistency attestation (at least 20 characters).");
   return { failures, current };
 }
+
+// =================================================================================================
+// M5 — CLAIM-LEVEL COHERENCE. A layer BESIDE the component-level graph above, never a replacement.
+// =================================================================================================
+//
+// Everything above this line reasons about FILES: one component per file, one byte-hash per
+// component, and an edge between files. It stays exactly as it was — it is live, its consumers
+// depend on it, and spec §2.4's backward-compatibility rule is that `COMPONENT_INDEX.json` does not
+// move. What follows reasons about CLAIMS, and the two never touch.
+//
+// WHY A SECOND LAYER RATHER THAN A BETTER FIRST ONE
+// -------------------------------------------------
+// `computeRevisionImpact` answers "which FILES must a human re-review?" — and it answers it by
+// traversing every edge out of every byte-changed file. That is correct and it is also the defect
+// (spec §0): one edit, six required reviews, because a file is not a unit of meaning. Fixing it in
+// place would mean teaching the component graph about claims, which is how you end up with one
+// module that is authoritative about two different things and quietly wrong about both.
+//
+// WHAT THE FOUR OUTPUTS ARE FOR
+// -----------------------------
+//   affected   — the reachability set. **M9 takes this as INPUT and must never compute it**
+//                (`planPropagation`'s `change.claimIds`). Reachability derived in two places is
+//                §5d, whose own worked example — the unit table — shipped a live under-reporting
+//                bug before anyone noticed, because a blind spot looks exactly like a clean bill
+//                of health. Reachability is minted here, once.
+//   actions    — M4's verb per affected claim. This module CALLS `classify`; it does not own a
+//                second opinion about what a moved layer obliges.
+//   silentRisk — THE REASON THIS MODULE EXISTS (see below).
+//   cycles     — reported, never broken.
+//
+// `silentRisk` — THE WHOLE-PACKAGE-AWARENESS CLAIM (S-C) IN ONE FIELD
+// -------------------------------------------------------------------
+// A claim that a change REACHES but whose fingerprints DID NOT MOVE is invisible to every other
+// detector in this system, by construction:
+//   * M3 hashes it and sees five identical layers.
+//   * M4 is handed those layers and correctly returns NONE. It is not wrong; it is asked a
+//     per-claim question and the per-claim answer genuinely is "nothing happened here".
+//   * M9 plans nothing, because M4 obliged nothing.
+// The package therefore reports NO FLAG — an assurance it has not earned. The golden fixture is
+// the case in one line: the study guide says the melting point of water is 100 °C; the practice
+// answer key says "**Answer:** 100 °C". Change the study guide to 0 °C and the answer key's own
+// text does not move one byte. Every check passes. The package now contradicts itself, in prose a
+// student will read, and the index's silence is the only thing standing where a flag should be.
+//
+// That is what this field is: the claims about which the correct per-claim answer is "nothing
+// happened" and the correct whole-package answer is "look at this". Getting `affected` right and
+// leaving `silentRisk` empty would make this module decorative — a restatement of facts M3 and M4
+// already hold.
+//
+// HOW `affected` IS BOUNDED, AND WHY THE BOUND IS THE DESIGN
+// ----------------------------------------------------------
+// An impact set that contains everything is the byte-hash bug wearing a claim-shaped hat: an
+// instructor buried in flags stops reading flags. So reachability is built from exactly two
+// relations, with deliberately different powers:
+//
+//   1. DERIVATION (`derivedFrom`) — DIRECTED and FULLY TRANSITIVE, downstream only.
+//      `Y.derivedFrom` naming X is an AUTHORED assertion that Y depends on X, so it composes: if
+//      Z depends on Y and Y depends on X, a change to X reaches Z. Downstream ONLY — a change to
+//      X does not reach what X was derived FROM. Its sources did not move.
+//
+//   2. CO-MENTION (a shared `spineRef` / a shared term id) — ONE HOP FROM A SEED, NON-COMPOSING.
+//      This is the bound that matters, so here is the argument. Co-mention is not a dependency; it
+//      is evidence of one. Two claims sharing a term are talking about the same thing, which is
+//      why the relation earns its place at all — it is how the answer key above is reached, since
+//      nothing in the package DECLARES that it depends on the study guide. But it does not
+//      compose: "shares a term with something that shares a term with the change" is a random walk
+//      through the vocabulary, and two hops of it reaches the whole package. So a co-mention edge
+//      may carry you INTO the set, and derivation composes onward from there, but co-mention is
+//      never chained to another co-mention. Stated as one rule:
+//
+//          affected = derivation_closure( seeds ∪ comention_one_hop(seeds) )
+//
+//      What keeps this honest at scale is M1: term ids come only from the instructor's authored
+//      `## Key terms` section, so co-mention runs over a small CONTROLLED VOCABULARY, not over
+//      words. "water" links nothing unless the instructor registered it.
+//
+// Co-mention is further gated by WHICH LAYER MOVED, because a relation without a reason is noise:
+//   * a shared TERM matters when the seed's `label` or `content` moved (the vocabulary or the
+//     meaning attached to it changed);
+//   * a shared SPINE matters when the seed's `spine` or `content` moved (the pedagogy the claim
+//     hangs under, or what it asserts under it, changed).
+// A `provenance`-only move reaches nothing by co-mention: re-citing one claim does not make
+// another claim's prose wrong, and M4 already returns RECHECK + an ESCALATE follow-up for it.
+//
+// WHAT IS DELIBERATELY NOT REACHABLE — the refusals ARE the module
+//   * A FORMAT-ONLY move seeds NOTHING. This is the product's #1 requirement stated as code: a
+//     whitespace edit moves no fingerprint at all, and a meaning-preserving rephrase moves only
+//     `format`, which M4 calls NONE and M9 plans nothing for. If a rephrase seeded reachability,
+//     every cosmetic edit would flag its neighbours and we would have rebuilt the byte-hash bug at
+//     a finer granularity — which would be worse than not having built this at all, because it
+//     would carry the index's authority.
+//   * CO-MENTION IS NOT CHAINED (above).
+//   * DERIVATION IS NOT WALKED UPSTREAM (above).
+//   * A DANGLING `derivedFrom` (naming an id in neither version) yields NO edge. There is nothing
+//     to reach; inventing a node for it would be a fabrication. It is also unreportable through
+//     this signature — see CONTRACT HISTORY D (assigned to the M11 gate, §5b).
+//
+// SCOPE — READ, NEVER RE-DERIVED (§4a, §5d)
+// -----------------------------------------
+// Term refs are canonicalized through M1's `resolve`, which is scope-aware, so this module needs a
+// claim's scope — and takes it from `claim.scope`, tested with `"scope" in claim`. NEVER
+// `claim.scope ?? derive(...)`: `null` is a MEANINGFUL value (package-wide), so `??` would
+// silently re-derive for exactly the claims most likely to span chapters, which is the worst
+// possible set to re-open the divergence on. This module does not contain a derivation to fall
+// back to, on purpose — half-copying the authoritative one is the drift §4a closed.
+//
+// PURE and DETERMINISTIC (§6.1): no network, no LLM, no clock, no randomness — and, as it happens,
+// no I/O at all (`root` is vestigial — CONTRACT HISTORY A). Every set-shaped output is sorted, and nodes are
+// visited in sorted id order, so a flag a human acted on is reproducible from git months later.
+// That is not a nicety; an irreproducible flag is not auditable, and an unauditable flag is a
+// rumour.
+
+/** The five fingerprint layers (interfaces §5). */
+const FP_LAYERS = ["format", "label", "content", "spine", "provenance"];
+
+/**
+ * The one layer whose movement obliges NOTHING (M4's `format`-only row -> NONE).
+ * A seed that moved only this reaches nothing at all — see the header's first refusal.
+ */
+const INERT_LAYER = "format";
+
+const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+const byClaimId = (a, b) => cmp(a.claimId, b.claimId);
+
+/**
+ * The decision context for ONE claim, assembled for M4 (§3's optional `ctx`).
+ *
+ * **`authorized` is PER-CLAIM ONLY, and there is deliberately no edit-level default.** M7's
+ * authority is `isAuthorizedDivergence(overrides, claimId)` — per claim, because an override is
+ * recorded AGAINST a claim. A blanket `ctx.authorized = true` would assert, from one bit, that
+ * every claim in an impact set has a recorded override; the ones that did not would silently
+ * classify RE-DERIVE instead of ESCALATE, and a suspected error would propagate on the machine's
+ * own authority. That is the silent direction, so the shape does not permit it: an edit-level
+ * `authorized` THROWS rather than being ignored. Ignoring it would be worse — the caller would
+ * believe they had authorized something. (M9 and M10 throw on a contract break for the same
+ * reason: a broken caller must not hide behind a plausible-looking review item.)
+ *
+ * `spineChange` and `pedagogy` DO take an edit-level default, because unlike authorization they are
+ * facts about the EDIT ("this spine move was additive enrichment"), not about a claim's standing.
+ * Per-claim wins where both are given.
+ *
+ * Presence-tested, never `??`: `spineChange: null` is a MEANINGFUL value (unknown -> structural,
+ * fail toward review), so `??` would silently promote a deliberate null to the edit-level default —
+ * §4a's trap in a third costume, on a field that decides whether a package gets rechecked.
+ *
+ * Absent ctx yields exactly `{authorized:false, spineChange:null, pedagogy:null}` — M4's documented
+ * fail-toward-review default, and byte-for-byte the behavior this module had before `ctx` existed.
+ */
+function ctxForClaim(ctx, claimId) {
+  const per = ctx?.byClaimId?.[claimId];
+  const own = per && typeof per === "object" ? per : {};
+  const edit = ctx && typeof ctx === "object" ? ctx : {};
+  return {
+    authorized: own.authorized === true,
+    spineChange: "spineChange" in own ? own.spineChange : "spineChange" in edit ? edit.spineChange : null,
+    pedagogy: "pedagogy" in own ? own.pedagogy : "pedagogy" in edit ? edit.pedagogy : null,
+  };
+}
+
+/** Reject an edit-level `authorized` loudly — see `ctxForClaim` for why it must not exist. */
+function assertCtxShape(ctx) {
+  if (ctx && typeof ctx === "object" && "authorized" in ctx) {
+    throw new TypeError(
+      "claimImpact: `ctx.authorized` is not a valid edit-level field — authorization is PER CLAIM " +
+        "(M7 records an override against a claimId). Pass ctx.byClaimId[<claimId>].authorized instead. " +
+        "A blanket authorization would assert, from one bit, that every reached claim has a recorded " +
+        "override, silently downgrading the unauthorized ones from ESCALATE to RE-DERIVE.",
+    );
+  }
+}
+
+/** Accept CLAIMS (`{claims:[…]}`) or a bare array — the shape M6 and M9 already tolerate. */
+function claimNodes(claims) {
+  const list = Array.isArray(claims) ? claims : Array.isArray(claims?.claims) ? claims.claims : [];
+  return list.filter((c) => c && typeof c === "object" && typeof c.id === "string" && c.id);
+}
+
+/** Sorted, de-duplicated, stringified refs. */
+function refSet(list) {
+  return [...new Set((Array.isArray(list) ? list : []).map((v) => String(v ?? "")).filter(Boolean))].sort(cmp);
+}
+
+/**
+ * Which fingerprint layers differ between two versions of one claim.
+ * A side that is absent entirely (an added or removed claim) differs on every layer — the same
+ * reading M4 takes ("a layer absent from BOTH sides has not moved; absent-on-one-side has").
+ */
+function movedLayers(oldClaim, newClaim) {
+  const a = oldClaim?.fingerprints;
+  const b = newClaim?.fingerprints;
+  return FP_LAYERS.filter((layer) => a?.[layer] !== b?.[layer]);
+}
+
+/**
+ * The claim's scope (§4a). READ from the field; presence-tested because `null` is an ANSWER
+ * (package-wide), not an absence.
+ *
+ * A claim WITHOUT the field is malformed by `claims.schema.json` (scope is required, M2 always
+ * sets it). We resolve its terms UNSCOPED rather than reconstructing the derivation: this module
+ * deliberately holds no copy of §4a's tiers, because a copy that drifts is the exact divergence
+ * §4a exists to close. `undefined` is M1's documented "any scope".
+ */
+function scopeArg(claim) {
+  if (claim && typeof claim === "object" && "scope" in claim) return claim.scope ?? undefined;
+  return undefined;
+}
+
+/**
+ * A claim's term refs as canonical M1 ids.
+ *
+ * Already-known ids pass through; a ref written as a LABEL is resolved through M1 in the claim's
+ * own scope, so aliases collapse onto one node and a chapter-local homograph does not link two
+ * chapters that never shared a term. An unresolvable ref is kept under a namespaced key rather
+ * than dropped: two claims citing the same unknown label really do share a vocabulary item, we
+ * simply cannot name it, and dropping it would silently sever a real edge. The `?|` prefix cannot
+ * collide with a real `term.*` id.
+ */
+function termIdsOf(claim, terms, knownIds) {
+  const scope = scopeArg(claim);
+  const out = new Set();
+  for (const ref of refSet(claim?.termRefs)) {
+    if (knownIds.has(ref)) {
+      out.add(ref);
+      continue;
+    }
+    const id = resolveTerm(terms, ref, scope);
+    out.add(id || `?|${ref}`);
+  }
+  return [...out].sort(cmp);
+}
+
+/**
+ * Merge the two versions of a package's claims into one node set, keyed by claim id.
+ *
+ * Identity comes from M2's `matchClaims` (§4) — this module does not own a second opinion about
+ * what "the same claim" means. A matched pair is ONE node carrying both versions; an unmatched new
+ * claim is an addition (`old: null`); an unmatched old claim is a removal (`new: null`), and it
+ * stays a node so that whatever depended on it can still be reached.
+ */
+function mergeVersions(oldList, newList) {
+  const oldById = new Map(oldList.map((c) => [c.id, c]));
+  const newById = new Map(newList.map((c) => [c.id, c]));
+  const { matched } = matchClaims(oldList, newList);
+
+  const nodes = new Map();
+  const pairedOld = new Set();
+  const pairedNew = new Set();
+  for (const { oldId, newId } of [...matched].sort((a, b) => cmp(a.newId, b.newId) || cmp(a.oldId, b.oldId))) {
+    pairedOld.add(oldId);
+    pairedNew.add(newId);
+    nodes.set(newId, { id: newId, old: oldById.get(oldId) ?? null, new: newById.get(newId) ?? null });
+  }
+  for (const c of [...newList].sort((a, b) => cmp(a.id, b.id))) {
+    if (pairedNew.has(c.id) || nodes.has(c.id)) continue;
+    nodes.set(c.id, { id: c.id, old: null, new: c });
+  }
+  for (const c of [...oldList].sort((a, b) => cmp(a.id, b.id))) {
+    if (pairedOld.has(c.id)) continue;
+    const existing = nodes.get(c.id);
+    // An old id colliding with an unrelated node is the degenerate case `matchClaims` already
+    // refused to resolve (two indistinguishable claims). Fill the empty side if there is one;
+    // never overwrite. Deterministic, and it invents no pairing.
+    if (existing) {
+      if (!existing.old) existing.old = c;
+      continue;
+    }
+    nodes.set(c.id, { id: c.id, old: c, new: null });
+  }
+  return nodes;
+}
+
+/**
+ * The claim record a node's REFS are read from, unioned across versions.
+ *
+ * Both versions, deliberately: a change can REMOVE a term or a spineRef, and the claims that
+ * shared the dropped ref are exactly the ones a human should look at. Reading only the new version
+ * would make a deletion reach nothing — silence on the edit most likely to strand a dependent.
+ */
+function refsOf(node, terms, knownIds) {
+  const versions = [node.old, node.new].filter(Boolean);
+  const termIds = new Set();
+  const spineRefs = new Set();
+  for (const claim of versions) {
+    for (const id of termIdsOf(claim, terms, knownIds)) termIds.add(id);
+    for (const ref of refSet(claim.spineRefs)) spineRefs.add(ref);
+  }
+  return { termIds: [...termIds].sort(cmp), spineRefs: [...spineRefs].sort(cmp) };
+}
+
+/**
+ * Directed derivation edges, `from -> to`, meaning "to was derived from from".
+ *
+ * Read from the CURRENT version where the claim still exists (the package as it now stands is what
+ * a human will fix), else from the removed version. A ref naming an id in neither version yields
+ * no edge — there is nothing to reach, and minting a node for it would be a fabrication.
+ */
+function derivationEdges(nodes) {
+  const out = new Map([...nodes.keys()].map((id) => [id, new Set()]));
+  for (const id of [...nodes.keys()].sort(cmp)) {
+    const node = nodes.get(id);
+    const record = node.new ?? node.old;
+    for (const from of refSet(record?.derivedFrom)) {
+      if (!nodes.has(from)) continue; // dangling — see CONTRACT HISTORY D
+      out.get(from).add(id);
+    }
+  }
+  return new Map([...out].map(([k, v]) => [k, [...v].sort(cmp)]));
+}
+
+/**
+ * Strongly connected components of the derivation graph with more than one member, plus
+ * self-derivations. Tarjan's algorithm, nodes visited in sorted id order so the result is stable.
+ *
+ * SCCs rather than an enumeration of every elementary cycle: enumerating them is exponential in
+ * the worst case, and an SCC is the honest answer to "which claims are tangled together" — it
+ * names every claim involved without claiming to know which of the many loops through them the
+ * author meant.
+ *
+ * **Nothing here removes an edge.** A cycle is REPORTED and the traversal keeps its `visited` set,
+ * which is what makes it terminate. Breaking a cycle by dropping an edge would be picking, on the
+ * machine's own authority, which of two authored dependencies is the fake one — a guess in a
+ * deterministic costume, and the loser would silently stop propagating.
+ */
+function findCycles(nodes, edges) {
+  const ids = [...nodes.keys()].sort(cmp);
+  const index = new Map();
+  const low = new Map();
+  const onStack = new Set();
+  const stack = [];
+  const sccs = [];
+  let counter = 0;
+
+  // Iterative: a deep derivation chain must not blow the JS stack on a real package.
+  for (const root of ids) {
+    if (index.has(root)) continue;
+    const work = [{ id: root, at: 0 }];
+    while (work.length) {
+      const frame = work[work.length - 1];
+      const { id } = frame;
+      if (frame.at === 0) {
+        index.set(id, counter);
+        low.set(id, counter);
+        counter += 1;
+        stack.push(id);
+        onStack.add(id);
+      }
+      const next = edges.get(id) ?? [];
+      if (frame.at < next.length) {
+        const child = next[frame.at];
+        frame.at += 1;
+        if (!index.has(child)) work.push({ id: child, at: 0 });
+        else if (onStack.has(child)) low.set(id, Math.min(low.get(id), index.get(child)));
+        continue;
+      }
+      if (low.get(id) === index.get(id)) {
+        const group = [];
+        for (;;) {
+          const w = stack.pop();
+          onStack.delete(w);
+          group.push(w);
+          if (w === id) break;
+        }
+        const selfLoop = group.length === 1 && (edges.get(id) ?? []).includes(id);
+        if (group.length > 1 || selfLoop) sccs.push(group.sort(cmp));
+      }
+      work.pop();
+      const parent = work[work.length - 1];
+      if (parent) low.set(parent.id, Math.min(low.get(parent.id), low.get(id)));
+    }
+  }
+
+  return sccs
+    .map((claimIds) => {
+      const inside = new Set(claimIds);
+      const cycleEdges = [];
+      for (const from of claimIds) for (const to of edges.get(from) ?? []) if (inside.has(to)) cycleEdges.push({ from, to });
+      return { claimIds, edges: cycleEdges.sort((a, b) => cmp(a.from, b.from) || cmp(a.to, b.to)) };
+    })
+    .sort((a, b) => cmp(a.claimIds.join("|"), b.claimIds.join("|")));
+}
+
+/**
+ * Everything one seed reaches: itself, its one-hop co-mentions, and the derivation closure of all
+ * of those. See the header for why the two relations have different powers.
+ *
+ * @returns {Map<string, Set<string>>} reached id -> the relation kinds that reached it
+ */
+function reachFrom(seedId, nodes, edges, refIndex, refsByNode, moved) {
+  const reached = new Map([[seedId, new Set(["seed"])]]);
+  const note = (id, kind) => {
+    if (id === seedId) return; // the seed is reached by being the seed
+    if (!reached.has(id)) reached.set(id, new Set());
+    reached.get(id).add(kind);
+  };
+
+  // --- CO-MENTION: one hop, gated by which layer moved ---------------------------------------
+  const byTerm = moved.includes("label") || moved.includes("content");
+  const bySpine = moved.includes("spine") || moved.includes("content");
+  const refs = refsByNode.get(seedId);
+  if (byTerm) for (const t of refs.termIds) for (const id of refIndex.term.get(t) ?? []) note(id, "shared-term");
+  if (bySpine) for (const s of refs.spineRefs) for (const id of refIndex.spine.get(s) ?? []) note(id, "shared-spine");
+
+  // --- DERIVATION: transitive, downstream, from everything reached so far ----------------------
+  // The `visited` semantics of `reached` is what makes a cycle terminate WITHOUT removing an edge.
+  const queue = [...reached.keys()].sort(cmp);
+  while (queue.length) {
+    const at = queue.shift();
+    for (const to of edges.get(at) ?? []) {
+      const seen = reached.has(to);
+      note(to, "derivation");
+      if (!seen && to !== seedId) queue.push(to);
+    }
+  }
+  return reached;
+}
+
+/**
+ * The claim-level impact of an edit: what it reaches, what that obliges, and — the reason this
+ * function exists — what it reaches SILENTLY.
+ *
+ * PURE and DETERMINISTIC (§6.1): no network, no LLM, no clock, no randomness, and no I/O. Same
+ * inputs -> byte-identical output, so a flag a human acted on is reproducible from git months
+ * later. Every set-shaped output is sorted.
+ *
+ * Read the section header above before changing anything here: the bounds on `affected` are the
+ * design, not an optimization, and `silentRisk` is the only output no other module could recompute.
+ *
+ * @param {string} root The package root. **VESTIGIAL** — this layer needs no I/O and never did.
+ *   Accepted, never read; see CONTRACT HISTORY A. Do not "use it since it's there".
+ * @param {{claims:Array<object>}|Array<object>} oldClaims CLAIMS before the edit (M2).
+ * @param {{claims:Array<object>}|Array<object>} newClaims CLAIMS after the edit (M2).
+ * @param {object} terms TERMS (M1) — the only authority on what a label means in a scope.
+ * @param {object} [ctx] OPTIONAL decision context, threaded to M4 (§3, added after this module
+ *   showed §10 decision 2's ask-once rule was unreachable from this seam). Shape:
+ *   `{byClaimId: {<claimId>: {authorized?, spineChange?, pedagogy?}}, spineChange?, pedagogy?}`.
+ *   `authorized` is PER-CLAIM ONLY — an edit-level `ctx.authorized` THROWS (see `ctxForClaim`).
+ *   Omitted, every claim classifies under M4's fail-toward-review default, which is byte-for-byte
+ *   this module's behavior before `ctx` existed: safe stays the default, and no caller breaks.
+ *   M5 does NOT read OVERRIDES itself — M7 owns `authorized` and the caller passes it down;
+ *   deriving authorization here would be §5d.
+ * @returns {{affected:string[],
+ *            actions:Array<{claimId:string, action:string, layer:(string|null), reason:string,
+ *                           followUp?:{action:string, reason:string}}>,
+ *            silentRisk:Array<{claimId:string, reachedFrom:string[], via:string[], reason:string}>,
+ *            cycles:Array<{claimIds:string[], edges:Array<{from:string,to:string}>}>}}
+ *   `affected` is the reachability set M9 takes as input. `actions` is M4's verb per affected
+ *   claim, under `ctx` (or M4's fail-toward-review defaults when it is absent). `silentRisk` is the
+ *   subset of `affected` whose fingerprints did not move — reached, and invisible to everything
+ *   else. `cycles` are the derivation graph's tangles, reported and never broken.
+ */
+export function claimImpact(root, oldClaims, newClaims, terms, ctx) {
+  assertCtxShape(ctx);
+  const oldList = claimNodes(oldClaims);
+  const newList = claimNodes(newClaims);
+  const nodes = mergeVersions(oldList, newList);
+  const knownIds = new Set((terms?.terms ?? []).map((t) => t?.id).filter(Boolean));
+
+  const refsByNode = new Map([...nodes].map(([id, node]) => [id, refsOf(node, terms, knownIds)]));
+  const refIndex = { term: new Map(), spine: new Map() };
+  for (const id of [...nodes.keys()].sort(cmp)) {
+    const { termIds, spineRefs } = refsByNode.get(id);
+    for (const t of termIds) refIndex.term.set(t, [...(refIndex.term.get(t) ?? []), id]);
+    for (const s of spineRefs) refIndex.spine.set(s, [...(refIndex.spine.get(s) ?? []), id]);
+  }
+
+  const edges = derivationEdges(nodes);
+  const movedByNode = new Map([...nodes].map(([id, n]) => [id, movedLayers(n.old, n.new)]));
+
+  // --- SEEDS ---------------------------------------------------------------------------------
+  // A claim whose ONLY moved layer is `format` is a rephrase: M4 calls it NONE and it seeds
+  // nothing. That single line is the product's #1 requirement — a cosmetic edit costs zero — and
+  // dropping it would rebuild the byte-hash bug at claim granularity, carrying this index's
+  // authority while doing it.
+  const seeds = [...nodes.keys()]
+    .filter((id) => movedByNode.get(id).some((layer) => layer !== INERT_LAYER))
+    .sort(cmp);
+
+  // --- REACHABILITY --------------------------------------------------------------------------
+  const reachedBy = new Map(); // id -> {from:Set<seedId>, via:Set<kind>}
+  for (const seedId of seeds) {
+    for (const [id, kinds] of reachFrom(seedId, nodes, edges, refIndex, refsByNode, movedByNode.get(seedId))) {
+      if (!reachedBy.has(id)) reachedBy.set(id, { from: new Set(), via: new Set() });
+      const entry = reachedBy.get(id);
+      if (id !== seedId) entry.from.add(seedId);
+      for (const kind of kinds) if (kind !== "seed") entry.via.add(kind);
+    }
+  }
+  const affected = [...reachedBy.keys()].sort(cmp);
+
+  // --- ACTIONS -------------------------------------------------------------------------------
+  // M4 owns classification. This module calls it and does not hold a second opinion. Context comes
+  // from the CALLER (§3's optional `ctx`) — M7 owns `authorized` and passes it down; M5 reading
+  // OVERRIDES itself would derive authorization in a second place (§5d). Absent ctx is M4's
+  // fail-toward-review default, which is what this module did before `ctx` existed.
+  const actions = affected
+    .map((id) => {
+      const node = nodes.get(id);
+      const verdict = classify(node.old?.fingerprints, node.new?.fingerprints, ctxForClaim(ctx, id));
+      return { claimId: id, ...verdict };
+    })
+    .sort(byClaimId);
+
+  // --- SILENT RISK ---------------------------------------------------------------------------
+  // Reached, present in BOTH versions, and not one of its five layers moved. Nothing else in the
+  // system will ever mention this claim: M3 sees no move, M4 returns NONE, M9 plans nothing.
+  // An added or removed claim is never silent — its existence changed, which is a flag in itself.
+  const silentRisk = affected
+    .filter((id) => {
+      const node = nodes.get(id);
+      return node.old && node.new && movedByNode.get(id).length === 0;
+    })
+    .map((id) => {
+      const { from, via } = reachedBy.get(id);
+      const reachedFrom = [...from].sort(cmp);
+      const kinds = [...via].sort(cmp);
+      return {
+        claimId: id,
+        reachedFrom,
+        via: kinds,
+        reason:
+          `A change reached this claim (via ${kinds.join(", ")}, from ${reachedFrom.join(", ")}) but none of its ` +
+          `five fingerprints moved: its own text is untouched, so M4 reports NONE and no other check will ` +
+          `mention it. If it restates, answers or depends on what changed, it now contradicts the package ` +
+          `silently — every check passes and the contradiction ships.`,
+      };
+    })
+    .sort(byClaimId);
+
+  return { affected, actions, silentRisk, cycles: findCycles(nodes, edges) };
+}
+
+// CONTRACT HISTORY (four defects this implementation surfaced; ALL now fixed at the source —
+// kept here because THE REASONING is the load-bearing part, and a fixed contract with a forgotten
+// rationale is one refactor away from being un-fixed. The authority is the interfaces file, not
+// this comment: read §3 and §5b rather than re-deriving them here.)
+// -------------------------------------------------------------------------------------------
+// A. **`root` is VESTIGIAL** — accepted, never read. This layer needs no I/O: everything
+//    reachability depends on is already in CLAIMS and TERMS, and a pure impact path is what makes
+//    a flag reproducible from git months later. RESOLVED in §3 as documentation rather than a
+//    removal (signature stability). It is §5c's worst instance IN A MIRROR: there, a parameter
+//    (M9's `immutableRegionsByFile`) made a check that COULD NOT RUN look implemented; here it
+//    makes a pure function look file-dependent, holding a door open for the next author to walk
+//    through. **Do not "use it since it's there".**
+// B. **`claimImpact` had no `ctx`, so `actions` could not be authorized.** RESOLVED: §3 now
+//    carries the optional 5th parameter, and `ctxForClaim` threads it to M4. The reasoning worth
+//    keeping is not "it was inconvenient": M4 takes `{authorized, spineChange, pedagogy}` and M7
+//    exists to answer the first (`isAuthorizedDivergence(overrides, claimId)`), but M5 had no
+//    parameter to receive it — so **§10 decision 2's ask-once rule was UNREACHABLE from this seam
+//    at all**, not merely awkward. Every `content` move classified ESCALATE and every `spine` move
+//    structural RECHECK: the safe direction, and therefore invisible, but systematically more
+//    alarming than the package deserved. Alarm fatigue is the failure M10 exists to prevent,
+//    arriving one module earlier. **M5 still does not read OVERRIDES itself** — M7 owns
+//    `authorized` and the caller passes it down; deriving authorization here would be §5d. And see
+//    `ctxForClaim` for why `authorized` is per-claim only and an edit-level one throws.
+// C. **`derivedFrom` HAD NO PRODUCER — the primary reachability edge was contract-only.** RESOLVED:
+//    §3's `declaredProvenance` now returns `derivedFrom` beside `termRefs`, for the identical
+//    reason, and M2 threads it into the claim record. The lesson is the part to keep. It was
+//    declared in `claims.schema.json` and spec §2.2 ("explicit edges for aggregate/derived
+//    claims"), and §3 made it the first thing `affected` traverses — but `grep` found it in
+//    exactly two places: the schema and the spec. No producer. Nothing wrote it. Every prior §5c
+//    instance had TWO implementations that could disagree; **this one had ZERO**, sitting in a
+//    consumer's contract, making the strongest edge in the graph look implemented. **A field's
+//    presence in a schema proves someone INTENDED it; it never proves anything WRITES it.**
+//    The proof that it mattered is this module's own headline test: the answer key is reached via
+//    `shared-term`, NOT `derivedFrom`, because nothing in the package declared that dependency —
+//    so the silent-risk result exists only because co-mention does, and a module that had trusted
+//    the authored edge would have found nothing at all.
+//    **The refusal that goes with the fix, now frozen into §3 as a rule:** M5 does not infer
+//    derivation from prose, from anchor adjacency, or from "the answer key sits under the
+//    question". Those are the fabrications §1 forbids for a term's spineRef, wearing a third hat.
+//    A guessed `derivedFrom` fabricates an AUTHORED assertion, which is strictly worse than
+//    co-mention — co-mention reaches the same claim while honestly saying WHY (`via`).
+// D. **A dangling `derivedFrom` is silent here.** A ref naming an id in neither version yields no
+//    edge (inventing a ghost node would be a fabrication), so the dependency the author asserted
+//    vanishes without a word. This signature's four fields have nowhere to say so. RESOLVED by
+//    ASSIGNMENT: §5b gained a fourth M11 row, "`derivedFrom` target exists", beside the dangling
+//    declared anchor and the dangling spineRef — the same question, one level down, same owner.
+//    Deliberately NOT crammed into `cycles`, which answers a different question: a field made to
+//    answer two questions is how both of them get lost.

@@ -101,7 +101,7 @@
       "id": "repo:docs/semantic-index-interfaces.md",
       "path": "docs/semantic-index-interfaces.md",
       "type": "documentation",
-      "hash": "5d317543cc8c57f107fb384601834975126852bc52ae20e4c11f2cb0dbe575ac"
+      "hash": "7341a93d101fce856c8d61628f8160a2ba08b47c016f3f404575278ca75d1758"
     },
     {
       "id": "repo:docs/semantic-index-spec.md",
@@ -125,7 +125,7 @@
       "id": "repo:format-contracts/deliverables.md",
       "path": "format-contracts/deliverables.md",
       "type": "documentation",
-      "hash": "2a59600ae3412b5eb9b166ac40d07d41f7d993c10845ca73a3b187390c4ac9c1"
+      "hash": "1998bf9b9fa63dc0d747acfd4825d39291bb9096377e6dec37fdd0eb3cfed6c0"
     },
     {
       "id": "repo:GEMINI.md",
@@ -299,7 +299,7 @@
       "id": "repo:scripts/lib/claims.mjs",
       "path": "scripts/lib/claims.mjs",
       "type": "kernel",
-      "hash": "1c56e1509a5a8c068e19409657b8e0b7d55453487a00760514fa40b0687ed023"
+      "hash": "b8c6595165b48c5f9ebc7e25cdccf94a6438de5dc43fdc8392bd938a2b28e58c"
     },
     {
       "id": "repo:scripts/lib/classify.mjs",
@@ -311,7 +311,7 @@
       "id": "repo:scripts/lib/coherence.mjs",
       "path": "scripts/lib/coherence.mjs",
       "type": "kernel",
-      "hash": "f88886e1a66b999ec72bacc1dd6c0e2f2f5df4a683eb6c4fc41df5b2f9ea6c77"
+      "hash": "95f6015f67ee7ee345a1d1b898f01114aea93742e72d69f85c726182804d4edb"
     },
     {
       "id": "repo:scripts/lib/consistency.mjs",
@@ -323,7 +323,7 @@
       "id": "repo:scripts/lib/contract.mjs",
       "path": "scripts/lib/contract.mjs",
       "type": "kernel",
-      "hash": "accc3cd10c90a63a34eb9fa8dbd3463edc39cbbb110f25a3597541cc3f9b4968"
+      "hash": "c30c68455e1095ed94cc92a9e18f13aac92d42c53d8b5d7d5586a986055af35d"
     },
     {
       "id": "repo:scripts/lib/escalation.mjs",
@@ -722,10 +722,22 @@
       "hash": "216d424096bc52751f3eee604afc043121d8c20faf8cf71bc8213f793f8bb9cd"
     },
     {
+      "id": "repo:tests/coherence-claims.test.mjs",
+      "path": "tests/coherence-claims.test.mjs",
+      "type": "test",
+      "hash": "dde933a7608e310901a07fead1315a7062e2b010ebd75e327e805a722be8bc0b"
+    },
+    {
       "id": "repo:tests/consistency.test.mjs",
       "path": "tests/consistency.test.mjs",
       "type": "test",
       "hash": "397deda358a263834511fa0cb13af81665be0fb64b0a334fbef5bf2285eec465"
+    },
+    {
+      "id": "repo:tests/contract-declarations.test.mjs",
+      "path": "tests/contract-declarations.test.mjs",
+      "type": "test",
+      "hash": "b619e2b0a48547016c0d3129691c0f64e70aba10e30e98fb79fec49cd3a0d18a"
     },
     {
       "id": "repo:tests/contract.test.mjs",
