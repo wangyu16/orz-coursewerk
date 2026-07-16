@@ -98,6 +98,18 @@
       "hash": "c4288e3b72e054195cf0e9be280f4f59110b61661e7216a1c9e4633e7ac03146"
     },
     {
+      "id": "repo:docs/semantic-index-interfaces.md",
+      "path": "docs/semantic-index-interfaces.md",
+      "type": "documentation",
+      "hash": "f2920c21ebe3254e79bbc81e23a2cb53b680011655cfde989b2b20ce6ab64057"
+    },
+    {
+      "id": "repo:docs/semantic-index-spec.md",
+      "path": "docs/semantic-index-spec.md",
+      "type": "documentation",
+      "hash": "8e1df8f281e887db8c6647a896967ae052761897d7aab2289676b40cf4435e2b"
+    },
+    {
       "id": "repo:docs/wikipedia-science-topic.md",
       "path": "docs/wikipedia-science-topic.md",
       "type": "documentation",
@@ -284,6 +296,12 @@
       "hash": "fc5531431ddf5e58c4bf3004eae22b57c80810b2b6e47abfd447c26c06f0bdfe"
     },
     {
+      "id": "repo:scripts/lib/classify.mjs",
+      "path": "scripts/lib/classify.mjs",
+      "type": "kernel",
+      "hash": "7ac0579bc48ba8f3b119e1707ff1d613022be1b89a1aea0f24a3dcb95493ec28"
+    },
+    {
       "id": "repo:scripts/lib/coherence.mjs",
       "path": "scripts/lib/coherence.mjs",
       "type": "kernel",
@@ -296,6 +314,12 @@
       "hash": "accc3cd10c90a63a34eb9fa8dbd3463edc39cbbb110f25a3597541cc3f9b4968"
     },
     {
+      "id": "repo:scripts/lib/immutable.mjs",
+      "path": "scripts/lib/immutable.mjs",
+      "type": "kernel",
+      "hash": "16c3c61314341c09cab6a59b9d46fdcaf752f8bb757258f0d5b81d3adfc8ee78"
+    },
+    {
       "id": "repo:scripts/lib/key_fact_review.mjs",
       "path": "scripts/lib/key_fact_review.mjs",
       "type": "kernel",
@@ -306,6 +330,12 @@
       "path": "scripts/lib/output_git.mjs",
       "type": "kernel",
       "hash": "4de30289a1368bf4d5b847374ab398ed070b4ea1c5c5eb82aa1f495ee2c8f955"
+    },
+    {
+      "id": "repo:scripts/lib/overrides.mjs",
+      "path": "scripts/lib/overrides.mjs",
+      "type": "kernel",
+      "hash": "4a5c3ab956029ffddfdd448002c17d78842448209c092531c2e3b0ec0bb89dd5"
     },
     {
       "id": "repo:scripts/lib/pre_ingestion.mjs",
@@ -336,6 +366,12 @@
       "path": "scripts/lib/system_index.mjs",
       "type": "kernel",
       "hash": "5241698bafbbde43fbacb6abe70c1669ebc0d36d5e2f2920ad40208ff74d1aa3"
+    },
+    {
+      "id": "repo:scripts/lib/terms.mjs",
+      "path": "scripts/lib/terms.mjs",
+      "type": "kernel",
+      "hash": "386931f7978e74af4899be990d35c5e84203905ff274ff3fde5d09fb3ad462ac"
     },
     {
       "id": "repo:scripts/lib/verbatim.mjs",
@@ -638,6 +674,12 @@
       "hash": "1afeb2968b64ef48ec436982ea5c70cfb5cccd6dff72bad8833441a8d89d2f1b"
     },
     {
+      "id": "repo:tests/classify.test.mjs",
+      "path": "tests/classify.test.mjs",
+      "type": "test",
+      "hash": "216d424096bc52751f3eee604afc043121d8c20faf8cf71bc8213f793f8bb9cd"
+    },
+    {
       "id": "repo:tests/contract.test.mjs",
       "path": "tests/contract.test.mjs",
       "type": "test",
@@ -648,6 +690,54 @@
       "path": "tests/evidence-tools.test.mjs",
       "type": "test",
       "hash": "3a3bce8ade7e96ebdb0cab3344abafe4abf90268396770ade8fded19a62e4593"
+    },
+    {
+      "id": "repo:tests/fixtures/mini-package/assessment-support/phase-change.md",
+      "path": "tests/fixtures/mini-package/assessment-support/phase-change.md",
+      "type": "test",
+      "hash": "089db210c862d75aec66c87226d15d3c7f5ac96eb7b7d151e7a5ef72e29c47af"
+    },
+    {
+      "id": "repo:tests/fixtures/mini-package/concepts/course.md",
+      "path": "tests/fixtures/mini-package/concepts/course.md",
+      "type": "test",
+      "hash": "650606745e83f459594d813c58ead6b02e2741b94789b24afe3e1951bb3e3ec3"
+    },
+    {
+      "id": "repo:tests/fixtures/mini-package/concepts/phase-change.md",
+      "path": "tests/fixtures/mini-package/concepts/phase-change.md",
+      "type": "test",
+      "hash": "2bac5f48298c938a351be6666e00126e67991dddd3171894ae37c2ee7726f319"
+    },
+    {
+      "id": "repo:tests/fixtures/mini-package/metadata/SOURCE_RECORD.json",
+      "path": "tests/fixtures/mini-package/metadata/SOURCE_RECORD.json",
+      "type": "test",
+      "hash": "0ede64e5c10e3732b21b6bd027c19ee47b0d1dbb70c137ec73a66b2ea3cf706c"
+    },
+    {
+      "id": "repo:tests/fixtures/mini-package/practice/phase-change.md",
+      "path": "tests/fixtures/mini-package/practice/phase-change.md",
+      "type": "test",
+      "hash": "a632beb61df8ab5d155854765f976fb7a86cb633e8a4a7c8196dfe844ba0c46b"
+    },
+    {
+      "id": "repo:tests/fixtures/mini-package/study-guide/phase-change.md",
+      "path": "tests/fixtures/mini-package/study-guide/phase-change.md",
+      "type": "test",
+      "hash": "a886401d9ae630d55d08297f0248e118b546d616a1a102ebde78046e6ba901de"
+    },
+    {
+      "id": "repo:tests/immutable.test.mjs",
+      "path": "tests/immutable.test.mjs",
+      "type": "test",
+      "hash": "0e1e81a73906de462b08e095c33ecd0cfa1a8bc08d31438d1cb0800f1b3776be"
+    },
+    {
+      "id": "repo:tests/overrides.test.mjs",
+      "path": "tests/overrides.test.mjs",
+      "type": "test",
+      "hash": "8ac4c09b05b7ba7aa7c78b302bfeb9b5036d7ca7ddc6dd0c28c735bc8fb8634d"
     },
     {
       "id": "repo:tests/qa.test.mjs",
@@ -672,6 +762,12 @@
       "path": "tests/system-index.test.mjs",
       "type": "test",
       "hash": "d8cece363b125adb0b809baf24714c44fcfe516f33f86acac30b02921878fd40"
+    },
+    {
+      "id": "repo:tests/terms.test.mjs",
+      "path": "tests/terms.test.mjs",
+      "type": "test",
+      "hash": "78f96cb328ca944dcd92ae74095e489a7f9ca3a8c294f54d38a77afb6d8816b9"
     },
     {
       "id": "repo:VERSION",

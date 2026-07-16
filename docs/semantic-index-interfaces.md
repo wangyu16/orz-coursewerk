@@ -32,16 +32,30 @@ Real packages already use a regular section structure — the parser targets exa
 `## Concept sequence` → `concept.course.<n>`; `## Chapter sequence` → inter-chapter order;
 `## Key terms` (optional) → course-wide vocabulary.
 
-### `## Key terms` grammar (plain markdown, tolerant)
+### `## Key terms` grammar (plain markdown, tolerant)  [AMENDED 2026-07-16 — see §7]
 ```
-- **<preferredLabel>** (<alias>, <alias>) — <gloss>
-- **PAM** (protospacer adjacent motif) — the motif adjacent to the target
+- **<preferredLabel>** (<alias>, <alias>) — <gloss> [<spineRef>]
+- **PAM** (protospacer adjacent motif) — the motif adjacent to the target [concept.crispr.5]
 - **ethene** (aliases: ethylene) — the IUPAC-preferred name
 - **Cas9**
 ```
 Rules: bold run = `preferredLabel` (required). Optional parenthetical = aliases (an `aliases:` prefix is
-accepted and stripped). Optional `—`/`--` gloss. Everything else ignored. A term listed here is
+accepted and stripped). Optional `—`/`--` gloss. **Optional trailing `[concept.x]` / `[objective.x]` =
+`spineRef`** — the concept this term is authorized under. Everything else ignored. A term listed here is
 `status:"confirmed"` (instructor-authorized **because it is in the map**).
+
+**`spineRef` is OPTIONAL and absent-is-honest.** NEVER derive it by matching term labels against
+`## Concept sequence` items: those are *sentences*, so matching yields incidental hits (a term like
+"temperature" would bind to whichever sentence mentions it first) and M5's orphan analysis would then trust an
+arbitrary link. An absent link is honest; a guessed one is a fabrication in a deterministic costume. The
+explicit bracket exists because the **Q3 placement flow already produces a placement** — when the instructor
+approves a candidate's placement, that decision is recorded here.
+
+**`status` vs `lifecycle` are ORTHOGONAL (bug fix, 2026-07-16).** `status ∈ confirmed|candidate` is
+**authorization** only; `lifecycle ∈ active|deprecated-but-teach|superseded` is the term's life stage. A
+`deprecated-but-teach` term **is still `confirmed`** — it is in the map. (The original flat enum mixed the
+axes, so a naive `status==="confirmed"` check would have read false for an instructor-authored deprecated
+term and mis-flagged it as an orphan.)
 
 **Why a new section:** concepts are written as *sentences* ("Foreign nucleic acid supplies a protospacer
 candidate"), so term extraction from prose alone would be heuristic guessing. `## Key terms` makes the
@@ -76,10 +90,23 @@ export function fingerprints(claim, terms)     // -> {format,label,content,spine
 export function normalizeContent(text, terms)  // -> canonical string (terms->ids, numbers+units normalized,
                                                //    modality/negation/quantifiers PRESERVED)
 
-// M4 lib/classify.mjs      (PURE)
-export function classify(oldFp, newFp, ctx)    // ctx: {authorized:bool, spineChange:"additive"|"structural"|null}
-                                               // -> {action, layer, reason}
-                                               // action ∈ NONE|RENAME|RE-DERIVE|REGENERATE|RECHECK|ESCALATE|ANNOTATE
+// M4 lib/classify.mjs      (PURE)   [AMENDED 2026-07-16 after M4 implementation surfaced 3 gaps]
+export function classify(oldFp, newFp, ctx)
+  // ctx: { authorized: boolean,
+  //        spineChange: "additive"|"structural"|"depth"|null,   // "depth" REQUIRED: spec §5 wants REGENERATE
+  //                                                             //   for a depth change (cannot patch depth).
+  //                                                             //   unknown/absent => reads as structural (fail toward review)
+  //        pedagogy: "deprecate-but-teach"|null }               // REQUIRED: else spec §5's ANNOTATE row is dead code
+  // -> { action, layer, reason, followUp? }
+  // action ∈ NONE|RENAME|RE-DERIVE|REGENERATE|RECHECK|ESCALATE|ANNOTATE
+  // followUp?: { action, reason } — a STRUCTURED second step, never prose to be parsed.
+  //   Needed because spec §5's provenance rule is a SEQUENCE ("RECHECK, then ESCALATE (adopt upstream?)"):
+  //   RECHECK is the mechanical impact analysis; ESCALATE is the human adopt-or-decline decision.
+  //   M10 reads `followUp` to queue the escalation. Suppressed when ctx.authorized (ask-once rule,
+  //   §10 decision 2 — re-asking a settled override is alarm fatigue).
+  // Precedence when several layers move: ANNOTATE(pedagogy) > spine > content > provenance > label > format
+  //   (blast radius; the winning verb subsumes the losers' work). Losing layers are named in `reason`,
+  //   never discarded. ONE primary action — returning a set would push precedence into every caller.
 
 // M2 lib/claims.mjs
 export function extractClaims(root, terms)     // -> CLAIMS (declared-first + deterministic scan backstop)
@@ -131,6 +158,12 @@ changing is the whole point). Consequences:
   move this; whitespace/reflow/rephrase **MUST NOT**).
 - `spine` — hash of sorted `spineRefs`.
 - `provenance` — hash of sorted `sourceRefs` + any override id.
+
+## 5b. Ownership of cross-cutting validations (assigned — do not leave orphaned)
+| Check | Owner | Why it can't live elsewhere |
+|---|---|---|
+| **spineRef target exists** (`[concept.crispr.5]` parses fine whether or not concept 5 exists) | **M11 gate** (may share code with M5 orphan analysis) | M1 has only the term side; validating term→spine needs BOTH node sets. **A typo'd bracket becomes a dangling link that LOOKS authorized** — the same fabrication risk the absent-spineRef rule exists to prevent, wearing a badge. Dangling spineRef ⇒ flag. |
+| **claim.spineRefs target exists** | **M11 gate** | same reason; orphan analysis must distinguish "no parent" from "parent that doesn't exist". |
 
 ## 6. Non-negotiables for every module
 1. **Pure/deterministic** (M3–M6, M4): same input → same output. No LLM, no network, no clock in the index path.
