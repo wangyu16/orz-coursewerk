@@ -1,6 +1,6 @@
 # Semantic Whole-Package Index — Implementation Spec
 
-*Status: SPEC (no code yet — for operator review). Branch: `feat/semantic-index` off `origin/main`
+*Status: SPEC — DECISION-COMPLETE (all 4 operator questions resolved; ready to implement Slice 1). Branch: `feat/semantic-index` off `origin/main`
 (`e28957a`). Extends the existing course-package coherence index; does not replace it.*
 
 ---
@@ -235,7 +235,7 @@ Each slice: code + tests green + a commit on `feat/semantic-index`. **No push** 
   wave-1→wave-2 **delta on the S-C/S-F metrics is a headline manuscript result** (found-by-fault-injection →
   fixed → re-measured).
 
-## 10. Operator decisions (Q1 resolved; Q2-Q4 open)
+## 10. Operator decisions (ALL RESOLVED 2026-07-16 — spec is decision-complete)
 1. **Claim-provenance declaration burden — DECIDED (2026-07-16): selective + structural + gate-on-presence.**
    Declare only HIGH-STAKES claim types (facts with values/quantities, definitions, answer keys, objectives
    coverage — the CLAIMS.json types); connective prose carries no duty. Declaration is STRUCTURAL (sidecar /
@@ -286,4 +286,18 @@ Each slice: code + tests green + a commit on `feat/semantic-index`. **No push** 
    concept) = registry regeneration only, NO propagation cascade; STRUCTURAL change (add/remove/move a
    concept/objective) = the full RECHECK/REGENERATE path from the change taxonomy. Registering supporting
    vocabulary must never RECHECK the whole package.
-4. **Override authority** — does an override require a cited `justifiedBy`, or is instructor assertion enough?
+4. **Override authority — DECIDED (2026-07-16): source REQUESTED, never REQUIRED; basis + rationale always
+   recorded.** The agent asks ONCE for a reference (optional); the override is recorded and permanently
+   settled either way (Q2 ask-once rule — no future nagging). `OVERRIDES.json` gains a `basis` field:
+   `cited` (justifiedBy present) | `instructor-expertise` | `pedagogical-choice` (deliberate simplification;
+   pairs with ANNOTATE where appropriate). All three bases are EQUALLY AUTHORITATIVE inside the package —
+   the fidelity checker treats each as authorized divergence, never hallucination.
+   **Refinement (operator): an important, not-obviously-true claim usually needs a reliable source. If the
+   instructor insists WITHOUT one, a RECORD AND EXPLANATION are required for future reference:** for uncited
+   overrides the `rationale` field is REQUIRED — the agent asks for a brief explanation ("for the record,
+   what's the basis?" — a scribe's question, not a challenge) and records it verbatim. Every override thus
+   answers "why does this package diverge from its source?" — for future maintainers, the instructor's own
+   later reference, and downstream OER reusers. Publish-time transparency: the pack receipt lists overrides
+   by basis; uncited ones appear in the package's deviation notes — visible, never blocking, neutral tone.
+   Accepted cost: a mistaken expertise-based override gets the same protection as a good one — mitigated by
+   the Q2 sanity-check ask happening BEFORE recording, the required rationale, and publish-time visibility.
