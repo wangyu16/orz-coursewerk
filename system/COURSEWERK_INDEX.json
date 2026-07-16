@@ -101,7 +101,7 @@
       "id": "repo:docs/semantic-index-interfaces.md",
       "path": "docs/semantic-index-interfaces.md",
       "type": "documentation",
-      "hash": "e761320054e21c05a8038832bdf5e14bf9bfd158c26ffff17faf3edca3f1221d"
+      "hash": "5d317543cc8c57f107fb384601834975126852bc52ae20e4c11f2cb0dbe575ac"
     },
     {
       "id": "repo:docs/semantic-index-spec.md",
@@ -296,6 +296,12 @@
       "hash": "fc5531431ddf5e58c4bf3004eae22b57c80810b2b6e47abfd447c26c06f0bdfe"
     },
     {
+      "id": "repo:scripts/lib/claims.mjs",
+      "path": "scripts/lib/claims.mjs",
+      "type": "kernel",
+      "hash": "02b318c00c085e6c7831ad6982baa9fd5a153b202262076347d7b9a4396db114"
+    },
+    {
       "id": "repo:scripts/lib/classify.mjs",
       "path": "scripts/lib/classify.mjs",
       "type": "kernel",
@@ -360,6 +366,12 @@
       "path": "scripts/lib/pre_ingestion.mjs",
       "type": "kernel",
       "hash": "dffa52bc99908bc408498621e300ad1bd8c8dae31fe63af5dfd3d9fa8131944f"
+    },
+    {
+      "id": "repo:scripts/lib/propagate.mjs",
+      "path": "scripts/lib/propagate.mjs",
+      "type": "kernel",
+      "hash": "be30211ca9e15be73a482f3274d37841534524e55d8f2f7246e334e1c9037269"
     },
     {
       "id": "repo:scripts/lib/rights_preflight.mjs",
@@ -692,6 +704,12 @@
       "hash": "1afeb2968b64ef48ec436982ea5c70cfb5cccd6dff72bad8833441a8d89d2f1b"
     },
     {
+      "id": "repo:tests/claims.test.mjs",
+      "path": "tests/claims.test.mjs",
+      "type": "test",
+      "hash": "9e42bd9101c0e137ec665ce47b4bc9a6442a807b50e4e8f0252e9569c46b00c2"
+    },
+    {
       "id": "repo:tests/classify.test.mjs",
       "path": "tests/classify.test.mjs",
       "type": "test",
@@ -774,6 +792,12 @@
       "path": "tests/overrides.test.mjs",
       "type": "test",
       "hash": "922281b84c68345a73e22fb9ad45ec19053a7b3879c0ea2d8b836b89bc79230b"
+    },
+    {
+      "id": "repo:tests/propagate.test.mjs",
+      "path": "tests/propagate.test.mjs",
+      "type": "test",
+      "hash": "a7139895467f189e6cc506566516033922f4cf98729733996ea290b634445e78"
     },
     {
       "id": "repo:tests/qa.test.mjs",

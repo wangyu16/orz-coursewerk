@@ -115,6 +115,11 @@
                 },
                 "anchor": {
                   "type": "string"
+                },
+                "offset": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Offset of this claim's text within `file`, as a JS STRING INDEX (UTF-16 code units) — the unit `lib/immutable.mjs` (M8) indexes its regions in. **NOT a byte offset.** The two diverge on any non-ASCII character (`°`, `→`, Greek letters), which a chemistry package is guaranteed to contain — the golden fixture itself says `100 °C`. This is not a pedantic distinction: a byte offset does not fail loudly, it lands one character INSIDE the quotation, which is precisely the fabrication case the check exists to prevent. (Demonstrated: for `Heat to 100 °C. Then: \"the melting point...\"`, M8 reports the quote at 22; the byte offset is 23; slicing at 23 lands inside the quote.) SET ONCE BY M2 at extraction; consumers READ it (§5d) and MUST NOT re-derive it by searching for the claim text — that breaks on any repeated sentence. Without it, M9's plan-time immutable-region check CANNOT RUN: M8's regions are file offsets, so a claim carrying only {file, anchor} gives planPropagation nothing to compare against. Optional ONLY because a claim may be built in memory without a file; when a real file location exists, M2 MUST set it, and a consumer MUST treat its absence as fail-closed (refuse the edit) rather than as offset 0."
                 }
               },
               "additionalProperties": false

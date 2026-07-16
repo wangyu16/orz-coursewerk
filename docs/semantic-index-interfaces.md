@@ -70,9 +70,14 @@ vocabulary explicit, human-authored, and deterministically parseable — and it 
 | concept | `concept.<chapter-slug>.<n>` · course: `concept.course.<n>` |
 | objective | `objective.<chapter-slug>.<n>` |
 | misconception | `misconception.<chapter-slug>.<n>` |
-| claim | `claim.<slug(spineRef)>.<shortHash(anchor + label-fp)>` — see §4 |
+| claim | `claim.<slug(spineRef)>.<shortHash(fileQualifiedAnchor + identityLabel)>` — see §4 |
 
 Use existing `lib/slug.mjs` for slugging. Ids are **stable across rephrase and rename** (§4).
+
+**`identityLabel` is NOT M3's `label` fingerprint** — see §4b. **`fileQualifiedAnchor` is `location.file + "|" + anchor`**,
+never the bare anchor: two claims under the same heading in different artifacts (`study-guide/ch3.md` and
+`practice/ch3.md` both have `## Objectives`) would otherwise collide into ONE id — a granularity defect in the
+module built to fix granularity defects, and it would silently merge two distinct claims into one node.
 
 ---
 
@@ -185,13 +190,33 @@ class this index exists to catch, reproduced inside the index itself. Therefore:
   3. else `null`.
 - A claim whose locations span chapters keeps the **spine's** scope — the spine outranks file placement.
 
-Match old↔new by **(spineRef + location anchor + `label` fingerprint)** — **never by `content`** (content
-changing is the whole point). Consequences:
+Match old↔new by **(spineRef + file-qualified anchor + `identityLabel`)** — **never by `content`** (content
+changing is the whole point), and **never by M3's `label` fingerprint** (§4b). Consequences:
 - rephrase → same id (format fp moves only)
 - value change → **same id** (content fp moves; the claim is still "the melting point of water")
-- rename → same id (label fp moves, but spineRef+anchor hold)
+- rename → same id (M3's label fp moves; `identityLabel` and spineRef+anchor hold)
 - unmatched new = **added**; unmatched old = **removed**; report both (splits/merges surface as add+remove pairs
   with a shared spineRef — flag as `split`/`merged`, do not silently drop).
+
+### 4b. `identityLabel` ≠ M3's `label` fingerprint  [ADDED 2026-07-16 — M2 exposed a self-contradiction in §4]
+As originally frozen, §2 and §4 were **jointly unsatisfiable**, and §4 violated its own rename rule with its own
+key. M3's `label` fingerprint hashes `termId + preferredLabel` and therefore **moves on rename BY DESIGN** (§5 —
+that is what makes RENAME detectable at all, and hashing ids alone was dead code). So if the identity key were
+that fingerprint, a rename would move the key → no match → add+remove → the id changes, contradicting §4's
+"rename → same id" row directly. The line "rename → same id (label fp moves, but spineRef+anchor hold)" states
+the contradiction out loud: a key component that moves on the operation the key must survive.
+
+**Resolution — the two are different values with opposite requirements over the same projection:**
+| | needs | value |
+|---|---|---|
+| `identityLabel` (§2/§4, M2) | rename-**INVARIANT** — an id must survive the rename | hash of **sorted term ids** |
+| `label` fingerprint (§5, M3) | rename-**VARIANT** — a rename must be *observable* | hash of **termId + preferredLabel** |
+
+**The general lesson, worth more than the instance: an IDENTITY KEY and a CHANGE SIGNAL have opposite
+requirements over the same projection, so they can never be the same value.** M3 was right to reject ids-alone for
+its layer; M2 is right to use exactly that for its key. Both are correct; the freeze conflated them. Whenever a
+projection is used for both "is this the same thing?" and "did this thing change?", it must be computed twice, on
+purpose, under two names — and a comment must say why, or someone will dutifully DRY them back together.
 
 ## 5. Fingerprint rules (FROZEN)  [AMENDED 2026-07-16 — M3 implementation exposed 3 contradictions]
 - `format` — **the WORDING layer**: hashed blind to whitespace/markup, so it moves on a *rephrase* and NOT on
@@ -228,6 +253,12 @@ Four modules independently hit the same failure during implementation, so it is 
 - **M6/M10**: M6's detector kinds (`value-disagreement`/`definition-drift`) had no field in REVIEW_QUEUE's enum
   → folding them into the generic `internal-inconsistency` destroyed the observation → fixed with
   `detectorKinds[]`, carried alongside the decision-level `kind`.
+- **M8/M9**: M8 produces immutable regions as **file offsets**, but `claims.schema.json`'s `locations[]` held only
+  `{file, anchor}` — so `planPropagation`, handed `immutableRegionsByFile`, had nothing to compare against and the
+  plan-time quotation guard could not run at all. Fixed with `locations[].offset`, set by M2. **The most dangerous
+  instance so far**: the unheld fact was the one preventing a rename from silently editing the inside of a direct
+  quotation — i.e. fabricating a quotation — and the parameter's presence in the signature made the check *look*
+  implemented.
 
 **The rule:** if a downstream module would have to *parse prose* to get a fact, that prose has silently become a
 load-bearing API that no test protects — and any rewording breaks it. Give the fact a field. Keep the prose for
@@ -244,6 +275,21 @@ and every one was visible in *this file*, at the seam, with nothing built yet. R
 signature or schema changes. Corollary: when the fold is *deliberate* (many observations → one decision, as with
 queue `kind`), the fold is correct but the collapsed detail still needs its own field; "it's in the prose" is not
 a field.
+
+### 5e. A third freeze-time check: IS ONE VALUE SERVING AS BOTH AN IDENTITY KEY AND A CHANGE SIGNAL?
+If so it is two values, and freezing them as one makes the spec self-contradictory (§4b: §4's key violated §4's
+own rename rule). Ask of every projection: is it used to answer *"is this the same thing?"* AND *"did this thing
+change?"* Those demand invariance and variance respectively over the same input. Compute both, name both,
+comment why — otherwise a later tidy-up DRYs them back together and silently breaks whichever one loses.
+
+### 5f. A fourth freeze-time check: DOES THIS FIELD NAME ONE UNIT, OR OFFER A CHOICE?
+`locations[].offset` was frozen as *"Byte/char offset"* — which is not a unit, it is an **offer of two**. Two
+modules can each read that sentence correctly and still disagree, and the drift is one position per non-ASCII
+character upstream: invisible in ASCII fixtures, guaranteed in a chemistry package. M8's unit is the **JS string
+index (UTF-16 code units)**; a byte offset does not fail loudly, it lands one character *inside* a quotation —
+the exact fabrication case. Name the unit, name the module that defines it, and say what it is NOT. A consumer
+should also **verify** the unit where it can (`text.slice(offset, offset + s.length) === s`) and refuse on
+mismatch, so a mis-minted offset fails loudly instead of editing one character off.
 
 ### 5d. A second freeze-time check: IS THIS FACT DERIVED IN MORE THAN ONE PLACE?
 `scope` was independently derived by M6 (from `spineRefs`) and M3 (from `locations[0].file`) — both defensible,
