@@ -146,6 +146,7 @@ import path from "node:path";
 import { slugify } from "./slug.mjs";
 import { resolve as resolveTerm } from "./terms.mjs";
 import { fingerprints } from "./fingerprint.mjs";
+import { scanProjection } from "./units.mjs";
 
 const SCHEMA_VERSION = 1;
 
@@ -180,39 +181,27 @@ const SPINE_SCOPE_RE = /^(?:concept|objective)\.([^.]+)\./;
 const ANSWER_RE = /(?:^|[\s|>])\*{0,2}answers?\*{0,2}\s*:/i;
 
 /**
- * Unit surface forms the scan recognizes, LONGEST FIRST so "kJ/mol" wins over "kJ" and "min" over
- * "m". This is a RECOGNIZER, not a conversion table and not a vocabulary: it answers only "is this
- * number bound to a unit", i.e. "is this block asserting a quantity". An unrecognized unit yields
- * no quantity, hence no claim from this rule — silence, not a guess. (A number with no unit is
- * never a quantity: "step 3" and "Chapter 2" are the richest source of spurious hits there is.)
- * See CONTRACT CONCERNS #3 — this is the third unit table in the index.
- */
-const SCAN_UNIT_FORMS = [
-  "kJ/mol", "J/mol", "kJ/kg", "J/kg", "kJ/g", "J/g",
-  "°C", "°F", "℃", "℉", "K",
-  "kcal", "kJ", "cal", "J",
-  "kg", "mg", "µg", "g",
-  "km", "cm", "mm", "nm", "µm", "m",
-  "mL", "L", "mmol", "mol",
-  "MPa", "kPa", "Pa", "atm", "bar",
-  "min", "h", "s", "%",
-  "celsius", "fahrenheit", "kelvin", "gram", "grams", "joule", "joules", "percent",
-];
-
-const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-/**
  * A number bound to a recognized unit. The trailing lookahead stops "g" matching inside "grams"
  * and "J" inside "J/g"; the leading `\d` requirement is what keeps bare integers out.
+ *
+ * THE RECOGNIZER VIEW of the shared unit table (`lib/units.mjs`) — see CONTRACT CONCERNS B, now
+ * CLOSED. This module used to own `SCAN_UNIT_FORMS`, the third of three unit tables in an index
+ * whose own interfaces §5d forbids deriving one fact in two places. They had drifted exactly the
+ * way that concern predicted: M3's alias table knew `torr`, `V`, `A`, `W` and `Hz`; this
+ * recognizer did not. So "The cell potential is 5 V" was never a `fact` claim, so M6 had nothing
+ * to compare it against, so the package reported ZERO FLAGS IT HAD NOT EARNED — a clean bill of
+ * health manufactured by a blind spot, which looks exactly like success.
+ *
+ * The recognizer is now a PROJECTION, and deliberately the narrowest of the three: it gets forms
+ * and nothing else. It answers only "is this number bound to a unit", i.e. "is this block
+ * asserting a quantity" — it is not a conversion table (M6's projection owns that) and not a
+ * vocabulary (M1 owns that). An unrecognized unit yields no quantity, hence no claim from this
+ * rule — silence, not a guess. (A number with no unit is never a quantity: "step 3" and
+ * "Chapter 2" are the richest source of spurious hits there is.)
  */
-const QUANTITY_RE = (() => {
-  const forms = [...SCAN_UNIT_FORMS]
-    .flatMap((f) => (/^[a-z]/.test(f) ? [f, f[0].toUpperCase() + f.slice(1)] : [f]))
-    .sort((a, b) => b.length - a.length || (a < b ? -1 : a > b ? 1 : 0));
-  return new RegExp(
-    `(?:-?\\d+(?:\\.\\d+)?)[\\s\\u00A0]*(?:${forms.map(escapeRe).join("|")})(?![A-Za-z0-9/])`,
-  );
-})();
+const QUANTITY_RE = scanProjection().quantityRe();
+
+const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const byString = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 

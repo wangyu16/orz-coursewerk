@@ -299,7 +299,7 @@
       "id": "repo:scripts/lib/claims.mjs",
       "path": "scripts/lib/claims.mjs",
       "type": "kernel",
-      "hash": "02b318c00c085e6c7831ad6982baa9fd5a153b202262076347d7b9a4396db114"
+      "hash": "1c56e1509a5a8c068e19409657b8e0b7d55453487a00760514fa40b0687ed023"
     },
     {
       "id": "repo:scripts/lib/classify.mjs",
@@ -317,7 +317,7 @@
       "id": "repo:scripts/lib/consistency.mjs",
       "path": "scripts/lib/consistency.mjs",
       "type": "kernel",
-      "hash": "02935dc21c638ca9befc07c87bb8f45cd5de22f9241a9f2624af3e311633233e"
+      "hash": "223ae36e157c72ff06606c92a0f33de38b33600dc63562c19d254dba0e1aad1c"
     },
     {
       "id": "repo:scripts/lib/contract.mjs",
@@ -335,7 +335,7 @@
       "id": "repo:scripts/lib/fingerprint.mjs",
       "path": "scripts/lib/fingerprint.mjs",
       "type": "kernel",
-      "hash": "8fbaffaf8c3c0099174d48123ae15fe1cc9ac2404e9ae55b0184e392bbd2a17d"
+      "hash": "115edfe2bc21312fcd6c120a4c8bc919e7f1b5cc2cccb4ffe0fc41a17980f4a0"
     },
     {
       "id": "repo:scripts/lib/immutable.mjs",
@@ -402,6 +402,12 @@
       "path": "scripts/lib/terms.mjs",
       "type": "kernel",
       "hash": "386931f7978e74af4899be990d35c5e84203905ff274ff3fde5d09fb3ad462ac"
+    },
+    {
+      "id": "repo:scripts/lib/units.mjs",
+      "path": "scripts/lib/units.mjs",
+      "type": "kernel",
+      "hash": "4a9e715f47eacce5fa528b6eea4f8241bef2eccf888c5d7baeee51e4e3cfbd51"
     },
     {
       "id": "repo:scripts/lib/verbatim.mjs",
@@ -834,6 +840,12 @@
       "path": "tests/terms.test.mjs",
       "type": "test",
       "hash": "78f96cb328ca944dcd92ae74095e489a7f9ca3a8c294f54d38a77afb6d8816b9"
+    },
+    {
+      "id": "repo:tests/units.test.mjs",
+      "path": "tests/units.test.mjs",
+      "type": "test",
+      "hash": "eba92f6668fb9a91ca7b1186f680979cff4bdec288283e17c78120d4b2ae0640"
     },
     {
       "id": "repo:VERSION",

@@ -123,6 +123,7 @@
 // randomness. Output is fully sorted, so a diff of two scans shows only real change.
 
 import { resolve } from "./terms.mjs";
+import { dimensionProjection } from "./units.mjs";
 
 /**
  * Claim types whose numbers are ASSERTIONS ABOUT THE TERM, and so can contradict each other.
@@ -133,109 +134,42 @@ const ASSERTIVE_TYPES = new Set(["fact", "answer-key", "definition"]);
 /** Articles are the only words folded away when comparing definitions — provably cosmetic. */
 const ARTICLES = new Set(["a", "an", "the"]);
 
-/**
- * Unit table: surface form -> {dim, to} where `to` converts to the dimension's canonical unit.
- * The DIMENSION is the half of the subject key that stops a melting point from colliding with a
- * latent heat; the CONVERSION is what makes 212 °F and 100 °C agree instead of "disagree".
- * Deliberately a closed list: an unrecognized unit yields no quantity, which yields no finding —
- * silence, not a guess.
- */
-const SYMBOL_UNITS = {
-  // temperature -> K
-  "°C": { dim: "temperature", to: (v) => v + 273.15 },
-  "℃": { dim: "temperature", to: (v) => v + 273.15 },
-  "°F": { dim: "temperature", to: (v) => ((v - 32) * 5) / 9 + 273.15 },
-  "℉": { dim: "temperature", to: (v) => ((v - 32) * 5) / 9 + 273.15 },
-  K: { dim: "temperature", to: (v) => v },
-  // specific energy -> J/g   (listed before bare energy: longest-match-first matters)
-  "kJ/g": { dim: "specific-energy", to: (v) => v * 1000 },
-  "J/g": { dim: "specific-energy", to: (v) => v },
-  "kJ/kg": { dim: "specific-energy", to: (v) => v },
-  "J/kg": { dim: "specific-energy", to: (v) => v / 1000 },
-  // molar energy -> J/mol
-  "kJ/mol": { dim: "molar-energy", to: (v) => v * 1000 },
-  "J/mol": { dim: "molar-energy", to: (v) => v },
-  // energy -> J
-  kJ: { dim: "energy", to: (v) => v * 1000 },
-  J: { dim: "energy", to: (v) => v },
-  kcal: { dim: "energy", to: (v) => v * 4184 },
-  cal: { dim: "energy", to: (v) => v * 4.184 },
-  // mass -> g
-  kg: { dim: "mass", to: (v) => v * 1000 },
-  mg: { dim: "mass", to: (v) => v / 1000 },
-  µg: { dim: "mass", to: (v) => v / 1e6 },
-  g: { dim: "mass", to: (v) => v },
-  // length -> m
-  km: { dim: "length", to: (v) => v * 1000 },
-  cm: { dim: "length", to: (v) => v / 100 },
-  mm: { dim: "length", to: (v) => v / 1000 },
-  µm: { dim: "length", to: (v) => v / 1e6 },
-  nm: { dim: "length", to: (v) => v / 1e9 },
-  m: { dim: "length", to: (v) => v },
-  // volume -> L
-  mL: { dim: "volume", to: (v) => v / 1000 },
-  L: { dim: "volume", to: (v) => v },
-  // amount -> mol
-  mmol: { dim: "amount", to: (v) => v / 1000 },
-  mol: { dim: "amount", to: (v) => v },
-  // pressure -> Pa
-  MPa: { dim: "pressure", to: (v) => v * 1e6 },
-  kPa: { dim: "pressure", to: (v) => v * 1000 },
-  atm: { dim: "pressure", to: (v) => v * 101325 },
-  bar: { dim: "pressure", to: (v) => v * 1e5 },
-  Pa: { dim: "pressure", to: (v) => v },
-  // time -> s
-  min: { dim: "time", to: (v) => v * 60 },
-  h: { dim: "time", to: (v) => v * 3600 },
-  s: { dim: "time", to: (v) => v },
-  // ratio
-  "%": { dim: "ratio", to: (v) => v },
-};
-
-/** Spelled-out units, matched case-insensitively (symbols are case-SENSITIVE: mg ≠ Mg). */
-const WORD_UNITS = {
-  celsius: SYMBOL_UNITS["°C"],
-  fahrenheit: SYMBOL_UNITS["°F"],
-  kelvin: SYMBOL_UNITS.K,
-  degrees: null, // ambiguous without a scale — recognized only to be REJECTED, never guessed
-  gram: SYMBOL_UNITS.g,
-  grams: SYMBOL_UNITS.g,
-  kilogram: SYMBOL_UNITS.kg,
-  kilograms: SYMBOL_UNITS.kg,
-  joule: SYMBOL_UNITS.J,
-  joules: SYMBOL_UNITS.J,
-  percent: SYMBOL_UNITS["%"],
-  minutes: SYMBOL_UNITS.min,
-  minute: SYMBOL_UNITS.min,
-  seconds: SYMBOL_UNITS.s,
-  second: SYMBOL_UNITS.s,
-  hours: SYMBOL_UNITS.h,
-  hour: SYMBOL_UNITS.h,
-};
-
 const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * THE DIMENSIONED VIEW of the shared unit table (`lib/units.mjs`).
+ *
+ * This module used to own `SYMBOL_UNITS`/`WORD_UNITS` outright — one of THREE unit tables in the
+ * index (M3 had spelling aliases, M2 a bare recognizer), which was interfaces §5d's own check
+ * failing on §5d's own example. They had already drifted, in the dangerous direction: M3 knew
+ * `torr`/`V`/`A`/`W`/`Hz` and M2's scanner did not, so a "5 V" claim was never minted, so THIS
+ * SCAN had nothing to compare, so the package reported zero flags it had not earned. §5d's
+ * prescription is derive-once-at-the-source and project per consumer, so the fact now lives in the
+ * data and this module takes the projection it needs — the dimensioned one.
+ *
+ * The two halves this projection supplies are exactly the two this module's subject key is made of:
+ *   - the DIMENSION stops a melting point colliding with a latent heat (see the header);
+ *   - the CONVERSION is what makes 212 °F and 100 °C AGREE instead of alarm.
+ * `lookup` still refuses rather than guesses: an unrecognized unit (and a recognized-but-ambiguous
+ * one, "90 degrees") yields no quantity, hence no finding. Silence, not a guess.
+ *
+ * CASE IS PART OF THE CONTRACT, and it is the shared table that keeps it: symbols match exactly
+ * (`mg` is not `Mg`; `K` is kelvin, `k` is kilo- and is not a unit here at all) while spelled-out
+ * words fold case. M3's projection of the SAME table is wholly case-insensitive, because M3
+ * lowercases prose before it reads it — the same units, two case disciplines, one source.
+ */
+const UNIT_VIEW = dimensionProjection();
 
 /**
  * One regex for every unit form, LONGEST FIRST so "kJ/mol" wins over "kJ" and "min" over "m".
  * The trailing lookahead stops "g" from matching inside "gravity" (and "J" inside "J/g").
+ * Built by `lib/units.mjs` so that M2's recognizer and this scan cannot disagree about what a
+ * unit looks like — a form M2 does not see is a claim that never reaches this scan.
  */
-const QUANTITY_RE = (() => {
-  const forms = [
-    ...Object.keys(SYMBOL_UNITS),
-    ...Object.keys(WORD_UNITS).flatMap((w) => [w, w[0].toUpperCase() + w.slice(1)]),
-  ].sort((a, b) => b.length - a.length || (a < b ? -1 : a > b ? 1 : 0));
-  return new RegExp(
-    `(-?\\d+(?:\\.\\d+)?)[\\s\\u00A0]*(${forms.map(escapeRe).join("|")})(?![A-Za-z0-9/])`,
-    "g",
-  );
-})();
+const QUANTITY_RE = UNIT_VIEW.quantityRe();
 
 /** Look a matched unit form up: symbols exactly (case-sensitive), words case-insensitively. */
-function unitEntry(form) {
-  if (Object.prototype.hasOwnProperty.call(SYMBOL_UNITS, form)) return SYMBOL_UNITS[form];
-  const word = form.toLowerCase();
-  return Object.prototype.hasOwnProperty.call(WORD_UNITS, word) ? WORD_UNITS[word] : null;
-}
+const unitEntry = (form) => UNIT_VIEW.lookup(form);
 
 /**
  * Strip the markdown noise that carries no meaning ("**Answer:** 100 °C" ⇒ "Answer: 100 °C"),

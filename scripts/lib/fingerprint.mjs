@@ -167,6 +167,7 @@
 
 import { createHash } from "node:crypto";
 import { resolve } from "./terms.mjs";
+import { aliasProjection } from "./units.mjs";
 
 /** Longest term label we will try to match, in words, when the registry can't tell us. */
 const DEFAULT_MAX_TERM_WORDS = 6;
@@ -228,25 +229,20 @@ const NO_STEM = new Set([
  * Unit alias table → canonical unit token. Spelling only; NEVER a conversion table (see header).
  * An unknown unit is kept verbatim (lowercased) rather than dropped: an unrecognized unit is
  * still a distinction, and losing it would be an over-absorption.
+ *
+ * SOURCED FROM `./units.mjs` (interfaces §5d). This table used to live here, and drifted from M2's
+ * and M6's copies in the dangerous direction — M3 knew `torr`/`V`/`A`/`W`/`Hz`, M2's scanner did
+ * not, so those quantities minted no claim, M6 had nothing to compare, and the package reported
+ * ZERO FLAGS IT HAD NOT EARNED. One table now, three projections.
+ *
+ * `aliasProjection()` hands back `Map<string, string>` — canonical NAMES, not records. That shape
+ * is the SAFETY PROPERTY that replaces the isolation this module used to enjoy: the conversions
+ * now live in the file we import from, one autocomplete away, and the no-conversion rule above is
+ * the reason this module can be audited. There is no `to` to reach for. Do NOT widen this to
+ * return records "for convenience" — that hands M3 a way to be silently wrong that it does not
+ * currently have.
  */
-const UNIT_ALIASES = new Map(Object.entries({
-  "°c": "celsius", "c": "celsius", "degc": "celsius", "deg c": "celsius",
-  celsius: "celsius", centigrade: "celsius",
-  "°f": "fahrenheit", f: "fahrenheit", degf: "fahrenheit", fahrenheit: "fahrenheit",
-  k: "kelvin", kelvin: "kelvin",
-  g: "gram", gram: "gram", grams: "gram", kg: "kilogram", kilogram: "kilogram",
-  mg: "milligram", mol: "mole", mole: "mole", moles: "mole", mmol: "millimole",
-  j: "joule", joule: "joule", joules: "joule", kj: "kilojoule", kilojoule: "kilojoule",
-  cal: "calorie", calorie: "calorie", kcal: "kilocalorie",
-  m: "metre", metre: "metre", meter: "metre", cm: "centimetre", mm: "millimetre",
-  nm: "nanometre", km: "kilometre",
-  l: "litre", litre: "litre", liter: "litre", ml: "millilitre",
-  s: "second", sec: "second", second: "second", seconds: "second",
-  min: "minute", h: "hour", hr: "hour", hour: "hour",
-  pa: "pascal", kpa: "kilopascal", atm: "atmosphere", bar: "bar", torr: "torr",
-  "%": "percent", percent: "percent",
-  v: "volt", volt: "volt", a: "ampere", w: "watt", hz: "hertz",
-}));
+const UNIT_ALIASES = aliasProjection();
 
 /** Domain-separated SHA-256. The layer name is hashed in so an empty `spine` and an empty
  *  `provenance` cannot collide into "these two layers agree". */
