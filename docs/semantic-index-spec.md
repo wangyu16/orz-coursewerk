@@ -235,9 +235,15 @@ Each slice: code + tests green + a commit on `feat/semantic-index`. **No push** 
   wave-1→wave-2 **delta on the S-C/S-F metrics is a headline manuscript result** (found-by-fault-injection →
   fixed → re-measured).
 
-## 10. Open questions for the operator
-1. **Claim-provenance declaration burden** — how heavy a contract change is acceptable for the generator?
-   (Declared-first is cheap for the agent; deterministic scan is the recall backstop.)
+## 10. Operator decisions (Q1 resolved; Q2-Q4 open)
+1. **Claim-provenance declaration burden — DECIDED (2026-07-16): selective + structural + gate-on-presence.**
+   Declare only HIGH-STAKES claim types (facts with values/quantities, definitions, answer keys, objectives
+   coverage — the CLAIMS.json types); connective prose carries no duty. Declaration is STRUCTURAL (sidecar /
+   front-matter at write time), never inline in student-facing prose. The gate enforces PRESENCE, not
+   perfection: zero declared provenance in an artifact = fail; a scan-found undeclared claim = index + WARN,
+   not hard-fail (hard-failing every miss recreates the fabrication incentive). Deterministic scan (M6) is the
+   recall backstop. Accepted cost: connective prose is unindexed (covered by the decoupled reviewer, not the
+   graph).
 2. **Auto-propagation aggressiveness** — always gate behind a review diff, or allow silent propagation for
    trivially-mechanical dependents (e.g., a number in a summary table)?
 3. **Terms not in the concept map** — auto-propose additions to TERMS for instructor approval, or ignore?
