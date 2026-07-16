@@ -244,7 +244,29 @@ Each slice: code + tests green + a commit on `feat/semantic-index`. **No push** 
    not hard-fail (hard-failing every miss recreates the fabrication incentive). Deterministic scan (M6) is the
    recall backstop. Accepted cost: connective prose is unindexed (covered by the decoupled reviewer, not the
    graph).
-2. **Auto-propagation aggressiveness** — always gate behind a review diff, or allow silent propagation for
-   trivially-mechanical dependents (e.g., a number in a summary table)?
+2. **Auto-propagation aggressiveness — DECIDED (2026-07-16): two-tier policy.**
+   MECHANICAL dependents (deterministic term/value substitution outside immutable regions, where the
+   dependent's post-substitution `content` fingerprint matches the expected transform) are AUTO-APPLIED with a
+   summarized RECEIPT (listed in the revision receipt + git; consent-by-summary, expandable — informed, not
+   interrupted). DERIVED dependents (anything needing an LLM re-derive: worked examples, explanatory prose,
+   distractors) are ALWAYS gated behind a review diff. Classification uncertainty defaults to DERIVED (fail
+   toward review, never toward silence). Golden-test class: mechanical applied silently+correctly; derived
+   always diffed. Accepted residual risk: a mis-classified dependent auto-applies — mitigated by the
+   conservative default, the receipt, and git reversibility.
+
+   **ADDENDUM — knowledge-truth sensitivity (operator, 2026-07-16):**
+   - **Instructor-input sanity check (ask-to-confirm):** when instructor-provided content conflicts with the
+     model's internal knowledge (an implausible number, an off-by-magnitude date), the agent ASKS TO CONFIRM
+     before propagating — one question, with its reasoning. Typos are real; internal knowledge is the tripwire.
+     This extends obedience-decoupling to the instructor channel: obedient in execution, never silently
+     obedient to a likely slip.
+   - **Confirmed override = permanently settled:** if the instructor confirms — or provides a source (the
+     IUPAC case) — record it in `OVERRIDES.json` and NEVER ASK AGAIN, even though it diverges from internal
+     knowledge (frozen at training time, possibly stale). Re-asking = alarm fatigue.
+   - **Precedence order for truth in a package:** instructor override (sourced/confirmed) > pinned source >
+     model internal knowledge. Internal knowledge is a TRIPWIRE for the ask, never an authority that overrules
+     a recorded decision. (M7 override-manager implements the ask-once lifecycle: propose -> confirm/source ->
+     recorded -> silent thereafter; M9 propagation and the decoupled reviewer both consult OVERRIDES before
+     challenging.)
 3. **Terms not in the concept map** — auto-propose additions to TERMS for instructor approval, or ignore?
 4. **Override authority** — does an override require a cited `justifiedBy`, or is instructor assertion enough?
