@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "metadata/REVIEW_QUEUE.json — the escalation artifact (the recovery step)",
+  "type": "object",
+  "required": ["schemaVersion", "items", "burden"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "severity", "evidence"],
+        "properties": {
+          "kind": { "enum": ["suspected-error", "source-conflict", "internal-inconsistency", "sanity-check", "orphan-claim", "misconception-asserted", "term-proposal", "derived-diff", "upstream-drift"] },
+          "claimId": { "type": "string" },
+          "severity": { "enum": ["blocking", "review", "info"] },
+          "evidence": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "why this is flagged — source says X, others say Y, check failed" },
+          "proposal": { "type": "string", "description": "for term-proposal: the suggested concept-map placement (placement, not yes/no)" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "burden": {
+      "type": "object",
+      "description": "alarm-fatigue is measured, not assumed",
+      "required": ["flagCount", "artifactCount"],
+      "properties": {
+        "flagCount": { "type": "integer" }, "artifactCount": { "type": "integer" },
+        "flagsPerArtifact": { "type": "number" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

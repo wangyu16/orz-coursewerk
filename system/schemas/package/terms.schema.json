@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "metadata/TERMS.json — domain-term registry DERIVED from the concept map",
+  "type": "object",
+  "required": ["schemaVersion", "terms"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "generatedFrom": { "type": "array", "items": { "type": "string" }, "description": "concept-map files this was derived from; TERMS is ALWAYS derived, never an authority" },
+    "terms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "canonical", "preferredLabel", "status"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^term\\." },
+          "canonical": { "type": "string", "minLength": 1 },
+          "preferredLabel": { "type": "string", "minLength": 1 },
+          "aliases": { "type": "array", "items": { "type": "string" }, "description": "legacy/synonyms — recognized forever, never deleted" },
+          "status": { "enum": ["confirmed", "candidate", "deprecated-but-teach", "superseded"], "description": "confirmed = present in the concept map (instructor-authorized); candidate = found in prose, awaiting a proposed map revision" },
+          "authority": { "type": "string" },
+          "spineRef": { "type": "string", "description": "the concept-map node authorizing this term" },
+          "gloss": { "type": "string" },
+          "scope": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

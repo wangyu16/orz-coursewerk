@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "metadata/OVERRIDES.json — instructor override of source (authorized divergence, NOT hallucination)",
+  "type": "object",
+  "required": ["schemaVersion", "overrides"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "overrides": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["claimId", "divergesFrom", "basis", "authorizedBy", "date", "rationale"],
+        "properties": {
+          "claimId": { "type": "string", "pattern": "^claim\\." },
+          "divergesFrom": { "type": "string", "description": "the pinned source anchor it deliberately contradicts" },
+          "basis": { "enum": ["cited", "instructor-expertise", "pedagogical-choice"], "description": "all three are EQUALLY authoritative inside the package" },
+          "justifiedBy": { "type": "string", "description": "required when basis=cited (the newer/authoritative source S')" },
+          "authorizedBy": { "type": "string" },
+          "date": { "type": "string" },
+          "rationale": { "type": "string", "minLength": 1, "description": "REQUIRED always; for uncited bases this is the record+explanation for future reference" }
+        },
+        "allOf": [
+          { "if": { "properties": { "basis": { "const": "cited" } } }, "then": { "required": ["justifiedBy"] } }
+        ],
+        "additionalProperties": false
+      }
+    },
+    "declinedUpstream": {
+      "type": "array",
+      "description": "upstream source updates deliberately NOT adopted — distinguishes 'behind the source' from 'deliberately diverges'",
+      "items": {
+        "type": "object", "required": ["sourceRef", "date", "rationale"],
+        "properties": { "sourceRef": { "type": "string" }, "date": { "type": "string" }, "rationale": { "type": "string" } },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
