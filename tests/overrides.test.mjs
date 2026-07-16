@@ -55,8 +55,11 @@ function validateAgainstSchema(doc) {
         errors.push(`claimId pattern: ${entry.claimId}`);
       }
       if (!itemSchema.properties.basis.enum.includes(entry.basis)) errors.push(`basis enum: ${entry.basis}`);
+      if (!new RegExp(itemSchema.properties.date.pattern).test(entry.date)) errors.push(`date pattern: ${entry.date}`);
       if (!(typeof entry.rationale === "string" && entry.rationale.length >= 1)) errors.push("rationale minLength 1");
       if (entry.basis === "cited" && !("justifiedBy" in entry)) errors.push("cited requires justifiedBy");
+      // schema `else: { not: { required: ["justifiedBy"] } }` — justifiedBy is FORBIDDEN on uncited bases
+      if (entry.basis !== "cited" && "justifiedBy" in entry) errors.push("uncited basis forbids justifiedBy");
     }
 
   if ("declinedUpstream" in doc) {
@@ -70,10 +73,20 @@ function validateAgainstSchema(doc) {
             errors.push(`declined additionalProperty: ${key}`);
           }
         }
+        if (!new RegExp(dSchema.properties.date.pattern).test(entry.date)) {
+          errors.push(`declined date pattern: ${entry.date}`);
+        }
       }
   }
   return errors;
 }
+
+/**
+ * Date shapes that must be REJECTED, and why each is a real hazard rather than a strawman:
+ * an unpadded month sorts wrong as a string; a locale format is ambiguous (is 07/08 July 8 or
+ * August 7?); a timestamp is a second spelling of one day; empty is a missing decision date.
+ */
+const MALFORMED_DATES = ["2026-7-16", "16/07/2026", "2026-07-16T10:00:00Z", "", "   ", "July 16, 2026", "20260716"];
 
 const CITED = {
   claimId: "claim.iupac-name.a1b2c3",
@@ -175,6 +188,58 @@ test("structural validation: claimId shape, basis enum, unknown fields, required
     const entry = { ...base };
     delete entry[field];
     assert.throws(() => recordOverride(emptyOverrides(), entry), new RegExp(`${field} is required`));
+  }
+});
+
+// ---------------------------------------------------------------------------
+// ISO-8601 dates — these feed publish-time receipts and the deviation notes,
+// where free-form dates poison sorting and display.
+// ---------------------------------------------------------------------------
+
+test("recordOverride: a well-formed ISO-8601 date passes; malformed ones throw", () => {
+  const ok = recordOverride(emptyOverrides(), { ...CITED, date: "2026-07-16" });
+  assert.equal(ok.overrides[0].date, "2026-07-16");
+  assert.deepEqual(validateAgainstSchema(ok), []);
+
+  // A date is validated by SHAPE only — the caller still supplies it (no clock in the module).
+  const boundary = recordOverride(emptyOverrides(), { ...CITED, date: "2026-01-01" });
+  assert.equal(boundary.overrides[0].date, "2026-01-01");
+
+  for (const date of MALFORMED_DATES) {
+    assert.throws(
+      () => recordOverride(emptyOverrides(), { ...CITED, date }),
+      /date is required|date must be an ISO-8601 calendar date, YYYY-MM-DD/,
+      `recordOverride must reject date ${JSON.stringify(date)}`,
+    );
+  }
+});
+
+test("recordDeclined: a well-formed ISO-8601 date passes; malformed ones throw", () => {
+  const declined = { sourceRef: "source:openstax-chem@2e-rev3#ch4", rationale: "Not adopted this term." };
+
+  const ok = recordDeclined(emptyOverrides(), { ...declined, date: "2026-07-16" });
+  assert.equal(ok.declinedUpstream[0].date, "2026-07-16");
+  assert.deepEqual(validateAgainstSchema(ok), []);
+
+  for (const date of MALFORMED_DATES) {
+    assert.throws(
+      () => recordDeclined(emptyOverrides(), { ...declined, date }),
+      /date is required|date must be an ISO-8601 calendar date, YYYY-MM-DD/,
+      `recordDeclined must reject date ${JSON.stringify(date)}`,
+    );
+  }
+});
+
+test("the date rule is pinned to the schema: every shape this module accepts, the schema accepts", () => {
+  // Code and schema must agree — a divergence here is how a valid-in-code doc fails at publish.
+  const schemaDatePattern = new RegExp(SCHEMA.properties.overrides.items.properties.date.pattern);
+  const declinedDatePattern = new RegExp(SCHEMA.properties.declinedUpstream.items.properties.date.pattern);
+
+  assert.equal(schemaDatePattern.test("2026-07-16"), true);
+  assert.equal(declinedDatePattern.test("2026-07-16"), true);
+  for (const date of MALFORMED_DATES) {
+    assert.equal(schemaDatePattern.test(date), false, `schema must reject ${JSON.stringify(date)}`);
+    assert.equal(declinedDatePattern.test(date), false, `schema must reject ${JSON.stringify(date)}`);
   }
 });
 

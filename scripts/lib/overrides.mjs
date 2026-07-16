@@ -62,6 +62,14 @@ const DECLINED_FIELDS = Object.freeze(["sourceRef", "date", "rationale"]);
 
 const CLAIM_ID_RE = /^claim\./;
 
+// ISO-8601 calendar date (YYYY-MM-DD) — mirrors the schema's `date` pattern on BOTH
+// `overrides[]` and `declinedUpstream[]`. These dates feed publish-time receipts and the
+// package's deviation notes, where free-form dates poison sorting and display. Enforced HERE,
+// once, rather than at each call site — and by SHAPE only: the caller still supplies the value
+// (no clock in this module). A timestamp is deliberately rejected; a package decision is dated,
+// not clocked, and accepting both shapes would put two spellings of one day on disk.
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
 class OverrideError extends Error {
   constructor(message) {
     super(message);
@@ -75,6 +83,23 @@ function fail(message) {
 
 function isNonEmptyString(value) {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+/**
+ * Require an ISO-8601 `YYYY-MM-DD` date. Shape only — no clock, no calendar arithmetic.
+ * @param {string} value
+ * @param {string} fn - calling function name, for a message that says what to do
+ */
+function requireIsoDate(value, fn) {
+  if (!isNonEmptyString(value)) {
+    fail(`${fn}: date is required (pass it in — this module has no clock).`);
+  }
+  if (!ISO_DATE_RE.test(value)) {
+    fail(
+      `${fn}: date must be an ISO-8601 calendar date, YYYY-MM-DD (got ${JSON.stringify(value)}). ` +
+        'Zero-pad month and day ("2026-07-16", not "2026-7-16") and pass the date only, without a time component.',
+    );
+  }
 }
 
 /**
@@ -136,6 +161,7 @@ export function findOverride(overrides, claimId) {
  * VALIDATION (spec §10 decision 4 — throws `OverrideError` with a clear message on violation):
  *  - `claimId` (must look like `claim.…`), `divergesFrom`, `authorizedBy`, `date` — required.
  *  - `basis` ∈ {cited, instructor-expertise, pedagogical-choice}.
+ *  - `date` — required, ISO-8601 `YYYY-MM-DD` (shape only; the caller supplies the value).
  *  - `rationale` — REQUIRED ALWAYS. For uncited bases it IS the record: the explanation a future
  *    maintainer needs to learn why the package diverges.
  *  - `justifiedBy` — required IF AND ONLY IF basis === "cited". Supplying a justifying source while
@@ -171,7 +197,7 @@ export function recordOverride(overrides, entry) {
     fail(`recordOverride: basis must be one of ${BASES.join(" | ")} (got ${JSON.stringify(entry.basis)}).`);
   }
   if (!isNonEmptyString(entry.authorizedBy)) fail("recordOverride: authorizedBy is required.");
-  if (!isNonEmptyString(entry.date)) fail("recordOverride: date is required (pass it in — this module has no clock).");
+  requireIsoDate(entry.date, "recordOverride");
 
   // rationale: REQUIRED ALWAYS. This is the "why does this package diverge?" record.
   if (!isNonEmptyString(entry.rationale)) {
@@ -230,7 +256,8 @@ export function needsAsk(overrides, claimId) {
  *
  * This is what separates "the package is BEHIND its source" (staleness — a defect to fix) from "the
  * package DELIBERATELY diverges" (a decision to respect). Same discipline as an override: rationale
- * required, date passed in by the caller. Re-declining the same `sourceRef` replaces the prior entry.
+ * required, ISO-8601 `YYYY-MM-DD` date passed in by the caller. Re-declining the same `sourceRef`
+ * replaces the prior entry.
  *
  * @param {object|null} overrides
  * @param {{sourceRef:string, date:string, rationale:string}} entry
@@ -245,7 +272,7 @@ export function recordDeclined(overrides, entry) {
     fail(`recordDeclined: unknown field(s) ${unknown.join(", ")}; allowed: ${DECLINED_FIELDS.join(", ")}.`);
   }
   if (!isNonEmptyString(entry.sourceRef)) fail("recordDeclined: sourceRef is required (the upstream update not adopted).");
-  if (!isNonEmptyString(entry.date)) fail("recordDeclined: date is required (pass it in — this module has no clock).");
+  requireIsoDate(entry.date, "recordDeclined");
   if (!isNonEmptyString(entry.rationale)) {
     fail("recordDeclined: rationale is required — it is what distinguishes a deliberate decline from staleness.");
   }

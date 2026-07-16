@@ -26,13 +26,28 @@
 import { buildSourceIndex, VERBATIM } from "./verbatim.mjs";
 
 /**
- * @typedef {{start: number, end: number, kind: "quote"|"citation"|"source-span"}} Region
+ * @typedef {{start: number, end: number, kind: "quote"|"citation"|"literal"|"source-span"}} Region
  *   Half-open character interval [start, end) into the ORIGINAL `text`.
+ *
+ *   `kind` is not decoration: M9/M10 must EXPLAIN a refusal to the instructor, and
+ *   "we did not rename inside this quotation" is FALSE when the frozen text is a code
+ *   block — a confusing answer is worse than a coarse one. Hence `literal` gets its own
+ *   reason rather than borrowing `quote`'s. Additive: callers that only branch on
+ *   immutable/not are unaffected.
  */
 
 // Merge precedence when two regions overlap: the surviving `kind` is the one that most
 // directly explains to a human WHY the text is frozen. Lower rank wins. Deterministic.
-const KIND_RANK = { quote: 0, citation: 1, "source-span": 2 };
+//
+// quote > citation > literal > source-span, by that same test:
+//   - `quote` carries the most specific prohibition (rewriting it fabricates an attributed
+//     statement) and `citation` names a record — both are authored boundaries and stay
+//     decisive over the structural reasons.
+//   - `literal` outranks `source-span`: when a fence also matches the source, "it is code"
+//     is the reason a human can act on; the resemblance is incidental to it.
+//   - `source-span` ranks last — it is the weakest claim (a statistical resemblance, not an
+//     authored boundary), so it survives only when nothing more specific explains the freeze.
+const KIND_RANK = { quote: 0, citation: 1, literal: 2, "source-span": 3 };
 
 // Headings whose section body is a reference list (whole body is citation text).
 const REFERENCE_HEADING = /^(#{1,6})[ \t]*(references|bibliography|works cited|citations|further reading|sources)\b[^\n]*$/gim;
@@ -70,15 +85,15 @@ const CITATION_PATTERNS = [
  * Blank out spans we must not scan INTO, preserving every character offset (each masked
  * character becomes a space; newlines survive so line-anchored patterns stay aligned).
  *
- * DECISION — code fences and `{{...}}` orz plugin blocks ARE immutable ("quote"):
+ * DECISION — code fences and `{{...}}` orz plugin blocks ARE immutable, kind "literal":
  *   - A fence is literal text: auto-substituting a term inside `pH = calc(ethylene)` can
  *     break the code, and code is copied and run, not read as prose.
  *   - An orz `{{...}}` payload is a machine-parsed DSL (mermaid/smiles/yaml); a blind
  *     substitution can produce syntax that no longer renders.
  *   - lib/verbatim.mjs already treats both as noise, so source-span detection is BLIND
  *     inside them. Blind + rewritable is the one combination we refuse: fail closed.
- * They are reported as kind "quote" — of the three frozen kinds it is the one that means
- * "reproduced literally; not this package's prose to reword".
+ * "literal" means "reproduced verbatim as machine-read text; not this package's prose to
+ * reword" — a distinct reason from `quote`, so a refusal can be explained truthfully.
  *
  * @param {string} text
  * @returns {{masked: string, regions: Region[]}}
@@ -88,7 +103,7 @@ function maskLiterals(text) {
   let masked = text;
   const blank = (re) => {
     masked = masked.replace(re, (m, offset) => {
-      regions.push({ start: offset, end: offset + m.length, kind: "quote" });
+      regions.push({ start: offset, end: offset + m.length, kind: "literal" });
       return m.replace(/[^\n]/g, " ");
     });
   };
@@ -185,8 +200,8 @@ function shingleKey(words, i) {
  * source-matching shingles, at least VERBATIM.MIN_SPAN_WORDS words long. Same rule, same
  * constants, same index as the publish-time verbatim gate.
  */
-function sourceSpanRegions(masked, sourceText) {
-  const index = buildSourceIndex([sourceText]);
+function sourceSpanRegions(masked, sourceTexts) {
+  const index = buildSourceIndex(sourceTexts);
   const toks = tokensWithOffsets(masked);
   const words = toks.map((t) => t.w);
   const regions = [];
@@ -247,12 +262,16 @@ function normalize(regions) {
  * line, <=600 chars, marks included); citations (footnote markers + definitions, pandoc
  * citekeys, numeric markers, DOIs, URLs, author-year parentheticals, and whole reference
  * sections); code fences and `{{...}}` orz plugin blocks; and — when `sourceText` is given —
- * spans detected as near-verbatim from the pinned source via lib/verbatim.mjs.
+ * spans detected as near-verbatim from the pinned source(s) via lib/verbatim.mjs.
  *
  * @param {string} text - the deliverable text.
- * @param {string|null} [sourceText] - the pinned source. Null/absent/empty simply SKIPS
- *   source-span detection (a package with no readable source still gets quote/citation
- *   protection); it is never an error.
+ * @param {string|string[]|null} [sourceText] - the pinned source(s). Accepts one text, an
+ *   ARRAY of texts (a package generally pins several — passed straight through to
+ *   buildSourceIndex, which indexes each separately; callers must NOT pre-join them, as a
+ *   shingle spanning the join boundary exists in no real source and would fabricate an
+ *   immutable region), or null/undefined/empty, which simply SKIPS source-span detection —
+ *   a package with no readable source still gets quote/citation/literal protection. Empty
+ *   and non-string array entries are ignored. Never an error.
  * @returns {Region[]} sorted, non-overlapping, half-open [start, end) intervals.
  */
 export function immutableRegions(text, sourceText) {
@@ -266,9 +285,10 @@ export function immutableRegions(text, sourceText) {
     ...referenceSectionRegions(masked),
   ];
   for (const re of CITATION_PATTERNS) found.push(...matchRegions(masked, re, "citation"));
-  if (typeof sourceText === "string" && sourceText.length > 0) {
-    found.push(...sourceSpanRegions(masked, sourceText));
-  }
+  const sources = (Array.isArray(sourceText) ? sourceText : [sourceText]).filter(
+    (s) => typeof s === "string" && s.length > 0,
+  );
+  if (sources.length > 0) found.push(...sourceSpanRegions(masked, sources));
   return normalize(found);
 }
 

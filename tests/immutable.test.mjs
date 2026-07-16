@@ -99,6 +99,41 @@ test("near-verbatim source spans are immutable and agree with verbatim.mjs", () 
   assert.match(text.slice(spans[0].start, spans[0].end), /^the melting point of a substance/);
 });
 
+test("multiple pinned sources: an array detects a span from EACH source", () => {
+  const fromA = "the melting point of a substance is the temperature at which the solid and liquid phases coexist in equilibrium";
+  const fromB = "latent heat is the energy absorbed during a phase change without any accompanying rise in the measured temperature";
+  const srcA = `Textbook chapter two. ${fromA} End of section.`;
+  const srcB = `Lab manual appendix. ${fromB} End of appendix.`;
+  const text = ["# Phase Change", "", `${fromA}.`, "", `${fromB}.`, "", "Our own summary sentence follows.", ""].join("\n");
+
+  const regions = immutableRegions(text, [srcA, srcB]);
+  const spans = regions.filter((r) => r.kind === "source-span");
+  assert.equal(spans.length, 2, "one span per source");
+  assert.equal(isImmutable(regions, at(text, "the solid and liquid phases")), true, "span from source A");
+  assert.equal(isImmutable(regions, at(text, "without any accompanying rise")), true, "span from source B");
+  assert.equal(isImmutable(regions, at(text, "Our own summary sentence")), false);
+
+  // Each source is indexed separately. Pre-joining would let a shingle straddle the join
+  // and fabricate an immutable region matching NO real source — so callers must not.
+  const straddle = `${fromA} ${fromB}`;
+  assert.deepEqual(
+    immutableRegions(straddle, [srcA, srcB]).filter((r) => r.kind === "source-span").length,
+    2,
+    "two distinct spans, not one span spanning the seam",
+  );
+
+  // A single source finds only its own span — the array is doing real work.
+  assert.equal(immutableRegions(text, srcA).filter((r) => r.kind === "source-span").length, 1);
+});
+
+test("sourceText back-compat: a bare string behaves exactly like a one-element array", () => {
+  const src = "the melting point of a substance is the temperature at which the solid and liquid phases coexist in equilibrium";
+  const text = `# X\n\n${src} and then our own words.\n`;
+  assert.deepEqual(immutableRegions(text, src), immutableRegions(text, [src]));
+  assert.deepEqual(immutableRegions(text, [src, "", null, undefined, 42]), immutableRegions(text, src), "junk entries ignored");
+  assert.deepEqual(immutableRegions(text, []), immutableRegions(text, null), "an empty array skips source detection");
+});
+
 test("sourceText null/absent/empty: no crash, quote + citation regions still returned", () => {
   for (const src of [null, undefined, ""]) {
     const regions = immutableRegions(guide, src);
@@ -128,6 +163,27 @@ test("code fences and {{...}} orz blocks are immutable (documented decision: fai
   assert.equal(isImmutable(regions, at(text, "Body prose about ethylene")), false);
   // The quote marks INSIDE the fence must not leak out as a stray inline-quote region.
   assert.equal(regions.filter((r) => r.start < at(text, "```js")).length, 0);
+});
+
+test("literal is its own kind: a refusal inside code must not be explained as a quotation", () => {
+  // M9/M10 have to tell the instructor WHY an edit was refused. "We did not rename inside
+  // this quotation" is FALSE for a code block — a confusing reason is worse than a coarse one.
+  const text = ['He wrote: "ethylene is an olefin".', "", "```js", 'const gas = "ethylene";', "```", "", "{{mermaid graph TD; ethylene --> ethene}}", ""].join("\n");
+  const regions = immutableRegions(text, null);
+  const kindAt = (needle) => regions.find((r) => r.start <= at(text, needle) && at(text, needle) < r.end)?.kind;
+
+  assert.equal(kindAt('const gas = "ethylene"'), "literal", "a code fence is literal, not a quotation");
+  assert.equal(kindAt("graph TD; ethylene"), "literal", "an orz plugin payload is literal");
+  assert.equal(kindAt("ethylene is an olefin"), "quote", "a real quotation is still a quote");
+  assert.equal(regions.every((r) => ["quote", "citation", "literal", "source-span"].includes(r.kind)), true);
+});
+
+test("literal outranks source-span when a code fence also matches the source", () => {
+  const code = "const melting = 100; const boiling = 373; const label = 'phase change table row'; export default melting;";
+  const text = ["Own prose here about melting.", "", "```js", code, "```", ""].join("\n");
+  const regions = immutableRegions(text, `Appendix A listing:\n${code}\n`);
+  const fence = regions.find((r) => r.start <= at(text, "const melting") && at(text, "const melting") < r.end);
+  assert.equal(fence.kind, "literal", "'it is code' is the reason a human can act on; the resemblance is incidental");
 });
 
 test("output is sorted, non-overlapping, and overlaps merge deterministically", () => {
