@@ -85,8 +85,14 @@ function cleanFixture() {
   const credit = "\nSource: https://example.org/source\n";
   const tabs = Array.from({ length: 10 }, (_, i) => `:::: tabs\n::: tab Q\nObjective 1: Question ${i + 1}\n:::\n::: tab Answer\nAnswer ${i + 1}\n:::\n::::`).join("\n");
   const files = {
-    "concepts/course.md": `# Course${credit}\n## Summary\nSequence.\n## Keywords\nquality, course, fixture\n`,
-    "concepts/ch1.md": `# Concept${credit}\n## Source and Scope\nChapter.\n## Summary\nSummary.\n## Prerequisites\nNone.\n## Objectives\nObjective 1.\n`,
+    // THE SPINE, per format-contracts/deliverables.md §Concept maps.
+    // [UPDATED 2026-07-17] This fixture wrote `## Keywords` and omitted the node-bearing sections,
+    // because it was built against the OLD, loose gate — the same pre-W2 rule that told every real demo
+    // course to emit a keyword dump. The ASSERTION below is unchanged ("a clean package passes"); what
+    // had to track the contract is the fixture's DEFINITION OF CLEAN. A fixture encoding a superseded
+    // rule silently certifies the old behavior forever.
+    "concepts/course.md": `# Course${credit}\n## Organizing question\nHow does matter change state?\n## Summary\nSequence.\n## Concept sequence\n1. Matter changes state at characteristic temperatures.\n## Chapter sequence\n1. **ch1** — the first chapter.\n`,
+    "concepts/ch1.md": `# Concept${credit}\n## Source and Scope\nChapter.\n## Summary\nSummary.\n## Prerequisites\n- None.\n## Objectives\n1. Objective 1.\n## Concept sequence\n1. A solid melts at a characteristic temperature.\n## Key terms\n- **melting point** (fusion point) — the temperature at which a solid becomes liquid\n## Misconceptions to surface\n- Temperature always rises when heat is added.\n`,
     "study-guide/ch1.md": `# Study${credit}\n## Chapter Learning Objectives\nObjective 1.\n## Topic\n{{mermaid\ngraph LR\nA --> B\n}}\n> **Visual description:** A process arrow connects concept A to concept B.\n:::: tabs\n::: tab Problem\nExample.\n:::\n::: tab Solution\nSolution.\n:::\n::::\n## Synthesis\nSummary.\n`,
     "slides/ch1.md": `<!-- deck\ntitle: Ch1\nratio: 16:9\n-->\n<!-- slide template=title -->\n# Ch1${credit}\n<!-- slide template=outline -->\n# Outline\n- Objective 1\n<!-- slide -->\n## Topic\nText.\n<!-- slide template=closing -->\n# Closing\n`,
     "assessment-support/ch1.md": `# Assessment${credit}\n## Objective 1\nTarget.\n### Question guide\nParameterized.\n## Rubric Themes\nAccuracy.\n`,

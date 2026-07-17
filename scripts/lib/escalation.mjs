@@ -181,6 +181,44 @@ const DETECTOR_TO_QUEUE = {
   "dangling-spine-ref": "dangling-reference",
   "dangling-derived-from": "dangling-reference",
   "declaration-refusal": "declaration-refused",
+
+  // The M11 gate's REVISION rows (fresh compute vs stored index) — the detector that reports M4's
+  // verb for a claim whose fingerprints moved. The detector kind names the VERB because the verb IS
+  // the observation; the queue kind names the DECISION, and several verbs legitimately ask one.
+  //   revision-escalate  -> a `content` move with NO authorization on record. spec §5/§10 dec. 2
+  //     name this exactly: a SUSPECTED ERROR, adjudicated by a person rather than propagated on the
+  //     machine's authority. The enum member already had the right name.
+  //   revision-re-derive / revision-rename / revision-regenerate -> `derived-diff`. All three end in
+  //     ONE question — "here is the rewrite this change implies; sign it off" — differing only in
+  //     blast radius. They are NOT `suspected-error`: each is a change the human already authorized
+  //     or performed (an override, a map rename, a depth change), and asking "is this wrong?" about a
+  //     decision the instructor just made is the re-nag §10 dec. 2 forbids.
+  //   revision-recheck -> `sanity-check`: a structural/spine move obliges verifying coverage,
+  //     orphans and prereq order. Nothing is provably wrong — that is the definition of `review`.
+  //   revision-annotate -> `sanity-check`: confirm the deprecate-but-teach annotation. Never
+  //     `derived-diff`, which would propose REPLACING the old idea that was kept ON PURPOSE.
+  //   revision-silent-risk -> `upstream-drift`, and this fold is the load-bearing one. A change
+  //     reached a claim whose own fingerprints did NOT move: its upstream drifted out from under it.
+  //     Folding it into the seed's `suspected-error` would have been the costly mistake — the queue
+  //     kind is the dedupe key, so it would MERGE "is the edited fact wrong?" with "does the answer
+  //     key that quietly contradicts it still hold?", and silently answer the second by answering
+  //     the first. Two claims, two decisions, two items.
+  // REGENERATE and ANNOTATE are mapped but are currently UNREACHABLE from a package edit: both are
+  // driven by caller-supplied `ctx` (`spineChange:"depth"`, `pedagogy`), which no package byte
+  // produces. Mapped anyway because M4's enum is closed and `queueKindOf` THROWS — an unmapped verb
+  // would take down the whole queue, blocking items included, which is fail-toward-silence at the
+  // worst possible moment. A total table over a closed enum cannot do that.
+  "revision-escalate": "suspected-error",
+  "revision-re-derive": "derived-diff",
+  "revision-rename": "derived-diff",
+  "revision-regenerate": "derived-diff",
+  "revision-recheck": "sanity-check",
+  "revision-annotate": "sanity-check",
+  "revision-silent-risk": "upstream-drift",
+  // §4's split/merge rows. A `sanity-check` because the question is "is this division what you
+  // meant, and does coverage survive it?" — the participants separately carry their own verbs.
+  "claim-split": "sanity-check",
+  "claim-merged": "sanity-check",
 };
 
 /**

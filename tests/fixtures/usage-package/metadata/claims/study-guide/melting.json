@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "claims": [
+    {
+      "type": "objective",
+      "anchor": "learning-objectives#1",
+      "spineRefs": ["objective.melting.1"],
+      "sourceRefs": [],
+      "termRefs": ["term.melting-point"]
+    },
+    {
+      "type": "objective",
+      "anchor": "learning-objectives#2",
+      "spineRefs": ["objective.melting.2"],
+      "sourceRefs": [],
+      "termRefs": ["term.latent-heat-of-fusion"]
+    },
+    {
+      "type": "fact",
+      "anchor": "melting-point-of-pure-water#1",
+      "spineRefs": ["objective.melting.1"],
+      "sourceRefs": ["src.synthetic.handbook.rev1"],
+      "termRefs": ["term.melting-point"]
+    },
+    {
+      "type": "fact",
+      "anchor": "what-the-source-says#1",
+      "spineRefs": ["objective.melting.1"],
+      "sourceRefs": ["src.synthetic.handbook.rev1"],
+      "termRefs": ["term.melting-point"]
+    },
+    {
+      "type": "fact",
+      "anchor": "latent-heat-of-fusion#1",
+      "spineRefs": ["concept.melting.2"],
+      "sourceRefs": ["src.synthetic.handbook.rev1"],
+      "termRefs": ["term.latent-heat-of-fusion"]
+    }
+  ]
+}

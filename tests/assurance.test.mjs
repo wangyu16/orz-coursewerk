@@ -611,8 +611,12 @@ function coherentChapterFixture() {
   const credit = "\nSource: https://example.org/book\n";
   const qaTabs = Array.from({ length: 10 }, (_, i) => `:::: tabs\n::: tab Q\nObjective 1: Question ${i + 1}\n:::\n::: tab Answer\nWorked answer ${i + 1}\n:::\n::::`).join("\n\n");
   const files = {
-    "concepts/course.md": `# Course concepts${credit}\n## Summary\nCourse sequence.\n## Keywords\ntest, course, education\n`,
-    "concepts/ch1.md": `# Chapter concepts${credit}\n## Source and Scope\nChapter 1.\n## Summary\nSummary.\n## Prerequisites\nNone.\n## Objectives\nObjective 1.\n`,
+    // THE SPINE, per format-contracts/deliverables.md §Concept maps. [UPDATED 2026-07-17 — same reason
+    // as tests/qa.test.mjs: this fixture wrote `## Keywords` and omitted the node-bearing sections
+    // because it was built against the OLD, loose gate. The assertions are unchanged; the fixture's
+    // DEFINITION OF CLEAN had to track the contract, or it certifies a superseded rule forever.]
+    "concepts/course.md": `# Course concepts${credit}\n## Organizing question\nHow does matter change state?\n## Summary\nCourse sequence.\n## Concept sequence\n1. Matter changes state at characteristic temperatures.\n## Chapter sequence\n1. **ch1** — the first chapter.\n`,
+    "concepts/ch1.md": `# Chapter concepts${credit}\n## Source and Scope\nChapter 1.\n## Summary\nSummary.\n## Prerequisites\n- None.\n## Objectives\n1. Objective 1.\n## Concept sequence\n1. A solid melts at a characteristic temperature.\n## Key terms\n- **melting point** (fusion point) — the temperature at which a solid becomes liquid\n## Misconceptions to surface\n- Temperature always rises when heat is added.\n`,
     "study-guide/ch1.md": `# Study guide${credit}\n## Chapter Learning Objectives\nObjective 1.\n## Topic\n{{mermaid graph LR\nA --> B\n}}\n\n**Visual description:** A directed arrow connects concept A to concept B, showing that A precedes B.\n\n:::: tabs\n::: tab Problem\nExample question.\n:::\n::: tab Solution\nWorked solution.\n:::\n::::\n## Synthesis\nSummary.\n`,
     "slides/ch1.md": `<!-- deck\ntitle: Chapter 1\nratio: 16:9\n-->\n<!-- slide template=title -->\n# Chapter 1${credit}\n<!-- slide template=outline -->\n# Outline\n- Objective 1\n<!-- slide -->\n## Topic\nConcept.\n<!-- slide template=closing -->\n# Summary\n`,
     "assessment-support/ch1.md": `# Assessment${credit}\n## Objective 1\nTarget understanding.\n### Question guide\nParameterized design.\n## Rubric Themes\nAccuracy.\n`,

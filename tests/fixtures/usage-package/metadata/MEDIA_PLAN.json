@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "chapters": {
+    "melting": {
+      "realImageDecision": "not-used",
+      "rationale": "This package is a synthetic test fixture and teaches nobody: it exists to be driven through the documented Coursewerk CLI workflow. Fetching a real photograph would add an asset, a rights receipt and a network dependency to a fixture whose whole point is to stay deterministic and offline, without teaching anything more.",
+      "reviewedBy": "Fixture Author (synthetic test identity)",
+      "reviewedAt": "2026-07-17"
+    }
+  }
+}

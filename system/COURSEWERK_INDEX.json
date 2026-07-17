@@ -113,7 +113,7 @@
       "id": "repo:docs/walkthrough.md",
       "path": "docs/walkthrough.md",
       "type": "documentation",
-      "hash": "e1dc977c7369b9f761c24f009207fc5d49fb820b2b7309f8f9f7ab6b4bfebc91"
+      "hash": "57b15671d4416f8cf07d331cefbe6b546abf640810cfb32c6e258dc57b3a0e2f"
     },
     {
       "id": "repo:docs/wikipedia-science-topic.md",
@@ -155,7 +155,7 @@
       "id": "repo:package.json",
       "path": "package.json",
       "type": "release-metadata",
-      "hash": "e0f29175ca3b823736c1009c72d9c19e9083875e01945bc1c7981c4080a5c5ef"
+      "hash": "0120a97f19166a571c994439ab9dde9758fbf1502753f2a4ce24453ef63e57cf"
     },
     {
       "id": "repo:PROCEDURE.md",
@@ -215,7 +215,7 @@
       "id": "repo:scripts/check_oer.mjs",
       "path": "scripts/check_oer.mjs",
       "type": "executable",
-      "hash": "d37fb0e27bbea4eb8d87c1d8e88e60e78fa13b735ab6de6f34e013bee153bef6"
+      "hash": "6be848797c24777f29d75a010df024ca325380372e1a7bf647943eed34013c5c"
     },
     {
       "id": "repo:scripts/coursewerk_impact.mjs",
@@ -341,7 +341,7 @@
       "id": "repo:scripts/lib/escalation.mjs",
       "path": "scripts/lib/escalation.mjs",
       "type": "kernel",
-      "hash": "72da25ac78e4250c89dccc256ca4ea824cbdd34a7b48012a98e297b18e4c7491"
+      "hash": "5d2e1f21ed1d0fa3acc6ea5a9385f3ebcca7020cf30b2b257172452c9fef3c98"
     },
     {
       "id": "repo:scripts/lib/fingerprint.mjs",
@@ -462,6 +462,12 @@
       "path": "scripts/prepare_wikipedia_topic.mjs",
       "type": "executable",
       "hash": "a887bd6fc9e06a92b08961af7dda8b78c8fbb2628e58529902e5af923d4d9ac6"
+    },
+    {
+      "id": "repo:scripts/record_override.mjs",
+      "path": "scripts/record_override.mjs",
+      "type": "executable",
+      "hash": "97c0e3ac08098e1a955f15bd639ef077c28866483588d572e5c5d36a7711192d"
     },
     {
       "id": "repo:scripts/revision_impact.mjs",
@@ -731,7 +737,7 @@
       "id": "repo:tests/assurance.test.mjs",
       "path": "tests/assurance.test.mjs",
       "type": "test",
-      "hash": "73924142bf67db20a0cd1cd67fcd14e75d74fa8d2f8c1e03da8dd1ef7434d387"
+      "hash": "b4cd1ee80f276f3af66415896a3b032b5c2809b05bc32112381fdb85aca9ccd1"
     },
     {
       "id": "repo:tests/carriers.test.mjs",
@@ -740,10 +746,16 @@
       "hash": "1afeb2968b64ef48ec436982ea5c70cfb5cccd6dff72bad8833441a8d89d2f1b"
     },
     {
+      "id": "repo:tests/check-oer-revision.test.mjs",
+      "path": "tests/check-oer-revision.test.mjs",
+      "type": "test",
+      "hash": "001962736c51380280afdf1ad1497da93a640f667998edab0533f48c85cf5b3a"
+    },
+    {
       "id": "repo:tests/check-oer-semantic.test.mjs",
       "path": "tests/check-oer-semantic.test.mjs",
       "type": "test",
-      "hash": "352410398de67bc0fc390c0f4efa55af44013410eaaf5738b6c180bc65737181"
+      "hash": "754c0703f6bed317f784c94f7f879d72520506cd219e4ab252bfbb35b9231a73"
     },
     {
       "id": "repo:tests/claims.test.mjs",
@@ -836,6 +848,114 @@
       "hash": "a886401d9ae630d55d08297f0248e118b546d616a1a102ebde78046e6ba901de"
     },
     {
+      "id": "repo:tests/fixtures/usage-package/alembic.json",
+      "path": "tests/fixtures/usage-package/alembic.json",
+      "type": "test",
+      "hash": "3b101b22af9eb8ce97261490267ecb0947270cd31c626049a8cf6e3dc34af787"
+    },
+    {
+      "id": "repo:tests/fixtures/usage-package/assessment-support/melting.md",
+      "path": "tests/fixtures/usage-package/assessment-support/melting.md",
+      "type": "test",
+      "hash": "c607cd9c9780cf2ad94b6efe54dc26c001dedeab116edc844e65ed6dcbbf6999"
+    },
+    {
+      "id": "repo:tests/fixtures/usage-package/concepts/course.md",
+      "path": "tests/fixtures/usage-package/concepts/course.md",
+      "type": "test",
+      "hash": "68e9f24183c552faaf26d680259174a4e36c6882010f165e80ad141a4055f3ce"
+    },
+    {
+      "id": "repo:tests/fixtures/usage-package/concepts/melting.md",
+      "path": "tests/fixtures/usage-package/concepts/melting.md",
+      "type": "test",
+      "hash": "a81138fb1d4cbab7e0bd7f9a6531cffd18bf3a1fb11dc6dc1d8ee4ee9c379eb2"
+    },
+    {
+      "id": "repo:tests/fixtures/usage-package/LICENSE",
+      "path": "tests/fixtures/usage-package/LICENSE",
+      "type": "test",
+      "hash": "9e5f1b3c610b9c2da5c313bf81d577a7d1acec686bdb0384edefa6df0f90cd94"
+    },
+    {
+      "id": "repo:tests/fixtures/usage-package/metadata/ATTRIBUTION.md",
+      "path": "tests/fixtures/usage-package/metadata/ATTRIBUTION.md",
+      "type": "test",
+      "hash": "8ccd32471f7cc9cf19a60e0dd9a6d52190c46d0f05337065cb08dd73739664b8"
+    },
+    {
+      "id": "repo:tests/fixtures/usage-package/metadata/claims/practice/melting.json",
+      "path": "tests/fixtures/usage-package/metadata/claims/practice/melting.json",
+      "type": "test",
+      "hash": "f7b5022d1cb63775c5193ec77aa95796f31579b3ce907a6c5512de8d91fda3fe"
+    },
+    {
+      "id": "repo:tests/fixtures/usage-package/metadata/claims/study-guide/melting.json",
+      "path": "tests/fixtures/usage-package/metadata/claims/study-guide/melting.json",
+      "type": "test",
+      "hash": "97d389dc073ca12277b92fe143147c2f0bbb9756e73e62f04b53657127477925"
+    },
+    {
+      "id": "repo:tests/fixtures/usage-package/metadata/evidence/src.synthetic.handbook.rev1.html",
+      "path": "tests/fixtures/usage-package/metadata/evidence/src.synthetic.handbook.rev1.html",
+      "type": "test",
+      "hash": "87be2001fc0e324e530dbbede48c9147b027db5d02852f86bfa5d2a7f96fd524"
+    },
+    {
+      "id": "repo:tests/fixtures/usage-package/metadata/FOUNDATION.json",
+      "path": "tests/fixtures/usage-package/metadata/FOUNDATION.json",
+      "type": "test",
+      "hash": "1d5a7ce3967643d148f9df71fa0959cfb2c8f9628775e01f6029ac8054c440e2"
+    },
+    {
+      "id": "repo:tests/fixtures/usage-package/metadata/MEDIA_PLAN.json",
+      "path": "tests/fixtures/usage-package/metadata/MEDIA_PLAN.json",
+      "type": "test",
+      "hash": "47881de7626ab777e661f1308651cc41814367ffb374eeb3ad54e73df4da2f34"
+    },
+    {
+      "id": "repo:tests/fixtures/usage-package/metadata/preflight/src.synthetic.handbook.rev1.json",
+      "path": "tests/fixtures/usage-package/metadata/preflight/src.synthetic.handbook.rev1.json",
+      "type": "test",
+      "hash": "666b9278c59096bdd47f5e0b8d2705d0bac369e0ea44e7143aeafcae52a47811"
+    },
+    {
+      "id": "repo:tests/fixtures/usage-package/metadata/PROVENANCE.json",
+      "path": "tests/fixtures/usage-package/metadata/PROVENANCE.json",
+      "type": "test",
+      "hash": "0e5e19436438b496cb29a0243523d31a7369bd1228b84cc6779d8ca88eaeec17"
+    },
+    {
+      "id": "repo:tests/fixtures/usage-package/metadata/SOURCE_RECORD.json",
+      "path": "tests/fixtures/usage-package/metadata/SOURCE_RECORD.json",
+      "type": "test",
+      "hash": "26ee8f7e29a42b0bff052004ec2276dd3fb2e8c59bee43ccc00a76aa119ef6fa"
+    },
+    {
+      "id": "repo:tests/fixtures/usage-package/practice/melting.md",
+      "path": "tests/fixtures/usage-package/practice/melting.md",
+      "type": "test",
+      "hash": "d55a7f938664ccf61028e9277949522cfd889a31ab6079e9a5742dc36db41e88"
+    },
+    {
+      "id": "repo:tests/fixtures/usage-package/README.md",
+      "path": "tests/fixtures/usage-package/README.md",
+      "type": "test",
+      "hash": "3975697bb7814c64d86016ba72aa78a6cbddf8bea498c764aa700d059f6db45c"
+    },
+    {
+      "id": "repo:tests/fixtures/usage-package/slides/melting.md",
+      "path": "tests/fixtures/usage-package/slides/melting.md",
+      "type": "test",
+      "hash": "a0a01bbbc70eda1089c162be469f868a8ca3f5f9f93f06fba98807ddf0430ff4"
+    },
+    {
+      "id": "repo:tests/fixtures/usage-package/study-guide/melting.md",
+      "path": "tests/fixtures/usage-package/study-guide/melting.md",
+      "type": "test",
+      "hash": "09dee7d859b12f23c400e7391c41bb9f20a7663eee6e793bf54c992684086987"
+    },
+    {
       "id": "repo:tests/immutable.test.mjs",
       "path": "tests/immutable.test.mjs",
       "type": "test",
@@ -869,7 +989,7 @@
       "id": "repo:tests/qa.test.mjs",
       "path": "tests/qa.test.mjs",
       "type": "test",
-      "hash": "97ec863a5d74a4b21dd955e09f04c9335a00cb93ff6bbd7679c03f65a3ef351f"
+      "hash": "4c504dd0525009671b87afd8d5fb9f2f4a15df146cbbbd892cc4918dd0f2c9a3"
     },
     {
       "id": "repo:tests/reviews.test.mjs",
@@ -918,6 +1038,12 @@
       "path": "tests/units.test.mjs",
       "type": "test",
       "hash": "eba92f6668fb9a91ca7b1186f680979cff4bdec288283e17c78120d4b2ae0640"
+    },
+    {
+      "id": "repo:tests/usage-e2e.test.mjs",
+      "path": "tests/usage-e2e.test.mjs",
+      "type": "test",
+      "hash": "f2afe813a43b3040561efd4298380eb3e39da01948807f8a9e0b68b54ffe0743"
     },
     {
       "id": "repo:VERSION",

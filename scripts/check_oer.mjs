@@ -31,14 +31,15 @@ import {
 } from "./lib/contract.mjs";
 import { buildSourceIndex, scanText, VERBATIM } from "./lib/verbatim.mjs";
 import { auditAssurance } from "./lib/assurance.mjs";
-import { auditCoherence } from "./lib/coherence.mjs";
+import { auditCoherence, claimImpact } from "./lib/coherence.mjs";
 import { auditSourceRecord } from "./lib/source_record.mjs";
 import { auditKeyFactReview } from "./lib/key_fact_review.mjs";
 import { auditVisualReview } from "./lib/visual_review.mjs";
-import { artifactAnchors } from "./lib/claims.mjs";
+import { artifactAnchors, matchClaims } from "./lib/claims.mjs";
 import { danglingSpineRefs } from "./lib/spine.mjs";
 import { buildQueue, REVIEW_QUEUE_PATH } from "./lib/escalation.mjs";
-import { computeSemanticIndex, loadSemanticIndex } from "./lib/semantic_index.mjs";
+import { computeSemanticIndex, loadSemanticIndex, CLAIMS_PATH } from "./lib/semantic_index.mjs";
+import { isAuthorizedDivergence, OVERRIDES_PATH } from "./lib/overrides.mjs";
 import { commitOutput, outputGitState } from "./lib/output_git.mjs";
 import { md as orzMarkdown } from "orz-markdown";
 
@@ -420,11 +421,39 @@ function formatContractAudit() {
       fail.push({ file: name, issue: `${t} must be graphics-free but contains a rich plugin` });
     if ((t === "concepts" || t === "assessment-support") && /(?:\{\{|:{3,}\s+\S)/.test(text))
       fail.push({ file: name, issue: `${t} must be plain Markdown without plugins or semantic containers` });
+    // THE SPINE'S SECTIONS — enforced against `format-contracts/deliverables.md` §Concept maps, which is
+    // the single authority. [FIXED 2026-07-17: this check REQUIRED a `## Keywords` section while the
+    // contract and PROCEDURE both forbid one in bold, so a CONTRACT-CONFORMANT PACKAGE COULD NOT PASS THE
+    // GATE. The W2 fix reached the two documents and never reached the code that enforces them — the
+    // contradiction simply moved from doc<->doc to doc<->gate, where it is harder to see. Found by the
+    // usage tests, which are the only tests that run the documented workflow.]
     if (t === "concepts" && name === "concepts/course.md") {
-      for (const required of ["summary", "keyword"]) if (!new RegExp(`^##+\\s+.*${required}`, "im").test(text)) fail.push({ file: name, issue: `course concept map is missing a ${required} section` });
+      // `## Key terms` is OPTIONAL here (the contract says course-wide vocabulary is optional); the
+      // node-bearing and ordering sections are not.
+      for (const [label, re] of [
+        ["Summary", /^##+\s+summary/im],
+        ["Concept sequence", /^##+\s+concept sequence/im],
+        ["Chapter sequence", /^##+\s+chapter sequence/im],
+      ])
+        if (!re.test(text)) fail.push({ file: name, issue: `course concept map is missing its \`## ${label}\` section (format-contracts/deliverables.md §Concept maps)` });
     } else if (t === "concepts") {
-      for (const required of ["source", "summary", "prerequisite", "objective"]) if (!new RegExp(required, "i").test(text)) fail.push({ file: name, issue: `chapter concept map is missing ${required} content` });
+      for (const [label, re] of [
+        ["Source and scope", /^##+\s+source/im],
+        ["Summary", /^##+\s+summary/im],
+        ["Prerequisites", /^##+\s+prerequisite/im],
+        ["Objectives", /^##+\s+objectives/im],
+        ["Concept sequence", /^##+\s+concept sequence/im],
+        ["Key terms", /^##+\s+key terms/im],
+        ["Misconceptions to surface", /^##+\s+misconceptions/im],
+      ])
+        if (!re.test(text)) fail.push({ file: name, issue: `chapter concept map is missing its \`## ${label}\` section (format-contracts/deliverables.md §Concept maps)` });
     }
+    // A `## Keywords` DUMP IS FORBIDDEN in either map. It is an authoring INPUT, not a stored section:
+    // two vocabulary lists in one document are the same fact in two places, they drift, and nothing says
+    // which is the authority. It also silently costs the instructor the ability to migrate terminology,
+    // because aliases — which a bare dump has no room for — are what make a rename detectable at all.
+    if (t === "concepts" && /^##+\s+keywords?\s*$/im.test(text))
+      fail.push({ file: name, issue: "concept map has a `## Keywords` section: promote the keywords into `## Key terms` with aliases + gloss (format-contracts/deliverables.md §Concept maps)" });
     if (t === "study-guide") {
       if (!/learning objectives?/i.test(text)) fail.push({ file: name, issue: "study guide is missing learning objectives" });
       if (!/^##\s+/m.test(text)) fail.push({ file: name, issue: "study guide needs section-level H2 content" });
@@ -803,13 +832,262 @@ function derivedFromFindings(fresh) {
   return out;
 }
 
+// ==================== D. THE REVISION COMPARISON (fresh vs stored) ====================
+//
+// THE OTHER QUESTION. The five §5b checks above are all REFERENTIAL — "does this pointer point at
+// something?" — and every one is answerable from the package as it stands NOW, which is why they
+// take `fresh` alone and never look at the stored index.
+//
+// This layer asks the question `docs/walkthrough.md` §2 promises and the product did not have:
+// **what MOVED, and what does the move oblige?** The stored index was loaded, and used for exactly
+// `.present` and `.errors`; `fresh` was computed; and the two were NEVER COMPARED. So the five
+// fingerprints, the seven verbs and `silentRisk` were reachable only from `scripts/study_pairs.mjs`
+// — the STUDY harness. **The revision loop existed to produce the paper's numbers and not in the
+// product.** A value change `0 °C -> 4 °C` yielded zero flags; the answer key that declares
+// `derivedFrom` that very fact was never touched; a full term rename was invisible. This is W1's
+// exact shape one level down: W1 was "does the index run?", this is "does the index DO THE THING?".
+// `semanticAudit`'s own header already said the stored artifacts are "the 'before' a later edit is
+// diffed against" — the module knew; it just never did it.
+//
+// NOTHING IS RE-DERIVED, and one omission here is deliberate enough to name. **`classify` is NOT
+// called from this file.** M5 (`claimImpact`) owns the call: it computes which layers moved and
+// hands each affected claim to M4 under `ctx`. Calling M4 a second time from here would be two
+// derivations of "what does this edit oblige" (§5d) — the defect that put `scope` in §4a — and the
+// two could disagree. Identity is M2's (`matchClaims`), reachability and silent risk are M5's,
+// authorization is M7's, the queue is M10's. This function asks and writes down.
+//
+// AUTHORIZATION IS READ, NEVER DERIVED (§5d, §3's note on M5). M7 owns the question
+// (`isAuthorizedDivergence`); this module does the I/O M7 cannot do — reading `OVERRIDES.json` off
+// the package — and threads the answer down PER CLAIM via `ctx.byClaimId`, exactly as §3 requires.
+// M5 must not read OVERRIDES itself, and an edit-level `ctx.authorized` THROWS by contract, because
+// one bit asserting "every reached claim has an override" would silently downgrade the
+// unauthorized ones from ESCALATE to RE-DERIVE.
+//
+// ALARM FATIGUE IS THE BUDGET, NOT A SIDE EFFECT. A clean, unedited package must earn ZERO flags
+// here, and a null edit must earn zero too. Both hold for one reason and it is M5's, not this
+// module's: a claim whose only moved layer is `format` is not a seed, so it reaches nothing. If
+// wiring this comparison ever made an untouched package flag, it would be the byte-hash bug
+// (1 edit -> 6 required reviews) rebuilt at claim granularity, wearing this index's authority —
+// the founding defect the whole system exists to fix.
+
+/** M4's closed action enum -> the DETECTOR kind M10's table maps. `NONE` is never a finding. */
+const VERB_TO_DETECTOR = {
+  ESCALATE: "revision-escalate",
+  "RE-DERIVE": "revision-re-derive",
+  RENAME: "revision-rename",
+  REGENERATE: "revision-regenerate",
+  RECHECK: "revision-recheck",
+  ANNOTATE: "revision-annotate",
+};
+
 /**
- * Run the five checks and build the instructor's queue.
+ * The recorded overrides, or the honest reason there are none.
  *
- * Checks run against the FRESH compute, not the stored index, and the distinction matters: the
- * stored artifacts are the "before" a later edit is diffed against, so they are stale the moment an
- * author touches a map. "Does this reference point at something?" is a question about the package
- * as it stands NOW, which is what a human will open and fix.
+ * A CORRUPT file must never read as "no overrides recorded" — that is the same manufactured clean
+ * bill of health `loadSemanticIndex` refuses, and here it fails toward MORE flags (every authorized
+ * divergence re-reported as a suspected error), which is the safe direction and therefore the
+ * invisible one. Absence is an answer; corruption is a fault. Branch on presence.
+ */
+function readOverrides() {
+  const text = readOrNull(OVERRIDES_PATH);
+  if (text === null) return { overrides: null, error: null };
+  try {
+    return { overrides: JSON.parse(text), error: null };
+  } catch (e) {
+    return {
+      overrides: null,
+      error:
+        `${OVERRIDES_PATH} is invalid JSON: ${e.message} — every authorization you recorded is unreadable, so ` +
+        "an AUTHORIZED divergence will be reported as a SUSPECTED ERROR below. That fails toward the human " +
+        "(the safe direction), but the flags in this run are more alarming than the package deserves. Restore it from git.",
+    };
+  }
+}
+
+/**
+ * The terms whose preferredLabel MOVED between the stored registry and the fresh one, restricted to
+ * the ones this claim actually references.
+ *
+ * Why bother: `label` moving tells the author a fingerprint changed; "melting point -> fusion point"
+ * tells them WHAT THEY DID. That is the difference between a flag and a fix, and it is the same
+ * reason `anchorHint` exists a few functions up. Reads two artifacts; re-derives nothing — the term
+ * id is M1's, minted once and never re-minted, which is exactly what makes this diff meaningful.
+ */
+function renamedTermsFor(claim, storedTermsIndex, freshTerms) {
+  if (storedTermsIndex === null) return [];
+  const before = new Map((storedTermsIndex.terms ?? []).map((t) => [t?.id, t?.preferredLabel]));
+  const refs = new Set(Array.isArray(claim?.termRefs) ? claim.termRefs : []);
+  const out = [];
+  for (const term of freshTerms.terms ?? []) {
+    if (!refs.has(term.id) || !before.has(term.id)) continue;
+    if (before.get(term.id) !== term.preferredLabel) {
+      out.push({ id: term.id, from: before.get(term.id), to: term.preferredLabel });
+    }
+  }
+  return out.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+}
+
+/**
+ * Diff the FRESH compute against the STORED index and say what the revision obliges.
+ *
+ * @returns {{compared: boolean, reason: string|null, overridesError: string|null,
+ *            authorizedClaims: number, matched: number, added: number, removed: number,
+ *            split: number, merged: number, actions: number, silentRisk: number,
+ *            findings: Array<object>}}
+ */
+function revisionFindings(stored, fresh) {
+  const none = (reason) => ({
+    compared: false,
+    reason,
+    overridesError: null,
+    authorizedClaims: 0,
+    matched: 0, added: 0, removed: 0, split: 0, merged: 0, actions: 0, silentRisk: 0,
+    findings: [],
+  });
+
+  // PRESENCE, never truthiness — `index: null, error: null` is a package that never wrote CLAIMS
+  // (there is no "before", and that is a fact, not a fault); `error` set is a corrupt artifact,
+  // already surfaced in `indexErrors`. An empty `{claims: []}` is a VALUE and must still compare:
+  // every claim in the package is then an addition, which is true and worth saying.
+  const storedClaims = stored.claims.index;
+  if (storedClaims === null) {
+    return none(
+      stored.claims.error ??
+        `${CLAIMS_PATH} is not stored, so this revision has no "before" to be compared against — ` +
+          "nothing here can tell a rephrase from a fact change. Run `npm run index:semantic` to baseline it.",
+    );
+  }
+
+  const { overrides, error: overridesError } = readOverrides();
+  const { matched, added, removed, split, merged } = matchClaims(storedClaims, fresh.claims);
+
+  // PER-CLAIM authorization, threaded down from M7 (§3). Only `true` entries are carried: M5's
+  // `ctxForClaim` reads `own.authorized === true`, so an absent entry and `false` are the same
+  // answer, and listing every claim would just be a bigger object saying it.
+  const ids = [...new Set([...(storedClaims.claims ?? []), ...(fresh.claims.claims ?? [])].map((c) => c?.id).filter(Boolean))].sort();
+  const byClaimId = {};
+  for (const id of ids) if (isAuthorizedDivergence(overrides, id)) byClaimId[id] = { authorized: true };
+
+  // `root` is VESTIGIAL by contract (M5 CONTRACT HISTORY A) — passed for signature stability only.
+  const impact = claimImpact(pkg, storedClaims, fresh.claims, fresh.terms, { byClaimId });
+
+  const byId = new Map([...(storedClaims.claims ?? []), ...(fresh.claims.claims ?? [])].filter((c) => c?.id).map((c) => [c.id, c]));
+  const freshIds = new Set((fresh.claims.claims ?? []).map((c) => c?.id));
+  const addedSet = new Set(added);
+  const removedSet = new Set(removed);
+  const lifecycleOf = (id) => {
+    if (addedSet.has(id) && removedSet.has(id)) return "re-minted (its identity key carries two claims, so M2 refused to pair it)";
+    if (addedSet.has(id)) return "added by this revision";
+    if (removedSet.has(id)) return "REMOVED by this revision";
+    return "matched across the revision";
+  };
+  const whereOf = (id) => {
+    const claim = byId.get(id);
+    if (!claim) return "an unrecorded location";
+    return claimWhere(claim);
+  };
+  const typeOf = (id) => (typeof byId.get(id)?.type === "string" ? byId.get(id).type : "claim");
+
+  const findings = [];
+
+  // --- WHAT MOVED, AND WHAT IT OBLIGES (M5's actions; M4's verb) ------------------------------
+  for (const action of impact.actions) {
+    if (action.action === "NONE") continue; // a rephrase obliges nothing. This line IS the null-edit budget.
+    const detector = VERB_TO_DETECTOR[action.action];
+    if (detector === undefined) {
+      // M4's action enum is CLOSED and frozen (§3), so this cannot be anything but a contract
+      // break — the same reasoning, and the same boundary condition, as M10's `queueKindOf` throw.
+      throw new Error(
+        `check_oer: M4 returned an unmapped action ${JSON.stringify(action.action)}. Extend VERB_TO_DETECTOR ` +
+          "and M10's DETECTOR_TO_QUEUE together — deciding WHICH QUESTION a new verb asks the instructor is the point.",
+      );
+    }
+    const claim = byId.get(action.claimId);
+    const renames = action.layer === "label" ? renamedTermsFor(claim, stored.terms.index, fresh.terms) : [];
+    const renamePhrase = renames.length
+      ? ` The vocabulary moved underneath it: ${renames.map((r) => `${r.id} "${r.from}" -> "${r.to}"`).join("; ")} — a RENAME keeps the old label as an alias, so the prose still resolves and every deliverable still SAYS the old label until the migration is applied.`
+      : "";
+    findings.push({
+      kind: detector,
+      claimId: action.claimId,
+      evidence: [
+        `${action.claimId} (${typeOf(action.claimId)}) in ${whereOf(action.claimId)} is ${lifecycleOf(action.claimId)}: ` +
+          `comparing the fresh compute against the stored index, its "${action.layer}" fingerprint moved. ` +
+          `${action.reason} What this obliges: ${action.action}.${renamePhrase}`,
+        ...(action.followUp
+          ? [`Then: ${action.followUp.action} — ${action.followUp.reason}`]
+          : []),
+      ],
+    });
+  }
+
+  // --- SILENT RISK — the case NOTHING ELSE IN THE SYSTEM CAN CATCH -----------------------------
+  // A change REACHED this claim and not one of its five fingerprints moved: the answer key whose
+  // text is untouched but whose upstream value just changed. M3 sees no move, M4 returns NONE, M9
+  // plans nothing — so without this item the contradiction ships with every check green. It is a
+  // DIFFERENT QUESTION from "is the edited fact wrong?" (`suspected-error`), which is why it gets
+  // its own queue kind and its own item rather than merging into the seed's: the instructor has two
+  // decisions, and a merge would silently answer one of them.
+  for (const risk of impact.silentRisk) {
+    findings.push({
+      kind: "revision-silent-risk",
+      claimIds: [risk.claimId, ...risk.reachedFrom],
+      evidence: [
+        `${risk.claimId} (${typeOf(risk.claimId)}) in ${whereOf(risk.claimId)} was NOT edited — and that is the problem. ` +
+          risk.reason,
+      ],
+    });
+  }
+
+  // --- SPLIT / MERGED (§4: flag them; never silently drop them) --------------------------------
+  // The participants also surface as plain added/removed above, and §4 is explicit that this is an
+  // ANNOTATION OVER the honest report, not a substitute for it. It is a distinct decision — "are
+  // these two claims really that one claim, divided?" is not "does this new claim have coverage?" —
+  // and it names a different claim SET, so M10 keys it as its own item either way.
+  for (const [detector, groups, verb] of [["claim-split", split, "SPLIT INTO"], ["claim-merged", merged, "MERGED INTO"]]) {
+    for (const g of groups) {
+      findings.push({
+        kind: detector,
+        claimIds: [...g.from, ...g.to],
+        evidence: [
+          `Under ${g.spineRef}, ${g.from.length} claim(s) were ${verb} ${g.to.length}: ${g.from.join(", ")} -> ${g.to.join(", ")}. ` +
+            "M2 pairs these only where they share a NON-EMPTY spineRef, so this is a real structural change to what " +
+            "the package asserts under that concept — confirm the division is what you meant, and that coverage and " +
+            "every derivation that pointed at the old claim(s) still point somewhere.",
+        ],
+      });
+    }
+  }
+
+  return {
+    compared: true,
+    reason: null,
+    overridesError,
+    authorizedClaims: Object.keys(byClaimId).length,
+    matched: matched.length,
+    added: added.length,
+    removed: removed.length,
+    split: split.length,
+    merged: merged.length,
+    actions: findings.filter((f) => f.kind.startsWith("revision-") && f.kind !== "revision-silent-risk").length,
+    silentRisk: impact.silentRisk.length,
+    findings,
+    // Reported, never broken: a derivation cycle is two authored dependencies, and dropping one to
+    // untangle them would pick the fake on the machine's own authority.
+    cycles: impact.cycles.length,
+    freshClaims: freshIds.size,
+  };
+}
+
+/**
+ * Run the checks and build the instructor's queue.
+ *
+ * Two families, and the split is the point. The five §5b checks are REFERENTIAL and run against the
+ * FRESH compute alone: the stored artifacts are the "before" a later edit is diffed against, so they
+ * are stale the moment an author touches a map, and "does this reference point at something?" is a
+ * question about the package as it stands NOW — what a human will open and fix. The revision layer
+ * (`revisionFindings`) is the one that needs BOTH, and it is what makes the stored index more than
+ * a file nobody reads.
  */
 function semanticAudit() {
   const stored = loadSemanticIndex(pkg);
@@ -820,11 +1098,24 @@ function semanticAudit() {
     };
   }
   const fresh = computeSemanticIndex(pkg);
-  const findings = [...declarationFindings(), ...spineRefFindings(fresh), ...derivedFromFindings(fresh)];
+  const revision = revisionFindings(stored, fresh);
+  const findings = [
+    ...declarationFindings(),
+    ...spineRefFindings(fresh),
+    ...derivedFromFindings(fresh),
+    ...revision.findings,
+  ];
+  // `fresh.claims` supplies the locations AND the burden denominator. Deliberately NOT a union with
+  // the stored claims: `artifactCount` is "the whole reviewable surface of the package", and a claim
+  // this revision REMOVED is not part of it. A removed claim's last known location therefore does not
+  // resolve here — which is why `revisionFindings` puts it in its OWN evidence prose, where it has
+  // the record in hand. Detector prose is passed through verbatim precisely so it can carry that.
   const queue = buildQueue(findings, fresh.claims);
   const severityCount = (s) => queue.items.filter((i) => i.severity === s).length;
+  const { findings: _routed, ...revisionSummary } = revision;
   return {
     ran: true,
+    revision: revisionSummary,
     // A stored artifact that is CORRUPT is a real fault and must never read as "no claims" — that
     // would be a clean bill of health manufactured by a parse error.
     indexErrors: stored.errors,
@@ -1043,6 +1334,21 @@ if (reportPath) {
     L.push("## Semantic index (declarations, spine references, derivations)");
     L.push(`- spine nodes ${semantic.spineNodes} · terms ${semantic.terms} · claims ${semantic.claims}`);
     L.push(`- review queue: **${semantic.burden.flagCount}** item(s) across ${semantic.burden.artifactCount} artifact(s) — ${semantic.burden.flagsPerArtifact} flags/artifact (blocking ${semantic.blockingFlags} · review ${semantic.reviewFlags} · info ${semantic.infoFlags})`);
+    // The revision comparison, SAID OUT LOUD whether or not it found anything. "0 obliged, 0 silent"
+    // is a result an author can trust; silence is indistinguishable from "nothing was compared",
+    // which is precisely what this layer was for years.
+    const rev = semantic.revision;
+    if (rev.compared) {
+      L.push(
+        `- revision vs the stored index: ${rev.matched} claim(s) matched · ${rev.added} added · ${rev.removed} removed · ` +
+          `${rev.split} split · ${rev.merged} merged — **${rev.actions}** obliging action, **${rev.silentRisk}** reached SILENTLY ` +
+          `(fingerprints unmoved)${rev.authorizedClaims ? ` · ${rev.authorizedClaims} authorized divergence(s) on record` : ""}.`,
+      );
+      if (rev.cycles) L.push(`  - note: ${rev.cycles} derivation cycle(s) reported (never broken — see the queue).`);
+    } else {
+      L.push(`- revision vs the stored index: **not compared** (${rev.reason})`);
+    }
+    if (rev.overridesError) L.push(`  - FAIL ${rev.overridesError}`);
     for (const e of semantic.indexErrors) L.push(`  - FAIL ${e}`);
     for (const w of semantic.warnings) L.push(`  - warn ${w}`);
     for (const item of semantic.queue.items.slice(0, 20)) L.push(`  - ${item.severity.toUpperCase()} ${item.kind} — ${item.evidence[0]}`);

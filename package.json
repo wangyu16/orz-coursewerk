@@ -17,6 +17,7 @@
     "capture:rights": "node scripts/capture_rights_evidence.mjs",
     "capture:media": "node scripts/capture_media_evidence.mjs",
     "bind:key-fact-review": "node scripts/bind_key_fact_review.mjs",
+    "record:override": "node scripts/record_override.mjs --root package",
     "attest:visual-review": "node scripts/attest_visual_review.mjs",
     "generate:source-record": "node scripts/generate_source_record.mjs --root package --inputs inputs",
     "init:output-git": "node scripts/init_output_git.mjs --root package",
@@ -30,7 +31,8 @@
     "system:accept": "node scripts/accept_coursewerk_revision.mjs",
     "build:carriers": "node scripts/build_carriers.mjs --package package --out preview",
     "pack": "node scripts/pack.mjs --package package --out dist",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "test:usage": "node --test tests/usage-e2e.test.mjs"
   },
   "dependencies": {
     "orz-mdhtml": "^0.9.0",

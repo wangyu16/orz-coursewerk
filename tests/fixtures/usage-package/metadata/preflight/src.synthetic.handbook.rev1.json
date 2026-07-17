@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 2,
+  "sourceId": "src.synthetic.handbook.rev1",
+  "sourceBindingSha256": "4ac4fbbe461529d6765dc9b78d3d40b7262b5ae44a46f4524892718460323473",
+  "policyId": null,
+  "evidence": {
+    "url": "https://fixture.invalid/synthetic-handbook-of-melting/rights",
+    "snapshot": "metadata/evidence/src.synthetic.handbook.rev1.html",
+    "sha256": "87be2001fc0e324e530dbbede48c9147b027db5d02852f86bfa5d2a7f96fd524",
+    "retrieval": {
+      "captureMode": "local-file",
+      "claimedEvidenceUrl": "https://fixture.invalid/synthetic-handbook-of-melting/rights",
+      "localFileName": "rights.html",
+      "retrievedAt": "2026-07-17T06:54:39.455Z",
+      "byteLength": 455,
+      "contentType": "text/html",
+      "tool": {
+        "name": "coursewerk",
+        "version": "v0.11.0"
+      }
+    }
+  },
+  "operator": {
+    "type": "automation",
+    "name": "Coursewerk usage fixture builder"
+  },
+  "processUseReview": {
+    "schemaVersion": 1,
+    "scannedAt": "2026-07-17T06:54:39.455Z",
+    "status": "no-notice-detected",
+    "legalEffectDetermined": false,
+    "notices": []
+  },
+  "noticeReviewComplete": true,
+  "policyChecksPassed": true,
+  "status": "cleared",
+  "warnings": [],
+  "blockers": [],
+  "generatedAt": "2026-07-17T06:54:39.455Z"
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "claims": [
+    {
+      "type": "answer-key",
+      "anchor": "practice-melting#2",
+      "spineRefs": ["objective.melting.1"],
+      "sourceRefs": [],
+      "termRefs": ["term.melting-point"],
+      "derivedFrom": ["claim.objective-melting-1.e9d3e0b3806b"]
+    },
+    {
+      "type": "answer-key",
+      "anchor": "practice-melting#4",
+      "spineRefs": ["objective.melting.1"],
+      "sourceRefs": [],
+      "termRefs": ["term.melting-point"],
+      "derivedFrom": ["claim.objective-melting-1.e9d3e0b3806b"]
+    },
+    {
+      "type": "answer-key",
+      "anchor": "practice-melting#8",
+      "spineRefs": ["objective.melting.2"],
+      "sourceRefs": [],
+      "termRefs": ["term.latent-heat-of-fusion"],
+      "derivedFrom": ["claim.concept-melting-2.e09385e81e82"]
+    }
+  ]
+}

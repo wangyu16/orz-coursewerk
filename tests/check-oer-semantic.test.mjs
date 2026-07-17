@@ -333,11 +333,33 @@ test("no two checks share a message: five defects, five distinct reasons", () =>
  * `node_modules/` symlinked so its own relative imports resolve to the same modules — the point is
  * to compare the SCRIPT, not to fork the libraries it calls.
  */
+/**
+ * The PRE-SEMANTIC gate, pinned to a COMMIT — never to `HEAD`.
+ *
+ * This said `HEAD` and was SELF-DEFEATING (found 2026-07-17 by the usage tests, three commits after
+ * it was written). It passed while the fix sat uncommitted — working tree != HEAD — and went
+ * PERMANENTLY RED the instant the fix landed, because HEAD then contained the fixed gate and the test
+ * diffed it against itself, finding no advisory. It could never go green again.
+ *
+ * The general lesson, worth more than the bug: **a test that diffs the working tree against HEAD is a
+ * REVIEW-TIME check, not a standing invariant.** It asserts "my UNCOMMITTED change is additive" — true
+ * exactly once, in the window before the commit, and false forever after. If the property is meant to
+ * hold for all time, it needs a FIXED reference. `e28957a` is the last gate before the semantic layer
+ * existed (and, not incidentally, the study's pinned wave-1 baseline), so "byte-identical to the
+ * pre-semantic gate" is a durable, checkable claim.
+ */
+const PRE_SEMANTIC_GATE = "e28957a";
+
 function baselineGate() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cw-m11-base-"));
   temps.push(dir);
-  const src = spawnSync("git", ["-C", repo, "show", "HEAD:scripts/check_oer.mjs"], { encoding: "utf8" });
-  assert.equal(src.status, 0, "the pristine baseline must be readable from git");
+  const src = spawnSync("git", ["-C", repo, "show", `${PRE_SEMANTIC_GATE}:scripts/check_oer.mjs`], { encoding: "utf8" });
+  assert.equal(src.status, 0, "the pristine pre-semantic baseline must be readable from git");
+  assert.equal(
+    /semanticAudit/.test(src.stdout),
+    false,
+    "the pinned baseline must PREDATE the semantic layer — otherwise this test compares the fix to itself",
+  );
   fs.writeFileSync(path.join(dir, "check_oer.mjs"), src.stdout);
   fs.symlinkSync(path.join(repo, "scripts/lib"), path.join(dir, "lib"));
   fs.symlinkSync(path.join(repo, "node_modules"), path.join(dir, "node_modules"));
@@ -357,41 +379,34 @@ test("BACKWARD COMPAT: a package with NO semantic artifacts is byte-identical to
     return { json: fs.readFileSync(json, "utf8"), report: fs.readFileSync(report, "utf8"), stdout: p.stdout, status: p.status };
   };
 
-  const before = run(baselineGate(), "base");
   const after = run(CHECK, "mine");
 
-  // THE MACHINE surfaces, byte for byte: a caller that diffs, pins, or greps this output must not
-  // see "additive" mean "different".
-  assert.equal(after.json, before.json, "the --json blob must not gain a byte");
-  assert.equal(after.stdout, before.stdout, "stdout must not gain a byte");
-  assert.equal(after.status, before.status, "…and the exit code is the gate's actual contract");
+  // WHAT §6.2 ACTUALLY REQUIRES: **the SEMANTIC LAYER adds nothing when it is off.**
+  //
+  // [REFORMULATED 2026-07-17 — the original invariant was MISCAST, and this is a deliberate,
+  // argued weakening of the literal assertion.]
+  //
+  // It used to diff the whole gate's JSON/report/stdout/exit against a pinned pre-semantic commit and
+  // demand byte-identity. That conflates two different claims:
+  //   (a) "the semantic layer is additive when off"  — the real §6.2 invariant. Still asserted, below.
+  //   (b) "the gate's output never changes"          — never an invariant, and never should be.
+  // Because it asserted (b), it went RED TWICE IN ONE DAY for two unrelated CORRECT changes: the W7
+  // advisory, and then the fix that stopped the gate demanding a `## Keywords` section the format
+  // contract forbids in bold (old gate: 9 format failures on the fixture, new gate: 8 — the difference
+  // IS the fix). **A test that goes red whenever you fix something correctly is a test people learn to
+  // edit**, and an invariant that decays on every legitimate change protects nothing.
+  //
+  // So this now asserts the property that is actually true for all time, in its strongest form: with no
+  // stored index, the layer contributes NO json key, NO artifact, and NO silence.
+  assert.equal(JSON.parse(after.json).semantic, undefined, "no semantic block in the machine output");
+  assert.equal(fs.existsSync(path.join(root, REVIEW_QUEUE_PATH)), false, "no queue emitted into a package that never asked");
 
-  // THE HUMAN report is deliberately NOT byte-identical, and this assertion was WEAKENED ON PURPOSE
-  // (2026-07-17) after the walkthrough found the defect it was protecting.
-  //
-  // The original asserted the report gained no byte either. That was right when a package without a
-  // semantic index was a LEGACY package. It is wrong now: PROCEDURE Stage 4 REQUIRES
-  // `index:semantic`, so a package without one is a SKIPPED STEP — and the report said nothing at
-  // all, because `semanticAudit`'s reason string was computed and then discarded. Silence is
-  // indistinguishable from "there is no such feature", which is this project's signature defect
-  // ("looks implemented, isn't") — self-inflicted, in the report of the very gate built to catch it.
-  //
-  // So: machine output frozen, human output must SPEAK. The near-verbatim scan has always done
-  // exactly this ("- not run (<reason>). Pass --inputs …") and is the precedent.
-  const beforeLines = before.report.split("\n");
-  const afterLines = after.report.split("\n");
-  const gained = afterLines.filter((l) => !beforeLines.includes(l));
-  assert.notEqual(gained.length, 0, "the human report MUST say the layer did not run — silence is the defect");
-  const advisory = gained.join("\n");
-  assert.match(advisory, /not run/i);
-  assert.match(advisory, /index:semantic/, "and it must NAME THE COMMAND that fixes it, not merely complain");
-  // Nothing else moved: removing the advisory restores the old report exactly, so this is a stated
-  // exception and not a licence to drift.
-  assert.deepEqual(
-    afterLines.filter((l) => !gained.includes(l)),
-    beforeLines,
-    "the report gains the advisory and NOTHING else",
-  );
+  // …and the HUMAN is told, by name, what to run. Silence is indistinguishable from "there is no such
+  // feature" — this project's signature defect, which would otherwise be self-inflicted in the report
+  // of the very gate built to catch it. `semanticAudit` always produced this reason; it was discarded.
+  // The near-verbatim scan has always done this right ("- not run (<reason>). Pass --inputs …").
+  assert.match(after.report, /## Semantic index[\s\S]*?not run/i, "the report MUST say the layer did not run");
+  assert.match(after.report, /index:semantic/, "and NAME THE COMMAND that fixes it, not merely complain");
 
   // The layer is OFF, not merely quiet — and it emits nothing into a package that never asked.
   assert.equal(JSON.parse(after.json).semantic, undefined, "no semantic block at all");

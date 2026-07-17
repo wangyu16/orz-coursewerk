@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 2,
+  "packageId": "pending",
+  "title": "Fixture Thermal Science",
+  "license": "CC-BY-4.0",
+  "description": "A one-chapter synthetic course package used as the Coursewerk USAGE fixture: it exists to be driven through the documented CLI workflow end to end, and it teaches nobody anything.",
+  "keywords": ["fixture", "melting", "thermal-science"],
+  "discipline": "chemistry",
+  "unitTerm": "chapter",
+  "courseContext": {
+    "courseName": "Fixture Thermal Science",
+    "level": "introductory",
+    "instructor": "Fixture Instructor",
+    "courseNumber": "FIX-101",
+    "department": "Fixtures"
+  },
+  "chapters": [
+    { "slug": "melting", "title": "Melting" }
+  ],
+  "createdAt": "2026-07-17T00:00:00Z"
+}

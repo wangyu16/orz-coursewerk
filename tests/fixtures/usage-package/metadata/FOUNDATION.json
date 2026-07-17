@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "usageProfile": "public-oer",
+  "audience": "public",
+  "access": "public-web",
+  "redistribution": "open-license",
+  "jurisdiction": "international",
+  "outputLicense": "CC-BY-4.0",
+  "outputAuthors": [
+    {
+      "name": "Fixture Author (synthetic test identity)",
+      "role": "author and adapter",
+      "rightsHolder": true,
+      "accountabilityConfirmedByUser": true,
+      "aiAssistanceDisclosure": "Synthetic fixture content. No real authoring or review took place."
+    }
+  ],
+  "privacy": {
+    "containsPersonalData": false,
+    "containsRestrictedContent": false
+  },
+  "sources": [
+    {
+      "id": "src.synthetic.handbook.rev1",
+      "title": "Synthetic Handbook of Melting (fixture-only; this document does not exist)",
+      "version": "rev1",
+      "publisher": "Coursewerk test fixture",
+      "canonicalUrl": "https://fixture.invalid/synthetic-handbook-of-melting",
+      "role": "primary",
+      "use": "adaptation",
+      "scope": [
+        "the invented melting-point section of an invented public-domain handbook"
+      ],
+      "rightsBasis": {
+        "type": "public-domain",
+        "license": "PUBLIC-DOMAIN",
+        "evidenceType": "official-publisher-page",
+        "evidenceUrl": "https://fixture.invalid/synthetic-handbook-of-melting/rights",
+        "verifiedAt": "2026-07-17",
+        "evidenceSnapshot": "metadata/evidence/src.synthetic.handbook.rev1.html",
+        "evidenceSha256": "87be2001fc0e324e530dbbede48c9147b027db5d02852f86bfa5d2a7f96fd524",
+        "evidenceRetrieval": {
+          "captureMode": "local-file",
+          "claimedEvidenceUrl": "https://fixture.invalid/synthetic-handbook-of-melting/rights",
+          "localFileName": "rights.html",
+          "retrievedAt": "2026-07-17T06:54:39.455Z",
+          "byteLength": 455,
+          "contentType": "text/html",
+          "tool": {
+            "name": "coursewerk",
+            "version": "v0.11.0"
+          }
+        },
+        "evidenceCapture": {
+          "operator": {
+            "type": "automation",
+            "name": "Coursewerk usage fixture builder"
+          },
+          "capturedAt": "2026-07-17T06:54:39.455Z",
+          "tool": {
+            "name": "coursewerk",
+            "version": "v0.11.0"
+          }
+        },
+        "processUseReview": {
+          "schemaVersion": 1,
+          "scannedAt": "2026-07-17T06:54:39.455Z",
+          "status": "no-notice-detected",
+          "legalEffectDetermined": false,
+          "notices": []
+        },
+        "preflightReceipt": "metadata/preflight/src.synthetic.handbook.rev1.json",
+        "preflightReceiptSha256": "666b9278c59096bdd47f5e0b8d2705d0bac369e0ea44e7143aeafcae52a47811"
+      }
+    }
+  ]
+}

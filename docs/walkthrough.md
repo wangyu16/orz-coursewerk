@@ -199,6 +199,53 @@ The backward-compat test was **weakened deliberately and argued in place**: it n
 the advisory *and nothing else*, and that the advisory **names the command that fixes it** rather than merely
 complaining.
 
+### W8 — **THE REVISION LOOP WAS WIRED TO NOTHING.** *(critical; FIXED)*
+The RELIABILITY claim — the product's *distinctive* one — existed **only in the study harness**.
+`check_oer.mjs` loaded the stored index, used it for `.present` and `.errors`, computed `fresh`, and ran
+three referential-integrity checks. **It never diffed fresh against stored.** Grep: `matchClaims`,
+`classify`, `claimImpact`, `planPropagation`, `scanConsistency`, `immutableRegions`,
+`isAuthorizedDivergence` — **0 occurrences**. The only caller outside `lib/` and tests was
+`scripts/study_pairs.mjs`, *the instrument that produces the paper's numbers*.
+
+So: a value change `0 °C → 4 °C` produced **zero flags**; the answer key declaring `derivedFrom` that fact
+was never touched. The instructor ships a practice sheet contradicting their own study guide, and the
+queue is empty. A rename was invisible. **W1's exact shape one level down** — W1 asked *does the index
+run?*; this asked *does the index DO THE THING?* — and `semanticAudit`'s own header already called the
+stored artifacts "the 'before' a later edit is diffed against". The module knew. It never did it.
+
+Fixed: `revisionFindings(stored, fresh)` — identity via `matchClaims`, reachability + `silentRisk` via
+`claimImpact`, M7's per-claim authorization threaded as `ctx`, routed through `buildQueue`.
+**Clean package still 0 flags / 3 artifacts; null edit still 0.** Value change → 10 (1 seed + 9
+dependents); rename → 13, ids held.
+
+### W9 — `OVERRIDES.json` had no producer. *(FIXED)* — 5th no-producer defect
+`lib/overrides.mjs` exports `OVERRIDES_PATH` and a complete, mutation-tested API; **nothing wrote the
+file**, nothing read it, and the package tree didn't list it. The module is *pure by design* (correct), so
+the producer had to live somewhere — and lived nowhere. An instructor **could not authorize a divergence
+at all.** Fixed: `scripts/record_override.mjs` + `npm run record:override`.
+
+### W10 — the override test over-read the spec. *(RESOLVED — assertion corrected, not weakened)*
+Usage test #12 asserted `flagCount === 0` after an override. **Spec §7 says "NOT flagged as
+HALLUCINATION" — not "not flagged at all"**, and §10 dec. 2's ask-once rule governs *asking whether the
+divergence is legitimate*, which `needsAsk` answers false forever after recording. It says nothing about
+dependents.
+
+**An override authorizes divergence FROM THE SOURCE; it does not make everything downstream correct.**
+Override the melting point to 273.15 K and the answer keys still saying 0 °C are still wrong. An override
+that silenced its dependents would **authorize the package into an internal contradiction** — worse than
+the flag it removed. `study_pairs` preregistered exactly this (`real-value-change-authorized`) *before the
+behaviour existed*, and a preregistered expectation outranks an assertion written later against an unbuilt
+feature. The override changes the flag's **character** — an accusation becomes a revision to sign off —
+which is what #12 now asserts (`kind !== "suspected-error"`, `severity === "review"`).
+
+### W11 — a test that diffs against `HEAD` is a review-time check, not an invariant. *(FIXED)*
+The W7 backward-compat test did `git show HEAD:scripts/check_oer.mjs`. It passed while the fix was
+uncommitted and went **permanently red the instant it landed** — thereafter diffing the fixed gate against
+itself. It then went red a *second* time for the F-A fix. Two reds for two **correct** changes is the
+diagnosis: the invariant conflated *"the semantic layer is additive when off"* (true) with *"the gate's
+output never changes"* (never true). **A test that goes red whenever you fix something correctly is a test
+people learn to edit.** Reformulated to assert the real property directly.
+
 ### W3 — `false_flag_rate` = 0.125, target 0 (orz `:::info` bump). *(open — task #58)*
 `stripMarkup` has no orz rule, so the bare word `info` enters the semantic core and `content` moves.
 orz-markdown is the house standard, so this fires on ordinary styling — the "whitespace flags everything"
