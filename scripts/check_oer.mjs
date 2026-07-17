@@ -832,6 +832,263 @@ function derivedFromFindings(fresh) {
   return out;
 }
 
+// ==================== C2. CONTROL — THE SPINE AND THE PACKAGE, IN BOTH DIRECTIONS ====================
+//
+// Every check above is REFERENTIAL — "does this pointer point at something?" Not one of them asks
+// about the single claim this product exists to make: **THE INSTRUCTOR DECIDES WHAT IS TAUGHT.**
+// That claim has two directions and neither had a checker:
+//
+//   spine -> package   is every objective the instructor wrote actually taught?    (W12)
+//   package -> spine   is every claim the author declared authorized by a concept? (W13)
+//
+// W12, MEASURED, not theorized: add a third `## Objectives` item to a chapter map that nothing in
+// the package teaches, run `index:semantic`, run the gate -> `criticalTotal: 0`, burden 0. SILENCE.
+// So CONTROL was enforced by GENERATION (the agent is told to build from the spine) and never by
+// VERIFICATION. If an agent silently drops an objective, the instructor's authority evaporates and
+// every check still passes — which is precisely the obedience the design says it cannot rely on,
+// and therefore the reason this harness exists at all. A property enforced only by the good behavior
+// of the thing being checked is not a checked property; it is a hope with a test suite.
+//
+// W13: `orphan-claim` sits in `review_queue.schema.json`'s enum and in M10's severity map, and
+// NOTHING PRODUCED IT — the sixth no-producer defect, after `derivedFrom`, the spine namespace,
+// `REVIEW_QUEUE.json`, `overrideId` and `OVERRIDES.json`. `spineRefFindings`' own dangling-spineRef
+// message says orphan analysis "must be able to tell 'this claim has no parent concept' from 'its
+// parent does not exist' — those are opposite problems with opposite fixes". **The message explained
+// why a distinction matters while only one side of it was built.** This is the other side.
+//
+// ---- THE MEASURED TRAP, AND WHY THE PRECISION BOUNDARY *IS* THE DESIGN -------------------------
+//
+// On the CLEAN, contract-conformant reference package (`tests/fixtures/usage-package`):
+//   * 3 of 6 objective/concept nodes have NO claim referencing them;
+//   * 6 of 14 claims have NO spineRef (every one scan-found — M2 never invents one, BY DESIGN).
+// So the naive pair of checks — "uncovered => flag", "no parent => orphan" — ships **9 false flags
+// on a package with nothing wrong with it.** That is the alarm-fatigue failure delivered BY the
+// check built to prove CONTROL, wearing the badge of the mechanism meant to prevent it. Perfect
+// recall with no precision is worthless: an instructor buried in flags stops opening the file, and
+// then the mechanism protects nobody — including on the flag that mattered. **The clean package must
+// report burden 0**, and every restriction below exists to buy that, each one paid for in recall and
+// each one named rather than quietly assumed.
+//
+// ---- WHY COVERAGE IS A FLOOR, AND SAID SO WHERE THE NUMBER IS PRODUCED -------------------------
+//
+// Coverage looks low for a STRUCTURAL reason, not an authoring one: only DECLARED claims carry
+// `spineRefs`, so an objective genuinely taught in undeclared prose measures as UNCOVERED. Coverage
+// is not unmeasured here by oversight — **it is unmeasurable without traceability.** The number is
+// therefore a FLOOR that rises as authors declare, never an accusation, and `coverageAudit` says so
+// at the point of production rather than in a doc nobody opens.
+//
+// ---- MEASURE BOTH KINDS; FLAG ONLY OBJECTIVES (the restriction that cost the most) -------------
+//
+// `concept` nodes are MEASURED and never flagged, and the reference package is the evidence, not a
+// preference: 2 of 2 OBJECTIVE nodes carry a declared claim, and only 1 of 4 CONCEPT nodes does —
+// while all four are plainly taught. Authors declare against the objective that operationalizes a
+// concept, not against the concept node, so the declared-claim signal is calibrated for objectives
+// and is a blind spot for concepts. Flagging concepts on it would fire on a clean package: it would
+// be flagging THE SIGNAL'S OWN BLIND SPOT and calling it the author's defect. It is also where the
+// product's own words point — CONTROL is "the instructor decides what is TAUGHT", and an objective is
+// the promise about what a student will be able to do. When authors declare against concepts, the
+// concept number in `coverage` is what will show it; until then it is reported and not acted on.
+// COURSE-SCOPE nodes are likewise measured and never flagged: there is no `chapter.course`, hence no
+// chapter deliverables to look in, and course concepts are restated per chapter by construction.
+
+/**
+ * COVERAGE: does the package teach what the instructor's map promises? (W12)
+ *
+ * @returns {{coverage: {objectives: {covered:number,total:number}, concepts: {covered:number,total:number}},
+ *            findings: Array<object>}}
+ */
+function coverageAudit(fresh) {
+  const spine = fresh.spine;
+  const claims = fresh.claims.claims ?? [];
+  const chapters = new Set(spine.chapters ?? []);
+
+  // A node is COVERED when some claim names it. Every reference here is necessarily one an author
+  // DECLARED: M2 mints `spineRefs: []` for every scan-found claim and never invents one, so "no
+  // claim references it" and "no DECLARED claim references it" are the same set — read off the
+  // claim record rather than re-deriving M2's declared/scan split from `provenanceDeclared`.
+  const referenced = new Set(
+    claims.flatMap((c) => (Array.isArray(c.spineRefs) ? c.spineRefs : [])),
+  );
+
+  // "Does this chapter's prose use this term?" is M2's question, ALREADY ANSWERED and STORED in
+  // `claim.termRefs`. Reading it is §5d's own prescription — derive once at the producer, store it,
+  // consumers READ it — and here the rule has teeth: "does this label occur as a whole word in this
+  // text" is ALREADY IMPLEMENTED FOUR TIMES in this repo (claims.mjs `labelRe`, consistency.mjs
+  // `labelRe`, consistency.mjs's inline `replace`, propagate.mjs `findOccurrences`) and NOT ONE is
+  // exported. A fifth spelling — inside the gate built to catch exactly this defect — would be §5d
+  // self-inflicted, and the four would then disagree with the gate about what a chapter says.
+  // See CONTRACT CONCERN 1 in the report: M2 should EXPORT the matcher, exactly as §5b required it
+  // to export its anchor set for the same reason one row up.
+  //
+  // THE COST, STATED: `termRefs` is claim-block scoped, so a term used ONLY in prose that mints no
+  // claim is invisible here — narrower than "anywhere in the deliverables". It fails toward MORE
+  // flags (a term reads as absent), which is the safe direction and therefore the invisible one.
+  const termsInChapter = new Map(); // chapter slug -> Set(term id)
+  for (const claim of claims) {
+    // §4a — `scope` is derived ONCE by M2 and STORED. Read it; never re-derive it. Branch on
+    // presence: `null` is an ANSWER here (package-wide), not a missing value, and it is not a chapter.
+    const scope = claim.scope;
+    if (typeof scope !== "string" || !chapters.has(scope)) continue;
+    if (!termsInChapter.has(scope)) termsInChapter.set(scope, new Set());
+    const bucket = termsInChapter.get(scope);
+    for (const id of Array.isArray(claim.termRefs) ? claim.termRefs : []) bucket.add(id);
+  }
+
+  // THE TRACEABILITY GATE — the check speaks ONLY about a chapter that demonstrably USES the
+  // convention the check reads. It engages for a chapter when at least one of that chapter's
+  // OBJECTIVE nodes already carries a declared claim; otherwise coverage there is not a floor, it is
+  // UNDEFINED, and the honest report of an undefined value is silence.
+  //
+  // FOUND BY TWO FIXTURES, EACH KILLING A WEAKER GATE, AND NEITHER GUESSED AT:
+  //   * `mini-package` is CLEAN, declares nothing and brackets nothing. Its objectives are plainly
+  //     taught. With no gate the check flagged BOTH — "no declared claim names this objective"
+  //     carries NO information in a package that declares nothing, and reading it as "untaught" is
+  //     absence of evidence dressed as evidence of absence. It would also aim the loudest possible
+  //     queue at exactly the authors who have not adopted the convention: every author, on day one.
+  //   * `check-oer-semantic`'s CHECK 1/3/4 declare ONE claim, about a CONCEPT. A gate of "does this
+  //     chapter declare anything at all?" is armed by that single unrelated declaration, and both
+  //     objectives flag again. So the gate must read the SAME signal the check reads — declarations
+  //     against OBJECTIVES — or it is a different question standing in for the real one.
+  //
+  // THE RECALL COST, NAMED: a chapter in which EVERY objective is dropped has no covered objective,
+  // so the gate stays shut and the check says nothing. An agent that drops one objective is caught;
+  // an agent that drops all of them in a chapter is not. That is the price of not flagging every
+  // non-adopting package, it is paid knowingly, and it is the first thing to revisit if the coverage
+  // numbers ever show adoption is universal.
+  const objectivesDeclaredIn = new Set(
+    (spine.nodes ?? [])
+      .filter((n) => n.kind === "objective" && chapters.has(n.scope) && referenced.has(n.id))
+      .map((n) => n.scope),
+  );
+
+  // The `## Key terms` entries authorized under each node — M1's `spineRef` bracket, read, never
+  // guessed at. (CONTRACT CONCERN 3: a term's `scope` is PLURAL but its `spineRef` is SINGULAR and
+  // first-declaration-wins, so a term bracketed `[concept.course.1]` in the course map and
+  // `[concept.melting.1]` in the chapter map silently keeps only the course one. That loses terms
+  // from chapter nodes and so pushes this check toward MORE flags — safe direction, still wrong.)
+  const termsUnder = new Map(); // node id -> [term]
+  for (const term of fresh.terms.terms ?? []) {
+    const ref = typeof term.spineRef === "string" ? term.spineRef : "";
+    if (!ref) continue;
+    if (!termsUnder.has(ref)) termsUnder.set(ref, []);
+    termsUnder.get(ref).push(term);
+  }
+
+  const coverage = {
+    // A FLOOR, not a score — see the header. Denominators are reported BECAUSE a bare "4 covered"
+    // is a number an instructor cannot act on, and a bare percentage is one they cannot audit.
+    objectives: { covered: 0, total: 0 },
+    concepts: { covered: 0, total: 0 },
+  };
+  const findings = [];
+
+  for (const node of spine.nodes ?? []) {
+    // `misconception` and `chapter` nodes are deliberately outside the measurement: a misconception
+    // is a NEGATIVE node (the package asserts its OPPOSITE, so "is it taught?" inverts and would
+    // read backwards), and a chapter node is a container, not a promise.
+    const bucket =
+      node.kind === "objective" ? coverage.objectives : node.kind === "concept" ? coverage.concepts : null;
+    if (bucket === null) continue;
+    bucket.total += 1;
+    if (referenced.has(node.id)) {
+      bucket.covered += 1;
+      continue;
+    }
+
+    // ---- MEASURED ABOVE. FLAGGED BELOW. Everything from here is the precision boundary. --------
+    if (node.kind !== "objective") continue; // concepts: measured, never flagged (see header)
+    // SUBSUMED, AND KEPT DELIBERATELY — recorded because MUTATION TESTING found it, not guessed at:
+    // `objectivesDeclaredIn` is built from chapter scopes ONLY, so it can never contain `course`,
+    // and mutating this line away kills no test. It stays because the two guards hold for DIFFERENT
+    // reasons — this one says a course-scope node has no chapter deliverables to look in; the next
+    // says the convention is not in use here. If the gate below is ever widened, this still holds.
+    if (!chapters.has(node.scope)) continue;
+    if (!objectivesDeclaredIn.has(node.scope)) continue; // no objective traceability -> UNDEFINED, not zero
+    const under = (termsUnder.get(node.id) ?? []).slice().sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    const present = termsInChapter.get(node.scope) ?? new Set();
+    if (under.some((t) => present.has(t.id))) continue; // its vocabulary IS taught: undeclared, not untaught
+
+    findings.push({
+      kind: "spine-uncovered",
+      evidence: [
+        `${node.file} declares ${node.id} — "${node.label}" — and NOTHING in this package teaches it: ` +
+          `no claim anywhere names it as a spineRef, and ` +
+          (under.length === 0
+            ? "no `## Key terms` entry is authorized under it either, so the objective has no vocabulary tying it to a single line of the chapter"
+            : `not one of the \`## Key terms\` authorized under it (${under.map((t) => `"${t.preferredLabel}"`).join(", ")}) is used anywhere in chapter "${node.scope}"'s indexed prose`) +
+          `. You wrote this objective into your own map and the package does not deliver it. This is the ` +
+          `CONTROL check: an objective silently dropped by a generator leaves your authority intact on ` +
+          `paper and gone in the package, and every other check here passes. Two honest options, and only ` +
+          `you can choose between them — TEACH it, or REMOVE it from ${node.file}.` +
+          ` (If it IS taught, the package cannot see that: declare a claim under "spineRefs": ["${node.id}"], ` +
+          `or register a \`## Key terms\` entry under [${node.id}]. An objective taught only in undeclared ` +
+          `prose is invisible to this check BY CONSTRUCTION — that is the cost of never guessing which ` +
+          `prose covers which objective, and guessing would put words in your mouth about your own course.)`,
+      ],
+    });
+  }
+
+  return { coverage, findings };
+}
+
+/**
+ * ORPHANS: a claim the author DECLARED and gave no parent concept. (W13 — the missing producer.)
+ *
+ * SCAN-FOUND CLAIMS ARE NOT ORPHANS, and that is the precision boundary rather than a loophole. M2
+ * mints `spineRefs: []` for every scan-found claim BY DESIGN — it never invents a spineRef — so on
+ * the clean reference package 6 of 14 claims have no parent, and flagging them would add SIX flags
+ * to a package with nothing wrong with it while double-counting a gap `provenanceDeclared` already
+ * records. Nobody ASSERTED anything about those blocks; the backstop noticed them. An orphan needs an
+ * AUTHOR — someone who wrote a claim down deliberately and left it unparented. That is a decision a
+ * human owes an answer to ("what concept does this belong under?"), which is exactly the question the
+ * `orphan-claim` queue kind names.
+ *
+ * OMITTED vs DECLARED-EMPTY — AND WHY THERE IS NOTHING TO BRANCH ON (CONTRACT CONCERN 2).
+ * M12 distinguishes the two for `termRefs` and `derivedFrom` (omitted -> `null`, "resolve them for
+ * me"; `[]`, an authoritative "there are none"). It does NOT for `spineRefs`: `normalizeDeclaration`
+ * passes the field straight through `refSet`, whose FROZEN contract is `absent -> []` ("'I have none'
+ * is an ANSWER, and an honest one"). **Both spellings therefore arrive here as `[]`, and the
+ * distinction a caller might expect does not exist in the data.**
+ *
+ * The collapse is CORRECT for this field, and the asymmetry with its two neighbours is not an
+ * oversight: `termRefs` and `derivedFrom` each have a FALLBACK for "not declared" (M2 recognizes the
+ * vocabulary itself; M5 reaches the claim by co-mention), so for them silence and emptiness oblige
+ * genuinely different behavior. `spineRefs` has NO fallback — nothing anywhere may invent one — so
+ * "I didn't say" and "there are none" oblige the identical behavior: NO PARENT. Two spellings, one
+ * meaning, one flag. **Both are the orphan**, and the item says so instead of asking the author which
+ * spelling they used for a distinction the grammar never kept.
+ */
+function orphanClaimFindings(fresh) {
+  const out = [];
+  for (const claim of fresh.claims.claims ?? []) {
+    // BRANCH ON PRESENCE, NEVER TRUTHINESS. `!claim.provenanceDeclared` would read a MISSING field
+    // as "scan-found" and silently exempt a malformed record from the check — the trap this repo has
+    // now hit six times, once inside a test helper written to check for it.
+    if (claim.provenanceDeclared !== true) continue;
+    const refs = Array.isArray(claim.spineRefs) ? claim.spineRefs : null;
+    if (refs === null) continue; // not a well-formed record; `indexErrors` owns that fault
+    if (refs.length > 0) continue; // it HAS a parent — dangling-or-not is `spineRefFindings`' row
+    out.push({
+      kind: "claim-without-parent",
+      claimId: claim.id,
+      evidence: [
+        `${claim.id} (${claim.type}) in ${claimWhere(claim)} was DECLARED by its author, and the ` +
+          `declaration gives it NO parent concept — so this claim hangs under nothing in the instructor's ` +
+          `map. It is authorized by no concept the map declares, which is the package asserting something ` +
+          `the course structure never approved. This is NOT a dangling ref (a parent that does not exist — ` +
+          `flagged separately, and the opposite problem with the opposite fix), and it is NOT a scan-found ` +
+          `block (which the backstop noticed and nobody claimed — those are never flagged here, because ` +
+          `nobody asserted anything about them). Place it under a concept with "spineRefs": ["concept.…"], ` +
+          `or add the concept to the map if this package teaches something the map does not yet say it ` +
+          `teaches. Note: omitting \`spineRefs\` and declaring it \`[]\` are the SAME assertion — the ` +
+          `declaration grammar reads both as "there are none" — so this flag is about the missing PARENT, ` +
+          `never about which spelling you used.`,
+      ],
+    });
+  }
+  return out;
+}
+
 // ==================== D. THE REVISION COMPARISON (fresh vs stored) ====================
 //
 // THE OTHER QUESTION. The five §5b checks above are all REFERENTIAL — "does this pointer point at
@@ -1099,10 +1356,16 @@ function semanticAudit() {
   }
   const fresh = computeSemanticIndex(pkg);
   const revision = revisionFindings(stored, fresh);
+  // CONTROL (§C2) is REFERENTIAL in the same sense as the §5b rows — both directions are questions
+  // about the package as it stands NOW, not about what moved — so it takes `fresh` alone and never
+  // looks at the stored index.
+  const coverage = coverageAudit(fresh);
   const findings = [
     ...declarationFindings(),
     ...spineRefFindings(fresh),
     ...derivedFromFindings(fresh),
+    ...orphanClaimFindings(fresh),
+    ...coverage.findings,
     ...revision.findings,
   ];
   // `fresh.claims` supplies the locations AND the burden denominator. Deliberately NOT a union with
@@ -1123,6 +1386,12 @@ function semanticAudit() {
     spineNodes: fresh.spine.nodes.length,
     terms: fresh.terms.terms.length,
     claims: fresh.claims.claims.length,
+    // INFORMATION, NOT AN ACCUSATION — and a FLOOR, not a score. Only DECLARED claims carry
+    // `spineRefs`, so an objective taught in undeclared prose measures as UNCOVERED: this number
+    // rises as authors declare, and it is unmeasurable at all without traceability. Reported with
+    // its DENOMINATORS because "4 covered" is not a number anyone can act on or audit. `concepts`
+    // is measured and never flagged (see §C2's header for the evidence).
+    coverage: coverage.coverage,
     detectorFindings: findings.length,
     queue,
     burden: queue.burden,
@@ -1333,6 +1602,15 @@ if (reportPath) {
   if (semantic.ran) {
     L.push("## Semantic index (declarations, spine references, derivations)");
     L.push(`- spine nodes ${semantic.spineNodes} · terms ${semantic.terms} · claims ${semantic.claims}`);
+    // Said out loud, with denominators, and with the understatement named IN THE LINE — an
+    // instructor reading "1/4 concepts covered" and not told why would read a scolding where the
+    // honest reading is "your package is under-declared, not under-taught".
+    L.push(
+      `- coverage (a FLOOR, not a score): objectives **${semantic.coverage.objectives.covered}/${semantic.coverage.objectives.total}** · ` +
+        `concepts **${semantic.coverage.concepts.covered}/${semantic.coverage.concepts.total}** — an objective/concept counts as covered only when a ` +
+        "DECLARED claim names it, so anything taught in undeclared prose measures as uncovered. The number rises as you declare; " +
+        "concepts are measured but never flagged.",
+    );
     L.push(`- review queue: **${semantic.burden.flagCount}** item(s) across ${semantic.burden.artifactCount} artifact(s) — ${semantic.burden.flagsPerArtifact} flags/artifact (blocking ${semantic.blockingFlags} · review ${semantic.reviewFlags} · info ${semantic.infoFlags})`);
     // The revision comparison, SAID OUT LOUD whether or not it found anything. "0 obliged, 0 silent"
     // is a result an author can trust; silence is indistinguishable from "nothing was compared",

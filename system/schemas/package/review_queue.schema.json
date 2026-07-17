@@ -33,9 +33,10 @@
               "derived-diff",
               "upstream-drift",
               "dangling-reference",
-              "declaration-refused"
+              "declaration-refused",
+              "missing-coverage"
             ],
-            "description": "The DECISION the human is asked (not what was observed — that is `detectorKinds`), and part of M10's dedupe key so one decision = one item. `dangling-reference` and `declaration-refused` were ADDED 2026-07-17: the M11 gate's own §5b findings had no member, and folding them into `internal-inconsistency` would have asked the wrong question — 'these two artifacts disagree' is not 'this reference points at nothing' or 'your declaration was malformed', and the instructor's next action differs for each. A gate that must misname its finding to fit an enum is an enum that is wrong."
+            "description": "The DECISION the human is asked (not what was observed — that is `detectorKinds`), and part of M10's dedupe key so one decision = one item. `dangling-reference` and `declaration-refused` were ADDED 2026-07-17: the M11 gate's own §5b findings had no member, and folding them into `internal-inconsistency` would have asked the wrong question — 'these two artifacts disagree' is not 'this reference points at nothing' or 'your declaration was malformed', and the instructor's next action differs for each. A gate that must misname its finding to fit an enum is an enum that is wrong. `missing-coverage` was ADDED 2026-07-17 with the CONTROL checks (W12), and is the spine->package direction: 'you wrote this objective into your own map and nothing in the package teaches it — teach it or remove it'. It is NOT `dangling-reference` (opposite direction: that is a pointer aimed at nothing, this is a promise nothing delivers) and NOT `sanity-check` (which fits loosely, and would bury the one check that verifies the product's central claim — that the instructor decides what is taught — in the bucket an instructor cannot filter). Its counterpart in the package->spine direction is `orphan-claim`, which needed no new member: it had the right name from the start and simply had no producer until now (W13). Members are APPENDED, never slotted in by consequence — the order is frozen and doubles as M10's intra-severity triage order."
           },
           "claimIds": {
             "type": "array",

@@ -666,3 +666,37 @@ test("12 · a knowledge update beyond the source is not flagged as hallucination
   assert.ok(g.json.semantic.burden.flagCount > 0,
     "the dependents were silenced by an override that does not authorize them — that authorizes an internal contradiction");
 });
+
+test("13 · a DROPPED objective is caught — the instructor's map is a CHECKED promise, not a hope", (t) => {
+  const pkg = freshPackage(t);
+
+  // W12, at the CLI, from the user's side. The instructor writes a third objective into their own
+  // map and the package teaches it nowhere — the exact scenario an agent silently dropping an
+  // objective produces. This probe used to yield `criticalTotal: 0`, burden 0: SILENCE. CONTROL
+  // ("the instructor decides what is taught") was enforced by GENERATION — the agent is TOLD to
+  // build from the spine — and never by VERIFICATION. A property enforced only by the good behavior
+  // of the thing being checked is not a checked property, and relying on that obedience is the very
+  // thing this harness exists because you cannot do.
+  write(pkg, "concepts/melting.md", read(pkg, "concepts/melting.md").replace(
+    "2. Explain why the temperature stays constant while a pure solid melts.\n",
+    "2. Explain why the temperature stays constant while a pure solid melts.\n3. Derive the Clausius–Clapeyron relation for the solid–liquid boundary.\n",
+  ));
+  stage4(pkg);
+  const g = gate(pkg);
+  const queue = queueOf(pkg);
+
+  const flags = queue.items.filter((i) => i.kind === "missing-coverage");
+  assert.equal(flags.length, 1,
+    `the instructor's own map promises an objective the package never teaches, and the gate said nothing (W12). Queue: ${evidenceText(queue)}`);
+  const text = flags[0].evidence.join("\n");
+  assert.match(text, /objective\.melting\.3/, "the flag does not name the objective");
+  assert.match(text, /Clausius–Clapeyron/, "the flag does not quote what the instructor actually wrote");
+
+  // Coverage is MEASURED alongside the flag, with its denominators — information, not an accusation.
+  assert.deepEqual(g.json.semantic.coverage.objectives, { covered: 2, total: 3 });
+  assert.match(g.report, /coverage \(a FLOOR, not a score\)/);
+
+  // The instructor SEES it: a `review` item, in the report, in the queue artifact.
+  assert.equal(flags[0].severity, "review");
+  assert.match(g.report, /REVIEW missing-coverage/);
+});

@@ -113,7 +113,7 @@
       "id": "repo:docs/walkthrough.md",
       "path": "docs/walkthrough.md",
       "type": "documentation",
-      "hash": "57b15671d4416f8cf07d331cefbe6b546abf640810cfb32c6e258dc57b3a0e2f"
+      "hash": "d4562c86761e170a4909b990c0e3f81cde6464f91d16454e035f72fc5d6c7d24"
     },
     {
       "id": "repo:docs/wikipedia-science-topic.md",
@@ -215,7 +215,7 @@
       "id": "repo:scripts/check_oer.mjs",
       "path": "scripts/check_oer.mjs",
       "type": "executable",
-      "hash": "6be848797c24777f29d75a010df024ca325380372e1a7bf647943eed34013c5c"
+      "hash": "d29c10165e8d9bcb7a1ca1029e843a0b6f665bea55931b8881aa114fbf8b553b"
     },
     {
       "id": "repo:scripts/coursewerk_impact.mjs",
@@ -341,7 +341,7 @@
       "id": "repo:scripts/lib/escalation.mjs",
       "path": "scripts/lib/escalation.mjs",
       "type": "kernel",
-      "hash": "5d2e1f21ed1d0fa3acc6ea5a9385f3ebcca7020cf30b2b257172452c9fef3c98"
+      "hash": "07dedf8843ce8d03e8b5c5565d40a90f998ada4d19aa28ea212be1b4d92a632b"
     },
     {
       "id": "repo:scripts/lib/fingerprint.mjs",
@@ -746,6 +746,12 @@
       "hash": "1afeb2968b64ef48ec436982ea5c70cfb5cccd6dff72bad8833441a8d89d2f1b"
     },
     {
+      "id": "repo:tests/check-oer-control.test.mjs",
+      "path": "tests/check-oer-control.test.mjs",
+      "type": "test",
+      "hash": "07a61f12dd1e2bb09e3b08aa916d40a8caf1fede28e62cd7ca8cbaf7b3f223f0"
+    },
+    {
       "id": "repo:tests/check-oer-revision.test.mjs",
       "path": "tests/check-oer-revision.test.mjs",
       "type": "test",
@@ -1043,7 +1049,7 @@
       "id": "repo:tests/usage-e2e.test.mjs",
       "path": "tests/usage-e2e.test.mjs",
       "type": "test",
-      "hash": "f2afe813a43b3040561efd4298380eb3e39da01948807f8a9e0b68b54ffe0743"
+      "hash": "8801cdd29a0ab0ec4f5d64790b9cff18a808dd267bca184567368c84bfa464a3"
     },
     {
       "id": "repo:VERSION",

@@ -246,6 +246,53 @@ diagnosis: the invariant conflated *"the semantic layer is additive when off"* (
 output never changes"* (never true). **A test that goes red whenever you fix something correctly is a test
 people learn to edit.** Reformulated to assert the real property directly.
 
+### W12 — **CONTROL was enforced by GENERATION, not verification.** *(critical; FIXED)*
+Probed, not reasoned: add a third `## Objectives` item that nothing in the package teaches → index →
+gate → **`criticalTotal: 0`, burden 0. Silence.** The instructor's authority rested entirely on the agent
+*choosing* to obey the spine — the one thing the harness exists because you cannot rely on. An agent that
+quietly drops an objective passed every check.
+
+**The measured trap** (why the obvious fix was wrong): on the *clean* fixture, **3 of 6** objective/concept
+nodes had no claim referencing them and **6 of 14** claims had no `spineRef` (scan-found, by design). The
+naive checks flag **9 false positives on a clean package** — the alarm-fatigue failure, shipped inside the
+check meant to prove CONTROL.
+
+**Operator's decision (2026-07-17): measure + flag only the strong case.** Coverage is reported with its
+denominators as a **FLOOR, not a score** — an objective counts as covered only when a DECLARED claim names
+it, so anything taught in undeclared prose measures as uncovered, and **coverage is unmeasurable at all
+without traceability**. Only the unambiguous case is flagged: no declared claim AND none of its Key terms
+present → genuinely *untaught*. New queue kind `missing-coverage` (not `sanity-check`, which would bury the
+one check verifying the product's central claim in a bucket nobody can filter).
+**Clean fixture: burden 0. Dropped objective: flagged, quoting the instructor's own words.**
+
+### W13 — `orphan-claim` had no producer. *(FIXED)* — 6th no-producer defect
+It sat in the enum and the severity map; only hand-built test findings emitted it. Meanwhile the gate's own
+dangling-ref message read *"Orphan analysis must be able to tell 'this claim has no parent concept' from
+'its parent does not exist' — those are opposite problems with opposite fixes"*. **The message explained why
+a distinction mattered while only one side of it existed.** Scoped per the operator to **declared claims
+only** — a scan-found claim is not an orphan, or a clean package gains 6 flags for a gap already reported
+elsewhere.
+
+### W14 — "does this label occur here" is implemented **FOUR** times, none exported. *(open)*
+`claims.mjs labelRe`, `consistency.mjs labelRe`, its inline `replace`, `propagate.mjs findOccurrences`. The
+CONTROL agent **refused to add a fifth inside the gate built to catch that defect** and read M2's stored
+`claim.termRefs` instead — §5d's own prescription. Cost, stated in its code: `termRefs` is claim-block
+scoped, narrower than "anywhere in the deliverables". **M2 should export the matcher.**
+
+### W15 — a term's `spineRef` is SINGULAR while its `scope` is PLURAL. *(open)*
+First-declaration-wins, so `melting point` bracketed `[concept.course.1]` in the course map and
+`[concept.melting.1]` in the chapter map **silently keeps only the course one — and file order decides**,
+which `terms.mjs` itself calls "accident, not authority". §5c's freeze-time check again.
+
+### W16 — `provenanceDeclared` had no consumer. *(FIXED as a side effect)*
+The coordinator's brief asserted scan-found claims "are reported through that channel". **They were not** —
+the field appeared nowhere outside `claims.mjs` and its tests. The CONTROL check is its first consumer. The
+reasoning for exempting scan-found claims from orphan analysis holds regardless; the premise was wrong.
+
+### W17 — `formatContractAudit`'s objective cross-check is vacuous. *(open)*
+It requires literal `Objective N` text in the concept map, which the format contract's `## Objectives` items
+do not carry. W12's probe was therefore silent **twice over**.
+
 ### W3 — `false_flag_rate` = 0.125, target 0 (orz `:::info` bump). *(open — task #58)*
 `stripMarkup` has no orz rule, so the bare word `info` enters the semantic core and `content` moves.
 orz-markdown is the house standard, so this fires on ordinary styling — the "whitespace flags everything"

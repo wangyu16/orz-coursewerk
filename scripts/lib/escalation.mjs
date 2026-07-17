@@ -129,6 +129,14 @@ const KIND_ORDER = [
   "upstream-drift",
   "dangling-reference",
   "declaration-refused",
+  // APPENDED 2026-07-17 with the CONTROL checks, and appended for the same reason the two above
+  // were: this list must stay in the schema's own enum order, which is what makes it checkable
+  // against the frozen artifact. Position only breaks ties WITHIN a severity, and severity is the
+  // primary key. THE COST IS REAL AND IS ACCEPTED: `missing-coverage` therefore sorts LAST among
+  // `review` items — below "your bracket has a typo" — which is worse triage than it deserves.
+  // Re-slotting it by consequence would silently renumber a FROZEN enum every stored queue was
+  // written against; that trade is the schema's to make, not this table's.
+  "missing-coverage",
 ];
 const KIND_SET = new Set(KIND_ORDER);
 
@@ -157,6 +165,11 @@ const DEFAULT_SEVERITY = {
   // instructor to ignore the loudest one.
   "dangling-reference": "review",
   "declaration-refused": "review",
+  // `review`, not `blocking`, by the same rule: no student meets a falsehood. The prose a student
+  // reads is not wrong — it is ABSENT, and what broke is the promise the instructor's own map makes.
+  // Nor is the absence provable: the check cannot see an objective taught in prose that names no
+  // registered term, which is exactly "a human must decide but nothing is provably wrong yet".
+  "missing-coverage": "review",
   "term-proposal": "info",
 };
 
@@ -181,6 +194,25 @@ const DETECTOR_TO_QUEUE = {
   "dangling-spine-ref": "dangling-reference",
   "dangling-derived-from": "dangling-reference",
   "declaration-refusal": "declaration-refused",
+
+  // The M11 gate's CONTROL rows (§C2) — the two directions of "the instructor decides what is
+  // taught", which is the claim the whole product makes and the one nothing verified.
+  //   spine-uncovered -> `missing-coverage`, a NEW queue kind, and the alternatives were weighed:
+  //     * NOT `dangling-reference`. "You said teach this and nothing does" is not "this reference
+  //       points at nothing" — opposite directions, opposite fixes, and the queue kind is the dedupe
+  //       key, so misnaming it would fold the CONTROL failure in with a typo'd bracket.
+  //     * NOT `sanity-check`, which fits loosely enough to be tempting and is the wrong call twice
+  //       over. The queue kind is the vocabulary an instructor TRIAGES on: burying "your course
+  //       promises something it does not teach" beside "confirm this split is what you meant" makes
+  //       the one check that verifies CONTROL unfilterable — and this enum's own schema says a gate
+  //       that must misname its finding to fit an enum is an enum that is wrong.
+  //   claim-without-parent -> `orphan-claim`, which needed no new member: the enum has had exactly
+  //     the right name since the beginning and NOTHING EVER PRODUCED ONE (the sixth no-producer
+  //     defect). The detector kind names the OBSERVATION ("this declared claim has no parent") and
+  //     the queue kind names the DECISION ("what concept does this belong under?") — the two-
+  //     vocabulary rule this table exists for, rather than a detector speaking a queue kind.
+  "spine-uncovered": "missing-coverage",
+  "claim-without-parent": "orphan-claim",
 
   // The M11 gate's REVISION rows (fresh compute vs stored index) — the detector that reports M4's
   // verb for a claim whose fingerprints moved. The detector kind names the VERB because the verb IS
