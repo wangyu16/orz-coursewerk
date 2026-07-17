@@ -175,7 +175,14 @@ test("a VALUE change flags the edited fact AND the answer key DERIVED from it", 
   // THE ANSWER KEY: reached, and its OWN text was never touched. This is the case NOTHING else in
   // the system can catch — M3 sees no move, M4 returns NONE, M9 plans nothing.
   assert.ok(read(pkg, "practice/melting.md").includes("0 °C."), "the answer key's own text moved — this is no longer the silent case");
-  const silent = q.items.find((i) => (i.claimIds ?? []).includes(key.id));
+  // KIND-QUALIFIED, like the seed lookup above. [FIXED 2026-07-17 when M6 was wired into the gate.]
+  // The bare `.find()` grabbed whichever item sorted first and got `internal-inconsistency` — because
+  // M6 is now live and CORRECTLY reports a real contradiction (the guide says 4 °C, the answer key still
+  // says 0 °C) alongside the revision layer's `upstream-drift`. BOTH firing is right by design: M10 does
+  // not merge different queue KINDS, deliberately — "this claim's upstream moved" and "these two
+  // artifacts disagree" are two questions with two next actions. The test was under-specified, not the
+  // product wrong.
+  const silent = q.items.find((i) => (i.claimIds ?? []).includes(key.id) && i.kind === "upstream-drift");
   assert.ok(silent, "the answer key DERIVED FROM the edited fact was not flagged");
   assert.equal(silent.kind, "upstream-drift", "the answer key was not reported as upstream drift");
   assert.deepEqual(silent.detectorKinds, ["revision-silent-risk"]);

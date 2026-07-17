@@ -193,7 +193,31 @@ const TABLE = [
   // The four M3 knew and M2's scanner did not — the live blind spot this module was built to fix.
   // Each is its dimension's canonical unit, so the conversion is identity: certain, not guessed.
   { id: "volt", dim: "voltage", symbols: ["V"], words: ["volt"], to: (v) => v },
-  { id: "ampere", dim: "current", symbols: ["A"], words: [], to: (v) => v },
+  // `A` IS AN ENGLISH ARTICLE. [MOVED to spellingOnly 2026-07-17 — MEASURED, not theorized: wiring M6
+  // into the gate made the CLEAN reference package flag
+  //   `practice/melting.md asserts 9 A; practice/melting.md asserts 3 A for term.melting-point`
+  // The prose was "Q 3 A thermometer in melting ice reads…" and "Answer 9 A flat plateau sits…". A
+  // numbered question borrowed the NEXT SENTENCE'S capitalized article and became a current.
+  //
+  // The irony is exact: M6's non-flag 1 refuses bare integers as "the single richest source of spurious
+  // collisions", and THIS ROW SILENTLY CONVERTED ONE INTO A QUANTITY. Q&A deliverables ("Answer 3 A …")
+  // are a minefield, and `A` is the only single-capital symbol in this table that is also an English word.
+  //
+  // DELETING the row is NOT the fix — tests/units.test.mjs pins `A -> ampere` because M3 knew it and M2's
+  // scanner did not, and that drift was a real silent-under-reporting bug. `spellingOnly` is the
+  // exactly-right EXISTING device: known to M3's normalizer (harmless — articles are stripped as
+  // closed-class words BEFORE unit folding; verified: "A solid melts at a characteristic temperature"
+  // normalizes to "at characteristic melt solid temperature"), and typed OUT of M2/M6, which must never
+  // dimension a guess. Identical in shape to `c`/`f`: a spelling variant to a normalizer, a GUESS to a
+  // dimensioner.
+  //
+  // NAMED RECALL COST, accepted deliberately: a genuine "5 A of current" now mints NO claim, so M6 cannot
+  // compare currents. The alternative is a false flag on every Q&A sheet in the corpus, and ALARM FATIGUE
+  // IS THE #1 RISK — a queue nobody opens protects nobody, including on the flag that mattered. Precision
+  // wins here because the queue dies of false positives, not of misses. A heuristic ("`A` is a unit unless
+  // followed by a lowercase word") would separate "5 A of current" from "9 A flat plateau"; this project
+  // does not guess.
+  { id: "ampere", dim: "current", symbols: [], words: [], spellingOnly: ["a"], to: (v) => v },
   { id: "watt", dim: "power", symbols: ["W"], words: [], to: (v) => v },
   { id: "hertz", dim: "frequency", symbols: ["Hz"], words: [], to: (v) => v },
 ];
@@ -219,7 +243,13 @@ for (const u of TABLE) {
   if (UNITS_BY_ID.has(u.id)) fail(`duplicate unit id "${u.id}"`);
   if (!(u.dim in CANONICAL_BY_DIM)) fail(`unit "${u.id}" has unknown dimension "${u.dim}"`);
   if (typeof u.to !== "function") fail(`unit "${u.id}" has no conversion`);
-  if (!u.symbols?.length && !u.words?.length) fail(`unit "${u.id}" has no surface form`);
+  // `spellingOnly` COUNTS as a surface form. [AMENDED 2026-07-17] A unit reachable only through M3's
+  // normalizer is still reachable — it is simply typed out of M2/M6, which is the whole point of the
+  // field. `ampere` is the case: `A` is an English article, so it must normalize and must never
+  // dimension. The invariant is right that a unit with NO form at all is dead code; it was wrong that
+  // `symbols`/`words` are the only forms.
+  if (!u.symbols?.length && !u.words?.length && !u.spellingOnly?.length)
+    fail(`unit "${u.id}" has no surface form`);
   UNITS_BY_ID.set(u.id, u);
 
   for (const s of u.symbols ?? []) {

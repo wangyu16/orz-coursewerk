@@ -700,3 +700,48 @@ test("13 · a DROPPED objective is caught — the instructor's map is a CHECKED 
   assert.equal(flags[0].severity, "review");
   assert.match(g.report, /REVIEW missing-coverage/);
 });
+
+test("14 · a SELF-CONTRADICTING package is caught — TRUST layer 3, at the CLI, with no declared edge", (t) => {
+  const pkg = freshPackage(t);
+
+  // W-M6, from the user's side. `docs/reliability_recovery_design.md` §5.3 lists internal
+  // cross-artifact consistency as TRUST LAYER 3 — one of the only two layers that catch a KNOWLEDGE
+  // error rather than a referential one. `scripts/lib/consistency.mjs` was built, tested (20 tests)
+  // and mutation-covered, and `grep -c scanConsistency scripts/check_oer.mjs` was 0: NO PRODUCT
+  // CALLER, in `lib/` and its own unit tests and nowhere else. So this probe — the study guide says
+  // one thing, the package's own answer key says another — yielded burden 0: SILENCE. The same shape
+  // as F-B one layer over, and one rung WORSE: F-B's loop at least ran in the study harness, and
+  // `scripts/study_pairs.mjs` does not call M6 either.
+  //
+  // The contradiction is planted BEFORE Stage 4, so the package is indexed already at war with
+  // itself and NOTHING MOVED: the revision layer is silent by construction, no declared edge links
+  // the two artifacts, and every other check is green. This is the undeclared-edge case, and the
+  // edge nobody declared is by definition the edge nobody notices is missing. The only casualty is
+  // a student who answers correctly and is marked wrong.
+  write(pkg, "practice/melting.md", read(pkg, "practice/melting.md").replace(
+    "0 °C — the melting point of pure water at standard pressure.",
+    "90 °C — the melting point of pure water at standard pressure.",
+  ));
+  stage4(pkg);
+  const g = gate(pkg);
+  const queue = queueOf(pkg);
+
+  const flags = queue.items.filter((i) => i.kind === "internal-inconsistency");
+  assert.equal(flags.length, 1,
+    `the package's own answer key contradicts its own study guide, and the gate said nothing. Queue: ${evidenceText(queue)}`);
+
+  // The instructor is a person who will not open the code and may be three semesters late to the
+  // conversation. This is a DETECTOR — it never adjudicates which number is right — so the message
+  // has to hand them BOTH sides and the files to open.
+  const text = flags[0].evidence.join("\n");
+  for (const needle of ["study-guide/melting.md", "practice/melting.md", "0 °C", "90 °C"])
+    assert.ok(text.includes(needle), `the flag does not name ${JSON.stringify(needle)}:\n${text}`);
+  assert.deepEqual(flags[0].detectorKinds, ["value-disagreement"], "the observation was destroyed by the fold to the queue kind");
+
+  // It reached the human on every surface, and it BLOCKS at release — a student meets a
+  // contradiction, which is M10's own definition of blocking.
+  assert.equal(flags[0].severity, "blocking");
+  assert.match(g.report, /BLOCKING internal-inconsistency/);
+  assert.ok(gate(pkg, ["--for-discovery"]).json.criticalTotal > 0,
+    "a package that contradicts itself can still be published");
+});

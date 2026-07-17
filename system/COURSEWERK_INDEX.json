@@ -113,7 +113,7 @@
       "id": "repo:docs/walkthrough.md",
       "path": "docs/walkthrough.md",
       "type": "documentation",
-      "hash": "d4562c86761e170a4909b990c0e3f81cde6464f91d16454e035f72fc5d6c7d24"
+      "hash": "d5aced14fafa050878062f4826244a7ed003ae585416a84481dc4d47640b7a2d"
     },
     {
       "id": "repo:docs/wikipedia-science-topic.md",
@@ -215,7 +215,7 @@
       "id": "repo:scripts/check_oer.mjs",
       "path": "scripts/check_oer.mjs",
       "type": "executable",
-      "hash": "d29c10165e8d9bcb7a1ca1029e843a0b6f665bea55931b8881aa114fbf8b553b"
+      "hash": "d0fac054898062cc68c9fb7c8f609e46d12865658add16b1f55ca0eb4acdb6e8"
     },
     {
       "id": "repo:scripts/coursewerk_impact.mjs",
@@ -431,7 +431,7 @@
       "id": "repo:scripts/lib/units.mjs",
       "path": "scripts/lib/units.mjs",
       "type": "kernel",
-      "hash": "4a9e715f47eacce5fa528b6eea4f8241bef2eccf888c5d7baeee51e4e3cfbd51"
+      "hash": "c181a2e62beeaaaf026953737b7f501708811d87ca6fdbd62c14d0cd7364739c"
     },
     {
       "id": "repo:scripts/lib/verbatim.mjs",
@@ -746,6 +746,12 @@
       "hash": "1afeb2968b64ef48ec436982ea5c70cfb5cccd6dff72bad8833441a8d89d2f1b"
     },
     {
+      "id": "repo:tests/check-oer-consistency.test.mjs",
+      "path": "tests/check-oer-consistency.test.mjs",
+      "type": "test",
+      "hash": "a308d3b0789c40b60eb3c65e4258449d8e52b7d9ca065a68d3c62691c04e642d"
+    },
+    {
       "id": "repo:tests/check-oer-control.test.mjs",
       "path": "tests/check-oer-control.test.mjs",
       "type": "test",
@@ -755,7 +761,7 @@
       "id": "repo:tests/check-oer-revision.test.mjs",
       "path": "tests/check-oer-revision.test.mjs",
       "type": "test",
-      "hash": "001962736c51380280afdf1ad1497da93a640f667998edab0533f48c85cf5b3a"
+      "hash": "9b6863cbb855dc8e7c30148222acf42ea77da861193b736b1669395ce720ce27"
     },
     {
       "id": "repo:tests/check-oer-semantic.test.mjs",
@@ -1043,13 +1049,13 @@
       "id": "repo:tests/units.test.mjs",
       "path": "tests/units.test.mjs",
       "type": "test",
-      "hash": "eba92f6668fb9a91ca7b1186f680979cff4bdec288283e17c78120d4b2ae0640"
+      "hash": "235ffaf3ff14f30a9f1e1a55618b0065d3504f475356aefaa58df680c5620404"
     },
     {
       "id": "repo:tests/usage-e2e.test.mjs",
       "path": "tests/usage-e2e.test.mjs",
       "type": "test",
-      "hash": "8801cdd29a0ab0ec4f5d64790b9cff18a808dd267bca184567368c84bfa464a3"
+      "hash": "3777106a6f499eaf8e04296cd811f34b79b0b68db7de5ab45a2f1a8f91b4d061"
     },
     {
       "id": "repo:VERSION",

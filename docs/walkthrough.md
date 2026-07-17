@@ -160,6 +160,76 @@ nothing and a real edit cost exactly what it should.
 
 ---
 
+## 3b. The three claims — what each MEANS, and what makes it real
+
+### CONTROL — the instructor decides what is taught
+**Means:** the instructor stays on the high ground: *what* to teach, *to what depth*, *how to assess*. That
+decision is the **spine** (concept map + assessment guide). Everything student-facing is derived FROM it.
+
+**Mechanism (all live):** the spine is authored, not inferred (the agent may restructure what the instructor
+*said*, never add a node they didn't) · M13 mints the namespace · M1 makes `## Key terms` the vocabulary
+authority, so a claim resolves through the instructor's words · the gate rejects dangling references
+(a typo'd `[concept.x.5]` is a link that *looks* authorized) · **coverage** measures whether the package
+delivers the spine, and flags an objective nothing teaches (W12).
+
+**Situations:**
+| Situation | What Coursewerk does |
+|---|---|
+| Agent quietly drops an objective | **flagged** `missing-coverage`, quoting the instructor's own words |
+| Objective taught but undeclared | **measured** as uncovered, **not flagged** — coverage is a FLOOR |
+| Agent invents a concept the instructor never stated | forbidden by contract at authoring; nothing detects it after the fact — **open** |
+| Instructor renames a term | ids hold, `RENAME` fires, the migration works |
+| A claim hangs off nothing | `orphan-claim` (declared claims only) |
+
+**Honest limit:** coverage is **unmeasurable without traceability**. Only declared claims carry `spineRefs`.
+
+### TRUST — catch errors in content, *including errors in the source*
+**Means:** the goal is **NOT error-free — it is RECOVERY**: high-recall detection of suspect claims plus
+**escalation** to the human authority, who adjudicates source-vs-AI. The design's two facts: the model's own
+knowledge is a strong ground-truth channel (it aces exams), **and** RL trains obedience, so a model
+*reproduces source errors it internally knows are wrong*. The knowledge is present but **suppressed**.
+
+**The core idea:** separate **obedience** from **skepticism**. Generation stays obedient (fidelity to the
+instructor's plan and the source). Verification is a **separate, obedience-decoupled role** with an explicit
+licence to disagree. Put the trained obedience where it helps and strip it out where it hurts.
+
+| Layer | Status |
+|---|---|
+| 1 · deterministic domain checks (recompute, units, ranges) | partial |
+| **2 · obedience-decoupled expert reviewer** — "the top method" | **ABSENT (W18)** |
+| **3 · internal cross-artifact consistency (M6)** | built + tested, **wired 2026-07-17 (W19)** |
+| 4 · cross-source corroboration | absent |
+| 5 · escalation queue | ✅ live; burden measured |
+
+**Reviewer scope, or CONTROL breaks:** skeptical about **FACTS**, obedient about **PEDAGOGY**. It may
+challenge the source on scientific correctness; it must **never** override the instructor's scope, depth,
+sequencing, or assessment choices. Facts are contestable; pedagogical intent is not.
+
+### RELIABILITY — lifecycle consistency while editing, revising, maintaining
+**Means:** the **distinctive** claim. A general-purpose agent structurally *cannot* maintain a package across
+sessions — it has no whole-package view. This is that view.
+
+**Mechanism (live since W8):** `index:semantic` stores the **before** · the gate computes **fresh** · M2
+matches identity (§4: rephrase/value-change/rename all keep the id) · M3's five layers say *what moved* · M4
+says *what it obliges* · M5 says *what it reaches* — and **`silentRisk`**, the claims a change reaches whose
+own fingerprints did NOT move. **That is the case nothing else in the system can catch**: an answer key whose
+text is untouched but whose upstream value changed now silently contradicts the source, and every check
+passes.
+
+| Situation | What Coursewerk does |
+|---|---|
+| Whitespace / reflow | **0 flags** — no layer moves at all |
+| Meaning-preserving rephrase | `format` only → NONE |
+| Value change `0 °C → 4 °C` | `content` moves → the fact **and its declared dependents** flag |
+| Answer key derived from that value, text untouched | **`silentRisk`** — the only mechanism that sees it |
+| Term rename (old label demoted to alias) | ids hold **and** `label` moves — both halves |
+| Edit inside a direct quotation | never auto-applied (M8) — rewriting a quote **fabricates a quotation** |
+| Authorized divergence | flag's *character* changes: accusation → revision to sign off |
+
+**Honest limits:** an orz `:::info` bump still false-flags (W3) · a reorder is a mass delete-and-recreate
+(W6) · nothing auto-applies, so the quotation guard has **no product caller** and its refusal branch is
+never exercised end-to-end.
+
 ## 4. Findings
 
 ### W1 — **THE SEMANTIC INDEX NEVER RUNS.** `PROCEDURE.md` never reindexes. *(critical; FIXED)*
@@ -292,6 +362,55 @@ reasoning for exempting scan-found claims from orphan analysis holds regardless;
 ### W17 — `formatContractAudit`'s objective cross-check is vacuous. *(open)*
 It requires literal `Objective N` text in the concept map, which the format contract's `## Objectives` items
 do not carry. W12's probe was therefore silent **twice over**.
+
+### W18 — **THE OBEDIENCE-DECOUPLED REVIEWER WAS NEVER BUILT.** *(critical; specced — task #60)*
+The largest claim gap in the project. `docs/reliability_recovery_design.md` §4/§5.2 calls it **"the top
+method"** and S-F's **centerpiece**. It exists **only in comments — in three modules, each DEFERRING to it**:
+- `claims.mjs`: *"the decoupled reviewer covers it, not the graph"*
+- `consistency.mjs`: *"not caught here; it is caught by M5's declared edges and the decoupled reviewer"*
+- `check_oer.mjs`: *"the obedience the design says it cannot rely on"*
+
+**Three consumers, zero producers** — and each module's justification for *not* doing something rests on a
+mechanism that was never built. The no-producer pattern in its purest form (the 7th instance).
+
+**Worse, what occupies its place does the OPPOSITE.** `KEY_FACT_REVIEW.json` records
+`status: "verified"` + `evidenceSourceIds`: **source TRACING** — *does the draft match the source?* The
+decoupled reviewer's entire purpose is the inverse — *the source says X and X is WRONG; I know from my own
+expertise it is Y* — and **the artifact has no slot for "the source is wrong."**
+
+Consequence: **TRUST today = referential integrity + source conformity. Neither catches a wrong fact.** And
+S-F's centerpiece test — *"a source error the obedient generator reproduces but the decoupled reviewer
+catches"* — **cannot run.**
+Operator decision (2026-07-17): a **new stage + `EXPERT_REVIEW.json` with a `challengesSource` slot**, scoped
+to high-stakes claims, reviewer **skeptical about facts / obedient about pedagogy**.
+
+### W20 — **`A` IS AN ENGLISH ARTICLE, AND THE UNIT TABLE READ IT AS AMPERES.** *(FIXED)*
+Found by *wiring M6* — the defect was invisible until a consumer existed. Wiring made the **clean reference
+package** flag:
+> `practice/melting.md asserts 9 A; practice/melting.md asserts 3 A for term.melting-point`
+
+The prose: *"Q **3 A** thermometer in melting ice reads…"* and *"Answer **9 A** flat plateau sits…"*. A
+numbered question borrowed the next sentence's capitalized article and became a current.
+
+**The irony is exact:** M6's non-flag 1 refuses bare integers as *"the single richest source of spurious
+collisions"* — and the unit table **silently converted one into a quantity**, inside the check built to
+prove the product doesn't cry wolf. `A` is the only single-capital symbol in the table that is also an
+English word, and Q&A deliverables (`Answer 3 A …`) are a minefield for it.
+
+**Deleting the row was NOT the fix** — `units.test.mjs` pins `A → ampere` because M3 knew it and M2's
+scanner did not, and *that* drift was a real under-reporting bug (W-units). The unification **over-corrected
+on this one row**: for `A`, the divergence was *correct*. Fixed with the existing device: `spellingOnly` —
+known to M3's normalizer (harmless: articles are stripped as closed-class words *before* unit folding,
+verified), typed OUT of M2/M6, exactly like `c`/`f`.
+**Named recall cost:** a genuine `5 A of current` now mints no claim. Accepted — the alternative false-flags
+every Q&A sheet, and the queue dies of false positives, not of misses.
+**§5d is intact**: the exemption is now *declared in the type*, and a test asserts that anything M6 cannot
+dimension **must** have declared itself `spellingOnly` — a row that merely forgot its symbols still fails.
+
+### W19 — M6 (internal consistency) had no product caller. *(FIXED)*
+`grep -c scanConsistency scripts/check_oer.mjs` → **0**. Built, 20 tests, mutation-covered — and its only
+caller outside `lib/` and tests was `study_pairs.mjs`, **the study harness**. Same shape as W8: a package
+could ship with its own study guide and answer key contradicting each other and the gate said nothing.
 
 ### W3 — `false_flag_rate` = 0.125, target 0 (orz `:::info` bump). *(open — task #58)*
 `stripMarkup` has no orz rule, so the bare word `info` enters the semantic core and `content` moves.

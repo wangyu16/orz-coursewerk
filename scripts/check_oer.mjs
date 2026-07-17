@@ -38,6 +38,7 @@ import { auditVisualReview } from "./lib/visual_review.mjs";
 import { artifactAnchors, matchClaims } from "./lib/claims.mjs";
 import { danglingSpineRefs } from "./lib/spine.mjs";
 import { buildQueue, REVIEW_QUEUE_PATH } from "./lib/escalation.mjs";
+import { scanConsistency } from "./lib/consistency.mjs";
 import { computeSemanticIndex, loadSemanticIndex, CLAIMS_PATH } from "./lib/semantic_index.mjs";
 import { isAuthorizedDivergence, OVERRIDES_PATH } from "./lib/overrides.mjs";
 import { commitOutput, outputGitState } from "./lib/output_git.mjs";
@@ -1089,6 +1090,75 @@ function orphanClaimFindings(fresh) {
   return out;
 }
 
+// ==================== C3. TRUST LAYER 3 — THE PACKAGE AGAINST ITSELF ====================
+//
+// `docs/reliability_recovery_design.md` §5.3 lists internal cross-artifact consistency as TRUST
+// layer 3 — one of the only two layers that catch a KNOWLEDGE error rather than a referential one.
+// Every check above this line asks "does this pointer point at something?"; C2 asks "is the map
+// obeyed?". NOT ONE of them asks whether the package is TRUE TO ITSELF. `scanConsistency` (M6) has
+// been built, tested and mutation-covered since the index landed, and `grep -c scanConsistency
+// scripts/check_oer.mjs` was **0**: no product caller, in `lib/` and the tests and nowhere else.
+// Same shape as F-B (the revision loop, which lived only in the study harness) and the same family
+// as the six no-producer defects. So a package whose study guide says 100 °C while its own answer
+// key says 90 °C shipped with every check green and the gate SILENT — the exact case M6's header
+// opens with, and the exact student who answers correctly and is marked wrong.
+//
+// THIS FUNCTION IS DELIBERATELY THIN, AND THE THINNESS IS THE DESIGN.
+//
+// M6 documents SIX non-flags (unitless numbers, different dimensions under one term, ambiguous
+// attribution, several values in one dimension, `derived`/`procedure` claims, non-`active` claims),
+// each pinned by a test, each bought with recall on purpose. They are what makes the queue worth
+// reading: the naive "could these two numbers be related?" scan is the byte-hash bug rebuilt with a
+// vocabulary. So this wiring adds NO filter of its own — a wrapper that re-asked the question more
+// loosely would defeat six precision decisions from the outside while leaving all twenty of M6's
+// tests green, which is precisely how a refusal gets lost. It also adds no filter in the other
+// direction: nothing here suppresses an M6 finding, because a detector that a caller can quietly
+// mute is a detector that reports to the caller instead of to the instructor.
+//
+// THE MEASURED RESULT ON THE CLEAN REFERENCE PACKAGE (`tests/fixtures/usage-package`): burden 0.
+// It is not a happy accident and it is not an untested assumption — the fixture is a live trap for
+// three of the six non-flags at once, and each one fires:
+//   * `practice/melting.md` answers "273.15 K, because 0 °C is 273.15 K" while `study-guide` asserts
+//     0 °C. UNIT NORMALIZATION is what makes those AGREE; a string compare flags the clean package
+//     on its own correct answer key. (Non-flag 4 also holds it: one claim, two spellings of one
+//     value, one dimension — same key, so nothing is dropped and nothing collides.)
+//   * "334 J/g times 10 g is 3340 J" — a worked example carrying three numbers, of which none is an
+//     assertion about the term. Non-flag 5 (`derived`/`procedure` are not assertive) is why the
+//     energy of a 10 g sample never argues with the energy of a 250 g one.
+//   * "Q 1", "Objective 1", "Q6–Q10" — bare integers everywhere. Non-flag 1 (unitless ⇒ no
+//     dimension ⇒ no subject) is the only thing standing between this package and a queue made of
+//     question numbers.
+// If wiring M6 ever makes a clean package flag, THE WIRING IS WRONG, NOT M6.
+//
+// SEVERITY IS M10'S AND IS NOT OVERRIDDEN HERE — `internal-inconsistency` is already `blocking` in
+// `DEFAULT_SEVERITY`, and the default is right. M10's rule is "blocking = a student meets a
+// falsehood or a contradiction", and this is the second clause literally: one of the two artifacts
+// IS wrong, the package cannot say which, and a student meets whichever one they opened. That is
+// strictly worse than a dangling reference — which is `review` precisely BECAUSE no student meets a
+// falsehood there: the prose is untouched and the package is merely UNDER-indexed, not wrong. So
+// this passes NO `severity`, and the finding takes the queue kind's default through the frozen
+// table. BLOCKING IS NOT THE SAME AS FAILING THE GATE, and the distinction is the established
+// precedent, not a softening: `criticalCounts.semanticReviewFlags` counts blocking+review flags
+// ONLY under `--for-discovery`, exactly as the dangling-ref rows and the key-fact/visual gates do.
+// While authoring, a contradiction is a queue item and the queue is the product; at RELEASE it
+// blocks. `info` never blocks, here as everywhere.
+//
+// M10's table ALREADY maps all three of M6's kinds to `internal-inconsistency` (interfaces §3), so
+// `lib/escalation.mjs` needs no edit — verified, not assumed, and fenced by a test that would fail
+// the day someone deletes a row. `queueKindOf` THROWS on an unmapped kind, so the alternative to a
+// mapped row is a loud failure, never a silent misfile.
+
+/**
+ * TRUST LAYER 3: do this package's own artifacts contradict each other? (M6, finally called.)
+ *
+ * Pass-through by design — M6 owns the question, the subject key and every refusal; this hands it
+ * the fresh compute and routes what comes back into the queue unaltered. `fresh.claims` carries the
+ * required `text` and the M2-derived `scope` M6 READS (§4a — never re-derived here or anywhere).
+ */
+function consistencyFindings(fresh) {
+  return scanConsistency(fresh.claims, fresh.terms);
+}
+
 // ==================== D. THE REVISION COMPARISON (fresh vs stored) ====================
 //
 // THE OTHER QUESTION. The five §5b checks above are all REFERENTIAL — "does this pointer point at
@@ -1366,6 +1436,12 @@ function semanticAudit() {
     ...derivedFromFindings(fresh),
     ...orphanClaimFindings(fresh),
     ...coverage.findings,
+    // TRUST layer 3 (§C3) — REFERENTIAL in the same sense as the rows above it: "do these two
+    // artifacts disagree?" is a question about the package as it stands NOW, so it takes `fresh`
+    // alone and never looks at the stored index. It is ALSO the only check in this list that can
+    // catch a disagreement across an UNDECLARED edge, which is why it must not be conditioned on
+    // any of them: the edge nobody declared is, by definition, the edge nobody will notice.
+    ...consistencyFindings(fresh),
     ...revision.findings,
   ];
   // `fresh.claims` supplies the locations AND the burden denominator. Deliberately NOT a union with

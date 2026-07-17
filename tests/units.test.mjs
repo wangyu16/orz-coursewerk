@@ -48,13 +48,33 @@ test("the three projections agree on the unit set — the defect, made un-regres
   assert.deepEqual([...m3Ids].sort(), [...ids].sort(), "M3's aliases must cover exactly the unit set");
 
   // M6's view: every declared symbol and word dimensions to an id in the set.
+  //
+  // [AMENDED 2026-07-17] The M6 set is `ids` MINUS the spellingOnly-only units, and that subtraction is
+  // the point rather than a hole in it. `ampere` is now M3-only: `A` is an English article, and a
+  // dimensioner that reads "Answer 9 A flat plateau" as 9 amperes false-flags every Q&A sheet in the
+  // corpus (measured, on the CLEAN reference package — see units.mjs's ampere row).
+  //
+  // This LOOKS like the original defect returning (a unit M3 knows and M2 does not) and is its exact
+  // inverse: there, the divergence was ACCIDENTAL and silent — three tables drifting, nobody deciding.
+  // Here it is DECLARED IN THE TYPE. `spellingOnly` is the visible, argued act of exempting one row, so
+  // the §5d protection is intact: you still cannot add a unit to one projection and forget another —
+  // you can only exempt it ON PURPOSE, in a field whose name says what it means.
+  const dimensionable = new Set(UNITS.filter((u) => u.symbols.length || (u.words ?? []).length).map((u) => u.id));
   const m6Ids = new Set();
   for (const form of [...allSymbols(), ...allWords()]) {
     const hit = dim.lookup(form);
     assert.ok(hit, `M6 must dimension a declared form: ${form}`);
     m6Ids.add(hit.id);
   }
-  assert.deepEqual([...m6Ids].sort(), [...ids].sort(), "M6 must dimension exactly the unit set");
+  assert.deepEqual([...m6Ids].sort(), [...dimensionable].sort(), "M6 must dimension exactly the dimensionable set");
+  // ...and the exemption is EXPLICIT, never accidental: whatever M6 cannot dimension must be a unit that
+  // declared itself spellingOnly. A row that simply forgot its symbols still fails here.
+  for (const id of ids) {
+    if (m6Ids.has(id)) continue;
+    const u = UNITS.find((x) => x.id === id);
+    assert.ok((u.spellingOnly ?? []).length,
+      `${id} is invisible to M6 but never declared spellingOnly — that is the drift this module exists to stop`);
+  }
 
   // M2's view: every declared form is recognized as a quantity when bound to a number.
   for (const form of [...allSymbols(), ...allWords()]) {
@@ -65,11 +85,41 @@ test("the three projections agree on the unit set — the defect, made un-regres
 test("the units that were actually drifting are now known to all three", () => {
   // The measured blind spot, pinned by name. These are regression tests for a real bug, not
   // examples — each one is a sentence that silently minted no claim.
-  for (const [form, id] of [["torr", "torr"], ["V", "volt"], ["A", "ampere"], ["W", "watt"], ["Hz", "hertz"]]) {
+  for (const [form, id] of [["torr", "torr"], ["V", "volt"], ["W", "watt"], ["Hz", "hertz"]]) {
     assert.equal(dim.lookup(form)?.id, id, `${form} must dimension`);
     assert.ok(scan.quantityRe().test(`5 ${form}`), `${form} must mint a claim`);
     assert.equal(alias.get(form.toLowerCase()), id, `${form} must normalize`);
   }
+});
+
+test("`A` is an ENGLISH ARTICLE: M3 folds it, M2/M6 must refuse it", () => {
+  // `A` WAS in the loop above, asserting `dim.lookup("A") === "ampere"` and that `5 A` mints a claim.
+  // That assertion was REMOVED, deliberately, and this is the argument — not a quiet edit.
+  //
+  // The old assertion was RIGHT about the drift it fenced (M3 knew `A`, M2's scanner did not, and that
+  // divergence was a real silent-under-reporting bug) and WRONG about this one row. The unification
+  // over-corrected: for `A` specifically the divergence was CORRECT, because `A` is an English article.
+  //
+  // MEASURED, not argued: wiring M6 into the gate made the CLEAN reference package flag a
+  // value-disagreement between "9 A" and "3 A" for term.melting-point. The prose was
+  //   "Q 3 A thermometer in melting ice reads a steady value."
+  //   "Answer 9 A flat plateau sits at the melting point."
+  // A numbered question borrowed the next sentence's capitalized article and became a current — inside
+  // the check built to prove the product does not cry wolf.
+  //
+  // `spellingOnly` is the existing device for exactly this (see `c`/`f`), and the recall cost is named
+  // in units.mjs: a genuine "5 A of current" now mints no claim. Accepted — a false flag on every Q&A
+  // sheet is alarm fatigue, and the queue dies of false positives, not of misses.
+  assert.equal(dim.lookup("A"), null, "M6 must NOT dimension a bare `A` — it is an article far more often than an ampere");
+  assert.equal(scan.quantityRe().test("Answer 9 A flat plateau sits at the melting point."), false,
+    "M2 must not mint a claim from an article: this exact sentence false-flagged the clean package");
+  assert.equal(scan.quantityRe().test("The cell delivers 5 A of current."), false,
+    "the named recall cost: a REAL ampere is also refused. Precision is the deliberate trade.");
+  // ...but M3 still normalizes the spelling, which is its call to make and is harmless: articles are
+  // stripped as closed-class words before unit folding.
+  assert.equal(alias.get("a"), "ampere", "M3's spelling normalization is unchanged");
+  // The negative that keeps this honest: the OTHER three drift units are untouched by this exception.
+  for (const f of ["V", "W", "Hz"]) assert.ok(dim.lookup(f), `${f} must still dimension`);
 });
 
 test("M2 no longer invents phantom units: `Mg` is not a milligram", () => {
@@ -174,14 +224,19 @@ test("definitional conversions are exact: 1 atm = 760 torr = 101325 Pa", () => {
 });
 
 test("newly-dimensioned units are identity, not guesses", () => {
-  // V/A/W/Hz reached M6 only via this unification. Each IS its dimension's canonical unit, so the
+  // V/W/Hz reached M6 only via this unification. Each IS its dimension's canonical unit, so the
   // conversion is certain. If a future edit gives one a non-identity `to`, it is a knowledge
   // claim and must be argued, not autocompleted.
-  for (const form of ["V", "A", "W", "Hz"]) {
+  // `A` was here and is not: it is spellingOnly now, so M6 does not dimension it at all (an English
+  // article). Its `to` is still asserted below — the row still exists and must stay honest.
+  for (const form of ["V", "W", "Hz"]) {
     const u = dim.lookup(form);
     assert.equal(u.id, CANONICAL_BY_DIM[u.dim], `${form} must be its dimension's canonical unit`);
     assert.equal(u.to(37), 37);
   }
+  const ampere = UNITS.find((u) => u.id === "ampere");
+  assert.equal(ampere.dim, "current");
+  assert.equal(ampere.to(37), 37, "ampere's conversion must stay identity even though M6 never reaches it");
 });
 
 // ---------------------------------------------------------------------------------------------
