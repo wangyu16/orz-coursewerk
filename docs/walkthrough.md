@@ -110,6 +110,39 @@ deliverables ──> M12 declarations ──> M2 claims ──> claim.* nodes + 
 | M14 | `semantic_index.mjs` | persists the "before"; the accept step |
 | — | `units.mjs` | one unit table, three projections |
 
+### Why the modular design matters (operator, 2026-07-17)
+
+Not user-facing, and easy to undersell as "tidy code". It is neither. **The modularity is what made this
+system's defects findable at all** — and, at 15 modules and ~5,000 lines, it is what makes the thing
+maintainable by someone who did not write it.
+
+Two properties do the work:
+1. **One module, one owner, one question.** `units.mjs` answers *what strings are units*; `spine.mjs` answers
+   *what nodes exist*; `escalation.mjs` answers *what is the human asked*. A module that answers one question
+   can be reviewed, mutation-tested, and replaced on its own.
+2. **A written contract at every edge** (`docs/semantic-index-interfaces.md`). The contract is the seam, and
+   **the seam is where the bugs were.**
+
+**Every serious defect found on 2026-07-17 lived in a seam, not inside a module.** Each module was correct and
+well-tested; what failed was the space between them, or between the code and the document driving it:
+
+| Defect | Seam |
+|---|---|
+| `derivedFrom` had no producer | schema ↔ consumer |
+| the spine namespace had no producer | §1 ↔ six consumers |
+| `REVIEW_QUEUE.json` had no producer | design ↔ code |
+| the unit table drifted three ways | M2 ↔ M3 ↔ M6 |
+| the term id was an identity key derived from the change signal | M1 ↔ M2 |
+| the index never ran (W1) | PROCEDURE ↔ everything |
+| the procedure contradicted the contract (W2) | doc ↔ doc |
+
+A monolith would have absorbed every one of these into "that's just how it works," because there would be no
+edge at which to ask *"who produces this?"* The modular design did not prevent the defects — **it made them
+askable**, which is why four freeze-time checks (§5c–§5f) could be written down as mechanical questions about
+the interfaces file. The corollary for maintenance: **when adding capability, add a module behind the existing
+contract, and state its edge.** A change that needs no contract edit is cheap; one that needs a contract edit is
+exactly the change that deserves the scrutiny.
+
 ### The five fingerprints — the whole design in one table
 
 A change is classified by **which layer moved**, never by bytes. This is what makes a null edit cost
