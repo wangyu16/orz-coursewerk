@@ -23,6 +23,7 @@
     "index:components": "node scripts/index_components.mjs --root package --initialize",
     "index:semantic": "node scripts/index_semantic.mjs --root package",
     "revision:impact": "node scripts/revision_impact.mjs --root package",
+    "study:pairs": "node scripts/study_pairs.mjs",
     "system:index": "node scripts/index_coursewerk.mjs",
     "system:impact": "node scripts/coursewerk_impact.mjs",
     "system:verify": "node scripts/verify_coursewerk.mjs",

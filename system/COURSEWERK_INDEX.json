@@ -149,7 +149,7 @@
       "id": "repo:package.json",
       "path": "package.json",
       "type": "release-metadata",
-      "hash": "0123d5accda7a4d49ad9625bb8250968021003623f968a57e38ea55174cda3d3"
+      "hash": "e0f29175ca3b823736c1009c72d9c19e9083875e01945bc1c7981c4080a5c5ef"
     },
     {
       "id": "repo:PROCEDURE.md",
@@ -462,6 +462,12 @@
       "path": "scripts/revision_impact.mjs",
       "type": "executable",
       "hash": "e96a1c999f2283b2ea7520fb1b5e2fd81bec4d81fd5e51225ee66b1986937e65"
+    },
+    {
+      "id": "repo:scripts/study_pairs.mjs",
+      "path": "scripts/study_pairs.mjs",
+      "type": "executable",
+      "hash": "c6638ac2f7ce1fb9d8e30032e96093371af730871672470a2eef1352df757290"
     },
     {
       "id": "repo:scripts/verify_coursewerk.mjs",
@@ -828,6 +834,12 @@
       "path": "tests/immutable.test.mjs",
       "type": "test",
       "hash": "ea9ab653038e9da5b2f31a1eb69e9dce44d7410739a03f65e1afc1fd6d428e06"
+    },
+    {
+      "id": "repo:tests/integration-study-pairs.test.mjs",
+      "path": "tests/integration-study-pairs.test.mjs",
+      "type": "test",
+      "hash": "9b9d8f45eadf45c12b45557e3ae705810d33c132e10031235ea4cac96929c852"
     },
     {
       "id": "repo:tests/key-fact-bindings.test.mjs",
