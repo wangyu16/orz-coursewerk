@@ -12,6 +12,7 @@ import { matchClaims } from "./claims.mjs";
 import { classify } from "./classify.mjs";
 import { resolve as resolveTerm } from "./terms.mjs";
 import { SEMANTIC_INDEX_PATHS } from "./semantic_index.mjs";
+import { REVIEW_QUEUE_PATH } from "./escalation.mjs";
 
 export const COMPONENT_INDEX_PATH = "metadata/COMPONENT_INDEX.json";
 // DERIVED INDEXES ARE NOT COMPONENTS — and this is not tidiness, it is the fix for a reproduced
@@ -27,11 +28,10 @@ export const COMPONENT_INDEX_PATH = "metadata/COMPONENT_INDEX.json";
 const EXCLUDE = new Set([
   COMPONENT_INDEX_PATH,
   ...SEMANTIC_INDEX_PATHS, // metadata/{CLAIMS,SPINE,TERMS}.json — one home for the paths (§5d)
-  // M10's queue. Spelled literally because it has NO PRODUCER YET — `buildQueue` returns the
-  // object and nothing writes it — so there is no module whose constant this could be. When the
-  // writer lands it must export this path and this line must import it (§5d); until then, this
-  // is a second authority with a deadline, recorded rather than hidden.
-  "metadata/REVIEW_QUEUE.json",
+  // M10's queue. The deadline on the literal path recorded here is PAID: the writer landed with the
+  // M11 gate (`check_oer.mjs` runs the detectors, calls `buildQueue`, emits and commits the result),
+  // M10 now exports the path it owns, and this line imports it. One home (§5d).
+  REVIEW_QUEUE_PATH,
   ".gitignore",
   ".DS_Store",
 ]);

@@ -26,6 +26,8 @@ import {
   SLUG_PATTERN,
   ROOT_FILE_ALLOWLIST,
   FOLDER_REPO,
+  artifactDeclarationReport,
+  claimSidecarPath,
 } from "./lib/contract.mjs";
 import { buildSourceIndex, scanText, VERBATIM } from "./lib/verbatim.mjs";
 import { auditAssurance } from "./lib/assurance.mjs";
@@ -33,6 +35,11 @@ import { auditCoherence } from "./lib/coherence.mjs";
 import { auditSourceRecord } from "./lib/source_record.mjs";
 import { auditKeyFactReview } from "./lib/key_fact_review.mjs";
 import { auditVisualReview } from "./lib/visual_review.mjs";
+import { artifactAnchors } from "./lib/claims.mjs";
+import { danglingSpineRefs } from "./lib/spine.mjs";
+import { buildQueue, REVIEW_QUEUE_PATH } from "./lib/escalation.mjs";
+import { computeSemanticIndex, loadSemanticIndex } from "./lib/semantic_index.mjs";
+import { commitOutput, outputGitState } from "./lib/output_git.mjs";
 import { md as orzMarkdown } from "orz-markdown";
 
 const args = process.argv.slice(2);
@@ -46,6 +53,10 @@ const reportPath = opt("--report");
 const jsonPath = opt("--json");
 const inputsDir = opt("--inputs"); // source materials, for the near-verbatim scan
 const forDiscovery = args.includes("--for-discovery"); // enforce the Discover bar (open license + verified)
+// The emitted review queue must be COMMITTED or it trips the package's own gate (see
+// `emitReviewQueue`). `--no-commit` is for a caller that manages its own git, mirroring
+// `index_semantic.mjs`.
+const commitQueue = !args.includes("--no-commit");
 if (!fs.existsSync(pkg)) {
   console.error(`coursewerk-check: package dir not found: ${pkg}`);
   process.exit(2);
@@ -605,6 +616,269 @@ function verbatimAudit(dir, foundation) {
   };
 }
 
+// ==================== C. SEMANTIC INDEX (the M11 gate, interfaces §5b) ====================
+//
+// FIVE CHECKS, ONE SHAPE: **IT LOOKS HONOURED AND ISN'T.**
+//
+// Every row §5b assigns here is the same failure wearing a different hat — an author ASSERTED
+// something, the system silently did nothing, and every check passed. A declared anchor naming a
+// block that does not exist yields no claim; a typo'd `[concept.crispr.5]` is a dangling link that
+// LOOKS authorized; a dangling `derivedFrom` mints no edge, so the dependency the author stated
+// simply is not in the graph; a refused declaration is reported by ABSENCE, so the author who
+// wrote one and got a field wrong hears "you did not declare this". In every case the refusal
+// itself is CORRECT — inventing the prose, the concept, or the edge would be a fabrication. It is
+// the SILENCE that is the defect, and the gate is the only place that can break it, because it is
+// the only place holding both the assertion and the thing asserted about.
+//
+// WHY THESE LIVE HERE AND NOWHERE ELSE (§5b, verbatim): M1 has only the term side of a spineRef;
+// M12 parses a declaration but cannot see the artifact's blocks; M2 mints the blocks but its frozen
+// return has no channel to report one it could not honour; M5 correctly refuses the edge. Each
+// module is right, and the question falls between them. Only a gate holding the whole package can
+// ask it.
+//
+// NOTHING IS RE-DERIVED. The anchor vocabulary is M2's (`artifactAnchors` — a second block parser
+// would be two answers to "does this anchor exist", §5d); reachability is M13's
+// (`danglingSpineRefs`); the declaration grammar and its precedence rule are M12's. This module
+// asks the questions and writes down the answers.
+//
+// **`artifactDeclarationReport`, NOT `declaredProvenanceReport`** (§3, and it is not a style
+// preference): a refusal requires knowing somebody INTENDED to declare, and a sidecar's intent is
+// *the file existing* — which only a caller doing the I/O can see. It is also the only function
+// applying the sidecar-beats-front-matter precedence, so reporting refusals from a front matter
+// that LOST would tell an author to fix a file the index never reads.
+//
+// ENGAGEMENT IS OPT-IN BY CONSTRUCTION (spec §6.2/§6.8). The layer runs ONLY when the package
+// carries a stored semantic index — i.e. only after somebody ran `npm run index:semantic`. A
+// package without one degrades to EXACTLY today's behavior: not a quieter gate, not a zeroed
+// count, but zero bytes changed anywhere in the output. That is the whole backward-compatibility
+// contract, and it is cheap to keep only if nothing here leaks into the report unconditionally.
+
+/** Package-relative read that answers "absent" instead of throwing — a missing carrier is a fact. */
+function readOrNull(rel) {
+  try {
+    return fs.readFileSync(path.join(pkg, rel), "utf8");
+  } catch {
+    return null;
+  }
+}
+
+/** "study-guide/ch3.md#melting-point#2" — a place a human can open. */
+function claimWhere(claim) {
+  const loc = (claim.locations ?? [])[0];
+  if (!loc || typeof loc.file !== "string") return "an unrecorded location";
+  return typeof loc.anchor === "string" && loc.anchor ? `${loc.file}#${loc.anchor}` : loc.file;
+}
+
+/**
+ * Name the anchors an artifact DOES have — the difference between a flag and a fix.
+ * Capped, deterministically (sorted, first 8): the whole point is a message a human reads, and a
+ * 200-anchor dump is a message nobody reads.
+ */
+function anchorHint(file, anchors) {
+  if (anchors.length === 0) return `${file} has no anchored blocks at all.`;
+  const shown = anchors.slice(0, 8);
+  const more = anchors.length - shown.length;
+  return `Anchors ${file} does have: ${shown.join(", ")}${more > 0 ? ` (+${more} more)` : ""}.`;
+}
+
+/**
+ * §5b rows 3 and 4 — a DANGLING DECLARED ANCHOR, and a REFUSED DECLARATION.
+ *
+ * One pass, because they are one read and one parse of the same two carriers, and because they are
+ * the same question one step apart: "your declaration named a block that isn't there" and "your
+ * declaration could not be read at all". Both end with the block falling to the deterministic scan
+ * while the author believes a high-stakes fact was declared.
+ */
+function declarationFindings() {
+  const out = [];
+  for (const { file, anchors } of artifactAnchors(pkg)) {
+    const sidecarRel = claimSidecarPath(file);
+    const sidecarText = readOrNull(sidecarRel);
+    const fileText = readOrNull(file);
+    // The carrier the INDEX reads, per M12's precedence — never the one that lost.
+    const carrier = sidecarText !== null ? sidecarRel : file;
+    const report = artifactDeclarationReport({ fileText, sidecarText });
+
+    const have = new Set(anchors);
+    for (const decl of report.declarations) {
+      if (have.has(decl.anchor)) continue;
+      out.push({
+        kind: "dangling-anchor",
+        evidence: [
+          `${carrier} declares a "${decl.type}" claim at anchor "${decl.anchor}", but ${file} has no block with that anchor — the declaration named a location that does not exist, so NOTHING was indexed for it. The declaration looks honoured and is not: a high-stakes fact you declared is absent from the index, which reads downstream as "nothing to review" rather than as a flag. ${anchorHint(file, anchors)}`,
+        ],
+      });
+    }
+    for (const refusal of report.refusals) {
+      // `index: null` means the DOCUMENT itself was the problem, not an entry in it (M12 froze
+      // that meaning). Branch on presence — null is an answer here, not a missing value.
+      const which = refusal.index === null ? "the declaration document itself" : `declaration #${refusal.index + 1}`;
+      out.push({
+        kind: "declaration-refusal",
+        evidence: [
+          `${carrier}: ${which} was REFUSED — ${refusal.reason}. The refusal is correct (half-honouring a declaration is worse), but it is reported by absence, so this message exists to say the true thing: your declaration was MALFORMED and was not read. It is not "you did not declare this". The block fell through to the deterministic scan, which mints no spineRef, no sourceRef and no derivation — so everything this declaration was carrying is gone.`,
+        ],
+      });
+    }
+  }
+  return out;
+}
+
+/**
+ * §5b rows 1 and 2 — a spineRef, from a TERM or from a CLAIM, whose target does not exist.
+ *
+ * Two rows, two messages, deliberately: a term's dangling bracket and a claim's dangling parent are
+ * different repairs in different files, and a reason that fits both sends the author to the wrong
+ * one. Reachability is M13's `danglingSpineRefs` — the question six modules could not ask, and the
+ * gate does not re-derive it.
+ */
+function spineRefFindings(fresh) {
+  const out = [];
+  const spine = fresh.spine;
+
+  // ROW 1 — the term side. An ABSENT spineRef is honest and is never flagged (M13 drops ""/null):
+  // §1 makes the bracket optional precisely so an author need not guess, and punishing the absence
+  // would push them into the fabrication the rule exists to prevent.
+  const byRef = new Map();
+  for (const term of fresh.terms.terms ?? []) {
+    const ref = typeof term.spineRef === "string" ? term.spineRef : "";
+    if (!ref) continue;
+    if (!byRef.has(ref)) byRef.set(ref, []);
+    byRef.get(ref).push(term);
+  }
+  for (const ref of danglingSpineRefs(spine, [...byRef.keys()])) {
+    const labels = byRef
+      .get(ref)
+      .map((t) => `"${t.preferredLabel}" (${t.id}${(t.scope ?? []).length ? `, scope: ${[...t.scope].sort().join("+")}` : ""})`)
+      .sort();
+    out.push({
+      kind: "dangling-spine-ref",
+      evidence: [
+        `The "## Key terms" ${labels.length === 1 ? "entry" : "entries"} ${labels.join(", ")} ${labels.length === 1 ? "is" : "are"} authorized under [${ref}], but no such node exists in this package's spine. The bracket parses whether or not the concept exists, so the term LOOKS placed under the instructor's own map and is not — the exact fabrication risk the "never guess a spineRef" rule exists to prevent, wearing a badge. Fix the bracket's target, or remove it: an ABSENT spineRef is honest and is never flagged.`,
+      ],
+    });
+  }
+
+  // ROW 2 — the claim side.
+  for (const claim of fresh.claims.claims ?? []) {
+    for (const ref of danglingSpineRefs(spine, claim.spineRefs)) {
+      out.push({
+        kind: "dangling-spine-ref",
+        claimId: claim.id,
+        evidence: [
+          `${claim.id} (${claim.type}) in ${claimWhere(claim)} names spineRef "${ref}", but no such node exists in this package's spine. Orphan analysis must be able to tell "this claim has no parent concept" from "its parent does not exist" — those are opposite problems with opposite fixes, and an unresolvable ref silently reads as the first. The claim hangs under a concept the map never declared.`,
+        ],
+      });
+    }
+  }
+  return out;
+}
+
+/**
+ * §5b row 5 — a `derivedFrom` naming a claim that is not in the index.
+ *
+ * M5 mints NO edge for a dangling ref, and is right to (a ghost node would be worse) — so the
+ * strongest edge in the graph, the one an author explicitly AUTHORED, vanishes without a trace.
+ * This is the row that most deserves its place: `derivedFrom` is declared-only and never inferred,
+ * so a dangling one is always a real assertion that silently did nothing.
+ */
+function derivedFromFindings(fresh) {
+  const out = [];
+  const claims = fresh.claims.claims ?? [];
+  const ids = new Set(claims.map((c) => c.id));
+  for (const claim of claims) {
+    // `derivedFrom: null` = NOT DECLARED; `[]` = declared empty. Neither can dangle.
+    const refs = Array.isArray(claim.derivedFrom) ? claim.derivedFrom : [];
+    const dangling = [...new Set(refs.filter((r) => typeof r === "string" && r && !ids.has(r)))].sort();
+    for (const ref of dangling) {
+      out.push({
+        kind: "dangling-derived-from",
+        claimId: claim.id,
+        evidence: [
+          `${claim.id} (${claim.type}) in ${claimWhere(claim)} declares derivedFrom "${ref}", but no claim with that id is in the index. A derivation is an AUTHORED dependency — it is never inferred by anyone — so the impact graph mints no edge for a ref it cannot resolve: the dependency you asserted is not merely weak, it is ABSENT, and an edit to the claim you meant will never reach this one.`,
+        ],
+      });
+    }
+  }
+  return out;
+}
+
+/**
+ * Run the five checks and build the instructor's queue.
+ *
+ * Checks run against the FRESH compute, not the stored index, and the distinction matters: the
+ * stored artifacts are the "before" a later edit is diffed against, so they are stale the moment an
+ * author touches a map. "Does this reference point at something?" is a question about the package
+ * as it stands NOW, which is what a human will open and fix.
+ */
+function semanticAudit() {
+  const stored = loadSemanticIndex(pkg);
+  if (!stored.present) {
+    return {
+      ran: false,
+      reason: "no stored semantic index (metadata/{CLAIMS,SPINE,TERMS}.json). Run `npm run index:semantic` to index this package; until then it degrades to the pre-semantic behavior.",
+    };
+  }
+  const fresh = computeSemanticIndex(pkg);
+  const findings = [...declarationFindings(), ...spineRefFindings(fresh), ...derivedFromFindings(fresh)];
+  const queue = buildQueue(findings, fresh.claims);
+  const severityCount = (s) => queue.items.filter((i) => i.severity === s).length;
+  return {
+    ran: true,
+    // A stored artifact that is CORRUPT is a real fault and must never read as "no claims" — that
+    // would be a clean bill of health manufactured by a parse error.
+    indexErrors: stored.errors,
+    warnings: fresh.warnings,
+    spineNodes: fresh.spine.nodes.length,
+    terms: fresh.terms.terms.length,
+    claims: fresh.claims.claims.length,
+    detectorFindings: findings.length,
+    queue,
+    burden: queue.burden,
+    blockingFlags: severityCount("blocking"),
+    reviewFlags: severityCount("review"),
+    infoFlags: severityCount("info"),
+  };
+}
+
+/**
+ * Write `metadata/REVIEW_QUEUE.json` — the artifact's MISSING PRODUCER (§5c's third no-producer
+ * defect, and its first at artifact scale). `buildQueue` returned the object; nothing wrote it.
+ * The gate is its natural writer: it runs the detectors, so it is the only thing holding the
+ * findings.
+ *
+ * WHY IT COMMITS, WHICH IS M14'S CORRECTION AND NOT A DETAIL. `EXCLUDE` alone is NOT enough:
+ * `auditCoherence`'s git loop iterates `git.changes` UNFILTERED, so an emitted artifact still trips
+ * `Git ??` (untracked) or `Git M` (modified) and the package fails its own gate for emitting its own
+ * queue. EXCLUDE kills the component-graph half; committing kills the git half. Both are required.
+ * Not a bypass: `auditCoherence` gates on accepted component HASHES, not on git cleanliness, so an
+ * author's pending edit swept into this commit still reports "content changed after the last
+ * coherence review".
+ *
+ * IT NEVER `git init`s. `index_semantic.mjs` may — `reindex` is a write command the user asked for.
+ * A CHECKER creating a git repository as a side effect of being asked a question is a surprise
+ * nobody consented to, and it is unnecessary: with no repository there are no `git.changes`, so
+ * there is no failure to prevent. Commit only where a history already exists.
+ */
+function emitReviewQueue(semantic) {
+  if (!semantic.ran) return null;
+  const file = path.join(pkg, REVIEW_QUEUE_PATH);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  // The house serialization, byte-identical to every other emitted artifact's.
+  fs.writeFileSync(file, JSON.stringify(semantic.queue, null, 2) + "\n");
+  const tracked = outputGitState(pkg).available;
+  // PATH-SCOPED, deliberately (see output_git.mjs `opts.paths`). This is a CHECKER. It must commit the
+  // queue — an uncommitted emitted artifact trips auditCoherence's unfiltered `Git ??` loop and the
+  // package fails its own gate — but its blast radius stops at the artifact it emitted. `add -A` here
+  // would sweep the author's half-written prose and private notes into a commit they never asked for
+  // and never reviewed. Not a correctness bypass (the hash gate still reports honestly); a CONSENT one,
+  // which is worse in the way that matters: the tool you ran to CHECK your work rewrote your history.
+  const git = tracked && commitQueue
+    ? commitOutput(pkg, "coursewerk: review queue", { paths: [REVIEW_QUEUE_PATH] })
+    : null;
+  return { path: REVIEW_QUEUE_PATH, committed: git?.committed ?? false, ...(git ? { head: git.head } : {}) };
+}
+
 // ============================ assemble ============================
 
 const manifest = manifestAudit();
@@ -614,6 +888,11 @@ const verbatim = verbatimAudit(inputsDir, assurance.foundation);
 const coherence = auditCoherence(pkg);
 const keyFactReview = auditKeyFactReview(pkg, assurance.foundation);
 const visualReview = auditVisualReview(pkg);
+// The semantic layer runs LAST of the audits and emits after `auditCoherence` has already read the
+// package, so this run reports the package as the author left it — the queue it writes is the next
+// run's input, not this one's.
+const semantic = semanticAudit();
+const queueEmission = emitReviewQueue(semantic);
 // During first-pass chapter authoring, the index may not exist yet. Once it
 // exists, every edit is always enforced. Final/public QA (--for-discovery) also
 // requires the index, so deletion can never bypass release assurance.
@@ -642,6 +921,11 @@ const r = {
   coherence,
   keyFactReview,
   visualReview,
+  // ADDITIVE, AND CONDITIONAL ON PURPOSE (spec §6.2). A package with no semantic index must produce
+  // byte-identical output to today — not a `semantic: {ran:false}` block, not a zeroed count. An
+  // unconditional key would change every existing package's JSON, and "additive" would quietly mean
+  // "different".
+  ...(semantic.ran ? { semantic: { ...semantic, emitted: queueEmission } } : {}),
 };
 
 // discoverability — the bar to LIST on Discover: an OPEN license + verified-clean content.
@@ -660,6 +944,9 @@ if (!assurance.canPack) discoverBlockers.push(`assurance kernel has ${assurance.
 if (coherence.hardFailures.length) discoverBlockers.push(`component coherence index has ${coherence.hardFailures.length} unresolved failure(s)`);
 if (!keyFactReview.ready) discoverBlockers.push(`key-fact critique has ${keyFactReview.failures.length} unresolved failure(s)`);
 if (!visualReview.ready) discoverBlockers.push(`visual review has ${visualReview.failures.length} unresolved failure(s)`);
+if (semantic.ran && semantic.indexErrors.length) discoverBlockers.push(`stored semantic index is corrupt: ${semantic.indexErrors.join("; ")}`);
+if (semantic.ran && semantic.blockingFlags + semantic.reviewFlags > 0)
+  discoverBlockers.push(`semantic review queue has ${semantic.blockingFlags + semantic.reviewFlags} unresolved item(s) — see ${REVIEW_QUEUE_PATH}`);
 r.discoverability = {
   mode: forDiscovery ? "for-discovery (enforced)" : "advisory",
   license,
@@ -693,8 +980,23 @@ const critical = {
   coherenceFailures: coherenceCritical.length,
   keyFactReviewFailures: forDiscovery ? keyFactReview.failures.length : 0,
   visualReviewFailures: forDiscovery ? visualReview.failures.length : 0,
+  // The semantic layer, counted ONLY when it ran — see `r.semantic` for why nothing appears here
+  // for a package that has no index.
+  //   semanticIndexErrors  — mode-independent. A corrupt stored artifact is a FAULT, not a finding:
+  //     read as "no claims" it would manufacture a clean bill of health out of a parse error.
+  //   semanticReviewFlags  — release-blocking under --for-discovery only, exactly like the key-fact
+  //     and visual review gates above. While authoring, a dangling ref is a queue item and the queue
+  //     is the product; at RELEASE, shipping a package whose own declarations silently did not take
+  //     effect is the defect this layer exists to catch, so it must not be listed. `info` items
+  //     (term proposals) never block: vocabulary housekeeping is not a release fault.
+  ...(semantic.ran
+    ? {
+        semanticIndexErrors: semantic.indexErrors.length,
+        semanticReviewFlags: forDiscovery ? semantic.blockingFlags + semantic.reviewFlags : 0,
+      }
+    : {}),
   // near-verbatim text: advisory by default, release-blocking under --for-discovery
-  ...(forDiscovery ? { additionalDiscoverBlockers: discoverBlockers.filter((b) => !b.startsWith("assurance kernel") && !b.startsWith("component coherence") && !b.startsWith("key-fact critique") && !b.startsWith("visual review")).length } : {}),
+  ...(forDiscovery ? { additionalDiscoverBlockers: discoverBlockers.filter((b) => !b.startsWith("assurance kernel") && !b.startsWith("component coherence") && !b.startsWith("key-fact critique") && !b.startsWith("visual review") && !b.startsWith("stored semantic index") && !b.startsWith("semantic review queue")).length } : {}),
 };
 r.criticalCounts = critical;
 r.criticalTotal = Object.values(critical).reduce((a, b) => a + b, 0);
@@ -737,6 +1039,15 @@ if (reportPath) {
   L.push("## Human visual/DOM review (release gate)");
   L.push(`- status: ${visualReview.ready ? "passed" : "not passed"} · failures: ${visualReview.failures.length}`);
   for (const i of visualReview.failures.slice(0, 30)) L.push(`  - FAIL ${i}`);
+  if (semantic.ran) {
+    L.push("## Semantic index (declarations, spine references, derivations)");
+    L.push(`- spine nodes ${semantic.spineNodes} · terms ${semantic.terms} · claims ${semantic.claims}`);
+    L.push(`- review queue: **${semantic.burden.flagCount}** item(s) across ${semantic.burden.artifactCount} artifact(s) — ${semantic.burden.flagsPerArtifact} flags/artifact (blocking ${semantic.blockingFlags} · review ${semantic.reviewFlags} · info ${semantic.infoFlags})`);
+    for (const e of semantic.indexErrors) L.push(`  - FAIL ${e}`);
+    for (const w of semantic.warnings) L.push(`  - warn ${w}`);
+    for (const item of semantic.queue.items.slice(0, 20)) L.push(`  - ${item.severity.toUpperCase()} ${item.kind} — ${item.evidence[0]}`);
+    if (queueEmission) L.push(`- queue written to \`${queueEmission.path}\`${queueEmission.committed ? " (committed)" : ""}.`);
+  }
   L.push("## Near-verbatim vs source");
   L.push(`- source corpus: ${verbatim.corpus?.ready ? "ready" : "not ready"}; automatic: ${(verbatim.corpus?.automaticSourceIds || []).join(", ") || "none"}; human-attested: ${(verbatim.corpus?.attestedSourceIds || []).join(", ") || "none"}`);
   if (!verbatim.ran) L.push(`- not run (${verbatim.reason}). Pass \`--inputs <dir>\` to scan deliverables against the source materials.`);
@@ -762,5 +1073,15 @@ console.log(JSON.stringify({
   coherence: { ready: coherence.hardFailures.length === 0, failures: coherence.hardFailures.length, changed: coherence.changed.length, staleDependents: coherence.staleDependents.length },
   keyFactReview: { ready: keyFactReview.ready, failures: keyFactReview.failures.length },
   visualReview: { ready: visualReview.ready, failures: visualReview.failures.length },
+  ...(semantic.ran
+    ? {
+        semantic: {
+          indexErrors: semantic.indexErrors.length,
+          flags: semantic.burden.flagCount,
+          burden: semantic.burden,
+          queue: queueEmission?.path ?? null,
+        },
+      }
+    : {}),
 }, null, 2));
 process.exit(r.criticalTotal > 0 ? 1 : 0);

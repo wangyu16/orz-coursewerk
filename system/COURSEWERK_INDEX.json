@@ -101,7 +101,7 @@
       "id": "repo:docs/semantic-index-interfaces.md",
       "path": "docs/semantic-index-interfaces.md",
       "type": "documentation",
-      "hash": "83a440d52d5c287a2bbf0b0e14971390d588035167a7d98fcd3308039eab61fb"
+      "hash": "1270c86e87643c416a1aafaa744021274630d9df6078c7d1515369b5900d6a3e"
     },
     {
       "id": "repo:docs/semantic-index-spec.md",
@@ -209,7 +209,7 @@
       "id": "repo:scripts/check_oer.mjs",
       "path": "scripts/check_oer.mjs",
       "type": "executable",
-      "hash": "8e3802b6601294c60a9cef980427e0155730ec3edbecb25141964b65122f4f5a"
+      "hash": "1b1a1fd37d82178cc56737dbfc2c67994f5ca0253e1a66ad18bd4c13817c9bd3"
     },
     {
       "id": "repo:scripts/coursewerk_impact.mjs",
@@ -287,7 +287,7 @@
       "id": "repo:scripts/index_semantic.mjs",
       "path": "scripts/index_semantic.mjs",
       "type": "executable",
-      "hash": "fd6ea886120225da8a49ad4a24dce4a2ca5b39f7ea5ccfdfadec79419fd0ca8e"
+      "hash": "977d398ab1a74ff75e2e5f3d293695f921d58a4868ec2ff8626b47826aec3cfc"
     },
     {
       "id": "repo:scripts/init_output_git.mjs",
@@ -305,7 +305,7 @@
       "id": "repo:scripts/lib/claims.mjs",
       "path": "scripts/lib/claims.mjs",
       "type": "kernel",
-      "hash": "b8c6595165b48c5f9ebc7e25cdccf94a6438de5dc43fdc8392bd938a2b28e58c"
+      "hash": "b2fd6b08a2208cf58dcd70071a405951d8ce2ba8ec8d463d018a45c14d72f9a9"
     },
     {
       "id": "repo:scripts/lib/classify.mjs",
@@ -317,7 +317,7 @@
       "id": "repo:scripts/lib/coherence.mjs",
       "path": "scripts/lib/coherence.mjs",
       "type": "kernel",
-      "hash": "c81b29c654fe2a114bec73a3c866ce50f53c9ca00e6f2a27fa375db6d691eefd"
+      "hash": "df36caab5fd86ae9ccfd7ca0979c0a8093bc16cdbe4b3f90e9ac03df5f97b8ee"
     },
     {
       "id": "repo:scripts/lib/consistency.mjs",
@@ -335,7 +335,7 @@
       "id": "repo:scripts/lib/escalation.mjs",
       "path": "scripts/lib/escalation.mjs",
       "type": "kernel",
-      "hash": "37274e7aa29db1bcddf5e80b73eba57d6e30e9064339f36698b6d00442d31d8a"
+      "hash": "72da25ac78e4250c89dccc256ca4ea824cbdd34a7b48012a98e297b18e4c7491"
     },
     {
       "id": "repo:scripts/lib/fingerprint.mjs",
@@ -359,7 +359,7 @@
       "id": "repo:scripts/lib/output_git.mjs",
       "path": "scripts/lib/output_git.mjs",
       "type": "kernel",
-      "hash": "4de30289a1368bf4d5b847374ab398ed070b4ea1c5c5eb82aa1f495ee2c8f955"
+      "hash": "9c308d2b4ecb0b3853977a3d8a3cee92751de89ed2e29703dddd4d9067723f59"
     },
     {
       "id": "repo:scripts/lib/overrides.mjs",
@@ -726,6 +726,12 @@
       "path": "tests/carriers.test.mjs",
       "type": "test",
       "hash": "1afeb2968b64ef48ec436982ea5c70cfb5cccd6dff72bad8833441a8d89d2f1b"
+    },
+    {
+      "id": "repo:tests/check-oer-semantic.test.mjs",
+      "path": "tests/check-oer-semantic.test.mjs",
+      "type": "test",
+      "hash": "9187936903cc5aea90ab82b8581da62963ab764071e8765809473699da0086bd"
     },
     {
       "id": "repo:tests/claims.test.mjs",

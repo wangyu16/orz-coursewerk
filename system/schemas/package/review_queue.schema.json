@@ -31,8 +31,11 @@
               "misconception-asserted",
               "term-proposal",
               "derived-diff",
-              "upstream-drift"
-            ]
+              "upstream-drift",
+              "dangling-reference",
+              "declaration-refused"
+            ],
+            "description": "The DECISION the human is asked (not what was observed — that is `detectorKinds`), and part of M10's dedupe key so one decision = one item. `dangling-reference` and `declaration-refused` were ADDED 2026-07-17: the M11 gate's own §5b findings had no member, and folding them into `internal-inconsistency` would have asked the wrong question — 'these two artifacts disagree' is not 'this reference points at nothing' or 'your declaration was malformed', and the instructor's next action differs for each. A gate that must misname its finding to fit an enum is an enum that is wrong."
           },
           "claimIds": {
             "type": "array",

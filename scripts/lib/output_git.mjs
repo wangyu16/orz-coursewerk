@@ -70,11 +70,31 @@ export function outputGitState(root) {
   };
 }
 
-export function commitOutput(root, message) {
+/**
+ * Commit the output package.
+ *
+ * `opts.paths` — commit ONLY these paths (package-relative). Omit for the historical `add -A`.
+ *
+ * WHY THE PARAMETER EXISTS (added 2026-07-17, found by M11):
+ * `add -A` is correct for a step the author ASKED to write (`index:components`, `index:semantic`).
+ * It is wrong for a CHECKER. `check_oer.mjs` emits REVIEW_QUEUE.json and must commit it — an emitted
+ * artifact that stays uncommitted trips `auditCoherence`'s unfiltered `Git ??` loop, so the package
+ * would fail its own gate. But with `add -A` the gate ALSO sweeps up whatever the author happened to
+ * have in the tree — half-written prose, private notes, an experiment — into a commit they never asked
+ * for and did not review. Nothing is destroyed and the hash gate still reports honestly, so it is not a
+ * correctness bypass; it is a CONSENT bypass, which is worse in the way that matters: the tool you ran
+ * to *check* your work quietly rewrote your history. A checker's blast radius must be the artifact it
+ * emits and nothing else.
+ */
+export function commitOutput(root, message, opts = {}) {
   ensureOutputGit(root);
-  git(root, ["add", "-A"]);
-  const state = outputGitState(root);
-  if (state.clean) return { committed: false, head: state.head };
+  const paths = Array.isArray(opts.paths) ? opts.paths.filter(Boolean) : null;
+  if (paths && paths.length === 0) return { committed: false, head: outputGitState(root).head };
+  git(root, paths ? ["add", "--", ...paths] : ["add", "-A"]);
+  // Staged-only, so an author's unstaged WIP is invisible to the decision as well as to the commit.
+  const staged = git(root, ["diff", "--cached", "--name-only"]);
+  const nothingStaged = staged.status === 0 && staged.stdout.trim() === "";
+  if (nothingStaged) return { committed: false, head: outputGitState(root).head };
   git(root, ["commit", "-m", message]);
   return { committed: true, head: outputGitState(root).head };
 }

@@ -235,7 +235,19 @@ export function buildQueue(findings, claims)   // -> REVIEW_QUEUE (schema) incl.
   //   which is how S-F reports detection PER LAYER.
   // M10 owns the mapping table; detectors never speak queue kinds:
   //   value-disagreement | definition-drift | cross-artifact-mismatch  -> "internal-inconsistency"
+  //   dangling-anchor | dangling-spine-ref | dangling-derived-from     -> "dangling-reference"
+  //   declaration-refusal                                              -> "declaration-refused"
   //   (extend the table when a detector is added)
+  // The last two queue kinds were ADDED 2026-07-17 rather than folding the gate's §5b findings into
+  // `internal-inconsistency`: "these two artifacts disagree", "this reference points at nothing", and
+  // "your declaration was malformed" are THREE different questions with three different next actions.
+  // A gate that must misname its finding to fit an enum is an enum that is wrong — and misnaming here
+  // would also silently MERGE them, since the queue kind is the dedupe key.
+
+// M10 also OWNS THE ARTIFACT PATH:
+export const REVIEW_QUEUE_PATH  // "metadata/REVIEW_QUEUE.json" — import it, NEVER respell it (§5d).
+  // [ADDED 2026-07-17 — M14 found the queue had NO PRODUCER and no constant, so it had to spell the
+  // path literally in coherence's EXCLUDE: a second authority created to work around a missing one.]
   // An UNMAPPED detector kind THROWS. It is a contract break, caught by tests at build time; silently folding
   // an unknown kind into a generic bucket would hide it — the same defect as trapping it in prose.
 

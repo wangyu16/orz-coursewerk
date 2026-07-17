@@ -98,7 +98,25 @@
 // DOES ANY PRODUCER'S SIGNATURE CARRY MORE STRUCTURE THAN THE FIELD CAN HOLD? It is
 // mechanical, needs no downstream consumer to exist yet, and catches this at freeze time.
 
-/** Frozen enum order (schema `kind`) — doubles as the intra-severity triage order. */
+/**
+ * The artifact this module's output is written to (interfaces §3 — M10 OWNS THE PATH).
+ *
+ * Import it; never respell it (§5d). It exists because it did not: `buildQueue` returned the queue
+ * and NOTHING wrote it, so the path lived only in a schema title and in doc prose — and M14, needing
+ * it in `lib/coherence.mjs`'s EXCLUDE, had no constant to import and had to spell it literally,
+ * creating a second authority to work around a missing one. The producer is `check_oer.mjs`'s
+ * semantic audit (M11), which runs the detectors and calls `buildQueue`; `EXCLUDE` now imports this.
+ */
+export const REVIEW_QUEUE_PATH = "metadata/REVIEW_QUEUE.json";
+
+/**
+ * Frozen enum order (schema `kind`) — doubles as the intra-severity triage order.
+ *
+ * The last two were ADDED 2026-07-17 with the M11 gate, and are APPENDED rather than slotted in by
+ * consequence: this list must stay in the schema's own enum order (that is what makes it checkable
+ * against the frozen artifact), and the position only breaks ties WITHIN a severity — a `review`
+ * dangling reference still sorts above an `info` term proposal, because severity is the primary key.
+ */
 const KIND_ORDER = [
   "suspected-error",
   "source-conflict",
@@ -109,6 +127,8 @@ const KIND_ORDER = [
   "term-proposal",
   "derived-diff",
   "upstream-drift",
+  "dangling-reference",
+  "declaration-refused",
 ];
 const KIND_SET = new Set(KIND_ORDER);
 
@@ -128,6 +148,15 @@ const DEFAULT_SEVERITY = {
   "derived-diff": "review",
   "orphan-claim": "review",
   "sanity-check": "review",
+  // A dangling reference and a refused declaration are `review`, not `blocking`, and the rule above
+  // is why: no student meets a falsehood: the prose a student reads is untouched, and in both cases
+  // the package is UNDER-indexed rather than wrong. What broke is the author's assertion ABOUT the
+  // prose — a link to nothing, a declaration that could not be read — so a human must decide what
+  // was meant. Calling them blocking would put "your bracket has a typo" beside "the answer key
+  // contradicts the study guide", and a severity that cannot separate those two teaches an
+  // instructor to ignore the loudest one.
+  "dangling-reference": "review",
+  "declaration-refused": "review",
   "term-proposal": "info",
 };
 
@@ -141,6 +170,17 @@ const DETECTOR_TO_QUEUE = {
   "value-disagreement": "internal-inconsistency",
   "definition-drift": "internal-inconsistency",
   "cross-artifact-mismatch": "internal-inconsistency",
+  // The M11 gate's §5b rows. THREE detector kinds fold to `dangling-reference` because they are one
+  // QUESTION — "this reference points at nothing; fix it or remove it" — asked about three different
+  // reference species (a declared anchor, a spineRef, a `derivedFrom`). The fold is deliberate and
+  // the observation survives in `detectorKinds`, which is what lets a study report recall per layer.
+  // They did NOT fold into `internal-inconsistency`: "these two artifacts disagree" is a different
+  // question with a different next action, and since the queue kind is the dedupe key, misnaming
+  // them would also have silently MERGED a typo'd bracket with a real contradiction.
+  "dangling-anchor": "dangling-reference",
+  "dangling-spine-ref": "dangling-reference",
+  "dangling-derived-from": "dangling-reference",
+  "declaration-refusal": "declaration-refused",
 };
 
 /**

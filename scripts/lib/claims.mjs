@@ -391,6 +391,47 @@ function parseBlocks(body, base = 0) {
   return blocks;
 }
 
+/**
+ * The ANCHOR VOCABULARY of every artifact this module indexes — "does this anchor exist?",
+ * exported (interfaces §5b; CONTRACT CONCERNS A below; M12's CONCERN B).
+ *
+ * REQUESTED BY M11, AND THE MINIMAL SHAPE THAT ANSWERS IT. A declaration naming a block that does
+ * not exist yields NO claim (`extractClaims` step 1 — inventing the prose it named would be a
+ * fabrication), and this module has no channel to say so: its frozen return is
+ * `{schemaVersion, claims}` and `claims.schema.json` is `additionalProperties:false`. So the
+ * declaration LOOKS honoured and nothing was indexed — and only the gate can tell the author.
+ *
+ * WHY IT TAKES `root` AND NOT A `fileText`, which is the whole point of the export. The gate must
+ * ask about exactly the artifacts THIS MODULE READS, and there are two facts in that sentence, not
+ * one: the anchor set of a text, and WHICH TEXTS ARE ARTIFACTS. `ARTIFACT_FOLDERS` deliberately
+ * excludes `concepts/` (above) while `check_oer.mjs`'s own `DELIVERABLE_TOPS` includes it — so a
+ * gate iterating its own file list would report a dangling anchor in a concept map that the index
+ * never reads, which is precisely the error M12 refuses when it applies sidecar precedence
+ * (interfaces §3: "telling the author to fix a file the index never reads"). Handing back the pair
+ * makes both facts this module's, and re-derives neither in the caller (§5d: two block parsers = two
+ * answers to "does this anchor exist", and the unit table is what that costs).
+ *
+ * The front-matter skip is part of the answer, not an optimization: `extractClaims` anchors the
+ * BODY (`parseBlocks(fileText.slice(base), base)`), so an anchor set taken over the whole text would
+ * mint blocks for the declaration itself and disagree with the index about which anchors exist.
+ *
+ * Pure apart from reading the package, deterministic, sorted — same package, identical result.
+ *
+ * @param {string} root the package root
+ * @returns {Array<{file:string, anchors:string[]}>} one entry per indexed artifact, in the same
+ *   sorted file order `extractClaims` uses; `anchors` sorted and de-duplicated
+ */
+export function artifactAnchors(root) {
+  const out = [];
+  for (const rel of ARTIFACT_FOLDERS.flatMap((folder) => markdownIn(root, folder))) {
+    const fileText = readText(root, rel);
+    if (fileText == null) continue;
+    const base = frontMatterLength(fileText);
+    out.push({ file: rel, anchors: strSet(parseBlocks(fileText.slice(base), base).map((b) => b.anchor)) });
+  }
+  return out;
+}
+
 /** Whether a block asserts a quantity (a number bound to a recognized unit). */
 const hasQuantity = (text) => QUANTITY_RE.test(text);
 
@@ -786,7 +827,14 @@ export function matchClaims(oldClaims, newClaims) {
 //   * `text` vs `offset` describing different strings → closed by making `text` non-overridable;
 //     the rule and the reason are in this file's header, where the temptation to re-add it lives.
 // Read those sections rather than re-deriving them here. What follows is what is still OPEN.
-// A. **OPEN, owner M11 — a DANGLING declared anchor is silent.** (`termRefs` is no longer part of
+// A. **CLOSED 2026-07-17 — the anchor vocabulary is exported and the M11 gate reports the
+//    dangling anchor.** `artifactAnchors(root)` (above) is the export this concern asked for, and
+//    `check_oer.mjs`'s semantic audit consumes it: a declaration naming a block that does not exist
+//    is now a `dangling-anchor` finding carrying the anchors the artifact DOES have, instead of an
+//    absence that reads as "nothing to review". The export deliberately returns the (file, anchors)
+//    PAIR, because "which files are artifacts" is this module's fact too — see its header. What
+//    follows is the original concern, kept because the reasoning is why the export exists.
+//    **OPEN → CLOSED, owner M11 — a DANGLING declared anchor is silent.** (`termRefs` is no longer part of
 //    this concern: §3 was amended and M12 now carries it, so a generator that knows its claim's
 //    vocabulary states it instead of making this module recognize it. `text` remains correctly
 //    ABSENT from the shape — see the header; that door is closed for a good reason, and the prose is

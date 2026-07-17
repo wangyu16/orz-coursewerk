@@ -53,7 +53,12 @@ if (index.conceptMaps.length === 0) {
 }
 
 writeSemanticIndex(root, index);
-const git = commit ? commitOutput(root, "coursewerk: reindex semantic index") : null;
+// PATH-SCOPED to the artifacts this command writes. The author asked to reindex; they did not ask to
+// commit their prose. Scoping also keeps the receipt honest — `committed: true` now means "the index
+// moved", not "something in the tree moved". An author's own uncommitted deliverable stays
+// uncommitted and is reported by the coherence gate, which is exactly correct: it is their change to
+// review, not ours to bury in a reindex commit.
+const git = commit ? commitOutput(root, "coursewerk: reindex semantic index", { paths: SEMANTIC_INDEX_PATHS }) : null;
 
 // Warnings go to stderr and the receipt, and do NOT change the exit code: they name real gaps in
 // the package (no `## Key terms`, no claims) that a half-written but legitimately-in-progress
