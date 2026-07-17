@@ -39,6 +39,49 @@
 // stable across rephrase and rename), so a rename moves the `label` fingerprint while
 // claim identity holds.
 //
+// THE TERM ID IS MINTED ONCE — AND `priorTerms` IS WHAT MAKES THAT TRUE
+// ---------------------------------------------------------------------
+// [interfaces §2, amended 2026-07-17; the study pairs proved the rename BROKEN end to end.]
+// The paragraph above described an invariant this module could not keep. §2 minted
+// `term.<slug(preferredLabel)>` and spec §10 dec. 3(c) REGENERATES this registry from the map,
+// so the only path an instructor has to a rename — editing `## Key terms` — re-minted the id.
+// That moved M2's `identityLabel` (a hash of sorted term IDS), so it moved the claim id, so the
+// three claims mentioning the term reported 3 added + 3 removed where §4 promises 3 matched, and
+// the `label` fingerprint — the layer built to make a rename OBSERVABLE — never got a matched
+// pair to be observed on. `setPreferred` was the only rename-safe path in the system and NOTHING
+// PERSISTED IT: §4b reasoned correctly about an API nobody could reach.
+//
+// This is §5e at SYSTEM scale, and the first instance spanning two modules: the term id served as
+// an IDENTITY KEY (M2 hashes it) while DERIVING FROM THE CHANGE SIGNAL (this module's
+// preferredLabel). An identity key must be rename-INVARIANT; a change signal must be
+// rename-VARIANT; one value cannot be both. Every earlier §5e instance sat inside one file where
+// its author could see both halves — this one lived in the seam, so neither module's review caught it.
+//
+// The fix is MEMORY, and the memory is `priorTerms` — the STORED `TERMS.json` (M14), a registry
+// that simply did not exist when §2 was frozen. `buildTerms(conceptMaps, priorTerms)`:
+//
+//   * a term id is minted from its preferredLabel THE FIRST TIME the term is seen, and never re-minted;
+//   * on a later build, a map entry whose LABEL SET (preferred + aliases) overlaps EXACTLY ONE prior
+//     term IN THE SAME SCOPE resolves to it and KEEPS ITS ID. Only preferredLabel/aliases update, so
+//     TERMS stays a pure projection of the map in everything except the id;
+//   * §1's grammar guarantees the hinge: a rename keeps the old label as an alias
+//     (`- **fusion point** (melting point, …)`), so the overlap exists BY CONSTRUCTION. If an author
+//     DELETES the old label instead of demoting it, that is NOT a rename — it is a remove + an add,
+//     and reporting it as such is correct. We do not rescue it with similarity matching: that is the
+//     fabrication this project refuses everywhere else, wearing a helpful hat;
+//   * overlapping ≥2 prior terms is AMBIGUOUS: resolve nothing, mint fresh, and REPORT
+//     (`buildTermsReport().ambiguous`). A silent merge of two concepts is worse than a missed
+//     rename — it folds two distinct teachings into one node and every downstream check then
+//     ENFORCES the merge.
+//
+// With no `priorTerms` this is a first build and behaves exactly as it always did. A caller that
+// HAS a stored registry and does not pass it silently reintroduces the defect (§3).
+//
+// THE RESULT: the id is a HISTORICAL ARTIFACT. `term.melting-point` may carry preferredLabel
+// "fusion point" forever. That is correct and normal for an identity key — it is a HANDLE, not a
+// display name — and it is the same discipline the `setPreferred` note below already states. DO
+// NOT "tidy" it to match the label; the tidy IS the bug.
+//
 // DO NOT "FIX" STALE-LOOKING IDS. After `setPreferred(t, "term.latent-heat", "enthalpy of
 // fusion")` the id still reads `term.latent-heat` while the label says something else. That
 // is not a bug — it is the entire point. The id is an OPAQUE HANDLE, minted once from the
@@ -226,6 +269,34 @@ function labelsOf(term) {
   return [term.preferredLabel, ...(term.aliases ?? [])];
 }
 
+/**
+ * Every term that answers to `label` in `scope`, in `resolve`'s own precedence order.
+ *
+ * `resolve` is a PROJECTION of this (it takes the first). They are one implementation on purpose:
+ * the rename resolution below must ask "how many prior terms does this entry overlap?" — a question
+ * whose answer decides whether an id is inherited or an ambiguity is refused — and `resolve` answers
+ * only "which one wins the tie". A second copy of the scope rule would be interfaces §5d: one fact
+ * (what this label means here) derived in two places, silently agreeing right up until it didn't.
+ *
+ * The precedence is the scope rule: a term declared IN the scope wins; else a course-wide/unscoped
+ * term (a course-level term applies everywhere); else nothing — a term declared ONLY in another
+ * chapter is not this chapter's term, which is the homograph rule earning its keep.
+ */
+function candidatesFor(terms, label, scope) {
+  const key = normalizeLabel(label);
+  if (!key) return [];
+  const matches = (terms?.terms ?? []).filter((t) => labelsOf(t).some((l) => normalizeLabel(l) === key));
+  if (matches.length === 0) return [];
+  if (scope === undefined || scope === null || scope === "") return matches;
+
+  const inScope = matches.filter((t) => (t.scope ?? []).includes(String(scope)));
+  if (inScope.length > 0) return inScope;
+  return matches.filter((t) => {
+    const s = t.scope ?? [];
+    return s.length === 0 || s.includes("course");
+  });
+}
+
 /** Structural clone of a TERMS object — every export returns a fresh value, never a mutation. */
 function cloneTerms(terms) {
   return {
@@ -240,23 +311,21 @@ function cloneTerms(terms) {
 }
 
 /**
- * Build the term registry from concept maps.
+ * Every `## Key terms` DECLARATION in the maps, grouped by canonical (the merge key this module
+ * has always used).
  *
- * The same term may be declared in several maps (a course-wide term restated in a chapter):
- * those are ONE node — aliases, scopes and gloss union together, first declaration wins for
- * the preferred label — because a term id must mean one thing package-wide.
+ * The same term may be declared in several maps (a course-wide term restated in a chapter): those
+ * are ONE group — labels, scopes and gloss union together, first declaration wins for the preferred
+ * label and the gloss/spineRef — because a term id must mean one thing package-wide.
  *
- * @param {Array<{file:string, text:string, scope?:string}>} conceptMaps concept-map sources
- * @returns {{schemaVersion:number, generatedFrom:string[], terms:Array<object>}} TERMS,
- *   conforming to `system/schemas/package/terms.schema.json`. Every entry is
- *   `status:"confirmed"` — being in the map IS the instructor's authorization — and
- *   `lifecycle:"active"`; the grammar has no lifecycle marker, so a term is retired to
- *   `deprecated-but-teach`/`superseded` by a later edit, never by this parser.
+ * `labels` carries the preferred label FIRST and then the aliases, in first-seen order. That is the
+ * projection §2's rename rule is stated over ("label set = preferred + aliases"), and keeping it as
+ * one ordered list is what lets the record below derive `aliases` by simply removing whichever label
+ * ends up preferred — which is exactly `setPreferred`'s add-alias rule, arrived at from the map.
  */
-export function buildTerms(conceptMaps) {
-  const maps = Array.isArray(conceptMaps) ? conceptMaps : [];
-  const byCanonical = new Map(); // canonical -> term record (the merge key)
-  const takenIds = new Set();
+function collectGroups(maps) {
+  const byCanonical = new Map();
+  const groups = [];
 
   for (const map of maps) {
     const sections = parseSections(map?.text);
@@ -269,51 +338,254 @@ export function buildTerms(conceptMaps) {
       const canonical = normalizeLabel(parsed.preferredLabel);
       if (!canonical) continue;
 
-      let term = byCanonical.get(canonical);
-      if (!term) {
-        const id = mintId(parsed.preferredLabel, takenIds);
-        takenIds.add(id);
-        term = {
-          id,
+      let group = byCanonical.get(canonical);
+      if (!group) {
+        group = {
           canonical,
           preferredLabel: parsed.preferredLabel,
-          aliases: [],
-          status: "confirmed",
-          lifecycle: "active",
-          scope: [],
+          labels: [],
+          scopes: [],
+          gloss: null,
+          spineRef: null,
         };
-        byCanonical.set(canonical, term);
+        byCanonical.set(canonical, group);
+        groups.push(group);
       }
 
-      term.aliases = uniqueLabels([...term.aliases, ...parsed.aliases]).filter(
-        (a) => normalizeLabel(a) !== term.canonical,
-      );
+      group.labels = uniqueLabels([...group.labels, parsed.preferredLabel, ...parsed.aliases]);
       // First declaration wins for gloss and spineRef: re-declaring a course term in a
       // chapter must not silently re-parent it.
-      if (parsed.gloss && !term.gloss) term.gloss = parsed.gloss;
-      if (parsed.spineRef && !term.spineRef) term.spineRef = parsed.spineRef;
-      if (scope && !term.scope.includes(scope)) term.scope.push(scope);
+      if (parsed.gloss && !group.gloss) group.gloss = parsed.gloss;
+      if (parsed.spineRef && !group.spineRef) group.spineRef = parsed.spineRef;
+      if (scope && !group.scopes.includes(scope)) group.scopes.push(scope);
     }
   }
+  return groups;
+}
+
+/** The prior terms this group's LABEL SET overlaps, within the group's own scopes (§2's rule). */
+function priorCandidates(priorTerms, group) {
+  const ids = new Set();
+  // An unscoped map asks the scope-blind question, exactly as `resolve(terms, label)` does.
+  const scopes = group.scopes.length > 0 ? group.scopes : [null];
+  for (const scope of scopes) {
+    for (const label of group.labels) {
+      for (const t of candidatesFor(priorTerms, label, scope)) ids.add(t.id);
+    }
+  }
+  return [...ids].sort();
+}
+
+const canonicalOf = (term) => normalizeLabel(term?.canonical ?? term?.preferredLabel);
+
+/** Do these groups all declare at least one label in common with each other? */
+function mutuallyOverlapping(groups) {
+  const keys = groups.map((g) => new Set(g.labels.map(normalizeLabel)));
+  for (let i = 0; i < keys.length; i += 1) {
+    for (let j = i + 1; j < keys.length; j += 1) {
+      if (![...keys[i]].some((k) => keys[j].has(k))) return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Assign an id to every group: inherited from `priorTerms` where §2's rule resolves, minted where it
+ * does not, refused where it is ambiguous.
+ *
+ * Returns records in FIRST-SEEN group order (byte-stability), each `{id, groups[], preferredLabel}`.
+ * Ambiguities are pushed onto `ambiguous` — a FIELD, never prose (§5c): the caller must be able to
+ * report a refusal without regexing a sentence, and a refusal reported by ABSENCE is the silence
+ * §5b's declaration-refusal row exists to close.
+ */
+function planRecords(groups, priorTerms, ambiguous) {
+  const prior = priorTerms === undefined || priorTerms === null ? [] : priorTerms.terms ?? [];
+  const priorById = new Map(prior.map((t) => [t.id, t]));
+  const claimedBy = new Map(); // prior id -> the groups that overlap exactly it
+
+  for (const group of groups) {
+    if (prior.length === 0) continue; // first build: nothing to inherit, everything is minted
+    const candidates = priorCandidates(priorTerms, group);
+    if (candidates.length === 0) continue; // a genuinely NEW term — mint below
+    if (candidates.length > 1) {
+      // §2: a silent merge of two concepts is worse than a missed rename. Refuse, report, mint fresh.
+      ambiguous.push({
+        preferredLabel: group.preferredLabel,
+        scopes: [...group.scopes],
+        candidates,
+        reason:
+          `"${group.preferredLabel}" overlaps ${candidates.length} prior terms (${candidates.join(", ")}), ` +
+          "so which one it continues cannot be known from the map. Refused: a fresh id is minted and " +
+          "the rename (if any) is reported as a remove + an add rather than guessed.",
+      });
+      continue;
+    }
+    const id = candidates[0];
+    if (!claimedBy.has(id)) claimedBy.set(id, []);
+    claimedBy.get(id).push(group);
+  }
+
+  const idByGroup = new Map();
+  const preferredById = new Map();
+
+  for (const [id, claimants] of claimedBy) {
+    if (claimants.length === 1) {
+      idByGroup.set(claimants[0], id);
+      continue;
+    }
+    // TWO OR MORE GROUPS OVERLAP ONE PRIOR TERM. The map itself says which it is, and the two
+    // readings are opposite, so neither may be assumed:
+    //   * the groups share a label => the map declares them to be ONE term under two preferred
+    //     labels (the fixture's case: a rename made in the chapter map while the course map still
+    //     declares the old label). One node, one id, and the label the map MOVED to wins — see below.
+    //   * the groups share no label => the map declares them to be TWO terms that both descend from
+    //     one prior term: a SPLIT. Merging them would be the silent merge §2 forbids, so only the
+    //     group still carrying the prior's own preferred label continues its identity; the other is
+    //     a new term. If none carries it, nothing distinguishes the claimants and we refuse.
+    const priorCanonical = canonicalOf(priorById.get(id));
+    if (mutuallyOverlapping(claimants)) {
+      const moved = claimants.filter((g) => g.canonical !== priorCanonical);
+      if (moved.length > 1) {
+        ambiguous.push({
+          preferredLabel: claimants.map((g) => g.preferredLabel).join(" | "),
+          scopes: [...new Set(claimants.flatMap((g) => g.scopes))],
+          candidates: [id],
+          reason:
+            `${id} is declared with ${moved.length} competing new preferred labels ` +
+            `(${moved.map((g) => `"${g.preferredLabel}"`).join(", ")}), so the rename target cannot be ` +
+            "known from the map. Refused: fresh ids are minted and the change is reported as removes + adds.",
+        });
+        continue;
+      }
+      // The prior label is the status quo; a declaration that DIFFERS from it is the new information.
+      // Order-independent on purpose — reading it off file order would make an id depend on a
+      // filename, and `concepts/course.md` sorts before every chapter by accident, not by authority.
+      for (const g of claimants) idByGroup.set(g, id);
+      preferredById.set(id, (moved[0] ?? claimants[0]).preferredLabel);
+      continue;
+    }
+    const continuing = claimants.filter((g) => g.canonical === priorCanonical);
+    if (continuing.length === 1) {
+      idByGroup.set(continuing[0], id);
+      continue;
+    }
+    ambiguous.push({
+      preferredLabel: claimants.map((g) => g.preferredLabel).join(" | "),
+      scopes: [...new Set(claimants.flatMap((g) => g.scopes))],
+      candidates: [id],
+      reason:
+        `${id} is claimed by ${claimants.length} unrelated declarations ` +
+        `(${claimants.map((g) => `"${g.preferredLabel}"`).join(", ")}) and none of them still carries its ` +
+        "preferred label, so which one continues it cannot be known from the map. Refused: fresh ids are minted.",
+    });
+  }
+
+  // MINT for everything left. `takenIds` is seeded with EVERY prior id, not just the inherited ones:
+  // an id is RETIRED, never recycled. Handing a retired term's id to an unrelated new term would
+  // leave M2's `identityLabel` unmoved while the vocabulary underneath it changed meaning — a silent
+  // merge across time, which is the §2 failure with a longer fuse.
+  const takenIds = new Set([...priorById.keys(), ...idByGroup.values()]);
+  for (const group of groups) {
+    if (idByGroup.has(group)) continue;
+    const id = mintId(group.preferredLabel, takenIds);
+    takenIds.add(id);
+    idByGroup.set(group, id);
+  }
+
+  const records = [];
+  const byId = new Map();
+  for (const group of groups) {
+    const id = idByGroup.get(group);
+    let record = byId.get(id);
+    if (!record) {
+      record = { id, groups: [] };
+      byId.set(id, record);
+      records.push(record);
+    }
+    record.groups.push(group);
+  }
+  for (const record of records) {
+    record.preferredLabel = preferredById.get(record.id) ?? record.groups[0].preferredLabel;
+  }
+  return records;
+}
+
+/**
+ * Build the term registry from concept maps, AND report what could not be resolved.
+ *
+ * `buildTerms` is the SURVIVORS PROJECTION of this — the same shape as M12's
+ * `declaredProvenanceReport`/`declaredProvenance` pair, and for the same reason: a refusal that is
+ * reported only by absence is indistinguishable from "there was nothing to resolve". The registry
+ * itself cannot carry the report (`terms.schema.json` is `additionalProperties: false`, correctly —
+ * an ambiguity is not part of the projection), so it rides the envelope, exactly as M14's
+ * `warnings[]` does.
+ *
+ * @param {Array<{file:string, text:string, scope?:string}>} conceptMaps concept-map sources
+ * @param {object} [priorTerms] the STORED TERMS.json (M14) — see §2. Absent = FIRST BUILD.
+ * @returns {{terms:object, ambiguous:Array<{preferredLabel:string, scopes:string[],
+ *   candidates:string[], reason:string}>}}
+ */
+export function buildTermsReport(conceptMaps, priorTerms) {
+  const maps = Array.isArray(conceptMaps) ? conceptMaps : [];
+  const ambiguous = [];
+  const records = planRecords(collectGroups(maps), priorTerms, ambiguous);
 
   // Key order is fixed so the serialized file is byte-stable across runs.
-  const terms = [...byCanonical.values()].map((t) => ({
-    id: t.id,
-    canonical: t.canonical,
-    preferredLabel: t.preferredLabel,
-    aliases: t.aliases,
-    status: t.status,
-    lifecycle: t.lifecycle,
-    ...(t.spineRef ? { spineRef: t.spineRef } : {}),
-    ...(t.gloss ? { gloss: t.gloss } : {}),
-    scope: t.scope,
-  }));
+  const terms = records.map((record) => {
+    const groups = record.groups;
+    const canonical = normalizeLabel(record.preferredLabel);
+    // EVERY label the map declares for this term, minus whichever one is preferred — so a label the
+    // map still declares is never dropped. When a rename lands, the old preferred label is demoted
+    // to an alias here for the same reason `setPreferred` demotes it: legacy occurrences must keep
+    // resolving. The map is the authority for labels; the prior supplies ONLY the id.
+    const aliases = uniqueLabels(groups.flatMap((g) => g.labels)).filter(
+      (a) => normalizeLabel(a) !== canonical,
+    );
+    const gloss = groups.map((g) => g.gloss).find((g) => g) ?? null;
+    const spineRef = groups.map((g) => g.spineRef).find((s) => s) ?? null;
+    return {
+      id: record.id,
+      canonical,
+      preferredLabel: record.preferredLabel,
+      aliases,
+      status: "confirmed",
+      lifecycle: "active",
+      ...(spineRef ? { spineRef } : {}),
+      ...(gloss ? { gloss } : {}),
+      scope: [...new Set(groups.flatMap((g) => g.scopes))],
+    };
+  });
 
   return {
-    schemaVersion: SCHEMA_VERSION,
-    generatedFrom: maps.map((m) => String(m?.file ?? "")),
-    terms,
+    terms: {
+      schemaVersion: SCHEMA_VERSION,
+      generatedFrom: maps.map((m) => String(m?.file ?? "")),
+      terms,
+    },
+    ambiguous,
   };
+}
+
+/**
+ * Build the term registry from concept maps.
+ *
+ * The same term may be declared in several maps (a course-wide term restated in a chapter):
+ * those are ONE node — aliases, scopes and gloss union together, first declaration wins for
+ * the preferred label — because a term id must mean one thing package-wide.
+ *
+ * @param {Array<{file:string, text:string, scope?:string}>} conceptMaps concept-map sources
+ * @param {object} [priorTerms] the STORED TERMS.json (M14) — what makes the id RENAME-INVARIANT
+ *   (interfaces §2/§3). Omit it ONLY for a first build: a caller that has a stored registry and
+ *   does not pass it silently re-mints every renamed term's id and the rename becomes invisible
+ *   (measured: 3 added + 3 removed where §4 promises 3 matched).
+ * @returns {{schemaVersion:number, generatedFrom:string[], terms:Array<object>}} TERMS,
+ *   conforming to `system/schemas/package/terms.schema.json`. Every entry is
+ *   `status:"confirmed"` — being in the map IS the instructor's authorization — and
+ *   `lifecycle:"active"`; the grammar has no lifecycle marker, so a term is retired to
+ *   `deprecated-but-teach`/`superseded` by a later edit, never by this parser.
+ */
+export function buildTerms(conceptMaps, priorTerms) {
+  return buildTermsReport(conceptMaps, priorTerms).terms;
 }
 
 /**
@@ -334,29 +606,17 @@ export function buildTerms(conceptMaps) {
  * true homograph (one word, two meanings, one scope) cannot be told apart from a label alone;
  * disambiguating it needs the claim's context and belongs to M2, not here.
  *
+ * A PROJECTION of `candidatesFor` (it takes the first — that IS the tie-break above), and one
+ * implementation on purpose: §2's rename rule needs to know HOW MANY terms a label set overlaps,
+ * because an ambiguity must be refused rather than tie-broken. Same scope rule, one home (§5d).
+ *
  * @param {object} terms TERMS object
  * @param {string} label the surface form found in text
  * @param {string} [scope] the scope to resolve within (e.g. "chapter-3"); omit for any scope
  * @returns {string|null} the term id, or null when nothing matches
  */
 export function resolve(terms, label, scope) {
-  const key = normalizeLabel(label);
-  if (!key) return null;
-
-  const matches = (terms?.terms ?? []).filter((t) =>
-    labelsOf(t).some((l) => normalizeLabel(l) === key),
-  );
-  if (matches.length === 0) return null;
-  if (scope === undefined || scope === null || scope === "") return matches[0].id;
-
-  const inScope = matches.find((t) => (t.scope ?? []).includes(String(scope)));
-  if (inScope) return inScope.id;
-
-  const global = matches.find((t) => {
-    const s = t.scope ?? [];
-    return s.length === 0 || s.includes("course");
-  });
-  return global ? global.id : null;
+  return candidatesFor(terms, label, scope)[0]?.id ?? null;
 }
 
 /**

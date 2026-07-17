@@ -485,3 +485,49 @@ test("SEMANTIC_INDEX_PATHS has ONE home — coherence.mjs imports it, never resp
     assert.equal(src.includes(`"${rel}"`), false, `coherence.mjs respells ${rel}; import the constant`);
   }
 });
+
+// ---------------------------------------------------------------------------------------------
+// THE PRIOR-REGISTRY WARNING — added 2026-07-17, closing a mutant that SURVIVED THE FULL SUITE.
+//
+// `indexGaps` branches on `storedTerms.error !== null`. Mutating that to `!storedTerms.index`
+// survived all 438 tests: behaviorally it emits the "prior term registry is unreadable" warning on
+// every legitimate FIRST BUILD, where `index` is null and nothing is wrong. Alarm fatigue plus a
+// garbled message ("null — it is the prior term registry…"), and no test could see it, because the
+// warning channel had no test at all.
+//
+// This is the presence-vs-truthiness trap that has now caught SIX agents on this project — one of
+// them inside a test helper written to check for that very trap. It is the reflex, not an ignorance
+// error, which is exactly why it needs a test rather than a comment: `error: null` (first build,
+// silence) and `error: "<reason>"` (memory unreadable, speak up) are DIFFERENT ANSWERS, and `index`
+// is null in both.
+//
+// The stakes are specific: the stored registry is what makes a term id rename-invariant (§2). If it
+// is unreadable and we say nothing, every id is silently re-minted from its current label and a
+// later rename moves the claim ids that depend on it — the exact defect the mint-once rule fixed.
+// ---------------------------------------------------------------------------------------------
+
+test("a FIRST build warns nothing about the prior registry — silence is the correct answer", () => {
+  const root = tempPackage(); // no metadata/TERMS.json yet: loadSemanticIndex -> {index:null, error:null}
+  const index = computeSemanticIndex(root);
+  const priorWarnings = index.warnings.filter((w) => /prior term registry/i.test(w));
+  assert.deepEqual(
+    priorWarnings,
+    [],
+    "a first build has no prior registry BY DESIGN; warning here trains the author to ignore warnings",
+  );
+  // The negative that makes the assertion mean something: the machinery is live, not merely quiet.
+  assert.ok(index.terms, "the build must actually have produced a registry");
+});
+
+test("a CORRUPT prior registry warns exactly once, and names the consequence", () => {
+  const root = tempPackage();
+  writeSemanticIndex(root, computeSemanticIndex(root)); // establish a real prior
+  fs.writeFileSync(path.join(root, TERMS_PATH), "{ not json\n"); // the memory is now unreadable
+  const index = computeSemanticIndex(root);
+  const priorWarnings = index.warnings.filter((w) => /prior term registry/i.test(w));
+  assert.equal(priorWarnings.length, 1, "unreadable memory must be reported, once");
+  // It must name what SILENTLY happened, not merely that a file is bad: ids were re-minted, so a
+  // later rename will move claim ids. An author who does not know that cannot act on the warning.
+  assert.match(priorWarnings[0], /re-?minted/i);
+  assert.doesNotMatch(priorWarnings[0], /^null/, "a truthiness read garbles the reason into `null`");
+});

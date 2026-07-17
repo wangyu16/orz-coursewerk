@@ -101,7 +101,7 @@
       "id": "repo:docs/semantic-index-interfaces.md",
       "path": "docs/semantic-index-interfaces.md",
       "type": "documentation",
-      "hash": "1270c86e87643c416a1aafaa744021274630d9df6078c7d1515369b5900d6a3e"
+      "hash": "cb760df54452ca1b643048ee22c989bdbb98c7ae208c98b7ab2aa75942f60b1c"
     },
     {
       "id": "repo:docs/semantic-index-spec.md",
@@ -389,7 +389,7 @@
       "id": "repo:scripts/lib/semantic_index.mjs",
       "path": "scripts/lib/semantic_index.mjs",
       "type": "kernel",
-      "hash": "354c27c34b034063dada86e0fb8585bf9a760248aaf447d7ee461947136e26e7"
+      "hash": "da0248cb6bb2ccb4b2bf3c51bc9c69a75179ed0e336ba11021bf2d8a07c2a9b3"
     },
     {
       "id": "repo:scripts/lib/slug.mjs",
@@ -419,7 +419,7 @@
       "id": "repo:scripts/lib/terms.mjs",
       "path": "scripts/lib/terms.mjs",
       "type": "kernel",
-      "hash": "f6feb5ad1d2108153875fc79c839cb2df48cfa92d6a6b8d9bc4985d54c6c818e"
+      "hash": "b08e75f2d205bfeafbb5c7c4f0eb02cb86c114a7df494346b4afb9c0841fdc47"
     },
     {
       "id": "repo:scripts/lib/units.mjs",
@@ -839,7 +839,7 @@
       "id": "repo:tests/integration-study-pairs.test.mjs",
       "path": "tests/integration-study-pairs.test.mjs",
       "type": "test",
-      "hash": "9b9d8f45eadf45c12b45557e3ae705810d33c132e10031235ea4cac96929c852"
+      "hash": "ca10b7a3f148f2fd13d223a5aae2bd7fb5d0e6bbba1cc2d4ab4c74ddf3a25b07"
     },
     {
       "id": "repo:tests/key-fact-bindings.test.mjs",
@@ -875,7 +875,7 @@
       "id": "repo:tests/semantic-index-artifact.test.mjs",
       "path": "tests/semantic-index-artifact.test.mjs",
       "type": "test",
-      "hash": "1cf49f7c2509e072018f4ce6039dff399d2ee2726afe8a77588336a2ad44f071"
+      "hash": "673ef3a31333fbbfdc58830e0adae06684b2110186a9fbc5b3ffe869f15eaf8c"
     },
     {
       "id": "repo:tests/site.test.mjs",
@@ -905,7 +905,7 @@
       "id": "repo:tests/terms.test.mjs",
       "path": "tests/terms.test.mjs",
       "type": "test",
-      "hash": "78f96cb328ca944dcd92ae74095e489a7f9ca3a8c294f54d38a77afb6d8816b9"
+      "hash": "5181437c7b2c5de2ac0efb054c23d61ff3e1b8c8ce6714670b5f2e66fdd2615e"
     },
     {
       "id": "repo:tests/units.test.mjs",

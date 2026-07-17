@@ -91,11 +91,50 @@ vocabulary explicit, human-authored, and deterministically parseable — and it 
 ## 2. Stable id schemes (FROZEN)
 | Kind | Scheme |
 |---|---|
-| term | `term.<slug(preferredLabel)>` |
+| term | `term.<slug(preferredLabel-AT-FIRST-SIGHT)>` — **MINTED ONCE, NEVER RE-MINTED ON RENAME** |
 | **chapter** | **`chapter.<chapter-slug>`** — [ADDED 2026-07-17, M13] a prereq edge needs TWO endpoints and the near end is the CHAPTER; §2 minted no id for one, so §1's `## Prerequisites → incoming prereq edges` row was **not implementable as written**. |
 | concept | `concept.<chapter-slug>.<n>` · course: `concept.course.<n>` |
 | objective | `objective.<chapter-slug>.<n>` · course: `objective.course.<n>` |
 | misconception | `misconception.<chapter-slug>.<n>` · course: `misconception.course.<n>` |
+
+### The term id is MINTED ONCE  [AMENDED 2026-07-17 — the study pairs proved the rename BROKEN end-to-end]
+As frozen, §2 and §10 dec. 3(c) were **individually correct and jointly unsatisfiable**: the id EMBEDDED the
+preferredLabel, and TERMS is REGENERATED from the map. So a rename re-minted the term id → moved M2's
+`identityLabel` (a hash of sorted term **ids**) → moved the claim id → **`RENAME` never fired, and `label` never
+got a matched pair to be observed on.** Measured: a rename yields **3 added + 3 removed** where §4 promises 3
+matched. That killed the IUPAC terminology-migration case — the scenario this feature exists for.
+
+**This is §5e at SYSTEM scale, and the first instance spanning two modules:** the term id served as an identity
+key (M2 hashes it) while *deriving from the change signal* (M1's preferredLabel). Every earlier §5e instance sat
+inside one file, where its author could see both halves. Here neither module's own review could — M1 was right
+that a rename must be observable, M2 was right to key identity on ids, and the defect lived in the seam.
+**§4b's rename-invariance held only via `setPreferred`, which NOTHING PERSISTED** — §4b reasoned correctly about
+an API nobody could reach.
+
+**The rule:** `buildTerms(conceptMaps, priorTerms)` — a term id is minted from its preferredLabel **the first
+time the term is seen** and is **never re-minted**. On a later build, a map entry whose label set (preferred +
+aliases) overlaps **exactly one** prior term *in the same scope* **RESOLVES TO THAT TERM AND KEEPS ITS ID**;
+only the `preferredLabel`/`aliases` update. §1's grammar already guarantees the hinge: a rename keeps the old
+label as an alias (`- **fusion point** (melting point, …)`), so the overlap exists by construction — **and if an
+author deletes the old label instead of demoting it to an alias, that is NOT a rename; it is a remove + an add,
+and reporting it as such is correct.**
+- **Overlapping ≥2 prior terms ⇒ AMBIGUOUS ⇒ adopt no prior id, mint fresh, and REPORT.** A silent merge of two
+  concepts is worse than a missed rename: it would fold two distinct teachings into one node and every downstream
+  check would enforce the merge. ("Mint nothing" would be worse still — dropping the term destroys data: claims
+  lose their `termRefs` and `label` moves anyway. Refuse the *adoption*, never the term.)
+- **CHANGE-WINS when two entries continue one prior term** [FROZEN 2026-07-17, the fix's own implementation
+  exposed this]: the course map and a chapter map may both declare a term, and an instructor renames it in ONE of
+  them — so two entries overlap one prior and §2 said both "keep its id" and "preferredLabel updates" without
+  saying **which update wins**. The prior's label is the STATUS QUO; an entry differing from it is the NEW
+  INFORMATION, so **the differing entry's label wins**. First-wins would silently swallow the rename (3 matched,
+  no `RENAME` — the defect restored); last-wins would depend on filename sort order, i.e. on an accident rather
+  than an authority. Change-wins is order-independent and is what makes the rename observable at all.
+- **The id space is APPEND-ONLY**: a retired id is never recycled. Otherwise `identityLabel` sits still while the
+  vocabulary beneath it changes meaning — a silent merge across time, which is the same defect with a delay.
+- The id is thereafter a **historical artifact** (`term.melting-point` may carry preferredLabel "fusion point").
+  That is correct and normal for an identity key — it is a handle, not a display name. Never "tidy" it to match.
+- `priorTerms` comes from the **stored `TERMS.json`** (M14). The registry that made this fixable did not exist
+  when §2 was frozen; the memory the design assumed was simply absent.
 
 **`<n>` is the item's POSITION in the list (1-based), NEVER the typed list marker.** [FROZEN 2026-07-17, M13]
 `1. 1. 1.` is ordinary markdown, and a hand-edited map routinely carries `4.` where `3.` was deleted —
@@ -133,7 +172,11 @@ export function danglingSpineRefs(spine, refs) // -> sorted unique refs with no 
   // The gate asks: danglingSpineRefs(spine, claim.spineRefs)  (§5b rows 1-2, previously uncomputable)
 
 // M1 lib/terms.mjs
-export function buildTerms(conceptMaps)        // [{file, text, scope}] -> TERMS (schema: terms.schema.json)
+export function buildTerms(conceptMaps, priorTerms)   // [{file,text,scope}] -> TERMS (terms.schema.json)
+  // `priorTerms` (optional; the STORED TERMS.json, M14) is what makes the id RENAME-INVARIANT — see §2.
+  // Without it the id is re-minted from the new label and the rename is invisible (measured: 3 added +
+  // 3 removed where §4 promises 3 matched). Omit it ONLY for a first build; a caller that has a stored
+  // registry and does not pass it silently reintroduces the defect.
 export function parseSections(text)            // -> Map<lowercased heading, body lines>   [EXPORTED for M13]
 export function listItems(lines)               // -> the list grammar                      [EXPORTED for M13]
   // Both exported rather than re-implemented in M13: one document, ONE parser. Every node-bearing

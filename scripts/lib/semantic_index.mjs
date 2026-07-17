@@ -64,7 +64,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { readConceptMaps, buildSpine } from "./spine.mjs";
-import { buildTerms } from "./terms.mjs";
+import { buildTermsReport } from "./terms.mjs";
 import { extractClaims } from "./claims.mjs";
 
 export const SPINE_PATH = "metadata/SPINE.json";
@@ -91,8 +91,21 @@ const serialize = (value) => JSON.stringify(value, null, 2) + "\n";
  * empty spine is not a bug in this module; it is a fact about the package, and the person
  * running `reindex` is the only one who can fix it.
  */
-function indexGaps(conceptMaps, spine, terms, claims) {
+function indexGaps(conceptMaps, spine, terms, claims, storedTerms, termsReport) {
   const warnings = [];
+  // THE STORED REGISTRY IS AN INPUT NOW, so its absence-vs-corruption distinction is load-bearing
+  // (see `loadSemanticIndex`): `index: null, error: null` is a legitimate FIRST BUILD and says
+  // nothing; `error` set means the memory that makes a term id rename-invariant is unreadable, and
+  // the rebuild below has silently re-minted every id from its label. Branch on PRESENCE of the
+  // error, never on truthiness of the index — an empty registry is a value, not an absence.
+  if (storedTerms.error !== null) {
+    warnings.push(
+      `${storedTerms.error} — it is the prior term registry, so every term id was RE-MINTED from ` +
+        "its current label. A rename in a concept map will move the claim ids that depend on it " +
+        "(interfaces §2). Delete it and reindex to re-baseline, or restore it from git.",
+    );
+  }
+  for (const a of termsReport.ambiguous) warnings.push(`concepts/: ${a.reason}`);
   if (conceptMaps.length === 0) {
     warnings.push(
       "concepts/: no concept maps found. The spine is EMPTY, so every spineRef in this package " +
@@ -142,10 +155,32 @@ function indexGaps(conceptMaps, spine, terms, claims) {
 export function computeSemanticIndex(root) {
   root = path.resolve(root);
   const conceptMaps = readConceptMaps(root);
+  // THE STORED REGISTRY IS AN INPUT (interfaces §2, amended 2026-07-17). A term id is minted from
+  // its preferredLabel ONCE and never re-minted, so a rebuild must be handed the ids the last one
+  // minted or a rename in `## Key terms` re-mints them, moves M2's `identityLabel`, moves the claim
+  // id, and the rename that the `label` fingerprint exists to make observable is reported as 3
+  // removed + 3 added instead. §3 is explicit that a caller holding a stored registry and not
+  // passing it silently reintroduces that defect — and THIS is that caller: nothing else in the
+  // system sits between the artifact on disk and `buildTerms`.
+  //
+  // It does not make the compute impure or irreproducible: TERMS.json is part of the package's own
+  // bytes, exactly like the maps. Same bytes in, same bytes out. And it is idempotent — a rebuild
+  // over an unchanged map resolves every term to its own prior id, so `reindex` twice is still the
+  // no-op the header promises. Absent (a first build) is an ANSWER, not a fault; corrupt is a fault
+  // and is warned about rather than read as absent.
+  const storedTerms = loadArtifact(root, TERMS_PATH);
   const spine = buildSpine(conceptMaps);
-  const terms = buildTerms(conceptMaps);
+  const termsReport = buildTermsReport(conceptMaps, storedTerms.index);
+  const terms = termsReport.terms;
   const claims = extractClaims(root, terms);
-  return { root, conceptMaps, spine, terms, claims, warnings: indexGaps(conceptMaps, spine, terms, claims) };
+  return {
+    root,
+    conceptMaps,
+    spine,
+    terms,
+    claims,
+    warnings: indexGaps(conceptMaps, spine, terms, claims, storedTerms, termsReport),
+  };
 }
 
 /** One stored artifact: `{file, index, error}` — the shape `loadComponentIndex` returns. */

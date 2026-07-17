@@ -9,14 +9,19 @@
 //   * The ground truth is PREREGISTERED in `scripts/study_pairs.mjs` — each case's expected flag
 //     set is a literal with a rationale, derived from the INTENT of the edit and spec §5's
 //     taxonomy, written before the harness was ever run. This file asserts against those literals.
-//   * **FIVE OF TWELVE CASES FAIL THEIR PREREGISTRATION, AND THIS FILE ASSERTS THEM AS FAILING.**
+//   * **FOUR OF TWELVE CASES FAIL THEIR PREREGISTRATION, AND THIS FILE ASSERTS THEM AS FAILING.**
 //     It does not "expect" the broken behavior in the sense of blessing it: it pins the mismatch,
 //     names the finding, and makes the day somebody FIXES it a loud test failure that says so.
 //     The alternative — quietly editing the expectation to match the output — yields a green suite,
 //     a recall of 1.0, and a lie. It is indistinguishable from fabrication from the outside and
 //     from bug-fixing from the inside, which is exactly what spec §6.9 says about this project's
 //     own manuscript: "adjusting a check so our own product scores better in our own paper".
-//     An honest 0.545 recall is a result. A fitted 1.0 is a fraud with a timer on it.
+//     An honest 0.818 recall is a result. A fitted 1.0 is a fraud with a timer on it.
+//   * **IT WAS FIVE, AND THE MECHANISM WORKED.** On 2026-07-17 FINDING 1 (the rename) was fixed in
+//     interfaces §2 and `lib/terms.mjs`; the pin failed, loudly, and said so. Recall moved 0.545 ->
+//     0.818 because the SYSTEM moved: not one `expect` literal in `scripts/study_pairs.mjs` was
+//     touched, and the four cases that still fail still fail. That is the whole design of this file
+//     — a preregistration you cannot edit is only worth something if it is allowed to be MET.
 //   * The two INDEPENDENTLY VERIFIED ANCHORS are asserted FIRST, before any metric. If the harness
 //     disagrees with them, the harness is wrong, and every number below it is worthless. They are
 //     the calibration, and calibration comes before measurement.
@@ -194,43 +199,60 @@ test("real: an objective ADD and an objective REMOVE both RECHECK, and nothing e
   assert.equal(remove.observedFlags, 1);
 });
 
-test("FINDING 1 (headline): a term RENAME does not survive the only path an instructor has", () => {
-  // PREREGISTERED: 3 claims, ids PRESERVED, verdict RENAME. That is not an opinion — it is
-  // interfaces §4's identity table ("rename -> same id") and spec §5's label-only row, and §4b
-  // exists for no other purpose than to make it true.
+test("FINDING 1 (headline, RESOLVED 2026-07-17): a term RENAME survives the map-edit path", () => {
+  // THE PREREGISTRATION IS UNCHANGED — it was never in question. 3 claims, ids PRESERVED, verdict
+  // RENAME: interfaces §4's identity table ("rename -> same id"), spec §5's label-only row, and §4b,
+  // which exists for no other purpose than to make it true. What changed is that OBSERVED now MEETS
+  // it. This file's header said "the day someone fixes the rename, the test fails and says so";
+  // that day was 2026-07-17, the test failed, and this is it saying so.
   //
-  // OBSERVED: 0 of 3. Editing `## Key terms` in the concept map — the way spec §10 decision 3 says
-  // a rename happens — re-mints `term.melting-point` as `term.fusion-point`, because interfaces §2
-  // mints a term id from `slug(preferredLabel)` and TERMS is regenerated from the map. That moves
-  // `identityLabel` (the hash of sorted TERM IDS), so it moves the identity key, so it moves the
-  // claim id. Every claim mentioning the term reports removed+added and classifies RECHECK.
+  // WHAT WAS BROKEN: §2 minted `term.<slug(preferredLabel)>` while spec §10 dec. 3(c) REGENERATES
+  // TERMS from the map — individually correct, jointly unsatisfiable. Renaming in `## Key terms`
+  // re-minted `term.melting-point` as `term.fusion-point`, which moved `identityLabel` (the hash of
+  // sorted TERM IDS), which moved the claim id: 3 removed + 3 added, classified RECHECK, and the
+  // `label` layer never got a matched pair to be observed on.
   //
-  // The `label` fingerprint — the layer built to make a rename OBSERVABLE — never gets a matched
-  // pair to be observed on. RENAME is unreachable from a package edit.
-  //
-  // THE FIX IS A CONTRACT CHANGE (interfaces §2's id scheme) AND IS NOT THIS FILE'S. When it
-  // lands, this test MUST fail — and that failure means "the preregistration now holds; delete
-  // this test and let the real assertion above stand".
+  // WHAT FIXED IT: §2 amended — the id is minted ONCE and never re-minted. `buildTerms(maps,
+  // priorTerms)` takes the STORED TERMS.json (the memory the design assumed and did not have), and
+  // an entry whose label set overlaps exactly one prior term keeps that term's id. §1's grammar
+  // guarantees the hinge: a rename keeps the old label as an alias, so the overlap exists by
+  // construction. `term.melting-point` now carries preferredLabel "fusion point" — a historical
+  // artifact, and correct: an identity key is a handle, not a display name.
   const r = run("real-term-rename");
-  assert.equal(r.matchesPreregistration, false, "FINDING 1: observed != preregistered");
-  assert.equal(r.detected, 0, "RECALL 0/3 on this case");
-  assert.deepEqual(r.missed.sort(), [
-    "practice/phase-change.md#practice-phase-change#1|matched",
-    "study-guide/phase-change.md#melting-point-of-water#1|matched",
-    "study-guide/phase-change.md#objectives#1|matched",
-  ]);
-  // Not one claim was matched across the rename: every one is an add or a remove.
-  assert.equal(r.observations.every((o) => o.lifecycle !== "matched"), true, "no claim identity survived");
-  assert.equal(r.observedFlags, 6, "3 claims -> 3 removed + 3 added");
+  assert.equal(r.matchesPreregistration, true, "FINDING 1 RESOLVED: observed == preregistered");
+  assert.equal(r.detected, 3, "RECALL 3/3 on this case");
+  assert.deepEqual(r.missed, [], "nothing preregistered is missed");
+  assert.deepEqual(r.unexpected, [], "and nothing else is dragged in: objectives#2 mentions no term");
+  assert.deepEqual(r.wrongVerb, []);
+
+  // THE TWO PROPERTIES, ASSERTED SEPARATELY, BECAUSE EITHER ALONE IS HALF A FIX. §4b's whole
+  // content is that an IDENTITY KEY and a CHANGE SIGNAL have opposite requirements over the same
+  // projection — so identity holding is worth nothing if the change stopped being observable, and
+  // vice versa. An id scheme that ignored the label would hold identity and go silent; the scheme
+  // that was frozen made the change observable and destroyed identity. Both, or neither.
+  assert.equal(r.observedFlags, 3, "3 claims -> 3 flags, not 3 removed + 3 added");
   assert.equal(
-    r.observations.every((o) => o.verdict === "RECHECK"),
+    r.observations.every((o) => o.lifecycle === "matched"),
     true,
-    "an absent side moves all five layers, so `spine` wins precedence — RENAME is never emitted",
+    "IDENTITY HELD: every claim mentioning the term matched across the rename — 0 added, 0 removed",
   );
   assert.equal(
-    r.observations.some((o) => o.verdict === "RENAME"),
+    r.observations.every((o) => o.verdict === "RENAME"),
+    true,
+    "THE CHANGE IS OBSERVABLE: `label` moved and won precedence on all three — spec §5's label-only row",
+  );
+  assert.equal(
+    r.observations.every((o) => o.layer === "label"),
+    true,
+    "and it is the VOCABULARY layer that moved — not `spine` winning because a side was absent",
+  );
+  // The negative that proves the layer split is real and not a rename painted over everything:
+  // `content` must NOT move. Both labels resolve to the same id, so the semantic core is identical
+  // — that is M3's `foldTerms` earning its keep, and it is why the verb is RENAME and not ESCALATE.
+  assert.equal(
+    r.observations.some((o) => o.layer === "content"),
     false,
-    "the whole terminology-migration (IUPAC) case is unreachable end to end",
+    "a rename changes what the term is CALLED, not what the claim SAYS",
   );
 });
 
@@ -314,34 +336,47 @@ test("apparatus: the headline metrics are what they are", () => {
   const m = runStudyPairs().metrics;
   // Pinned so a regression, or an improvement, is loud. NOT fitted: each number is the sum of the
   // per-case results above, every one of which is preregistered and reasoned in the source.
-  assert.equal(m.false_flag_rate.value, 0.125, "3/24 — one case, FINDING 3");
-  assert.equal(m.impact_detection_recall.value, 0.5455, "6/11 — the two 0-recall cases are FINDINGS 1 and 2");
-  assert.equal(m.propagation_correctness.value, 1, "6/6 of the flags we DID detect carry the right verb");
+  assert.equal(m.false_flag_rate.value, 0.125, "3/24 — one case, FINDING 3; the rename fix moved nothing here");
+  assert.equal(
+    m.impact_detection_recall.value,
+    0.8182,
+    "9/11 — was 6/11 until FINDING 1 was fixed (+3, the rename case); the one 0-recall case left is FINDING 2",
+  );
+  assert.equal(m.propagation_correctness.value, 1, "9/9 of the flags we DID detect carry the right verb");
   // propagation_correctness reads perfectly and must never be quoted alone: its denominator is the
-  // DETECTED set, so the two cases that detected nothing cannot lower it. Recall and correctness
-  // are one result in two halves.
-  assert.equal(m.propagation_correctness.detectedFlags, 6);
+  // DETECTED set, so the case that detected nothing cannot lower it. Recall and correctness are one
+  // result in two halves.
+  assert.equal(m.propagation_correctness.detectedFlags, 9);
   assert.ok(m.impact_detection_recall.value < 1, "spec §7 targets full recall; it is not met");
 });
 
-test("apparatus: FIVE of twelve cases fail their preregistration, across FOUR named findings", () => {
+test("apparatus: FOUR of twelve cases fail their preregistration, across THREE named findings", () => {
   // The count is stated exactly, because "some cases fail" is how a mismatch becomes background
-  // noise. Five cases, four findings — the two value-change cases mismatch for the SAME reason
+  // noise. Four cases, three findings — the two value-change cases mismatch for the SAME reason
   // (FINDING 4's one-hop over-reach), which is why the finding count is lower than the case count
   // and why both numbers are reported rather than the flattering one.
+  //
+  // It was FIVE cases across FOUR findings until 2026-07-17, when FINDING 1 (the rename) was fixed
+  // in interfaces §2 and `lib/terms.mjs`. The count moved because the SYSTEM moved: not one
+  // expectation in `scripts/study_pairs.mjs` was touched, and the three that remain are still
+  // failing, still named, still reported.
   const report = runStudyPairs();
   assert.deepEqual(
     report.mismatches.map((x) => x.case).sort(),
     [
       "null-orz-container", // FINDING 3 — an orz container bump moves `content`
       "real-reorder", // FINDING 2 — a reorder is a mass delete-and-recreate
-      "real-term-rename", // FINDING 1 — a rename does not survive the map-edit path
       "real-value-change", // FINDING 4 — one-hop co-mention over-reach
       "real-value-change-authorized", // FINDING 4 again — same over-reach, same edit
     ].sort(),
   );
+  assert.equal(
+    report.mismatches.some((x) => x.case === "real-term-rename"),
+    false,
+    "FINDING 1 is fixed: the rename case now meets the preregistration it was pinned as failing",
+  );
   assert.equal(report.cases.length, 12);
-  assert.equal(report.cases.filter((c) => c.matchesPreregistration).length, 7);
+  assert.equal(report.cases.filter((c) => c.matchesPreregistration).length, 8);
 });
 
 test("apparatus: unreachable cases are DECLARED, never silently dropped", () => {
@@ -367,9 +402,21 @@ test("apparatus: 2 of the 5 fingerprint layers are CONSTANT on this fixture (FIN
   assert.equal(seen.has("content"), true);
   assert.equal(seen.has("format"), false, "format never WINS precedence — it is never the report");
   assert.equal(
-    [...seen].every((l) => ["content", "spine"].includes(l)),
+    [...seen].every((l) => ["content", "label", "spine"].includes(l)),
     true,
-    `only content and spine are ever reported; observed: ${[...seen].sort().join(", ")}`,
+    `only content, label and spine are ever reported; observed: ${[...seen].sort().join(", ")}`,
+  );
+  // `label` JOINED THIS SET on 2026-07-17, and it is the FINDING-1 fix showing up in the coverage
+  // rather than in a metric. Before the fix a rename destroyed claim identity, so no matched pair
+  // existed for `label` to be observed on and the layer was unreachable end to end — measured, not
+  // asserted: the set was {content, spine}. It is now reported on a MATCHED claim, which is the
+  // only way it can ever be reported. The bound that remains is `spine` + `provenance` (below).
+  assert.equal(seen.has("label"), true, "the rename fix made the vocabulary layer reachable");
+  const labelReports = CASES.flatMap((c) => runCase(c).observations).filter((o) => o.layer === "label");
+  assert.equal(
+    labelReports.every((o) => o.lifecycle === "matched"),
+    true,
+    "`label` is only ever reported on a claim whose identity SURVIVED — that is what §4b buys",
   );
   // `spine` appears ONLY as the precedence winner on an added/removed claim (an absent side moves
   // all five layers) — never because a spineRef actually changed. That is not spine coverage.
