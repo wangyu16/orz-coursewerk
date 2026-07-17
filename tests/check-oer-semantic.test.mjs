@@ -360,13 +360,38 @@ test("BACKWARD COMPAT: a package with NO semantic artifacts is byte-identical to
   const before = run(baselineGate(), "base");
   const after = run(CHECK, "mine");
 
-  // ALL THREE surfaces, byte for byte. The JSON alone would miss a stray report line, and the
-  // report alone would miss a new key — and either one makes "additive" mean "different" to a
-  // caller that diffs, pins, or greps this output.
+  // THE MACHINE surfaces, byte for byte: a caller that diffs, pins, or greps this output must not
+  // see "additive" mean "different".
   assert.equal(after.json, before.json, "the --json blob must not gain a byte");
-  assert.equal(after.report, before.report, "the --report must not gain a byte");
   assert.equal(after.stdout, before.stdout, "stdout must not gain a byte");
   assert.equal(after.status, before.status, "…and the exit code is the gate's actual contract");
+
+  // THE HUMAN report is deliberately NOT byte-identical, and this assertion was WEAKENED ON PURPOSE
+  // (2026-07-17) after the walkthrough found the defect it was protecting.
+  //
+  // The original asserted the report gained no byte either. That was right when a package without a
+  // semantic index was a LEGACY package. It is wrong now: PROCEDURE Stage 4 REQUIRES
+  // `index:semantic`, so a package without one is a SKIPPED STEP — and the report said nothing at
+  // all, because `semanticAudit`'s reason string was computed and then discarded. Silence is
+  // indistinguishable from "there is no such feature", which is this project's signature defect
+  // ("looks implemented, isn't") — self-inflicted, in the report of the very gate built to catch it.
+  //
+  // So: machine output frozen, human output must SPEAK. The near-verbatim scan has always done
+  // exactly this ("- not run (<reason>). Pass --inputs …") and is the precedent.
+  const beforeLines = before.report.split("\n");
+  const afterLines = after.report.split("\n");
+  const gained = afterLines.filter((l) => !beforeLines.includes(l));
+  assert.notEqual(gained.length, 0, "the human report MUST say the layer did not run — silence is the defect");
+  const advisory = gained.join("\n");
+  assert.match(advisory, /not run/i);
+  assert.match(advisory, /index:semantic/, "and it must NAME THE COMMAND that fixes it, not merely complain");
+  // Nothing else moved: removing the advisory restores the old report exactly, so this is a stated
+  // exception and not a licence to drift.
+  assert.deepEqual(
+    afterLines.filter((l) => !gained.includes(l)),
+    beforeLines,
+    "the report gains the advisory and NOTHING else",
+  );
 
   // The layer is OFF, not merely quiet — and it emits nothing into a package that never asked.
   assert.equal(JSON.parse(after.json).semantic, undefined, "no semantic block at all");

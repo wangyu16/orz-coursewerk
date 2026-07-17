@@ -1047,6 +1047,19 @@ if (reportPath) {
     for (const w of semantic.warnings) L.push(`  - warn ${w}`);
     for (const item of semantic.queue.items.slice(0, 20)) L.push(`  - ${item.severity.toUpperCase()} ${item.kind} — ${item.evidence[0]}`);
     if (queueEmission) L.push(`- queue written to \`${queueEmission.path}\`${queueEmission.committed ? " (committed)" : ""}.`);
+  } else {
+    // SAY SO. The JSON stays byte-identical for machine consumers (spec §6.2), but a HUMAN reading the
+    // report must never meet silence here: PROCEDURE Stage 4 requires `index:semantic`, so a package
+    // without it is a skipped step, not a legacy package. Silence is indistinguishable from "there is no
+    // such feature" — which is this project's signature defect, and it would be self-inflicted in the
+    // report of the very gate built to catch it. `semanticAudit` has always produced this reason; it was
+    // simply discarded. The near-verbatim scan below gets this right and is the precedent copied here.
+    L.push("## Semantic index (declarations, spine references, derivations)");
+    L.push(`- **not run** (${semantic.reason})`);
+    L.push(
+      "- Until it runs there is no \"before\" to compare against: a rename cannot be detected, and nothing " +
+        "can tell a rephrase from a fact change.",
+    );
   }
   L.push("## Near-verbatim vs source");
   L.push(`- source corpus: ${verbatim.corpus?.ready ? "ready" : "not ready"}; automatic: ${(verbatim.corpus?.automaticSourceIds || []).join(", ") || "none"}; human-attested: ${(verbatim.corpus?.attestedSourceIds || []).join(", ") || "none"}`);

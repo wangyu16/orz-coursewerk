@@ -110,6 +110,12 @@
       "hash": "acc74d28d9d055a344afb825736e127103429be0460cfe9fbc9923633c854551"
     },
     {
+      "id": "repo:docs/walkthrough.md",
+      "path": "docs/walkthrough.md",
+      "type": "documentation",
+      "hash": "c825f87d82a1dae81f857e6e109ca02d3e36e1d6294a956c593f4785c3fdb4f2"
+    },
+    {
       "id": "repo:docs/wikipedia-science-topic.md",
       "path": "docs/wikipedia-science-topic.md",
       "type": "documentation",
@@ -155,7 +161,7 @@
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "3c6fed9245bcb6819ae72b937033000a89e5340519efbf8923ce95dc993902c3"
+      "hash": "09b21c0f66e8d94e97b06819b95369322497c1be3358d97e86e9d22f09721429"
     },
     {
       "id": "repo:README.md",
@@ -209,7 +215,7 @@
       "id": "repo:scripts/check_oer.mjs",
       "path": "scripts/check_oer.mjs",
       "type": "executable",
-      "hash": "1b1a1fd37d82178cc56737dbfc2c67994f5ca0253e1a66ad18bd4c13817c9bd3"
+      "hash": "d37fb0e27bbea4eb8d87c1d8e88e60e78fa13b735ab6de6f34e013bee153bef6"
     },
     {
       "id": "repo:scripts/coursewerk_impact.mjs",
@@ -737,7 +743,7 @@
       "id": "repo:tests/check-oer-semantic.test.mjs",
       "path": "tests/check-oer-semantic.test.mjs",
       "type": "test",
-      "hash": "9187936903cc5aea90ab82b8581da62963ab764071e8765809473699da0086bd"
+      "hash": "352410398de67bc0fc390c0f4efa55af44013410eaaf5738b6c180bc65737181"
     },
     {
       "id": "repo:tests/claims.test.mjs",

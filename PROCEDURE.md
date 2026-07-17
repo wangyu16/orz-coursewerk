@@ -83,18 +83,42 @@ Write **`package/alembic.json`** (the manifest — see `format-contracts/deliver
 scope, chapter slugs, and the manifest.**
 
 ## Stage 2 — Course concept map ⏸
-Write `<root>/concepts/course.md` (`root=package` for public OER; `root=personal` otherwise): a course-wide
-concept map in **plain Markdown (no graphics)** —
-the major concepts and their dependency/reinforcement links, the logical teaching order, per-section
-objectives — plus an overall **summary** and **keywords/tags** for discovery. This is the backbone the
-chapters hang from. **Gate: confirm the logic backbone.**
+Write `<root>/concepts/course.md` (`root=package` for public OER; `root=personal` otherwise): the course-wide
+concept map, **plain Markdown (no graphics)**, following **`format-contracts/deliverables.md` §Concept maps
+EXACTLY** — that section is the authority for every heading, and this stage deliberately does not restate it
+(two authorities on one artifact drift, and this one already did).
+
+**This file is the SPINE, not a summary.** It is the instructor's decision about what is taught, to what depth,
+and in what order. Every other deliverable is derived FROM it, and the semantic index resolves every term
+through it. Its `## Concept sequence`, `## Objectives`, `## Key terms`, `## Misconceptions to surface` and
+`## Chapter sequence` are what Stage 5's gate reads. **A map missing them does not fail loudly — it silently
+indexes nothing**, and the package earns a clean bill of health from a blind spot.
+
+**The concept map is CO-CREATED.** The instructor supplies raw, messy intent — a syllabus dump, a topic list,
+last year's outline, a paragraph. **You standardize it into the canonical format; the instructor reviews and
+corrects.** That review is where their authority lands, so optimize for a human to eyeball and fix.
+- **A bare keyword dump (`adaptation; CRISPR array; spacer; …`) is an INPUT, not a section.** Promote each into
+  `## Key terms` with its preferred label, aliases and gloss. **Do NOT emit a `## Keywords` section** — two
+  vocabulary lists in one document are the same fact in two places; they drift, and nothing says which is the
+  authority. Aliases are also what make a later **rename** detectable, so a keyword dump silently costs the
+  instructor the ability to migrate terminology.
+- **NEVER invent spine content.** Standardizing means restructuring what the instructor SAID — never adding a
+  concept, objective, or misconception they did not. A fabricated node puts words in their mouth about their own
+  course, and every downstream check then enforces it as authoritative. When the input does not say: fewer
+  entries, and **ask**.
+
+**Gate: confirm the logic backbone.**
 
 ## Stage 3 — Per-chapter build (loop over the manifest's chapters)
 For each chapter `<slug>`, produce the **five deliverables** under the selected root (the `package/` paths below
 become `personal/` for private/restricted work). Honor `format-contracts/deliverables.md`
 and `skills/courseguide-standards` exactly):
-1. `package/concepts/<slug>.md` — chapter concept map, **plain Markdown, no graphics**: concepts,
-   links to prior/later chapters, logical order, per-section objectives. Readable raw.
+1. `package/concepts/<slug>.md` — chapter concept map, **plain Markdown, no graphics**. **THE CHAPTER'S SPINE
+   — follow `format-contracts/deliverables.md` §Concept maps EXACTLY** for the required sections
+   (`## Objectives`, `## Concept sequence`, `## Key terms`, `## Misconceptions to surface`,
+   `## Prerequisites`). The same rules as Stage 2 apply and are not optional here: **no `## Keywords`
+   section** (promote keywords into `## Key terms` with aliases + gloss), and **never invent a concept,
+   objective, or misconception the instructor did not state** — fewer entries, and ask. Readable raw.
 2. `package/study-guide/<slug>.md` — the **study guide**, rich **orz-markdown**: opens with objectives;
    explains along the concept-map logic; worked **example questions** (container tabs); figures via
    `oer-figures` (RDKit structures, matplotlib charts with real values, openly-licensed images, or the
@@ -207,13 +231,34 @@ Complete the mode-independent release reviews before indexing the accepted basel
    The record binds source and local-asset hashes plus a stable carrier fingerprint. Never have an agent invent
    the human name or attestation. Rebuild/review after a meaningful source, asset, or carrier change.
 
-After the first complete cross-deliverable coherence pass, initialize the component graph:
+After the first complete cross-deliverable coherence pass, index the accepted baseline — **both indexes,
+in this order, and both AFTER your last edit**:
 
 ```bash
-node scripts/index_components.mjs --root package --initialize
+node scripts/index_components.mjs --root package --initialize   # file-level: what depends on what
+npm run index:semantic -- --root package                        # claim-level: the SPINE/TERMS/CLAIMS baseline
 ```
 
-Use `personal` for private/restricted work. For every later edit, follow `docs/coherence-index.md`: generate the
+Use `personal` for private/restricted work.
+
+**ORDER IS LOAD-BEARING: edit, THEN index. Never index and then edit.** Both indexes record the bytes they
+read. Indexing before your last edit records a baseline of text that no longer exists, and the gate then
+reports a staleness failure that is *correct* — the index genuinely did not read those bytes. The same rule
+governs `bind:key-fact-review` above: **fix first, bind last.** A review certifies what it read.
+
+**What `index:semantic` is for, and why skipping it is not a small omission.** It writes
+`metadata/{SPINE,TERMS,CLAIMS}.json` — the **"before"** that every later edit is compared against. Without
+it there is no before, so:
+- the QA gate's semantic layer **does not run at all** (it degrades silently to the pre-semantic behavior
+  and says so in its report);
+- **a rename cannot be detected** — the stored `TERMS.json` is the memory that keeps a term id stable across
+  a rename, so without it every id is re-minted from its current label and the change is invisible;
+- **nothing can tell a rephrase from a fact change**, which is the whole point of the layer.
+
+Re-run it whenever you accept a new baseline. It is deterministic and safe to repeat: same package, byte-identical
+output, and it commits only its own three artifacts — never your work-in-progress.
+
+For every later edit, follow `docs/coherence-index.md`: generate the
 revision impact, revise/review the complete required set, regenerate the final plan, attest it, and refresh the
 index. Initialization creates the first coherent Git baseline; each accepted refresh creates a coherent-revision
 commit. User commits remain welcome, but do not replace the attested refresh. A stale or missing final index is
@@ -231,7 +276,13 @@ chapter's `study-guide/<slug>.md` present, no carriers or stray root files, rend
 you know it will **upload with zero friction**; **(B) OER quality** — attribution completeness,
 link/asset-path integrity, orz-syntax, the defined accessibility floor, leftover placeholders, format contracts; and
 **(C) copyright and high-risk factual assurance** — the `--inputs` flag runs a **near-verbatim scan** against the source materials, flagging
-prose copied too closely (rewrite it originally). **Fix every critical issue** and **re-run until
+prose copied too closely (rewrite it originally); and **(D) the semantic layer** — if the package has been
+indexed (Stage 4), the gate resolves every claim against the spine and reports **dangling references**
+(a declared anchor, `spineRef`, or `derivedFrom` pointing at nothing) and **refused declarations** (malformed,
+so the block silently fell back to the scan). These are all one shape: **the author asserted something and the
+system silently did nothing.** The findings land in `metadata/REVIEW_QUEUE.json` with a `burden` count — that
+number is the alarm-fatigue meter, and it is reported, not assumed. **If the report says the semantic layer did
+not run, you skipped `index:semantic` — go back to Stage 4.** **Fix every critical issue** and **re-run until
 `criticalTotal == 0`**. It also requires the current compact source record, mode-appropriate key-fact critique,
 accountable final author identity, media-rights receipts, and human visual-review record. Also confirm the carriers build cleanly: `node scripts/build_carriers.mjs` should
 report `failed: 0` (proves each lean source reassembles into a valid framework document). The report's
