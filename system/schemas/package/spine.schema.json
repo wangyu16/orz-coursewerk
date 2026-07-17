@@ -1,0 +1,193 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "metadata/SPINE.json — the concept-map SPINE: the instructor's own structure, projected",
+  "description": "The `chapter.*`/`concept.*`/`objective.*`/`misconception.*` namespace every spineRef in the package points into. Like TERMS, SPINE is a PURE PROJECTION of the concept maps and is ALWAYS derived, NEVER an authority: regenerate it any time; it cannot disagree with the maps because it has no independent existence. It exists so that one question is answerable at all — 'does this spineRef's target exist?' — which six consuming modules ask and, before M13, no code could refute. NOTHING here is inferred: a node comes from a list item under a section interfaces §1 names, or it does not exist. A fabricated node puts words in the instructor's mouth about what their own course teaches, and every downstream layer then reads the fabrication as authorization.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "nodes"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "generatedFrom": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The concept-map files this was derived from, IN THE ORDER GIVEN (not sorted) — SPINE is always derived, never an authority, and this is what keeps that honest. It is the one output the node sort cannot canonicalize, which is why the producer sorts its directory read: readdir order is unspecified, so an unsorted read would make this field disagree across filesystems."
+    },
+    "chapters": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Sorted chapter slugs, from `concepts/<slug>.md` (interfaces §1). `course` is EXCLUDED: it is a scope, not a chapter. This is the package's single answer to 'what is a chapter' — the `chapter.*` nodes are projected from it rather than re-derived (§5d: one fact, one home)."
+    },
+    "nodes": {
+      "type": "array",
+      "description": "Every spine node, sorted by (kind, scope, ordinal). THE set a spineRef resolves against.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "scope",
+          "ordinal",
+          "label",
+          "negative",
+          "file"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^(?:chapter\\.[^.]+|(?:concept|objective|misconception)\\.[^.]+\\.[0-9]+)$",
+            "description": "interfaces §2. `<kind>.<scope>.<n>`, or `chapter.<chapter-slug>`. Resolution is EXACT string equality — no case folding, no prefix match: every tolerance converts a typo'd bracket into a false authorization, and a dangling link that LOOKS approved is the fabrication §1's absent-spineRef rule exists to prevent."
+          },
+          "kind": {
+            "enum": [
+              "chapter",
+              "concept",
+              "objective",
+              "misconception"
+            ],
+            "description": "Which §1 section minted it. `chapter` is minted from the map FILE's existence (it is the near end of a declared prerequisite edge), not from any section."
+          },
+          "scope": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The chapter slug, or `course`. `course` IS A SCOPE, NOT A SPECIAL DOCUMENT (§2): the course map uses the same section grammar, so `objective.course.<n>` and `misconception.course.<n>` are real ids. Two grammars for one document kind would be §5d waiting to happen."
+          },
+          "ordinal": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "description": "The item's POSITION in its list, 1-based — NEVER the typed list marker (§2). `1. 1. 1.` is ordinary markdown and a hand-edited map routinely carries `4.` where `3.` was deleted; trusting the number would silently re-parent every claim under the item below it. `null` on a `chapter` node, which is not a list item and therefore HAS no position — emitted explicitly, because an absent field reads as 0 to a naive consumer."
+          },
+          "label": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The list item's text, verbatim (whitespace-collapsed). `null` on a `chapter` node: §1's chapter title needs a case-preserving h1, which M1's section splitter does not expose, and a second heading parser here would be §5d over a document M1 already owns."
+          },
+          "negative": {
+            "type": "boolean",
+            "description": "TRUE ON A MISCONCEPTION, AND ONLY THERE: the node states the WRONG belief — the thing the chapter exists to REFUTE. A consumer that forgets this enforces the misconception as truth: it would read `misconception.phase-change.1` ('Temperature always rises when heat is added.') as course doctrine and flag the correct teaching as an inconsistency, i.e. it would use the index to argue the student into the error. Emitted EXPLICITLY on every node, never left to a default — M1's `lifecycle` bug is precisely a naive read of an absent field, and the stakes here are higher."
+          },
+          "file": {
+            "type": "string",
+            "description": "The concept map this node came from, package-relative. Provenance, so a flag can name the file the instructor must edit."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "edges": {
+      "type": "array",
+      "description": "Prereq edges, sorted by (from, to). `{from, to}` reads 'from is a PREREQUISITE OF to'.",
+      "items": {
+        "type": "object",
+        "required": [
+          "from",
+          "to",
+          "kind",
+          "reason"
+        ],
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "The prerequisite. Always an existing node: an edge is minted only when BOTH ends resolve."
+          },
+          "to": {
+            "type": "string",
+            "description": "What depends on it — the next concept in sequence, or the `chapter.<slug>` a declared prerequisite feeds."
+          },
+          "kind": {
+            "const": "prereq"
+          },
+          "reason": {
+            "enum": [
+              "concept sequence order",
+              "declared prerequisite"
+            ],
+            "description": "Which §1 rule minted the edge: the intra-chapter `## Concept sequence` chain, or an explicit `[concept.x.n]` bracket in `## Prerequisites`. PROSE FOR THE HUMAN reading a receipt — the fact itself is in the fields."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "prerequisites": {
+      "type": "array",
+      "description": "`## Prerequisites` items, sorted by (scope, ordinal) — the RECORD, kept whether or not an edge was minted. This is the field that makes the refusal honest: it lets the gate ask the author for a bracket instead of guessing one for them, and it keeps a DANGLING bracket reportable. §5b's `derivedFrom` row is the counterexample — there a dangling ref mints no edge and leaves no trace, so the dependency the author asserted vanishes silently and the declaration LOOKS honoured. Refusing the edge is right; refusing it invisibly is the defect.",
+      "items": {
+        "type": "object",
+        "required": [
+          "scope",
+          "ordinal",
+          "text",
+          "ref"
+        ],
+        "properties": {
+          "scope": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The map that declared it — the near end's chapter."
+          },
+          "ordinal": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Position in the list, 1-based. Order only; prerequisites are not ranked."
+          },
+          "text": {
+            "type": "string",
+            "description": "The item's prose, bracket removed. PROSE ON PURPOSE: it is what the instructor wrote, and it is what a review flag shows them."
+          },
+          "ref": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The far end, from the OPTIONAL trailing `[concept.x.n]` — the same bracket `## Key terms` uses, reused rather than a second convention invented. ABSENT IS VALID AND HONEST: matching the prose to a concept needs the label-vs-sentence inference §1 forbids, and it WOULD misfire — the golden fixture's 'Temperature and thermal energy' overlaps `concept.phase-change.1`'s sentence. A fabricated prerequisite asserts a claim about the course's structure that the instructor never made."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "chapterSequence": {
+      "type": "array",
+      "description": "`## Chapter sequence` from the course map — inter-chapter order, in document order.",
+      "items": {
+        "type": "object",
+        "required": [
+          "ordinal",
+          "text",
+          "slug"
+        ],
+        "properties": {
+          "ordinal": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Position, 1-based. THE ORDER IS CARRIED HERE — so an unbindable entry still keeps its place in the sequence."
+          },
+          "text": {
+            "type": "string",
+            "description": "The item's prose, verbatim."
+          },
+          "slug": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The chapter this entry names: slugify its bold run and bind ONLY if `concepts/<slug>.md` exists — VERIFIED, never guessed (§1). `null` when nothing matches: an honest absence, never a phantom chapter and never a guess at the nearest one."
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

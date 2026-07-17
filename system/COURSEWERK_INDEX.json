@@ -101,7 +101,7 @@
       "id": "repo:docs/semantic-index-interfaces.md",
       "path": "docs/semantic-index-interfaces.md",
       "type": "documentation",
-      "hash": "7341a93d101fce856c8d61628f8160a2ba08b47c016f3f404575278ca75d1758"
+      "hash": "f85cae9a0cba27500b59434009eaf2d6e4cdb22e607262b980a38a9e520348ce"
     },
     {
       "id": "repo:docs/semantic-index-spec.md",
@@ -125,7 +125,7 @@
       "id": "repo:format-contracts/deliverables.md",
       "path": "format-contracts/deliverables.md",
       "type": "documentation",
-      "hash": "1998bf9b9fa63dc0d747acfd4825d39291bb9096377e6dec37fdd0eb3cfed6c0"
+      "hash": "0d7b2dc63367130939233c1b55971ae8ccd55f6d563133a9ed3fb32da9a6b64e"
     },
     {
       "id": "repo:GEMINI.md",
@@ -392,6 +392,12 @@
       "hash": "c438ee9d7e71532d0dab86c11c943c64e6b86529696f9535d32379a480cc588e"
     },
     {
+      "id": "repo:scripts/lib/spine.mjs",
+      "path": "scripts/lib/spine.mjs",
+      "type": "kernel",
+      "hash": "083d5f7c66f9ba043134cb8ea5f04a56f34e2ff48d6adb98814ae1105d9b314e"
+    },
+    {
       "id": "repo:scripts/lib/system_index.mjs",
       "path": "scripts/lib/system_index.mjs",
       "type": "kernel",
@@ -401,7 +407,7 @@
       "id": "repo:scripts/lib/terms.mjs",
       "path": "scripts/lib/terms.mjs",
       "type": "kernel",
-      "hash": "386931f7978e74af4899be990d35c5e84203905ff274ff3fde5d09fb3ad462ac"
+      "hash": "f6feb5ad1d2108153875fc79c839cb2df48cfa92d6a6b8d9bc4985d54c6c818e"
     },
     {
       "id": "repo:scripts/lib/units.mjs",
@@ -846,6 +852,12 @@
       "path": "tests/source-hygiene.test.mjs",
       "type": "test",
       "hash": "4495456f2107bb45b67b79399ee0c7e3a68a0f01c21676f92e1a8d7330521904"
+    },
+    {
+      "id": "repo:tests/spine.test.mjs",
+      "path": "tests/spine.test.mjs",
+      "type": "test",
+      "hash": "805edce9023cd5ac66612bbbe4464420436b3ec695f66f886758d39f5d6a6cae"
     },
     {
       "id": "repo:tests/system-index.test.mjs",

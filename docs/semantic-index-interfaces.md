@@ -21,16 +21,41 @@ Real packages already use a regular section structure — the parser targets exa
 | `# Concept Map — <Title>` | h1 | chapter title |
 | `## Source and scope` | prose | source refs (informational) |
 | `## Summary` | prose | — |
-| `## Prerequisites` | unordered list | incoming prereq edges |
+| `## Prerequisites` | unordered list, each item MAY carry a trailing `[concept.x.n]` | incoming prereq edge `concept.x.n → chapter.<slug>` — **only where the bracket is present** |
 | `## Objectives` | **ordered** list | `objective.<chapter-slug>.<n>` |
 | `## Concept sequence` | **ordered** list | `concept.<chapter-slug>.<n>` + intra-chapter order = prereq chain |
 | `## Key terms` **(NEW — required by M12)** | unordered list | `term.<slug>` (see grammar below) |
 | `## Misconceptions to surface` | unordered list | `misconception.<chapter-slug>.<n>` — **negative claims** |
 
 ### `concepts/course.md`
-`# Course Concept Map — <Title>`; `## Organizing question`; `## Summary`;
-`## Concept sequence` → `concept.course.<n>`; `## Chapter sequence` → inter-chapter order;
+**Same section grammar as a chapter map, with `scope: "course"`** (§2) — `## Objectives` →
+`objective.course.<n>`, `## Concept sequence` → `concept.course.<n>`, and so on. Plus:
+`# Course Concept Map — <Title>`; `## Organizing question`; `## Chapter sequence` → inter-chapter order;
 `## Key terms` (optional) → course-wide vocabulary.
+
+**`## Chapter sequence` binding** [FROZEN 2026-07-17, M13]: slugify each item's **bold run** and bind it
+to that chapter **only if `concepts/<slug>.md` exists** — verified, never guessed. No match ⇒ `slug: null`
+and NO phantom chapter; the item's order is still carried by its ordinal. (Same bold-run convention as
+`## Key terms`; stated here because §1 previously gave it only there, so M13 had to infer it.)
+
+### Prerequisites in `course.md` — RECORDS ONLY, no edges  [FROZEN 2026-07-17, M13]
+Making `course` a scope (§2) created an asymmetry: the same `## Prerequisites` line yields an edge in a
+chapter map and none in the course map, because a prereq edge's near end is `chapter.<slug>` and **course
+is not a chapter**. Resolved in favour of the asymmetry, deliberately: **a course's prerequisites are BY
+DEFINITION outside the course** ("Algebra II", "one year of biology"), so their far end has no node in this
+package and never can. Minting `chapter.course` to paper over it would assert the course is a chapter of
+itself. So course-map prerequisites are carried as `prerequisites[]` records and mint **no edge** — which
+is what they are: a statement to a human reader about entry requirements, not an intra-package dependency.
+Nothing is silent; the records are still reportable.
+
+### Prerequisites — why the bracket, and why no inference
+[ADDED 2026-07-17 — M13 found the row unimplementable] A prereq item is prose ("Temperature and thermal
+energy"). Matching that prose to a concept needs exactly the label-vs-sentence inference §1 forbids — and
+it **would** misfire: in the golden fixture that very item overlaps `concept.phase-change.1`'s sentence.
+So the far end comes from an **explicit bracket or not at all**, reusing `## Key terms`' convention rather
+than inventing a second one, and the near end is the new `chapter.<slug>` id. An item with no bracket is
+carried with `ref: null` and mints **no edge**: a fabricated prerequisite asserts a claim about the
+course's structure that the instructor never made.
 
 ### `## Key terms` grammar (plain markdown, tolerant)  [AMENDED 2026-07-16 — see §7]
 ```
@@ -67,9 +92,19 @@ vocabulary explicit, human-authored, and deterministically parseable — and it 
 | Kind | Scheme |
 |---|---|
 | term | `term.<slug(preferredLabel)>` |
+| **chapter** | **`chapter.<chapter-slug>`** — [ADDED 2026-07-17, M13] a prereq edge needs TWO endpoints and the near end is the CHAPTER; §2 minted no id for one, so §1's `## Prerequisites → incoming prereq edges` row was **not implementable as written**. |
 | concept | `concept.<chapter-slug>.<n>` · course: `concept.course.<n>` |
-| objective | `objective.<chapter-slug>.<n>` |
-| misconception | `misconception.<chapter-slug>.<n>` |
+| objective | `objective.<chapter-slug>.<n>` · course: `objective.course.<n>` |
+| misconception | `misconception.<chapter-slug>.<n>` · course: `misconception.course.<n>` |
+
+**`<n>` is the item's POSITION in the list (1-based), NEVER the typed list marker.** [FROZEN 2026-07-17, M13]
+`1. 1. 1.` is ordinary markdown, and a hand-edited map routinely carries `4.` where `3.` was deleted —
+trusting the typed number would silently **re-parent every claim under the item below it**.
+
+**`course` is a scope, not a special document.** [FROZEN 2026-07-17] `concepts/course.md` uses the SAME
+section grammar as a chapter map with `scope: "course"` — one grammar, two scopes — plus `## Organizing
+question` and `## Chapter sequence`. Two grammars for one document kind is §5d waiting to happen, and a
+real course map legitimately carries course-level objectives.
 | claim | `claim.<slug(spineRef)>.<shortHash(fileQualifiedAnchor + identityLabel)>` — see §4 |
 
 Use existing `lib/slug.mjs` for slugging. Ids are **stable across rephrase and rename** (§4).
@@ -84,8 +119,25 @@ module built to fix granularity defects, and it would silently merge two distinc
 ## 3. Module signatures (FROZEN)
 
 ```js
+// M13 lib/spine.mjs   [FROZEN 2026-07-17 — the namespace SIX modules consumed and NOTHING produced]
+export function buildSpine(conceptMaps)   // [{file,text,scope}] -> SPINE   (PURE; same input shape as M1)
+export function readConceptMaps(root)     // root -> [{file,text,scope}]    (the ONLY I/O; §1 scope convention, applied ONCE)
+export function spineNode(spine, ref)     // -> node | null   EXACT id match, never prefix/fuzzy
+export function hasSpineNode(spine, ref)  // -> bool          <- THE QUESTION SIX MODULES COULD NOT ASK
+export function danglingSpineRefs(spine, refs) // -> sorted unique refs with no node ("" / null are NOT dangling)
+  // SPINE: {schemaVersion, generatedFrom[], chapters[], nodes[], edges[], prerequisites[], chapterSequence[]}
+  // node:  {id, kind, scope, ordinal, label, negative, file}
+  // edge:  {from, to, kind:"prereq", reason}   reads "FROM is a prerequisite of TO"
+  // `negative` marks a misconception — it is the WRONG belief, and a consumer that forgets this
+  // enforces the misconception as truth. Carry it; never drop it.
+  // The gate asks: danglingSpineRefs(spine, claim.spineRefs)  (§5b rows 1-2, previously uncomputable)
+
 // M1 lib/terms.mjs
 export function buildTerms(conceptMaps)        // [{file, text, scope}] -> TERMS (schema: terms.schema.json)
+export function parseSections(text)            // -> Map<lowercased heading, body lines>   [EXPORTED for M13]
+export function listItems(lines)               // -> the list grammar                      [EXPORTED for M13]
+  // Both exported rather than re-implemented in M13: one document, ONE parser. Every node-bearing
+  // section is a list, and `-` vs `*` vs `1)` is precisely what two copies stop agreeing on (§5d).
 export function resolve(terms, label, scope)   // -> termId | null   (alias-aware, scope-aware, case-insensitive)
 export function addCandidate(terms, label, scope) // -> TERMS' (status:"candidate")
 export function setPreferred(terms, termId, newLabel) // -> TERMS' (RENAME = add-alias + set-preferred; old label NEVER deleted)

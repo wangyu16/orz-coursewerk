@@ -94,10 +94,16 @@ function normalizeLabel(label) {
  * Split a markdown document into `## Section` buckets, keyed by lowercased heading text.
  * Generic on purpose: the parse convention is shared across the concept-map sections, and
  * being tolerant here is what makes a missing section a non-event.
+ * EXPORTED (additive, 2026-07-17) for M13 (`lib/spine.mjs`): the spine producer reads the map's
+ * OTHER sections (`## Objectives`, `## Concept sequence`, `## Misconceptions to surface`) from
+ * the same document this module reads `## Key terms` from. A second sectioniser would be
+ * interfaces §5d — one fact (what this document's sections ARE) derived in two places — and the
+ * two would drift the day a heading convention changes. One document, one section splitter.
+ *
  * @param {string} text
  * @returns {Map<string, string[]>} heading (lowercased) -> its body lines
  */
-function parseSections(text) {
+export function parseSections(text) {
   const sections = new Map();
   let current = null;
   for (const rawLine of String(text ?? "").split(/\r?\n/)) {
@@ -119,8 +125,14 @@ function sectionLines(sections, name) {
   return sections.get(name) ?? [];
 }
 
-/** Unordered/ordered list items ("- x", "* x", "1. x"), trimmed. Non-items ignored. */
-function listItems(lines) {
+/**
+ * Unordered/ordered list items ("- x", "* x", "1. x"), trimmed. Non-items ignored.
+ * EXPORTED (additive, 2026-07-17) for M13, for the same reason as `parseSections`: every
+ * node-bearing section of the concept map is a LIST, and the list grammar is one fact about one
+ * document. Two readers of it is §5d, and "- " vs "* " vs "1)" is exactly the kind of detail two
+ * copies stop agreeing on.
+ */
+export function listItems(lines) {
   const out = [];
   for (const line of lines) {
     const m = /^\s*(?:[-*+]|\d+[.)])\s+(.*\S)\s*$/.exec(line);
