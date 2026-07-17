@@ -21,6 +21,7 @@
     "generate:source-record": "node scripts/generate_source_record.mjs --root package --inputs inputs",
     "init:output-git": "node scripts/init_output_git.mjs --root package",
     "index:components": "node scripts/index_components.mjs --root package --initialize",
+    "index:semantic": "node scripts/index_semantic.mjs --root package",
     "revision:impact": "node scripts/revision_impact.mjs --root package",
     "system:index": "node scripts/index_coursewerk.mjs",
     "system:impact": "node scripts/coursewerk_impact.mjs",

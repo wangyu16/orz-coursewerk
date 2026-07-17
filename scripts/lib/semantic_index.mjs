@@ -1,0 +1,221 @@
+// Semantic index WRITER (M14) — the module that persists `metadata/SPINE.json`,
+// `metadata/TERMS.json` and `metadata/CLAIMS.json`.
+//
+// Why this exists
+// ---------------
+// Thirteen modules were wired into nothing a user runs. M13 mints the spine, M1 the terms, M2
+// the claims — and **nothing wrote any of them down**. Every test to date hand-builds its
+// inputs, which is exactly how a suite stays green while the system is inert on a real package:
+// spec §6.8's one-shot `reindex` was named in the migration plan and never built.
+//
+// But the missing writer is not a packaging chore. It is the substrate for the product's
+// headline claim. `matchClaims(old, new)` and `claimImpact(...)` take an **old**, and with no
+// persisted prior state there IS no "before": the null-edit/real-edit delta cannot be measured,
+// and `silentRisk` — the answer key that quietly contradicts a changed value, the one failure
+// NOTHING else in the system can see — can never fire. A detector with no baseline does not
+// detect. This module is the baseline.
+//
+// THE SHAPE (mirrored from `lib/coherence.mjs`, deliberately — it solves the identical problem)
+// --------------------------------------------------------------------------------------------
+//   the STORED artifact  = the "before"      -> `loadSemanticIndex`
+//   a FRESH COMPUTE      = the "after"       -> `computeSemanticIndex`
+//   the GATE compares them                   -> M11's, not this module's
+//   the ACCEPT step writes the new state     -> `writeSemanticIndex`
+// Same four beats as `computeComponentGraph` / `loadComponentIndex` / `auditCoherence` /
+// `writeComponentIndex`. A reader who knows the component layer already knows this one.
+//
+// ONE DELIBERATE DIFFERENCE FROM THE COMPONENT INDEX — DO NOT COPY ITS GATING
+// ---------------------------------------------------------------------------
+// `COMPONENT_INDEX.json` is an **attested coherence state**: it records that a human reviewed
+// an impact set, which is why refreshing it demands `--review` and an accepted-hash ledger.
+// Regenerating it without that attestation would launder an unreviewed edit into "accepted".
+//
+// These three artifacts are **purely derived and deterministic**: same package bytes -> the same
+// output, byte for byte. They assert nothing a human must stand behind — they are a PROJECTION
+// of the concept maps and deliverables, a snapshot taken so a later compute has something to
+// diff against. There is nothing to attest, so there is nothing to gate: **regenerating must be
+// safe and repeatable**, and an accept step that could refuse to record the truth would be worse
+// than no accept step. (This is the schemas' own language: TERMS and SPINE are "ALWAYS derived,
+// NEVER an authority ... regenerate it any time; it cannot disagree with the maps because it has
+// no independent existence.") If that reasoning is wrong, the fix is to say so here, not to bolt
+// a review flag onto a pure function.
+//
+// NO CLOCK — AND THIS IS THE ONE FIELD MOST WORTH ARGUING ABOUT
+// -------------------------------------------------------------
+// `makeComponentIndex` stamps `generatedAt: new Date().toISOString()`. **This module has no
+// such step, on purpose, and that is why there is no `makeSemanticIndex`**: adding the stamp is
+// the only work that function does, and here it would be poison. A timestamp inside a derived
+// artifact makes it irreproducible — two runs over identical bytes would differ, so the
+// byte-identity property that the whole delta rests on would be false, and a flag a human acted
+// on could not be regenerated from git months later to check whether the machine was right.
+// Provenance is the CALLER's to stamp, outside the artifact, where it cannot contaminate the
+// comparison. (SPINE/TERMS carry `generatedFrom` — file names, not a clock. That is provenance
+// that survives regeneration.)
+//
+// HONEST GAPS, NOT SILENT ONES
+// ----------------------------
+// A package with no concept maps yields an empty spine and an empty registry. That is the
+// correct DATA — inventing a node would put words in the instructor's mouth (M13's refusal) —
+// but it must never be reported as a successful index: every spineRef in the package would then
+// dangle against an empty node set and the gate would have nothing to refute. So the compute
+// carries `warnings[]` on its ENVELOPE (never inside an artifact — the schemas are
+// `additionalProperties: false`, and a warning is not part of the projection), and the CLI
+// refuses outright when there is nothing to index.
+import fs from "node:fs";
+import path from "node:path";
+import { readConceptMaps, buildSpine } from "./spine.mjs";
+import { buildTerms } from "./terms.mjs";
+import { extractClaims } from "./claims.mjs";
+
+export const SPINE_PATH = "metadata/SPINE.json";
+export const TERMS_PATH = "metadata/TERMS.json";
+export const CLAIMS_PATH = "metadata/CLAIMS.json";
+
+/**
+ * The three derived artifacts, sorted, as `lib/coherence.mjs`'s EXCLUDE knows them.
+ *
+ * Exported so the exclusion list has ONE home. If the coherence kernel spelled these paths a
+ * second time, the day a path changed here it would silently stop being excluded there — and
+ * the symptom (interfaces §5d: one fact, two derivations) would be a package failing its own
+ * gate for emitting its own index.
+ */
+export const SEMANTIC_INDEX_PATHS = Object.freeze([CLAIMS_PATH, SPINE_PATH, TERMS_PATH]);
+
+/** The house serialization, byte-for-byte identical to `writeComponentIndex`'s. */
+const serialize = (value) => JSON.stringify(value, null, 2) + "\n";
+
+/**
+ * Name the gaps that would make an empty index look like a working one.
+ *
+ * Each entry is a real, checkable absence with its consequence attached — never a scold. An
+ * empty spine is not a bug in this module; it is a fact about the package, and the person
+ * running `reindex` is the only one who can fix it.
+ */
+function indexGaps(conceptMaps, spine, terms, claims) {
+  const warnings = [];
+  if (conceptMaps.length === 0) {
+    warnings.push(
+      "concepts/: no concept maps found. The spine is EMPTY, so every spineRef in this package " +
+        "dangles and no term resolves — this is not an indexed package.",
+    );
+  } else {
+    if (spine.nodes.length === 0) {
+      warnings.push(
+        "concepts/: the maps carry no `## Objectives` / `## Concept sequence` / " +
+          "`## Misconceptions to surface` items, so the spine has no nodes to resolve against.",
+      );
+    }
+    if (terms.terms.length === 0) {
+      warnings.push(
+        "concepts/: no `## Key terms` declared, so the term registry is empty — every claim's " +
+          "`label` fingerprint is computed over no terms and a rename cannot be observed.",
+      );
+    }
+  }
+  if (claims.claims.length === 0) {
+    warnings.push(
+      "study-guide/, practice/, assessment-support/, slides/: no claims extracted. There is no " +
+        "'before' to diff a later edit against.",
+    );
+  }
+  return warnings;
+}
+
+/**
+ * Compute the semantic index from the package — the FRESH state, written nowhere.
+ *
+ * The pipeline is fixed and each stage feeds the next: the maps are read ONCE (`readConceptMaps`
+ * is M13's single I/O seam and applies §1's scope convention, so this module does not re-derive
+ * a scope from a filename), the spine and the registry are projected from those same map
+ * objects, and the claims are extracted against the registry — a claim cannot resolve a term the
+ * registry has not minted.
+ *
+ * PURE apart from reading the package: no network, no LLM, no clock, no randomness. Same bytes
+ * in, same bytes out.
+ *
+ * @param {string} root package root
+ * @returns {{root:string, conceptMaps:Array<object>, spine:object, terms:object, claims:object,
+ *            warnings:string[]}} the artifacts plus the ENVELOPE fields (`root`, `conceptMaps`,
+ *   `warnings`) — envelope only, never serialized: all three schemas are
+ *   `additionalProperties: false` and would reject them, which is the schemas being right.
+ */
+export function computeSemanticIndex(root) {
+  root = path.resolve(root);
+  const conceptMaps = readConceptMaps(root);
+  const spine = buildSpine(conceptMaps);
+  const terms = buildTerms(conceptMaps);
+  const claims = extractClaims(root, terms);
+  return { root, conceptMaps, spine, terms, claims, warnings: indexGaps(conceptMaps, spine, terms, claims) };
+}
+
+/** One stored artifact: `{file, index, error}` — the shape `loadComponentIndex` returns. */
+function loadArtifact(root, rel) {
+  const file = path.join(root, rel);
+  if (!fs.existsSync(file)) return { file, index: null, error: null };
+  try {
+    return { file, index: JSON.parse(fs.readFileSync(file, "utf8")), error: null };
+  } catch (e) {
+    return { file, index: null, error: `${rel} is invalid JSON: ${e.message}` };
+  }
+}
+
+/**
+ * Load the STORED semantic index — the "before" the gate diffs a fresh compute against.
+ *
+ * **A missing artifact is `index: null` with `error: null`, and that is not a failure**
+ * (spec §6.8): a package that predates the semantic index must degrade to exactly today's
+ * behavior, so absence is an answer here, not a fault. `loadComponentIndex` reports its own
+ * absence as an error because that index is REQUIRED — every package must be coherent. These
+ * are additive, so the two cases must stay distinguishable:
+ *
+ *   index: null, error: null  -> never written (backward compatible; there is no "before")
+ *   index: null, error: "..." -> written and CORRUPT (a real fault; do not read it as absent)
+ *
+ * Collapsing those two would let a corrupted CLAIMS.json read as "this package has no claims",
+ * which is the system reporting a clean bill of health it has not earned — the exact failure the
+ * index exists to prevent. Consumers branch on `present`, never on truthiness.
+ *
+ * @param {string} root package root
+ * @returns {{present:boolean, complete:boolean, errors:string[],
+ *            spine:object, terms:object, claims:object}} per-artifact `{file, index, error}`,
+ *   plus `present` (any artifact stored) and `complete` (all three, none corrupt).
+ */
+export function loadSemanticIndex(root) {
+  root = path.resolve(root);
+  const spine = loadArtifact(root, SPINE_PATH);
+  const terms = loadArtifact(root, TERMS_PATH);
+  const claims = loadArtifact(root, CLAIMS_PATH);
+  const all = [spine, terms, claims];
+  return {
+    root,
+    spine,
+    terms,
+    claims,
+    present: all.some((a) => a.index !== null || a.error !== null),
+    complete: all.every((a) => a.index !== null),
+    errors: all.map((a) => a.error).filter(Boolean),
+  };
+}
+
+/**
+ * Write the three artifacts — the ACCEPT step.
+ *
+ * Serializes ONLY the artifacts, never the envelope: `root`/`conceptMaps`/`warnings` are this
+ * module's, and all three schemas are `additionalProperties: false`.
+ *
+ * @param {string} root package root
+ * @param {{spine:object, terms:object, claims:object}} index a `computeSemanticIndex` result
+ * @returns {string[]} the files written, in `SEMANTIC_INDEX_PATHS` order
+ */
+export function writeSemanticIndex(root, index) {
+  root = path.resolve(root);
+  const byPath = { [CLAIMS_PATH]: index.claims, [SPINE_PATH]: index.spine, [TERMS_PATH]: index.terms };
+  const written = [];
+  for (const rel of SEMANTIC_INDEX_PATHS) {
+    const file = path.join(root, rel);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, serialize(byPath[rel]));
+    written.push(file);
+  }
+  return written;
+}

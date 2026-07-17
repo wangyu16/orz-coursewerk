@@ -11,9 +11,30 @@ import { outputGitState } from "./output_git.mjs";
 import { matchClaims } from "./claims.mjs";
 import { classify } from "./classify.mjs";
 import { resolve as resolveTerm } from "./terms.mjs";
+import { SEMANTIC_INDEX_PATHS } from "./semantic_index.mjs";
 
 export const COMPONENT_INDEX_PATH = "metadata/COMPONENT_INDEX.json";
-const EXCLUDE = new Set([COMPONENT_INDEX_PATH, ".gitignore", ".DS_Store"]);
+// DERIVED INDEXES ARE NOT COMPONENTS — and this is not tidiness, it is the fix for a reproduced
+// bug. A gate that emits an artifact into the package it just accepted makes that package FAIL
+// ITS OWN GATE on the next run: the new file is untracked (`Git ??`) and absent from the index
+// ("new component is not in the coherence index"), so `criticalTotal > 0` and pack exits 1.
+// `COMPONENT_INDEX_PATH` has been excluded for exactly that reason since day one. The semantic
+// index (M14) and the escalation queue (M10) are the same category: every one of them is a PURE
+// PROJECTION of the components — regenerable from the package alone, asserting nothing of its
+// own — so hashing them as components would make the index depend on its own output. Authored
+// content belongs in the graph; a projection of that content never does.
+// Do not "tidy" an entry out of this list; each one is load-bearing.
+const EXCLUDE = new Set([
+  COMPONENT_INDEX_PATH,
+  ...SEMANTIC_INDEX_PATHS, // metadata/{CLAIMS,SPINE,TERMS}.json — one home for the paths (§5d)
+  // M10's queue. Spelled literally because it has NO PRODUCER YET — `buildQueue` returns the
+  // object and nothing writes it — so there is no module whose constant this could be. When the
+  // writer lands it must export this path and this line must import it (§5d); until then, this
+  // is a second authority with a deadline, recorded rather than hidden.
+  "metadata/REVIEW_QUEUE.json",
+  ".gitignore",
+  ".DS_Store",
+]);
 const DELIVERABLE_TOPS = new Set(["concepts", "study-guide", "slides", "assessment-support", "practice"]);
 const HASH = (value) => crypto.createHash("sha256").update(value).digest("hex");
 const norm = (p) => String(p || "").replaceAll("\\", "/").replace(/^\.\//, "");

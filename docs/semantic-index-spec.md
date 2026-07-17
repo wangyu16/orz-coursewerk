@@ -187,9 +187,23 @@ regions are never auto-rewritten** (quotes/citations/source records — rewritin
    is reproducible. LLM lives only in generation (M12) and the decoupled reviewer (separate; not in the impact path).
 8. **Backward compatibility & migration:** additive metadata; `COMPONENT_INDEX.json` untouched; packages without
    the new files degrade to current behavior; a one-shot `reindex` migrates an existing package.
-9. **The S-D coherence-binding bug (known):** the Full reviewer edits `KEY_FACT_REVIEW.json` without refreshing
-   coherence bindings → introduces coherence failures. M5/M11 must **refresh bindings after any review-driven edit**;
-   fix + re-run S-D before drawing conclusions about critique.
+9. **~~The S-D coherence-binding bug (known)~~ — REFUTED 2026-07-17. DO NOT "FIX" THIS.**
+   *The claim was:* the Full reviewer edits `KEY_FACT_REVIEW.json` without refreshing coherence bindings →
+   introduces coherence failures → Full scores worse than Light for doing more work. **Investigated; the
+   mechanism does not exist.** `scripts/bind_key_fact_review.mjs` re-runs `makeKeyFactBindings` after the fixes
+   (the exact analogue of `recordAcceptedCoherence`), so the review is not trapped — the suspected asymmetry
+   between the two gates is imaginary. And `KEY_FACT_REVIEW.json` is absent from its **own** bindings, so
+   recording a review cannot invalidate it; without that there would be no fixed point and the gate WOULD be
+   unsatisfiable by construction, which is the defect it was accused of. **The gate is correct as written.**
+   The residual failure is **ordering — fix, THEN bind**; a harness that binds before its last edit produces a
+   stale binding and a failure that is *correct*, because the review genuinely did not read those bytes. That
+   belongs in PROCEDURE, not in M5/M11.
+   **Pinned by `tests/key-fact-bindings.test.mjs`, which makes the gate HARDER to weaken, not easier to pass.**
+   This result feeds a manuscript about this very product: adjusting a check so our own product scores better
+   in our own paper is indistinguishable from fabrication from the outside, and indistinguishable from
+   bug-fixing from the inside. **S-D's negative result is therefore unexplained**, and "cross-model critique
+   has no mechanical value" remains unsafe to conclude — for want of evidence, not because of a known artifact.
+   Re-running S-D requires a bind-last harness first.
 10. **Performance:** ~500 files / a few thousand claims for a full course → in-memory graph is fine. Bound claim
     count per artifact; the deterministic scan is O(claims·terms) — acceptable; no service needed.
 

@@ -101,13 +101,13 @@
       "id": "repo:docs/semantic-index-interfaces.md",
       "path": "docs/semantic-index-interfaces.md",
       "type": "documentation",
-      "hash": "f85cae9a0cba27500b59434009eaf2d6e4cdb22e607262b980a38a9e520348ce"
+      "hash": "83a440d52d5c287a2bbf0b0e14971390d588035167a7d98fcd3308039eab61fb"
     },
     {
       "id": "repo:docs/semantic-index-spec.md",
       "path": "docs/semantic-index-spec.md",
       "type": "documentation",
-      "hash": "8e1df8f281e887db8c6647a896967ae052761897d7aab2289676b40cf4435e2b"
+      "hash": "acc74d28d9d055a344afb825736e127103429be0460cfe9fbc9923633c854551"
     },
     {
       "id": "repo:docs/wikipedia-science-topic.md",
@@ -149,7 +149,7 @@
       "id": "repo:package.json",
       "path": "package.json",
       "type": "release-metadata",
-      "hash": "8e54bdc8c6ceee07389f3679f3eb7ea7d4b701b4cb384394a4ceac05f08a4a99"
+      "hash": "0123d5accda7a4d49ad9625bb8250968021003623f968a57e38ea55174cda3d3"
     },
     {
       "id": "repo:PROCEDURE.md",
@@ -284,6 +284,12 @@
       "hash": "ebb77554087d3fe5924f0f0d8f2f3c94d565cc8cc501abd3b8deba8d698a7075"
     },
     {
+      "id": "repo:scripts/index_semantic.mjs",
+      "path": "scripts/index_semantic.mjs",
+      "type": "executable",
+      "hash": "fd6ea886120225da8a49ad4a24dce4a2ca5b39f7ea5ccfdfadec79419fd0ca8e"
+    },
+    {
       "id": "repo:scripts/init_output_git.mjs",
       "path": "scripts/init_output_git.mjs",
       "type": "executable",
@@ -311,7 +317,7 @@
       "id": "repo:scripts/lib/coherence.mjs",
       "path": "scripts/lib/coherence.mjs",
       "type": "kernel",
-      "hash": "95f6015f67ee7ee345a1d1b898f01114aea93742e72d69f85c726182804d4edb"
+      "hash": "c81b29c654fe2a114bec73a3c866ce50f53c9ca00e6f2a27fa375db6d691eefd"
     },
     {
       "id": "repo:scripts/lib/consistency.mjs",
@@ -378,6 +384,12 @@
       "path": "scripts/lib/rights_preflight.mjs",
       "type": "kernel",
       "hash": "ea5896685777fd04c384f3a2648970ab713663738e754e566825792f3fc30317"
+    },
+    {
+      "id": "repo:scripts/lib/semantic_index.mjs",
+      "path": "scripts/lib/semantic_index.mjs",
+      "type": "kernel",
+      "hash": "354c27c34b034063dada86e0fb8585bf9a760248aaf447d7ee461947136e26e7"
     },
     {
       "id": "repo:scripts/lib/slug.mjs",
@@ -840,6 +852,12 @@
       "path": "tests/reviews.test.mjs",
       "type": "test",
       "hash": "af664d0659d4205570ded337805606dd1b42c8ddde87303b70bbc752a27097ca"
+    },
+    {
+      "id": "repo:tests/semantic-index-artifact.test.mjs",
+      "path": "tests/semantic-index-artifact.test.mjs",
+      "type": "test",
+      "hash": "1cf49f7c2509e072018f4ce6039dff399d2ee2726afe8a77588336a2ad44f071"
     },
     {
       "id": "repo:tests/site.test.mjs",

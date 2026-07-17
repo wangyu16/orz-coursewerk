@@ -179,7 +179,12 @@ export function classify(oldFp, newFp, ctx)
 
 // M2 lib/claims.mjs
 export function extractClaims(root, terms)     // -> CLAIMS (declared-first + deterministic scan backstop)
-export function matchClaims(oldClaims, newClaims) // -> {matched, added, removed, split, merged}  (§4)
+export function matchClaims(oldClaims, newClaims)
+  // -> {matched:[{oldId, newId}], added:[claimId], removed:[claimId], split:[…], merged:[…]}   (§4)
+  // [AMENDED 2026-07-17 — M14 guessed the element shape wrong first] §3 named the tuple's KEYS and never
+  // its ELEMENTS. `matched` carries IDS — `{oldId, newId}`, NOT `{old, new}` — so a consumer must hold
+  // both claim lists to compare anything. Naming a container without naming what it contains reads as
+  // specified and isn't; same omission as a field whose unit is unstated (§5f).
 
 // M5 lib/coherence.mjs  (EXTEND — additive, backward compatible)
 export function claimImpact(root, oldClaims, newClaims, terms, ctx)
@@ -374,6 +379,11 @@ Four modules independently hit the same failure during implementation, so it is 
 - **M6/M10**: M6's detector kinds (`value-disagreement`/`definition-drift`) had no field in REVIEW_QUEUE's enum
   → folding them into the generic `internal-inconsistency` destroyed the observation → fixed with
   `detectorKinds[]`, carried alongside the decision-level `kind`.
+- **M10/M14**: `metadata/REVIEW_QUEUE.json` **has no producer.** `buildQueue` returns the object; *nothing writes
+  it*. The path exists only in the schema's title and in doc prose — so M14, needing it in coherence's `EXCLUDE`,
+  had no module constant to import and had to **spell the path literally**, creating a second authority. Third
+  instance of the no-producer family (`derivedFrom`, the spine namespace, now an artifact), and the first at
+  **artifact scale**: a file the design treats as an output that no code emits.
 - **M8/M9**: M8 produces immutable regions as **file offsets**, but `claims.schema.json`'s `locations[]` held only
   `{file, anchor}` — so `planPropagation`, handed `immutableRegionsByFile`, had nothing to compare against and the
   plan-time quotation guard could not run at all. Fixed with `locations[].offset`, set by M2. **The most dangerous
