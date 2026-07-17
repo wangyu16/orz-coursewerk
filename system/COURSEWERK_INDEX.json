@@ -806,6 +806,12 @@
       "hash": "ea9ab653038e9da5b2f31a1eb69e9dce44d7410739a03f65e1afc1fd6d428e06"
     },
     {
+      "id": "repo:tests/key-fact-bindings.test.mjs",
+      "path": "tests/key-fact-bindings.test.mjs",
+      "type": "test",
+      "hash": "05b2441ef480ce602af017822baa146448073a84d3bee1b65bb704c990143bdb"
+    },
+    {
       "id": "repo:tests/overrides.test.mjs",
       "path": "tests/overrides.test.mjs",
       "type": "test",
