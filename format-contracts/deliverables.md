@@ -86,13 +86,107 @@ concepts/ assessment-support/ assets/ metadata/ current/` are **public** (shared
 
 | # | File | Format | Contract |
 |---|------|--------|----------|
-| 1 | `concepts/<slug>.md` | **Plain Markdown, NO graphics** (any parser, readable raw) | Concept/topic dependency logic + per-section objectives. Headings, nested lists, tables, text arrows (→) only — no mermaid, no images, no `{{plugins}}`. |
+| 1 | `concepts/<slug>.md` | **Plain Markdown, NO graphics** (any parser, readable raw) | **THE SPINE — see §Concept maps for the required sections.** Concept/topic dependency logic + per-section objectives + the `## Key terms` vocabulary authority. Headings, nested lists, tables, text arrows (→) only — no mermaid, no images, no `{{plugins}}`. Everything student-facing is derived from this file, and the index resolves every term through it. |
 | 2 | `study-guide/<slug>.md` | **orz-markdown**, visually rich | Concise study guide derived from the concept map; opens with objectives; figures + worked **example questions** (container tabs); full orz feature use (KaTeX/mhchem, `{{smiles}}`, mermaid, `:::info/:::success`, columns). Every Mermaid/chart block has a nearby visible `**Visual description:**`/`**Data summary:**`. Each `## H2` section MAY carry a stable block ID `{{attrs[#blk-…]}}`. Built to `.md.html` via **orz-mdhtml** for preview. |
 | 3 | `slides/<slug>.md` | **orz-slides deck grammar** | Deck SOURCE, not HTML. Opens with a `<!-- deck\ntitle: …\nratio: 16:9\n-->` block; slides separated by the `<!-- slide -->` marker (NOT bare `---`); `# H1` on a `<!-- slide template=title -->` = title slide; `## H2` = content-slide title; `<!-- slide template=closing -->` for the closing slide. One concept per slide. **Reuse only the study guide's `../assets/` figures.** Built to `.slides.html` via **orz-slides** for preview. |
 | 4 | `assessment-support/<slug>.md` | **Plain Markdown, NO graphics** | Per objective, **how to design** questions/activities (assignments, discussion, quizzes, exams, projects) at the right cognitive level — guidance, **NOT a question bank**. Several parameterized question guides per objective. |
 | 5 | `practice/<slug>.md` | **orz-markdown** | ~15 concrete questions instantiated from the assessment guide, covering all major objectives; each Q + worked answer in container tabs (`:::: tabs` / `::: tab`); correct, work shown. Built to `.md.html` via **orz-mdhtml** for preview. |
-| — | `concepts/course.md` | **Plain Markdown, NO graphics** | Course-wide concept map + overall summary + keywords/tags. |
+| — | `concepts/course.md` | **Plain Markdown, NO graphics** | Course-wide concept map + overall summary + course-wide `## Key terms`. See §Concept maps. (**Not** a `## Keywords` dump — that is an authoring input, not a stored section.) |
 | — | `private/…` | Plain Markdown | Answer keys, full solutions, exam content, instructor notes — **PRIVATE**, never in a public folder. |
+
+## Concept maps — the spine
+
+`concepts/` is not a deliverable like the others. It is the **spine**: the instructor's decision about
+*what is taught, to what depth, and in what order*. Everything student-facing is derived FROM it, and
+every other contract in this file points INTO it. Get this file right and the rest of the package has
+an authority to be checked against; get it wrong and there is nothing to check against, only prose.
+
+**It is co-created, and that is the point.** The instructor supplies raw, messy intent — a syllabus
+dump, a list of topics, a paragraph, last year's outline. **The agent standardizes it into exactly the
+format below; the instructor then reads and corrects it.** That review is where the instructor's
+authority actually lands, so the format is optimized for **a human to eyeball and fix**, not for
+machine convenience. If a section is hard to read back, it is the wrong format.
+
+**The agent MUST NOT invent spine content.** Standardizing means *restructuring what the instructor
+said* — never adding a concept, an objective, or a misconception they didn't. A fabricated spine node
+puts words in the instructor's mouth about what their own course teaches, and every downstream check
+would then enforce it as authoritative. When the raw input doesn't say, the section gets fewer entries
+and the agent ASKS. Fewer honest nodes beat a complete invented one.
+
+### `concepts/<chapter-slug>.md`
+
+```markdown
+# Concept Map — <Chapter Title>
+
+## Source and scope
+Adapts the version-pinned article **<Source>**.
+
+## Summary
+<a short paragraph>
+
+## Prerequisites
+- <concept assumed already known>
+
+## Objectives
+1. <what the student can DO after this chapter>
+2. …
+
+## Concept sequence
+1. <a claim-shaped sentence: "A solid melts at a characteristic temperature.">
+2. …
+
+## Key terms
+- **<preferred label>** (<alias>, aliases: <alias>) — <one-line gloss> [<concept.slug.n>]
+
+## Misconceptions to surface
+- <the WRONG belief, stated as the student would hold it>
+```
+
+| Section | Shape | Becomes | Notes |
+|---|---|---|---|
+| `## Objectives` | **ordered** list | `objective.<slug>.<n>` | ordinals are identity — **inserting in the middle renumbers the ones after it** |
+| `## Concept sequence` | **ordered** list | `concept.<slug>.<n>` | written as **sentences**, not noun phrases; the order IS the prerequisite chain |
+| `## Key terms` | unordered list | `term.<slug>` | **the vocabulary authority** — see below |
+| `## Misconceptions to surface` | unordered list | `misconception.<slug>.<n>` | **negative claims**: state the misconception, not its correction |
+| `## Prerequisites` | unordered list | incoming prereq edges | |
+| `## Source and scope` · `## Summary` | prose | — | informational |
+
+`concepts/course.md` uses `# Course Concept Map — <Title>`, `## Organizing question`, `## Summary`,
+`## Concept sequence` → `concept.course.<n>`, `## Chapter sequence` (inter-chapter order), and an
+optional `## Key terms` for course-wide vocabulary.
+
+### `## Key terms` is the vocabulary authority — and `## Keywords` is NOT a section
+
+The index resolves every term through this list. A term declared here is **authorized**; a word that
+merely appears in prose is not. Aliases are what make a **rename** detectable — when IUPAC recommends
+a new name and the instructor adopts it, the migration works *because* the old label survives as an
+alias and is never deleted.
+
+**Do NOT emit a `## Keywords` section.** A flat keyword dump — `adaptation; CRISPR array; spacer; …` —
+is a fine thing for an instructor to *hand you*, and it is a legitimate **authoring input**. It is not
+a stored section. Two vocabulary lists in one document are the same fact in two places: they drift,
+and nothing tells you which one is the authority. **Standardize keywords INTO `## Key terms`** —
+promoting each to a preferred label with its aliases, gloss, and the concept it hangs off — and ask
+the instructor about any you cannot place. That promotion is exactly the work the agent is for.
+
+Grammar (tolerant; every part after the label is optional):
+```markdown
+- **melting point** (fusion point, aliases: melting temperature) — temperature at which a solid melts [concept.phase-change.1]
+- **PAM** (protospacer adjacent motif) — the motif adjacent to the target [concept.crispr.5]
+- **Cas9**
+```
+The `[concept.x.n]` bracket links a term to the concept it belongs to. **Never guess it** — a bracket
+naming a concept that doesn't exist is a dangling link *that looks authorized*, which is worse than an
+absent one. Omit it and the gate will ask.
+
+### What a missing spine costs you
+
+A map without `## Concept sequence`, `## Objectives`, or `## Key terms` yields **fewer nodes, never
+invented ones** — the parser is deliberately tolerant. But understand what "fewer nodes" means: with
+no `## Key terms`, the vocabulary registry is **empty**, so no claim resolves to a term, so the index
+cannot tell a rephrase from a fact change, and **the package reports zero flags it has not earned** —
+a clean bill of health manufactured by a blind spot. The gate therefore reports a missing spine as a
+**finding**, loudly. Silence would be the worse failure.
 
 ## Claim-provenance declarations
 
