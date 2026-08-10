@@ -951,11 +951,15 @@ function coverageAudit(fresh) {
   //     objectives flag again. So the gate must read the SAME signal the check reads — declarations
   //     against OBJECTIVES — or it is a different question standing in for the real one.
   //
-  // THE RECALL COST, NAMED: a chapter in which EVERY objective is dropped has no covered objective,
-  // so the gate stays shut and the check says nothing. An agent that drops one objective is caught;
-  // an agent that drops all of them in a chapter is not. That is the price of not flagging every
-  // non-adopting package, it is paid knowingly, and it is the first thing to revisit if the coverage
-  // numbers ever show adoption is universal.
+  // THE RECALL COST, NAMED — AND SINCE NARROWED (E1 revisit, coursewerk-caeai). ORIGINALLY: a chapter
+  // in which EVERY objective is dropped has no covered objective, so this gate stayed shut and said
+  // nothing — one dropped objective caught, a whole chapter NOT. That hole is now closed for any
+  // objective the instructor ANCHORED with `## Key terms`: its own spineRef bracket is traceability
+  // in its own right (an instructor declaration), so a whole-chapter drop is caught on the vocabulary
+  // signal even with no declared claim (see the flag block below). What remains uncaught is only an
+  // objective with NEITHER a declared claim in its chapter NOR any authorized key term — genuinely no
+  // traceability at all, where coverage is UNDEFINED and silence is the honest report (tests 3c/3d).
+  // Paid knowingly; still the first thing to revisit as declaration adoption rises.
   const objectivesDeclaredIn = new Set(
     (spine.nodes ?? [])
       .filter((n) => n.kind === "objective" && chapters.has(n.scope) && referenced.has(n.id))
@@ -998,16 +1002,24 @@ function coverageAudit(fresh) {
 
     // ---- MEASURED ABOVE. FLAGGED BELOW. Everything from here is the precision boundary. --------
     if (node.kind !== "objective") continue; // concepts: measured, never flagged (see header)
-    // SUBSUMED, AND KEPT DELIBERATELY — recorded because MUTATION TESTING found it, not guessed at:
-    // `objectivesDeclaredIn` is built from chapter scopes ONLY, so it can never contain `course`,
-    // and mutating this line away kills no test. It stays because the two guards hold for DIFFERENT
-    // reasons — this one says a course-scope node has no chapter deliverables to look in; the next
-    // says the convention is not in use here. If the gate below is ever widened, this still holds.
+    // COURSE-SCOPE GUARD, KEPT DELIBERATELY — recorded because MUTATION TESTING found it, not guessed
+    // at: a course-scope objective has no chapter deliverables to look in. It once looked SUBSUMED by
+    // the objectivesDeclaredIn gate; the E1 widening below removes that gate's unconditional form, so
+    // this guard is now the SOLE thing keeping course-scope nodes out — no longer subsumed, and load-
+    // bearing. `objectivesDeclaredIn` is built from chapter scopes only, so it never contained course.
     if (!chapters.has(node.scope)) continue;
-    if (!objectivesDeclaredIn.has(node.scope)) continue; // no objective traceability -> UNDEFINED, not zero
     const under = (termsUnder.get(node.id) ?? []).slice().sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
     const present = termsInChapter.get(node.scope) ?? new Set();
-    if (under.some((t) => present.has(t.id))) continue; // its vocabulary IS taught: undeclared, not untaught
+    // TRACEABILITY HAS TWO SOURCES (E1 recall-limit revisit — coursewerk-caeai). The check engages
+    // when the chapter has EITHER a declared claim against one of its objectives (`objectivesDeclaredIn`)
+    // OR this objective carries its own `## Key terms` bracket (M1's spineRef under the node — an
+    // instructor declaration too). With NEITHER, coverage here is genuinely UNDEFINED and the honest
+    // report is silence (3c: a chapter that declares nothing; 3d: one unrelated concept declaration).
+    // The second guard then keeps a package that HAS anchored its vocabulary silent while that
+    // vocabulary is TAUGHT — undeclared is not untaught. Only a genuinely-untaught anchored objective
+    // (its terms nowhere in the chapter's prose) survives to the flag, whole-chapter drop included.
+    if (!objectivesDeclaredIn.has(node.scope) && under.length === 0) continue;
+    if (under.length > 0 && under.some((t) => present.has(t.id))) continue; // its vocabulary IS taught
 
     findings.push({
       kind: "spine-uncovered",

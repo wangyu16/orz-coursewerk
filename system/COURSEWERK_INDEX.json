@@ -215,7 +215,7 @@
       "id": "repo:scripts/check_oer.mjs",
       "path": "scripts/check_oer.mjs",
       "type": "executable",
-      "hash": "d0fac054898062cc68c9fb7c8f609e46d12865658add16b1f55ca0eb4acdb6e8"
+      "hash": "d10720fe59786c4509ee69401f153b54b986d1a1e18309430481338352d5b5bd"
     },
     {
       "id": "repo:scripts/coursewerk_impact.mjs",
@@ -755,7 +755,7 @@
       "id": "repo:tests/check-oer-control.test.mjs",
       "path": "tests/check-oer-control.test.mjs",
       "type": "test",
-      "hash": "07a61f12dd1e2bb09e3b08aa916d40a8caf1fede28e62cd7ca8cbaf7b3f223f0"
+      "hash": "ec09caf6b123a2be322e534c7c052618304121294b2405e740551fcfada59802"
     },
     {
       "id": "repo:tests/check-oer-revision.test.mjs",

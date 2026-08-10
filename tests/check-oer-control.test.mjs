@@ -256,6 +256,53 @@ test("2b · the NEGATIVE — the same objective, TAUGHT and DECLARED, is not fla
   assert.deepEqual(g.json.semantic.coverage.objectives, { covered: 3, total: 3 });
 });
 
+test("2c · the RECALL LIMIT, revisited — a WHOLE chapter's objectives dropped is caught via its key-term anchor", (t) => {
+  // W12's known recall hole, named in check_oer.mjs: "a chapter in which EVERY objective is dropped
+  // has no covered objective, so the gate stays shut and the check says nothing." An agent that drops
+  // ONE objective was caught (test 2); an agent that drops the WHOLE chapter was NOT — the exact
+  // obedience-not-verification failure the CONTROL check exists to close, one scale up.
+  //
+  // E1 (coursewerk-caeai) narrows it: an objective's own `## Key terms` bracket is instructor-declared
+  // traceability, so the check engages on the vocabulary signal even when no CLAIM declares against a
+  // chapter objective. Here the instructor anchors an objective's vocabulary and the chapter never
+  // teaches it, AND every declared claim in the chapter is gone (the whole-chapter drop).
+  const pkg = freshPackage(t);
+  addObjective(pkg, "Explain nucleation as the trigger for freezing.");
+  addKeyTerm(
+    pkg,
+    "- **nucleation** — the initial formation of a solid seed that triggers freezing [objective.melting.3]",
+  );
+  // The whole chapter's declarations are dropped — before E1 this armed nothing and the gate stayed shut.
+  fs.rmSync(path.join(pkg, "metadata", "claims"), { recursive: true, force: true });
+  const g = run(pkg);
+
+  const flags = itemsOfKind(g.queue, "missing-coverage");
+  assert.equal(
+    flags.length,
+    1,
+    `the dropped-chapter objective was not caught (recall limit still open): ${evidenceText(g.queue)}`,
+  );
+  const text = flags[0].evidence.join("\n");
+  assert.match(text, /objective\.melting\.3/, "the flag does not name the dropped objective");
+  assert.match(text, /nucleation/, "the flag does not name the untaught vocabulary the instructor anchored");
+  assert.equal(flags[0].severity, "review");
+
+  // PRECISION HELD: the chapter's OTHER objectives are uncovered too now (their claims were stripped),
+  // but their vocabulary IS taught in the intact prose — so they raise NO coverage flag. The single
+  // missing-coverage item asserted above is the whole precision claim: only the genuinely untaught,
+  // anchored objective flags. This is what separates "whole chapter dropped" from test 3c's "chapter
+  // that simply declares nothing" — there the objectives are taught; here one is not.
+  //
+  // (Total burden is >1 only because stripping every declaration also lets the consistency scanner
+  // re-read the practice sheet's two energy values as a value-disagreement — a separate finding, the
+  // same reason test 3c asserts on missing-coverage rather than on flagCount. Not this check's flag.)
+  assert.deepEqual(
+    itemsOfKind(g.queue, "missing-coverage").map((i) => i.detectorKinds),
+    [["spine-uncovered"]],
+    "exactly one spine-uncovered coverage flag, and nothing else in the coverage family",
+  );
+});
+
 // =============================================================================================
 // 3 · PRECISION — the boundary the whole design is bought with.
 // =============================================================================================
