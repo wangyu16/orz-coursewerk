@@ -30,6 +30,7 @@ import {
   claimSidecarPath,
 } from "./lib/contract.mjs";
 import { buildSourceIndex, scanText, VERBATIM } from "./lib/verbatim.mjs";
+import { unverifiableQuotations } from "./lib/immutable.mjs";
 import { auditAssurance } from "./lib/assurance.mjs";
 import { auditCoherence, claimImpact } from "./lib/coherence.mjs";
 import { auditSourceRecord } from "./lib/source_record.mjs";
@@ -671,6 +672,12 @@ function verbatimAudit(dir, foundation) {
     shingle: VERBATIM.SHINGLE,
     minSpanWords: VERBATIM.MIN_SPAN_WORDS,
     sourceFiles: sourceTexts.length,
+    // The pinned AUTOMATIC source texts, exposed for the unverifiable-quotation check (TRUST 3c).
+    // Not serialized into the JSON report (see the r.verbatim assignment, which drops it): whole
+    // source corpora are large and already recorded by SHA in `corpus.evidence`. Carried in-process
+    // only, so the quotation scan re-uses the exact texts the verbatim gate compared against — one
+    // extraction, two consumers (§5d).
+    sourceTexts,
     corpus,
     filesFlagged: perFile.length,
     totalSpans: perFile.reduce((a, b) => a + b.spanCount, 0),
@@ -1230,6 +1237,64 @@ function rangeFindings(fresh) {
   return rangeAudit(fresh.claims);
 }
 
+/**
+ * TRUST LAYER 3c: does a span the package presents as a QUOTATION actually appear in a pinned
+ * source? (The publish-gate half of the immutable promise — W18's missing product caller.)
+ *
+ * The symmetrical twin of the verbatim gate, and the fault it is BLIND to. `verbatimAudit` fires
+ * when deliverable text matches a source too CLOSELY (plagiarism-scale copying, >= 15 words). This
+ * fires when a span dressed in quote marks matches NO source at all — an EDITED quote no longer
+ * matches, so it mints no verbatim span and is reported clean; a short faithful quote is below the
+ * 15-word floor and likewise mints none. Quote marks assert "these are the author's words", so a
+ * quotation that appears in no pinned source is UNVERIFIABLE — the "edited quote → refused" fault.
+ * `unverifiableQuotations` (lib/immutable.mjs) owns the quote-length-aware matcher and its fuzzy
+ * tolerance; this hands it each deliverable's text plus the pinned AUTOMATIC source texts and routes
+ * every hit into the queue as `unverifiable-quotation` (folds to `source-conflict`, severity
+ * `review`: a human decides whether the quote is wrong or its source simply is not pinned).
+ *
+ * TWO BOUNDS, both by construction — the alarm-fatigue budget the design gated on:
+ *   1. Runs ONLY when the verbatim scan ran with a real corpus (`verbatim.ran` && sourceTexts). A
+ *      package with no pinned source cannot falsify any quote, so it flags nothing (bound #1).
+ *   2. Runs ONLY when EVERY primary source is `automatic`. One `human-attested` primary is an escape
+ *      hatch through which a legitimate off-corpus quotation can enter, and flagging it would fire on
+ *      a clean package — so a package with any attested primary source is skipped whole. This is
+ *      stricter than #1 and is the "no attested escape hatch in play" bound.
+ * Both are the G1 discipline restated: flag only what is provably unverifiable, queue nothing a clean
+ * package would trip. Not index-gated by its own nature (it reads deliverable text, not claims), but
+ * it lives here beside its TRUST siblings and so runs whenever the semantic layer does.
+ */
+function quotationFindings(verbatim) {
+  if (!verbatim?.ran || !Array.isArray(verbatim.sourceTexts) || verbatim.sourceTexts.length === 0) return [];
+  if ((verbatim.corpus?.attestedSourceIds?.length ?? 0) > 0) return [];
+  const findings = [];
+  for (const f of deliverableFiles) {
+    for (const hit of unverifiableQuotations(read(f), verbatim.sourceTexts)) {
+      // BOUND (MEASURED on the clean fixture, not assumed): act ONLY on INLINE quotation marks, not
+      // markdown blockquotes. `unverifiableQuotations` treats every `quote`-kind immutable region the
+      // same — correct for the matcher — but a blockquote is STRUCTURALLY OVERLOADED in orz: a
+      // `> **Visual description:** …` accessibility callout, an admonition, or a worked example is a
+      // blockquote and reproduces nothing, so flagging it is the alarm-fatigue trap (it tripped this
+      // gate on a clean package's visual-description callout the first time it ran). An INLINE
+      // "…" span in running prose is an unambiguous claim of reproduced words, and it still catches
+      // the headline edited-quote fault. Blockquote quotations remain a matcher capability
+      // (immutable.mjs's unit test) but need a callout-vs-quotation discriminator before the GATE can
+      // act on them — see the residual in research/g3-confidence-wiring-design.md.
+      if (!/^["'“”‘’«»]/.test(hit.text.trimStart())) continue;
+      const shown = hit.text.replace(/\s+/g, " ").trim();
+      const snippet = shown.length > 160 ? `${shown.slice(0, 157)}…` : shown;
+      findings.push({
+        kind: "unverifiable-quotation",
+        severity: "review",
+        evidence: [
+          `${rel(f)} presents a ${hit.words}-word passage as a reproduced quotation, but it appears in no pinned automatic source: ${snippet}`,
+          "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words.",
+        ],
+      });
+    }
+  }
+  return findings;
+}
+
 // ==================== D. THE REVISION COMPARISON (fresh vs stored) ====================
 //
 // THE OTHER QUESTION. The five §5b checks above are all REFERENTIAL — "does this pointer point at
@@ -1487,7 +1552,7 @@ function revisionFindings(stored, fresh) {
  * (`revisionFindings`) is the one that needs BOTH, and it is what makes the stored index more than
  * a file nobody reads.
  */
-function semanticAudit() {
+function semanticAudit(verbatim) {
   const stored = loadSemanticIndex(pkg);
   if (!stored.present) {
     return {
@@ -1519,6 +1584,12 @@ function semanticAudit() {
     // self-consistent package agrees on (every artifact says "-40 K"), which no cross-artifact scan
     // can see. Conservative by construction — see `rangeAudit`'s header for the zero-FP boundary.
     ...rangeFindings(fresh),
+    // TRUST layer 3c (§C3c) — the unverifiable-quotation scan, the publish-gate twin of the verbatim
+    // gate and orthogonal to both scans above it: "does this quotation actually appear in a pinned
+    // source?" reads deliverable TEXT (not claims) against `verbatim`'s pinned sources, so it takes
+    // `verbatim`, never `fresh` or the stored index. Bounded by construction (see `quotationFindings`)
+    // to fire only when a real automatic corpus is pinned — a clean package flags nothing.
+    ...quotationFindings(verbatim),
     ...revision.findings,
   ];
   // `fresh.claims` supplies the locations AND the burden denominator. Deliberately NOT a union with
@@ -1610,7 +1681,7 @@ const visualReview = auditVisualReview(pkg);
 // The semantic layer runs LAST of the audits and emits after `auditCoherence` has already read the
 // package, so this run reports the package as the author left it — the queue it writes is the next
 // run's input, not this one's.
-const semantic = semanticAudit();
+const semantic = semanticAudit(verbatim);
 const queueEmission = emitReviewQueue(semantic);
 // During first-pass chapter authoring, the index may not exist yet. Once it
 // exists, every edit is always enforced. Final/public QA (--for-discovery) also
@@ -1635,7 +1706,9 @@ const r = {
   orzSyntax: orzSyntaxAudit(),
   placeholders: placeholdersAudit(),
   formatContracts: formatContractAudit(),
-  verbatim,
+  // Drop the in-process-only `sourceTexts` (see verbatimAudit's return): whole source corpora do not
+  // belong in the report — they are recorded by SHA in `verbatim.corpus.evidence`.
+  verbatim: (({ sourceTexts: _drop, ...rest }) => rest)(verbatim),
   assurance,
   coherence,
   keyFactReview,

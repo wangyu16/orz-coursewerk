@@ -237,3 +237,93 @@ test("obvious instructor-only content in a public deliverable is rejected", () =
   const { report } = runQa(f);
   assert.ok(report.criticalCounts.layoutErrors > 0);
 });
+
+// TRUST LAYER 3c — the unverifiable-quotation gate, wired end-to-end through the DOCUMENTED CLI on a
+// SOURCE-BEARING package (W18's missing product caller: `immutable.mjs`'s publish-time half was
+// tested in isolation but nothing ran it against an assembled package). The unit test
+// (tests/unverifiable_quotation.test.mjs) pins the matcher; THIS pins the wiring — the finding must
+// travel deliverable text -> `quotationFindings` -> `buildQueue` -> escalation fold -> a real
+// REVIEW_QUEUE.json item, exercised on the same source corpus the verbatim gate compares against.
+//
+// A helper to store the semantic index the TRUST layer runs behind (Stage 4 of the pipeline); the
+// gate is a no-op on the semantic layer without it, exactly like its range/consistency siblings.
+function indexSemantic(root) {
+  const run = spawnSync(process.execPath, [path.join(repo, "scripts", "index_semantic.mjs"), "--root", root], { encoding: "utf8" });
+  assert.equal(run.status, 0, `index:semantic failed:\n${run.stdout}\n${run.stderr}`);
+}
+// Ten contiguous words that appear VERBATIM in cleanFixture's source corpus prose (see `cleanFixture`:
+// "Distinct source corpus prose for deterministic comparison and copyright review." repeated).
+const FAITHFUL_QUOTE = "Distinct source corpus prose for deterministic comparison and copyright review";
+const EDITED_QUOTE = FAITHFUL_QUOTE.replace("copyright", "trademark"); // one substituted word — absent from the source
+const quotationItems = (root) => JSON.parse(fs.readFileSync(path.join(root, "metadata", "REVIEW_QUEUE.json"), "utf8"))
+  .items.filter((it) => it.detectorKinds.includes("unverifiable-quotation"));
+
+test("a FAITHFUL quotation of the pinned source verifies — zero unverifiable-quotation flags (the FP budget)", () => {
+  // The DISCRIMINATION proof paired with the headline test below: both inject the SAME sentence into
+  // the SAME indexed fixture, differing by exactly one word (copyright/trademark). So any semantic
+  // perturbation the indexer adds from the injected prose is IDENTICAL in both runs — the only
+  // variable is whether the quoted words appear in the pinned source. Here they do, so the layer
+  // must be silent; below they do not, so it must fire. The blockquote callout that tripped the broad
+  // form the first time this ran is why the assertion is scoped to `quotationItems`, not `criticalTotal`.
+  const f = cleanFixture();
+  fs.appendFileSync(path.join(f.root, "study-guide", "ch1.md"), `\nThe source records that "${FAITHFUL_QUOTE}".\n`);
+  indexSemantic(f.root);
+  accept(f.root);
+  const { report } = runQa(f);
+  // The scan RAN and LOOKED — a layer that silently skipped itself would report zero too, and that is
+  // the defect this file exists to fence, not the fix (the headline test proves it fires when it must).
+  assert.equal(report.semantic.ran, true, "the semantic layer did not run — the quotation scan never looked");
+  assert.deepEqual(quotationItems(f.root), [], "a faithfully-reproduced quotation was flagged as unverifiable");
+});
+
+test("the HEADLINE FAULT — an EDITED quotation with no source match is queued as source-conflict, and blocks at release", () => {
+  const f = cleanFixture();
+  fs.appendFileSync(path.join(f.root, "study-guide", "ch1.md"), `\nThe source records that "${EDITED_QUOTE}".\n`);
+  indexSemantic(f.root);
+  accept(f.root);
+
+  // WHILE AUTHORING: the finding is a queue ITEM, not a gate failure — the sibling precedent
+  // (dangling refs, consistency, the review gates) is that the semantic layer counts toward
+  // criticalTotal under --for-discovery ONLY.
+  const authoringJson = path.join(f.parent, "authoring.json");
+  const authoring = spawnSync(process.execPath, [path.join(repo, "scripts", "check_oer.mjs"), "--package", f.root, "--inputs", f.inputs, "--json", authoringJson], { encoding: "utf8" });
+  const authoringReport = JSON.parse(fs.readFileSync(authoringJson, "utf8"));
+  assert.equal(authoringReport.criticalCounts.semanticReviewFlags ?? 0, 0, "an authoring run was blocked by a queue item");
+  assert.ok(authoringReport.semantic.burden.flagCount > 0, "the edited quotation was not queued at all");
+
+  // THE ITEM ITSELF, read from the user-visible artifact.
+  const items = quotationItems(f.root);
+  assert.equal(items.length, 1, `expected exactly one unverifiable-quotation item, got ${items.length}`);
+  const [item] = items;
+  // The fold, both directions: the human is asked "source-conflict"; the observation survives as the
+  // detector kind so a study can still count TRUST 3c's contribution per layer.
+  assert.equal(item.kind, "source-conflict");
+  assert.deepEqual(item.detectorKinds, ["unverifiable-quotation"], "the observation was destroyed by the fold to the queue kind");
+  // `review`, not `blocking`: nothing is provably a falsehood — the quote may simply come from an
+  // unpinned source — so a human decides. `blocking` is reserved for a quote provably attributed to a
+  // pinned automatic source.
+  assert.equal(item.severity, "review");
+  const prose = item.evidence.join("\n");
+  for (const needle of ["study-guide/ch1.md", "trademark", "no pinned automatic source"])
+    assert.ok(prose.includes(needle), `the message does not name ${JSON.stringify(needle)}:\n${prose}`);
+
+  // AT RELEASE: shipping a package whose quotation matches no source is exactly the fault this layer
+  // exists to catch, so it must block.
+  const { report: release } = runQa(f); // runQa runs --for-discovery
+  assert.ok(release.criticalCounts.semanticReviewFlags > 0, "an unverifiable quotation can still be published");
+  assert.ok(release.criticalTotal > 0, "the release gate passed a package quoting text from no source");
+});
+
+test("bound #1 — with NO pinned source corpus, no quotation is flaggable (off-corpus quotes are unfalsifiable)", () => {
+  const f = cleanFixture();
+  fs.appendFileSync(path.join(f.root, "study-guide", "ch1.md"), `\nThe source records that "${EDITED_QUOTE}".\n`);
+  // Remove the corpus so verbatim cannot run — the quotation scan must then flag NOTHING, because a
+  // package that pins no source cannot falsify any quote (bound #1, by construction).
+  fs.rmSync(path.join(f.inputs, "SOURCE_CORPUS.json"));
+  fs.rmSync(path.join(f.inputs, "source.txt"));
+  indexSemantic(f.root);
+  accept(f.root);
+  const { report } = runQa(f);
+  assert.equal(report.verbatim.ran, false, "verbatim ran despite the corpus being removed");
+  assert.deepEqual(quotationItems(f.root), [], "a quotation was flagged with no pinned source to falsify it against");
+});

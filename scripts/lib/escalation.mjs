@@ -192,6 +192,17 @@ const DETECTOR_TO_QUEUE = {
   // detector kind `implausible-quantity` survives in `detectorKinds`, so a study can still count the
   // range layer's contribution separately from the disagreement layer's.
   "implausible-quantity": "suspected-error",
+  // TRUST 3c's unverifiable-quotation scan (the publish-gate half of the immutable promise). A span
+  // the package dresses in quote marks but that appears in NO pinned source folds to `source-conflict`
+  // — the question is exactly "the package's text cannot be reconciled to the source", which is what
+  // that queue kind names, and its default severity is `review`: nothing is provably a falsehood (the
+  // quote may simply come from a source that was not pinned), so a human decides. It is NOT
+  // `internal-inconsistency` (nothing here DISAGREES across artifacts) and NOT `suspected-error`
+  // (a range value is impossible on its own terms; a quotation is merely unverifiable). `blocking` is
+  // reserved for a quote provably attributed to a pinned automatic source — not yet emitted. The
+  // detector kind `unverifiable-quotation` survives in `detectorKinds`, so a study can count this
+  // layer's contribution (S-CONF-fi) separately.
+  "unverifiable-quotation": "source-conflict",
   // The M11 gate's §5b rows. THREE detector kinds fold to `dangling-reference` because they are one
   // QUESTION — "this reference points at nothing; fix it or remove it" — asked about three different
   // reference species (a declared anchor, a spineRef, a `derivedFrom`). The fold is deliberate and
