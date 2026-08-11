@@ -32,12 +32,14 @@
 // go into a paper about this very product, so the incentive to fit them is exactly as strong as
 // the reason not to. **An honest 0.8 is worth more than a fitted 1.0.**
 //
-// FIVE of the twelve cases below are currently FAILING their preregistration, across FOUR
-// findings: the rename (1), the reorder (2), the orz container bump (3), and the two value-change
-// cases, which mismatch for one shared reason (4). They are left failing, and
-// `npm run study:pairs` prints them. Read FINDINGS at the foot of this file before "fixing" any of
-// them here — three of the four are defects whose fix is a CONTRACT change, not a change to this
-// file, and the fourth is a designed trade-off reported rather than proposed as a defect.
+// THREE of the twelve cases below are currently FAILING their preregistration, across TWO
+// findings: the reorder (2) and the two value-change cases, which mismatch for one shared reason
+// (4). They are left failing, and `npm run study:pairs` prints them. TWO earlier findings have
+// been RESOLVED by CONTRACT changes elsewhere — the rename (1, fixed 2026-07-17 in interfaces §2 /
+// `lib/terms.mjs`) and the orz container bump (3, fixed 2026-08-11 in `lib/fingerprint.mjs`'s
+// `stripMarkup`) — and their cases now PASS, without one `expect` literal below being touched.
+// Read FINDINGS at the foot of this file before "fixing" any of the rest here — FINDING 4 is a
+// designed trade-off reported rather than proposed as a defect, and FINDING 2 fails by design.
 //
 // WHAT A "FLAG" IS (the definition every metric below rests on)
 // -------------------------------------------------------------
@@ -184,7 +186,8 @@ export const CASES = [
     // this project's house markdown standard, so a real package is full of these containers and a
     // real author adds them while styling a chapter, without touching a fact.
     //
-    // OBSERVED: 3 flags (ESCALATE + 2 silent-risk). PREREGISTRATION LEFT AS IS. See FINDING 3.
+    // WAS OBSERVED (until 2026-08-11): 3 flags (ESCALATE + 2 silent-risk). RESOLVED — `stripMarkup`
+    // learned orz containers + `{{...}}` directives, so `content` no longer moves. See FINDING 3.
     expect: {},
   },
 
@@ -787,8 +790,13 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
 //    catch worth stating: declaring the anchor makes the reorder survive only if the author moves
 //    the declaration with the prose, and nothing checks that they did.
 //
-// 3. **AN ORZ CONTAINER BUMP IS A FALSE FLAG.** (`null-orz-container`: 3 flags where spec §5's
-//    format row promises zero.) `:::info` is not markdown, so `stripMarkup` has no rule for it and
+// 3. **[RESOLVED 2026-08-11] AN ORZ CONTAINER BUMP WAS A FALSE FLAG.** (`null-orz-container`: was
+//    3 flags where spec §5's format row promises zero; now 0.) The diagnosis below stands as the
+//    record of the defect and its fix: `stripMarkup` in `lib/fingerprint.mjs` now strips orz
+//    container fences (`:::name` open / bare `:::` close) and `{{...}}` directives — the two
+//    constructs `check_oer.mjs`'s `orzSyntaxAudit` already recognizes — so `format`/`content` are
+//    blind to them and the styling edit moves nothing. Original diagnosis:
+//    `:::info` is not markdown, so `stripMarkup` has no rule for it and
 //    `tokenize` sees the bare word "info", which lands in the semantic core:
 //        plain    -> "#100:celsius at is pressure standard term.melting-point water"
 //        wrapped  -> "#100:celsius at info is pressure standard term.melting-point water"

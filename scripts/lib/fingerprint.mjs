@@ -260,6 +260,14 @@ function stripMarkup(text) {
     .normalize("NFKC")
     .replace(/```[\s\S]*?```/g, " ") // fenced code
     .replace(/`([^`]*)`/g, "$1") // inline code — keep the code TEXT, drop the ticks
+    // orz-markdown (this project's HOUSE markdown standard) — the two constructs check_oer's
+    // orzSyntaxAudit recognizes, stripped with its exact definitions so `format` is blind to them:
+    //   * a plugin directive ({{toc}}, {{plugin ...}}) is a RENDER instruction and asserts nothing;
+    //   * a container fence — open `:::name`/`::::tabs`, bare close `:::` — is PRESENTATION, not
+    //     meaning. Without these, `:::info` leaks the bare word "info" into the semantic core and a
+    //     pure styling edit false-flags every claim it drags in (study_pairs FINDING 3).
+    .replace(/\{\{[\s\S]*?\}\}/g, " ") // orz plugin directive
+    .replace(/^\s{0,3}:{3,}.*$/gm, " ") // orz container fence (open `:::name` or bare close `:::`)
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1") // image → alt text
     .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1") // link → link text
     .replace(/^\s{0,3}#{1,6}\s+/gm, "") // heading markers

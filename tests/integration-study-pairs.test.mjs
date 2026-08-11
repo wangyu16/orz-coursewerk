@@ -104,36 +104,30 @@ test("null suite: a meaning-preserving rephrase moves `format` AND ONLY `format`
   assert.equal(run("null-rephrase").observedFlags, 0);
 });
 
-test("FINDING 3: an orz `:::info` container bump is a FALSE FLAG (3 flags where spec §5 promises 0)", () => {
+test("FINDING 3 RESOLVED: an orz `:::info` container bump is clean — the preregistration now holds", () => {
   // PREREGISTERED: 0 flags. spec §5's format row lists "orz/template bump" -> NONE, and wrapping a
   // sentence in a callout asserts nothing new.
-  // OBSERVED: `:::info` is not markdown, so `stripMarkup` has no rule for it and the bare word
-  // "info" lands in the semantic core -> `content` moves -> ESCALATE -> the claim seeds co-mention
-  // and drags two more claims in as silent-risk.
-  //
-  // THIS TEST PINS THE DEFECT. It is not a blessing: orz-markdown is this project's house markdown
-  // standard, so this fires on ordinary chapter styling. When `stripMarkup` learns orz containers,
-  // this test MUST fail — and the failure means "delete this test, the preregistration now holds".
+  // WAS OBSERVED (until 2026-08-11): `:::info` was not markdown, so `stripMarkup` had no rule for it
+  // and the bare word "info" landed in the semantic core -> `content` moved -> ESCALATE -> the claim
+  // seeded co-mention and dragged two more claims in as silent-risk (3 flags).
+  // FIX: `stripMarkup` learned orz containers + `{{...}}` directives (the two constructs check_oer's
+  // orzSyntaxAudit recognizes), so a fence is now stripped before hashing and `content` holds.
+  // This test asserts the FIX — the finding's own note said this is the failure that means "the
+  // preregistration now holds", the same way FINDING 1 (the rename) was retired on 2026-07-17.
   const r = run("null-orz-container");
   assert.equal(r.expectedFlags, 0, "the preregistration is 0 and stays 0");
-  assert.equal(r.matchesPreregistration, false, "FINDING 3: observed != preregistered");
-  assert.equal(r.observedFlags, 3);
-  assert.equal(verdictAt(r, "study-guide/phase-change.md#melting-point-of-water#1|matched"), "ESCALATE");
-  assert.equal(
-    r.observations.find((o) => o.key === "study-guide/phase-change.md#melting-point-of-water#1|matched").layer,
-    "content",
-    "the mechanism: a container fence moves the MEANING layer",
-  );
+  assert.equal(r.matchesPreregistration, true, "FINDING 3 resolved: observed == preregistered");
+  assert.equal(r.observedFlags, 0, "no false flag on a styling-only edit");
 });
 
-test("false_flag_rate is reported with its denominator, and is NOT zero", () => {
+test("false_flag_rate is reported with its denominator, and is now ZERO (spec §7 target met)", () => {
   const m = metrics(CASES.map((c) => runCase(c)));
   const ffr = m.false_flag_rate;
-  assert.equal(ffr.falseFlags, 3, "all three from null-orz-container; the other five null cases are clean");
+  assert.equal(ffr.falseFlags, 0, "all six null cases are clean after FINDING 3 was fixed");
   assert.equal(ffr.claimObservations, 24, "6 null cases x 4 claims — the denominator the paper must print");
-  assert.equal(ffr.value, 0.125);
-  // spec §7's target is 0. The honest report is that it is NOT met, by one case, for one reason.
-  assert.notEqual(ffr.value, ffr.target, "spec §7 targets 0; see FINDING 3");
+  assert.equal(ffr.value, 0);
+  // spec §7's target is 0, and it is now MET across every null edit in the suite.
+  assert.equal(ffr.value, ffr.target, "spec §7 targets 0; the null suite meets it");
 });
 
 // ==============================================================================================
@@ -336,7 +330,7 @@ test("apparatus: the headline metrics are what they are", () => {
   const m = runStudyPairs().metrics;
   // Pinned so a regression, or an improvement, is loud. NOT fitted: each number is the sum of the
   // per-case results above, every one of which is preregistered and reasoned in the source.
-  assert.equal(m.false_flag_rate.value, 0.125, "3/24 — one case, FINDING 3; the rename fix moved nothing here");
+  assert.equal(m.false_flag_rate.value, 0, "0/24 — every null edit is clean after FINDING 3 was fixed on 2026-08-11");
   assert.equal(
     m.impact_detection_recall.value,
     0.8182,
@@ -350,33 +344,38 @@ test("apparatus: the headline metrics are what they are", () => {
   assert.ok(m.impact_detection_recall.value < 1, "spec §7 targets full recall; it is not met");
 });
 
-test("apparatus: FOUR of twelve cases fail their preregistration, across THREE named findings", () => {
+test("apparatus: THREE of twelve cases fail their preregistration, across TWO named findings", () => {
   // The count is stated exactly, because "some cases fail" is how a mismatch becomes background
-  // noise. Four cases, three findings — the two value-change cases mismatch for the SAME reason
+  // noise. Three cases, two findings — the two value-change cases mismatch for the SAME reason
   // (FINDING 4's one-hop over-reach), which is why the finding count is lower than the case count
   // and why both numbers are reported rather than the flattering one.
   //
-  // It was FIVE cases across FOUR findings until 2026-07-17, when FINDING 1 (the rename) was fixed
-  // in interfaces §2 and `lib/terms.mjs`. The count moved because the SYSTEM moved: not one
-  // expectation in `scripts/study_pairs.mjs` was touched, and the three that remain are still
-  // failing, still named, still reported.
+  // The trail of retirements, each moving because the SYSTEM moved — not one expectation in
+  // `scripts/study_pairs.mjs` was ever touched:
+  //   * FIVE cases / FOUR findings until 2026-07-17, when FINDING 1 (the rename) was fixed in
+  //     interfaces §2 and `lib/terms.mjs`;
+  //   * FOUR cases / THREE findings until 2026-08-11, when FINDING 3 (the orz container bump) was
+  //     fixed in `lib/fingerprint.mjs`'s `stripMarkup`.
+  // The two that remain are still failing, still named, still reported: FINDING 4 (the two
+  // value-change cases) and FINDING 2 (the reorder, failing by design).
   const report = runStudyPairs();
   assert.deepEqual(
     report.mismatches.map((x) => x.case).sort(),
     [
-      "null-orz-container", // FINDING 3 — an orz container bump moves `content`
       "real-reorder", // FINDING 2 — a reorder is a mass delete-and-recreate
       "real-value-change", // FINDING 4 — one-hop co-mention over-reach
       "real-value-change-authorized", // FINDING 4 again — same over-reach, same edit
     ].sort(),
   );
-  assert.equal(
-    report.mismatches.some((x) => x.case === "real-term-rename"),
-    false,
-    "FINDING 1 is fixed: the rename case now meets the preregistration it was pinned as failing",
-  );
+  for (const fixed of ["real-term-rename", "null-orz-container"]) {
+    assert.equal(
+      report.mismatches.some((x) => x.case === fixed),
+      false,
+      `resolved: ${fixed} now meets the preregistration it was pinned as failing`,
+    );
+  }
   assert.equal(report.cases.length, 12);
-  assert.equal(report.cases.filter((c) => c.matchesPreregistration).length, 8);
+  assert.equal(report.cases.filter((c) => c.matchesPreregistration).length, 9);
 });
 
 test("apparatus: unreachable cases are DECLARED, never silently dropped", () => {

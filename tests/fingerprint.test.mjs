@@ -69,6 +69,15 @@ test("null edit: markdown emphasis/formatting does not move content", () => {
   assert.equal(contentOf("- The melting point of water is 100 °C."), contentOf(BASE));
 });
 
+test("null edit: orz container fence / plugin directive does not move content", () => {
+  // orz-markdown is the house standard; wrapping a fact in a container or adding a directive is
+  // STYLING, not meaning. `:::info` must not leak the word "info" into the semantic core, and a
+  // `{{toc}}` sharing a block with prose must not either (study_pairs FINDING 3).
+  assert.equal(contentOf(`:::info\n${BASE}\n:::`), contentOf(BASE));
+  assert.equal(contentOf(`::::tabs\n:::tab A\n${BASE}\n:::\n::::`), contentOf(BASE));
+  assert.equal(contentOf(`{{toc}}\n${BASE}`), contentOf(BASE));
+});
+
 test("null edit: meaning-preserving rephrase does not move content", () => {
   // The pinned rephrase: of-genitive -> 's-genitive, constituent order changed.
   assert.equal(contentOf("Water's melting point is 100 °C."), contentOf(BASE));
