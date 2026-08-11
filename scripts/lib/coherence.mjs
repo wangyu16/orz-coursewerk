@@ -11,6 +11,7 @@ import { outputGitState } from "./output_git.mjs";
 import { matchClaims } from "./claims.mjs";
 import { classify } from "./classify.mjs";
 import { resolve as resolveTerm } from "./terms.mjs";
+import { scanProjection } from "./units.mjs";
 import { SEMANTIC_INDEX_PATHS } from "./semantic_index.mjs";
 import { REVIEW_QUEUE_PATH } from "./escalation.mjs";
 
@@ -475,6 +476,21 @@ export function validateRevisionReview(root, review) {
 //     meaning attached to it changed);
 //   * a shared SPINE matters when the seed's `spine` or `content` moved (the pedagogy the claim
 //     hangs under, or what it asserts under it, changed).
+//
+// The TERM gate is further narrowed for a VALUE CHANGE, and this is the FINDING 4 fix. When the
+// `content` move is a change to a QUANTITY — the seed states a value (M2's unit recognizer fires on
+// its text) and no rename accompanies it — a co-mentioning claim can only be silently contradicted
+// if it ALSO states a value. "State the melting point of water at standard pressure" names the term
+// but asserts no number; it is exactly as true at 0 °C as at 100 °C, so a value edit strands it in
+// no way an instructor must see. Flagging it is a precision cost, not a detection. So a value
+// change reaches, by term, only the term-sharers that THEMSELVES carry a quantity (the answer key
+// that restates "100 °C" — the very claim `silentRisk` exists to catch — is kept). The authority on
+// "is this a value" is M-shared units (`scanProjection`), reused rather than re-invented, so this
+// gate cannot drift from what M2 will mint as a quantity. Two guards keep it conservative:
+//   * it NEVER applies when `label` also moved — a rename touches the term everywhere it appears,
+//     value-bearing or not, so a rename still reaches the objective (see `real-term-rename`);
+//   * it NEVER applies when the seed states no quantity — a non-numeric meaning change ("boils" ->
+//     "freezes") could strand any sharer, and we cannot cheaply tell which, so reach stays full.
 // A `provenance`-only move reaches nothing by co-mention: re-citing one claim does not make
 // another claim's prose wrong, and M4 already returns RECHECK + an ESCALATE follow-up for it.
 //
@@ -569,6 +585,17 @@ function assertCtxShape(ctx) {
 function claimNodes(claims) {
   const list = Array.isArray(claims) ? claims : Array.isArray(claims?.claims) ? claims.claims : [];
   return list.filter((c) => c && typeof c === "object" && typeof c.id === "string" && c.id);
+}
+
+/**
+ * Does this claim's prose STATE a quantity (a number bound to a unit)? The recognizer is M2's own
+ * (`scanProjection`, M-shared units) — the FINDING 4 term gate must agree with what M2 mints as a
+ * quantity claim, so it borrows the same authority rather than a second copy that could drift. A
+ * fresh matcher per call: `quantityRe()` returns one because `lastIndex` is shared state.
+ */
+const { quantityRe } = scanProjection();
+function statesQuantity(text) {
+  return quantityRe().test(String(text ?? ""));
 }
 
 /** Sorted, de-duplicated, stringified refs. */
@@ -781,7 +808,7 @@ function findCycles(nodes, edges) {
  *
  * @returns {Map<string, Set<string>>} reached id -> the relation kinds that reached it
  */
-function reachFrom(seedId, nodes, edges, refIndex, refsByNode, moved) {
+function reachFrom(seedId, nodes, edges, refIndex, refsByNode, moved, quantityByNode) {
   const reached = new Map([[seedId, new Set(["seed"])]]);
   const note = (id, kind) => {
     if (id === seedId) return; // the seed is reached by being the seed
@@ -793,7 +820,16 @@ function reachFrom(seedId, nodes, edges, refIndex, refsByNode, moved) {
   const byTerm = moved.includes("label") || moved.includes("content");
   const bySpine = moved.includes("spine") || moved.includes("content");
   const refs = refsByNode.get(seedId);
-  if (byTerm) for (const t of refs.termIds) for (const id of refIndex.term.get(t) ?? []) note(id, "shared-term");
+  // FINDING 4: a VALUE change (content moved, no rename, and the seed itself states a quantity)
+  // reaches by term only the sharers that ALSO state a value — a claim that merely names the term
+  // is as true after the edit as before. Both conjuncts keep it conservative; see the header.
+  const valueChange = moved.includes("content") && !moved.includes("label") && quantityByNode.get(seedId);
+  if (byTerm)
+    for (const t of refs.termIds)
+      for (const id of refIndex.term.get(t) ?? []) {
+        if (valueChange && !quantityByNode.get(id)) continue; // value edit cannot strand a valueless sharer
+        note(id, "shared-term");
+      }
   if (bySpine) for (const s of refs.spineRefs) for (const id of refIndex.spine.get(s) ?? []) note(id, "shared-spine");
 
   // --- DERIVATION: transitive, downstream, from everything reached so far ----------------------
@@ -861,6 +897,13 @@ export function claimImpact(root, oldClaims, newClaims, terms, ctx) {
 
   const edges = derivationEdges(nodes);
   const movedByNode = new Map([...nodes].map(([id, n]) => [id, movedLayers(n.old, n.new)]));
+  // Does a claim STATE a quantity? Read from its text via M-shared units (the same recognizer M2
+  // mints quantity claims with — reused so this gate cannot drift from what counts as a value).
+  // Unioned across versions: a value the edit ADDED or REMOVED still makes the claim value-bearing
+  // for the hop that matters. Used by the FINDING 4 term gate in `reachFrom`.
+  const quantityByNode = new Map(
+    [...nodes].map(([id, n]) => [id, [n.old, n.new].filter(Boolean).some((c) => statesQuantity(c.text))]),
+  );
 
   // --- SEEDS ---------------------------------------------------------------------------------
   // A claim whose ONLY moved layer is `format` is a rephrase: M4 calls it NONE and it seeds
@@ -874,7 +917,7 @@ export function claimImpact(root, oldClaims, newClaims, terms, ctx) {
   // --- REACHABILITY --------------------------------------------------------------------------
   const reachedBy = new Map(); // id -> {from:Set<seedId>, via:Set<kind>}
   for (const seedId of seeds) {
-    for (const [id, kinds] of reachFrom(seedId, nodes, edges, refIndex, refsByNode, movedByNode.get(seedId))) {
+    for (const [id, kinds] of reachFrom(seedId, nodes, edges, refIndex, refsByNode, movedByNode.get(seedId), quantityByNode)) {
       if (!reachedBy.has(id)) reachedBy.set(id, { from: new Set(), via: new Set() });
       const entry = reachedBy.get(id);
       if (id !== seedId) entry.from.add(seedId);

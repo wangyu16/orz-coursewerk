@@ -146,22 +146,31 @@ test("real: a value change ESCALATEs the edited fact and catches the answer key 
   assert.deepEqual(r.wrongVerb, [], "both carry the preregistered verb");
 });
 
-test("FINDING 4: the value change also over-reaches to an objective that did not change meaning", () => {
-  // PREREGISTERED: not flagged. "State the melting point of water at standard pressure" does not
-  // restate the value; it is exactly as true at 0 °C as at 100 °C.
-  // OBSERVED: SILENT-RISK, via one-hop co-mention on the shared term.
-  // A PRECISION cost, not a detection failure — and the DESIGNED behavior, so this is reported
-  // rather than proposed as a defect (see FINDING 4; the alternative would have missed the answer
-  // key, which is the case the system exists for). spec §1 asks for precision "measured, not
-  // assumed"; §7 gives it no metric, so the harness adds one.
+test("FINDING 4 (RESOLVED): a value change reaches the answer key but NOT an objective that states no value", () => {
+  // THE PREREGISTRATION IS UNCHANGED — it was never in question. "State the melting point of water
+  // at standard pressure" restates no value; it is exactly as true at 0 °C as at 100 °C, so a value
+  // edit strands it in no way an instructor must see. What changed is that OBSERVED now MEETS the
+  // preregistration. The header once said this case "fails by design (a precision cost, reported)";
+  // that stopped being true when the value-change term gate landed, and this is it saying so.
+  //
+  // WHAT WAS BROKEN: term co-mention fired for ANY term-sharer whenever `content` moved, so a value
+  // change dragged in every claim naming the term — including the objective, which asserts nothing
+  // that a value could contradict. It flagged, matchesPreregistration was false, one unexpected.
+  //
+  // WHAT FIXED IT: `reachFrom` narrows the TERM hop on a value change (content moved, no rename, and
+  // the seed itself states a quantity) to the sharers that THEMSELVES state a value — read from M2's
+  // own units recognizer (`scanProjection`), so the gate cannot drift from what counts as a value.
+  // The answer key restates "100 °C" and is kept (the case the system exists for); the objective
+  // states no value and is dropped. Never applied on a rename (label) or a non-numeric content move.
   const r = run("real-value-change");
-  assert.equal(r.matchesPreregistration, false);
-  assert.deepEqual(r.unexpected, [
-    { key: "study-guide/phase-change.md#objectives#1|matched", verdict: "SILENT-RISK" },
-  ]);
-  // The RELATION that reached it, read from the `via` field rather than regexed out of prose:
-  // one hop on the shared term, with no derivation edge involved (there are none — FINDING 5).
-  assert.deepEqual(r.observations.find((o) => o.key === r.unexpected[0].key).via, ["shared-term"]);
+  assert.equal(r.matchesPreregistration, true, "FINDING 4 RESOLVED: observed == preregistered");
+  assert.deepEqual(r.unexpected, [], "the objective is no longer over-reached");
+  assert.deepEqual(r.missed, [], "and the answer key is NOT lost — under-reach was the trap this avoided");
+  // The answer key IS still flagged (SILENT-RISK), reached by one hop on the shared term — the very
+  // claim `silentRisk` exists to catch. Read from `via` rather than regexed out of prose.
+  const ans = "practice/phase-change.md#practice-phase-change#1|matched";
+  assert.equal(verdictAt(r, ans), "SILENT-RISK", "the answer key that restates the value is kept");
+  assert.deepEqual(r.observations.find((o) => o.key === ans).via, ["shared-term"]);
 });
 
 test("real (spec §7 OVERRIDE test): an authorized knowledge update is RE-DERIVE, never a hallucination", () => {
@@ -344,30 +353,30 @@ test("apparatus: the headline metrics are what they are", () => {
   assert.ok(m.impact_detection_recall.value < 1, "spec §7 targets full recall; it is not met");
 });
 
-test("apparatus: THREE of twelve cases fail their preregistration, across TWO named findings", () => {
+test("apparatus: ONE of twelve cases fails its preregistration, on ONE named finding", () => {
   // The count is stated exactly, because "some cases fail" is how a mismatch becomes background
-  // noise. Three cases, two findings — the two value-change cases mismatch for the SAME reason
-  // (FINDING 4's one-hop over-reach), which is why the finding count is lower than the case count
-  // and why both numbers are reported rather than the flattering one.
+  // noise. One case, one finding — FINDING 2 (the reorder), which fails BY DESIGN: a reorder is
+  // indexed as a mass delete-and-recreate, and closing it is a contract change (a DECLARED anchor)
+  // left for its own step. It is reported, not smoothed over.
   //
   // The trail of retirements, each moving because the SYSTEM moved — not one expectation in
   // `scripts/study_pairs.mjs` was ever touched:
   //   * FIVE cases / FOUR findings until 2026-07-17, when FINDING 1 (the rename) was fixed in
   //     interfaces §2 and `lib/terms.mjs`;
   //   * FOUR cases / THREE findings until 2026-08-11, when FINDING 3 (the orz container bump) was
-  //     fixed in `lib/fingerprint.mjs`'s `stripMarkup`.
-  // The two that remain are still failing, still named, still reported: FINDING 4 (the two
-  // value-change cases) and FINDING 2 (the reorder, failing by design).
+  //     fixed in `lib/fingerprint.mjs`'s `stripMarkup`;
+  //   * THREE cases / TWO findings, same day, when FINDING 4 (the value-change term over-reach) was
+  //     fixed by the quantity gate in `lib/coherence.mjs`'s `reachFrom` — retiring BOTH value-change
+  //     cases at once, since they share the edit.
+  // The one that remains is still failing, still named, still reported: FINDING 2, by design.
   const report = runStudyPairs();
   assert.deepEqual(
     report.mismatches.map((x) => x.case).sort(),
     [
       "real-reorder", // FINDING 2 — a reorder is a mass delete-and-recreate
-      "real-value-change", // FINDING 4 — one-hop co-mention over-reach
-      "real-value-change-authorized", // FINDING 4 again — same over-reach, same edit
     ].sort(),
   );
-  for (const fixed of ["real-term-rename", "null-orz-container"]) {
+  for (const fixed of ["real-term-rename", "null-orz-container", "real-value-change", "real-value-change-authorized"]) {
     assert.equal(
       report.mismatches.some((x) => x.case === fixed),
       false,
@@ -375,7 +384,7 @@ test("apparatus: THREE of twelve cases fail their preregistration, across TWO na
     );
   }
   assert.equal(report.cases.length, 12);
-  assert.equal(report.cases.filter((c) => c.matchesPreregistration).length, 9);
+  assert.equal(report.cases.filter((c) => c.matchesPreregistration).length, 11);
 });
 
 test("apparatus: unreachable cases are DECLARED, never silently dropped", () => {

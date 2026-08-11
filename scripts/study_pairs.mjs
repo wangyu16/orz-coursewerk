@@ -32,14 +32,14 @@
 // go into a paper about this very product, so the incentive to fit them is exactly as strong as
 // the reason not to. **An honest 0.8 is worth more than a fitted 1.0.**
 //
-// THREE of the twelve cases below are currently FAILING their preregistration, across TWO
-// findings: the reorder (2) and the two value-change cases, which mismatch for one shared reason
-// (4). They are left failing, and `npm run study:pairs` prints them. TWO earlier findings have
-// been RESOLVED by CONTRACT changes elsewhere — the rename (1, fixed 2026-07-17 in interfaces §2 /
-// `lib/terms.mjs`) and the orz container bump (3, fixed 2026-08-11 in `lib/fingerprint.mjs`'s
-// `stripMarkup`) — and their cases now PASS, without one `expect` literal below being touched.
-// Read FINDINGS at the foot of this file before "fixing" any of the rest here — FINDING 4 is a
-// designed trade-off reported rather than proposed as a defect, and FINDING 2 fails by design.
+// ONE of the twelve cases below is currently FAILING its preregistration, on ONE finding: the
+// reorder (2), which fails BY DESIGN and is left failing — `npm run study:pairs` prints it. THREE
+// earlier findings have been RESOLVED by CONTRACT changes elsewhere — the rename (1, fixed
+// 2026-07-17 in interfaces §2 / `lib/terms.mjs`), the orz container bump (3, fixed 2026-08-11 in
+// `lib/fingerprint.mjs`'s `stripMarkup`), and the value-change term over-reach (4, fixed 2026-08-11
+// by the quantity gate in `lib/coherence.mjs`'s `reachFrom`, retiring both value-change cases at
+// once) — and their cases now PASS, without one `expect` literal below being touched. Read FINDINGS
+// at the foot of this file before "fixing" any of the rest here — FINDING 2 fails by design.
 //
 // WHAT A "FLAG" IS (the definition every metric below rests on)
 // -------------------------------------------------------------
@@ -213,7 +213,8 @@ export const CASES = [
     //   correctly worded, at 0 °C as at 100 °C — nothing about it needs an instructor's attention.
     //   Flagging it is a precision cost, not a detection.
     //
-    // OBSERVED: the objective IS flagged SILENT-RISK — 1 unexpected flag. See FINDING 4.
+    // OBSERVED: MEETS preregistration since the value-change term gate landed (2026-08-11). The
+    // objective is no longer over-reached; the answer key is still SILENT-RISK. See FINDING 4.
     expect: {
       [`${SG}#melting-point-of-water#1|matched`]: "ESCALATE",
       [`${PRACTICE}#practice-phase-change#1|matched`]: "SILENT-RISK",
@@ -813,18 +814,23 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
 //    own block and mints no claim. Both are in the suite deliberately — reporting only the failing
 //    one would be as much a choice of the result as reporting only the passing one.
 //
-// 4. **THE ONE-HOP CO-MENTION OVER-REACHES.** (`real-value-change`: 1 unexpected flag.) Changing
-//    the melting point drags in "State the melting point of water at standard pressure" — an
-//    objective that does not restate the value and is exactly as correct after the edit as before.
-//    This is a precision cost, not a detection failure, and it is the DESIGNED behavior (`reachFrom`
-//    gates co-mention on the layer that moved and reaches every claim sharing a term). It is
-//    reported because spec §1 lists precision as a goal to be "measured, not assumed" and §7 gives
-//    it no metric — so `real_edit_unexpected_flag_rate` is added above rather than left uncounted.
-//    On this fixture the number is small; on a real chapter, every claim sharing a common term
-//    ("temperature") is one hop from every other, and 1/12 here is not evidence about that.
-//    NOT proposed as a defect: the alternative (reach only `derivedFrom` edges) would have missed
-//    the answer key, which is the case the system exists for. The honest report is the trade-off
-//    with both numbers, not a verdict.
+// 4. **[RESOLVED 2026-08-11] THE VALUE-CHANGE TERM CO-MENTION OVER-REACHED.** (`real-value-change`
+//    and `real-value-change-authorized`: was 1 unexpected flag each; now 0.) Changing the melting
+//    point used to drag in "State the melting point of water at standard pressure" — an objective
+//    that restates no value and is exactly as correct after the edit as before. Original diagnosis:
+//    `reachFrom` fired term co-mention for EVERY claim sharing a term whenever `content` moved, so a
+//    value edit reached every claim naming the term, value-bearing or not. The fix, narrow and
+//    grounded in existing machinery: a VALUE change (content moved, no accompanying rename, and the
+//    seed itself states a quantity) reaches by term only the sharers that THEMSELVES state a value —
+//    read from M2's own units recognizer (`scanProjection`, M-shared units), so the gate cannot
+//    drift from what counts as a quantity. The answer key that restates "100 °C" is KEPT (the case
+//    the system exists for); the objective that names the term but states no value is DROPPED. Two
+//    guards keep it conservative and forbid a fitted win: it NEVER applies on a rename (a rename
+//    touches the term everywhere — `real-term-rename` still reaches the objective), and it NEVER
+//    applies on a non-numeric content move (a meaning change could strand any sharer, so reach stays
+//    full). `real_edit_unexpected_flag_rate` — added when this was still open, and kept — records the
+//    precision gain: 8/24 -> 6/24 over the suite. The reorder (FINDING 2) is the only over-reach
+//    that remains, and it fails by design.
 //
 // 5. **THE FIXTURE CANNOT EXERCISE 2 OF THE 5 FINGERPRINT LAYERS — and that is one cause, not
 //    four.** Four of the five SKIPPED cases and one identity row trace to a single property: every

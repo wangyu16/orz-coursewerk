@@ -136,12 +136,12 @@ test("affected: a claim sharing no vocabulary with the change is absent (noise i
   // The negative's negative: the mechanism is live, not merely silent about everything.
   assert.ok(out.affected.includes(answerId), "the answer key IS reached — the relation works");
 
-  // Documented over-reach, asserted so it is a CHOICE and not a surprise: the objective naming the
-  // melting point is reached by a change to the melting point's value, even though it asserts no
-  // value. Co-mention over the instructor's controlled vocabulary cannot tell "states the value"
-  // from "names the term", and over-reporting a silent risk costs a glance while under-reporting
-  // one is invisible forever (M3's under-absorb doctrine, applied to reachability).
-  assert.ok(out.affected.includes(idOf(before, OBJ_MELTING)), "objective naming the term is reached (documented)");
+  // FINDING 4, now CLOSED: the objective naming the melting point asserts no value ("State the
+  // melting point of water at standard pressure"), so a change to the VALUE cannot silently
+  // contradict it — it is exactly as true at 0 °C as at 100 °C. A value change (content moved, no
+  // rename, seed states a quantity) reaches by term only the sharers that themselves state a value,
+  // so the objective is NOT reached. The answer key (asserted above) still is: it restates "100 °C".
+  assert.ok(!out.affected.includes(idOf(before, OBJ_MELTING)), "objective naming the term but stating no value is NOT reached by a value change");
 });
 
 /**

@@ -323,7 +323,7 @@
       "id": "repo:scripts/lib/coherence.mjs",
       "path": "scripts/lib/coherence.mjs",
       "type": "kernel",
-      "hash": "df36caab5fd86ae9ccfd7ca0979c0a8093bc16cdbe4b3f90e9ac03df5f97b8ee"
+      "hash": "aa95b077d51387206e73640210d62042c4d3aea1c54126236493c2c01a74da8b"
     },
     {
       "id": "repo:scripts/lib/consistency.mjs",
@@ -479,7 +479,7 @@
       "id": "repo:scripts/study_pairs.mjs",
       "path": "scripts/study_pairs.mjs",
       "type": "executable",
-      "hash": "830a0cab1daf9c50074820b7471a54dca3b0290997e45d70ed76470b0cf2a702"
+      "hash": "a88326526c6795924b175c9c9659ee65389992a215690576f091c593579945d5"
     },
     {
       "id": "repo:scripts/verify_coursewerk.mjs",
@@ -785,7 +785,7 @@
       "id": "repo:tests/coherence-claims.test.mjs",
       "path": "tests/coherence-claims.test.mjs",
       "type": "test",
-      "hash": "dde933a7608e310901a07fead1315a7062e2b010ebd75e327e805a722be8bc0b"
+      "hash": "41d0e6ac699ef95e61af24df43a83d82fda920d94d1dd3dd08cbc161af7bb6c9"
     },
     {
       "id": "repo:tests/consistency.test.mjs",
@@ -977,7 +977,7 @@
       "id": "repo:tests/integration-study-pairs.test.mjs",
       "path": "tests/integration-study-pairs.test.mjs",
       "type": "test",
-      "hash": "976ee2b5a03945b82f454ffe253ba5bc54b868ebec4eb5e57848cd2d3372b7fc"
+      "hash": "7d19df2ae5e670a249df0cc6de320bb125e0fb0844e2d8d0b752072d5a3fc0cc"
     },
     {
       "id": "repo:tests/key-fact-bindings.test.mjs",
