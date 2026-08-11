@@ -319,3 +319,92 @@ export function isImmutable(regions, offset) {
   }
   return false;
 }
+
+// ── Unverifiable quotations — the publish-gate half of the immutable promise ────────────
+//
+// immutableRegions answers "may an edit touch this offset?" at PLAN time. This answers the
+// symmetrical PUBLISH-time question the verbatim gate is blind to: "does a span the package
+// presents as a reproduced quotation actually appear in a pinned source?" Quote marks assert
+// "these are the author's words"; if those words appear in NO pinned source, the quotation is
+// unverifiable — the exact "edited quote → refused" fault. The verbatim/source-span gate
+// cannot catch it: a SHORT faithful quote (14 words in the golden fixture) is below
+// verbatim.mjs's 15-word MIN_SPAN_WORDS floor, so it mints no span at all, and an EDITED quote
+// no longer matches the source, so it likewise mints no span and is reported clean. Both fail
+// the same way — no span to inspect — which is why source-span OVERLAP was measured and
+// rejected for this check (research/g3-confidence-wiring-design.md §sub-part (a)). The sound
+// signal is a QUOTE-LENGTH-AWARE match: test the quote's own word run against the source at
+// the quote's own length, with no 15-word floor.
+//
+// Fuzzy tolerance (QUOTE_GAP_BUDGET): a real quotation elides words with "…" or brackets, and
+// the tokenizer drops those marks — so the quote's words appear in the source as an in-order
+// subsequence with a few SOURCE words skipped between them. We allow that. Crucially, skipping
+// is only ever of SOURCE words: a SUBSTITUTED quote word ("equal"→"unequal") has no source
+// match at all, so no gap budget can launder an edit. That asymmetry is what lets one knob
+// tolerate legit ellipsis while still catching the single-word edit.
+//
+// Pure, local, deterministic. Bound #1 (design): with no pinned source this returns [] — a
+// quote from an off-corpus / human-attested primary source is NOT flaggable here.
+const MIN_QUOTE_WORDS = 6; // below this a double-quoted span is emphasis/scare-quote, not a
+// reproduced quotation to hold to the source — skip it, never flag (measured FP guard).
+const QUOTE_GAP_BUDGET = 6; // source words an ellipsis/bracket-elision may skip between the
+// quote's words. Generous by design: gaps help legit elisions, never an edited word.
+
+/** Lowercased word tokens (same class as tokensWithOffsets / verbatim.mjs). */
+function wordSeq(text) {
+  const re = /[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*/g;
+  const out = [];
+  let m;
+  while ((m = re.exec(text))) out.push(m[0].toLowerCase());
+  return out;
+}
+
+/**
+ * Does `needle` occur in `hay` (both word arrays) as an IN-ORDER subsequence in which EVERY
+ * needle word matches, skipping at most `gap` hay words in total? Anchored on the needle's
+ * first word so a start is only tried where it can succeed. O(hay × (needle+gap)).
+ */
+function occursWithGap(needle, hay, gap) {
+  const n = needle.length;
+  for (let i = 0; i < hay.length; i += 1) {
+    if (hay[i] !== needle[0]) continue;
+    let k = 1;
+    let j = i + 1;
+    let budget = gap;
+    while (k < n && j < hay.length) {
+      if (hay[j] === needle[k]) {
+        k += 1;
+        j += 1;
+      } else if (budget > 0) {
+        budget -= 1;
+        j += 1;
+      } else break;
+    }
+    if (k === n) return true;
+  }
+  return false;
+}
+
+/**
+ * Quotes the package presents as reproduced text but that appear in NO pinned source.
+ *
+ * @param {string} text - the deliverable text.
+ * @param {string|string[]|null} sourceText - pinned source(s); same contract as
+ *   immutableRegions. With no readable source, returns [] (cannot verify ⇒ do not flag).
+ * @returns {{start:number,end:number,text:string,words:number}[]} one entry per quote region
+ *   of >= MIN_QUOTE_WORDS words with no source match, sorted by start.
+ */
+export function unverifiableQuotations(text, sourceText) {
+  const sources = (Array.isArray(sourceText) ? sourceText : [sourceText])
+    .filter((s) => typeof s === "string" && s.length > 0)
+    .map(wordSeq);
+  if (sources.length === 0) return [];
+  const out = [];
+  for (const r of immutableRegions(text, sourceText)) {
+    if (r.kind !== "quote") continue;
+    const w = wordSeq(text.slice(r.start, r.end));
+    if (w.length < MIN_QUOTE_WORDS) continue;
+    if (sources.some((src) => occursWithGap(w, src, QUOTE_GAP_BUDGET))) continue;
+    out.push({ start: r.start, end: r.end, text: text.slice(r.start, r.end), words: w.length });
+  }
+  return out;
+}

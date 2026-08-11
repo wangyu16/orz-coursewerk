@@ -353,7 +353,7 @@
       "id": "repo:scripts/lib/immutable.mjs",
       "path": "scripts/lib/immutable.mjs",
       "type": "kernel",
-      "hash": "f88b03fc038dd52ee279ba8117b80f4b2bfd82aefa7a8ee197aaed8f7a0baa7e"
+      "hash": "5a47d0b88df9145b66416682a4e99b3de5a529f72fe48b57ae32a174e229cdbf"
     },
     {
       "id": "repo:scripts/lib/key_fact_review.mjs",
@@ -1056,6 +1056,12 @@
       "path": "tests/units.test.mjs",
       "type": "test",
       "hash": "235ffaf3ff14f30a9f1e1a55618b0065d3504f475356aefaa58df680c5620404"
+    },
+    {
+      "id": "repo:tests/unverifiable_quotation.test.mjs",
+      "path": "tests/unverifiable_quotation.test.mjs",
+      "type": "test",
+      "hash": "bf4d761cf4bbf877ef102e102d73bba1a91d57f05e679d082c396c068debd95f"
     },
     {
       "id": "repo:tests/usage-e2e.test.mjs",
