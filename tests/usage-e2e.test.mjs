@@ -696,9 +696,14 @@ test("13 · a DROPPED objective is caught — the instructor's map is a CHECKED 
   assert.deepEqual(g.json.semantic.coverage.objectives, { covered: 2, total: 3 });
   assert.match(g.report, /coverage \(a FLOOR, not a score\)/);
 
-  // The instructor SEES it: a `review` item, in the report, in the queue artifact.
-  assert.equal(flags[0].severity, "review");
-  assert.match(g.report, /REVIEW missing-coverage/);
+  // The instructor SEES it, and it BLOCKS: a `blocking` item, in the report, in the queue artifact.
+  // FAIL-CLOSED (G1/coursewerk-caeai) — a dropped objective is the agent overriding declared intent
+  // (P1), so it cannot pack in ANY mode. `gate` here runs WITHOUT `--for-discovery`, so a non-zero
+  // criticalTotal is packing blocked during authoring, not merely a louder queue.
+  assert.equal(flags[0].severity, "blocking");
+  assert.match(g.report, /BLOCKING missing-coverage/);
+  assert.ok(g.json.criticalCounts.semanticCoverageBlocks >= 1, "the dropped objective did not reach the fail-closed coverage count");
+  assert.ok(g.json.criticalTotal > 0, "a dropped objective still packs in authoring mode — CONTROL is not fail-closed");
 });
 
 test("14 · a SELF-CONTRADICTING package is caught — TRUST layer 3, at the CLI, with no declared edge", (t) => {

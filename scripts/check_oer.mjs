@@ -1055,6 +1055,17 @@ function coverageAudit(fresh) {
 
     findings.push({
       kind: "spine-uncovered",
+      // FAIL-CLOSED (G1/coursewerk-caeai). The queue-kind default for `missing-coverage` is `review`
+      // (M10, escalation.mjs) — right for the GENERIC "no student meets a falsehood" rule. But a
+      // `spine-uncovered` finding is not generic: it is the CONTROL signal. The package silently
+      // overrode the instructor's OWN declared objective (P1), which the whole product promises the
+      // agent can never do. So this ONE finding overrides the default to `blocking` — the explicit
+      // per-finding severity M10 honors — and the critical accounting counts it MODE-INDEPENDENTLY
+      // (see `semanticCoverageBlocks`), so a dropped objective cannot pack while authoring either.
+      // This is NARROW on purpose: it does NOT touch the release-only treatment of blocking
+      // CONTRADICTIONS (the established M6 precedent, ~:1184) — a contradiction is a quality item in
+      // material you are still authoring; a dropped objective is intent already overridden.
+      severity: "blocking",
       evidence: [
         `${node.file} declares ${node.id} — "${node.label}" — and NOTHING in this package teaches it: ` +
           `no claim anywhere names it as a spineRef, and ` +
@@ -1495,6 +1506,11 @@ function semanticAudit() {
   // the record in hand. Detector prose is passed through verbatim precisely so it can carry that.
   const queue = buildQueue(findings, fresh.claims);
   const severityCount = (s) => queue.items.filter((i) => i.severity === s).length;
+  // The CONTROL fail-closed signal, isolated from the other blocking flags: a blocking
+  // `missing-coverage` item is a declared objective the package dropped (spine-uncovered). It is
+  // counted MODE-INDEPENDENTLY in the critical accounting, unlike blocking contradictions — see the
+  // `severity: "blocking"` note on the spine-uncovered finding and the critical-counts block.
+  const coverageBlocks = queue.items.filter((i) => i.kind === "missing-coverage" && i.severity === "blocking").length;
   const { findings: _routed, ...revisionSummary } = revision;
   return {
     ran: true,
@@ -1518,6 +1534,7 @@ function semanticAudit() {
     blockingFlags: severityCount("blocking"),
     reviewFlags: severityCount("review"),
     infoFlags: severityCount("info"),
+    coverageBlocks,
   };
 }
 
@@ -1664,15 +1681,22 @@ const critical = {
   // for a package that has no index.
   //   semanticIndexErrors  — mode-independent. A corrupt stored artifact is a FAULT, not a finding:
   //     read as "no claims" it would manufacture a clean bill of health out of a parse error.
+  //   semanticCoverageBlocks — mode-independent, and for the SAME reason as semanticIndexErrors: a
+  //     declared objective the package silently dropped (a blocking `missing-coverage`) is the CONTROL
+  //     promise (P1) broken NOW — the agent overriding the instructor's intent — not a quality item
+  //     you triage before release. It must not pack in ANY mode. This is the G1 fail-closed gate, and
+  //     it is deliberately isolated from the release-only flags below so it does not disturb them.
   //   semanticReviewFlags  — release-blocking under --for-discovery only, exactly like the key-fact
-  //     and visual review gates above. While authoring, a dangling ref is a queue item and the queue
-  //     is the product; at RELEASE, shipping a package whose own declarations silently did not take
-  //     effect is the defect this layer exists to catch, so it must not be listed. `info` items
-  //     (term proposals) never block: vocabulary housekeeping is not a release fault.
+  //     and visual review gates above. While authoring, a dangling ref (or a blocking CONTRADICTION —
+  //     the M6 precedent, ~:1184) is a queue item and the queue is the product; at RELEASE, shipping a
+  //     package whose own declarations silently did not take effect is the defect this layer exists to
+  //     catch, so it must not be listed. The coverage blocks are subtracted out so a dropped objective
+  //     is never double-counted at release. `info` items (term proposals) never block.
   ...(semantic.ran
     ? {
         semanticIndexErrors: semantic.indexErrors.length,
-        semanticReviewFlags: forDiscovery ? semantic.blockingFlags + semantic.reviewFlags : 0,
+        semanticCoverageBlocks: semantic.coverageBlocks,
+        semanticReviewFlags: forDiscovery ? semantic.blockingFlags + semantic.reviewFlags - semantic.coverageBlocks : 0,
       }
     : {}),
   // near-verbatim text: advisory by default, release-blocking under --for-discovery

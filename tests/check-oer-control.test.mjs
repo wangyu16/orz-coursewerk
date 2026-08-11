@@ -223,10 +223,12 @@ test("2 · a DROPPED objective is flagged, and the message NAMES it", (t) => {
   // The observation survives the fold to the decision (§5c) — this is what lets recall be reported
   // per layer, and the queue kind is the decision, not the observation.
   assert.deepEqual(flag.detectorKinds, ["spine-uncovered"]);
-  assert.equal(flag.severity, "review");
+  // FAIL-CLOSED (G1). A dropped objective is the agent overriding the instructor's declared intent,
+  // so this finding is `blocking`, not `review` — and (test 2f) it blocks packing in EVERY mode.
+  assert.equal(flag.severity, "blocking");
 
   // …and it reaches the surfaces a user actually reads.
-  assert.match(g.report, /REVIEW missing-coverage/);
+  assert.match(g.report, /BLOCKING missing-coverage/);
   assert.equal(g.json.semantic.coverage.objectives.total, 3, "the new objective is in the denominator");
   assert.equal(g.json.semantic.coverage.objectives.covered, 2);
 });
@@ -285,7 +287,7 @@ test("2c · the RECALL LIMIT, revisited — a WHOLE chapter's objectives dropped
   const text = flags[0].evidence.join("\n");
   assert.match(text, /objective\.melting\.3/, "the flag does not name the dropped objective");
   assert.match(text, /nucleation/, "the flag does not name the untaught vocabulary the instructor anchored");
-  assert.equal(flags[0].severity, "review");
+  assert.equal(flags[0].severity, "blocking"); // FAIL-CLOSED (G1) — a dropped objective blocks in any mode.
 
   // PRECISION HELD: the chapter's OTHER objectives are uncovered too now (their claims were stripped),
   // but their vocabulary IS taught in the intact prose — so they raise NO coverage flag. The single
@@ -347,6 +349,39 @@ test("2e · the NEGATIVE for W17 — the CLEAN package's deliverables tag ONLY d
   const g = run(pkg);
   const w17 = g.json.formatContracts.failures.filter((f) => /undeclared objective/.test(f.issue));
   assert.deepEqual(w17, [], `the clean package earned reverse-containment failures it had not: ${JSON.stringify(w17, null, 2)}`);
+});
+
+test("2f · FAIL-CLOSED (G1) — a DROPPED objective packs in NEITHER mode, and the clean sibling packs in both", (t) => {
+  // The forward half of CONTROL, made fail-closed. Test 2 proved a dropped objective is FLAGGED; this
+  // proves it BLOCKS PACKING — in authoring, not only at release. The product's first promise is that
+  // the agent can never silently override what the instructor said to teach; a gate that merely files
+  // the override in a queue the author may never open does not keep that promise. So `spine-uncovered`
+  // is `blocking` (test 2) AND counted MODE-INDEPENDENTLY as `semanticCoverageBlocks` — like a corrupt
+  // index, and UNLIKE a blocking contradiction, which stays release-only (check-oer-consistency test 6).
+  const pkg = freshPackage(t);
+  addObjective(pkg, "Derive the Clausius–Clapeyron relation for the solid–liquid boundary.");
+  index(pkg);
+  const authoring = gate(pkg);            // NO --for-discovery — the mode the old gate let this pass in
+
+  // The dedicated CONTROL count is present and non-zero the moment an objective is dropped…
+  assert.ok(authoring.json.criticalCounts.semanticCoverageBlocks >= 1,
+    `a dropped objective did not reach the fail-closed coverage count: ${JSON.stringify(authoring.json.criticalCounts, null, 2)}`);
+  // …and it lifts criticalTotal above zero DURING AUTHORING — the exit rule is `criticalTotal > 0 ? 1 : 0`,
+  // so this is packing blocked, not merely a louder queue.
+  assert.ok(authoring.json.criticalTotal > 0,
+    "a dropped objective still packs in authoring mode — the CONTROL gate is not fail-closed");
+
+  // The NARROWNESS guard: the fail-closed count is the coverage block ALONE. A dropped objective here
+  // raises exactly the coverage count, not the release-only review tally — proof this change did not
+  // quietly drag blocking contradictions into authoring-mode blocking (consistency test 6's precedent).
+  assert.equal(authoring.json.criticalCounts.semanticReviewFlags, 0,
+    "authoring-mode review flags are non-zero — the narrow coverage fix leaked into the release-only precedent");
+
+  // The clean sibling packs in both modes — no coverage block, criticalTotal 0.
+  const clean = freshPackage(t);
+  const cg = run(clean);
+  assert.equal(cg.json.criticalCounts.semanticCoverageBlocks, 0, "a clean package earned a fail-closed coverage block");
+  assert.equal(cg.json.criticalTotal, 0, "the clean package must still pack");
 });
 
 // =============================================================================================

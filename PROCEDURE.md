@@ -281,7 +281,14 @@ indexed (Stage 4), the gate resolves every claim against the spine and reports *
 (a declared anchor, `spineRef`, or `derivedFrom` pointing at nothing) and **refused declarations** (malformed,
 so the block silently fell back to the scan). These are all one shape: **the author asserted something and the
 system silently did nothing.** The findings land in `metadata/REVIEW_QUEUE.json` with a `burden` count — that
-number is the alarm-fatigue meter, and it is reported, not assumed. **If the report says the semantic layer did
+number is the alarm-fatigue meter, and it is reported, not assumed. **One semantic finding is FAIL-CLOSED and blocks
+packing in EVERY mode, not just at release: a blocking `missing-coverage` item** — an objective your own concept map
+declares that nothing in the package teaches (the CONTROL check; it counts as `semanticCoverageBlocks`). This is the
+one thing the harness exists to refuse: the agent silently overrode what YOU said to teach. It cannot be packed past.
+Two honest options, and only you can choose — **TEACH it** (add a claim under `"spineRefs": ["<objective.id>"]`, or a
+`## Key terms` entry bracketed under it, so the coverage check can see the objective is delivered) **or REMOVE it**
+from `concepts/<slug>.md`'s `## Objectives`. Never let the silent drop stand. (Its mirror image, W17, is a
+`formatContractFailure`: a deliverable that tags an objective the map never declared — reconcile it the same way.) **If the report says the semantic layer did
 not run, you skipped `index:semantic` — go back to Stage 4.** **Fix every critical issue** and **re-run until
 `criticalTotal == 0`**. It also requires the current compact source record, mode-appropriate key-fact critique,
 accountable final author identity, media-rights receipts, and human visual-review record. Also confirm the carriers build cleanly: `node scripts/build_carriers.mjs` should
