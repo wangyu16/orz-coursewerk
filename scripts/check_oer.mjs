@@ -38,7 +38,7 @@ import { auditVisualReview } from "./lib/visual_review.mjs";
 import { artifactAnchors, matchClaims } from "./lib/claims.mjs";
 import { danglingSpineRefs } from "./lib/spine.mjs";
 import { buildQueue, REVIEW_QUEUE_PATH } from "./lib/escalation.mjs";
-import { scanConsistency } from "./lib/consistency.mjs";
+import { scanConsistency, rangeAudit } from "./lib/consistency.mjs";
 import { computeSemanticIndex, loadSemanticIndex, CLAIMS_PATH } from "./lib/semantic_index.mjs";
 import { isAuthorizedDivergence, OVERRIDES_PATH } from "./lib/overrides.mjs";
 import { commitOutput, outputGitState } from "./lib/output_git.mjs";
@@ -1214,6 +1214,22 @@ function consistencyFindings(fresh) {
   return scanConsistency(fresh.claims, fresh.terms);
 }
 
+/**
+ * TRUST LAYER 3b: is any single number physically impossible on its own? (M6b, the RANGE audit.)
+ *
+ * The sibling of `consistencyFindings` and its ORTHOGONAL question. The consistency scan asks
+ * whether two artifacts DISAGREE; a package can agree with itself and still assert "-40 K" in every
+ * file. This reads each claim ALONE and catches the value that is wrong on its own terms — a
+ * temperature below absolute zero, a negative mass/amount/volume/length/time. Conservative by
+ * construction (only the physically impossible fires; ΔH-style signed quantities are guarded), so a
+ * clean package flags nothing — if wiring it makes a clean fixture flag, THE FINDING IS WRONG, not
+ * the fixture. Pass-through: M6b owns the bounds and the delta guard; this hands it `fresh.claims`
+ * and routes what comes back into the queue unaltered. Maps to `suspected-error` in M10's table.
+ */
+function rangeFindings(fresh) {
+  return rangeAudit(fresh.claims);
+}
+
 // ==================== D. THE REVISION COMPARISON (fresh vs stored) ====================
 //
 // THE OTHER QUESTION. The five §5b checks above are all REFERENTIAL — "does this pointer point at
@@ -1497,6 +1513,12 @@ function semanticAudit() {
     // catch a disagreement across an UNDECLARED edge, which is why it must not be conditioned on
     // any of them: the edge nobody declared is, by definition, the edge nobody will notice.
     ...consistencyFindings(fresh),
+    // TRUST layer 3b (§C3b) — the RANGE audit, orthogonal to the disagreement scan above it: "is
+    // this number physically possible at all?" is a question about each claim ALONE, so it too takes
+    // `fresh` and never looks at the stored index. It catches the impossible value that a
+    // self-consistent package agrees on (every artifact says "-40 K"), which no cross-artifact scan
+    // can see. Conservative by construction — see `rangeAudit`'s header for the zero-FP boundary.
+    ...rangeFindings(fresh),
     ...revision.findings,
   ];
   // `fresh.claims` supplies the locations AND the burden denominator. Deliberately NOT a union with

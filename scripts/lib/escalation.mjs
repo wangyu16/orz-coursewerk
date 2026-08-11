@@ -183,6 +183,15 @@ const DETECTOR_TO_QUEUE = {
   "value-disagreement": "internal-inconsistency",
   "definition-drift": "internal-inconsistency",
   "cross-artifact-mismatch": "internal-inconsistency",
+  // M6b's RANGE audit. A physically-impossible value (a temperature below absolute zero, a negative
+  // mass) is a SUSPECTED ERROR adjudicated by a person, not a machine-propagated fix — the same
+  // decision `revision-escalate` asks, so it folds to the same queue kind (`suspected-error`,
+  // blocking). It is NOT `internal-inconsistency`: nothing here DISAGREES; one number is wrong on
+  // its own terms, and the queue kind is the dedupe key, so misnaming it would merge "this value is
+  // impossible" with "these two artifacts contradict each other" — two questions, two decisions. The
+  // detector kind `implausible-quantity` survives in `detectorKinds`, so a study can still count the
+  // range layer's contribution separately from the disagreement layer's.
+  "implausible-quantity": "suspected-error",
   // The M11 gate's §5b rows. THREE detector kinds fold to `dangling-reference` because they are one
   // QUESTION — "this reference points at nothing; fix it or remove it" — asked about three different
   // reference species (a declared anchor, a spineRef, a `derivedFrom`). The fold is deliberate and

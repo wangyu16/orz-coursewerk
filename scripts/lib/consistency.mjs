@@ -470,3 +470,113 @@ export function scanConsistency(claims, terms) {
     )
     .map(({ kind, claimIds, evidence }) => ({ kind, claimIds, evidence }));
 }
+
+// ==================== RANGE AUDIT (M6b) — IS EACH NUMBER PHYSICALLY POSSIBLE AT ALL? ====================
+//
+// A DIFFERENT QUESTION FROM THE SCAN ABOVE. `scanConsistency` asks whether the package's numbers
+// AGREE WITH EACH OTHER; it is silent on a value that is internally consistent and physically
+// impossible. Every artifact can say "the mixture was cooled to -40 K" in perfect agreement, and a
+// cross-artifact scan reports zero flags it has not earned — the same "clean bill of health
+// manufactured by a blind spot" the shared unit table (`lib/units.mjs`) exists to refuse. So this
+// check reads EACH claim ALONE and asks the orthogonal question: is this quantity possible at all?
+//
+// It lives beside `scanConsistency` because it shares the SAME quantity substrate — `QUANTITY_RE`,
+// `unitEntry`, `plainText`, `claimText`, `comparableClaims` — and interfaces §5d's discipline is
+// ONE scanner projected per question, not a fifth reimplementation of "find a number bound to a
+// unit" (the mistake `units.mjs` was built to end). Reusing `comparableClaims` is also
+// semantically right: only ASSERTIVE claims (`fact`/`answer-key`/`definition`) state a value on the
+// record, so a worked example's intermediate (a `-5` inside a subtraction step of a `derived`
+// claim) is never flagged — the same non-flag-5 guard the consistency scan already buys.
+//
+// CONSERVATIVE BY CONSTRUCTION — ONLY THE PHYSICALLY IMPOSSIBLE FIRES, NEVER THE MERELY UNUSUAL.
+// Two bound families, both CERTAIN, never estimated:
+//   - TEMPERATURE has an ABSOLUTE FLOOR. Below 0 K is not a rare temperature, it is no temperature.
+//     Checked on the CANONICAL (kelvin) value, so "-300 °C" is caught while "-273.15 °C" — exactly
+//     0 K, a true statement about absolute zero — is not. Strictly `< 0`: stating "0 K" is legit.
+//   - COUNT / EXTENT / DURATION dimensions (mass, amount, volume, length, time) cannot be NEGATIVE:
+//     there is no -5 g of a salt, no -2 mol of a product, no -3 min of reaction. Checked on the raw
+//     value's sign (every conversion in these dimensions is a positive scale, so sign is preserved).
+//
+// WHAT IS DELIBERATELY LEFT UNBOUNDED, because a negative there is legitimate, not impossible:
+// energy / molar-energy / specific-energy (ΔH, ΔG are routinely negative — an exothermic reaction),
+// voltage (a cell potential E° is signed), ratio/percent (a percent CHANGE is signed and a
+// percentage can exceed 100), and pressure (a gauge reading can sit below ambient). Flagging any of
+// these is the alarm-fatigue trap the CONTROL gate paid for once: a detector that fires on a correct
+// ΔH gets muted, and a muted detector protects nobody. pH and a dimensionless equilibrium constant K
+// are the other two chemistry ranges worth checking, but neither is a UNIT the shared table extracts
+// (pH is prefix-notation "pH 7", K is bare) — that needs a prefix-quantity recognizer in `units.mjs`
+// and is filed for later, not smuggled in as a guess here.
+//
+// THE SIGNED-QUANTITY / DELTA GUARD. Even a bounded dimension carries a legitimate negative when the
+// claim is about a CHANGE: "ΔT = -15 K", "Δn = -1 mol". So a claim whose text carries a delta marker
+// (Δ / ∆ / change / difference / increase / decrease / net) is SKIPPED WHOLE — precision-first,
+// exactly as the consistency scan drops an ambiguous subject rather than guess. Accepted recall
+// cost: an impossible ABSOLUTE value buried in a delta-laden claim is not caught here; it is caught
+// by the decoupled reviewer. A queue dies of false positives, not of misses.
+//
+// PURE and DETERMINISTIC, like everything in this file. O(claims · quantities-per-claim).
+
+/** Temperature's floor is absolute zero; these dimensions are simply non-negative magnitudes. */
+const NONNEGATIVE_DIMS = new Set(["mass", "amount", "volume", "length", "time"]);
+
+/**
+ * A claim about a CHANGE carries a legitimate negative. The marker set is deliberately broad —
+ * over-suppression only costs recall (backstopped by the decoupled reviewer), whereas a false flag
+ * on a correct ΔH is the alarm-fatigue failure this module refuses. Δ (U+0394) and ∆ (U+2206) both.
+ */
+const DELTA_RE = /Δ|∆|\bdelta\b|\bchang(?:e[ds]?|ing)\b|\bdifference\b|\bincreases?\b|\bdecreases?\b|\bnet\b/i;
+
+/** Human-readable name of the breach, for the instructor reading the queue. */
+function rangeBreach(dim, canonical, value) {
+  if (dim === "temperature") return `${canonical} K is below absolute zero (0 K) — no such temperature exists`;
+  return `a negative ${dim} (${value}) is physically impossible`;
+}
+
+/**
+ * range audit (M6b): a single claim asserting a physically-impossible quantity — a value wrong on
+ * its OWN terms, independent of whether any other artifact agrees with it. See the section header
+ * for the two bound families, the deliberately-unbounded dimensions, and the delta guard.
+ *
+ * PURE and DETERMINISTIC. Reuses this module's quantity substrate; derives nothing new.
+ *
+ * @param {{claims:Array<object>}|Array<object>} claims CLAIMS (`metadata/CLAIMS.json`) or a bare
+ *   claim array. Reads the required `text` field; a claim with no readable text is skipped in
+ *   silence (a detector that invents the words it failed to read is worse than a quiet one).
+ * @returns {Array<{kind:"implausible-quantity", claimIds:string[], evidence:string[]}>} findings,
+ *   one per offending claim, sorted by claim id — stable across runs. `kind` is a DETECTOR kind;
+ *   M10 folds it to a queue kind (see `lib/escalation.mjs` DETECTOR_TO_QUEUE). One claim ⇒ one
+ *   finding even when it carries several impossible values; the headline names the first breach.
+ */
+export function rangeAudit(claims) {
+  const findings = [];
+  for (const claim of comparableClaims(claimList(claims))) {
+    const text = claimText(claim);
+    if (DELTA_RE.test(text)) continue; // a change is legitimately signed — skip the whole claim
+    const breaches = [];
+    QUANTITY_RE.lastIndex = 0;
+    let m;
+    while ((m = QUANTITY_RE.exec(text))) {
+      const entry = unitEntry(m[2]);
+      if (!entry) continue; // recognized-but-ambiguous ("90 degrees") ⇒ silence, never a guess
+      const value = Number(m[1]);
+      const canonical = Number(entry.to(value).toPrecision(9)); // toPrecision folds float noise, not digits
+      const impossible =
+        entry.dim === "temperature" ? canonical < 0 : NONNEGATIVE_DIMS.has(entry.dim) && value < 0;
+      if (impossible) breaches.push({ raw: m[0].trim(), dim: entry.dim, canonical, value });
+    }
+    if (breaches.length === 0) continue;
+    const b = breaches[0];
+    findings.push({
+      kind: "implausible-quantity",
+      claimIds: [String(claim.id)],
+      evidence: [
+        `${claimFile(claim)}: "${b.raw}" — ${rangeBreach(b.dim, b.canonical, b.value)}`,
+        `${claim.id} (${claim.type}) at ${claimFile(claim)}: "${snippet(text)}"`,
+      ],
+      _sort: String(claim.id),
+    });
+  }
+  return findings
+    .sort((a, b) => byString(a._sort, b._sort))
+    .map(({ kind, claimIds, evidence }) => ({ kind, claimIds, evidence }));
+}
