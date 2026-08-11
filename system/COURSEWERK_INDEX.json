@@ -308,6 +308,12 @@
       "hash": "fc5531431ddf5e58c4bf3004eae22b57c80810b2b6e47abfd447c26c06f0bdfe"
     },
     {
+      "id": "repo:scripts/lib/blind_bundle.mjs",
+      "path": "scripts/lib/blind_bundle.mjs",
+      "type": "kernel",
+      "hash": "a2042ed0c3c131204efae466deb611302fb7835d65f8f7373ff6a6cec5c28c66"
+    },
+    {
       "id": "repo:scripts/lib/claims.mjs",
       "path": "scripts/lib/claims.mjs",
       "type": "kernel",
@@ -738,6 +744,12 @@
       "path": "tests/assurance.test.mjs",
       "type": "test",
       "hash": "b4cd1ee80f276f3af66415896a3b032b5c2809b05bc32112381fdb85aca9ccd1"
+    },
+    {
+      "id": "repo:tests/blind_bundle.test.mjs",
+      "path": "tests/blind_bundle.test.mjs",
+      "type": "test",
+      "hash": "764038d7c32fddabca0f74e0ca13dc478f82fd095e742bec09df1947d083e66a"
     },
     {
       "id": "repo:tests/carriers.test.mjs",
