@@ -303,6 +303,52 @@ test("2c · the RECALL LIMIT, revisited — a WHOLE chapter's objectives dropped
   );
 });
 
+test("2d · the REVERSE half (W17) — a deliverable tagging an objective the map never DECLARED is a format-contract fault, and blocks in authoring mode", (t) => {
+  // `coverageAudit` (tests 2/2c) fences the FORWARD half of the bidirectional CONTROL promise: an
+  // objective the instructor DECLARED that nothing teaches. W17 is the REVERSE half: no deliverable
+  // may tag an objective the instructor never declared — a practice sheet inventing `Objective 3`
+  // when the chapter map declares only 1–2 is the artifact overriding intent. The old check here was
+  // BOTH vacuous AND dead (its authority parse scanned the concept map for a literal `Objective <id>`
+  // token no conforming map ever writes, so `expected` was empty and the loop never ran); it now
+  // reads the map's numbered `## Objectives` list as the declared set and contains deliverables to it.
+  const pkg = freshPackage(t);
+  // The map declares objectives {1,2} (see fixtures/usage-package/concepts/melting.md). The clean
+  // practice sheet tags Objective 1 and Objective 2 — both declared. Append an UNDECLARED one.
+  write(pkg, "practice/melting.md", read(pkg, "practice/melting.md") + "\nObjective 3 is covered by Q10.\n");
+  const g = run(pkg);
+
+  const w17 = g.json.formatContracts.failures.filter((f) => /undeclared objective/.test(f.issue));
+  assert.equal(w17.length, 1, `expected exactly one reverse-containment failure, got: ${JSON.stringify(g.json.formatContracts.failures, null, 2)}`);
+  const [fail] = w17;
+  assert.equal(fail.file, "practice/melting.md", "the failure does not name the deliverable that invented the objective");
+  // It NAMES the fabricated id and the authority file to reconcile against — teach-or-declare, the
+  // reverse of test 2's teach-or-remove.
+  assert.match(fail.issue, /undeclared objective 3\b/, "the failure does not name the fabricated objective id");
+  assert.match(fail.issue, /concepts\/melting\.md `## Objectives`/, "the failure does not name the declaring authority to fix");
+
+  // FAIL-CLOSED IN ANY MODE. `formatContractFailures` is a mode-independent critical count (unlike the
+  // review-only semantic flags), so this reverse violation blocks packing during AUTHORING — `run`
+  // drives the gate WITHOUT `--for-discovery`. A CONTROL violation is a fault whenever it is seen.
+  assert.ok(g.json.criticalCounts.formatContractFailures >= 1, "the reverse-containment failure did not reach the critical count");
+  // `criticalTotal > 0` IS the non-zero exit: the CLI's exit rule is literally `criticalTotal > 0 ? 1 : 0`
+  // (check_oer.mjs), so a rising critical total during an authoring run is packing blocked.
+  assert.ok(g.json.criticalTotal > 0, "criticalTotal did not rise on an undeclared-objective tag — the package would still pack");
+});
+
+test("2e · the NEGATIVE for W17 — the CLEAN package's deliverables tag ONLY declared objectives, and earn ZERO reverse-containment failures", (t) => {
+  // The precision half of W17, measured on the untouched fixture. Every objective tag in the clean
+  // usage-package (usage tags `Objective 1`/`Objective 2`; mini's dotted `objective.<slug>.1`;
+  // study-guide/slides carry a `## Learning objectives` SECTION with no per-objective ids) is a
+  // SUBSET of what its map declares — so the reverse check must be silent. This is the assertion that
+  // the naive de-vacuuming (re-checking authority→deliverable per type, which duplicates the forward
+  // half) would have BROKEN: it injected 10 false positives on the two clean fixtures. Zero here is
+  // the whole no-new-false-positives claim, made load-bearing.
+  const pkg = freshPackage(t);
+  const g = run(pkg);
+  const w17 = g.json.formatContracts.failures.filter((f) => /undeclared objective/.test(f.issue));
+  assert.deepEqual(w17, [], `the clean package earned reverse-containment failures it had not: ${JSON.stringify(w17, null, 2)}`);
+});
+
 // =============================================================================================
 // 3 · PRECISION — the boundary the whole design is bought with.
 // =============================================================================================

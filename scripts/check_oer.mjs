@@ -483,6 +483,32 @@ function formatContractAudit() {
       if (!/objective/i.test(text)) fail.push({ file: name, issue: "practice sheet does not tag objective coverage" });
     }
   }
+  // OBJECTIVE CONTAINMENT — the REVERSE half of the bidirectional CONTROL promise. `coverageAudit`
+  // (spine -> package) already fail-closes the FORWARD half: an objective the instructor DECLARED that
+  // nothing teaches. This block enforces the reverse containment: no deliverable may tag an objective
+  // the instructor never declared. A study guide inventing `Objective 3` when the chapter map declares
+  // only 1-2 is the artifact overriding intent — a CONTROL violation. [W17, 2026-08-11: this replaced a
+  // check that was BOTH vacuous AND dead. The old authority parse scanned the concept map for a literal
+  // `Objective <id>` token, but every conforming map writes objectives as a numbered list under
+  // `## Objectives` (`1. State...`), which that token never matches — so `expected` was empty on every
+  // fixture, the loop never iterated, and no test ever exercised it. Naively de-vacuating it to
+  // re-check authority->deliverable per type injected 10 false positives on the two clean fixtures
+  // (study-guide/slides carry a `## Learning objectives` SECTION with no per-objective ids by design;
+  // mini's assessment-support tags a dotted `objective.<slug>.<n>`), because that direction duplicates
+  // coverageAudit's forward half. The honest, non-redundant role is reverse containment, which is
+  // zero-false-positive on both clean fixtures: every tagged id there IS declared.]
+  //   The declared set = the numbered items of the chapter map's `## Objectives` section (its ordinals).
+  //   The tagged set  = the deliverable's `Objective <n>` (numeric only — `\d` drops the stopword in
+  //     "objective OF this chapter") plus the dotted `objective.<slug>.<n>` table form.
+  const objectivesSection = (text) => {
+    let capturing = false;
+    const out = [];
+    for (const line of text.split(/\r?\n/)) {
+      if (/^##+\s/.test(line)) { if (capturing) break; capturing = /^##+\s+objectives\b/i.test(line); continue; }
+      if (capturing) out.push(line);
+    }
+    return out.join("\n");
+  };
   const byChapter = new Map();
   for (const f of deliverableFiles) {
     const name = rel(f);
@@ -490,14 +516,20 @@ function formatContractAudit() {
     const slug = path.posix.basename(name, ".md");
     if (slug === "course") continue;
     if (!byChapter.has(slug)) byChapter.set(slug, new Map());
-    const ids = new Set([...read(f).matchAll(/\bObjective\s+([A-Za-z0-9.-]+)/gi)].map((m) => m[1].toLowerCase().replace(/[.-]+$/, "")));
-    byChapter.get(slug).set(top, ids);
+    byChapter.get(slug).set(top, read(f));
   }
   for (const [slug, types] of byChapter) {
-    const expected = types.get("concepts") || new Set();
+    const conceptMap = types.get("concepts");
+    if (conceptMap == null) continue; // no authority -> nothing to contain against
+    const declared = new Set([...objectivesSection(conceptMap).matchAll(/^\s*(\d+)\.\s+\S/gm)].map((m) => m[1]));
+    if (declared.size === 0) continue; // an unnumbered/absent objectives list is a separate contract failure above
     for (const top of ["study-guide", "slides", "assessment-support", "practice"]) {
-      const actual = types.get(top) || new Set();
-      for (const objective of expected) if (!actual.has(objective)) fail.push({ file: `${top}/${slug}.md`, issue: `missing chapter objective ${objective} declared by concepts/${slug}.md` });
+      const text = types.get(top);
+      if (text == null) continue;
+      const tagged = new Set();
+      for (const m of text.matchAll(/\bObjective\s+(\d[\w.-]*)/gi)) tagged.add(m[1].replace(/[.-]+$/, ""));
+      for (const m of text.matchAll(/\bobjective\.(?:[\w-]+\.)*(\d+)\b/gi)) tagged.add(m[1]);
+      for (const objective of tagged) if (!declared.has(objective)) fail.push({ file: `${top}/${slug}.md`, issue: `deliverable tags undeclared objective ${objective} (not in concepts/${slug}.md \`## Objectives\`)` });
     }
   }
   let provenance = { items: [] };
