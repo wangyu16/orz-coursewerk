@@ -419,7 +419,7 @@
       "id": "repo:scripts/lib/spine.mjs",
       "path": "scripts/lib/spine.mjs",
       "type": "kernel",
-      "hash": "083d5f7c66f9ba043134cb8ea5f04a56f34e2ff48d6adb98814ae1105d9b314e"
+      "hash": "7cc065fb327cd7441e86a7295afb96d07edc5197428ff21d34a4a5c2bb462303"
     },
     {
       "id": "repo:scripts/lib/system_index.mjs",
@@ -1049,7 +1049,7 @@
       "id": "repo:tests/spine.test.mjs",
       "path": "tests/spine.test.mjs",
       "type": "test",
-      "hash": "805edce9023cd5ac66612bbbe4464420436b3ec695f66f886758d39f5d6a6cae"
+      "hash": "afa91cd039a40ad4f1bf10d71a64e1b6280672d4c0ac4487e1bce027749ff8f3"
     },
     {
       "id": "repo:tests/system-index.test.mjs",

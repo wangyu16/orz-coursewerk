@@ -46,7 +46,10 @@
 //   concepts/<chapter-slug>.md  AND  concepts/course.md  — ONE grammar, two scopes
 //     ## Objectives             (ordered)   -> objective.<scope>.<n>
 //     ## Concept sequence       (ordered)   -> concept.<scope>.<n>, + intra-chapter order as a
-//                                              prereq chain (`edges`)
+//                                              prereq chain (`edges`) UNLESS the map declares
+//                                              genuine semantic prereqs (see below), in which
+//                                              case the ordinal chain is SUPPRESSED for that map
+//                                              and the declared edges are minted instead
 //     ## Misconceptions to surface          -> misconception.<scope>.<n>, NEGATIVE claims
 //     ## Prerequisites          (unordered) -> `prerequisites[]` records, + a prereq edge
 //                                              `concept.x.n -> chapter.<slug>` ONLY where the
@@ -75,6 +78,41 @@
 // EDGE DIRECTION: `{from, to}` reads **"from is a prerequisite of to"**. Concept n precedes
 // concept n+1, so the chain is concept.<s>.1 -> concept.<s>.2 -> …, and a bracketed prerequisite
 // is concept.x.n -> chapter.<slug> (§1).
+//
+// SEMANTIC PREREQUISITE EDGES — THE INSTRUCTOR DECLARING REAL DEPENDENCIES, NOT THE ORDINAL PROXY
+// -----------------------------------------------------------------------------------------------
+// The intra-chapter ordinal chain (concept.<s>.n -> concept.<s>.n+1) is a PROXY: it asserts a
+// prerequisite between adjacent list items purely because one is typed above the other. That
+// proxy mints FALSE POSITIVES — two concepts that both depend only on an earlier one, listed in
+// either order, get a spurious edge between them (measured: the ordering-coherence axis flagged
+// `pure-solids -> reaction-quotient` as an inversion when neither is a prerequisite of the other).
+//
+// So a `## Concept sequence` item MAY carry a trailing bracket declaring its GENUINE prerequisites:
+//
+//     5. The reaction quotient has the same form as K. [prereq: concept.chemical-equilibrium.3]
+//     7. K depends on temperature. [prereq: concept.chemical-equilibrium.3, concept.chemical-equilibrium.6?]
+//
+//   * `[prereq: <ref>(, <ref>)*]`, each `<ref> = concept.<scope>.<n>`, a `?` suffix marking a
+//     DERIVATIONAL (defensible-but-optional) edge — carried on the edge so a consumer can score
+//     it separately. The `prereq:` label keeps the bracket unambiguous against the bare
+//     `[concept.x]` spineRef `## Key terms` uses: that one is a PLACEMENT OF the term it sits on,
+//     this one names the prerequisites OF the item it sits on.
+//   * Direction, as everywhere: the listed refs are PREREQUISITES of the item -> {from: ref,
+//     to: thisConcept, kind: "prereq", reason: "declared semantic prerequisite"}. `kind` stays
+//     "prereq" — these ARE prerequisite edges, so every consumer treats them as such; the
+//     semantic-vs-ordinal distinction is PROVENANCE, which `reason` already carries (exactly as
+//     it splits "concept sequence order" from "declared prerequisite"). A new `kind` would only
+//     make a consumer that filters `kind === "prereq"` silently drop the instructor's real edges.
+//   * SUPPRESSION — the rule that removes the false positives: a map that declares >=1 `[prereq:]`
+//     OWNS its intra-map prereq graph, so the auto ordinal chain is NOT minted for that map. A map
+//     with no annotation keeps the chain unchanged -> BACKWARD COMPATIBLE: no existing map is
+//     forced to be re-authored, and the proxy stays available for maps whose author has not (yet)
+//     declared the real edges.
+//   * VERIFIED-OR-DROPPED, the same discipline as the `## Prerequisites` bracket: an edge is
+//     minted ONLY when BOTH ends resolve to real concept nodes (and the ref is not the item
+//     itself). A ref that does not resolve mints no edge — but the `semanticPrereqs[]` record
+//     ALWAYS keeps the author's ref verbatim, so a dangling declaration stays reportable through
+//     `danglingSpineRefs`, never vanishing silently (the §5b `derivedFrom` trap).
 //
 // PURE and DETERMINISTIC: same maps -> byte-identical spine. No network, no LLM, no clock, no
 // randomness. `readConceptMaps` is the only I/O, and it only reads the package's own files.
@@ -159,6 +197,21 @@ const CHAPTER_SEQUENCE = "chapter sequence";
  */
 const SPINE_REF = /\s*\[((?:concept|objective)\.[^\]\s]+)\]\s*$/;
 
+/**
+ * A trailing `[prereq: concept.<scope>.<n>(, …)]` bracket on a `## Concept sequence` item — the
+ * instructor declaring GENUINE semantic prerequisites of that item (see the SEMANTIC PREREQUISITE
+ * doc block above). The `prereq:` label makes it unambiguous against SPINE_REF's bare bracket.
+ * Capture group 1 is the comma-separated ref list, split and shape-checked per ref below.
+ */
+const CONCEPT_PREREQ = /\s*\[prereq:\s*([^\]]+)\]\s*$/;
+
+/**
+ * One ref inside that bracket: `concept.<scope>.<n>`, group 1 the id, group 2 the optional `?`
+ * that marks a DERIVATIONAL edge. Shape only — resolution is still EXACT id equality (`spineNode`),
+ * so a well-shaped ref to a concept that does not exist mints no edge, only a reportable record.
+ */
+const CONCEPT_PREREQ_REF = /^(concept\.[^.\s]+\.[0-9]+)(\?)?$/;
+
 /** A leading bold run: `**Phase Change** introduces…` -> `Phase Change`. */
 const BOLD_LEAD = /^\*\*\s*(.+?)\s*\*\*/;
 
@@ -207,8 +260,9 @@ function splitRef(item) {
  * @returns {{schemaVersion:number, generatedFrom:string[], chapters:string[],
  *   nodes:Array<{id:string, kind:string, scope:string, ordinal:number|null, label:string|null,
  *                negative:boolean, file:string}>,
- *   edges:Array<{from:string, to:string, kind:"prereq", reason:string}>,
+ *   edges:Array<{from:string, to:string, kind:"prereq", reason:string, derivational?:boolean}>,
  *   prerequisites:Array<{scope:string, ordinal:number, text:string, ref:string|null}>,
+ *   semanticPrereqs:Array<{scope:string, ordinal:number, ref:string, derivational:boolean}>,
  *   chapterSequence:Array<{ordinal:number, text:string, slug:string|null}>}} SPINE
  */
 export function buildSpine(conceptMaps) {
@@ -216,6 +270,7 @@ export function buildSpine(conceptMaps) {
   const nodes = [];
   const edges = [];
   const prerequisites = [];
+  const semanticPrereqs = [];
   let chapterSequence = [];
 
   // Derived ONCE, then projected twice — into `chapters` and into the `chapter.<slug>` nodes.
@@ -242,10 +297,34 @@ export function buildSpine(conceptMaps) {
     for (const { section, kind, negative } of NODE_SECTIONS) {
       const items = listItems(sections.get(section) ?? []);
       const minted = [];
+      let mapDeclaresSemanticPrereqs = false;
       items.forEach((item, i) => {
-        const label = tidy(item);
-        if (!label) return;
         const ordinal = i + 1; // 1-based, from POSITION (§2) — never the typed list marker.
+        // A `## Concept sequence` item MAY carry a trailing `[prereq: …]` declaring genuine
+        // prerequisites of THIS item. Lift it off before the label is taken (it is metadata, not
+        // prose), then record each ref verbatim so a dangling one stays reportable. Only the
+        // concept section carries this bracket; other sections read the item as-is.
+        let itemText = item;
+        if (kind === "concept") {
+          const pm = CONCEPT_PREREQ.exec(item);
+          if (pm) {
+            mapDeclaresSemanticPrereqs = true;
+            itemText = item.slice(0, pm.index);
+            for (const token of pm[1].split(",").map((s) => s.trim()).filter(Boolean)) {
+              const rm = CONCEPT_PREREQ_REF.exec(token);
+              // Malformed tokens are KEPT verbatim (ref stays the raw token) so the record still
+              // reports them — the same "refuse the edge, never the trace" rule as prerequisites[].
+              semanticPrereqs.push({
+                scope,
+                ordinal, // the position of the concept these are prerequisites OF (the `to`)
+                ref: rm ? rm[1] : token,
+                derivational: rm ? rm[2] === "?" : false,
+              });
+            }
+          }
+        }
+        const label = tidy(itemText);
+        if (!label) return;
         const node = {
           id: `${kind}.${scope}.${ordinal}`,
           kind,
@@ -263,8 +342,11 @@ export function buildSpine(conceptMaps) {
         minted.push(node);
       });
 
-      // §1: intra-chapter order of `## Concept sequence` IS a prereq chain.
-      if (kind === "concept") {
+      // §1: intra-chapter order of `## Concept sequence` IS a prereq chain — the ORDINAL PROXY.
+      // SUPPRESSED for a map that declares genuine semantic prereqs: that map owns its intra-map
+      // graph, and the proxy's false positives are exactly what the declaration replaces. An
+      // un-annotated map keeps the chain, so nothing existing is forced to re-author.
+      if (kind === "concept" && !mapDeclaresSemanticPrereqs) {
         for (let i = 1; i < minted.length; i += 1) {
           edges.push({
             from: minted[i - 1].id,
@@ -336,6 +418,19 @@ export function buildSpine(conceptMaps) {
     edges.push({ from: p.ref, to: near, kind: "prereq", reason: "declared prerequisite" });
   }
 
+  // The declared SEMANTIC prereq edges (§1). Same verified-or-dropped discipline: mint ONLY when
+  // both ends are real nodes and the ref is a `concept.*` id that is not the item itself. A
+  // dangling or malformed ref mints nothing but survives in `semanticPrereqs[]` — reportable, not
+  // vanished. `derivational` rides on the edge so a consumer can score optional deps separately.
+  for (const s of semanticPrereqs) {
+    const to = `concept.${s.scope}.${s.ordinal}`;
+    if (!s.ref.startsWith("concept.") || s.ref === to) continue;
+    if (!byId.has(s.ref) || !byId.has(to)) continue;
+    const edge = { from: s.ref, to, kind: "prereq", reason: "declared semantic prerequisite" };
+    if (s.derivational) edge.derivational = true;
+    edges.push(edge);
+  }
+
   return {
     schemaVersion: SCHEMA_VERSION,
     generatedFrom: maps.map((m) => String(m?.file ?? "")),
@@ -344,6 +439,9 @@ export function buildSpine(conceptMaps) {
     edges: edges.sort((a, b) => byString(a.from, b.from) || byString(a.to, b.to)),
     prerequisites: prerequisites.sort(
       (a, b) => byString(a.scope, b.scope) || a.ordinal - b.ordinal,
+    ),
+    semanticPrereqs: semanticPrereqs.sort(
+      (a, b) => byString(a.scope, b.scope) || a.ordinal - b.ordinal || byString(a.ref, b.ref),
     ),
     chapterSequence,
   };

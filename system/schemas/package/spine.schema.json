@@ -107,14 +107,20 @@
             "description": "What depends on it — the next concept in sequence, or the `chapter.<slug>` a declared prerequisite feeds."
           },
           "kind": {
-            "const": "prereq"
+            "const": "prereq",
+            "description": "The relationship TYPE — always `prereq`. All three reasons below are prerequisite edges (adjacent-in-sequence, a declared chapter prerequisite, or a declared semantic prerequisite between concepts); the semantic-vs-ordinal distinction is PROVENANCE and lives in `reason`, not in a second kind that a consumer filtering `kind === 'prereq'` would silently drop."
           },
           "reason": {
             "enum": [
               "concept sequence order",
-              "declared prerequisite"
+              "declared prerequisite",
+              "declared semantic prerequisite"
             ],
-            "description": "Which §1 rule minted the edge: the intra-chapter `## Concept sequence` chain, or an explicit `[concept.x.n]` bracket in `## Prerequisites`. PROSE FOR THE HUMAN reading a receipt — the fact itself is in the fields."
+            "description": "Which §1 rule minted the edge: the intra-chapter `## Concept sequence` ordinal chain (a PROXY, suppressed for any map that declares semantic prereqs), an explicit `[concept.x.n]` bracket in `## Prerequisites`, or a `[prereq: concept.x.n]` bracket on a `## Concept sequence` item — the instructor declaring a GENUINE prerequisite in place of the ordinal proxy. PROSE FOR THE HUMAN reading a receipt — the fact itself is in the fields."
+          },
+          "derivational": {
+            "type": "boolean",
+            "description": "Present and TRUE only on a `declared semantic prerequisite` edge whose ref carried a `?` suffix: a DEFENSIBLE-BUT-OPTIONAL dependency the author flagged so a consumer can score it separately from a hard prerequisite. Absent (not `false`) on every other edge — an optional field carried only where it means something."
           }
         },
         "additionalProperties": false
@@ -152,6 +158,40 @@
               "null"
             ],
             "description": "The far end, from the OPTIONAL trailing `[concept.x.n]` — the same bracket `## Key terms` uses, reused rather than a second convention invented. ABSENT IS VALID AND HONEST: matching the prose to a concept needs the label-vs-sentence inference §1 forbids, and it WOULD misfire — the golden fixture's 'Temperature and thermal energy' overlaps `concept.phase-change.1`'s sentence. A fabricated prerequisite asserts a claim about the course's structure that the instructor never made."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "semanticPrereqs": {
+      "type": "array",
+      "description": "The `[prereq: …]` brackets declared on `## Concept sequence` items, sorted by (scope, ordinal, ref) — the RECORD, kept whether or not an edge was minted. Its role is `prerequisites[]`'s, one section over: a semantic-prereq ref that does not resolve mints no edge but stays here verbatim, so `danglingSpineRefs` can still report it. A map with any entry here has its ordinal chain SUPPRESSED — this array is also how a consumer sees which maps declared their real prereq graph rather than leaning on the proxy.",
+      "items": {
+        "type": "object",
+        "required": [
+          "scope",
+          "ordinal",
+          "ref",
+          "derivational"
+        ],
+        "properties": {
+          "scope": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The map that declared it — the scope of the concept the prereq is OF."
+          },
+          "ordinal": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "1-based POSITION of the concept these are prerequisites of (the edge's `to`) — never the typed list marker (§2)."
+          },
+          "ref": {
+            "type": "string",
+            "description": "The declared prerequisite, verbatim (the `?` derivational suffix stripped into `derivational`). Well-shaped and resolving -> an edge was minted; anything else -> no edge, but the ref survives here so the dangling declaration stays reportable and never LOOKS honoured."
+          },
+          "derivational": {
+            "type": "boolean",
+            "description": "TRUE when the author suffixed the ref with `?`: a defensible-but-optional dependency, carried onto the minted edge so a consumer can score it apart from a hard prerequisite."
           }
         },
         "additionalProperties": false

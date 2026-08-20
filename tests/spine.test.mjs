@@ -432,6 +432,132 @@ test("concept sequence order becomes the intra-chapter prereq chain, and nothing
   assert.deepEqual(ids(solo), ["chapter.s", "concept.s.1"]);
 });
 
+// --- edges: DECLARED semantic prereqs (the instructor replacing the ordinal proxy) -----------
+
+test("a [prereq:] bracket mints a semantic edge, strips itself off the label, and SUPPRESSES the ordinal chain", () => {
+  const text = [
+    "## Concept sequence",
+    "1. The equilibrium constant K.",
+    "2. Pure solids and liquids drop out of K. [prereq: concept.equilibrium.1]",
+    "3. The reaction quotient Q has K's form. [prereq: concept.equilibrium.1]",
+  ].join("\n");
+  const spine = buildSpine([{ file: "concepts/equilibrium.md", text, scope: "equilibrium" }]);
+
+  // Both declared edges are minted, pointing at concept 1 — the REAL prereq of 2 and of 3.
+  assert.deepEqual(
+    spine.edges.filter((e) => e.reason === "declared semantic prerequisite"),
+    [
+      { from: "concept.equilibrium.1", to: "concept.equilibrium.2", kind: "prereq", reason: "declared semantic prerequisite" },
+      { from: "concept.equilibrium.1", to: "concept.equilibrium.3", kind: "prereq", reason: "declared semantic prerequisite" },
+    ],
+    "from = the declared prereq; to = the item it sits on",
+  );
+  // SUPPRESSION: the ordinal proxy is gone for this map. Its false positive here would be the
+  // 2->3 edge (pure-solids before reaction-quotient), which neither depends on — exactly the
+  // artifact the declaration removes.
+  assert.deepEqual(spine.edges.filter((e) => e.reason === "concept sequence order"), []);
+  assert.ok(!spine.edges.some((e) => e.from === "concept.equilibrium.2" && e.to === "concept.equilibrium.3"), "the spurious ordinal edge is not minted");
+  // The bracket is METADATA, not label prose — it never leaks into the concept's text.
+  assert.equal(spineNode(spine, "concept.equilibrium.2").label, "Pure solids and liquids drop out of K.");
+  assert.equal(spineNode(spine, "concept.equilibrium.2").label.includes("["), false);
+  // ...and every concept node still exists — suppression drops EDGES, never nodes.
+  assert.deepEqual(ids(spine, "concept"), ["concept.equilibrium.1", "concept.equilibrium.2", "concept.equilibrium.3"]);
+});
+
+test("suppression is PER-MAP: an un-annotated map in the same build keeps its ordinal chain", () => {
+  const spine = buildSpine([
+    {
+      file: "concepts/annotated.md",
+      text: "## Concept sequence\n1. A.\n2. B. [prereq: concept.annotated.1]",
+      scope: "annotated",
+    },
+    { file: "concepts/plain.md", text: "## Concept sequence\n1. C.\n2. D.", scope: "plain" },
+  ]);
+  // The annotated map: declared edge, no proxy.
+  assert.deepEqual(
+    spine.edges.filter((e) => e.from.startsWith("concept.annotated")),
+    [{ from: "concept.annotated.1", to: "concept.annotated.2", kind: "prereq", reason: "declared semantic prerequisite" }],
+  );
+  // The plain map is untouched — the ordinal chain still mints (BACKWARD COMPATIBLE).
+  assert.deepEqual(
+    spine.edges.filter((e) => e.from.startsWith("concept.plain")),
+    [{ from: "concept.plain.1", to: "concept.plain.2", kind: "prereq", reason: "concept sequence order" }],
+  );
+});
+
+test("a `?` suffix marks a DERIVATIONAL edge, carried on both the record and the edge", () => {
+  const text = [
+    "## Concept sequence",
+    "1. K.",
+    "2. Gibbs energy relates to K.",
+    "3. K's temperature dependence. [prereq: concept.x.1, concept.x.2?]",
+  ].join("\n");
+  const spine = buildSpine([{ file: "concepts/x.md", text, scope: "x" }]);
+
+  const semantic = spine.edges.filter((e) => e.reason === "declared semantic prerequisite");
+  assert.deepEqual(semantic, [
+    { from: "concept.x.1", to: "concept.x.3", kind: "prereq", reason: "declared semantic prerequisite" },
+    { from: "concept.x.2", to: "concept.x.3", kind: "prereq", reason: "declared semantic prerequisite", derivational: true },
+  ]);
+  // The hard edge carries NO `derivational` key at all — the flag rides only where it means
+  // something (absent, never `false`).
+  assert.equal("derivational" in semantic[0], false, "absent on a hard prerequisite");
+  // The record mirrors it, with the `?` stripped out of the ref.
+  assert.deepEqual(spine.semanticPrereqs, [
+    { scope: "x", ordinal: 3, ref: "concept.x.1", derivational: false },
+    { scope: "x", ordinal: 3, ref: "concept.x.2", derivational: true },
+  ]);
+});
+
+test("verified-or-dropped: a bad semantic ref mints no edge but stays REPORTABLE (the §5b trap)", () => {
+  const text = [
+    "## Concept sequence",
+    "1. A.",
+    "2. B. [prereq: concept.eq.99]", // resolves to nothing (past the end)
+    "3. C. [prereq: concept.eq.3]", // self-reference — a concept is not its own prereq
+    "4. D. [prereq: objective.eq.1]", // right shape family, WRONG kind — a prereq must be a concept
+    "5. E. [prereq: not-a-ref]", // malformed
+  ].join("\n");
+  const spine = buildSpine([
+    { file: "concepts/eq.md", text, scope: "eq" },
+    // a course concept the cross-scope case below can actually resolve against
+    { file: "concepts/course.md", text: "## Concept sequence\n1. Foundational idea.", scope: "course" },
+  ]);
+
+  // NOT ONE of the four bad declarations minted an edge...
+  assert.deepEqual(spine.edges.filter((e) => e.reason === "declared semantic prerequisite"), []);
+  // ...yet every one is still on the record, verbatim — nothing vanished.
+  assert.deepEqual(spine.semanticPrereqs, [
+    { scope: "eq", ordinal: 2, ref: "concept.eq.99", derivational: false },
+    { scope: "eq", ordinal: 3, ref: "concept.eq.3", derivational: false },
+    { scope: "eq", ordinal: 4, ref: "objective.eq.1", derivational: false },
+    { scope: "eq", ordinal: 5, ref: "not-a-ref", derivational: false },
+  ]);
+  // ...and the resolvable-but-nonexistent ones are reportable through the gate's own question.
+  // (`concept.eq.3` is a real node — it is dropped for being a SELF ref, not for dangling — so it
+  // is correctly NOT flagged here; the other well-shaped concept ref is.)
+  assert.deepEqual(
+    danglingSpineRefs(spine, spine.semanticPrereqs.map((p) => p.ref)),
+    ["concept.eq.99", "not-a-ref", "objective.eq.1"],
+  );
+  // The ordinal chain is still suppressed for this map — the author DID declare (annotation is the
+  // opt-in, whether or not the refs resolve), so we do not silently fall back to the proxy.
+  assert.deepEqual(spine.edges.filter((e) => e.from.startsWith("concept.eq")), []);
+});
+
+test("a semantic prereq resolves ACROSS scopes when the target really exists", () => {
+  // The instructor names a chapter-1 concept as the prereq of a chapter-2 concept. Both ends are
+  // real nodes, so the edge is minted — the verified-or-dropped rule is about existence, not scope.
+  const spine = buildSpine([
+    { file: "concepts/ch1.md", text: "## Concept sequence\n1. Equilibrium constant.", scope: "ch1" },
+    { file: "concepts/ch2.md", text: "## Concept sequence\n1. Le Chatelier shifts. [prereq: concept.ch1.1]", scope: "ch2" },
+  ]);
+  assert.deepEqual(
+    spine.edges.filter((e) => e.reason === "declared semantic prerequisite"),
+    [{ from: "concept.ch1.1", to: "concept.ch2.1", kind: "prereq", reason: "declared semantic prerequisite" }],
+  );
+});
+
 // --- chapter sequence (CONTRACT CONCERN B) ---------------------------------------------------
 
 test("chapter sequence carries inter-chapter order; a binding is VERIFIED or null", () => {
@@ -551,6 +677,19 @@ test("the produced SPINE conforms to spine.schema.json — required fields, no s
       ].join("\n"),
       scope: "boiling",
     },
+    // A map that declares semantic prereqs, so the `declared semantic prerequisite` reason, the
+    // optional `derivational` edge field, and the `semanticPrereqs[]` array are all exercised
+    // against the schema rather than left as untested branches.
+    {
+      file: "concepts/kinetics.md",
+      text: [
+        "## Concept sequence",
+        "1. Rate depends on concentration.",
+        "2. Rate laws are empirical. [prereq: concept.kinetics.1]",
+        "3. The rate constant depends on temperature. [prereq: concept.kinetics.1, concept.kinetics.2?]",
+      ].join("\n"),
+      scope: "kinetics",
+    },
   ]);
 
   const check = (obj, itemSchema, what) => {
@@ -587,12 +726,17 @@ test("the produced SPINE conforms to spine.schema.json — required fields, no s
 
   const edgeSchema = schema.properties.edges.items;
   const ids_ = new Set(spine.nodes.map((n) => n.id));
-  assert.ok(spine.edges.some((e) => e.reason === "declared prerequisite"), "both reasons exercised");
+  assert.ok(spine.edges.some((e) => e.reason === "declared prerequisite"), "all reasons exercised");
   assert.ok(spine.edges.some((e) => e.reason === "concept sequence order"));
+  assert.ok(spine.edges.some((e) => e.reason === "declared semantic prerequisite"));
+  assert.ok(spine.edges.some((e) => e.derivational === true), "the optional derivational field is exercised");
   for (const e of spine.edges) {
     check(e, edgeSchema, `${e.from}->${e.to}`);
     assert.ok(edgeSchema.properties.reason.enum.includes(e.reason));
     assert.equal(e.kind, edgeSchema.properties.kind.const);
+    // `derivational`, when present, is boolean and never `false` (an optional flag carried only
+    // where it means something) — asserted so a mutant that emitted `derivational:false` is caught.
+    if ("derivational" in e) assert.equal(e.derivational, true, "derivational is present only as true");
     // The schema's promise: an edge is minted only when BOTH ends resolve.
     assert.ok(ids_.has(e.from), `edge from a node that does not exist: ${e.from}`);
     assert.ok(ids_.has(e.to), `edge to a node that does not exist: ${e.to}`);
@@ -603,6 +747,14 @@ test("the produced SPINE conforms to spine.schema.json — required fields, no s
   for (const p of spine.prerequisites) {
     check(p, preSchema, `${p.scope}#${p.ordinal}`);
     assert.ok(p.ref === null || typeof p.ref === "string");
+  }
+
+  const semSchema = schema.properties.semanticPrereqs.items;
+  assert.ok(spine.semanticPrereqs.length > 0 && spine.semanticPrereqs.some((s) => s.derivational));
+  for (const s of spine.semanticPrereqs) {
+    check(s, semSchema, `${s.scope}#${s.ordinal}:${s.ref}`);
+    assert.equal(typeof s.ref, "string");
+    assert.equal(typeof s.derivational, "boolean");
   }
 
   const seqSchema = schema.properties.chapterSequence.items;
