@@ -119,9 +119,35 @@ function runQa(fixture) {
 
 test("clean public fixture passes the complete QA gate", () => {
   const f = cleanFixture();
+  // A source-bearing package must be indexed before release — otherwise the semantic layer
+  // early-returns and the release passes clean FROM A BLIND SPOT (see the release-gate test below,
+  // which is the un-indexed variant this fixture used to certify as clean). index:semantic is the
+  // documented Stage 4 of the pipeline.
+  indexSemantic(f.root);
+  accept(f.root);
   const { run, report } = runQa(f);
   assert.equal(run.status, 0, `${run.stdout}\n${run.stderr}`);
   assert.equal(report.criticalTotal, 0);
+});
+
+test("release REQUIRES a stored semantic index — an un-indexed source-bearing package is blocked, not clean", () => {
+  // The CONFIDENCE blind spot (G3): with no stored index the semantic layer early-returns and every
+  // TRUST check plus the CONTROL coverage audit is silently skipped, so a source-bearing package
+  // would reach --for-discovery with a clean bill of health. The fix fails closed at release.
+  const f = cleanFixture(); // source-bearing, deliberately NOT indexed
+  const { run, report } = runQa(f); // runQa runs --for-discovery
+  assert.notEqual(run.status, 0, "an un-indexed source-bearing package passed the release gate");
+  assert.equal(report.discoverability.ready, false);
+  assert.ok(report.criticalCounts.additionalDiscoverBlockers > 0);
+  assert.match(report.discoverability.blockers.join("\n"), /no stored semantic index/);
+  assert.match(report.discoverability.blockers.join("\n"), /index:semantic/);
+  // Backward-compat: the same un-indexed package under AUTHORING (no --for-discovery) stays additive —
+  // no semantic block, no missing-index blocker — exactly as spec §6.2 requires.
+  const authoringJson = path.join(f.parent, "authoring.json");
+  const authoring = spawnSync(process.execPath, [path.join(repo, "scripts", "check_oer.mjs"), "--package", f.root, "--inputs", f.inputs, "--json", authoringJson], { encoding: "utf8" });
+  const authoringReport = JSON.parse(fs.readFileSync(authoringJson, "utf8"));
+  assert.equal(authoringReport.semantic, undefined, "the semantic layer must stay additive-when-off during authoring");
+  assert.doesNotMatch((authoringReport.discoverability?.blockers || []).join("\n"), /no stored semantic index/, "the missing-index blocker must fire ONLY under --for-discovery");
 });
 
 test("public release requires the mode-appropriate key-fact critique", () => {

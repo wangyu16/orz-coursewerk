@@ -1804,6 +1804,12 @@ if (!assurance.canPack) discoverBlockers.push(`assurance kernel has ${assurance.
 if (coherence.hardFailures.length) discoverBlockers.push(`component coherence index has ${coherence.hardFailures.length} unresolved failure(s)`);
 if (!keyFactReview.ready) discoverBlockers.push(`key-fact critique has ${keyFactReview.failures.length} unresolved failure(s)`);
 if (!visualReview.ready) discoverBlockers.push(`visual review has ${visualReview.failures.length} unresolved failure(s)`);
+// Fail-closed release invariant (the comment at ~:1754 already ASSERTS this; here it is ENFORCED):
+// with no stored index the semantic layer early-returns and every TRUST check (consistency M6, range
+// M6b, unverifiable-quotation M6c/3c) plus the CONTROL coverage audit is SILENTLY skipped, so a
+// source-bearing package can reach release with a clean bill of health from a blind spot. At release we
+// require the index; while authoring (no --for-discovery) the layer stays additive-when-off (spec §6.2).
+if (forDiscovery && !semantic.ran) discoverBlockers.push("no stored semantic index (metadata/{CLAIMS,SPINE,TERMS}.json) — the TRUST layers (consistency, range, unverifiable-quotation) and the CONTROL coverage audit cannot run at release; run `npm run index:semantic` before release");
 if (semantic.ran && semantic.indexErrors.length) discoverBlockers.push(`stored semantic index is corrupt: ${semantic.indexErrors.join("; ")}`);
 if (semantic.ran && semantic.blockingFlags + semantic.reviewFlags > 0)
   discoverBlockers.push(`semantic review queue has ${semantic.blockingFlags + semantic.reviewFlags} unresolved item(s) — see ${REVIEW_QUEUE_PATH}`);

@@ -570,6 +570,11 @@ test("pack succeeds only after a valid public assurance pass", () => {
   assert.equal(carriers.status, 0, `${carriers.stdout}\n${carriers.stderr}`);
   const visual = spawnSync(process.execPath, [path.join(repo, "scripts", "attest_visual_review.mjs"), "--root", f.root, "--receipt", carrierReceipt, "--reviewer", "Test Human Reviewer", "--reviewed-at", "2026-07-13", "--attestation", "I inspected every generated carrier in a browser for layout, readable content, interaction behavior, and visible overflow."], { encoding: "utf8" });
   assert.equal(visual.status, 0, `${visual.stdout}\n${visual.stderr}`);
+  // Stage 4 — a source-bearing package must be indexed before release (the semantic layer early-returns
+  // with no stored index, so an un-indexed release would pass clean from a blind spot). Index BEFORE the
+  // coherence accept so the metadata index is part of the attested state.
+  const index = spawnSync(process.execPath, [path.join(repo, "scripts", "index_semantic.mjs"), "--root", f.root], { encoding: "utf8" });
+  assert.equal(index.status, 0, `index:semantic failed:\n${index.stdout}\n${index.stderr}`);
   acceptCoherentState(f.root, "test: accept release reviews");
   const run = spawnSync(process.execPath, [path.join(repo, "scripts", "pack.mjs"), "--package", f.root, "--out", out, "--inputs", inputs], { encoding: "utf8" });
   assert.equal(run.status, 0, `${run.stdout}\n${run.stderr}`);

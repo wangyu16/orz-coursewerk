@@ -215,7 +215,7 @@
       "id": "repo:scripts/check_oer.mjs",
       "path": "scripts/check_oer.mjs",
       "type": "executable",
-      "hash": "73dbc54296e4521e14311c247fdc4fdd0b7b3186ec69d467159f959c35e36ff6"
+      "hash": "273a674e7bcc52248539488f050b8c4c4ea44c28ae0cbcde0542c7acbe6b47fa"
     },
     {
       "id": "repo:scripts/coursewerk_impact.mjs",
@@ -743,7 +743,7 @@
       "id": "repo:tests/assurance.test.mjs",
       "path": "tests/assurance.test.mjs",
       "type": "test",
-      "hash": "b4cd1ee80f276f3af66415896a3b032b5c2809b05bc32112381fdb85aca9ccd1"
+      "hash": "4b348488ca63fe67f47f0ea583e1d6ad59edd0b7fd62e3c34cf550bcf1029795"
     },
     {
       "id": "repo:tests/blind_bundle.test.mjs",
@@ -1013,7 +1013,7 @@
       "id": "repo:tests/qa.test.mjs",
       "path": "tests/qa.test.mjs",
       "type": "test",
-      "hash": "c5bca254afcc0c3fc3667146e5e1d5dc66405b777cb30b54c705e2b826bfb0ad"
+      "hash": "89429ef35c05786b1f4cf4181ece68c9e9ce541478e81f565503600337dc85a5"
     },
     {
       "id": "repo:tests/range.test.mjs",
