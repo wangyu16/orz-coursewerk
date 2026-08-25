@@ -1263,23 +1263,91 @@ function rangeFindings(fresh) {
  * package would trip. Not index-gated by its own nature (it reads deliverable text, not claims), but
  * it lives here beside its TRUST siblings and so runs whenever the semantic layer does.
  */
+
+// ── The callout-vs-quotation discriminator for blockquote hits (validated zero-FP on the callout
+// family in research/g3a-blockquote-discriminator-resolution.md; driver + battery under
+// results/g3-blockquote-discriminator*.{mjs,json}). orz overloads the `>` block — a
+// `> **Visual description:** …` accessibility callout, a `> [!NOTE]` admonition, a worked example
+// or a bare pull-quote all reproduce NOTHING — so "blockquote ⇒ reproduced quotation" false-fires.
+// For an INLINE span the quote marks ARE the reproduction claim; a blockquote carries no such mark,
+// so its equivalent claim is ATTRIBUTION (`> …\n> — Author, Work`, a footnote/citekey, or a
+// `Source:` line). The gate acts on a blockquote iff it makes that claim and is not a callout; an
+// UNATTRIBUTED reproduced blockquote is an attribution-gate concern, not this gate's to pass. ─────
+
+const QUOTATION_CALLOUT_LABEL =
+  /^(note|tip|warning|important|caution|info|example|worked example|visual description|data summary|definition|key idea|remember|summary|aside|callout|objective|objectives)\b\s*[:.\-—]/i;
+
+/** An attribution line: em/en-dash + a source (the block-quotation convention), or a "Source:" lead. */
+function isQuotationAttributionLine(line) {
+  return /^\s*[—–-]{1,2}\s+\S/.test(line) || /^\s*source\s*[:—-]/i.test(line);
+}
+
+/**
+ * Does this `quote`-kind region make a reproduction claim the publish gate may act on?
+ * Inline spans are handled by the caller (the quote mark is the shipped bound); this decides the
+ * overloaded blockquote case: YES iff it carries an attribution signal AND is not a callout label.
+ */
+function isActionableQuotation(regionText) {
+  const lines = regionText.split("\n").map((l) => l.replace(/^\s*>\s?/, ""));
+  const nonEmpty = lines.filter((l) => l.trim().length);
+  if (!nonEmpty.length) return false;
+  const first = nonEmpty[0].trim();
+
+  if (/^\[!\w+\]/.test(first)) return false; // SUPPRESS — GitHub-style admonition marker
+  if (/^\*{1,2}[^*\n]{1,48}?:?\*{1,2}\s*:?\s/.test(first) && /:/.test(first.slice(0, 52))) return false; // bold label
+  if (QUOTATION_CALLOUT_LABEL.test(first)) return false; // plain leading label word
+
+  return (
+    nonEmpty.some(isQuotationAttributionLine) ||
+    /\[\^[^\]]+\]/.test(regionText) ||
+    /\[@[^\]]+\]/.test(regionText) ||
+    /\bsource\s*[:—-]/i.test(regionText)
+  );
+}
+
+/**
+ * The reproduced BODY of a blockquote with the non-reproduced scaffolding removed — attribution
+ * lines, a leading `**Label:**`, `Source:` lead, and inline citation markers — re-prefixed with
+ * `> ` so it stays a `quote`-kind region the shipped matcher will test. This stops a FAITHFUL
+ * attributed quote from false-firing on its own attribution/citation words.
+ */
+function reproducedQuotationBody(regionText) {
+  return regionText
+    .split("\n")
+    .filter((line) => !isQuotationAttributionLine(line.replace(/^\s*>\s?/, "")))
+    .map((line) => {
+      let c = line.replace(/^\s*>\s?/, "");
+      c = c.replace(/^\s*\*{1,2}[^*\n]{1,48}?:\*{1,2}\s*/, ""); // leading bold label
+      c = c.replace(/^\s*source\s*[:—-]\s*/i, ""); // Source: lead
+      c = c.replace(/\[\^[^\]]+\]/g, "").replace(/\[@[^\]]+\]/g, ""); // citation markers
+      return "> " + c;
+    })
+    .join("\n");
+}
+
 function quotationFindings(verbatim) {
   if (!verbatim?.ran || !Array.isArray(verbatim.sourceTexts) || verbatim.sourceTexts.length === 0) return [];
   if ((verbatim.corpus?.attestedSourceIds?.length ?? 0) > 0) return [];
   const findings = [];
   for (const f of deliverableFiles) {
     for (const hit of unverifiableQuotations(read(f), verbatim.sourceTexts)) {
-      // BOUND (MEASURED on the clean fixture, not assumed): act ONLY on INLINE quotation marks, not
-      // markdown blockquotes. `unverifiableQuotations` treats every `quote`-kind immutable region the
-      // same — correct for the matcher — but a blockquote is STRUCTURALLY OVERLOADED in orz: a
-      // `> **Visual description:** …` accessibility callout, an admonition, or a worked example is a
-      // blockquote and reproduces nothing, so flagging it is the alarm-fatigue trap (it tripped this
-      // gate on a clean package's visual-description callout the first time it ran). An INLINE
-      // "…" span in running prose is an unambiguous claim of reproduced words, and it still catches
-      // the headline edited-quote fault. Blockquote quotations remain a matcher capability
-      // (immutable.mjs's unit test) but need a callout-vs-quotation discriminator before the GATE can
-      // act on them — see the residual in research/g3-confidence-wiring-design.md.
-      if (!/^["'“”‘’«»]/.test(hit.text.trimStart())) continue;
+      // BOUND (MEASURED on the clean fixture, not assumed): `unverifiableQuotations` treats every
+      // `quote`-kind immutable region the same — correct for the matcher — but a blockquote is
+      // STRUCTURALLY OVERLOADED in orz (a `> **Visual description:** …` accessibility callout, an
+      // admonition, a worked example all reproduce nothing), so acting on it blind is the
+      // alarm-fatigue trap (it tripped this gate on a clean package's visual-description callout the
+      // first time it ran). An INLINE "…" span is an unambiguous claim of reproduced words → act,
+      // unchanged. A BLOCKQUOTE is acted on iff it carries a reproduction claim (attribution) and is
+      // not a callout, and only after RE-TESTING the reproduced body so a faithful attributed quote
+      // clears on its own attribution words — the discriminator validated in
+      // research/g3a-blockquote-discriminator-resolution.md (0/6 callout FP, 3/3 attributed edited).
+      const head = hit.text.trimStart();
+      if (/^>/.test(head)) {
+        if (!isActionableQuotation(hit.text)) continue; // callout / admonition / unattributed → suppress
+        if (unverifiableQuotations(reproducedQuotationBody(hit.text), verbatim.sourceTexts).length === 0) continue; // faithful body → clear
+      } else if (!/^["'“”‘’«»]/.test(head)) {
+        continue; // defensive: neither a blockquote nor an inline quote mark
+      }
       const shown = hit.text.replace(/\s+/g, " ").trim();
       const snippet = shown.length > 160 ? `${shown.slice(0, 157)}…` : shown;
       findings.push({

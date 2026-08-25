@@ -327,3 +327,39 @@ test("bound #1 — with NO pinned source corpus, no quotation is flaggable (off-
   assert.equal(report.verbatim.ran, false, "verbatim ran despite the corpus being removed");
   assert.deepEqual(quotationItems(f.root), [], "a quotation was flagged with no pinned source to falsify it against");
 });
+
+// TRUST 3c — the BLOCKQUOTE arm. The gate used to abstain on every `>` block (inline-only bound),
+// because orz overloads the blockquote: `> **Visual description:** …`, admonitions and worked
+// examples reproduce nothing, so acting blind is the alarm-fatigue trap. The wired
+// callout-vs-quotation discriminator (research/g3a-blockquote-discriminator-resolution.md) lifts
+// recall to ATTRIBUTED blockquote quotations while keeping the callout family silent: it acts iff
+// the block carries a reproduction claim (attribution) and is not a callout, and only after
+// re-testing the reproduced body so a faithful attributed quote clears on its own attribution words.
+const ATTRIBUTED_EDITED_BLOCKQUOTE = `\n> ${EDITED_QUOTE}\n> — Atkins, *Physical Chemistry*\n`;
+const ATTRIBUTED_FAITHFUL_BLOCKQUOTE = `\n> ${FAITHFUL_QUOTE}\n> — Atkins, *Physical Chemistry*\n`;
+
+test("TRUST 3c blockquote arm — an ATTRIBUTED EDITED blockquote quotation is queued (recall past inline marks)", () => {
+  const f = cleanFixture();
+  fs.appendFileSync(path.join(f.root, "study-guide", "ch1.md"), ATTRIBUTED_EDITED_BLOCKQUOTE);
+  indexSemantic(f.root);
+  accept(f.root);
+  const { report } = runQa(f);
+  assert.equal(report.semantic.ran, true, "the semantic layer did not run — the quotation scan never looked");
+  const items = quotationItems(f.root);
+  assert.equal(items.length, 1, `expected the attributed edited blockquote to queue exactly one item, got ${items.length}`);
+  assert.ok(items[0].evidence.join("\n").includes("trademark"), "the queued item does not name the edited word");
+});
+
+test("TRUST 3c blockquote arm — a FAITHFUL attributed blockquote AND the visual-description callout stay silent (the FP budget)", () => {
+  // The clean fixture's study-guide already carries `> **Visual description:** …` — a 13-word matcher
+  // hit with no source match (the callout that tripped the broad gate the first time it ran).
+  // Appending a faithfully-reproduced attributed blockquote adds a second `>` block whose BODY does
+  // match the pinned source. Neither is a reproduction defect, so the gate must be silent on both.
+  const f = cleanFixture();
+  fs.appendFileSync(path.join(f.root, "study-guide", "ch1.md"), ATTRIBUTED_FAITHFUL_BLOCKQUOTE);
+  indexSemantic(f.root);
+  accept(f.root);
+  const { report } = runQa(f);
+  assert.equal(report.semantic.ran, true, "the semantic layer did not run — the quotation scan never looked");
+  assert.deepEqual(quotationItems(f.root), [], "a callout or faithful attributed blockquote was flagged as an unverifiable quotation");
+});
