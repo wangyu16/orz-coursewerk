@@ -24,7 +24,7 @@ function tokenize(text) {
     .replace(/^[ \t]{0,3}(?:```|~~~)[^\n]*$/gm, " ") // fence MARKERS only; the body is visible text
     .replace(/`[^`\n]*`/g, " ");
   const out = [];
-  const re = /[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*/g;
+  const re = /[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu;
   let m;
   while ((m = re.exec(cleaned))) out.push({ w: m[0].toLowerCase(), at: m.index });
   return out;

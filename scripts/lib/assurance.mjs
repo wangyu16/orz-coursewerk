@@ -11,6 +11,8 @@ import { fileURLToPath } from "node:url";
 import { isOpenLicense, normalizeLicense, ALL_RIGHTS_RESERVED } from "./contract.mjs";
 import { scanProcessRestrictions } from "./rights_preflight.mjs";
 import { auditIngestionReadiness, sourcePolicyFor } from "./pre_ingestion.mjs";
+import { identityProblem } from "./identity.mjs";
+import { normalizeEvidenceText } from "./rights_preflight.mjs";
 
 export const USAGE_PROFILES = ["personal-private", "restricted-teaching", "public-oer"];
 export const RIGHTS_BASES = [
@@ -27,7 +29,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const licenseTextsFile = path.resolve(here, "../data/license-texts.json");
 const licenseTexts = JSON.parse(fs.readFileSync(licenseTextsFile, "utf8")).licenses || {};
 const PUBLIC_TOPS = new Set(["study-guide", "slides", "practice", "concepts", "assessment-support"]);
-const MEDIA = /\.(?:png|jpe?g|webp|svg|gif|pdf|mp3|mp4|mov|wav)$/i;
+const MEDIA = /\.(?:png|jpe?g|webp|avif|svg|gif|bmp|tiff?|pdf|mp3|mp4|mov|webm|wav|ogg)$/i;
 
 const read = (f) => fs.readFileSync(f, "utf8");
 const exists = (f) => fs.existsSync(f);
@@ -112,11 +114,22 @@ function evidenceSnapshotAudit(root, source, basis, label, publicationBlockers, 
   if (retrieval?.captureMode === "network" &&
       (!nonempty(retrieval.requestedUrl) || !nonempty(retrieval.finalUrl) || !Number.isInteger(retrieval.httpStatus) || !nonempty(retrieval.contentType)))
     publicationBlockers.push(`${label}: network evidenceRetrieval requires requested/final URL, HTTP status, and content type.`);
+  if (retrieval?.captureMode === "network" && nonempty(retrieval.requestedUrl) && nonempty(retrieval.finalUrl)) {
+    try {
+      const requested = new URL(retrieval.requestedUrl), final = new URL(retrieval.finalUrl);
+      if (requested.origin !== final.origin)
+        warnings.push(`${label}: the rights page redirected to a DIFFERENT origin (${requested.origin} → ${final.origin}); the evidence may describe another site. Confirm the final page is this source's terms.`);
+    } catch { /* malformed URLs are refused elsewhere */ }
+  }
   if (retrieval?.captureMode === "local-file" && !nonempty(retrieval.localFileName))
     publicationBlockers.push(`${label}: local-file evidenceRetrieval requires localFileName.`);
   if (retrieval && Number.isInteger(retrieval.byteLength) && retrieval.byteLength !== fs.statSync(file).size)
     publicationBlockers.push(`${label}: evidenceRetrieval byteLength does not match the retained snapshot.`);
   const snapshot = read(file).toLowerCase();
+  // M2 (round-3 audit): the license needle was matched as a raw substring — inside an HTML comment,
+  // a display:none block, a footer on a sign-in page, or a sentence saying the OPPOSITE. Match on
+  // the VISIBLE text, and refuse when a negation sits beside the identifier.
+  const visible = normalizeEvidenceText(read(file)).toLowerCase();
   const processNotices = scanProcessRestrictions(snapshot);
   if (processNotices.length) {
     const recorded = basis.processUseReview?.notices || [];
@@ -138,8 +151,17 @@ function evidenceSnapshotAudit(root, source, basis, label, publicationBlockers, 
     "CC-BY-NC-SA-4.0": ["attribution-noncommercial-sharealike 4.0", "creativecommons.org/licenses/by-nc-sa/4.0"],
     "CC0-1.0": ["cc0 1.0", "creativecommons.org/publicdomain/zero/1.0"],
   };
-  if (normalized && needles[normalized] && !needles[normalized].some((needle) => snapshot.includes(needle)))
-    publicationBlockers.push(`${label}: evidenceSnapshot does not contain an expected ${normalized} identifier.`);
+  if (normalized && needles[normalized]) {
+    const hits = needles[normalized].map((needle) => visible.indexOf(needle)).filter((i) => i >= 0);
+    if (!hits.length) publicationBlockers.push(`${label}: evidenceSnapshot does not contain an expected ${normalized} identifier in its visible text.`);
+    for (const at of hits) {
+      const around = visible.slice(Math.max(0, at - 220), at + 220);
+      if (/\b(?:all rights reserved|not (?:released|licensed|available|distributed) under|is not (?:licensed|covered)|no license is granted|except (?:as|where) noted|commercial (?:edition|textbook))\b/.test(around))
+        publicationBlockers.push(`${label}: the ${normalized} identifier in evidenceSnapshot appears next to a contradicting statement ("${around.replace(/\s+/g, " ").trim().slice(0, 140)}…"); the evidence does not license this source.`);
+    }
+    if (/<title>[^<]*\b(?:sign in|log in|login|error|not found|404|access denied)\b/i.test(read(file)))
+      warnings.push(`${label}: evidenceSnapshot looks like a sign-in or error page (its <title>); the license identifier it carries may be a site footer, not this source's terms.`);
+  }
   if (basis.type === "public-domain" && !/public domain|no known copyright|copyright expired/i.test(snapshot))
     publicationBlockers.push(`${label}: public-domain evidenceSnapshot does not state a public-domain basis.`);
 }
@@ -380,10 +402,17 @@ function auditSource(source, index, foundation, manifestLicense, privateFailures
 
   if (foundation.usageProfile === "public-oer") {
     if (["unknown", "user-asserted-exception"].includes(basis.type)) return;
-    if (basis.type === "open-license" && source.use === "adaptation" && source.role !== "asset") {
+    // H1 (round-3 audit): the matrix used to run only for `use: adaptation` on non-assets, so a
+    // CC-BY-NC EXCERPT (copied expression) or an NC asset reached a CC-BY pack. Copied or adapted
+    // expression is copied or adapted expression whatever the field says; only a pure REFERENCE
+    // (cited, not reproduced) is exempt — and even that is named in the warnings.
+    if (basis.type === "open-license") {
       const sourceLicense = normalizeLicense(basis.license);
-      if (!sourceLicense || !compatibleOutputLicenses(sourceLicense).includes(manifestLicense))
-        publicationBlockers.push(`${label}: adapted source license ${sourceLicense || "unknown"} is not compatible with package license ${manifestLicense || "unknown"}.`);
+      const compatible = sourceLicense && compatibleOutputLicenses(sourceLicense).includes(manifestLicense);
+      if (source.use !== "reference" && !compatible)
+        publicationBlockers.push(`${label}: ${source.use || "reused"} source license ${sourceLicense || "unknown"} is not compatible with package license ${manifestLicense || "unknown"}.`);
+      else if (source.use === "reference" && !compatible)
+        warnings.push(`${label}: referenced (not reproduced) under ${sourceLicense || "unknown"}, which would not be compatible with package license ${manifestLicense || "unknown"} if any of its expression were reused.`);
     }
   }
 }
@@ -552,10 +581,10 @@ export function auditAssurance({ root, manifest = null }) {
     if (!authors.length) publicationBlockers.push("Public OER requires at least one accountable output author or rights-holding institution in outputAuthors.");
     for (const [index, author] of authors.entries()) {
       if (!nonempty(author?.name) || !nonempty(author?.role)) publicationBlockers.push(`outputAuthors[${index}] requires name and role.`);
-      if (/\b(?:coursewerk|AI|agent|language model)\b/i.test(String(author?.name || "")))
-        publicationBlockers.push(`outputAuthors[${index}]: an AI/tool name cannot be the accountable public author or rights holder.`);
-      if (/\b(?:replace(?:-with)?|placeholder|temporary|trial maintainer|pending|unassigned|tbd|unknown)\b/i.test(`${author?.name || ""} ${author?.role || ""}`))
-        publicationBlockers.push(`outputAuthors[${index}]: placeholder or temporary public identities are not releaseable.`);
+      const problem = identityProblem(author?.name);
+      if (problem) publicationBlockers.push(`outputAuthors[${index}]: "${author?.name}" ${problem} — placeholder or temporary public identities are not releaseable; an AI/tool name cannot be the accountable public author or rights holder.`);
+      if (/\b(?:replace(?:-with)?|placeholder|temporary|trial maintainer|pending|unassigned|tbd|unknown)\b/i.test(String(author?.role || "")))
+        publicationBlockers.push(`outputAuthors[${index}]: placeholder or temporary public roles are not releaseable.`);
       if (author?.accountabilityConfirmedByUser !== true)
         publicationBlockers.push(`outputAuthors[${index}]: accountabilityConfirmedByUser=true is required for the named public author or institution.`);
       if (typeof author?.rightsHolder !== "boolean")

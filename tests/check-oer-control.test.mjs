@@ -187,6 +187,7 @@ test("1b · coverage is MEASURED, with its denominators, and reported to a human
   assert.deepEqual(g.json.semantic.coverage, {
     objectives: { covered: 2, total: 2 },
     concepts: { covered: 1, total: 4 },
+    chaptersUnchecked: [], // D7: no chapter where the CONTROL check is undefined
   });
 
   // The number a HUMAN sees, and the understatement named IN THE LINE — an instructor reading

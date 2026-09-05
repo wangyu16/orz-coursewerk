@@ -44,7 +44,7 @@ const checkScript = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 // `--no-commit`: a RELEASE check must not write a commit into the package (L2, design audit) —
 // the queue it emits is a report of this run, and a commit here made every receipt read
 // acceptedGitHead ≠ currentGitHead.
-const checkArgs = [checkScript, "--package", pkg, "--for-discovery", "--json", qaJson, "--no-commit"];
+const checkArgs = [checkScript, "--package", pkg, "--for-discovery", "--json", qaJson, "--no-commit", "--no-queue"];
 if (fs.existsSync(inputsDir)) checkArgs.push("--inputs", inputsDir);
 const check = spawnSync(process.execPath, checkArgs, { encoding: "utf8" });
 if (check.status !== 0) {
@@ -54,7 +54,11 @@ if (check.status !== 0) {
   process.exit(2);
 }
 const buildScript = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "build_carriers.mjs");
-const build = spawnSync(process.execPath, [buildScript, "--package", pkg, "--out", carrierPreview, "--receipt", carrierReceipt], { encoding: "utf8" });
+// M10 (round-3 audit): carriers attested under a theme must be rebuilt under the same theme, or the
+// pack-side rebuild refuses a right package. The attestation carries the receipt's theme.
+let attestedTheme = null;
+try { attestedTheme = JSON.parse(fs.readFileSync(path.join(pkg, "metadata", "VISUAL_REVIEW.json"), "utf8")).theme || null; } catch { /* no attestation yet: the gate reports it */ }
+const build = spawnSync(process.execPath, [buildScript, "--package", pkg, "--out", carrierPreview, "--receipt", carrierReceipt, ...(attestedTheme ? ["--theme", attestedTheme] : [])], { encoding: "utf8" });
 if (build.status !== 0) {
   console.error("pack: carrier build verification failed; no archive was created.");
   console.error(build.stdout || build.stderr);
@@ -149,12 +153,21 @@ const evaluation = [
   "# Coursewerk Release Evaluation",
   "",
   "## Measured vs declared (what the gate could NOT verify)",
-  `- Source comparison: ${attestedPrimaries.length ? `HUMAN-ATTESTED for ${attestedPrimaries.join(", ")} (released with --accept-attested-sources)` : "automatic for every primary source"}`,
+  `- Source comparison: ${attestedPrimaries.length ? `HUMAN-ATTESTED for ${attestedPrimaries.join(", ")} (released with --accept-attested-sources)` : "automatic for every reused source"}${(() => { const scanned = new Set([...(qa.verbatim?.corpus?.automaticSourceIds || []), ...attestedPrimaries]); const un = (qa.assurance?.foundation?.sources || []).filter((s) => s.use !== "reference" && !scanned.has(s.id)).map((s) => s.id); return un.length ? `; NOT SCANNED: ${un.join(", ")}` : ""; })()}`,
+  `- Objective coverage (CONTROL): ${qa.semantic?.coverage ? `${qa.semantic.coverage.objectives.covered}/${qa.semantic.coverage.objectives.total} objectives have a teaching claim carrying their vocabulary` : "semantic layer did not run"}${qa.semantic?.coverage?.chaptersUnchecked?.length ? `; CHECK UNDEFINED in chapter(s) ${qa.semantic.coverage.chaptersUnchecked.join(", ")} (no objective there has a teaching claim or a bracketed key term)` : ""}`,
   `- Key-fact critique: mode ${qa.keyFactReview?.review?.mode || "n/a"}, reviewer ${qa.keyFactReview?.review?.reviewer?.modelId || "n/a"} — its independence is declared by the reviewer and bound to the blind bundle digest; it is not observed`,
   `- Overrides by basis (authorized divergences from the source): ${overridesByBasisLine}`,
   `- Claims: ${qa.semantic?.claims ?? "n/a"} indexed, of which ${qa.semantic?.declaredClaims ?? "n/a"} declared with provenance and ${qa.semantic?.scanFoundClaims ?? "n/a"} found only by the deterministic scan (no spine or source provenance)`,
   "- Arithmetic inside answer keys is not verified; only cross-artifact agreement and physical range are",
   `- Coherence ledger action: ${qa.coherence?.acceptedState?.action || "n/a"}`,
+  // M4 (round-3 audit): a rights receipt is a self-report (no secret, no signature). Say what it says.
+  ...((qa.assurance?.foundation?.sources || []).map((s) => {
+    const r = s.rightsBasis?.evidenceRetrieval || {};
+    const cap = s.rightsBasis?.evidenceCapture || {};
+    let origin = "";
+    try { if (r.captureMode === "network" && new URL(r.requestedUrl).origin !== new URL(r.finalUrl).origin) origin = `; REDIRECTED ${new URL(r.requestedUrl).origin} → ${new URL(r.finalUrl).origin}`; } catch { /* n/a */ }
+    return `- Rights evidence for ${s.id}: ${r.captureMode || "not captured"} capture by ${cap.operator?.type || "unknown"} operator${origin} — self-reported, not independently verified`;
+  })),
   "",
   `- Package: ${title}`,
   `- Critical issues: ${qa.criticalTotal}`,
@@ -191,6 +204,10 @@ const releaseReceipt = {
   runtimeVisualReviewRequired: carriers.runtimeVisualReviewRequired,
   criticalTotal: qa.criticalTotal,
   assuranceWarnings,
+  attestedPrimarySources: attestedPrimaries,
+  acceptedAttestedSources: attestedPrimaries.length > 0 && process.argv.includes("--accept-attested-sources"),
+  objectiveCoverage: qa.semantic?.coverage?.objectives ?? null,
+  chaptersWhereControlUnchecked: qa.semantic?.coverage?.chaptersUnchecked ?? null,
   archive: path.basename(zipPath),
   archiveSha256,
   evaluation: path.basename(evaluationPath),

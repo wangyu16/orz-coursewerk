@@ -245,6 +245,20 @@
       "status": "resolved",
       "summary": "record_override, revision_impact, index_semantic and propagate were scripts nobody was told to run; PROCEDURE had no revision loop.",
       "resolution": "PROCEDURE Stage 5b documents the loop, overrides and propagation; tests/wiring.test.mjs requires every product script to be documented."
+    },
+    {
+      "id": "AUDIT-ROUND3-KERNEL-001",
+      "severity": "P0",
+      "status": "resolved",
+      "summary": "A CC-BY-NC excerpt or asset reached a CC-BY public pack; nine forms of hot-linked media and media outside assets/ shipped; non-Latin sources could not be prepared; pack was not idempotent.",
+      "resolution": "License matrix for every use but reference; every resource attribute, CSS url() and reference-style image scanned; only .md/.json under deliverable folders; unicode word tokens; --no-queue for release runs. docs/closed-loop-rounds.md round 3."
+    },
+    {
+      "id": "AUDIT-ROUND3-VERIFY-001",
+      "severity": "P0",
+      "status": "resolved",
+      "summary": "Round-2 fixes bypassed: a restated objective typed as fact counted as coverage; an answer stating its value twice went uncompared; a key-fact review contradicting the package passed by substring.",
+      "resolution": "Vocabulary-bearing teaching claims outside the objectives list; first value per dimension inside an answer; token-level quantity+unit support with deliverable-only usedIn and distinct notes."
     }
   ]
 }

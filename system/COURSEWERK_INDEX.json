@@ -47,7 +47,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "e68c6a2d13497d17ebd030c189b8ed3117fc26d3ceaf7a1e9cc2f0fc0b96b714"
+      "hash": "09badee9ed7fafa786a6b3ccc49c2ed945a87fd21c8c9607ef180ef2f5035d18"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -77,7 +77,7 @@
       "id": "repo:docs/closed-loop-rounds.md",
       "path": "docs/closed-loop-rounds.md",
       "type": "documentation",
-      "hash": "9af746b999ad15d4101ff76cee91cdef99cf5c3222401867a26d0b777a456d85"
+      "hash": "d0d790e674fb09e0e2d7894dcdaf9e8437ce6266a9faed12197ce043603fa4ba"
     },
     {
       "id": "repo:docs/coherence-index.md",
@@ -191,7 +191,7 @@
       "id": "repo:scripts/attest_visual_review.mjs",
       "path": "scripts/attest_visual_review.mjs",
       "type": "executable",
-      "hash": "9af56a129d78cb471c5b339944557eb5e42fb373c2e8ba7b941eeb928d6d9e68"
+      "hash": "4e26cfa1deb2c8ea7b10cc89385ef98e57d7d4f267447da6dfbd446ec6220b6b"
     },
     {
       "id": "repo:scripts/bind_key_fact_review.mjs",
@@ -203,7 +203,7 @@
       "id": "repo:scripts/build_carriers.mjs",
       "path": "scripts/build_carriers.mjs",
       "type": "executable",
-      "hash": "e2d575a69aa22e215e9a085585a82a3382ed1656bf7034dc24ee61c70628d92f"
+      "hash": "1a582d32487bcaa18507cf979801ef44d06f0748ea2c999952fdab96b67a85fb"
     },
     {
       "id": "repo:scripts/capture_media_evidence.mjs",
@@ -227,7 +227,7 @@
       "id": "repo:scripts/check_oer.mjs",
       "path": "scripts/check_oer.mjs",
       "type": "executable",
-      "hash": "cd2b6c88efb072626728cdaf404c4f963dd5ecc849fcd0b07be7404012f47b11"
+      "hash": "36a4bdc903581ad49d89df3b7fd1b1074b8f2968db800ffc8935eeeddd4cbb95"
     },
     {
       "id": "repo:scripts/coursewerk_impact.mjs",
@@ -317,7 +317,7 @@
       "id": "repo:scripts/lib/assurance.mjs",
       "path": "scripts/lib/assurance.mjs",
       "type": "kernel",
-      "hash": "fc5531431ddf5e58c4bf3004eae22b57c80810b2b6e47abfd447c26c06f0bdfe"
+      "hash": "fe17e1f5757abde4c87ce039ccfa94d2b7e61486ecf21157f5d862e70b61cbac"
     },
     {
       "id": "repo:scripts/lib/blind_bundle.mjs",
@@ -341,13 +341,13 @@
       "id": "repo:scripts/lib/coherence.mjs",
       "path": "scripts/lib/coherence.mjs",
       "type": "kernel",
-      "hash": "c3c9ebf31f75af88a21745451a1ce66ef839298dcf1723475d10d40b665d5c11"
+      "hash": "4bdaf66a7abc9dc31fed1aa560b86cde2d757c159fba97065da96d6b1c2b3ac9"
     },
     {
       "id": "repo:scripts/lib/consistency.mjs",
       "path": "scripts/lib/consistency.mjs",
       "type": "kernel",
-      "hash": "ef3c380ec14d18656cb170d9c91023fa640ba3f6857c6b8625d6808099ad3ec7"
+      "hash": "bb7120e57af396cd8399d641b4b91f2767c7760b6a46bf697dc2b45b843f591d"
     },
     {
       "id": "repo:scripts/lib/contract.mjs",
@@ -359,7 +359,7 @@
       "id": "repo:scripts/lib/escalation.mjs",
       "path": "scripts/lib/escalation.mjs",
       "type": "kernel",
-      "hash": "588d89ff09172c3e01bb024ea851d7510d8429b163bfd7b0ab5c5b30b7e9911b"
+      "hash": "94fea03a63f251c1ac98d3af2948b9f65fbb3893f10c6c88580c0f6f2dd92f78"
     },
     {
       "id": "repo:scripts/lib/fingerprint.mjs",
@@ -368,10 +368,16 @@
       "hash": "900637ab1c0b7bfc2d54374e62104f01a04a37a73313e59f34c3feb7c8e2df52"
     },
     {
+      "id": "repo:scripts/lib/identity.mjs",
+      "path": "scripts/lib/identity.mjs",
+      "type": "kernel",
+      "hash": "e8ed807d5001d677205b7e49dbd48e855409afa81b854342248c6ff57578d93e"
+    },
+    {
       "id": "repo:scripts/lib/immutable.mjs",
       "path": "scripts/lib/immutable.mjs",
       "type": "kernel",
-      "hash": "14a2716bc12fa341ea1bfa7374ab77f6fc50d7a2909db4b143cb508f6978eaa7"
+      "hash": "4778b3a98aa0d878df0ac28837d4a4a7c62ba6c13bbea19314a0058c6eb05d93"
     },
     {
       "id": "repo:scripts/lib/key_fact_checks.mjs",
@@ -383,7 +389,7 @@
       "id": "repo:scripts/lib/key_fact_review.mjs",
       "path": "scripts/lib/key_fact_review.mjs",
       "type": "kernel",
-      "hash": "ab14668634345161da10826aaddd623350fed811d6aa4a0229e6d65d472ad3e9"
+      "hash": "f50e5427554abfa9adb5569c44a8672341177e285d7efa4e208eac11939e1a8c"
     },
     {
       "id": "repo:scripts/lib/output_git.mjs",
@@ -413,13 +419,13 @@
       "id": "repo:scripts/lib/rights_preflight.mjs",
       "path": "scripts/lib/rights_preflight.mjs",
       "type": "kernel",
-      "hash": "ea5896685777fd04c384f3a2648970ab713663738e754e566825792f3fc30317"
+      "hash": "8e1a62241a13774775aaa44f9cc5ae46a4d833285f340ba674af1af80e5264dd"
     },
     {
       "id": "repo:scripts/lib/semantic_index.mjs",
       "path": "scripts/lib/semantic_index.mjs",
       "type": "kernel",
-      "hash": "ad6b759466bb502d9ec8744a0248711d805dbfbc4af18558ee910b1199882a97"
+      "hash": "ab73685ec476a456bc7473f92227539f6b998c9db3d40930cc99cca39b7945fa"
     },
     {
       "id": "repo:scripts/lib/slug.mjs",
@@ -437,7 +443,7 @@
       "id": "repo:scripts/lib/spine.mjs",
       "path": "scripts/lib/spine.mjs",
       "type": "kernel",
-      "hash": "0715ad8d48bba0a52006f4817aed8921937c93582251eb880197bea88ee91b37"
+      "hash": "f8871667d3a9fe009dfcd833f930e3a2466c3aa76196a26bd32794baa421142b"
     },
     {
       "id": "repo:scripts/lib/system_index.mjs",
@@ -449,49 +455,49 @@
       "id": "repo:scripts/lib/terms.mjs",
       "path": "scripts/lib/terms.mjs",
       "type": "kernel",
-      "hash": "015967649f4c01ac2b9683cd29911ad9adff230c604c40940d56cbe261289e02"
+      "hash": "120a79ff50fe3e8352ff959ba7998aaec3ca1663f0813e75063be8f272ef24a3"
     },
     {
       "id": "repo:scripts/lib/units.mjs",
       "path": "scripts/lib/units.mjs",
       "type": "kernel",
-      "hash": "c181a2e62beeaaaf026953737b7f501708811d87ca6fdbd62c14d0cd7364739c"
+      "hash": "31b72bf993aa71372f5e4d5efe9bc863e3a7707b1bde75443f7d9759ff00ddc5"
     },
     {
       "id": "repo:scripts/lib/verbatim.mjs",
       "path": "scripts/lib/verbatim.mjs",
       "type": "kernel",
-      "hash": "4d0e7b082f2b911fa4cb8ceabb1dc84908a1d4bdc4170398274945c72070a4ab"
+      "hash": "6a9600d7b5ea8bc92c88b4f43b15404679797291eb7cc01fc8820773602f3aec"
     },
     {
       "id": "repo:scripts/lib/visual_review.mjs",
       "path": "scripts/lib/visual_review.mjs",
       "type": "kernel",
-      "hash": "d79597590d3c4de9a11170d11a1d8ba8942ff52aff1c55e707552dce37ef3c59"
+      "hash": "7d21354430e6c4d7ff305a2f89f8c913a8ab2c960a62c6ee2daf4d0fbfdb8fef"
     },
     {
       "id": "repo:scripts/pack.mjs",
       "path": "scripts/pack.mjs",
       "type": "executable",
-      "hash": "5277b0c72a3ff59e7a0d49fad111fef56d6882c771816d6f649a163fdc704756"
+      "hash": "740de070f3c954ceec95e56e6cfaa99516aed18475bbfff4c2ffb9a4ac4f6064"
     },
     {
       "id": "repo:scripts/prepare_source_corpus.mjs",
       "path": "scripts/prepare_source_corpus.mjs",
       "type": "executable",
-      "hash": "0b704eec081230f4471b80bbfa99a04904f19ec7ea30cb70e125eb4b875538ae"
+      "hash": "71aaf2ec01602fb4d0f8f85b3afff308671f5fdea261b1ef036ff11edf0806fb"
     },
     {
       "id": "repo:scripts/prepare_wikipedia_topic.mjs",
       "path": "scripts/prepare_wikipedia_topic.mjs",
       "type": "executable",
-      "hash": "a887bd6fc9e06a92b08961af7dda8b78c8fbb2628e58529902e5af923d4d9ac6"
+      "hash": "6d54959972679b83fb2960dfb6e0d0ddec5b01ca19843a47d2d8f0e642785cc1"
     },
     {
       "id": "repo:scripts/propagate.mjs",
       "path": "scripts/propagate.mjs",
       "type": "executable",
-      "hash": "b561fc619b48ce0f250adf14afdd9cd7188cea983a9e30927ce5546c33fc7f57"
+      "hash": "c70c0572850d6d2a85cbb33f4447bee5c1604058f674fb9ff9a59b5f84bcfdec"
     },
     {
       "id": "repo:scripts/record_override.mjs",
@@ -647,7 +653,7 @@
       "id": "repo:system/CLAIMS.json",
       "path": "system/CLAIMS.json",
       "type": "system-governance",
-      "hash": "4cfc4d03a91082dc73cdb455a6efc8ed1a599dde0332e858b6b5ba57be8d75d6"
+      "hash": "1e458e8c3cf905e3606d301263d476047ee6332d2ef45e870e10370a5b059375"
     },
     {
       "id": "repo:system/COMPONENTS.json",
@@ -659,7 +665,7 @@
       "id": "repo:system/KNOWN_FINDINGS.json",
       "path": "system/KNOWN_FINDINGS.json",
       "type": "system-governance",
-      "hash": "1830864ddea3da2ef34c30c36575c0e1c69a6539013d70a3852d7d326571b1a9"
+      "hash": "7e244b430bc37f8c4efa10fe0df6432390d4d11975d46e99dd6f699a51456fad"
     },
     {
       "id": "repo:system/QUALITY_PROFILES.json",
@@ -773,7 +779,7 @@
       "id": "repo:tests/assurance.test.mjs",
       "path": "tests/assurance.test.mjs",
       "type": "test",
-      "hash": "d7db0d40eba9b2ed5a12880625019de1a8818ffef67efa83881fd6f9689f6e73"
+      "hash": "ee30c08de66f5cf9738bd8a2b8c7a6103b12c4fb84c334c907c0300e0241772a"
     },
     {
       "id": "repo:tests/audit-round-2.test.mjs",
@@ -782,10 +788,16 @@
       "hash": "7f4168268ce8bfa37ae46713c931a5092d530008c5f2057170860f3f3ef47fb3"
     },
     {
+      "id": "repo:tests/audit-round-3.test.mjs",
+      "path": "tests/audit-round-3.test.mjs",
+      "type": "test",
+      "hash": "93936b7e6c95ac09031be2b6aeb9268a3986a3d91be4ba64b2ab345b275d0e4b"
+    },
+    {
       "id": "repo:tests/blind_bundle.test.mjs",
       "path": "tests/blind_bundle.test.mjs",
       "type": "test",
-      "hash": "dabf69a581f4042b1235d347897f8ad99702ead6fbff75f7335c140ac8bfc6d3"
+      "hash": "7de64117bb53f23165e3285d6b10f9c16f7b7550758250142d9686d679775d7b"
     },
     {
       "id": "repo:tests/carriers.test.mjs",
@@ -803,7 +815,7 @@
       "id": "repo:tests/check-oer-control.test.mjs",
       "path": "tests/check-oer-control.test.mjs",
       "type": "test",
-      "hash": "faa02913b54aae469b14644cddb8f2d183eedcf53ac5053182e155f4dbf3d26e"
+      "hash": "7d3a2e97724bc1f3274a4cf42a390ed99c4756997b669c31c5d2f36f20ef6817"
     },
     {
       "id": "repo:tests/check-oer-revision.test.mjs",
@@ -1037,7 +1049,7 @@
       "id": "repo:tests/key-fact-bindings.test.mjs",
       "path": "tests/key-fact-bindings.test.mjs",
       "type": "test",
-      "hash": "c2c52ad0b0189ce99b27878cc119715fdd95095ec7e8de2828b483eb9b10bd8e"
+      "hash": "c84c5ecaf927e9b408ad477f6a9121df039c7c6841fcafa31dc575de6c20e71e"
     },
     {
       "id": "repo:tests/overrides.test.mjs",
@@ -1061,7 +1073,7 @@
       "id": "repo:tests/qa.test.mjs",
       "path": "tests/qa.test.mjs",
       "type": "test",
-      "hash": "abc46b46004fa173142bdfc45168f0e93d9d7a75418bce6795eedcfad7a711b7"
+      "hash": "6231194c0e20166932094e65d5d26be29aba747a7395e5fabebb901db8f4ca19"
     },
     {
       "id": "repo:tests/range.test.mjs",
@@ -1073,7 +1085,7 @@
       "id": "repo:tests/reviews.test.mjs",
       "path": "tests/reviews.test.mjs",
       "type": "test",
-      "hash": "98bfd1852d2a96128c73092afe8f7b8586fb5bc35a033b3b9ea6337ba5a85bcb"
+      "hash": "9601bac01b85d4374098d665deeb4e932749a519e6a6fa4e0e1dd66dc02ec4db"
     },
     {
       "id": "repo:tests/semantic-index-artifact.test.mjs",
@@ -1756,7 +1768,7 @@
     {
       "id": "claim.control.coverage",
       "assuranceLevel": "hard-gate",
-      "statement": "The gate verifies the package against the instructor's concept map in both directions: an objective with no non-objective claim (fact, definition, answer key, derived, procedure) declared under it and none of its key terms taught is a fail-closed missing-coverage block in every mode; a deliverable tagging an undeclared objective fails the format contract; a spine label that moved under an unchanged id while claims are declared under it is blocking; coverage is reported as a floor with denominators.",
+      "statement": "The gate verifies the package against the instructor's concept map in both directions: an objective is taught only by a claim outside the deliverable's own objectives list that is not itself an objective and that carries the objective's bracketed vocabulary (declared termRef or in prose); an objective with no such claim and none of its key terms taught is a fail-closed missing-coverage block in every mode; a deliverable tagging an undeclared objective fails the format contract; a spine label moved under an unchanged id while claims are declared under it is blocking; a prerequisite cycle is blocking; coverage is reported as a floor with denominators and the chapters where the check is undefined are named.",
       "implementation": [
         "scripts/check_oer.mjs",
         "scripts/lib/spine.mjs",
@@ -1899,7 +1911,7 @@
     {
       "id": "claim.release.measured-vs-declared",
       "assuranceLevel": "automated-check",
-      "statement": "Release refuses a human-attested primary source unless explicitly accepted, never commits into the package, ships no review queue, produces a byte-reproducible archive for identical content, and the evaluation lists what the gate could not verify: attested sources, reviewer identity and mode, overrides by basis, declared versus scan-found claims, unverified arithmetic, and the coherence ledger action.",
+      "statement": "Release refuses a human-attested primary source unless explicitly accepted (recorded in the receipt), never commits into the package and leaves no queue behind, ships no review queue, rebuilds carriers under the attested theme, produces a byte-reproducible archive for identical content, and the evaluation lists what the gate could not verify: attested and unscanned sources, rights capture mode and operator per source, reviewer identity and mode, overrides by basis, declared versus scan-found claims, objective coverage and chapters where CONTROL is undefined, unverified arithmetic, and the coherence ledger action.",
       "implementation": [
         "scripts/pack.mjs",
         "scripts/check_oer.mjs",
@@ -1907,7 +1919,8 @@
       ],
       "tests": [
         "tests/assurance.test.mjs",
-        "tests/audit-round-2.test.mjs"
+        "tests/audit-round-2.test.mjs",
+        "tests/audit-round-3.test.mjs"
       ],
       "documentation": [
         "PROCEDURE.md",
@@ -1917,7 +1930,7 @@
     {
       "id": "claim.review.blind-bundle",
       "assuranceLevel": "hard-gate",
-      "statement": "A documented command assembles the blind key-fact reviewer's surface by allowlist outside the package (withheld process files and symbolic links named), and the key-fact review is BOUND to that surface: it must declare the digest of the current package's bundle, the digest is compared live, template placeholders are refused, and every key fact must be locatable in the deliverables it names. The reviewer's isolation itself is declared, not observed.",
+      "statement": "A documented command assembles the blind key-fact reviewer's surface by allowlist outside the package (withheld process files and symbolic links named, non-markdown assets carried by digest), and the key-fact review is BOUND to that surface: it must declare the digest of the current package's bundle, the digest is compared live, template placeholders, identical check notes and future dates are refused, and every key fact must be locatable as tokens (quantities with their units) in the deliverables it names. The reviewer's isolation itself is declared, not observed.",
       "implementation": [
         "scripts/lib/blind_bundle.mjs",
         "scripts/assemble_blind_bundle.mjs",
@@ -1982,7 +1995,7 @@
     },
     {
       "id": "claim.rights.verified",
-      "statement": "Public sources have hash-bound, known-policy-aware receipts separating verified copyright-license facts from access/AI-use notices; non-published source use remains advisory and public outputs enforce honest attribution and compatible licensing of copied or adapted expression.",
+      "statement": "Public sources have hash-bound, known-policy-aware receipts separating verified copyright-license facts from access/AI-use notices; non-published source use remains advisory and public outputs enforce honest attribution and compatible licensing of copied or adapted expression; the license identifier must appear in the evidence's visible text with no contradicting statement beside it, cross-origin redirects are warned, every reused (adapted or excerpted) source must satisfy the license matrix and be in the source corpus, and every accountable identity passes one placeholder/AI-vendor denylist.",
       "assuranceLevel": "hard-gate",
       "implementation": [
         "scripts/lib/assurance.mjs",
@@ -1990,11 +2003,13 @@
         "scripts/lib/rights_preflight.mjs",
         "scripts/data/source-policies.json",
         "scripts/capture_rights_evidence.mjs",
-        "scripts/prepare_source_corpus.mjs"
+        "scripts/prepare_source_corpus.mjs",
+        "scripts/lib/identity.mjs"
       ],
       "tests": [
         "tests/assurance.test.mjs",
-        "tests/evidence-tools.test.mjs"
+        "tests/evidence-tools.test.mjs",
+        "tests/audit-round-3.test.mjs"
       ],
       "documentation": [
         "FEATURES.md",
@@ -2044,7 +2059,7 @@
     {
       "id": "claim.trust.consistency",
       "assuranceLevel": "hard-gate",
-      "statement": "Cross-artifact disagreements on a shared term or quantity are found deterministically with no declared edge required — the answer tab of a tabs container is the assertion, a declared type or extra declared terms cannot opt an answer out — physically impossible values are flagged by a conservative range audit, and asserting the map's own misconception is blocking.",
+      "statement": "Cross-artifact disagreements on a shared term or quantity are found deterministically with no declared edge required — the answer tab or Answer line of a block is the assertion and its first value per dimension is compared, unit look-alikes and spelled-out units are recognized, a declared type or extra declared terms cannot opt an answer out — physically impossible values are flagged by a conservative range audit, and asserting the map's own misconception is blocking.",
       "implementation": [
         "scripts/lib/consistency.mjs",
         "scripts/lib/units.mjs",
@@ -2066,7 +2081,7 @@
     {
       "id": "claim.trust.immutable",
       "assuranceLevel": "hard-gate",
-      "statement": "Quotations, citations, code fences, orz payloads, and source-reproduced spans are never rewritten by an automatic edit on any product path, and a quotation that appears in no pinned source is refused at the publish check as unverifiable.",
+      "statement": "Quotations in straight, curly, German, guillemet or single-curly marks, up to 2000 characters, hard-wrapped or continued across a paragraph break, plus citations, code fences, orz payloads, HTML tags and source-reproduced spans are never rewritten by an automatic edit on any product path; a quotation that appears in no pinned source is refused at the publish check as unverifiable, and an elision is honored only where an ellipsis marks it.",
       "implementation": [
         "scripts/lib/immutable.mjs",
         "scripts/lib/propagate.mjs",
@@ -2303,6 +2318,20 @@
       "status": "resolved",
       "summary": "Report commands fail when the report parent directory does not exist.",
       "resolution": "Assurance and QA commands create report/JSON parent directories before writing."
+    },
+    {
+      "id": "AUDIT-ROUND3-KERNEL-001",
+      "severity": "P0",
+      "status": "resolved",
+      "summary": "A CC-BY-NC excerpt or asset reached a CC-BY public pack; nine forms of hot-linked media and media outside assets/ shipped; non-Latin sources could not be prepared; pack was not idempotent.",
+      "resolution": "License matrix for every use but reference; every resource attribute, CSS url() and reference-style image scanned; only .md/.json under deliverable folders; unicode word tokens; --no-queue for release runs. docs/closed-loop-rounds.md round 3."
+    },
+    {
+      "id": "AUDIT-ROUND3-VERIFY-001",
+      "severity": "P0",
+      "status": "resolved",
+      "summary": "Round-2 fixes bypassed: a restated objective typed as fact counted as coverage; an answer stating its value twice went uncompared; a key-fact review contradicting the package passed by substring.",
+      "resolution": "Vocabulary-bearing teaching claims outside the objectives list; first value per dimension inside an answer; token-level quantity+unit support with deliverable-only usedIn and distinct notes."
     },
     {
       "id": "AUDIT-SOURCE-001",

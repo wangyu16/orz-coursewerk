@@ -187,6 +187,7 @@ const KEY_TERMS = "key terms";
 /** Fold a label to its resolution key: case-insensitive, whitespace-collapsed. */
 function normalizeLabel(label) {
   return String(label ?? "")
+    .normalize("NFC") // L9: NFC and NFD spellings of one label are one label
     .replace(/\s+/g, " ")
     .trim()
     .toLowerCase();
@@ -382,6 +383,12 @@ function cloneTerms(terms) {
  * one ordered list is what lets the record below derive `aliases` by simply removing whichever label
  * ends up preferred — which is exactly `setPreferred`'s add-alias rule, arrived at from the map.
  */
+/** A gloss folded to what is provably cosmetic (case, punctuation, whitespace, articles) — the same
+ *  rule M6's definition-drift uses, so "the temperature at which…" and "temperature at which…" agree. */
+function glossKey(gloss) {
+  return normalizeLabel(gloss).replace(/[^\p{L}\p{N} ]+/gu, " ").split(" ").filter((w) => w && !["a", "an", "the"].includes(w)).join(" ");
+}
+
 function collectGroups(maps) {
   const byCanonical = new Map();
   const groups = [];
@@ -407,12 +414,18 @@ function collectGroups(maps) {
           gloss: null,
           spineRef: null,
           spineRefs: [],
+          conflicts: [],
         };
         byCanonical.set(canonical, group);
         groups.push(group);
       }
 
       group.labels = uniqueLabels([...group.labels, parsed.preferredLabel, ...parsed.aliases]);
+      // M6 (round-3 audit): a HOMOGRAPH ("cell" in biology and in electrochemistry) merged silently
+      // into one term with the first gloss. Two declarations of one label with DIFFERENT glosses
+      // are a conflict the instructor must resolve (one term with one gloss, or two labels).
+      if (parsed.gloss && group.gloss && glossKey(parsed.gloss) !== glossKey(group.gloss))
+        group.conflicts.push({ kind: "gloss", scope, detail: `"${parsed.preferredLabel}" is declared with two different glosses (${group.scopes.join(", ") || "course"} vs ${scope ?? "course"}): "${group.gloss}" / "${parsed.gloss}" — a homograph must be two labels, or one gloss.` });
       // First declaration wins for gloss and spineRef: re-declaring a course term in a
       // chapter must not silently re-parent it.
       if (parsed.gloss && !group.gloss) group.gloss = parsed.gloss;
@@ -592,7 +605,21 @@ function planRecords(groups, priorTerms, ambiguous) {
 export function buildTermsReport(conceptMaps, priorTerms) {
   const maps = Array.isArray(conceptMaps) ? conceptMaps : [];
   const ambiguous = [];
-  const records = planRecords(collectGroups(maps), priorTerms, ambiguous);
+  const groups = collectGroups(maps);
+  const records = planRecords(groups, priorTerms, ambiguous);
+  // M6: gloss conflicts within a group, and an ALIAS that two different groups claim in one scope
+  // (`resolve` would silently return the first) — both reported, never guessed.
+  const conflicts = groups.flatMap((g) => g.conflicts ?? []);
+  const aliasOwners = new Map();
+  for (const g of groups) for (const label of g.labels ?? []) {
+    const key = normalizeLabel(label);
+    for (const scope of (g.scopes.length ? g.scopes : [null])) {
+      const k = `${scope ?? ""}|${key}`;
+      const owner = aliasOwners.get(k);
+      if (owner && owner !== g) conflicts.push({ kind: "alias", scope, detail: `alias "${label}" is claimed by both "${owner.preferredLabel}" and "${g.preferredLabel}" in scope ${scope ?? "course"} — a mention of it cannot be resolved; drop it from one term.` });
+      else aliasOwners.set(k, g);
+    }
+  }
 
   // Key order is fixed so the serialized file is byte-stable across runs.
   const terms = records.map((record) => {
@@ -629,6 +656,7 @@ export function buildTermsReport(conceptMaps, priorTerms) {
       terms,
     },
     ambiguous,
+    conflicts,
   };
 }
 

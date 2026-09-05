@@ -22,6 +22,8 @@ if (receipt.failed !== 0 || !Array.isArray(receipt.results) || receipt.results.l
 const review = {
   schemaVersion: 1,
   status: "passed",
+  // M10: the theme the attested carriers were built under; pack rebuilds under the same one
+  theme: receipt.theme || null,
   reviewer: { type: "human", name: reviewer },
   reviewedAt,
   inspectionMethod: "browser-visual-dom",

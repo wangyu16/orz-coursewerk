@@ -38,6 +38,15 @@
   (normalized component hashes and review bindings); symbolic links are refused; the coherence ledger cannot be
   laundered by re-initializing over history; release refuses attested-only sources without consent, never
   commits into the package, ships no review queue, and its evaluation separates measured from declared.
+  Round three (two more adversaries): a teaching claim must carry the objective's vocabulary and never sit in
+  the objectives list; the first value in an answer is the answer (unit look-alikes recognized); key facts are
+  matched as tokens with their units and must be locatable in a deliverable; quotations up to 2000 characters
+  and across paragraph breaks are immutable and an ellipsis licenses a gap only where it stands; the license
+  matrix covers excerpts and assets; nine forms of hot-linked media and media outside `assets/` are refused;
+  non-Latin sources are prepared and scanned; release runs write no queue; placeholder and AI-vendor
+  identities are refused; license evidence is read as visible text with contradictions and redirects named;
+  homographs, alias collisions and prerequisite cycles are reported; nested deliverables are attestable;
+  the attested theme survives the pack rebuild; in-package report paths and non-UTF-8 files are refused.
   Every finding and its probe or dismissal: `docs/closed-loop-rounds.md`.
 - **Procedure.** Stage 4 opens the critique with the blind bundle; a new Stage 5b documents the revision loop,
   overrides, and propagation. The system claim register now covers every semantic-index mechanism.

@@ -55,7 +55,7 @@ function addReleaseReviews(root, foundation) {
     reviewedAt: "2026-07-13",
     bindings: makeKeyFactBindings(root),
     checks: ["accountable-identity", "source-identity-version", "source-license-evidence", "external-media-rights", "output-license-compatibility", "attribution-obligations", "scientific-key-facts"].map((id) => ({ id, status: "passed", note: `Independently reviewed ${id} against the bound fixture records and found it internally consistent.` })),
-    keyFacts: [{ id: "fact-1", claim: "Concept A precedes concept B in the fixture process.", status: "verified", evidenceSourceIds: ["source-1"], usedIn: ["study-guide/ch1.md"], note: "The claim is deliberately simple and is supported by the declared fixture source and diagram description." }],
+    keyFacts: [{ id: "fact-1", claim: "A process arrow connects concept A to concept B.", status: "verified", evidenceSourceIds: ["source-1"], usedIn: ["study-guide/ch1.md"], note: "The claim is deliberately simple and is supported by the declared fixture source and diagram description." }],
   });
 }
 

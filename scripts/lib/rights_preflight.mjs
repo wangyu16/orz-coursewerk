@@ -12,6 +12,9 @@ const RESTRICTION_RULES = [
     id: "automated-processing-restriction",
     summary: "Source contains a notice addressing automated, machine-learning, or text/data-mining processing.",
     patterns: [
+      /\b(?:train(?:ing)?|fine-?tun(?:e|ing)|evaluat(?:e|ing))\b[\s\S]{0,160}\b(?:artificial\s+intelligence|AI|machine\s+learning|language\s+models?)\b[\s\S]{0,160}\b(?:not\s+permitted|prohibited|forbidden|reserved|must\s+not)\b/i,
+      /\b(?:must\s+not|may\s+not|do\s+not)\b[\s\S]{0,80}\b(?:AI|artificial\s+intelligence|machine\s+learning)\s+training\b/i,
+      /\b(?:TDM|text\s+and\s+data\s+mining)\s+(?:reservation|rights?\s+reserved|opt-?out)\b/i,
       /\b(?:may\s+not|prohibit(?:ed|s)?|forbid(?:den|s)?)\b[\s\S]{0,100}\b(?:automated\s+processing|machine\s+learning|text\s+and\s+data\s+mining|text\s+or\s+data\s+mining)\b/i,
     ],
   },
@@ -28,6 +31,7 @@ const HTML_ENTITIES = {
 
 export function normalizeEvidenceText(value) {
   return String(value)
+    .replace(/[\u00AD\u200B\u200C\u200D\uFEFF]/g, "") // soft hyphens / zero-width joiners split "train­ing" (L4)
     .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
     .replace(/<style\b[\s\S]*?<\/style>/gi, " ")
     .replace(/<[^>]+>/g, " ")

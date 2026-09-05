@@ -60,7 +60,7 @@ const REFERENCE_HEADING = /^(#{1,6})[ \t]*(references|bibliography|works cited|c
 //     of the document into immutability. An odd quote simply matches nothing.
 //   - The quote MARKS are part of the region — an edit that rewrites the delimiters is just
 //     as much a fabrication as one that rewrites the words inside them.
-const MAX_INLINE_QUOTE = 600;
+const MAX_INLINE_QUOTE = 2000; // a block-length quotation is still a quotation (round-3 verify D3)
 // A quoted span may be HARD-WRAPPED inside its paragraph (audit finding 2: a wrapped quotation was
 // rewritten), so a single line break is allowed; a blank line — a paragraph boundary — is not, and
 // the span stays length-bounded so a stray quote mark never swallows the document. Pairs:
@@ -74,7 +74,12 @@ const GUILLEMET_QUOTE = new RegExp(`«${inner("»")}»`, "g");
 const REVERSE_GUILLEMET_QUOTE = new RegExp(`»${inner("«")}«`, "g");
 const SINGLE_GUILLEMET_QUOTE = new RegExp(`‹${inner("›")}›`, "g");
 const SINGLE_CURLY_QUOTE = new RegExp(`‘${inner("’")}’`, "g");
-const QUOTE_PATTERNS = [STRAIGHT_QUOTE, SMART_QUOTE, LOW_HIGH_QUOTE, GUILLEMET_QUOTE, REVERSE_GUILLEMET_QUOTE, SINGLE_GUILLEMET_QUOTE, SINGLE_CURLY_QUOTE];
+// A multi-paragraph quotation repeats the OPENING mark at each paragraph and closes once (the
+// standard convention): an unclosed opening mark whose next paragraph opens with the same mark is a
+// continuation, not a stray quote (round-3 verify D2). Two paragraphs bounded, straight and curly.
+const CONTINUED_STRAIGHT = new RegExp(`"[^"]{1,${MAX_INLINE_QUOTE}}?\\n[ \\t]*\\n[ \\t]*"[^"]{1,${MAX_INLINE_QUOTE}}?"`, "g");
+const CONTINUED_SMART = new RegExp(`“[^”]{1,${MAX_INLINE_QUOTE}}?\\n[ \\t]*\\n[ \\t]*“[^”]{1,${MAX_INLINE_QUOTE}}?”`, "g");
+const QUOTE_PATTERNS = [CONTINUED_STRAIGHT, CONTINUED_SMART, STRAIGHT_QUOTE, SMART_QUOTE, LOW_HIGH_QUOTE, GUILLEMET_QUOTE, REVERSE_GUILLEMET_QUOTE, SINGLE_GUILLEMET_QUOTE, SINGLE_CURLY_QUOTE];
 
 // Citation shapes. Deliberately narrow: each must be unambiguous enough that freezing it
 // cannot be mistaken for freezing ordinary prose.
@@ -123,6 +128,10 @@ function maskLiterals(text) {
   blank(/~~~[\s\S]*?~~~/g); // fenced code (tilde)
   blank(/\{\{[\s\S]*?\}\}/g); // orz plugin block
   blank(/`[^`\n]*`/g); // inline code
+  // M8 (round-3 audit): an HTML tag's attribute values (alt="…", title="…", srcset="… 2x") are
+  // machine-read text, not the author's quotation — a quoted alt text was refused as an
+  // unverifiable quotation. The whole tag is a literal: immutable, and never a `quote` region.
+  blank(/<[a-zA-Z][^<>]*>/g);
   return { masked, regions };
 }
 
@@ -195,7 +204,7 @@ function matchRegions(masked, re, kind) {
  */
 function tokensWithOffsets(masked) {
   const out = [];
-  const re = /[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*/g;
+  const re = /[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu;
   let m;
   while ((m = re.exec(masked))) out.push({ w: m[0].toLowerCase(), at: m.index, len: m[0].length });
   return out;
@@ -362,7 +371,7 @@ const QUOTE_GAP_BUDGET = 6; // source words an ellipsis/bracket-elision may skip
 
 /** Lowercased word tokens (same class as tokensWithOffsets / verbatim.mjs). */
 function wordSeq(text) {
-  const re = /[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*/g;
+  const re = /[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu;
   const out = [];
   let m;
   while ((m = re.exec(text))) out.push(m[0].toLowerCase());
@@ -374,7 +383,10 @@ function wordSeq(text) {
  * needle word matches, skipping at most `gap` hay words in total? Anchored on the needle's
  * first word so a start is only tried where it can succeed. O(hay × (needle+gap)).
  */
-function occursWithGap(needle, hay, gap) {
+// `gapAt`: the needle indices at which an elision is MARKED (an ellipsis stands before word k). A
+// gap may be consumed only there (round-3 verify finding 8: one ellipsis used to buy silent
+// deletions anywhere in the quotation).
+function occursWithGap(needle, hay, gap, gapAt = null) {
   const n = needle.length;
   for (let i = 0; i < hay.length; i += 1) {
     if (hay[i] !== needle[0]) continue;
@@ -385,7 +397,7 @@ function occursWithGap(needle, hay, gap) {
       if (hay[j] === needle[k]) {
         k += 1;
         j += 1;
-      } else if (budget > 0) {
+      } else if (budget > 0 && (gapAt === null || gapAt.has(k))) {
         budget -= 1;
         j += 1;
       } else break;
@@ -393,6 +405,18 @@ function occursWithGap(needle, hay, gap) {
     if (k === n) return true;
   }
   return false;
+}
+/** Word sequence of a quotation plus the word indices an ellipsis precedes. */
+function wordSeqWithElisions(text) {
+  const re = /[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*|…|\.\.\.|\[\s*(?:…|\.\.\.)\s*\]/gu;
+  const words = [];
+  const gapAt = new Set();
+  let m;
+  while ((m = re.exec(text))) {
+    if (/^[\p{L}\p{N}]/u.test(m[0])) words.push(m[0].toLowerCase());
+    else gapAt.add(words.length); // the NEXT word may follow a gap
+  }
+  return { words, gapAt };
 }
 
 /**
@@ -412,14 +436,13 @@ export function unverifiableQuotations(text, sourceText) {
   const out = [];
   for (const r of immutableRegions(text, sourceText)) {
     if (r.kind !== "quote") continue;
-    const w = wordSeq(text.slice(r.start, r.end));
+    const { words: w, gapAt } = wordSeqWithElisions(text.slice(r.start, r.end));
     if (w.length < MIN_QUOTE_WORDS) continue;
-    // The gap budget exists for a MARKED elision ("… [word] …"): a quotation that shows no ellipsis
-    // claims to be verbatim, and a silent deletion inside it is exactly the edit this gate refuses
-    // (design audit M2: "pure", "at standard pressure" and a verb were dropped without a mark).
-    const quoted = text.slice(r.start, r.end);
-    const budget = /…|\.\.\.|\[\s*(?:…|\.\.\.)\s*\]/.test(quoted) ? QUOTE_GAP_BUDGET : 0;
-    if (sources.some((src) => occursWithGap(w, src, budget))) continue;
+    // The gap budget exists for a MARKED elision, and only WHERE it is marked: a quotation that
+    // shows no ellipsis claims to be verbatim (design audit M2), and an ellipsis at one place does
+    // not license a deletion elsewhere (round-3 verify 8).
+    const budget = gapAt.size ? QUOTE_GAP_BUDGET : 0;
+    if (sources.some((src) => occursWithGap(w, src, budget, gapAt))) continue;
     out.push({ start: r.start, end: r.end, text: text.slice(r.start, r.end), words: w.length });
   }
   return out;

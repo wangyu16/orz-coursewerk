@@ -28,7 +28,8 @@ import { danglingSpineRefs } from "./lib/spine.mjs";
 import { buildQueue, REVIEW_QUEUE_PATH } from "./lib/escalation.mjs";
 import { scanConsistency, rangeAudit } from "./lib/consistency.mjs";
 import { computeSemanticIndex, loadSemanticIndex, auditIndexFreshness, CLAIMS_PATH } from "./lib/semantic_index.mjs";
-import { parseSections } from "./lib/terms.mjs";
+import { parseSections, labelMatcher } from "./lib/terms.mjs";
+import { spineCycles } from "./lib/spine.mjs";
 import { isAuthorizedDivergence, OVERRIDES_PATH } from "./lib/overrides.mjs";
 import { commitOutput, outputGitState } from "./lib/output_git.mjs";
 import { md as orzMarkdown } from "orz-markdown";
@@ -48,9 +49,21 @@ const forDiscovery = args.includes("--for-discovery"); // enforce the Discover b
 // `emitReviewQueue`). `--no-commit` is for a caller that manages its own git, mirroring
 // `index_semantic.mjs`.
 const commitQueue = !args.includes("--no-commit");
-if (!fs.existsSync(pkg)) {
-  console.error(`coursewerk-check: package dir not found: ${pkg}`);
+// `--no-queue`: evaluate the queue but write nothing into the package — for a RELEASE run (pack),
+// which must leave the tree exactly as it found it (H5, round-3 audit: pack was not idempotent
+// because its own gate run left an untracked REVIEW_QUEUE.json behind).
+const writeQueue = !args.includes("--no-queue");
+if (!fs.existsSync(pkg) || !fs.statSync(pkg).isDirectory()) {
+  console.error(`coursewerk-check: package dir not found (or not a directory): ${pkg}`);
   process.exit(2);
+}
+// M11/L6 (round-3 audit): a report written INSIDE the package becomes an untracked component on the
+// next run; a directory given as a file path crashed after a full run. Refuse both up front.
+for (const [flag, target] of [["--json", jsonPath], ["--report", reportPath]]) {
+  if (!target) continue;
+  const inside = path.relative(pkg, path.resolve(target));
+  if (inside === "" || (!inside.startsWith("..") && !path.isAbsolute(inside))) { console.error(`coursewerk-check: ${flag} must point OUTSIDE the package (got ${target}); use reports/`); process.exit(2); }
+  if (fs.existsSync(target) && fs.statSync(target).isDirectory()) { console.error(`coursewerk-check: ${flag} names a directory: ${target}`); process.exit(2); }
 }
 
 const rel = (f) => path.relative(pkg, f).replaceAll(path.sep, "/");
@@ -173,6 +186,15 @@ function layoutAudit(chapters) {
   for (const f of allFiles) {
     const r = rel(f);
     if (r === "alembic.json" || r === "LICENSE") continue;
+    // H3 (round-3 audit): a binary next to a study guide needed no provenance and shipped. Media
+    // lives under assets/ with a PROVENANCE record, or it is not in the package.
+    if (/^(?:study-guide|slides|practice|assessment-support|concepts)\//.test(r) && !/\.(?:md|json)$/i.test(r))
+      errors.push(`${r}: only .md sources belong under a deliverable folder; media goes under assets/ with a PROVENANCE.json record`);
+    // L5: a deliverable that is not valid UTF-8 ships U+FFFD to the student.
+    if (/\.md$/i.test(r)) {
+      try { new TextDecoder("utf-8", { fatal: true }).decode(fs.readFileSync(f)); }
+      catch { errors.push(`${r}: not valid UTF-8 (a replacement character would render); re-encode the file`); }
+    }
     const res = repoForPath(r);
     if (res.error) {
       errors.push(res.error + ".");
@@ -311,9 +333,27 @@ function linkAudit() {
       }
     }
     const text = read(f);
-    const htmlMedia = /<(?:img|video|audio|source)\b[^>]*\bsrc=["'](https?:\/\/[^"']+)["'][^>]*>/gi;
+    // H2 (round-3 audit): only `![](https://…)` and `<img src="https://…">` were caught; nine other
+    // forms shipped hot-linked media. Every attribute that loads a resource, in every media/embedding
+    // tag, with any spacing or quoting; CSS url(); protocol-relative `//host`; and reference-style
+    // images whose definition points off-package.
+    const REMOTE = /^(?:https?:)?\/\//i;
+    const attrMedia = /<(?:img|video|audio|source|picture|embed|iframe|object|track)\b[^>]*?\b(?:src|srcset|poster|data)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi;
     let mediaMatch;
-    while ((mediaMatch = htmlMedia.exec(text))) remoteMedia.push({ file: rel(f), target: mediaMatch[1], kind: "html-media" });
+    while ((mediaMatch = attrMedia.exec(text))) {
+      const value = mediaMatch[1] ?? mediaMatch[2] ?? mediaMatch[3] ?? "";
+      for (const candidate of value.split(",").map((v) => v.trim().split(/\s+/)[0]).filter(Boolean))
+        if (REMOTE.test(candidate)) remoteMedia.push({ file: rel(f), target: candidate, kind: "html-media" });
+    }
+    const cssUrl = /\burl\(\s*["']?((?:https?:)?\/\/[^"')\s]+)/gi;
+    while ((mediaMatch = cssUrl.exec(text))) remoteMedia.push({ file: rel(f), target: mediaMatch[1], kind: "css-url" });
+    const refDefs = new Map();
+    for (const d of text.matchAll(/^[ \t]{0,3}\[([^\]]+)\]:[ \t]*<?((?:https?:)?\/\/[^\s>]+)>?/gim)) refDefs.set(d[1].toLowerCase(), d[2]);
+    for (const use of text.matchAll(/!\[[^\]]*\]\[([^\]]*)\]/g)) {
+      const target = refDefs.get(use[1].toLowerCase());
+      if (target) remoteMedia.push({ file: rel(f), target, kind: "markdown-reference-image" });
+    }
+    for (const m2 of text.matchAll(/!\[[^\]]*\]\((\/\/[^)\s]+)/g)) remoteMedia.push({ file: rel(f), target: m2[1], kind: "markdown-image" });
   }
   const missingAssetRefs = [...assetRefs].filter((n) => !mediaAssets.includes(decodeURIComponent(n)));
   return {
@@ -568,7 +608,10 @@ function verbatimAudit(dir, foundation) {
   catch (e) { return empty("SOURCE_CORPUS.json is invalid", { ready: false, failures: [e.message] }); }
   const corpusFailures = [];
   if (corpusManifest.schemaVersion !== 1 || !Array.isArray(corpusManifest.sources)) corpusFailures.push("SOURCE_CORPUS.json requires schemaVersion 1 and a sources array");
-  const primaryIds = (foundation?.sources || []).filter((s) => s.role === "primary").map((s) => s.id);
+  // D6 (round-3 verify): a source demoted to `supplemental` while still ADAPTED left both source
+  // scans blind and the evaluation reading "automatic for every primary source". Every source whose
+  // expression is reused (adaptation/excerpt) must be in the corpus — automatic or attested.
+  const primaryIds = (foundation?.sources || []).filter((s) => s.role === "primary" || ["adaptation", "excerpt"].includes(s.use)).map((s) => s.id);
   const declaredSources = new Map((foundation?.sources || []).map((source) => [source.id, source]));
   const declaredSourceIds = new Set((foundation?.sources || []).map((s) => s.id).filter(Boolean));
   const entries = Array.isArray(corpusManifest.sources) ? corpusManifest.sources : [];
@@ -653,7 +696,7 @@ function verbatimAudit(dir, foundation) {
     const text = read(textFile);
     const digest = sha256(fs.readFileSync(textFile));
     if (!/^[a-f0-9]{64}$/.test(String(entry.sha256 || "")) || digest !== entry.sha256) corpusFailures.push(`${sourceId}: source text sha256 mismatch`);
-    const words = (text.match(/[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*/g) || []).length;
+    const words = (text.match(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu) || []).length; // any script (H4)
     if (entry.wordCount !== words) corpusFailures.push(`${sourceId}: recorded wordCount does not match extracted source text`);
     const minimumWords = Math.max(100, Number(entry.minimumWords) || 100);
     if (words < minimumWords) corpusFailures.push(`${sourceId}: source text has ${words} words; minimum is ${minimumWords}`);
@@ -963,9 +1006,7 @@ function coverageAudit(fresh) {
   // the study guide RESTATING the objective ("1. State the melting point…"), and a restatement
   // proves nothing was taught. Counting it let a package drop every teaching of an objective and
   // still pack at coverage 2/2 (design audit H1, 2026-09-05).
-  const referenced = new Set(
-    claims.filter((c) => c.type !== "objective").flatMap((c) => (Array.isArray(c.spineRefs) ? c.spineRefs : [])),
-  );
+  let referenced = new Set(); // computed below by `teaches()`, once `termsUnder` exists
 
   // "Does this chapter's prose use this term?" is M2's question, ALREADY ANSWERED and STORED in
   // `claim.termRefs`. Reading it is §5d's own prescription — derive once at the producer, store it,
@@ -1016,11 +1057,7 @@ function coverageAudit(fresh) {
   // objective with NEITHER a declared claim in its chapter NOR any authorized key term — genuinely no
   // traceability at all, where coverage is UNDEFINED and silence is the honest report (tests 3c/3d).
   // Paid knowingly; still the first thing to revisit as declaration adoption rises.
-  const objectivesDeclaredIn = new Set(
-    (spine.nodes ?? [])
-      .filter((n) => n.kind === "objective" && chapters.has(n.scope) && referenced.has(n.id))
-      .map((n) => n.scope),
-  );
+  let objectivesDeclaredIn = new Set(); // computed below with `referenced`
 
   // The `## Key terms` entries authorized under each node — M1's `spineRef` bracket, read, never
   // guessed at. (CONTRACT CONCERN 3: a term's `scope` is PLURAL but its `spineRef` is SINGULAR and
@@ -1035,11 +1072,41 @@ function coverageAudit(fresh) {
     }
   }
 
+  // What counts as TEACHING an objective (design audit H1 + round-3 verify A2/A5):
+  //   1. never a claim of type `objective`, and never a block that sits in the deliverable's own
+  //      objectives list — a restatement proves nothing was taught, whatever type it declares;
+  //   2. the block must carry the objective's VOCABULARY: when the instructor bracketed key terms
+  //      under the objective, the claim must name one (by declared termRef or in its prose);
+  //      when no term is bracketed under it, the declaration alone is the evidence (a floor).
+  const OBJECTIVES_SECTION = /^(?:learning-)?objectives?$/i;
+  const teaches = (claim, nodeId) => {
+    if (claim.type === "objective") return false;
+    const section = String(claim.locations?.[0]?.anchor ?? "").split("#")[0];
+    if (OBJECTIVES_SECTION.test(section)) return false;
+    const under = termsUnder.get(nodeId) ?? [];
+    if (under.length === 0) return true;
+    const refs = new Set(Array.isArray(claim.termRefs) ? claim.termRefs : []);
+    if (under.some((t) => refs.has(t.id))) return true;
+    const text = String(claim.text ?? "");
+    return under.some((t) => [t.preferredLabel, ...(t.aliases ?? [])].filter(Boolean).some((label) => labelMatcher(label).test(text)));
+  };
+  referenced = new Set();
+  for (const c of claims) for (const ref of (Array.isArray(c.spineRefs) ? c.spineRefs : [])) if (teaches(c, ref)) referenced.add(ref);
+  objectivesDeclaredIn = new Set(
+    (spine.nodes ?? [])
+      .filter((n) => n.kind === "objective" && chapters.has(n.scope) && referenced.has(n.id))
+      .map((n) => n.scope),
+  );
   const coverage = {
     // A FLOOR, not a score — see the header. Denominators are reported BECAUSE a bare "4 covered"
     // is a number an instructor cannot act on, and a bare percentage is one they cannot audit.
     objectives: { covered: 0, total: 0 },
     concepts: { covered: 0, total: 0 },
+    // D7 (round-3 verify): chapters where the CONTROL check is UNDEFINED — no objective in them has
+    // a teaching claim or a bracketed key term, so a dropped objective there cannot be seen. Named,
+    // so the release evaluation can say so instead of printing a ratio that hides it.
+    chaptersUnchecked: [...chapters].filter((ch) => !objectivesDeclaredIn.has(ch) &&
+      !(spine.nodes ?? []).some((n) => n.kind === "objective" && n.scope === ch && (termsUnder.get(n.id) ?? []).length > 0)).sort(),
   };
   const findings = [];
 
@@ -1732,6 +1799,25 @@ function overrideFindings(stored, fresh) {
   }));
 }
 
+/** M7 (round-3 audit): `[prereq:]` edges were minted and never read — a cycle taught nothing. */
+function spineCycleFindings(fresh) {
+  return spineCycles(fresh.spine).map((cycle) => ({
+    kind: "spine-cycle",
+    severity: "blocking",
+    evidence: [
+      `the concept map declares a prerequisite CYCLE: ${cycle.join(" → ")} → ${cycle[0]} — no order can teach these; remove one [prereq:] bracket (or the ordinal chain that closes the loop).`,
+    ],
+  }));
+}
+
+/** M6 (round-3 audit): a homograph or an alias shared by two terms merged silently in the registry. */
+function termConflictFindings(fresh) {
+  return (fresh.termConflicts ?? []).map((c) => ({
+    kind: "term-conflict",
+    evidence: [c.detail],
+  }));
+}
+
 function anchorFindings() {
   return anchorCoverage(pkg).map((f) => ({
     kind: "anchor-coverage",
@@ -1812,6 +1898,8 @@ function semanticAudit(verbatim) {
     ...overrideFindings(stored, fresh),
     ...spineDriftFindings(stored, fresh),
     ...misconceptionFindings(fresh),
+    ...spineCycleFindings(fresh),
+    ...termConflictFindings(fresh),
     ...spineRefFindings(fresh),
     ...derivedFromFindings(fresh),
     ...orphanClaimFindings(fresh),
@@ -1902,7 +1990,7 @@ function semanticAudit(verbatim) {
  * there is no failure to prevent. Commit only where a history already exists.
  */
 function emitReviewQueue(semantic) {
-  if (!semantic.ran) return null;
+  if (!semantic.ran || !writeQueue) return null;
   const file = path.join(pkg, REVIEW_QUEUE_PATH);
   fs.mkdirSync(path.dirname(file), { recursive: true });
   // The house serialization, byte-identical to every other emitted artifact's.

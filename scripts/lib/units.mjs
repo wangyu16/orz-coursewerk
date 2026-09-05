@@ -128,8 +128,10 @@ const TABLE = [
   // --- temperature -> kelvin -------------------------------------------------------------
   // `spellingOnly: ["c"]`: M3 folds "100 C" to celsius. Correct for a spelling normalizer,
   // a guess for a dimensioner (coulomb). Typed out of M2/M6 rather than argued about there.
-  { id: "celsius", dim: "temperature", symbols: ["°C", "℃"], words: ["celsius", "centigrade", "degC", "deg C"], spellingOnly: ["c"], to: (v) => v + 273.15 },
-  { id: "fahrenheit", dim: "temperature", symbols: ["°F", "℉"], words: ["fahrenheit", "degF"], spellingOnly: ["f"], to: (v) => ((v - 32) * 5) / 9 + 273.15 },
+  // `ºC` (ordinal indicator) and `˚C` (ring above) are the two look-alikes an author's keyboard
+  // produces; "degrees celsius" is the spelled-out form (round-3 verify B1).
+  { id: "celsius", dim: "temperature", symbols: ["°C", "℃", "ºC", "˚C"], words: ["celsius", "centigrade", "degC", "deg C", "degrees celsius", "degree celsius", "degrees centigrade"], spellingOnly: ["c"], to: (v) => v + 273.15 },
+  { id: "fahrenheit", dim: "temperature", symbols: ["°F", "℉", "ºF", "˚F"], words: ["fahrenheit", "degF", "degrees fahrenheit", "degree fahrenheit"], spellingOnly: ["f"], to: (v) => ((v - 32) * 5) / 9 + 273.15 },
   // `K` is kelvin; `k` is kilo-. The symbol is CASE-SENSITIVE and there is no `k` form: M6 must
   // not read "5 k" as 5 kelvin. M3 still gets "k" -> kelvin, because it lowercases `K` first.
   { id: "kelvin", dim: "temperature", symbols: ["K"], words: ["kelvin"], to: (v) => v },

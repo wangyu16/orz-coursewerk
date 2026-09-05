@@ -101,6 +101,11 @@ export function auditKeyFactReview(root, foundation) {
     if (PLACEHOLDER.test(String(value || ""))) failures.push(`${KEY_FACT_REVIEW_PATH}: ${name} still carries a template placeholder.`);
   for (const check of review.checks || [])
     if (PLACEHOLDER.test(String(check?.note || ""))) failures.push(`${KEY_FACT_REVIEW_PATH}: check ${check?.id} note still carries a template placeholder.`);
+  const notes = (review.checks || []).map((check) => String(check?.note || "").trim().toLowerCase()).filter(Boolean);
+  if (new Set(notes).size < notes.length)
+    failures.push(`${KEY_FACT_REVIEW_PATH}: two or more checks carry the identical note — boilerplate is not evidence of examining each criterion.`);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(String(review.reviewedAt || "")) && review.reviewedAt > new Date().toISOString().slice(0, 10))
+    failures.push(`${KEY_FACT_REVIEW_PATH}: reviewedAt ${review.reviewedAt} is in the future.`);
   const checks = new Map((review.checks || []).map((check) => [check.id, check]));
   for (const id of REQUIRED_KEY_FACT_CHECKS) {
     const check = checks.get(id);
@@ -120,6 +125,8 @@ export function auditKeyFactReview(root, foundation) {
       const target = path.resolve(root, String(rel));
       const inside = path.relative(root, target);
       if (inside.startsWith("..") || path.isAbsolute(inside) || !fs.existsSync(target)) failures.push(`${label} usedIn path is missing or outside the package: ${rel}.`);
+      else if (!DELIVERABLE_TOPS.has(inside.replaceAll(path.sep, "/").split("/")[0]))
+        failures.push(`${label} usedIn must name a deliverable (concepts/, study-guide/, slides/, assessment-support/, practice/), not ${rel} — a fact cannot be supported by the review that asserts it.`);
     }
     if (String(fact.note || "").trim().length < 20) failures.push(`${label} requires a substantive critique note.`);
     if (PLACEHOLDER.test(String(fact.claim || "")) || PLACEHOLDER.test(String(fact.note || "")))
@@ -131,13 +138,23 @@ export function auditKeyFactReview(root, foundation) {
       try { return fs.readFileSync(target, "utf8").toLowerCase(); } catch { return ""; }
     }).join("\n");
     if (corpus) {
+      // Token-level (round-3 verify C1b): "0" inside "10 g" is not the melting point, "3" inside
+      // "334" is not 3. A number must stand as a token, with its unit when the fact gives one; a
+      // short fact needs EVERY content word, a long one most of them.
       const claim = String(fact.claim || "");
-      const numbers = claim.match(/\d+(?:[.,]\d+)?/g) || [];
-      const words = (claim.toLowerCase().match(/[\p{L}\p{N}]{4,}/gu) || []);
-      const missingNumbers = numbers.filter((n) => !corpus.includes(n.replace(",", ".")) && !corpus.includes(n));
-      const present = words.filter((w) => corpus.includes(w)).length;
-      if (missingNumbers.length || (words.length >= 6 && present < Math.ceil(words.length * 0.6)))
-        failures.push(`${label} is not supported by its usedIn deliverables (${missingNumbers.length ? `numbers ${missingNumbers.join(", ")} not found` : `${present}/${words.length} content words found`}); trace the fact to prose that states it.`);
+      const esc = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const quantities = [...claim.matchAll(/(-?\d+(?:[.,]\d+)?)(?:\s*([°º˚]?[A-Za-z%µ]{1,6}))?/g)];
+      const missingNumbers = quantities.filter(([, n, unit]) => {
+        const num = esc(n.replace(",", "."));
+        const re = new RegExp(`(?<![\\d.])${num}${unit ? `\\s*${esc(unit.toLowerCase())}` : ""}(?![\\d])`, "i");
+        return !re.test(corpus);
+      }).map(([, n, unit]) => `${n}${unit ? " " + unit : ""}`);
+      const words = (claim.toLowerCase().match(/[\p{L}]{4,}/gu) || []);
+      const present = words.filter((w) => new RegExp(`(?<![\\p{L}])${esc(w)}(?![\\p{L}])`, "iu").test(corpus)).length;
+      // Fewer than three content words is a label, not a fact; the quantity rule still applies to it.
+      const need = words.length < 3 ? 0 : words.length < 6 ? words.length : Math.ceil(words.length * 0.6);
+      if (missingNumbers.length || present < need)
+        failures.push(`${label} is not supported by its usedIn deliverables (${missingNumbers.length ? `quantities ${missingNumbers.join(", ")} not found as stated` : `${present}/${words.length} content words found`}); trace the fact to prose that states it.`);
     }
   }
   let manifest = null;

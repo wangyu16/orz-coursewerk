@@ -59,7 +59,7 @@ if (args.includes("--human-attested")) {
     text = result.stdout.replace(/<w:tab\/?\s*>/g, "\t").replace(/<w:br\/?\s*>/g, "\n").replace(/<[^>]+>/g, " ");
   } else { console.error(`prepare-source-corpus: unsupported source format ${ext}`); process.exit(2); }
   text = text.replace(/\r\n/g, "\n").replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim() + "\n";
-  const words = (text.match(/[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*/g) || []).length;
+  const words = (text.match(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu) || []).length;
   if (words < 100) { console.error(`prepare-source-corpus: extracted source has only ${words} words; at least 100 are required`); process.exit(2); }
   const originalRel = `.coursewerk-source-original/${sourceId}${ext || ".bin"}`;
   const originalOut = path.join(inputs, originalRel);
@@ -70,7 +70,11 @@ if (args.includes("--human-attested")) {
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, text);
   const canonicalUrl = opt("--canonical-url", sourceRecord.canonicalUrl || null);
-  const retrievedAt = opt("--retrieved-at", new Date().toISOString());
+  // L1 (round-3 audit): preparing the SAME bytes twice must not move the record. The prior
+  // entry's timestamp is kept when the raw snapshot hash is unchanged.
+  const priorEntry = manifest.sources.find((e) => e?.sourceId === sourceId) ?? null;
+  const rawSha = crypto.createHash("sha256").update(rawBytes).digest("hex");
+  const retrievedAt = opt("--retrieved-at", priorEntry?.originalSha256 === rawSha && priorEntry?.retrievedAt ? priorEntry.retrievedAt : new Date().toISOString());
   entry = {
     sourceId,
     comparisonMode: "automatic",

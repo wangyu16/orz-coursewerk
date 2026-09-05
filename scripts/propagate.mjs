@@ -45,7 +45,9 @@ const planFile = path.resolve(opt("--plan", path.join(out, "propagation-plan.jso
 const termId = opt("--term");
 const from = opt("--from");
 const to = opt("--to");
-const inputsDir = opt("--inputs");
+// D5 (round-3 verify): the documented alias passed no --inputs, so source-reproduced spans went
+// unprotected by default. The package's sibling `inputs/` is the corpus when it exists (as pack does).
+const inputsDir = opt("--inputs") ?? (fs.existsSync(path.join(root, "..", "inputs")) ? path.join(root, "..", "inputs") : null);
 const apply = has("--apply");
 const commit = !has("--no-commit");
 const authorizedBy = opt("--authorized-by", "");
@@ -56,6 +58,7 @@ function die(code, message) { console.error(`propagate: ${message}`); process.ex
 if (!fs.existsSync(root)) die(2, `package root not found: ${root}`);
 if (!termId || !from || !to) die(2, "--term <termId> --from <label> --to <label> are required (the only mechanical tier is a RENAME).");
 if (from === to) die(2, "--from and --to are identical; nothing to propagate.");
+if (/[\n\r]|^[#>*_`\-+]|[<>{}]/.test(to)) die(2, "--to must be a plain label: no line breaks, markdown markers, or HTML.");
 const rel = path.relative(root, out);
 if (rel === "" || (!rel.startsWith("..") && !path.isAbsolute(rel))) die(2, `--out must be OUTSIDE the package root (got ${out}); use reports/`);
 
@@ -140,7 +143,10 @@ for (const f of files) {
     // A HEADING is structure: its slug is every positional anchor under it, so renaming it re-mints
     // the claims beneath (the documented positional limitation). Named for the author, never done.
     const lineStart = text.lastIndexOf("\n", o.start - 1) + 1;
-    if (/^[ \t]{0,3}#{1,6}[ \t]/.test(text.slice(lineStart, o.start))) { protectedOccurrences.push({ file: f, offset: o.start, surface: o.surface, reason: "inside a heading — renaming a heading moves every positional anchor under it; retitle it by hand and run the revision loop" }); continue; }
+    const lineEnd = text.indexOf("\n", o.start) === -1 ? text.length : text.indexOf("\n", o.start);
+    const nextLine = text.slice(lineEnd + 1, text.indexOf("\n", lineEnd + 1) === -1 ? text.length : text.indexOf("\n", lineEnd + 1));
+    const isSetext = /^[ \t]{0,3}(?:=+|-+)[ \t]*$/.test(nextLine); // a setext heading is a heading too
+    if (/^[ \t]{0,3}#{1,6}[ \t]/.test(text.slice(lineStart, o.start)) || isSetext) { protectedOccurrences.push({ file: f, offset: o.start, surface: o.surface, reason: "inside a heading — renaming a heading moves every positional anchor under it; retitle it by hand and run the revision loop" }); continue; }
     prose.push({
       claimId: `prose:${f}:${o.start}`,
       edit: { kind: "prose-substitution", file: f, termId, from, to, offset: o.start, match: o.surface, replacement: caseLike(o.surface, to),

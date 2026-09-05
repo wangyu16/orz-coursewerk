@@ -79,10 +79,59 @@ decision recorded in the study ledger); carrier fingerprints normalized beyond t
 
 ## Round 3 — 2026-09-05: verify the fixes; attack the unaudited surface
 
-Two adversaries launched against HEAD `8455cf1`: one to re-attack every round-2 fix and judge every
-dismissal; one to attack the assurance kernel, source preparation, carriers and visual review, the spine and
-term registry, the escalation queue, CLI argument handling and idempotence. Recorded below when they report.
-Meanwhile: W15 closed (`spineRefs`), the H8 migration tolerance (legacy raw-byte hashes), and the ledger
-restore for clones.
+Two adversaries against HEAD `8455cf1`: **V** re-attacked every round-2 fix and judged every dismissal;
+**U** attacked the assurance kernel, source preparation, carriers and visual review, the spine and term
+registry, the escalation queue, CLI argument handling and idempotence. Meanwhile: W15 closed (`spineRefs`), the
+H8 migration tolerance (legacy raw-byte hashes), and the ledger restore for clones.
+
+### V — the round-2 fixes, re-attacked (3 HIGH, 6 MEDIUM, 6 LOW)
+
+| finding | severity | outcome |
+|---|---|---|
+| V-1 a restated objective declared `type: fact` counted as coverage | HIGH | fixed: a teaching claim is never a block in the deliverable's own objectives list, whatever its type, and must carry the objective's bracketed vocabulary (declared termRef or in prose); probe H1 extended. **A5 sibling dismissed:** relabeling an objective while leaving its key-term bracket is the instructor declaring the same terms still operationalize it; `spine-relabeled` already forces that review |
+| V-2 a wrong answer stating the value twice ("5 °C, i.e. 278 K") | HIGH | fixed: inside an answer body the FIRST value per dimension is the answer; `ºC`/`˚C`/"degrees celsius" recognized; the `**Answer:** …` line convention is an answer body too; probe H2/H3 |
+| V-3 a key-fact review contradicting the package (substring match) | HIGH | fixed: token-level quantity+unit match, every content word for short facts, `usedIn` restricted to deliverables, identical check notes refused, future dates refused; probe H5 |
+| V-4 quotations over 600 chars or across paragraphs rewritten | MEDIUM | fixed: cap 2000; a repeated opening mark across a paragraph break is a continuation; probe M1 |
+| V-5 `revision:propagate` alias passes no `--inputs` | MEDIUM | fixed: defaults to the package's sibling `inputs/` |
+| V-6 an adapted source demoted to `supplemental` is never scanned | MEDIUM | fixed: every `adaptation`/`excerpt` source must be in the corpus; the evaluation names unscanned sources |
+| V-7 CONTROL undefined for a chapter, evaluation silent | MEDIUM | fixed: `coverage.chaptersUnchecked` reported in the gate, the evaluation and the release receipt |
+| V-8 one ellipsis buys deletions anywhere in a quotation | MEDIUM | fixed: gaps consumed only at the marked position; probe M2 |
+| V-9 probe #4's held-span disjunct was per-file (vacuous) | MEDIUM | fixed: heading survivors judged by position and named in the receipt |
+| V-L H6 probe asserts the queue kind, not the detector; `--to` accepts newlines; setext headings | LOW | fixed: `--to` guard, setext guard; probe left on the queue kind (the detector is in `detectorKinds`) |
+| V-L a renamed package can re-initialize | LOW | **dismissed:** the ledger is path-keyed by design; `--restore` and the evaluation's ledger action cover it |
+| V-L paraphrased misconceptions | LOW | **dismissed:** a no-LLM detector matches the map's sentence; paraphrase is the blind critic's job |
+
+### U — the unaudited surface (5 HIGH, 12 MEDIUM, 9 LOW)
+
+| finding | severity | outcome |
+|---|---|---|
+| U-H1 CC-BY-NC excerpt/asset reaches a CC-BY pack | HIGH | fixed: the license matrix applies to every use but `reference`; references are warned; probe H1 |
+| U-H2 nine forms of hot-linked media ship | HIGH | fixed: every resource attribute on every media/embedding tag, CSS `url()`, protocol-relative, reference-style images; probe H2 |
+| U-H3 media outside `assets/` needs no provenance | HIGH | fixed: only `.md`/`.json` under a deliverable folder; probe H3 |
+| U-H4 non-Latin sources cannot be prepared | HIGH | fixed: `\p{L}\p{N}` word tokens everywhere (gate, preparation, verbatim, quotations); probe H4 |
+| U-H5 pack not idempotent (its own gate run left a queue) | HIGH | fixed: `--no-queue` for release runs; probe H5 |
+| U-M1 placeholder / AI-vendor identities pass | MEDIUM | fixed: one `identityProblem` denylist for authors and reviewers; probe M1 |
+| U-M2 license needle matched inside comments / negations | MEDIUM | fixed: visible text only; a contradiction beside the needle blocks; sign-in pages warned; probe M2/M3 |
+| U-M3 cross-origin redirect clears silently | MEDIUM | fixed: warned in the kernel and named in the evaluation; probe M2/M3 |
+| U-M4 a network capture receipt can be minted offline | MEDIUM | **structural, disclosed:** the evaluation prints capture mode, operator type and redirect per source as self-reported |
+| U-M5 HTML-referenced assets not bound into the visual attestation | MEDIUM | fixed: every resource attribute contributes asset digests |
+| U-M6 homographs and alias collisions merge silently | MEDIUM | fixed: gloss conflicts (article-insensitive) and shared aliases are `term-conflict` findings; probe M6 |
+| U-M7 prerequisite cycles never reported | MEDIUM | fixed: `spineCycles` → blocking `spine-cycle`; probe M7 |
+| U-M8 quoted alt text refused as a quotation | MEDIUM | fixed: HTML tags are literals; probe M8 |
+| U-M9 nested deliverables unattestable | MEDIUM | fixed: one recursive walker |
+| U-M10 attested theme dropped at pack | MEDIUM | fixed: the receipt and attestation carry the theme; pack rebuilds under it. **Unknown theme silently ignored — dismissed:** the builders own theme validation |
+| U-M11 in-package `--json`/`--report` become components | MEDIUM | fixed: refused; probe M11 |
+| U-M12 path-keyed ledger through a symlinked parent | MEDIUM | fixed: real paths; probe M12 |
+| U-L1 `prepare:source` not idempotent | LOW | fixed: unchanged bytes keep their timestamp |
+| U-L2 batch severity order-dependent | LOW | fixed: worst member; probe L2 |
+| U-L3 burden 0 with an empty artifact set | LOW | **dismissed:** the frozen schema types the ratio as a finite number; `artifactCount: 0` is the signal |
+| U-L4 notice rewordings and soft hyphens | LOW | fixed; probe L4 |
+| U-L5 non-UTF-8 deliverable ships U+FFFD | LOW | fixed: layout error; probe L5 |
+| U-L6 bad argument types crash late | LOW | fixed: refused up front |
+| U-L7 kernel media list incomplete | LOW | fixed |
+| U-L8 Wikipedia permalinks refused | LOW | fixed: `title=` honored |
+| U-L9 NFC/NFD labels mint two terms | LOW | fixed; probe L9 |
+
+**Verification:** full offline suite after the last edit: 597 tests, all passing; `system:verify` ready.
 
 **Verification:** full offline suite after the last edit (see the commit), `system:verify` ready.

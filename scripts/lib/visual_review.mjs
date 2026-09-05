@@ -1,17 +1,26 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
+import { identityProblem } from "./identity.mjs";
 import path from "node:path";
 
 export const VISUAL_REVIEW_PATH = "metadata/VISUAL_REVIEW.json";
 const sha256 = (value) => crypto.createHash("sha256").update(value).digest("hex");
 
+function walkMarkdown(dir, prefix) {
+  const out = [];
+  if (!fs.existsSync(dir)) return out;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isSymbolicLink()) continue;
+    if (entry.isDirectory()) out.push(...walkMarkdown(path.join(dir, entry.name), `${prefix}/${entry.name}`));
+    else if (entry.isFile() && entry.name.endsWith(".md")) out.push(`${prefix}/${entry.name}`);
+  }
+  return out;
+}
 function expectedCarrierSources(root) {
   const out = [];
-  for (const top of ["study-guide", "practice", "slides"]) {
-    const dir = path.join(root, top);
-    if (!fs.existsSync(dir)) continue;
-    for (const name of fs.readdirSync(dir).filter((entry) => entry.endsWith(".md"))) out.push(`${top}/${name}`);
-  }
+  // M9 (round-3 audit): the builder walks recursively; the attestation walked one level, so a nested
+  // deliverable could be built and attested yet "not match every current carrier source". One rule.
+  for (const top of ["study-guide", "practice", "slides"]) out.push(...walkMarkdown(path.join(root, top), top));
   const documents = path.join(root, "metadata", "DOCUMENTS.json");
   if (fs.existsSync(documents)) {
     try { for (const item of JSON.parse(fs.readFileSync(documents, "utf8")).documents || []) if (item.source) out.push(String(item.source).replaceAll("\\", "/")); }
@@ -41,8 +50,8 @@ export function auditVisualReview(root) {
   catch (error) { return { ready: false, failures: [`${VISUAL_REVIEW_PATH} is invalid JSON: ${error.message}`], review: null }; }
   if (review.schemaVersion !== 1 || review.status !== "passed") failures.push(`${VISUAL_REVIEW_PATH}: schemaVersion 1 and status passed are required.`);
   if (review.reviewer?.type !== "human" || !String(review.reviewer?.name || "").trim()) failures.push(`${VISUAL_REVIEW_PATH}: an identified human reviewer is required.`);
-  if (/\b(?:replace(?:-with)?|placeholder|temporary|pending|unassigned|tbd|unknown)\b/i.test(String(review.reviewer?.name || "")))
-    failures.push(`${VISUAL_REVIEW_PATH}: placeholder or temporary reviewer identities are not accepted.`);
+  { const problem = identityProblem(review.reviewer?.name);
+    if (problem) failures.push(`${VISUAL_REVIEW_PATH}: reviewer "${review.reviewer?.name}" ${problem}.`); }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(review.reviewedAt || ""))) failures.push(`${VISUAL_REVIEW_PATH}: reviewedAt must be YYYY-MM-DD.`);
   if (review.inspectionMethod !== "browser-visual-dom") failures.push(`${VISUAL_REVIEW_PATH}: inspectionMethod must be browser-visual-dom.`);
   if (String(review.attestation || "").trim().length < 40) failures.push(`${VISUAL_REVIEW_PATH}: a substantive visual-review attestation is required.`);

@@ -41,7 +41,8 @@ const HASH = (value) => crypto.createHash("sha256").update(value).digest("hex");
 const norm = (p) => String(p || "").replaceAll("\\", "/").replace(/^\.\//, "");
 
 export function coherenceStateFile(root) {
-  root = path.resolve(root);
+  // M12 (round-3 audit): a symlinked parent gave the same package a second ledger path. Real paths.
+  try { root = fs.realpathSync(path.resolve(root)); } catch { root = path.resolve(root); }
   return path.join(path.dirname(root), ".coursewerk", `${path.basename(root)}-component-index-state.json`);
 }
 

@@ -49,7 +49,7 @@ function publicFoundation(sourceLicense = "CC-BY-4.0", outputLicense = sourceLic
     redistribution: "open-license",
     jurisdiction: "international",
     outputLicense,
-    outputAuthors: [{ name: "Example Course Author", role: "author", rightsHolder: true, accountabilityConfirmedByUser: true }],
+    outputAuthors: [{ name: "Avery Coursemaker", role: "author", rightsHolder: true, accountabilityConfirmedByUser: true }],
     privacy: { containsPersonalData: false, containsRestrictedContent: false },
     sources: [{
       id: "source-1",
@@ -339,7 +339,7 @@ test("public OER requires accountable authorship and rejects an AI agent as asse
   let result = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.match(result.hardFailures.join("\n"), /accountable output author/);
 
-  foundation.outputAuthors = [{ name: "Example Course Author", role: "author", rightsHolder: true, accountabilityConfirmedByUser: true }];
+  foundation.outputAuthors = [{ name: "Avery Coursemaker", role: "author", rightsHolder: true, accountabilityConfirmedByUser: true }];
   writeJson(path.join(f.root, "metadata", "FOUNDATION.json"), foundation);
   fs.mkdirSync(path.join(f.root, "assets"), { recursive: true });
   fs.mkdirSync(path.join(f.root, "study-guide"), { recursive: true });
@@ -558,7 +558,7 @@ test("pack succeeds only after a valid public assurance pass", () => {
     })),
     keyFacts: [{
       id: "fact-1",
-      claim: "Concept A precedes concept B in the fixture process.",
+      claim: "A directed arrow connects concept A to concept B.",
       status: "verified",
       evidenceSourceIds: [foundation.sources[0].id],
       usedIn: ["study-guide/ch1.md"],

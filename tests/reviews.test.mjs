@@ -35,7 +35,7 @@ function keyFactFixture(chapters = ["one"]) {
     reviewedAt: "2026-07-14",
     bindings: makeKeyFactBindings(root),
     checks: ["accountable-identity", "source-identity-version", "source-license-evidence", "external-media-rights", "output-license-compatibility", "attribution-obligations", "scientific-key-facts"].map((id) => ({ id, status: "passed", note: `The separate pass reviewed ${id} against the current bound records and teaching materials.` })),
-    keyFacts: [{ id: "fact-one", claim: "A representative chapter claim.", status: "verified", evidenceSourceIds: ["source-1"], usedIn: ["study-guide/one.md"], note: "The claim was traced independently to source-1 and checked in the chapter study guide." }],
+    keyFacts: [{ id: "fact-one", claim: "Representative claim.", status: "verified", evidenceSourceIds: ["source-1"], usedIn: ["study-guide/one.md"], note: "The claim was traced independently to source-1 and checked in the chapter study guide." }],
   };
   writeJson(path.join(root, "metadata", "KEY_FACT_REVIEW.json"), review);
   return { root, foundation, review };

@@ -106,6 +106,7 @@ function indexGaps(conceptMaps, spine, terms, claims, storedTerms, termsReport) 
     );
   }
   for (const a of termsReport.ambiguous) warnings.push(`concepts/: ${a.reason}`);
+  for (const c of termsReport.conflicts ?? []) warnings.push(`concepts/: ${c.detail}`);
   for (const t of terms?.terms ?? [])
     if (Array.isArray(t.spineRefs) && t.spineRefs.length > 1)
       warnings.push(`concepts/: term ${t.id} ("${t.preferredLabel}") is bracketed under ${t.spineRefs.length} spine nodes (${t.spineRefs.join(", ")}); all of them count for coverage — confirm this is intended, or keep one bracket.`);
@@ -182,6 +183,7 @@ export function computeSemanticIndex(root) {
     spine,
     terms,
     claims,
+    termConflicts: termsReport.conflicts ?? [],
     warnings: indexGaps(conceptMaps, spine, terms, claims, storedTerms, termsReport),
   };
 }

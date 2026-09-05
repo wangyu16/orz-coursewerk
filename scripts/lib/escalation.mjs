@@ -232,6 +232,8 @@ const DETECTOR_TO_QUEUE = {
   // H6: a spine label moved under an unchanged id — the package's declared structure no longer
   // says what the instructor's map says. Blocking by the finding's own severity.
   "spine-relabeled": "sanity-check",
+  "spine-cycle": "sanity-check",
+  "term-conflict": "declaration-refused",
   "declaration-unsupported": "declaration-refused",
 
   // The M11 gate's CONTROL rows (§C2) — the two directions of "the instructor decides what is
@@ -506,8 +508,9 @@ function buildTermProposals(findings, claimsArr) {
 
     items.push({
       kind: "term-proposal",
+      // L2 (round-3 audit): the WORST member's severity, never the first's — merging never quiets.
       severity: normalizeSeverity(
-        members.map((f) => f.severity).find((s) => SEVERITY_ORDER.includes(s)),
+        members.map((f) => f.severity).filter((s) => SEVERITY_ORDER.includes(s)).sort((a, b) => SEVERITY_ORDER.indexOf(a) - SEVERITY_ORDER.indexOf(b))[0],
         "term-proposal",
       ),
       evidence: [...new Set(evidence)],
@@ -640,6 +643,8 @@ export function buildQueue(findings, claims) {
   }
   const flagCount = ordered.length;
   const artifactCount = files.size;
+  // L3 (round-3 audit) DISMISSED: the frozen queue schema types this ratio as a finite number, and
+  // `artifactCount: 0` beside a non-zero `flagCount` is itself the signal that the ratio is undefined.
   const flagsPerArtifact = artifactCount === 0 ? 0 : Math.round((flagCount / artifactCount) * 1e4) / 1e4;
 
   return { schemaVersion: 1, items: ordered, burden: { flagCount, artifactCount, flagsPerArtifact } };

@@ -192,7 +192,7 @@ test("GATE · a key-fact review that does not name the bundle it judged, or name
     reviewer: { type: "ai", name: "reviewer-x", modelId: "model-1" },
     independence: { separatePass: true, contextReset: true, approach: "A fresh context reviewed the completed materials independently after drafting ended." },
     reviewedAt: "2026-09-05",
-    checks: REQUIRED_KEY_FACT_CHECKS.map((id) => ({ id, status: "passed", note: "Examined independently against the bundle; nothing to qualify." })),
+    checks: REQUIRED_KEY_FACT_CHECKS.map((id) => ({ id, status: "passed", note: `Examined ${id} independently against the bundle; nothing to qualify.` })),
     keyFacts: [{ id: "fact-1", claim: "Pure water melts at 0 °C at standard pressure.", status: "verified",
       evidenceSourceIds: [foundation.sources[0].id], usedIn: ["study-guide/melting.md"], note: "Traced to the declared source; consistent across the study guide and practice sheet." }],
   };
@@ -233,7 +233,7 @@ test("GATE · bind:key-fact-review can stamp the digest the reviewer was handed"
     authoringSystem: "author-x", authoringModelId: "model-1", reviewer: { type: "ai", name: "reviewer-x", modelId: "model-1" },
     independence: { separatePass: true, contextReset: true, approach: "A fresh context reviewed the completed materials independently after drafting ended." },
     reviewedAt: "2026-09-05",
-    checks: REQUIRED_KEY_FACT_CHECKS.map((id) => ({ id, status: "passed", note: "Examined independently against the bundle; nothing to qualify." })),
+    checks: REQUIRED_KEY_FACT_CHECKS.map((id) => ({ id, status: "passed", note: `Examined ${id} independently against the bundle; nothing to qualify.` })),
     keyFacts: [{ id: "fact-1", claim: "Pure water melts at 0 °C at standard pressure.", status: "verified",
       evidenceSourceIds: [foundation.sources[0].id], usedIn: ["study-guide/melting.md"], note: "Traced to the declared source; consistent across the study guide and practice sheet." }],
   }, null, 2));

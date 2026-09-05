@@ -98,7 +98,11 @@ function reviewFingerprint(file) {
 }
 function inspectSource(text, sourceRel) {
   const images = [...text.matchAll(/!\[([^\]]*)]\(([^)\s]+)(?:\s+=[^)]+)?\)/g)].map((match) => ({ alt: match[1].trim(), target: match[2] }));
-  const localAssetDependencies = images.map((image) => image.target).filter((target) => !/^(?:https?:|data:|#)/i.test(target));
+  // M5 (round-3 audit): an asset referenced by an HTML tag was not bound into the visual attestation,
+  // so it could be swapped after the human looked. Every resource-loading attribute counts.
+  const htmlTargets = [...text.matchAll(/<(?:img|video|audio|source|picture|embed|object|track)\b[^>]*?\b(?:src|srcset|poster|data)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi)]
+    .flatMap((m) => (m[1] ?? m[2] ?? m[3] ?? "").split(",").map((v) => v.trim().split(/\s+/)[0]).filter(Boolean));
+  const localAssetDependencies = [...images.map((image) => image.target), ...htmlTargets].filter((target) => !/^(?:https?:|data:|#|\/\/)/i.test(target));
   const localAssetDigests = [...new Set(localAssetDependencies)].map((reference) => {
     const file = path.resolve(pkg, path.posix.dirname(sourceRel), decodeURI(reference));
     const inside = path.relative(pkg, file);
@@ -182,7 +186,7 @@ if (fs.existsSync(assetsSrc)) {
   fs.cpSync(assetsSrc, path.join(outRoot, "assets"), { recursive: true });
 }
 
-const receipt = { schemaVersion: 2, root: pkg, preview: outRoot, requireSingleFile, carriersBuilt: built, failed, runtimeVisualReviewRequired: results.length > 0, results };
+const receipt = { schemaVersion: 2, root: pkg, preview: outRoot, theme: theme || null, requireSingleFile, carriersBuilt: built, failed, runtimeVisualReviewRequired: results.length > 0, results };
 if (receiptPath) {
   const file = path.resolve(receiptPath);
   fs.mkdirSync(path.dirname(file), { recursive: true });

@@ -539,3 +539,38 @@ export function danglingSpineRefs(spine, refs) {
     ),
   ].sort(byString);
 }
+
+/**
+ * M7 (round-3 audit): elementary cycles among prerequisite edges (a node that must precede itself).
+ * Ordered, deduplicated, each cycle rotated to start at its smallest id, so the report is stable.
+ * @param {{edges?:Array<{from:string,to:string}>}} spine
+ * @returns {string[][]}
+ */
+export function spineCycles(spine) {
+  const adj = new Map();
+  for (const e of spine?.edges ?? []) {
+    if (!e?.from || !e?.to) continue;
+    if (!adj.has(e.from)) adj.set(e.from, new Set());
+    adj.get(e.from).add(e.to);
+  }
+  const seen = new Set();
+  const out = [];
+  const stack = [];
+  const onStack = new Set();
+  const visit = (node) => {
+    stack.push(node); onStack.add(node);
+    for (const next of [...(adj.get(node) ?? [])].sort()) {
+      if (onStack.has(next)) {
+        const cycle = stack.slice(stack.indexOf(next));
+        const min = cycle.indexOf([...cycle].sort()[0]);
+        const rotated = [...cycle.slice(min), ...cycle.slice(0, min)];
+        const key = rotated.join("→");
+        if (!seen.has(key)) { seen.add(key); out.push(rotated); }
+      } else if (!visited.has(next)) visit(next);
+    }
+    stack.pop(); onStack.delete(node); visited.add(node);
+  };
+  const visited = new Set();
+  for (const node of [...adj.keys()].sort()) if (!visited.has(node)) visit(node);
+  return out.sort((a, b) => (a.join() < b.join() ? -1 : 1));
+}

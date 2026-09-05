@@ -53,7 +53,11 @@ const fetched = [];
 
 for (const source of sources) {
   const pageUrl = new URL(source.canonicalUrl);
-  const title = decodeURIComponent(pageUrl.pathname.replace(/^\/wiki\//, "")).replaceAll("_", " ");
+  // L8 (round-3 audit): a permalink (`/w/index.php?title=…&oldid=…`) is the most PINNED form of a
+  // canonical URL and was refused because its path is not /wiki/<title>. Honor `title=` too.
+  const title = pageUrl.pathname.startsWith("/wiki/")
+    ? decodeURIComponent(pageUrl.pathname.replace(/^\/wiki\//, "")).replaceAll("_", " ")
+    : String(pageUrl.searchParams.get("title") || "").replaceAll("_", " ");
   if (!title || pageUrl.hostname !== "en.wikipedia.org") {
     console.error(`prepare-wikipedia-topic: invalid English Wikipedia canonicalUrl for ${source.id}`);
     process.exit(2);

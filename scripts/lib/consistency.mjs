@@ -145,11 +145,17 @@ const ASSERTIVE_TYPES = new Set(["fact", "answer-key", "definition"]);
 // Tolerant of collapsed whitespace (claim text may be normalized to one line): the tab title is
 // `Answer` plus at most one token (`Answer 8`), and the body runs to the next fence.
 const ANSWER_TAB = /:{3,}[ \t]*tab[ \t]+answer(?:[ \t]+[\w.-]+)?[ \t]*\n?([\s\S]*?)(?=:{3,}|(?![\s\S]))/gi;
+// The `**Answer:** 7 °C` line convention — the same convention M2's scanner mints `answer-key` from.
+const ANSWER_LINE = /(?:^|\n)[ \t]*(?:\*\*|__)?answer(?:[ \t]*\d+)?[ \t]*:?(?:\*\*|__)?:?[ \t]*([^\n]+)/gi;
 function answerBodies(text) {
   const out = [];
+  const t = String(text ?? "");
   ANSWER_TAB.lastIndex = 0;
   let m;
-  while ((m = ANSWER_TAB.exec(String(text ?? "")))) out.push(m[1]);
+  while ((m = ANSWER_TAB.exec(t))) out.push(m[1]);
+  if (out.length) return out;
+  ANSWER_LINE.lastIndex = 0;
+  while ((m = ANSWER_LINE.exec(t))) out.push(m[1]);
   return out;
 }
 const hasAnswerTab = (text) => answerBodies(text).length > 0;
@@ -327,6 +333,10 @@ function quantitiesByDimension(text) {
   const dropped = new Set();
   const answers = answerBodies(text);
   const scanned = answers.length ? answers.join("\n") : text; // the ANSWER is the assertion (H2)
+  // Inside an ANSWER, the first value per dimension IS the answer; a restatement in another unit
+  // ("5 °C, i.e. 278 K") must not drop the dimension (round-3 verify B3). In prose, two different
+  // values for one dimension stay a range/worked example and are dropped (non-flag 4).
+  const inAnswer = answers.length > 0;
   QUANTITY_RE.lastIndex = 0;
   let m;
   while ((m = QUANTITY_RE.exec(scanned))) {
@@ -335,7 +345,7 @@ function quantitiesByDimension(text) {
     const key = valueKey(entry.to(Number(m[1])));
     const prior = byDim.get(entry.dim);
     if (!prior) byDim.set(entry.dim, { key, raw: m[0].trim() });
-    else if (prior.key !== key) dropped.add(entry.dim);
+    else if (prior.key !== key && !inAnswer) dropped.add(entry.dim);
   }
   for (const dim of dropped) byDim.delete(dim);
   return byDim;
