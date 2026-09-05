@@ -590,10 +590,19 @@ test("11 · an edit is never auto-applied inside a direct QUOTATION", (t) => {
   assert.ok(read(pkg, "study-guide/melting.md").includes(QUOTE),
     "a documented command rewrote the inside of a direct quotation — this fabricates a quotation");
 
-  // HONEST NOTE: this passes VACUOUSLY. No documented command auto-applies anything (F-B):
-  // `applyMechanical` is reachable only from `scripts/study_pairs.mjs`. The guard is never asked the
-  // question, so this asserts that the danger is absent, NOT that the guard works. The guard is
-  // covered by tests/propagate.test.mjs at the module level; it has no product caller to cover.
+  // F-B CLOSED (2026-09-05): a documented command now DOES auto-apply — `propagate.mjs --apply`, the
+  // mechanical rename tier. So ask the guard the real question on the real path: commit the edits
+  // (the command refuses a dirty tree), propagate the rename the quote's words would be a target of,
+  // and require the quotation to survive verbatim. The full receipt contract is tests/propagate-cli.
+  git(pkg, "-c", "user.email=t@t", "-c", "user.name=t", "add", "-A");
+  git(pkg, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "edits before propagation");
+  const propagated = cli("propagate.mjs", ["--root", pkg, "--out", path.join(pkg, "..", "reports"),
+    "--term", "term.melting-point", "--from", "melting point", "--to", "fusion point", "--apply"]);
+  assert.equal(propagated.code, 0, propagated.stderr);
+  assert.ok(JSON.parse(propagated.stdout).applied > 0, "the rename must actually land somewhere, or the guard was never asked");
+  assert.ok(read(pkg, "study-guide/melting.md").includes(QUOTE),
+    "propagate.mjs rewrote the inside of a direct quotation — this fabricates a quotation");
+  assert.ok(read(pkg, "study-guide/melting.md").includes("fusion point"), "the rename landed in the prose around the quote");
 });
 
 test("12 · a knowledge update beyond the source is not flagged as hallucination", (t) => {
