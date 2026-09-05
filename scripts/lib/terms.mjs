@@ -115,6 +115,49 @@
 
 import { slugify } from "./slug.mjs";
 
+// ---- THE label matcher (W14) ---------------------------------------------------------------
+// "Does this label occur here, as a whole word?" was implemented four times (M2, M6 twice, M9),
+// none exported — four places able to disagree, silently, about whether a term is mentioned.
+// It lives here because the term registry is the only authority on what a label IS. Boundary
+// class: alphanumerics (so `pre-melting point` and `melting point.` both match; `_` is a boundary,
+// as it was for three of the four copies). Case-insensitive. Cached per (label, flags).
+const LABEL_BOUNDARY = "A-Za-z0-9";
+const escapeRegExp = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const labelMatchers = new Map();
+/**
+ * A cached RegExp matching `label` as a whole word, case-insensitively. `flags` may add `g`.
+ * @param {string} label
+ * @param {string} [flags="i"]
+ */
+export function labelMatcher(label, flags = "i") {
+  const key = `${flags}\u0000${label}`;
+  let re = labelMatchers.get(key);
+  if (!re) {
+    re = new RegExp(`(?<![${LABEL_BOUNDARY}])${escapeRegExp(label)}(?![${LABEL_BOUNDARY}])`, flags);
+    labelMatchers.set(key, re);
+  }
+  return re;
+}
+/**
+ * Every whole-word occurrence of `label` in `text`, as `{start, end, surface}` in JS string
+ * indices — the offsets M9 splices at. Same boundary rule as `labelMatcher`, so what M2 counts as
+ * a mention is exactly what M9 will rename and what M6 compares.
+ */
+export function findLabelOccurrences(text, label) {
+  const out = [];
+  const hay = String(text ?? "");
+  const needle = String(label ?? "");
+  if (!hay || !needle) return out;
+  const re = labelMatcher(needle, "gi");
+  re.lastIndex = 0;
+  let m;
+  while ((m = re.exec(hay)) !== null) {
+    out.push({ start: m.index, end: m.index + m[0].length, surface: m[0] });
+    if (m[0].length === 0) re.lastIndex++;
+  }
+  return out;
+}
+
 const SCHEMA_VERSION = 1;
 
 /**

@@ -41,6 +41,10 @@
 // output (this file sits in the index path — see interfaces §6.1).
 
 /** Canonical location of the override record inside a package. */
+import { createHash } from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
+
 export const OVERRIDES_PATH = "metadata/OVERRIDES.json";
 
 /** The `basis` enum, in schema order. All three are equally authoritative. */
@@ -146,6 +150,33 @@ export function isAuthorizedDivergence(overrides, claimId) {
  * @param {string} claimId
  * @returns {object|null}
  */
+/**
+ * The id of an override ENTRY — W5's missing producer. `claims.schema.json` declares
+ * `claim.overrideId` and the `provenance` fingerprint hashes it, so "provenance moves on override"
+ * (spec §2.4) needs an id that (a) exists and (b) MOVES when the authorization changes. Entries
+ * carry no id field (the schema is closed), so the id is content-derived: `override.` + the first
+ * 12 hex of sha256 over the entry's fields in a fixed key order. Re-authorizing with a different
+ * basis, date or rationale is a different id — a different provenance — which is the point.
+ */
+export function overrideIdOf(entry) {
+  if (entry == null || typeof entry !== "object") return null;
+  const keys = Object.keys(entry).sort();
+  const canonical = JSON.stringify(keys.map((k) => [k, entry[k]]));
+  return `override.${createHash("sha256").update(canonical).digest("hex").slice(0, 12)}`;
+}
+
+/**
+ * Read `metadata/OVERRIDES.json` off disk for `root`. A missing file is `null` ("no overrides");
+ * a corrupt one is ALSO `null` here — reporting corruption is the gate's job (`readOverrides` in
+ * check_oer.mjs, which names the fault); consumers that only need the authorizations fail toward
+ * the human when they get none. Owned here so M2 never parses a registry it does not own (§5d).
+ */
+export function loadOverridesFile(root) {
+  const file = path.join(path.resolve(root), OVERRIDES_PATH);
+  if (!fs.existsSync(file)) return null;
+  try { return JSON.parse(fs.readFileSync(file, "utf8")); } catch { return null; }
+}
+
 export function findOverride(overrides, claimId) {
   if (!isNonEmptyString(claimId)) return null;
   const list = asDoc(overrides).overrides;

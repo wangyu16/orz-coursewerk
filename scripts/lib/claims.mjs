@@ -145,9 +145,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { slugify } from "./slug.mjs";
 import { artifactDeclarations, claimSidecarPath, frontMatterLength } from "./contract.mjs";
-import { resolve as resolveTerm } from "./terms.mjs";
+import { resolve as resolveTerm, labelMatcher } from "./terms.mjs";
 import { fingerprints } from "./fingerprint.mjs";
 import { scanProjection } from "./units.mjs";
+import { loadOverridesFile, findOverride, overrideIdOf } from "./overrides.mjs";
 
 const SCHEMA_VERSION = 1;
 
@@ -468,15 +469,8 @@ function deriveScope(spineRefs, file, chapters) {
 }
 
 /** Cached whole-word matcher for a term label (lookarounds, not \b: labels may end in punctuation). */
-const labelRes = new Map();
-function labelRe(label) {
-  let re = labelRes.get(label);
-  if (!re) {
-    re = new RegExp(`(?<![A-Za-z0-9])${escapeRe(label)}(?![A-Za-z0-9])`, "i");
-    labelRes.set(label, re);
-  }
-  return re;
-}
+// W14: the matcher is M1's (`labelMatcher`), not a fifth private copy.
+const labelRe = (label) => labelMatcher(label);
 
 /**
  * The registered terms a text mentions, scope-aware, as sorted ids.
@@ -565,7 +559,7 @@ function mintClaimId(claim, takenIds) {
 
 /** Assemble one claim record from a draft: derive scope, recognize terms, then hash (in that
  *  order — `fingerprints` READS `claim.scope`, so it must already be there). */
-function finalizeDraft(draft, terms, chapters, takenIds) {
+function finalizeDraft(draft, terms, chapters, takenIds, overrides = null) {
   const scope = deriveScope(draft.spineRefs, draft.file, chapters);
   const termRefs = draft.termRefs ?? termRefsInText(draft.text, terms, scope);
 
@@ -592,11 +586,15 @@ function finalizeDraft(draft, terms, chapters, takenIds) {
     locations: [{ file: draft.file, anchor: draft.anchor, offset: draft.offset }],
     provenanceDeclared: draft.provenanceDeclared,
   };
-  claim.fingerprints = fingerprints(claim, terms);
   // Minted from the assembled claim — the same value `matchClaims` will read back from the stored
   // record, so an id and a match can never be computed from two different pictures of one claim.
+  // The id does not read the fingerprints (anchor + identity label only), so it is minted FIRST:
+  // the override registry is keyed by claim id, and `provenance` must hash the override.
   claim.id = mintClaimId(claim, takenIds);
   takenIds.add(claim.id);
+  const override = overrides ? findOverride(overrides, claim.id) : null;
+  if (override) claim.overrideId = overrideIdOf(override);
+  claim.fingerprints = fingerprints(claim, terms);
   return claim;
 }
 
@@ -692,9 +690,15 @@ export function extractClaims(root, terms) {
   drafts.sort((a, b) => byString(a.file, b.file) || byString(a.anchor, b.anchor));
 
   const takenIds = new Set();
+  // W5: the override registry is read (by its own module, §5d) so every finalized claim
+  // that an instructor authorized carries `overrideId` BEFORE its fingerprints are taken — that is
+  // what makes `provenance` move on override. A missing file is "no overrides"; a corrupt one is
+  // the gate's fault to report (`readOverrides` in check_oer.mjs) and reads as "none" here, which
+  // fails toward the human: an authorized divergence is then flagged as suspected, never hidden.
+  const overrides = loadOverridesFile(root);
   return {
     schemaVersion: SCHEMA_VERSION,
-    claims: drafts.map((d) => finalizeDraft(d, terms, chapters, takenIds)),
+    claims: drafts.map((d) => finalizeDraft(d, terms, chapters, takenIds, overrides)),
   };
 }
 

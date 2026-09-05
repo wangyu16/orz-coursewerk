@@ -100,7 +100,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { immutableRegions, isImmutable } from "./immutable.mjs";
-import { resolve as resolveTerm } from "./terms.mjs";
+import { resolve as resolveTerm, findLabelOccurrences } from "./terms.mjs";
 
 /** M4's action vocabulary (interfaces §3). An action outside it is a contract break. */
 const ACTIONS = new Set(["NONE", "RENAME", "RE-DERIVE", "REGENERATE", "RECHECK", "ESCALATE", "ANNOTATE"]);
@@ -142,25 +142,9 @@ function claimList(claims) {
  *
  * Whole-word only: renaming inside "melting pointer" is not a rename, it is corruption.
  */
-function findOccurrences(text, label) {
-  const out = [];
-  const hay = str(text);
-  const needle = str(label);
-  if (!hay || !needle) return out;
-  const lowerHay = hay.toLowerCase();
-  const lowerNeedle = needle.toLowerCase();
-  let at = lowerHay.indexOf(lowerNeedle);
-  while (at >= 0) {
-    const end = at + lowerNeedle.length;
-    const before = at === 0 ? "" : hay[at - 1];
-    const after = end >= hay.length ? "" : hay[end];
-    if (!WORD.test(before) && !WORD.test(after)) {
-      out.push({ start: at, end, surface: hay.slice(at, end) });
-    }
-    at = lowerHay.indexOf(lowerNeedle, at + 1);
-  }
-  return out;
-}
+// W14: occurrences come from M1's matcher (`findLabelOccurrences`) — the same boundary rule M2
+// uses to count a mention and M6 uses to compare, so M9 can never rename what M2 did not index.
+const findOccurrences = (text, label) => findLabelOccurrences(text, label);
 
 /** Rewrite `text`, replacing each occurrence span with `to`. Occurrences must be ascending. */
 function substitute(text, occurrences, to) {

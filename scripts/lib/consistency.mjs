@@ -122,7 +122,7 @@
 // PURE and DETERMINISTIC: same input → same output. No I/O, no network, no LLM, no clock, no
 // randomness. Output is fully sorted, so a diff of two scans shows only real change.
 
-import { resolve } from "./terms.mjs";
+import { resolve, labelMatcher } from "./terms.mjs";
 import { dimensionProjection } from "./units.mjs";
 
 /**
@@ -239,15 +239,8 @@ function claimScope(claim) {
 const labelsOf = (t) => [t?.preferredLabel, ...(t?.aliases ?? [])].filter(Boolean);
 
 /** Cached whole-word matcher for a label (lookarounds, not \b: labels may end in punctuation). */
-const labelRes = new Map();
-function labelRe(label) {
-  let re = labelRes.get(label);
-  if (!re) {
-    re = new RegExp(`(?<![A-Za-z0-9])${escapeRe(label)}(?![A-Za-z0-9])`, "i");
-    labelRes.set(label, re);
-  }
-  return re;
-}
+// W14: the matcher is M1's (`labelMatcher`), not a private copy that could drift from M2's.
+const labelRe = (label) => labelMatcher(label);
 
 /**
  * Term ids mentioned in a text, alias- and scope-aware. The id always comes from M1's
@@ -391,7 +384,7 @@ function definitionKey(text, terms, scope) {
   }
   labels.sort((a, b) => b.label.length - a.label.length || byString(a.label, b.label));
   for (const { label, id } of labels) {
-    t = t.replace(new RegExp(`(?<![A-Za-z0-9])${escapeRe(label)}(?![A-Za-z0-9])`, "gi"), ` ${id} `);
+    t = t.replace(labelMatcher(label, "gi"), ` ${id} `);
   }
   return (t.match(/[A-Za-z0-9][A-Za-z0-9.\-]*/g) ?? [])
     .map((tok) => tok.replace(/[.\-]+$/, "").toLowerCase())
