@@ -329,6 +329,12 @@ npm run index:semantic -- --root package                 # 4. accept the claim-l
 node scripts/check_oer.mjs --package package            # 5. must come back clean; then the queue is empty
 ```
 
+A **clone** of a package carries the committed `COMPONENT_INDEX.json` but not the external ledger under
+`.coursewerk/`, so it cannot be gated. Never delete the index and re-initialize (the gate refuses an
+`initialize` over existing index history as a reset of the attested chain); run
+`node scripts/index_components.mjs --root package --restore`, which re-creates the ledger from the commit that
+last touched the index and records the action as `restore` — every release evaluation names it.
+
 What the gate reports between steps 1 and 4, and what each means:
 
 - **`metadata/REVIEW_QUEUE.json`** — one item per human decision, ordered by severity: a value the study guide and

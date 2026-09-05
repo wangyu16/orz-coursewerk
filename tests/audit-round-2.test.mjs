@@ -325,3 +325,34 @@ test("H8-migration · an index accepted with legacy raw-byte hashes does not rea
   assert.deepEqual(audit.changed, [], audit.hardFailures.join("\n"));
   assert.deepEqual(audit.staleDependents, []);
 });
+
+test("M8 · re-initializing over index history is refused at the gate; a CLONE restores its ledger from git instead", (t) => {
+  const { pkg } = pkgCopy(t);
+  const ledger = path.join(pkg, "..", ".coursewerk");
+  // an unreviewed wrong edit, committed
+  edit(pkg, "study-guide/melting.md", "pure water is 0 °C.", "pure water is 5 °C.");
+  commitAll(pkg, "wrong edit");
+  assert.notEqual(gate(pkg).code, 0, "the gate demands the review");
+  // the laundering path: delete the index and the external ledger, re-initialize
+  fs.rmSync(path.join(pkg, "metadata/COMPONENT_INDEX.json")); fs.rmSync(ledger, { recursive: true, force: true });
+  commitAll(pkg, "delete index");
+  assert.equal(cli("index_components.mjs", ["--root", pkg, "--initialize"]).code, 0);
+  const laundered = gate(pkg);
+  assert.ok(JSON.stringify(laundered.json.coherence.hardFailures).includes("RE-INITIALIZED"), laundered.json.coherence.hardFailures.join("\n"));
+  assert.notEqual(laundered.code, 0);
+
+  // the honest path for a clone: same committed index, ledger gone → --restore, gate passes
+  const { pkg: clone } = pkgCopy(t);
+  const cloneLedger = path.join(clone, "..", ".coursewerk");
+  fs.rmSync(cloneLedger, { recursive: true, force: true });
+  assert.ok(JSON.stringify(gate(clone).json.coherence.hardFailures).includes("ledger is missing"));
+  const restored = cli("index_components.mjs", ["--root", clone, "--restore"]);
+  assert.equal(restored.code, 0, restored.stderr);
+  assert.equal(JSON.parse(restored.stdout).action, "restored");
+  assert.equal(gate(clone).code, 0);
+  // restore refuses when a ledger exists, and when the index is uncommitted
+  assert.equal(cli("index_components.mjs", ["--root", clone, "--restore"]).code, 2);
+  fs.rmSync(cloneLedger, { recursive: true, force: true });
+  fs.appendFileSync(path.join(clone, "metadata/COMPONENT_INDEX.json"), "\n");
+  assert.equal(cli("index_components.mjs", ["--root", clone, "--restore"]).code, 2);
+});

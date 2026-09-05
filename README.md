@@ -151,7 +151,7 @@ scripts/bind_key_fact_review.mjs    # hash-bind the Light/Full focused critique 
 scripts/attest_visual_review.mjs    # record an identified human review of built carrier fingerprints
 scripts/generate_attribution.mjs    # render attribution deterministically from structured provenance
 scripts/init_output_git.mjs    # initialize an independent Git ledger for an output root
-scripts/index_components.mjs   # initialize/refresh the output dependency index
+scripts/index_components.mjs   # initialize/refresh the output dependency index; --restore re-creates a clone's ledger from git
 scripts/revision_impact.mjs    # compute every component affected by revisions
 scripts/propagate.mjs          # plan/apply a mechanical terminology rename with a verifiable receipt (never inside quotations)
 scripts/record_override.mjs    # record an authorized divergence from the source once; the gate stops asking

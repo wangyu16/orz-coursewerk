@@ -12,7 +12,8 @@ import {
   coherenceStateFile,
   recordAcceptedCoherence,
 } from "./lib/coherence.mjs";
-import { commitOutput, ensureOutputGit } from "./lib/output_git.mjs";
+import { commitOutput, ensureOutputGit, outputGitState, commitsTouching } from "./lib/output_git.mjs";
+import crypto from "node:crypto";
 
 const args = process.argv.slice(2);
 const opt = (n, d = null) => {
@@ -22,6 +23,7 @@ const opt = (n, d = null) => {
 const root = path.resolve(opt("--root", "package"));
 const initialize = args.includes("--initialize");
 const refresh = args.includes("--refresh");
+const restore = args.includes("--restore");
 const reviewFile = opt("--review");
 const stateFile = coherenceStateFile(root);
 try { ensureOutputGit(root); }
@@ -29,11 +31,40 @@ catch (e) {
   console.error(`index-components: ${e.message}`);
   process.exit(2);
 }
-if (initialize === refresh) {
-  console.error("index-components: choose exactly one of --initialize or --refresh.");
+if ([initialize, refresh, restore].filter(Boolean).length !== 1) {
+  console.error("index-components: choose exactly one of --initialize, --refresh or --restore.");
   process.exit(2);
 }
 const loaded = loadComponentIndex(root);
+if (restore) {
+  // A CLONE of a package carries its committed COMPONENT_INDEX.json but not the external ledger
+  // (.coursewerk/<name>-component-index-state.json), so it could not be gated — and the only way
+  // back was to delete the index and re-initialize, which is exactly the laundering the audit
+  // refuses. Restore re-creates the ledger FROM GIT: the committed index bytes at the commit that
+  // last touched the index, recorded as action "restore" (visible in every release evaluation).
+  // It refuses an existing ledger (nothing to restore) and an uncommitted index (nothing to trust).
+  if (fs.existsSync(stateFile)) {
+    console.error(`index-components: a ledger already exists at ${stateFile}; --restore is for a clone with none. Use the revision workflow.`);
+    process.exit(2);
+  }
+  if (!loaded.index) {
+    console.error(`index-components: ${loaded.error}`);
+    process.exit(2);
+  }
+  const state = outputGitState(root, { paths: [COMPONENT_INDEX_PATH] });
+  if (!state.available || !state.clean) {
+    console.error(`index-components: ${COMPONENT_INDEX_PATH} must be COMMITTED and unmodified to restore its ledger from git.`);
+    process.exit(2);
+  }
+  const [indexCommit] = commitsTouching(root, COMPONENT_INDEX_PATH);
+  if (!indexCommit) {
+    console.error(`index-components: git has no commit touching ${COMPONENT_INDEX_PATH}; nothing to restore from.`);
+    process.exit(2);
+  }
+  recordAcceptedCoherence(root, loaded.index, indexCommit, { action: "restore", restoredFrom: indexCommit, restoredAt: new Date().toISOString() });
+  console.log(JSON.stringify({ action: "restored", stateFile, acceptedHead: indexCommit, indexSha256: crypto.createHash("sha256").update(JSON.stringify(loaded.index)).digest("hex") }, null, 2));
+  process.exit(0);
+}
 if (initialize) {
   if (loaded.index) {
     console.error(`index-components: ${COMPONENT_INDEX_PATH} already exists; use the revision workflow, not --initialize.`);

@@ -45,7 +45,7 @@ Every finding below ends in a probe (`tests/audit-round-2.test.mjs` unless named
 | B-M5 gate prefix vs parser exact headings | MEDIUM | fixed: gate keys concept-map sections through the same parser; near-miss named; probe M5 |
 | B-M6 / A-4 rename reaches only claim blocks | HIGH/MEDIUM | fixed: prose tier; every untouched occurrence named (`protected`); headings protected by design; probes #4, P.1 |
 | B-M7 copied text in a code fence evades the verbatim scan | MEDIUM | fixed: fence bodies are scanned; probe M7 |
-| B-M8 the attested-review ledger can be laundered by re-initializing | MEDIUM | fixed: `initialize` over existing index history is a hard failure. **Open:** a cloned package has no ledger; a restore command is future work |
+| B-M8 the attested-review ledger can be laundered by re-initializing | MEDIUM | fixed: `initialize` over existing index history is a hard failure; `index_components --restore` re-creates a clone's ledger from git (refuses an existing ledger or an uncommitted index) and the evaluation names the action; probe M8 |
 | B-M9 contract vs gate mismatches | MEDIUM | fixed: contract states outline/rubric requirements, the "gate will ask" sentence removed, declared/scan-found counts reported, W17 scoped |
 | B-M10 misconceptions have no consumer | MEDIUM | fixed: `misconception-asserted` producer (paragraph-level, correction-aware, never the map or a misconceptions section); probe M10 |
 | B-L1 archive digest not reproducible | LOW | fixed for the zip (`-X`, fixed mtimes). **Open:** the carrier receipt hash still carries build UUIDs; `packageTreeHash` is the stable identity |
@@ -75,7 +75,14 @@ Every finding below ends in a probe (`tests/audit-round-2.test.mjs` unless named
 | A-16d nested key order in `overrideIdOf` | LOW | fixed: recursive canonicalization |
 
 **Stays open by choice (owner's call):** the authoring-time coverage block on un-indexed packages (an operator
-decision recorded in the study ledger); a `--restore` path for a cloned package's coherence ledger; carrier
-fingerprints normalized beyond the builders' UUID.
+decision recorded in the study ledger); carrier fingerprints normalized beyond the builders' UUID.
+
+## Round 3 — 2026-09-05: verify the fixes; attack the unaudited surface
+
+Two adversaries launched against HEAD `8455cf1`: one to re-attack every round-2 fix and judge every
+dismissal; one to attack the assurance kernel, source preparation, carriers and visual review, the spine and
+term registry, the escalation queue, CLI argument handling and idempotence. Recorded below when they report.
+Meanwhile: W15 closed (`spineRefs`), the H8 migration tolerance (legacy raw-byte hashes), and the ledger
+restore for clones.
 
 **Verification:** full offline suite after the last edit (see the commit), `system:verify` ready.
