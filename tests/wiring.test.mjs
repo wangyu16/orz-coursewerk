@@ -103,3 +103,22 @@ test("W.4 · overrideId has a PRODUCER (W5): an authorized claim carries it, and
   const others = after.claims.claims.filter((c) => c.id !== target.id);
   assert.ok(others.length > 0 && others.every((c) => !("overrideId" in c)));
 });
+
+test("W.5 · a term bracketed under TWO spine nodes keeps both parents (W15) — file order no longer decides", (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-w15-"));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const pkg = path.join(dir, "package");
+  fs.cpSync(path.join(REPO, "tests/fixtures/usage-package"), pkg, { recursive: true });
+  // the course map brackets `melting point` under a course concept; the chapter map under an objective
+  const course = path.join(pkg, "concepts/course.md");
+  const text = fs.readFileSync(course, "utf8");
+  assert.ok(/## Key terms/.test(text), "the course map has key terms");
+  fs.writeFileSync(course, text.replace(/## Key terms\n/, "## Key terms\n- **melting point** — the temperature at which a solid becomes liquid [concept.course.1]\n"));
+  const index = computeSemanticIndex(pkg);
+  const term = index.terms.terms.find((x) => x.id === "term.melting-point");
+  assert.ok(term, "one term, not two");
+  assert.ok(Array.isArray(term.spineRefs) && term.spineRefs.length === 2, `both parents kept: ${JSON.stringify(term.spineRefs)}`);
+  assert.ok(term.spineRefs.includes("concept.course.1"));
+  assert.equal(typeof term.spineRef, "string", "the singular survives for compatibility");
+  assert.ok(index.warnings.some((w) => /bracketed under 2 spine nodes/.test(w)), index.warnings.join("\n"));
+});

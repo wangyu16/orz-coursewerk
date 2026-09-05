@@ -119,7 +119,7 @@
       "id": "repo:docs/walkthrough.md",
       "path": "docs/walkthrough.md",
       "type": "documentation",
-      "hash": "9765cafb464f87bb97da946bddf94349144f8c3eec3dc4ff2828bd1e86027f06"
+      "hash": "cbfca49208f57cfc1bd938b2cecf121a9835c5b3a956d2030b8fe57e0674aab2"
     },
     {
       "id": "repo:docs/wikipedia-science-topic.md",
@@ -227,7 +227,7 @@
       "id": "repo:scripts/check_oer.mjs",
       "path": "scripts/check_oer.mjs",
       "type": "executable",
-      "hash": "db57da7fd215abe682f63f1bbd76117f8af2d8bc8860f76d95e4dd298d2dada3"
+      "hash": "cd2b6c88efb072626728cdaf404c4f963dd5ecc849fcd0b07be7404012f47b11"
     },
     {
       "id": "repo:scripts/coursewerk_impact.mjs",
@@ -341,7 +341,7 @@
       "id": "repo:scripts/lib/coherence.mjs",
       "path": "scripts/lib/coherence.mjs",
       "type": "kernel",
-      "hash": "175a4585373acdb45a0a0adf829fa83a248761892fcfe9316b75966fbd352ab2"
+      "hash": "c3c9ebf31f75af88a21745451a1ce66ef839298dcf1723475d10d40b665d5c11"
     },
     {
       "id": "repo:scripts/lib/consistency.mjs",
@@ -419,7 +419,7 @@
       "id": "repo:scripts/lib/semantic_index.mjs",
       "path": "scripts/lib/semantic_index.mjs",
       "type": "kernel",
-      "hash": "ef30b276a8aba46eae19a2eb316bc260a17b2a1f379b42681d1a4faac94e59d6"
+      "hash": "ad6b759466bb502d9ec8744a0248711d805dbfbc4af18558ee910b1199882a97"
     },
     {
       "id": "repo:scripts/lib/slug.mjs",
@@ -449,7 +449,7 @@
       "id": "repo:scripts/lib/terms.mjs",
       "path": "scripts/lib/terms.mjs",
       "type": "kernel",
-      "hash": "27ded19d4838b1b12cbed5241b019925a236fd7672c72829ccbdbaf4f48c6d76"
+      "hash": "015967649f4c01ac2b9683cd29911ad9adff230c604c40940d56cbe261289e02"
     },
     {
       "id": "repo:scripts/lib/units.mjs",
@@ -779,7 +779,7 @@
       "id": "repo:tests/audit-round-2.test.mjs",
       "path": "tests/audit-round-2.test.mjs",
       "type": "test",
-      "hash": "8f9c168f92085f9eb2b5190b899ac8ce8b8f8d3189afb84bcbf1e6e49727bff0"
+      "hash": "1c63665084cc072139c80d7ee5b6bc8bb0d08a04a5138e8ea8662e6bd2799fac"
     },
     {
       "id": "repo:tests/blind_bundle.test.mjs",
@@ -1133,7 +1133,7 @@
       "id": "repo:tests/wiring.test.mjs",
       "path": "tests/wiring.test.mjs",
       "type": "test",
-      "hash": "a5c0685ff485d8caea04fea3d87f2caf5c27adc68010cc0fb51d47efd1b22650"
+      "hash": "8c484e2dc48b5b2318c1790ec9ba359bd0389b8ed6a0434ff539a051928c4980"
     },
     {
       "id": "repo:VERSION",

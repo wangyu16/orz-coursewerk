@@ -816,10 +816,10 @@ function spineRefFindings(fresh) {
   // would push them into the fabrication the rule exists to prevent.
   const byRef = new Map();
   for (const term of fresh.terms.terms ?? []) {
-    const ref = typeof term.spineRef === "string" ? term.spineRef : "";
-    if (!ref) continue;
-    if (!byRef.has(ref)) byRef.set(ref, []);
-    byRef.get(ref).push(term);
+    for (const ref of termParents(term)) {
+      if (!byRef.has(ref)) byRef.set(ref, []);
+      byRef.get(ref).push(term);
+    }
   }
   for (const ref of danglingSpineRefs(spine, [...byRef.keys()])) {
     const labels = byRef
@@ -943,6 +943,12 @@ function derivedFromFindings(fresh) {
  * @returns {{coverage: {objectives: {covered:number,total:number}, concepts: {covered:number,total:number}},
  *            findings: Array<object>}}
  */
+/** W15: a term's declared spine parents — the plural when the registry carries it, else the singular. */
+function termParents(term) {
+  if (Array.isArray(term?.spineRefs) && term.spineRefs.length) return term.spineRefs.filter((r) => typeof r === "string" && r);
+  return typeof term?.spineRef === "string" && term.spineRef ? [term.spineRef] : [];
+}
+
 function coverageAudit(fresh) {
   const spine = fresh.spine;
   const claims = fresh.claims.claims ?? [];
@@ -1023,10 +1029,10 @@ function coverageAudit(fresh) {
   // from chapter nodes and so pushes this check toward MORE flags — safe direction, still wrong.)
   const termsUnder = new Map(); // node id -> [term]
   for (const term of fresh.terms.terms ?? []) {
-    const ref = typeof term.spineRef === "string" ? term.spineRef : "";
-    if (!ref) continue;
-    if (!termsUnder.has(ref)) termsUnder.set(ref, []);
-    termsUnder.get(ref).push(term);
+    for (const ref of termParents(term)) { // W15: every declared parent, not the first by file order
+      if (!termsUnder.has(ref)) termsUnder.set(ref, []);
+      termsUnder.get(ref).push(term);
+    }
   }
 
   const coverage = {

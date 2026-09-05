@@ -61,6 +61,11 @@
             "type": "string",
             "description": "The concept-map node authorizing this term, from the OPTIONAL trailing [concept.x]/[objective.x] in the Key-terms line. ABSENT IS VALID AND HONEST \u2014 never guess it by matching labels against concept sentences (that yields incidental matches: a fabrication in a deterministic costume)."
           },
+          "spineRefs": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "W15: EVERY concept-map node this term was bracketed under, sorted. `spineRef` is the first declaration (kept for compatibility); consumers that ask 'which nodes is this term under?' read this."
+          },
           "gloss": {
             "type": "string"
           },

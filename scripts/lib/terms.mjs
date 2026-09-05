@@ -406,6 +406,7 @@ function collectGroups(maps) {
           scopes: [],
           gloss: null,
           spineRef: null,
+          spineRefs: [],
         };
         byCanonical.set(canonical, group);
         groups.push(group);
@@ -416,6 +417,10 @@ function collectGroups(maps) {
       // chapter must not silently re-parent it.
       if (parsed.gloss && !group.gloss) group.gloss = parsed.gloss;
       if (parsed.spineRef && !group.spineRef) group.spineRef = parsed.spineRef;
+      // W15: EVERY declared parent is kept. `spineRef` stays the first (compatibility); `spineRefs`
+      // is the honest plural — a term bracketed under a course node AND a chapter node has two
+      // parents, and file order was deciding which one survived ("accident, not authority").
+      if (parsed.spineRef && !group.spineRefs.includes(parsed.spineRef)) group.spineRefs.push(parsed.spineRef);
       if (scope && !group.scopes.includes(scope)) group.scopes.push(scope);
     }
   }
@@ -602,6 +607,7 @@ export function buildTermsReport(conceptMaps, priorTerms) {
     );
     const gloss = groups.map((g) => g.gloss).find((g) => g) ?? null;
     const spineRef = groups.map((g) => g.spineRef).find((s) => s) ?? null;
+    const spineRefs = [...new Set(groups.flatMap((g) => g.spineRefs ?? []))].sort();
     return {
       id: record.id,
       canonical,
@@ -610,6 +616,7 @@ export function buildTermsReport(conceptMaps, priorTerms) {
       status: "confirmed",
       lifecycle: "active",
       ...(spineRef ? { spineRef } : {}),
+      ...(spineRefs.length ? { spineRefs } : {}),
       ...(gloss ? { gloss } : {}),
       scope: [...new Set(groups.flatMap((g) => g.scopes))],
     };

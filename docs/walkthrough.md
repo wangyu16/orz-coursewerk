@@ -352,7 +352,7 @@ CONTROL agent **refused to add a fifth inside the gate built to catch that defec
 `claim.termRefs` instead — §5d's own prescription. Cost, stated in its code: `termRefs` is claim-block
 scoped, narrower than "anywhere in the deliverables". **M2 should export the matcher.**
 
-### W15 — a term's `spineRef` is SINGULAR while its `scope` is PLURAL. *(open)*
+### W15 — a term's `spineRef` is SINGULAR while its `scope` is PLURAL. *(FIXED 2026-09-05 — `spineRefs` carries every declared parent; coverage and dangling checks read all of them; a multi-parent term is warned at index time; `tests/wiring.test.mjs` W.5)*
 First-declaration-wins, so `melting point` bracketed `[concept.course.1]` in the course map and
 `[concept.melting.1]` in the chapter map **silently keeps only the course one — and file order decides**,
 which `terms.mjs` itself calls "accident, not authority". §5c's freeze-time check again.
