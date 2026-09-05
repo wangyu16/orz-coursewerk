@@ -206,7 +206,8 @@ Complete the mode-independent release reviews before indexing the accepted basel
 
 1. **Assemble the blind bundle first, and hand the reviewer ONLY that.** The critique's power is
    independence — a reviewer blind to how the result was produced, judging only the result against the
-   criteria — and independence is assembled, not declared:
+   criteria — and the review is BOUND to the exact surface a blind reviewer receives (the gate cannot observe
+   the reviewer's isolation; it can refuse a review that names no bundle, or another package's):
 
    ```bash
    npm run review:blind-bundle          # writes reports/blind-bundle/{bundle.md,bundle.json,MANIFEST.json}
@@ -336,11 +337,19 @@ What the gate reports between steps 1 and 4, and what each means:
 - **`semantic.freshness`** — whether the committed SPINE/TERMS/CLAIMS are byte-fresh. Stale while you are mid-edit
   is normal. **Stale with nothing moved and everything committed is a silent strand** (a concept-map edit that was
   never re-indexed): it enters the queue as `stale-index`, and release refuses it. Step 4 clears it.
-- **`coherenceFailures`** — components changed after the last attested review. Step 3 clears them.
+- **`coherenceFailures`** — components changed after the last attested review. Step 3 clears them. A whitespace
+  reflow moves nothing here either: component hashes and review bindings are over normalized text.
+- **`spine-relabeled` (blocking)** — you reordered `## Objectives` or `## Concept sequence` in the map, so an
+  ordinal id now carries a different statement while claims are still declared under it. Restore the order or
+  re-declare the claims; ordinals are identity (or anchor the items with `[anchor: slug]`).
+- **`misconception-asserted` (blocking)** — a deliverable paragraph asserts a sentence from the map's
+  `## Misconceptions to surface` without correcting it.
+- **`declaration-refused`** — a partially anchored list, a positional declaration on an anchored item, or a
+  declaration under a repeated heading; **`dangling-reference`** — a spineRef, anchor, or override naming nothing.
 
 **Deliberate divergence from the source.** When the package must say something the pinned source does not —
-a newer value, a correction of a source error, a pedagogical simplification — record it once, and the gate stops
-asking:
+a newer value, a correction of a source error, a pedagogical simplification — record it once; after the next
+`index:semantic` the gate treats the divergence as authorized instead of suspected:
 
 ```bash
 npm run record:override -- --root package --claim-id <claim.id from CLAIMS.json> \
@@ -348,9 +357,11 @@ npm run record:override -- --root package --claim-id <claim.id from CLAIMS.json>
   --authorized-by "<name>" --date YYYY-MM-DD --rationale "<why, for the next maintainer>" [--justified-by "<newer source>"]
 ```
 
-The claim then carries `overrideId`, its provenance fingerprint moves (so the override is itself a tracked
-change), and `suspected-error` flags for that claim become authorized divergence. Never edit the source
-snapshot or the fidelity checker to make a divergence disappear; the override IS the record.
+The claim then carries `overrideId` and its provenance fingerprint moves — so the override is itself a tracked
+change: the gate reports the move once, and `npm run index:semantic` accepts it. From then on `suspected-error`
+flags for that claim read as authorized divergence. The recorder refuses an id that no claim carries (copy it
+from `CLAIMS.json`); an override whose claim was later re-minted is reported as `dangling-reference`. Never edit
+the source snapshot or the fidelity checker to make a divergence disappear; the override IS the record.
 
 **Terminology renames.** A rename is the one edit the harness can apply for you, because it is mechanical:
 one registered label to another, resolved through the term registry, never inside a quotation, citation, code
@@ -361,11 +372,16 @@ npm run revision:propagate -- --root package --term <term.id> --from "<old label
 npm run revision:propagate -- --root package --term <term.id> --from "<old label>" --to "<new label>" --apply --authorized-by "<name>"
 ```
 
-The dry run writes `reports/propagation-plan.json` and touches nothing. `--apply` refuses an uncommitted tree,
-writes only the planned files, commits only those, and files `reports/propagation-receipt.json` with the exact
-before/after text and file hashes on both sides — enough to verify every edit and to reverse it. Everything
-that needs judgment (a re-derived explanation, a coverage recheck) is *held for review* in the receipt, never
-guessed. Then run the loop above: the component gate demands the review, and the accept steps re-baseline.
+The dry run writes `reports/propagation-plan.json` (hash-bound to the package HEAD) and touches nothing. Read
+it. `--apply` executes exactly that plan: it refuses when the plan is missing, was made against another HEAD,
+or no longer matches a fresh computation; it refuses a package without an output git or with an uncommitted
+tree; it writes only the planned files, files `reports/propagation-receipt.json` BEFORE committing (before/after
+text and file hashes on both sides — enough to verify every edit and to reverse it), then commits only those
+files. The rename reaches the claim blocks and the prose around them; what it will not touch is NAMED in the
+plan as `protected` — quotations, citations, code, source-reproduced spans, and headings (renaming a heading
+moves every anchor under it; retitle by hand). Everything that needs judgment is *held for review*, never
+guessed. Rename the key term in the concept map first, so the registry records a RENAME. Then run the loop
+above: the component gate demands the review, and the accept steps re-baseline.
 
 ## Stage 6 — Honest evaluation report
 Write `reports/evaluation.md` — an **honest artifact-quality evaluation** of the package, so the user
@@ -380,6 +396,10 @@ counts from `.coursewerk/progress.md` — is the deliverable evidence of how the
 
 ## Stage 7 — Pack + deliver
 For public OER only, run `node scripts/pack.mjs --package package --out dist --inputs inputs` to produce the **lean upload zip** in `dist/`
+A primary source whose comparison is *human-attested* (no automatic text to scan) is a self-report; `pack`
+refuses to release on it unless you pass `--accept-attested-sources`, and the evaluation names the source.
+The evaluation's *Measured vs declared* section lists everything the gate could not verify.
+
 (`alembic.json` at the archive root; framework carriers excluded — Alembic rebuilds them). Write
 `reports/delivery.md` ('# Delivery'): what was produced, the evaluation summary (Stage 6), and the
 explicit list of items still needing the user (open `[VERIFY]`, license/DOI to confirm, cosmetic layout

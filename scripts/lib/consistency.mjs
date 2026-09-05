@@ -131,6 +131,30 @@ import { dimensionProjection } from "./units.mjs";
  */
 const ASSERTIVE_TYPES = new Set(["fact", "answer-key", "definition"]);
 
+/**
+ * An orz `:::: tabs` container holds the QUESTION and the ANSWER in one block (M2 anchors the
+ * container, so a declaration can address it). Two consequences the design audit (H2/H3,
+ * 2026-09-05) showed a package could pack through:
+ *   - a distractor value in the question ("a classmate insists it is 5 °C") shares the dimension
+ *     with the answer's value, and non-flag 4 dropped the dimension — so a WRONG answer key went
+ *     uncompared;
+ *   - a declared `type` of `derived`/`procedure` on an answer block took it out of the scan.
+ * So an ANSWER TAB is the assertion: when a block carries one, only the answer bodies are scanned
+ * for values, and the block is assertive whatever type its declaration claims.
+ */
+// Tolerant of collapsed whitespace (claim text may be normalized to one line): the tab title is
+// `Answer` plus at most one token (`Answer 8`), and the body runs to the next fence.
+const ANSWER_TAB = /:{3,}[ \t]*tab[ \t]+answer(?:[ \t]+[\w.-]+)?[ \t]*\n?([\s\S]*?)(?=:{3,}|(?![\s\S]))/gi;
+function answerBodies(text) {
+  const out = [];
+  ANSWER_TAB.lastIndex = 0;
+  let m;
+  while ((m = ANSWER_TAB.exec(String(text ?? "")))) out.push(m[1]);
+  return out;
+}
+const hasAnswerTab = (text) => answerBodies(text).length > 0;
+const isAssertive = (claim) => ASSERTIVE_TYPES.has(claim?.type) || hasAnswerTab(claimText(claim));
+
 /** Articles are the only words folded away when comparing definitions — provably cosmetic. */
 const ARTICLES = new Set(["a", "an", "the"]);
 
@@ -272,6 +296,22 @@ function subjectTerm(claim, terms, scope) {
   const found = [...termsInText(claimText(claim), terms, scope)];
   return found.length === 1 ? found[0] : null;
 }
+/**
+ * The subjects a claim's values are compared under. A DECLARED list of two or more terms used to
+ * mean "no subject" (non-flag 3) — which let a wrong answer key opt OUT of comparison by declaring
+ * one extra term (design audit H3). Declared terms are the generator's assertion, so each of them
+ * is a subject; the scan fallback still requires exactly one term, because there the ambiguity is
+ * the machine's, not the author's.
+ */
+function subjectTerms(claim, terms, scope) {
+  // Only a DECLARED claim's termRefs are the author's assertion; a scan-found claim's termRefs are
+  // the scanner's guess and keep the exactly-one-term rule (else a worked example naming two terms
+  // would be compared under both — the alarm-fatigue trap).
+  const declared = claim?.provenanceDeclared === true ? (claim?.termRefs ?? []).map(String).filter((r) => r.startsWith("term.")) : [];
+  if (declared.length >= 1) return [...new Set(declared)].sort(byString);
+  const one = subjectTerm(claim, terms, scope);
+  return one ? [one] : [];
+}
 
 /** Stable key for a converted value — kills float noise without pretending to 15 digits. */
 const valueKey = (n) => String(Number(n.toPrecision(9)));
@@ -285,9 +325,11 @@ const valueKey = (n) => String(Number(n.toPrecision(9)));
 function quantitiesByDimension(text) {
   const byDim = new Map();
   const dropped = new Set();
+  const answers = answerBodies(text);
+  const scanned = answers.length ? answers.join("\n") : text; // the ANSWER is the assertion (H2)
   QUANTITY_RE.lastIndex = 0;
   let m;
-  while ((m = QUANTITY_RE.exec(text))) {
+  while ((m = QUANTITY_RE.exec(scanned))) {
     const entry = unitEntry(m[2]);
     if (!entry) continue; // recognized-but-ambiguous (e.g. bare "degrees") ⇒ silence
     const key = valueKey(entry.to(Number(m[1])));
@@ -304,7 +346,7 @@ function comparableClaims(list) {
   return list.filter(
     (c) =>
       c &&
-      ASSERTIVE_TYPES.has(c.type) &&
+      isAssertive(c) &&
       (c.status ?? "active") === "active" &&
       claimText(c).length > 0,
   );
@@ -332,12 +374,14 @@ function valueDisagreements(list, terms) {
   const groups = new Map(); // `${termId}|${dim}` -> [{claim, key, raw}]
   for (const claim of comparableClaims(list)) {
     const scope = claimScope(claim);
-    const termId = subjectTerm(claim, terms, scope);
-    if (!termId) continue;
+    const subjects = subjectTerms(claim, terms, scope);
+    if (subjects.length === 0) continue;
     for (const [dim, q] of quantitiesByDimension(claimText(claim))) {
-      const key = `${termId}|${dim}`;
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push({ claim, ...q });
+      for (const termId of subjects) {
+        const key = `${termId}|${dim}`;
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push({ claim, ...q });
+      }
     }
   }
 

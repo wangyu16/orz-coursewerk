@@ -100,7 +100,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { immutableRegions, isImmutable } from "./immutable.mjs";
-import { resolve as resolveTerm, findLabelOccurrences } from "./terms.mjs";
+import { resolve as resolveTerm, findLabelOccurrences, labelMatcher } from "./terms.mjs";
 
 /** M4's action vocabulary (interfaces §3). An action outside it is a contract break. */
 const ACTIONS = new Set(["NONE", "RENAME", "RE-DERIVE", "REGENERATE", "RECHECK", "ESCALATE", "ANNOTATE"]);
@@ -145,6 +145,32 @@ function claimList(claims) {
 // W14: occurrences come from M1's matcher (`findLabelOccurrences`) — the same boundary rule M2
 // uses to count a mention and M6 uses to compare, so M9 can never rename what M2 did not index.
 const findOccurrences = (text, label) => findLabelOccurrences(text, label);
+
+/**
+ * Drop occurrences of `from` that lie INSIDE an occurrence of a longer registered label belonging
+ * to a DIFFERENT term (audit finding 3: renaming "melting point" turned "melting point depression"
+ * — another term — into "fusion point depression", a label that resolves to nothing). The
+ * registry is the authority on which longer labels exist; longest-first masking, whole-word.
+ * @returns the surviving occurrences, in order.
+ */
+export function maskLongerLabels(text, occurrences, from, termId, terms) {
+  const needle = String(from ?? "").toLowerCase();
+  if (!needle || !occurrences.length) return occurrences;
+  const masks = [];
+  for (const term of terms?.terms ?? []) {
+    if (!term || term.id === termId) continue;
+    const labels = [term.preferredLabel, ...(term.aliases ?? []), ...(term.labels ?? [])].filter(Boolean).map(String);
+    for (const label of labels) {
+      if (label.length <= needle.length || !label.toLowerCase().includes(needle)) continue;
+      const re = labelMatcher(label, "gi");
+      re.lastIndex = 0;
+      let m;
+      while ((m = re.exec(text)) !== null) { masks.push({ start: m.index, end: m.index + m[0].length }); if (m[0].length === 0) re.lastIndex++; }
+    }
+  }
+  if (!masks.length) return occurrences;
+  return occurrences.filter((o) => !masks.some((k) => o.start >= k.start && o.end <= k.end));
+}
 
 /** Rewrite `text`, replacing each occurrence span with `to`. Occurrences must be ascending. */
 function substitute(text, occurrences, to) {
@@ -380,7 +406,7 @@ export function planPropagation(change, claims, terms, immutableRegionsByFile) {
     //  2. if M2 declared what the claim is about, the term must be in that declaration.
     // A claim that is not a target is absent from BOTH tiers — it is not a refusal, there is
     // simply nothing to say about it, and a review item for it would be noise.
-    const occurrences = findOccurrences(claim.text, from);
+    const occurrences = maskLongerLabels(claim.text, findOccurrences(claim.text, from), from, termId, terms);
     if (occurrences.length === 0) continue;
 
     const declared = Array.isArray(claim.termRefs) ? claim.termRefs : null;

@@ -42,11 +42,14 @@ export function ensureOutputGit(root) {
   return { root, initialized };
 }
 
-export function outputGitState(root) {
+export function outputGitState(root, opts = {}) {
   root = path.resolve(root);
   if (!fs.existsSync(path.join(root, ".git"))) return { available: false, root, head: null, changes: [], clean: false };
   const headResult = git(root, ["rev-parse", "--verify", "HEAD"], { allowFailure: true });
-  const status = git(root, ["status", "--porcelain=v1", "--untracked-files=all"], { allowFailure: true });
+  // `opts.paths` narrows the question to "are THESE paths committed?" — a scratch file elsewhere in
+  // the tree must not hide a committed strand of the index (audit finding 10).
+  const scope = Array.isArray(opts.paths) && opts.paths.length ? ["--", ...opts.paths] : [];
+  const status = git(root, ["status", "--porcelain=v1", "--untracked-files=all", ...scope], { allowFailure: true });
   if (status.status !== 0) {
     return {
       available: false,
@@ -87,7 +90,12 @@ export function outputGitState(root) {
  * emits and nothing else.
  */
 export function commitOutput(root, message, opts = {}) {
-  ensureOutputGit(root);
+  // `opts.ensure === false`: the caller is an APPLIER/CHECKER whose blast radius must be exactly the
+  // files it names; `ensureOutputGit` also writes `.gitignore`, which is a file nobody asked for
+  // (audit finding 8). The repository must then already exist.
+  if (opts.ensure === false) {
+    if (!fs.existsSync(path.join(path.resolve(root), ".git"))) throw new Error("output root is not a Git repository; run init:output-git first");
+  } else ensureOutputGit(root);
   const paths = Array.isArray(opts.paths) ? opts.paths.filter(Boolean) : null;
   if (paths && paths.length === 0) return { committed: false, head: outputGitState(root).head };
   git(root, paths ? ["add", "--", ...paths] : ["add", "-A"]);
@@ -97,4 +105,13 @@ export function commitOutput(root, message, opts = {}) {
   if (nothingStaged) return { committed: false, head: outputGitState(root).head };
   git(root, ["commit", "-m", message]);
   return { committed: true, head: outputGitState(root).head };
+}
+
+/** Commit hashes that touched `rel`, newest first; [] when unavailable. */
+export function commitsTouching(root, rel) {
+  root = path.resolve(root);
+  if (!fs.existsSync(path.join(root, ".git"))) return [];
+  const res = git(root, ["log", "--format=%H", "--", rel], { allowFailure: true });
+  if (res.status !== 0) return [];
+  return res.stdout.split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
 }

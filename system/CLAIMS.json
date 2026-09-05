@@ -311,7 +311,7 @@
     {
       "id": "claim.control.coverage",
       "assuranceLevel": "hard-gate",
-      "statement": "The gate verifies the package against the instructor's concept map in both directions: a declared objective nothing teaches is a fail-closed missing-coverage block in every mode, and a deliverable tagging an undeclared objective fails the format contract; coverage is reported as a floor with denominators.",
+      "statement": "The gate verifies the package against the instructor's concept map in both directions: an objective with no non-objective claim (fact, definition, answer key, derived, procedure) declared under it and none of its key terms taught is a fail-closed missing-coverage block in every mode; a deliverable tagging an undeclared objective fails the format contract; a spine label that moved under an unchanged id while claims are declared under it is blocking; coverage is reported as a floor with denominators.",
       "implementation": [
         "scripts/check_oer.mjs",
         "scripts/lib/spine.mjs",
@@ -386,7 +386,7 @@
     {
       "id": "claim.coherence.index-fresh",
       "assuranceLevel": "hard-gate",
-      "statement": "The gate byte-compares each stored SPINE/TERMS/CLAIMS artifact against a fresh recompute; a stale artifact with no movement signal over a clean output tree is queued as one stale-index decision, any staleness blocks --for-discovery, and mid-edit staleness is reported without a flag.",
+      "statement": "The gate byte-compares each stored SPINE/TERMS/CLAIMS artifact against a fresh recompute (line endings ignored); a missing artifact beside a present one is stale; a stale index with no movement signal over committed index/spine/deliverable paths is queued as one stale-index decision; any staleness or incompleteness blocks --for-discovery.",
       "implementation": [
         "scripts/lib/semantic_index.mjs",
         "scripts/check_oer.mjs",
@@ -405,7 +405,7 @@
     {
       "id": "claim.trust.consistency",
       "assuranceLevel": "hard-gate",
-      "statement": "Cross-artifact disagreements on a shared term or quantity are found deterministically with no declared edge required, physically impossible values are flagged by a conservative range audit, and both enter the review queue through the publish check.",
+      "statement": "Cross-artifact disagreements on a shared term or quantity are found deterministically with no declared edge required \u2014 the answer tab of a tabs container is the assertion, a declared type or extra declared terms cannot opt an answer out \u2014 physically impossible values are flagged by a conservative range audit, and asserting the map's own misconception is blocking.",
       "implementation": [
         "scripts/lib/consistency.mjs",
         "scripts/lib/units.mjs",
@@ -449,7 +449,7 @@
     {
       "id": "claim.review.blind-bundle",
       "assuranceLevel": "hard-gate",
-      "statement": "A documented command assembles the blind key-fact reviewer's surface by allowlist outside the package, withholding every process file by name; the key-fact review must declare the digest of that surface and the gate compares it live, so independence is assembled and verified rather than declared.",
+      "statement": "A documented command assembles the blind key-fact reviewer's surface by allowlist outside the package (withheld process files and symbolic links named), and the key-fact review is BOUND to that surface: it must declare the digest of the current package's bundle, the digest is compared live, template placeholders are refused, and every key fact must be locatable in the deliverables it names. The reviewer's isolation itself is declared, not observed.",
       "implementation": [
         "scripts/lib/blind_bundle.mjs",
         "scripts/assemble_blind_bundle.mjs",
@@ -471,7 +471,7 @@
     {
       "id": "claim.revision.propagation",
       "assuranceLevel": "hard-gate",
-      "statement": "A documented command plans and, with --apply, applies only the mechanical rename tier, refuses an uncommitted output tree, writes and commits only the planned files, and files a receipt with before/after text and file hashes on both sides that can verify and reverse every edit; everything needing judgment is held for review.",
+      "statement": "A documented command plans a mechanical rename across claim blocks and prose (never inside quotations, citations, code, source-reproduced spans, headings, or a longer label of another term), writes a plan hash-bound to the package HEAD, and with --apply executes exactly that plan on a committed output git, files the receipt before committing, and commits only the planned files; everything needing judgment is held for review and everything untouched is named.",
       "implementation": [
         "scripts/propagate.mjs",
         "scripts/lib/propagate.mjs"
@@ -530,6 +530,24 @@
         "format-contracts/deliverables.md",
         "docs/walkthrough.md",
         "CHANGELOG.md"
+      ]
+    },
+    {
+      "id": "claim.release.measured-vs-declared",
+      "assuranceLevel": "automated-check",
+      "statement": "Release refuses a human-attested primary source unless explicitly accepted, never commits into the package, ships no review queue, produces a byte-reproducible archive for identical content, and the evaluation lists what the gate could not verify: attested sources, reviewer identity and mode, overrides by basis, declared versus scan-found claims, unverified arithmetic, and the coherence ledger action.",
+      "implementation": [
+        "scripts/pack.mjs",
+        "scripts/check_oer.mjs",
+        "scripts/lib/coherence.mjs"
+      ],
+      "tests": [
+        "tests/assurance.test.mjs",
+        "tests/audit-round-2.test.mjs"
+      ],
+      "documentation": [
+        "PROCEDURE.md",
+        "FEATURES.md"
       ]
     }
   ]

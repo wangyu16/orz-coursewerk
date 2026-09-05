@@ -47,16 +47,19 @@ const PROCESS_DIR_PREFIXES = [
   ["metadata/preflight/", "pre-ingestion receipts — tooling/process artifacts"],
 ];
 
-function walk(root) {
+function walk(root, symlinks = []) {
   const out = [];
   if (!fs.existsSync(root)) return out;
   for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
     const full = path.join(root, entry.name);
-    if (entry.isDirectory()) out.push(...walk(full));
+    if (entry.isSymbolicLink()) { symlinks.push(full); continue; } // never followed — see assembleBlindBundle
+    if (entry.isDirectory()) out.push(...walk(full, symlinks));
     else if (entry.isFile()) out.push(full);
   }
   return out;
 }
+const sha256 = (buf) => crypto.createHash("sha256").update(buf).digest("hex");
+const cmpPath = (a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0); // code points, never locale
 
 function readText(root, rel) {
   const file = path.join(root, rel);
@@ -105,11 +108,20 @@ export function assembleBlindBundle(root) {
 
   // Every file gets classified — result, allowlisted-input, or excluded (with reason+class).
   const inputRels = new Set([LICENSE_FILE, ATTRIBUTION_FILE, SOURCE_RECORD_FILE, MEDIA_PLAN_META, FOUNDATION_FILE]);
-  for (const abs of walk(root)) {
+  const assets = [];
+  const symlinks = [];
+  for (const abs of walk(root, symlinks)) {
     const relPath = path.relative(root, abs).replaceAll(path.sep, "/");
     const top = relPath.split("/")[0];
     if (top !== "metadata" && DELIVERABLE_TOPS.has(top) && relPath.endsWith(".md")) {
       deliverables.push({ path: relPath, text: fs.readFileSync(abs, "utf8") });
+      continue;
+    }
+    // A non-markdown file under a deliverable top or assets/ is part of the RESULT the reviewer
+    // judges (a figure's rights, an image that changed): carried by digest, so a swapped image moves
+    // the bundle identity even though no prose did (audit finding 16a).
+    if ((DELIVERABLE_TOPS.has(top) || top === "assets") && top !== "metadata") {
+      assets.push({ path: relPath, sha256: sha256(fs.readFileSync(abs)) });
       continue;
     }
     if (inputRels.has(relPath)) continue; // projected below via a named rule
@@ -118,8 +130,13 @@ export function assembleBlindBundle(root) {
     if (dirHit) { excluded.push({ path: relPath, class: "process", reason: dirHit[1] }); continue; }
     excluded.push({ path: relPath, class: "out-of-scope", reason: "not part of the blind key-fact review surface" });
   }
-  deliverables.sort((a, b) => a.path.localeCompare(b.path));
-  excluded.sort((a, b) => a.path.localeCompare(b.path));
+  // A symlink is not a package-owned file: it is never followed (its target may lie outside the
+  // package) and it is NAMED, so the audit trail stays complete (audit finding 12).
+  for (const abs of symlinks)
+    excluded.push({ path: path.relative(root, abs).replaceAll(path.sep, "/"), class: "out-of-scope", reason: "symbolic link — not a package-owned file; not followed" });
+  deliverables.sort(cmpPath);
+  assets.sort(cmpPath);
+  excluded.sort(cmpPath);
 
   // FOUNDATION is projected: sources kept (identity + rights facts); outputAuthors WITHHELD.
   if (foundation && Array.isArray(foundation.outputAuthors) && foundation.outputAuthors.length > 0)
@@ -127,6 +144,7 @@ export function assembleBlindBundle(root) {
 
   return {
     deliverables,
+    assets,
     criteria: [...REQUIRED_KEY_FACT_CHECKS],
     sources: (foundation?.sources || []).map(projectSource),
     license: readText(root, LICENSE_FILE),
@@ -152,6 +170,7 @@ export function serializeJudgedSurface(bundle) {
     schemaVersion: 1,
     criteria: bundle.criteria,
     deliverables: bundle.deliverables.map((d) => ({ path: d.path, text: d.text })),
+    assets: (bundle.assets ?? []).map((a) => ({ path: a.path, sha256: a.sha256 })),
     sources: bundle.sources,
     license: bundle.license,
     attribution: bundle.attribution,

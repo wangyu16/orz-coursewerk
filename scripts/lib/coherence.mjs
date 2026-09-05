@@ -7,7 +7,7 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { outputGitState } from "./output_git.mjs";
+import { outputGitState, commitsTouching } from "./output_git.mjs";
 import { matchClaims } from "./claims.mjs";
 import { classify } from "./classify.mjs";
 import { resolve as resolveTerm } from "./terms.mjs";
@@ -116,6 +116,20 @@ function assetReferences(text) {
 }
 
 /** Compute the current component set and dependency graph without writing. */
+/**
+ * H8 (design audit): the component hash was over raw bytes, so a whitespace reflow — free in the
+ * semantic layer by design — re-imposed "1 edit → 6 required reviews" at the file layer. Markdown
+ * components hash their WHITESPACE-NORMALIZED text (line endings, runs of blanks, trailing
+ * spaces); every visible change still moves the hash. Binaries hash their bytes.
+ */
+export function normalizeMarkdownForHash(text) {
+  return String(text).replace(/\r\n?/g, "\n").split("\n").map((l) => l.replace(/[ \t]+/g, " ").trimEnd()).join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
+}
+function componentHash(file) {
+  const bytes = fs.readFileSync(file);
+  return /\.(?:md|markdown|txt|json)$/i.test(file) ? HASH(normalizeMarkdownForHash(bytes.toString("utf8"))) : HASH(bytes);
+}
+
 export function computeComponentGraph(root) {
   root = path.resolve(root);
   const components = walk(root)
@@ -128,7 +142,7 @@ export function computeComponentGraph(root) {
         path: x.path,
         type,
         chapter: chapterOf(x.path, type),
-        hash: HASH(fs.readFileSync(x.file)),
+        hash: componentHash(x.file),
       };
     })
     .sort((a, b) => a.path.localeCompare(b.path));
@@ -195,7 +209,8 @@ export function makeComponentIndex(graph) {
   }
   return {
     schemaVersion: 1,
-    generatedAt: new Date().toISOString(),
+    // No clock: the index is a pure projection of the components (L3, design audit) — a
+    // timestamp made two identical states hash differently and leaked into `planId`.
     components: graph.components.map((c) => ({ ...c, dependencies: dependencies.get(c.id) || {} })),
     relationships: graph.relationships,
   };
@@ -269,6 +284,16 @@ export function auditCoherence(root) {
   let acceptedState = null;
   try { acceptedState = JSON.parse(fs.readFileSync(stateFile, "utf8")); }
   catch { failures.push(`accepted coherence ledger is missing or invalid: ${stateFile}.`); }
+  // M8 (design audit): deleting the index and the external ledger and running `--initialize` again
+  // cleared every coherence failure on an unreviewed edit — the attested chain was laundered. The
+  // package's own git history remembers: an `initialize` ledger whose head is NOT the oldest commit
+  // touching the index means the chain was reset over existing history.
+  if (acceptedState?.action === "initialize" && acceptedState?.acceptedHead) {
+    const history = commitsTouching(root, COMPONENT_INDEX_PATH);
+    const at = history.indexOf(acceptedState.acceptedHead);
+    if (at >= 0 && at < history.length - 1)
+      failures.push(`coherence index was RE-INITIALIZED over ${history.length - 1 - at} earlier index commit(s): the attested review chain was reset, not refreshed. Restore the ledger under .coursewerk/ or accept the revision through review (index_components --refresh --review).`);
+  }
   if (acceptedState) {
     const actualIndexHash = HASH(JSON.stringify(loaded.index));
     if (acceptedState.schemaVersion !== 2) failures.push("accepted coherence ledger schema is stale.");

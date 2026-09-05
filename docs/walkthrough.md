@@ -232,6 +232,9 @@ never exercised end-to-end.
 
 ## 4. Findings
 
+> Findings from the adversarial hardening rounds (2026-09-05 onward) — each with its probe or its dismissal —
+> live in `docs/closed-loop-rounds.md`. The register below is the original walkthrough's.
+
 ### W1 — **THE SEMANTIC INDEX NEVER RUNS.** `PROCEDURE.md` never reindexes. *(critical; FIXED)*
 `semanticAudit()` returns `{ran:false}` unless `metadata/{CLAIMS,SPINE,TERMS}.json` exist. `PROCEDURE.md`
 — the document the authoring agent actually executes — **never runs `npm run index:semantic`**, at any

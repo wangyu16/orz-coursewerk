@@ -4,6 +4,7 @@ import path from "node:path";
 
 import { REQUIRED_KEY_FACT_CHECKS } from "./key_fact_checks.mjs";
 import { blindBundleDigest } from "./blind_bundle.mjs";
+import { normalizeMarkdownForHash } from "./coherence.mjs";
 
 export const KEY_FACT_REVIEW_PATH = "metadata/KEY_FACT_REVIEW.json";
 export { REQUIRED_KEY_FACT_CHECKS };
@@ -32,7 +33,9 @@ export function makeKeyFactBindings(root) {
     .map((file) => path.relative(root, file).replaceAll(path.sep, "/"))
     .filter((rel) => rel.endsWith(".md") && DELIVERABLE_TOPS.has(rel.split("/")[0]))
     .sort()
-    .map((rel) => [rel, fileDigest(root, rel)]);
+    // H8: bound to whitespace-normalized text, so a reflow does not force a re-review; any visible
+    // change still does (the same rule the component index uses).
+    .map((rel) => [rel, sha256(normalizeMarkdownForHash(fs.readFileSync(path.join(root, rel), "utf8")))]);
   return {
     manifestSha256: fileDigest(root, "alembic.json"),
     licenseSha256: fileDigest(root, "LICENSE"),
@@ -86,6 +89,18 @@ export function auditKeyFactReview(root, foundation) {
     failures.push(`${KEY_FACT_REVIEW_PATH}: independence.bundleSha256 must record the digest of the blind bundle the reviewer judged (run \`npm run review:blind-bundle\`).`);
   else if (declaredBundle !== blindBundleDigest(root))
     failures.push(`${KEY_FACT_REVIEW_PATH}: independence.bundleSha256 does not match the current blind bundle — the reviewer judged a different result; re-assemble the bundle and repeat the critique.`);
+  // H5 (design audit 2026-09-05): the template's own placeholders passed the gate — only note LENGTH
+  // was checked. A review is evidence of a critique only if every identity and every note is real.
+  const PLACEHOLDER = /\b(?:replace(?:-with)?|generated-by|copy-from|placeholder|temporary|pending|unassigned|tbd|todo|unknown)\b/i;
+  const identityFields = [
+    ["authoringSystem", review.authoringSystem], ["authoringModelId", review.authoringModelId],
+    ["reviewer.name", review.reviewer?.name], ["reviewer.modelId", review.reviewer?.modelId],
+    ["independence.approach", review.independence?.approach],
+  ];
+  for (const [name, value] of identityFields)
+    if (PLACEHOLDER.test(String(value || ""))) failures.push(`${KEY_FACT_REVIEW_PATH}: ${name} still carries a template placeholder.`);
+  for (const check of review.checks || [])
+    if (PLACEHOLDER.test(String(check?.note || ""))) failures.push(`${KEY_FACT_REVIEW_PATH}: check ${check?.id} note still carries a template placeholder.`);
   const checks = new Map((review.checks || []).map((check) => [check.id, check]));
   for (const id of REQUIRED_KEY_FACT_CHECKS) {
     const check = checks.get(id);
@@ -107,6 +122,23 @@ export function auditKeyFactReview(root, foundation) {
       if (inside.startsWith("..") || path.isAbsolute(inside) || !fs.existsSync(target)) failures.push(`${label} usedIn path is missing or outside the package: ${rel}.`);
     }
     if (String(fact.note || "").trim().length < 20) failures.push(`${label} requires a substantive critique note.`);
+    if (PLACEHOLDER.test(String(fact.claim || "")) || PLACEHOLDER.test(String(fact.note || "")))
+      failures.push(`${label} still carries a template placeholder.`);
+    // The fact must be ABOUT the deliverables it names: its numbers must appear there, and most of
+    // its content words must. A fact nobody could locate in the package is not a reviewed fact.
+    const corpus = (fact.usedIn || []).map((relPath) => {
+      const target = path.resolve(root, String(relPath));
+      try { return fs.readFileSync(target, "utf8").toLowerCase(); } catch { return ""; }
+    }).join("\n");
+    if (corpus) {
+      const claim = String(fact.claim || "");
+      const numbers = claim.match(/\d+(?:[.,]\d+)?/g) || [];
+      const words = (claim.toLowerCase().match(/[\p{L}\p{N}]{4,}/gu) || []);
+      const missingNumbers = numbers.filter((n) => !corpus.includes(n.replace(",", ".")) && !corpus.includes(n));
+      const present = words.filter((w) => corpus.includes(w)).length;
+      if (missingNumbers.length || (words.length >= 6 && present < Math.ceil(words.length * 0.6)))
+        failures.push(`${label} is not supported by its usedIn deliverables (${missingNumbers.length ? `numbers ${missingNumbers.join(", ")} not found` : `${present}/${words.length} content words found`}); trace the fact to prose that states it.`);
+    }
   }
   let manifest = null;
   try { manifest = JSON.parse(fs.readFileSync(path.join(root, "alembic.json"), "utf8")); } catch { /* private roots may have no manifest */ }

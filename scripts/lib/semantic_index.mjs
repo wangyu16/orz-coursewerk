@@ -256,17 +256,24 @@ export function auditIndexFreshness(root, fresh) {
   root = path.resolve(root);
   const byPath = { [CLAIMS_PATH]: fresh.claims, [SPINE_PATH]: fresh.spine, [TERMS_PATH]: fresh.terms };
   const stale = [];
+  const missing = [];
   let checked = false;
   for (const rel of SEMANTIC_INDEX_PATHS) {
     const file = path.join(root, rel);
-    if (!fs.existsSync(file)) continue;
+    if (!fs.existsSync(file)) { missing.push(rel); continue; }
     let storedBytes;
     try { storedBytes = fs.readFileSync(file, "utf8"); } catch { continue; }
     try { JSON.parse(storedBytes); } catch { continue; } // corrupt: loadSemanticIndex owns that report
     checked = true;
+    // Line endings are a checkout setting, not a package change (audit finding 16b).
+    const normalized = storedBytes.replace(/\r\n/g, "\n");
     const freshBytes = serialize(byPath[rel]);
-    if (storedBytes !== freshBytes) stale.push({ path: rel, storedBytes: storedBytes.length, freshBytes: freshBytes.length });
+    if (normalized !== freshBytes) stale.push({ path: rel, storedBytes: storedBytes.length, freshBytes: freshBytes.length });
   }
+  // A PARTIAL index is stale, not absent: with one artifact present the layer runs, and a deleted
+  // TERMS.json silently re-mints every id from labels (audit finding 1). Absence is an answer only
+  // when the whole index is absent.
+  if (checked) for (const rel of missing) stale.push({ path: rel, storedBytes: null, freshBytes: serialize(byPath[rel]).length });
   return { checked, fresh: stale.length === 0, stale };
 }
 

@@ -16,10 +16,13 @@ const MIN_SPAN_WORDS = 15; // report spans at least this many consecutive shared
 /** Lowercase word tokens, stripped of markdown/punctuation noise. Returns [{w, at}]. */
 function tokenize(text) {
   // drop code fences and orz plugin blocks so we don't flag legit shared syntax
+  // Code fences are NOT dropped: a fence renders as visible text, so fifty copied words inside
+  // ```text``` reach the student exactly as prose would (design audit M7). Orz plugin payloads and
+  // inline code are still dropped — they are syntax, not sentences.
   const cleaned = text
-    .replace(/```[\s\S]*?```/g, " ")
     .replace(/\{\{[\s\S]*?\}\}/g, " ")
-    .replace(/`[^`]*`/g, " ");
+    .replace(/^[ \t]{0,3}(?:```|~~~)[^\n]*$/gm, " ") // fence MARKERS only; the body is visible text
+    .replace(/`[^`\n]*`/g, " ");
   const out = [];
   const re = /[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*/g;
   let m;

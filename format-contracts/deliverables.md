@@ -88,8 +88,8 @@ concepts/ assessment-support/ assets/ metadata/ current/` are **public** (shared
 |---|------|--------|----------|
 | 1 | `concepts/<slug>.md` | **Plain Markdown, NO graphics** (any parser, readable raw) | **THE SPINE — see §Concept maps for the required sections.** Concept/topic dependency logic + per-section objectives + the `## Key terms` vocabulary authority. Headings, nested lists, tables, text arrows (→) only — no mermaid, no images, no `{{plugins}}`. Everything student-facing is derived from this file, and the index resolves every term through it. |
 | 2 | `study-guide/<slug>.md` | **orz-markdown**, visually rich | Concise study guide derived from the concept map; opens with objectives; figures + worked **example questions** (container tabs); full orz feature use (KaTeX/mhchem, `{{smiles}}`, mermaid, `:::info/:::success`, columns). Every Mermaid/chart block has a nearby visible `**Visual description:**`/`**Data summary:**`. Each `## H2` section MAY carry a stable block ID `{{attrs[#blk-…]}}`. Built to `.md.html` via **orz-mdhtml** for preview. |
-| 3 | `slides/<slug>.md` | **orz-slides deck grammar** | Deck SOURCE, not HTML. Opens with a `<!-- deck\ntitle: …\nratio: 16:9\n-->` block; slides separated by the `<!-- slide -->` marker (NOT bare `---`); `# H1` on a `<!-- slide template=title -->` = title slide; `## H2` = content-slide title; `<!-- slide template=closing -->` for the closing slide. One concept per slide. **Reuse only the study guide's `../assets/` figures.** Built to `.slides.html` via **orz-slides** for preview. |
-| 4 | `assessment-support/<slug>.md` | **Plain Markdown, NO graphics** | Per objective, **how to design** questions/activities (assignments, discussion, quizzes, exams, projects) at the right cognitive level — guidance, **NOT a question bank**. Several parameterized question guides per objective. |
+| 3 | `slides/<slug>.md` | **orz-slides deck grammar** | Deck SOURCE, not HTML. Opens with a `<!-- deck\ntitle: …\nratio: 16:9\n-->` block; slides separated by the `<!-- slide -->` marker (NOT bare `---`); `# H1` on a `<!-- slide template=title -->` = title slide; `## H2` = content-slide title; `<!-- slide template=closing -->` for the closing slide. One concept per slide. **Reuse only the study guide's `../assets/` figures.** Built to `.slides.html` via **orz-slides** for preview. The gate requires `template=title`, `template=outline` and `template=closing` slides and an objective slide. |
+| 4 | `assessment-support/<slug>.md` | **Plain Markdown, NO graphics** | Per objective, **how to design** questions/activities (assignments, discussion, quizzes, exams, projects) at the right cognitive level — guidance, **NOT a question bank**. Several parameterized question guides per objective. The gate requires the words *objective*, *question guide* and *rubric* to appear. |
 | 5 | `practice/<slug>.md` | **orz-markdown** | ~15 concrete questions instantiated from the assessment guide, covering all major objectives; each Q + worked answer in container tabs (`:::: tabs` / `::: tab`); correct, work shown. Built to `.md.html` via **orz-mdhtml** for preview. |
 | — | `concepts/course.md` | **Plain Markdown, NO graphics** | Course-wide concept map + overall summary + course-wide `## Key terms`. See §Concept maps. (**Not** a `## Keywords` dump — that is an authoring input, not a stored section.) |
 | — | `private/…` | Plain Markdown | Answer keys, full solutions, exam content, instructor notes — **PRIVATE**, never in a public folder. |
@@ -147,7 +147,7 @@ Adapts the version-pinned article **<Source>**.
 | `## Objectives` | **ordered** list | `objective.<slug>.<n>` | ordinals are identity — **inserting in the middle renumbers the ones after it**. An item MAY end with `[anchor: <slug>]` — see *Inline anchors* below; the spine lifts it off, the deliverables key on it |
 | `## Concept sequence` | **ordered** list | `concept.<slug>.<n>` | written as **sentences**, not noun phrases; the order IS the prerequisite chain |
 | `## Key terms` | unordered list | `term.<slug>` | **the vocabulary authority** — see below |
-| `## Misconceptions to surface` | unordered list | `misconception.<slug>.<n>` | **negative claims**: state the misconception, not its correction |
+| `## Misconceptions to surface` | unordered list | `misconception.<slug>.<n>` | **negative claims**: state the misconception, not its correction. A deliverable paragraph that ASSERTS one of these sentences (outside a misconceptions section, without correcting it) is blocking (`misconception-asserted`) |
 | `## Prerequisites` | unordered list | incoming prereq edges | |
 | `## Source and scope` · `## Summary` | prose | — | informational |
 
@@ -177,7 +177,8 @@ Grammar (tolerant; every part after the label is optional):
 ```
 The `[concept.x.n]` bracket links a term to the concept it belongs to. **Never guess it** — a bracket
 naming a concept that doesn't exist is a dangling link *that looks authorized*, which is worse than an
-absent one. Omit it and the gate will ask.
+absent one. Omit it: the term is still registered (without a spine parent), coverage measures it as a floor, and
+nothing flags the omission — a bracket is an assertion you make, never one the gate demands.
 
 ### What a missing spine costs you
 
@@ -264,6 +265,12 @@ inline marker:
 - On an anchored list, a declaration **must** use the `@slug` form: a positional declaration there
   would vouch for whatever block stands at that ordinal after a reorder, and is refused as
   `declaration-refused`.
+
+### Front matter renders — ship the sidecar
+
+The JSON front-matter carrier is parsed for compatibility, but orz-markdown renders it as a rule and a heading:
+the declaration becomes visible student-facing text. The gate therefore fails a deliverable that carries JSON
+front matter (`formatContractFailures`); write the sidecar `metadata/claims/<folder>/<slug>.json` instead.
 
 ### The grammar (identical in both carriers)
 

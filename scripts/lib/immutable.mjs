@@ -61,8 +61,20 @@ const REFERENCE_HEADING = /^(#{1,6})[ \t]*(references|bibliography|works cited|c
 //   - The quote MARKS are part of the region — an edit that rewrites the delimiters is just
 //     as much a fabrication as one that rewrites the words inside them.
 const MAX_INLINE_QUOTE = 600;
-const STRAIGHT_QUOTE = new RegExp(`"[^"\\n]{1,${MAX_INLINE_QUOTE}}"`, "g");
-const SMART_QUOTE = new RegExp(`“[^”\\n]{1,${MAX_INLINE_QUOTE}}”`, "g");
+// A quoted span may be HARD-WRAPPED inside its paragraph (audit finding 2: a wrapped quotation was
+// rewritten), so a single line break is allowed; a blank line — a paragraph boundary — is not, and
+// the span stays length-bounded so a stray quote mark never swallows the document. Pairs:
+// straight "…", curly “…”, German „…“, guillemets «…» / »…« / ‹…›, and single curly ‘…’ (M1) —
+// the opening ‘ is never an apostrophe, so the pair is unambiguous; the plain apostrophe is not.
+const inner = (close) => `(?:[^${close}\\n]|\\n(?![ \\t]*\\n)){1,${MAX_INLINE_QUOTE}}`;
+const STRAIGHT_QUOTE = new RegExp(`"${inner('"')}"`, "g");
+const SMART_QUOTE = new RegExp(`“${inner("”")}”`, "g");
+const LOW_HIGH_QUOTE = new RegExp(`„${inner("“")}“`, "g");
+const GUILLEMET_QUOTE = new RegExp(`«${inner("»")}»`, "g");
+const REVERSE_GUILLEMET_QUOTE = new RegExp(`»${inner("«")}«`, "g");
+const SINGLE_GUILLEMET_QUOTE = new RegExp(`‹${inner("›")}›`, "g");
+const SINGLE_CURLY_QUOTE = new RegExp(`‘${inner("’")}’`, "g");
+const QUOTE_PATTERNS = [STRAIGHT_QUOTE, SMART_QUOTE, LOW_HIGH_QUOTE, GUILLEMET_QUOTE, REVERSE_GUILLEMET_QUOTE, SINGLE_GUILLEMET_QUOTE, SINGLE_CURLY_QUOTE];
 
 // Citation shapes. Deliberately narrow: each must be unambiguous enough that freezing it
 // cannot be mistaken for freezing ordinary prose.
@@ -280,8 +292,7 @@ export function immutableRegions(text, sourceText) {
   const found = [
     ...literal,
     ...blockquoteRegions(masked),
-    ...matchRegions(masked, STRAIGHT_QUOTE, "quote"),
-    ...matchRegions(masked, SMART_QUOTE, "quote"),
+    ...QUOTE_PATTERNS.flatMap((re) => matchRegions(masked, re, "quote")),
     ...referenceSectionRegions(masked),
   ];
   for (const re of CITATION_PATTERNS) found.push(...matchRegions(masked, re, "citation"));
@@ -403,7 +414,12 @@ export function unverifiableQuotations(text, sourceText) {
     if (r.kind !== "quote") continue;
     const w = wordSeq(text.slice(r.start, r.end));
     if (w.length < MIN_QUOTE_WORDS) continue;
-    if (sources.some((src) => occursWithGap(w, src, QUOTE_GAP_BUDGET))) continue;
+    // The gap budget exists for a MARKED elision ("… [word] …"): a quotation that shows no ellipsis
+    // claims to be verbatim, and a silent deletion inside it is exactly the edit this gate refuses
+    // (design audit M2: "pure", "at standard pressure" and a verb were dropped without a mark).
+    const quoted = text.slice(r.start, r.end);
+    const budget = /…|\.\.\.|\[\s*(?:…|\.\.\.)\s*\]/.test(quoted) ? QUOTE_GAP_BUDGET : 0;
+    if (sources.some((src) => occursWithGap(w, src, budget))) continue;
     out.push({ start: r.start, end: r.end, text: text.slice(r.start, r.end), words: w.length });
   }
   return out;

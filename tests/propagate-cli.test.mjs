@@ -27,6 +27,8 @@ const git = (cwd, ...a) => spawnSync("git", a, { cwd, encoding: "utf8", env: ENV
 const read = (pkg, rel) => fs.readFileSync(path.join(pkg, rel), "utf8");
 const sha = (t) => crypto.createHash("sha256").update(t).digest("hex");
 const RENAME = ["--term", "term.melting-point", "--from", "melting point", "--to", "fusion point"];
+// --apply executes THE PLAN YOU READ: every apply is preceded by the dry run that writes it.
+const planThenApply = (pkg, out, extra = []) => { const p = cli("propagate.mjs", ["--root", pkg, "--out", out, ...RENAME]); assert.equal(p.code, 0, p.stderr); return cli("propagate.mjs", ["--root", pkg, "--out", out, ...RENAME, "--apply", ...extra]); };
 const QUOTE = '"the melting point of pure water at standard pressure is 0 °C"';
 
 function indexedPackage(t) {
@@ -60,7 +62,7 @@ test("P.1 · --apply renames in prose, keeps the QUOTATION verbatim, files a ver
   const { pkg, out } = indexedPackage(t);
   const sgBefore = read(pkg, "study-guide/melting.md");
   assert.ok(sgBefore.includes(QUOTE), "fixture must carry the direct quotation");
-  const res = cli("propagate.mjs", ["--root", pkg, "--out", out, ...RENAME, "--apply", "--authorized-by", "instructor", "--reason", "house terminology"]);
+  const res = planThenApply(pkg, out, ["--authorized-by", "instructor", "--reason", "house terminology"]);
   assert.equal(res.code, 0, res.stderr);
   const printed = JSON.parse(res.stdout);
   assert.equal(printed.action, "applied");
@@ -76,8 +78,8 @@ test("P.1 · --apply renames in prose, keeps the QUOTATION verbatim, files a ver
     const now = read(pkg, a.file);
     assert.equal(sha(now), a.fileHashAfter, `${a.file}: receipt hash must be the file's hash`);
     // `before`/`after` are the CLAIM SPAN on both sides — enough context to read months later
-    assert.ok(a.before.includes("melting point") && !a.after.includes("melting point"), `${a.claimId}: the old label left the span`);
-    assert.ok(a.after.includes("fusion point"), `${a.claimId}: the new label entered the span`);
+    assert.ok(/melting point/i.test(a.before) && !/melting point/i.test(a.after), `${a.claimId}: the old label left the span`);
+    assert.ok(/fusion point/i.test(a.after), `${a.claimId}: the new label entered the span`);
     assert.equal(a.from, "melting point"); assert.equal(a.to, "fusion point");
   }
   assert.equal(receipt.offsetBasis, "before-text");
@@ -106,9 +108,9 @@ test("P.1 · --apply renames in prose, keeps the QUOTATION verbatim, files a ver
 
 test("P.2 · a second --apply is a no-op: nothing to rename, nothing committed", (t) => {
   const { pkg, out } = indexedPackage(t);
-  assert.equal(cli("propagate.mjs", ["--root", pkg, "--out", out, ...RENAME, "--apply"]).code, 0);
+  assert.equal(planThenApply(pkg, out).code, 0);
   const head = git(pkg, "rev-parse", "HEAD").stdout.trim();
-  const again = cli("propagate.mjs", ["--root", pkg, "--out", out, ...RENAME, "--apply"]);
+  const again = planThenApply(pkg, out);
   assert.equal(again.code, 0, again.stderr);
   const printed = JSON.parse(again.stdout);
   assert.equal(printed.applied, 0);
@@ -118,7 +120,7 @@ test("P.2 · a second --apply is a no-op: nothing to rename, nothing committed",
 test("P.3 · --apply refuses an uncommitted tree — an automatic edit never sweeps up the author's WIP", (t) => {
   const { pkg, out } = indexedPackage(t);
   fs.appendFileSync(path.join(pkg, "practice/melting.md"), "\nWork in progress.\n");
-  const res = cli("propagate.mjs", ["--root", pkg, "--out", out, ...RENAME, "--apply"]);
+  const res = planThenApply(pkg, out);
   assert.equal(res.code, 3);
   assert.match(res.stderr, /uncommitted/);
   assert.ok(read(pkg, "study-guide/melting.md").includes("melting point"), "nothing was applied");
@@ -126,7 +128,7 @@ test("P.3 · --apply refuses an uncommitted tree — an automatic edit never swe
 
 test("P.4 · the documented REVISION LOOP closes it: gate refuses → impact → attested review → refresh → re-index → gate passes", (t) => {
   const { pkg, out, dir } = indexedPackage(t);
-  assert.equal(cli("propagate.mjs", ["--root", pkg, "--out", out, ...RENAME, "--apply"]).code, 0);
+  assert.equal(planThenApply(pkg, out).code, 0);
   const json = path.join(dir, "qa.json");
 
   // (1) the gate REFUSES: the components changed after the last coherence review — exactly the

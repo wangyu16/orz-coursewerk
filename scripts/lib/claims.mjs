@@ -316,6 +316,8 @@ function parseBlocks(body, base = 0) {
   const blocks = [];
   let section = "";
   let ordinal = 0;
+  const seenSections = new Map();
+  let ambiguousSection = false;
   let buf = []; // line spans: {text, start, end}
   let bufIsItem = false;
   let inFence = false;
@@ -338,6 +340,7 @@ function parseBlocks(body, base = 0) {
       anchor: `${section || "body"}#${ordinal}`,
       section,
       slug,
+      ambiguous: ambiguousSection,
       text,
       // trimStart's width is exactly what the leading whitespace cost, so the invariant
       // `src.slice(offset, offset + text.length) === text` holds by construction.
@@ -367,7 +370,12 @@ function parseBlocks(body, base = 0) {
     if (heading) {
       flush();
       section = slugify(heading[1], "section");
-      ordinal = 0; // ordinals are per-section: editing section A cannot move section B's anchors
+      // M3 (design audit): a REPEATED heading slug makes every `<slug>#<n>` under it ambiguous; the
+      // second occurrence continues the ordinals (never restarts them) so two blocks can never share
+      // an anchor, and its blocks are marked so a declaration cannot bind to them by accident.
+      seenSections.set(section, (seenSections.get(section) ?? 0) + 1);
+      ambiguousSection = seenSections.get(section) > 1;
+      if (!ambiguousSection) ordinal = 0; // ordinals are per-section: editing section A cannot move section B's anchors
       continue;
     }
 
@@ -436,6 +444,33 @@ export function artifactAnchors(root) {
     out.push({ file: rel, anchors: strSet(blocks.flatMap((b) => (b.slug ? [b.anchor, `@${b.slug}`] : [b.anchor]))) });
   }
   return out;
+}
+
+/**
+ * M3 (design audit): declarations that address a block under a REPEATED heading slug. Ordinals
+ * continue across the repeat so anchors stay unique, and such blocks are never bound by position
+ * (see parseBlocks); this names the refused declarations for the gate. A repeated heading with no
+ * declaration under it is ordinary authoring and is not reported.
+ * @returns {Array<{file:string, section:string, anchor:string, count:number}>}
+ */
+export function duplicateSections(root) {
+  const out = [];
+  for (const rel of ARTIFACT_FOLDERS.flatMap((folder) => markdownIn(root, folder))) {
+    const fileText = readText(root, rel);
+    if (fileText == null) continue;
+    const base = frontMatterLength(fileText);
+    const blocks = parseBlocks(fileText.slice(base), base);
+    const ambiguous = new Map(blocks.filter((b) => b.ambiguous).map((b) => [b.anchor, b]));
+    if (!ambiguous.size) continue;
+    const declarations = artifactDeclarations({ fileText, sidecarText: readText(root, claimSidecarPath(rel)) });
+    for (const decl of declarations) {
+      const b = ambiguous.get(decl.anchor);
+      if (!b) continue;
+      const count = blocks.filter((x, i, arr) => x.section === b.section && (i === 0 || arr[i - 1].section !== x.section)).length;
+      out.push({ file: rel, section: b.section, anchor: decl.anchor, count });
+    }
+  }
+  return out.sort((a, b) => byString(a.file, b.file) || byString(a.anchor, b.anchor));
 }
 
 /**
@@ -712,7 +747,8 @@ export function extractClaims(root, terms) {
     const blocks = parseBlocks(fileText.slice(base), base);
     // A declaration may address a block positionally (`<section>#<n>`) or by its inline slug
     // (`@<slug>`); the slug form travels with the prose, so the author never has to move it.
-    const blockByAnchor = new Map(blocks.flatMap((b) => (b.slug ? [[b.anchor, b], [`@${b.slug}`, b]] : [[b.anchor, b]])));
+    // a block under a repeated heading is never bindable by position (M3); its @slug still is
+    const blockByAnchor = new Map(blocks.flatMap((b) => (b.slug ? [...(b.ambiguous ? [] : [[b.anchor, b]]), [`@${b.slug}`, b]] : (b.ambiguous ? [] : [[b.anchor, b]]))));
     const claimedAnchors = new Set();
 
     // 1. DECLARED — authoritative. The grammar and the sidecar-beats-front-matter precedence rule

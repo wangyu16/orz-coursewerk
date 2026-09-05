@@ -41,7 +41,10 @@ const carrierPreview = path.join(work, "preview");
 // Fail closed: packing is a release operation, so it may never bypass the
 // Coursewerk contract, quality checks, or mode-independent assurance kernel.
 const checkScript = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "check_oer.mjs");
-const checkArgs = [checkScript, "--package", pkg, "--for-discovery", "--json", qaJson];
+// `--no-commit`: a RELEASE check must not write a commit into the package (L2, design audit) —
+// the queue it emits is a report of this run, and a commit here made every receipt read
+// acceptedGitHead ≠ currentGitHead.
+const checkArgs = [checkScript, "--package", pkg, "--for-discovery", "--json", qaJson, "--no-commit"];
 if (fs.existsSync(inputsDir)) checkArgs.push("--inputs", inputsDir);
 const check = spawnSync(process.execPath, checkArgs, { encoding: "utf8" });
 if (check.status !== 0) {
@@ -90,9 +93,13 @@ for (const f of walk(pkg)) {
     dropped += 1; // never ship the framework shell
     continue;
   }
+  // The review queue is a report of the last gate run, not course content (L6).
+  if (relPath === "metadata/REVIEW_QUEUE.json") { dropped += 1; continue; }
   const dest = path.join(staged, relPath);
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.copyFileSync(f, dest);
+  // Fixed mtimes: two packs of identical content give identical archives (L1).
+  fs.utimesSync(dest, new Date("2000-01-01T00:00:00Z"), new Date("2000-01-01T00:00:00Z"));
   files += 1;
 }
 
@@ -103,7 +110,7 @@ const zipPath = path.join(outDir, `${base}.alembic.zip`);
 fs.rmSync(zipPath, { force: true });
 
 // zip from inside the staged dir so alembic.json sits at the archive root
-const res = spawnSync("zip", ["-r", "-q", zipPath, "."], { cwd: staged, encoding: "utf8" });
+const res = spawnSync("zip", ["-r", "-q", "-X", zipPath, "."], { cwd: staged, encoding: "utf8" });
 fs.rmSync(staged, { recursive: true, force: true });
 if (res.status !== 0) {
   fs.rmSync(work, { recursive: true, force: true });
@@ -113,6 +120,23 @@ if (res.status !== 0) {
 
 const size = fs.statSync(zipPath).size;
 const qa = JSON.parse(fs.readFileSync(qaJson, "utf8"));
+// H4 (design audit): a primary source compared by human attestation is a SELF-REPORT — three strings,
+// no evidence — and it used to switch both source scans off silently. Release now requires the
+// operator to acknowledge it explicitly, and the evaluation names it.
+const attestedPrimaries = qa.verbatim?.corpus?.attestedSourceIds || [];
+if (attestedPrimaries.length && !process.argv.includes("--accept-attested-sources")) {
+  console.error(`pack: primary source(s) ${attestedPrimaries.join(", ")} are compared by human attestation, not by the automatic scan. Re-run with --accept-attested-sources to release on that basis; the evaluation will say so.`);
+  fs.rmSync(work, { recursive: true, force: true });
+  fs.rmSync(zipPath, { force: true });
+  process.exit(2);
+}
+let overridesByBasisLine = "none recorded";
+try {
+  const ov = JSON.parse(fs.readFileSync(path.join(pkg, "metadata", "OVERRIDES.json"), "utf8"));
+  const counts = {};
+  for (const o of ov.overrides || []) counts[o.basis] = (counts[o.basis] || 0) + 1;
+  overridesByBasisLine = Object.keys(counts).length ? Object.entries(counts).map(([b, n]) => `${b}: ${n}`).join(", ") : "none recorded";
+} catch { /* no overrides */ }
 const carriers = rebuiltCarriers;
 const assuranceWarnings = qa.assurance?.warnings || [];
 const persistedCarrierReceipt = path.join(outDir, `${base}.carriers.json`);
@@ -123,6 +147,14 @@ const packageTreeHash = digestJson((qa.coherence?.graph?.components || []).map((
 const evaluationPath = path.join(outDir, `${base}.evaluation.md`);
 const evaluation = [
   "# Coursewerk Release Evaluation",
+  "",
+  "## Measured vs declared (what the gate could NOT verify)",
+  `- Source comparison: ${attestedPrimaries.length ? `HUMAN-ATTESTED for ${attestedPrimaries.join(", ")} (released with --accept-attested-sources)` : "automatic for every primary source"}`,
+  `- Key-fact critique: mode ${qa.keyFactReview?.review?.mode || "n/a"}, reviewer ${qa.keyFactReview?.review?.reviewer?.modelId || "n/a"} — its independence is declared by the reviewer and bound to the blind bundle digest; it is not observed`,
+  `- Overrides by basis (authorized divergences from the source): ${overridesByBasisLine}`,
+  `- Claims: ${qa.semantic?.claims ?? "n/a"} indexed, of which ${qa.semantic?.declaredClaims ?? "n/a"} declared with provenance and ${qa.semantic?.scanFoundClaims ?? "n/a"} found only by the deterministic scan (no spine or source provenance)`,
+  "- Arithmetic inside answer keys is not verified; only cross-artifact agreement and physical range are",
+  `- Coherence ledger action: ${qa.coherence?.acceptedState?.action || "n/a"}`,
   "",
   `- Package: ${title}`,
   `- Critical issues: ${qa.criticalTotal}`,

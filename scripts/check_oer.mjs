@@ -15,20 +15,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
-import {
-  repoForPath,
-  isCarrierPath,
-  normalizeLicense,
-  isOpenLicense,
-  ALL_RIGHTS_RESERVED,
-  chapterStudyGuidePath,
-  SCHEMA_VERSION,
-  SLUG_PATTERN,
-  ROOT_FILE_ALLOWLIST,
-  FOLDER_REPO,
-  artifactDeclarationReport,
-  claimSidecarPath,
-} from "./lib/contract.mjs";
+import { repoForPath, isCarrierPath, normalizeLicense, isOpenLicense, ALL_RIGHTS_RESERVED, chapterStudyGuidePath, SCHEMA_VERSION, SLUG_PATTERN, ROOT_FILE_ALLOWLIST, FOLDER_REPO, artifactDeclarationReport, claimSidecarPath, frontMatterLength } from "./lib/contract.mjs";
 import { buildSourceIndex, scanText, VERBATIM } from "./lib/verbatim.mjs";
 import { unverifiableQuotations } from "./lib/immutable.mjs";
 import { auditAssurance } from "./lib/assurance.mjs";
@@ -36,11 +23,12 @@ import { auditCoherence, claimImpact } from "./lib/coherence.mjs";
 import { auditSourceRecord } from "./lib/source_record.mjs";
 import { auditKeyFactReview } from "./lib/key_fact_review.mjs";
 import { auditVisualReview } from "./lib/visual_review.mjs";
-import { artifactAnchors, matchClaims, anchorCoverage, positionalDeclarationsOnAnchoredItems } from "./lib/claims.mjs";
+import { artifactAnchors, matchClaims, anchorCoverage, positionalDeclarationsOnAnchoredItems, duplicateSections } from "./lib/claims.mjs";
 import { danglingSpineRefs } from "./lib/spine.mjs";
 import { buildQueue, REVIEW_QUEUE_PATH } from "./lib/escalation.mjs";
 import { scanConsistency, rangeAudit } from "./lib/consistency.mjs";
 import { computeSemanticIndex, loadSemanticIndex, auditIndexFreshness, CLAIMS_PATH } from "./lib/semantic_index.mjs";
+import { parseSections } from "./lib/terms.mjs";
 import { isAuthorizedDivergence, OVERRIDES_PATH } from "./lib/overrides.mjs";
 import { commitOutput, outputGitState } from "./lib/output_git.mjs";
 import { md as orzMarkdown } from "orz-markdown";
@@ -69,6 +57,7 @@ const rel = (f) => path.relative(pkg, f).replaceAll(path.sep, "/");
 const read = (f) => fs.readFileSync(f, "utf8");
 const pct = (n, d) => (d === 0 ? 100 : Number(((n / d) * 100).toFixed(2)));
 
+const symlinksInPackage = [];
 function walk(root) {
   const out = [];
   if (!fs.existsSync(root)) return out;
@@ -77,6 +66,10 @@ function walk(root) {
     // revision evidence, not Alembic package content, and must never enter QA.
     if (e.name === ".git" || e.name === ".gitignore" || e.name === ".DS_Store") continue;
     const full = path.join(root, e.name);
+    // A symbolic link is not a package-owned file: its target can change or lie outside the
+    // package, and every walker (bindings, bundle, index) would see a different thing (audit
+    // finding 12). Refused as a layout error; never followed.
+    if (e.isSymbolicLink()) { symlinksInPackage.push(full); continue; }
     if (e.isDirectory()) out.push(...walk(full));
     else if (e.isFile()) out.push(full);
   }
@@ -174,6 +167,7 @@ function manifestAudit() {
 
 function layoutAudit(chapters) {
   const errors = [];
+  for (const link of symlinksInPackage) errors.push(`${rel(link)}: symbolic links are not package files (not followed) — replace it with the file itself`);
   const warnings = [];
   // every file must resolve to a repo; carriers must not be shipped / must be public
   for (const f of allFiles) {
@@ -439,6 +433,11 @@ function formatContractAudit() {
       ])
         if (!re.test(text)) fail.push({ file: name, issue: `course concept map is missing its \`## ${label}\` section (format-contracts/deliverables.md §Concept maps)` });
     } else if (t === "concepts") {
+      // M5 (design audit): the gate accepted "## Objectives for this chapter" by prefix while the
+      // parser keys the EXACT heading — so the spine minted zero objectives and the gate said
+      // nothing. Same parser, same key; a near-miss is reported as what it is.
+      const sections = parseSections(text);
+      const keyOf = (label) => [...parseSections(`## ${label}\n`).keys()][0];
       for (const [label, re] of [
         ["Source and scope", /^##+\s+source/im],
         ["Summary", /^##+\s+summary/im],
@@ -447,8 +446,11 @@ function formatContractAudit() {
         ["Concept sequence", /^##+\s+concept sequence/im],
         ["Key terms", /^##+\s+key terms/im],
         ["Misconceptions to surface", /^##+\s+misconceptions/im],
-      ])
-        if (!re.test(text)) fail.push({ file: name, issue: `chapter concept map is missing its \`## ${label}\` section (format-contracts/deliverables.md §Concept maps)` });
+      ]) {
+        if (sections.has(keyOf(label))) continue;
+        if (re.test(text)) fail.push({ file: name, issue: `chapter concept map heading is a NEAR-MISS of \`## ${label}\` — the spine parser keys the exact heading, so this section mints nothing; title it exactly` });
+        else fail.push({ file: name, issue: `chapter concept map is missing its \`## ${label}\` section (format-contracts/deliverables.md §Concept maps)` });
+      }
     }
     // A `## Keywords` DUMP IS FORBIDDEN in either map. It is an authoring INPUT, not a stored section:
     // two vocabulary lists in one document are the same fact in two places, they drift, and nothing says
@@ -456,6 +458,10 @@ function formatContractAudit() {
     // because aliases — which a bare dump has no room for — are what make a rename detectable at all.
     if (t === "concepts" && /^##+\s+keywords?\s*$/im.test(text))
       fail.push({ file: name, issue: "concept map has a `## Keywords` section: promote the keywords into `## Key terms` with aliases + gloss (format-contracts/deliverables.md §Concept maps)" });
+    // H7 (design audit): a JSON front-matter block is rendered by orz-markdown as a rule + heading —
+    // the declaration becomes visible student-facing text. The sidecar carrier is the shippable one.
+    if (frontMatterLength(text) > 0)
+      fail.push({ file: name, issue: "declarations in JSON front matter render in the carrier as visible text; move them to the sidecar metadata/claims/<folder>/<slug>.json" });
     if (t === "study-guide") {
       if (!/learning objectives?/i.test(text)) fail.push({ file: name, issue: "study guide is missing learning objectives" });
       if (!/^##\s+/m.test(text)) fail.push({ file: name, issue: "study guide needs section-level H2 content" });
@@ -528,7 +534,7 @@ function formatContractAudit() {
       const text = types.get(top);
       if (text == null) continue;
       const tagged = new Set();
-      for (const m of text.matchAll(/\bObjective\s+(\d[\w.-]*)/gi)) tagged.add(m[1].replace(/[.-]+$/, ""));
+      for (const m of text.matchAll(/\bObjective\s+(\d[\w.-]*)(?![\w.-]*\s+of\s+the\b)/gi)) tagged.add(m[1].replace(/[.-]+$/, ""));
       for (const m of text.matchAll(/\bobjective\.(?:[\w-]+\.)*(\d+)\b/gi)) tagged.add(m[1]);
       for (const objective of tagged) if (!declared.has(objective)) fail.push({ file: `${top}/${slug}.md`, issue: `deliverable tags undeclared objective ${objective} (not in concepts/${slug}.md \`## Objectives\`)` });
     }
@@ -946,8 +952,13 @@ function coverageAudit(fresh) {
   // DECLARED: M2 mints `spineRefs: []` for every scan-found claim and never invents one, so "no
   // claim references it" and "no DECLARED claim references it" are the same set — read off the
   // claim record rather than re-deriving M2's declared/scan split from `provenanceDeclared`.
+  // What counts as TEACHING an objective: a claim that asserts something under it — a fact, a
+  // definition, an answer key, a derived/procedure step. NOT a claim of type `objective`: that is
+  // the study guide RESTATING the objective ("1. State the melting point…"), and a restatement
+  // proves nothing was taught. Counting it let a package drop every teaching of an objective and
+  // still pack at coverage 2/2 (design audit H1, 2026-09-05).
   const referenced = new Set(
-    claims.flatMap((c) => (Array.isArray(c.spineRefs) ? c.spineRefs : [])),
+    claims.filter((c) => c.type !== "objective").flatMap((c) => (Array.isArray(c.spineRefs) ? c.spineRefs : [])),
   );
 
   // "Does this chapter's prose use this term?" is M2's question, ALREADY ANSWERED and STORED in
@@ -1327,7 +1338,9 @@ function reproducedQuotationBody(regionText) {
 
 function quotationFindings(verbatim) {
   if (!verbatim?.ran || !Array.isArray(verbatim.sourceTexts) || verbatim.sourceTexts.length === 0) return [];
-  if ((verbatim.corpus?.attestedSourceIds?.length ?? 0) > 0) return [];
+  // An attested (human-compared) primary alongside automatic texts used to switch this scan OFF
+  // entirely (design audit H4: one self-reported string disabled both source gates). The scan now
+  // runs against whatever automatic texts exist; the attested sources are reported, not trusted.
   const findings = [];
   for (const f of deliverableFiles) {
     for (const hit of unverifiableQuotations(read(f), verbatim.sourceTexts)) {
@@ -1620,6 +1633,99 @@ function revisionFindings(stored, fresh) {
  * (`revisionFindings`) is the one that needs BOTH, and it is what makes the stored index more than
  * a file nobody reads.
  */
+/**
+ * H6 (design audit): reordering `## Objectives` silently RE-PARENTS every declared claim, because
+ * spine ids are ordinal and sidecars hold literal ids — `objective.melting.1` quietly becomes
+ * "Explain why…" while the melting fact, quote and answer keys still hang under it. Compare the
+ * STORED spine to the fresh one per node id: a label that moved under an unchanged id is blocking
+ * until the instructor either restores the order or re-declares the claims under it.
+ */
+function spineDriftFindings(stored, fresh) {
+  const before = stored?.spine?.index?.nodes;
+  if (!Array.isArray(before)) return [];
+  const norm = (label) => String(label ?? "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  const byId = new Map(before.map((n) => [n.id, n]));
+  const referenced = new Set((fresh.claims.claims ?? []).flatMap((c) => (Array.isArray(c.spineRefs) ? c.spineRefs : [])));
+  const out = [];
+  for (const node of fresh.spine.nodes ?? []) {
+    const old = byId.get(node.id);
+    if (!old || norm(old.label) === norm(node.label)) continue;
+    if (!referenced.has(node.id)) continue; // nothing declared under it — nothing was re-parented
+    out.push({
+      kind: "spine-relabeled",
+      severity: "blocking",
+      evidence: [
+        `${node.id} now reads "${node.label}" but the accepted spine had "${old.label}" — the ordinals of \`## ${node.kind === "objective" ? "Objectives" : "Concept sequence"}\` moved, ` +
+          "so every claim declared under this id now hangs under a different statement (silent re-parenting).",
+        "Restore the order, or re-declare the affected claims under the ids that now carry their statements, then re-index.",
+      ],
+    });
+  }
+  return out;
+}
+
+/**
+ * M10 (design audit): misconception nodes were minted and `misconception-asserted` was a blocking
+ * queue kind — with no producer. A claim whose text contains the map's own misconception sentence
+ * asserts it; that is the one thing a misconception list exists to catch.
+ */
+function misconceptionFindings(fresh) {
+  const norm = (t) => String(t ?? "").toLowerCase().replace(/[*_`~>#]/g, "").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  const out = [];
+  const nodes = (fresh.spine.nodes ?? []).filter((n) => n.kind === "misconception");
+  if (!nodes.length) return out;
+  for (const f of deliverableFiles) {
+    if (rel(f).startsWith("concepts/")) continue; // the map LISTS misconceptions; that is its job
+    // paragraph by paragraph: the sentence is prose, not necessarily a claim, and the exemption
+    // ("not"/"wrong"/"myth" — the package CORRECTING it) must be judged on the same paragraph.
+    // A paragraph under a heading that names misconceptions is the package surfacing them.
+    let underMisconceptionHeading = false;
+    for (const para of read(f).split(/\n[ \t]*\n/)) {
+      const heading = /^\s{0,3}#{1,6}\s+(.*)$/m.exec(para);
+      if (heading) underMisconceptionHeading = /misconception|myth|common (?:error|mistake)/i.test(heading[1]);
+      if (underMisconceptionHeading) continue;
+      const text = norm(para);
+      for (const node of nodes) {
+        const needle = norm(node.label);
+        if (needle.split(" ").length < 4 || !text.includes(needle)) continue;
+        if (/\b(?:not|never|wrong|false|myth|misconception|incorrect|contrary|mistaken)\b/i.test(para)) continue;
+        out.push({
+          kind: "misconception-asserted",
+          severity: "blocking",
+          evidence: [`${rel(f)} asserts the map's own misconception ${node.id}: "${node.label}"`, "State the misconception only to correct it; prose that asserts it teaches it."],
+        });
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * M3 (design audit): two sections with the same slug make `<slug>#<n>` ambiguous and a declaration
+ * silently bound to the LAST one. Reported, and (in claims.mjs) the ambiguous blocks are refused
+ * for binding.
+ */
+function duplicateSectionFindings() {
+  return duplicateSections(pkg).map((d) => ({
+    kind: "duplicate-section",
+    evidence: [`${d.file}: a declaration names "${d.anchor}", a block under a heading slug ("${d.section}") that occurs ${d.count} times in the file — it is REFUSED rather than bound to whichever section came last. Retitle one heading, or address the block by an inline [anchor: slug].`],
+  }));
+}
+
+/**
+ * M4 (design audit): an override naming a claim that exists in neither the stored nor the fresh
+ * index is dangling — recorded for a typo'd id, or stranded when its block's anchor moved.
+ */
+function overrideFindings(stored, fresh) {
+  const { overrides } = readOverrides();
+  if (!overrides) return [];
+  const known = new Set([...(stored.claims.index?.claims ?? []), ...(fresh.claims.claims ?? [])].map((c) => c?.id).filter(Boolean));
+  return (overrides.overrides ?? []).filter((o) => o?.claimId && !known.has(o.claimId)).map((o) => ({
+    kind: "dangling-override",
+    evidence: [`${OVERRIDES_PATH} authorizes ${o.claimId}, but no claim with that id exists — the id was mistyped, or the claim's anchor moved and it was re-minted. The divergence it authorized is UNPROTECTED until the entry names the current id.`],
+  }));
+}
+
 function anchorFindings() {
   return anchorCoverage(pkg).map((f) => ({
     kind: "anchor-coverage",
@@ -1667,7 +1773,10 @@ function semanticAudit(verbatim) {
   // the author mid-sentence — a whitespace reflow must still cost ZERO flags (the headline null-edit
   // guarantee). The strand is the state git calls clean: "every file is committed" while the index
   // describes some earlier package. No output git = no way to tell the two apart = not queued.
-  const outputGit = outputGitState(pkg);
+  // "Committed" is asked of the paths that DEFINE the strand — the three index artifacts, the
+  // concept maps and the deliverables — not of the whole tree: a scratch note elsewhere must not
+  // hide a committed strand of the index forever (audit finding 10).
+  const outputGit = outputGitState(pkg, { paths: ["metadata/CLAIMS.json", "metadata/SPINE.json", "metadata/TERMS.json", "concepts", "study-guide", "slides", "assessment-support", "practice"] });
   const committed = outputGit.available && outputGit.clean;
   const freshnessFindings = !freshness.fresh && !movement && committed
     ? [{
@@ -1693,6 +1802,10 @@ function semanticAudit(verbatim) {
     // asked as `declaration-refused`. Referential: they read `fresh` and the files, never the store.
     ...anchorFindings(),
     ...declarationSupportFindings(),
+    ...duplicateSectionFindings(),
+    ...overrideFindings(stored, fresh),
+    ...spineDriftFindings(stored, fresh),
+    ...misconceptionFindings(fresh),
     ...spineRefFindings(fresh),
     ...derivedFromFindings(fresh),
     ...orphanClaimFindings(fresh),
@@ -1737,6 +1850,7 @@ function semanticAudit(verbatim) {
     // A stored artifact that is CORRUPT is a real fault and must never read as "no claims" — that
     // would be a clean bill of health manufactured by a parse error.
     indexErrors: stored.errors,
+    indexComplete: stored.complete,
     // G15h: byte-equality of each stored artifact with a fresh recompute. `fresh:false` with
     // movement is mid-edit; `fresh:false` without movement is the silent strand (queued above).
     freshness: { ...freshness, committed },
@@ -1744,6 +1858,8 @@ function semanticAudit(verbatim) {
     spineNodes: fresh.spine.nodes.length,
     terms: fresh.terms.terms.length,
     claims: fresh.claims.claims.length,
+    declaredClaims: fresh.claims.claims.filter((c) => c.provenanceDeclared).length,
+    scanFoundClaims: fresh.claims.claims.filter((c) => !c.provenanceDeclared).length,
     // INFORMATION, NOT AN ACCUSATION — and a FLOOR, not a score. Only DECLARED claims carry
     // `spineRefs`, so an objective taught in undeclared prose measures as UNCOVERED: this number
     // rises as authors declare, and it is unmeasurable at all without traceability. Reported with
@@ -1872,6 +1988,7 @@ if (!visualReview.ready) discoverBlockers.push(`visual review has ${visualReview
 // require the index; while authoring (no --for-discovery) the layer stays additive-when-off (spec §6.2).
 if (forDiscovery && !semantic.ran) discoverBlockers.push("no stored semantic index (metadata/{CLAIMS,SPINE,TERMS}.json) — the TRUST layers (consistency, range, unverifiable-quotation) and the CONTROL coverage audit cannot run at release; run `npm run index:semantic` before release");
 if (semantic.ran && semantic.indexErrors.length) discoverBlockers.push(`stored semantic index is corrupt: ${semantic.indexErrors.join("; ")}`);
+if (semantic.ran && !semantic.indexComplete) discoverBlockers.push("stored semantic index is INCOMPLETE (one of metadata/CLAIMS.json, SPINE.json, TERMS.json is missing) — run `npm run index:semantic`");
 // G15h: at release the accepted index must BE the package's index. A stale artifact means the
 // attested baseline describes some other state of the package; re-index and re-attest.
 if (semantic.ran && semantic.freshness && !semantic.freshness.fresh)

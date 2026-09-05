@@ -596,6 +596,9 @@ test("11 · an edit is never auto-applied inside a direct QUOTATION", (t) => {
   // and require the quotation to survive verbatim. The full receipt contract is tests/propagate-cli.
   git(pkg, "-c", "user.email=t@t", "-c", "user.name=t", "add", "-A");
   git(pkg, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "edits before propagation");
+  const planned = cli("propagate.mjs", ["--root", pkg, "--out", path.join(pkg, "..", "reports"),
+    "--term", "term.melting-point", "--from", "melting point", "--to", "fusion point"]);
+  assert.equal(planned.code, 0, planned.stderr);
   const propagated = cli("propagate.mjs", ["--root", pkg, "--out", path.join(pkg, "..", "reports"),
     "--term", "term.melting-point", "--from", "melting point", "--to", "fusion point", "--apply"]);
   assert.equal(propagated.code, 0, propagated.stderr);

@@ -47,7 +47,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "8e958d1ebe564c0e632f560be3ac793230574e14cf908163b00fcdadb7ab9b18"
+      "hash": "e68c6a2d13497d17ebd030c189b8ed3117fc26d3ceaf7a1e9cc2f0fc0b96b714"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -72,6 +72,12 @@
       "path": "docs/authoring-guidelines.md",
       "type": "documentation",
       "hash": "9b5fdf3916240b680727765a983ad009079038f8e95234540527b309d2b090d8"
+    },
+    {
+      "id": "repo:docs/closed-loop-rounds.md",
+      "path": "docs/closed-loop-rounds.md",
+      "type": "documentation",
+      "hash": "f714eb4886b5c60fae3e437b7288252797c414184d85b557c9c5d183ad41806f"
     },
     {
       "id": "repo:docs/coherence-index.md",
@@ -113,7 +119,7 @@
       "id": "repo:docs/walkthrough.md",
       "path": "docs/walkthrough.md",
       "type": "documentation",
-      "hash": "2deacc904bf06231cbb67a8a010b219e7bfea71505429d65b08d6ad20f85551d"
+      "hash": "9765cafb464f87bb97da946bddf94349144f8c3eec3dc4ff2828bd1e86027f06"
     },
     {
       "id": "repo:docs/wikipedia-science-topic.md",
@@ -131,7 +137,7 @@
       "id": "repo:format-contracts/deliverables.md",
       "path": "format-contracts/deliverables.md",
       "type": "documentation",
-      "hash": "41ae65e61e3edb8780cabd4acf3215822149f09eed3ea89d608846e0d00073c3"
+      "hash": "6bf90790effe0dd7c3dcc319b2bf501eb0a881945068766fedeca3f3106cff49"
     },
     {
       "id": "repo:GEMINI.md",
@@ -161,7 +167,7 @@
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "8d68f43afd35dad2aad181bf02d794c932daa68d2f86540530cb57076ba691fc"
+      "hash": "438b8873d087c0f636f6595aff7eafa07d47d3cfc01050be5e1831f572d43752"
     },
     {
       "id": "repo:README.md",
@@ -221,7 +227,7 @@
       "id": "repo:scripts/check_oer.mjs",
       "path": "scripts/check_oer.mjs",
       "type": "executable",
-      "hash": "a279cb43bfc9b2c159bd15b9fcfeda44d1500637f588cf8c804fe74b4060b946"
+      "hash": "db57da7fd215abe682f63f1bbd76117f8af2d8bc8860f76d95e4dd298d2dada3"
     },
     {
       "id": "repo:scripts/coursewerk_impact.mjs",
@@ -317,13 +323,13 @@
       "id": "repo:scripts/lib/blind_bundle.mjs",
       "path": "scripts/lib/blind_bundle.mjs",
       "type": "kernel",
-      "hash": "8e553d50fd163598d1f7205e1d1183c9e5e75d4837fead2ceef7b54157eb5568"
+      "hash": "262301c40199126165d0fbe33b47f708a422574456f45be172ca53c0d892493d"
     },
     {
       "id": "repo:scripts/lib/claims.mjs",
       "path": "scripts/lib/claims.mjs",
       "type": "kernel",
-      "hash": "22ab411543496a29a5e1c9106e369091f82caed713c73c188804b77b97c96423"
+      "hash": "5450bfaec9c7484a9f7f2ae9425b884aa820ffd361fbcee7a6900a7601893f04"
     },
     {
       "id": "repo:scripts/lib/classify.mjs",
@@ -335,13 +341,13 @@
       "id": "repo:scripts/lib/coherence.mjs",
       "path": "scripts/lib/coherence.mjs",
       "type": "kernel",
-      "hash": "267c615c201a0812653919e81c9293515b63e492c95811a5fda3c45183db1793"
+      "hash": "175a4585373acdb45a0a0adf829fa83a248761892fcfe9316b75966fbd352ab2"
     },
     {
       "id": "repo:scripts/lib/consistency.mjs",
       "path": "scripts/lib/consistency.mjs",
       "type": "kernel",
-      "hash": "2194dd96e4326f97107578f3bd8f384acc3e6be9c86bf67c4e8ecc32f34a8d42"
+      "hash": "ef3c380ec14d18656cb170d9c91023fa640ba3f6857c6b8625d6808099ad3ec7"
     },
     {
       "id": "repo:scripts/lib/contract.mjs",
@@ -353,7 +359,7 @@
       "id": "repo:scripts/lib/escalation.mjs",
       "path": "scripts/lib/escalation.mjs",
       "type": "kernel",
-      "hash": "9a50212a3027ec6b4069bf71890197daa5125453b90c03d759c163d71960becb"
+      "hash": "588d89ff09172c3e01bb024ea851d7510d8429b163bfd7b0ab5c5b30b7e9911b"
     },
     {
       "id": "repo:scripts/lib/fingerprint.mjs",
@@ -365,7 +371,7 @@
       "id": "repo:scripts/lib/immutable.mjs",
       "path": "scripts/lib/immutable.mjs",
       "type": "kernel",
-      "hash": "5a47d0b88df9145b66416682a4e99b3de5a529f72fe48b57ae32a174e229cdbf"
+      "hash": "14a2716bc12fa341ea1bfa7374ab77f6fc50d7a2909db4b143cb508f6978eaa7"
     },
     {
       "id": "repo:scripts/lib/key_fact_checks.mjs",
@@ -377,19 +383,19 @@
       "id": "repo:scripts/lib/key_fact_review.mjs",
       "path": "scripts/lib/key_fact_review.mjs",
       "type": "kernel",
-      "hash": "2b8f909cb93de860fca15cd1833b52cb91c4b15326466c862f29dbc98bf3466f"
+      "hash": "ab14668634345161da10826aaddd623350fed811d6aa4a0229e6d65d472ad3e9"
     },
     {
       "id": "repo:scripts/lib/output_git.mjs",
       "path": "scripts/lib/output_git.mjs",
       "type": "kernel",
-      "hash": "9c308d2b4ecb0b3853977a3d8a3cee92751de89ed2e29703dddd4d9067723f59"
+      "hash": "ad69d82e735d07db7d294b88eb84e53e6f1cc3eef6fefa53158cba28765c589e"
     },
     {
       "id": "repo:scripts/lib/overrides.mjs",
       "path": "scripts/lib/overrides.mjs",
       "type": "kernel",
-      "hash": "7319e55c2dfbf9f3290d76ade8b8163d5bc8a63691acfae78d4744904caa6d98"
+      "hash": "e3f6361911cf8646886165e1ba3b76d42fb12dabec5f8e97fc5431a649a5a6a8"
     },
     {
       "id": "repo:scripts/lib/pre_ingestion.mjs",
@@ -401,7 +407,7 @@
       "id": "repo:scripts/lib/propagate.mjs",
       "path": "scripts/lib/propagate.mjs",
       "type": "kernel",
-      "hash": "25f932e57b6a2ae4f7ae7f796b96a73c3d6e1f411a0d74af75a57eff3d76179f"
+      "hash": "8de57be36c8b0eb48deb0793c6d909f0736e7808b17587cc89f55f1df77ae8b7"
     },
     {
       "id": "repo:scripts/lib/rights_preflight.mjs",
@@ -413,7 +419,7 @@
       "id": "repo:scripts/lib/semantic_index.mjs",
       "path": "scripts/lib/semantic_index.mjs",
       "type": "kernel",
-      "hash": "6c8e8795333502e77f53122abd042d2d2e9edf351f4864106e37fc9bd2b092d5"
+      "hash": "ef30b276a8aba46eae19a2eb316bc260a17b2a1f379b42681d1a4faac94e59d6"
     },
     {
       "id": "repo:scripts/lib/slug.mjs",
@@ -443,7 +449,7 @@
       "id": "repo:scripts/lib/terms.mjs",
       "path": "scripts/lib/terms.mjs",
       "type": "kernel",
-      "hash": "e0c4ec552f588b34b3a9f48aeaffeb0c2c347a6d597513cda322e9d189f375bf"
+      "hash": "27ded19d4838b1b12cbed5241b019925a236fd7672c72829ccbdbaf4f48c6d76"
     },
     {
       "id": "repo:scripts/lib/units.mjs",
@@ -455,7 +461,7 @@
       "id": "repo:scripts/lib/verbatim.mjs",
       "path": "scripts/lib/verbatim.mjs",
       "type": "kernel",
-      "hash": "06982d0f0a0043873b379de5f2c856246576db49762b14c3097ca8ed717c35ec"
+      "hash": "4d0e7b082f2b911fa4cb8ceabb1dc84908a1d4bdc4170398274945c72070a4ab"
     },
     {
       "id": "repo:scripts/lib/visual_review.mjs",
@@ -467,7 +473,7 @@
       "id": "repo:scripts/pack.mjs",
       "path": "scripts/pack.mjs",
       "type": "executable",
-      "hash": "d4a4aafda2c7aa28eccce10f5ca6ccd9c596cdce728b0b62d1b881341a01b097"
+      "hash": "5277b0c72a3ff59e7a0d49fad111fef56d6882c771816d6f649a163fdc704756"
     },
     {
       "id": "repo:scripts/prepare_source_corpus.mjs",
@@ -485,13 +491,13 @@
       "id": "repo:scripts/propagate.mjs",
       "path": "scripts/propagate.mjs",
       "type": "executable",
-      "hash": "68134808d08385c66bd2143ec7057525b6f2b94cdd01c7576ef1309514eb0c84"
+      "hash": "b561fc619b48ce0f250adf14afdd9cd7188cea983a9e30927ce5546c33fc7f57"
     },
     {
       "id": "repo:scripts/record_override.mjs",
       "path": "scripts/record_override.mjs",
       "type": "executable",
-      "hash": "97c0e3ac08098e1a955f15bd639ef077c28866483588d572e5c5d36a7711192d"
+      "hash": "7559d010b78db73e6b288027f1f3172868c7012a07ee52e09e078ffa7d8b9fef"
     },
     {
       "id": "repo:scripts/revision_impact.mjs",
@@ -641,7 +647,7 @@
       "id": "repo:system/CLAIMS.json",
       "path": "system/CLAIMS.json",
       "type": "system-governance",
-      "hash": "2cf7315a05a33d886223341a7cca49c5f5e1ae66bac3e9a8a53faa91a09b6e7e"
+      "hash": "4cfc4d03a91082dc73cdb455a6efc8ed1a599dde0332e858b6b5ba57be8d75d6"
     },
     {
       "id": "repo:system/COMPONENTS.json",
@@ -768,6 +774,12 @@
       "path": "tests/assurance.test.mjs",
       "type": "test",
       "hash": "d7db0d40eba9b2ed5a12880625019de1a8818ffef67efa83881fd6f9689f6e73"
+    },
+    {
+      "id": "repo:tests/audit-round-2.test.mjs",
+      "path": "tests/audit-round-2.test.mjs",
+      "type": "test",
+      "hash": "8f9c168f92085f9eb2b5190b899ac8ce8b8f8d3189afb84bcbf1e6e49727bff0"
     },
     {
       "id": "repo:tests/blind_bundle.test.mjs",
@@ -1037,7 +1049,7 @@
       "id": "repo:tests/propagate-cli.test.mjs",
       "path": "tests/propagate-cli.test.mjs",
       "type": "test",
-      "hash": "dfa491dd6fb6fcf0d2e36ff590d18ea4b6d0f4075ada29e2c360051e9bf830ab"
+      "hash": "b82a3a28c6a65e44c1a538d986619b60ce6820dbd73d11cfbfcd920b0f64db62"
     },
     {
       "id": "repo:tests/propagate.test.mjs",
@@ -1115,7 +1127,7 @@
       "id": "repo:tests/usage-e2e.test.mjs",
       "path": "tests/usage-e2e.test.mjs",
       "type": "test",
-      "hash": "1d5e45dd3580e09e3092c7ae23d1ad4700aa3b779def32837d6474211dfde2e2"
+      "hash": "972d9a3d920539c6274c0957127df69021828a7e624c17073b212255fc4ada12"
     },
     {
       "id": "repo:tests/wiring.test.mjs",
@@ -1688,7 +1700,7 @@
     {
       "id": "claim.coherence.index-fresh",
       "assuranceLevel": "hard-gate",
-      "statement": "The gate byte-compares each stored SPINE/TERMS/CLAIMS artifact against a fresh recompute; a stale artifact with no movement signal over a clean output tree is queued as one stale-index decision, any staleness blocks --for-discovery, and mid-edit staleness is reported without a flag.",
+      "statement": "The gate byte-compares each stored SPINE/TERMS/CLAIMS artifact against a fresh recompute (line endings ignored); a missing artifact beside a present one is stale; a stale index with no movement signal over committed index/spine/deliverable paths is queued as one stale-index decision; any staleness or incompleteness blocks --for-discovery.",
       "implementation": [
         "scripts/lib/semantic_index.mjs",
         "scripts/check_oer.mjs",
@@ -1744,7 +1756,7 @@
     {
       "id": "claim.control.coverage",
       "assuranceLevel": "hard-gate",
-      "statement": "The gate verifies the package against the instructor's concept map in both directions: a declared objective nothing teaches is a fail-closed missing-coverage block in every mode, and a deliverable tagging an undeclared objective fails the format contract; coverage is reported as a floor with denominators.",
+      "statement": "The gate verifies the package against the instructor's concept map in both directions: an objective with no non-objective claim (fact, definition, answer key, derived, procedure) declared under it and none of its key terms taught is a fail-closed missing-coverage block in every mode; a deliverable tagging an undeclared objective fails the format contract; a spine label that moved under an unchanged id while claims are declared under it is blocking; coverage is reported as a floor with denominators.",
       "implementation": [
         "scripts/check_oer.mjs",
         "scripts/lib/spine.mjs",
@@ -1885,9 +1897,27 @@
       ]
     },
     {
+      "id": "claim.release.measured-vs-declared",
+      "assuranceLevel": "automated-check",
+      "statement": "Release refuses a human-attested primary source unless explicitly accepted, never commits into the package, ships no review queue, produces a byte-reproducible archive for identical content, and the evaluation lists what the gate could not verify: attested sources, reviewer identity and mode, overrides by basis, declared versus scan-found claims, unverified arithmetic, and the coherence ledger action.",
+      "implementation": [
+        "scripts/pack.mjs",
+        "scripts/check_oer.mjs",
+        "scripts/lib/coherence.mjs"
+      ],
+      "tests": [
+        "tests/assurance.test.mjs",
+        "tests/audit-round-2.test.mjs"
+      ],
+      "documentation": [
+        "PROCEDURE.md",
+        "FEATURES.md"
+      ]
+    },
+    {
       "id": "claim.review.blind-bundle",
       "assuranceLevel": "hard-gate",
-      "statement": "A documented command assembles the blind key-fact reviewer's surface by allowlist outside the package, withholding every process file by name; the key-fact review must declare the digest of that surface and the gate compares it live, so independence is assembled and verified rather than declared.",
+      "statement": "A documented command assembles the blind key-fact reviewer's surface by allowlist outside the package (withheld process files and symbolic links named), and the key-fact review is BOUND to that surface: it must declare the digest of the current package's bundle, the digest is compared live, template placeholders are refused, and every key fact must be locatable in the deliverables it names. The reviewer's isolation itself is declared, not observed.",
       "implementation": [
         "scripts/lib/blind_bundle.mjs",
         "scripts/assemble_blind_bundle.mjs",
@@ -1934,7 +1964,7 @@
     {
       "id": "claim.revision.propagation",
       "assuranceLevel": "hard-gate",
-      "statement": "A documented command plans and, with --apply, applies only the mechanical rename tier, refuses an uncommitted output tree, writes and commits only the planned files, and files a receipt with before/after text and file hashes on both sides that can verify and reverse every edit; everything needing judgment is held for review.",
+      "statement": "A documented command plans a mechanical rename across claim blocks and prose (never inside quotations, citations, code, source-reproduced spans, headings, or a longer label of another term), writes a plan hash-bound to the package HEAD, and with --apply executes exactly that plan on a committed output git, files the receipt before committing, and commits only the planned files; everything needing judgment is held for review and everything untouched is named.",
       "implementation": [
         "scripts/propagate.mjs",
         "scripts/lib/propagate.mjs"
@@ -2014,7 +2044,7 @@
     {
       "id": "claim.trust.consistency",
       "assuranceLevel": "hard-gate",
-      "statement": "Cross-artifact disagreements on a shared term or quantity are found deterministically with no declared edge required, physically impossible values are flagged by a conservative range audit, and both enter the review queue through the publish check.",
+      "statement": "Cross-artifact disagreements on a shared term or quantity are found deterministically with no declared edge required — the answer tab of a tabs container is the assertion, a declared type or extra declared terms cannot opt an answer out — physically impossible values are flagged by a conservative range audit, and asserting the map's own misconception is blocking.",
       "implementation": [
         "scripts/lib/consistency.mjs",
         "scripts/lib/units.mjs",

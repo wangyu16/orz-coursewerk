@@ -27,6 +27,18 @@
   dirty tree, commits only the planned files, and files a receipt that can verify and reverse every edit.
 - **Overrides are provenance.** `record:override` gives a deliberate divergence from the source an id that the
   claim carries and the provenance fingerprint hashes; the gate stops asking, the change stays tracked.
+- **Two adversarial audits, closed.** Objective restatements no longer count as coverage; the answer tab is the
+  assertion the consistency scan compares (a distractor in the question, a declared type, or an extra declared
+  term cannot opt a wrong answer out); template placeholders and unlocatable key facts are refused; a reordered
+  concept map that re-parents declared claims is blocking; asserting the map's own misconception is blocking;
+  JSON front matter (which renders) fails the format contract; a repeated heading cannot rebind a declaration;
+  a forged or stranded override is refused/reported; near-miss map headings are named; code fences are scanned
+  for verbatim copying; hard-wrapped and non-ASCII quotation marks are immutable and silent deletions inside a
+  quotation are unverifiable; a deleted index artifact is stale; whitespace reflow is free at the file layer too
+  (normalized component hashes and review bindings); symbolic links are refused; the coherence ledger cannot be
+  laundered by re-initializing over history; release refuses attested-only sources without consent, never
+  commits into the package, ships no review queue, and its evaluation separates measured from declared.
+  Every finding and its probe or dismissal: `docs/closed-loop-rounds.md`.
 - **Procedure.** Stage 4 opens the critique with the blind bundle; a new Stage 5b documents the revision loop,
   overrides, and propagation. The system claim register now covers every semantic-index mechanism.
 

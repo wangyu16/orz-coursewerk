@@ -227,6 +227,11 @@ const DETECTOR_TO_QUEUE = {
   // whose prose no longer supports its declared type/termRefs. Both are "your assertion about the
   // prose does not hold" — the question `declaration-refused` already asks a human.
   "anchor-coverage": "declaration-refused",
+  "duplicate-section": "declaration-refused",
+  "dangling-override": "dangling-reference",
+  // H6: a spine label moved under an unchanged id — the package's declared structure no longer
+  // says what the instructor's map says. Blocking by the finding's own severity.
+  "spine-relabeled": "sanity-check",
   "declaration-unsupported": "declaration-refused",
 
   // The M11 gate's CONTROL rows (§C2) — the two directions of "the instructor decides what is

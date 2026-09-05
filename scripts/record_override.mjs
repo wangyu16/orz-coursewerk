@@ -105,8 +105,21 @@ try {
   process.exit(2);
 }
 
+// M4 (design audit): an override for an id that no claim carries is a forged or stranded record.
+// When the package is indexed, the id must exist there; `--force` records it anyway (with the
+// dangling-override finding the gate will then raise).
+const claimsFile = path.join(root, "metadata", "CLAIMS.json");
+if (fs.existsSync(claimsFile) && !args.includes("--force")) {
+  let known = null;
+  try { known = new Set((JSON.parse(fs.readFileSync(claimsFile, "utf8")).claims ?? []).map((c) => c.id)); } catch { known = null; }
+  if (known && !known.has(entry.claimId)) {
+    console.error(`record-override: no claim ${entry.claimId} in ${path.relative(process.cwd(), claimsFile)} — copy the id from CLAIMS.json (or pass --force to record it anyway; the gate will report it as dangling).`);
+    process.exit(2);
+  }
+}
 fs.mkdirSync(path.dirname(file), { recursive: true });
 fs.writeFileSync(file, JSON.stringify(next, null, 2) + "\n");
+console.error("record-override: the claim's provenance fingerprint now moves; run `npm run index:semantic` to accept the new baseline, then re-run the gate.");
 
 console.log(
   JSON.stringify(

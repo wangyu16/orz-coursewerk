@@ -137,7 +137,7 @@ export function splitAnchorMarker(text) {
 // It lives here because the term registry is the only authority on what a label IS. Boundary
 // class: alphanumerics (so `pre-melting point` and `melting point.` both match; `_` is a boundary,
 // as it was for three of the four copies). Case-insensitive. Cached per (label, flags).
-const LABEL_BOUNDARY = "A-Za-z0-9";
+const LABEL_BOUNDARY = "\\p{L}\\p{N}"; // any letter or digit, any script (audit finding 14)
 const escapeRegExp = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const labelMatchers = new Map();
 /**
@@ -149,7 +149,7 @@ export function labelMatcher(label, flags = "i") {
   const key = `${flags}\u0000${label}`;
   let re = labelMatchers.get(key);
   if (!re) {
-    re = new RegExp(`(?<![${LABEL_BOUNDARY}])${escapeRegExp(label)}(?![${LABEL_BOUNDARY}])`, flags);
+    re = new RegExp(`(?<![${LABEL_BOUNDARY}])${escapeRegExp(label)}(?![${LABEL_BOUNDARY}])`, flags.includes("u") ? flags : flags + "u");
     labelMatchers.set(key, re);
   }
   return re;

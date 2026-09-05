@@ -160,8 +160,9 @@ export function isAuthorizedDivergence(overrides, claimId) {
  */
 export function overrideIdOf(entry) {
   if (entry == null || typeof entry !== "object") return null;
-  const keys = Object.keys(entry).sort();
-  const canonical = JSON.stringify(keys.map((k) => [k, entry[k]]));
+  const canon = (v) => (Array.isArray(v) ? v.map(canon) : v && typeof v === "object"
+    ? Object.keys(v).sort().map((k) => [k, canon(v[k])]) : v);
+  const canonical = JSON.stringify(canon(entry));
   return `override.${createHash("sha256").update(canonical).digest("hex").slice(0, 12)}`;
 }
 
