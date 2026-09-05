@@ -427,7 +427,7 @@ Fourth instance of the no-producer family. §2.4 says `provenance` "moves on ove
 reads `claim.overrideId`; the schema declares it; **nothing writes it**. It survives because the override
 reaches M4 through a different channel (`ctx.authorized`) — the working path masks the dead one.
 
-### W6 — a reorder is a mass delete-and-recreate. *(open)*
+### W6 — a reorder is a mass delete-and-recreate. *(FIXED 2026-09-05 under the anchored regime — inline `[anchor: slug]` identity (G22): a reorder keeps both ids and is reported as RECHECK; `study_pairs` 12/12, `real_edit_unexpected_flag_rate` 0.25 → 0; the positional regime is still supported and still cascades, by design)*
 1 edit → 6 flags on a 4-claim package: spec §0's founding defect (the S-C pilot's exact number) at claim
 granularity, now wearing this index's authority.
 

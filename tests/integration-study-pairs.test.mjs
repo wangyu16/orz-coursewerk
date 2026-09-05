@@ -259,29 +259,24 @@ test("FINDING 1 (headline, RESOLVED 2026-07-17): a term RENAME survives the map-
   );
 });
 
-test("FINDING 2: a reorder is indexed as a mass delete-and-recreate — 1 edit, 6 flags, 4 claims", () => {
+test("FINDING 2 (RESOLVED 2026-09-05): a reorder keeps both ids and is RECHECK — 1 edit, 2 flags, 4 claims", () => {
   // PREREGISTERED: 2 claims, ids PRESERVED, verdict RECHECK (spec §5 lists "reorder" as a RECHECK
-  // case; the two objectives are the SAME two assertions, moved).
-  // OBSERVED: 2 added + 2 removed + 2 silent-risk. The positional anchor moves (a limitation
-  // `lib/claims.mjs` documents honestly), so each re-added claim re-seeds co-mention and drags the
-  // fact and the answer key in — on an edit that changed no value at all.
-  //
-  // This is spec §0's founding defect — "1 change -> 6 required reviews", the S-C pilot's exact
-  // number — reappearing at claim granularity, wearing this index's authority.
+  // case; the two objectives are the SAME two assertions, moved). Never edited.
+  // OBSERVED until 2026-09-05: 2 added + 2 removed + 2 silent-risk — the positional anchor moved
+  // with the position, and each re-added claim re-seeded co-mention. spec §0's founding defect
+  // ("1 change -> 6 required reviews") at claim granularity.
+  // OBSERVED now: the fixture's objectives carry inline `[anchor: slug]` identity (G22, the contract
+  // change G2 named as the fix). Identity keys on the slug, so both ids survive; the relative rank
+  // among anchored siblings changed, so both are RECHECK; nothing else is reached.
   const r = run("real-reorder");
-  assert.equal(r.matchesPreregistration, false, "FINDING 2: observed != preregistered");
-  assert.equal(r.detected, 0, "RECALL 0/2 on this case");
-  assert.equal(r.observedFlags, 6, "six flags on a four-claim package, for a reorder");
-  assert.equal(
-    r.observations.filter((o) => o.lifecycle === "matched").every((o) => o.verdict === "SILENT-RISK"),
-    true,
-    "the two untouched claims are dragged in as silent-risk by the re-seeding",
-  );
-  assert.equal(
-    r.observations.filter((o) => o.key.includes("objectives")).every((o) => o.lifecycle !== "matched"),
-    true,
-    "neither objective's id survived the reorder",
-  );
+  assert.equal(r.matchesPreregistration, true, "FINDING 2: observed == preregistered");
+  assert.equal(r.detected, 2, "RECALL 2/2 on this case");
+  assert.equal(r.observedFlags, 2, "two flags on a four-claim package, for a reorder of two items");
+  assert.deepEqual(r.unexpected, [], "no re-seeding: the fact and the answer key are not dragged in");
+  const objectives = r.observations.filter((o) => o.key.includes("objectives"));
+  assert.equal(objectives.length, 2);
+  assert.equal(objectives.every((o) => o.lifecycle === "matched" && o.verdict === "RECHECK"), true, "both ids survived; both are RECHECK");
+  assert.equal(r.observations.some((o) => o.verdict === "SILENT-RISK"), false, "nothing is dragged in as silent-risk");
 });
 
 // ==============================================================================================
@@ -342,24 +337,19 @@ test("apparatus: the headline metrics are what they are", () => {
   assert.equal(m.false_flag_rate.value, 0, "0/24 — every null edit is clean after FINDING 3 was fixed on 2026-08-11");
   assert.equal(
     m.impact_detection_recall.value,
-    0.8182,
-    "9/11 — was 6/11 until FINDING 1 was fixed (+3, the rename case); the one 0-recall case left is FINDING 2",
+    1,
+    "11/11 — was 6/11 until FINDING 1 was fixed (+3, the rename case), 9/11 until FINDING 2 (the reorder) was fixed on 2026-09-05 (+2)",
   );
-  assert.equal(m.propagation_correctness.value, 1, "9/9 of the flags we DID detect carry the right verb");
+  assert.equal(m.propagation_correctness.value, 1, "11/11 of the flags we detect carry the right verb");
   // propagation_correctness reads perfectly and must never be quoted alone: its denominator is the
-  // DETECTED set, so the case that detected nothing cannot lower it. Recall and correctness are one
-  // result in two halves.
-  assert.equal(m.propagation_correctness.detectedFlags, 9);
-  assert.ok(m.impact_detection_recall.value < 1, "spec §7 targets full recall; it is not met");
+  // DETECTED set. Recall and correctness are one result in two halves — both are now 1.
+  assert.equal(m.propagation_correctness.detectedFlags, 11);
+  assert.equal(m.real_edit_unexpected_flag_rate.value, 0, "no real edit flags a claim it should not — was 0.25 while the reorder re-seeded");
 });
 
-test("apparatus: ONE of twelve cases fails its preregistration, on ONE named finding", () => {
+test("apparatus: TWELVE of twelve cases meet their preregistration — the trail of retirements is complete", () => {
   // The count is stated exactly, because "some cases fail" is how a mismatch becomes background
-  // noise. One case, one finding — FINDING 2 (the reorder), which fails BY DESIGN: a reorder is
-  // indexed as a mass delete-and-recreate, and closing it is a contract change (a DECLARED anchor)
-  // left for its own step. It is reported, not smoothed over.
-  //
-  // The trail of retirements, each moving because the SYSTEM moved — not one expectation in
+  // noise. The trail of retirements, each moving because the SYSTEM moved — not one expectation in
   // `scripts/study_pairs.mjs` was ever touched:
   //   * FIVE cases / FOUR findings until 2026-07-17, when FINDING 1 (the rename) was fixed in
   //     interfaces §2 and `lib/terms.mjs`;
@@ -367,16 +357,13 @@ test("apparatus: ONE of twelve cases fails its preregistration, on ONE named fin
   //     fixed in `lib/fingerprint.mjs`'s `stripMarkup`;
   //   * THREE cases / TWO findings, same day, when FINDING 4 (the value-change term over-reach) was
   //     fixed by the quantity gate in `lib/coherence.mjs`'s `reachFrom` — retiring BOTH value-change
-  //     cases at once, since they share the edit.
-  // The one that remains is still failing, still named, still reported: FINDING 2, by design.
+  //     cases at once, since they share the edit;
+  //   * ONE case / ONE finding until 2026-09-05, when FINDING 2 (the reorder) was fixed by the
+  //     contract change G2 named — inline `[anchor: slug]` identity (G22) — in `lib/claims.mjs`,
+  //     `lib/terms.mjs` and `lib/coherence.mjs`, with the fixture's objectives anchored.
   const report = runStudyPairs();
-  assert.deepEqual(
-    report.mismatches.map((x) => x.case).sort(),
-    [
-      "real-reorder", // FINDING 2 — a reorder is a mass delete-and-recreate
-    ].sort(),
-  );
-  for (const fixed of ["real-term-rename", "null-orz-container", "real-value-change", "real-value-change-authorized"]) {
+  assert.deepEqual(report.mismatches.map((x) => x.case).sort(), []);
+  for (const fixed of ["real-term-rename", "null-orz-container", "real-value-change", "real-value-change-authorized", "real-reorder"]) {
     assert.equal(
       report.mismatches.some((x) => x.case === fixed),
       false,
@@ -384,7 +371,7 @@ test("apparatus: ONE of twelve cases fails its preregistration, on ONE named fin
     );
   }
   assert.equal(report.cases.length, 12);
-  assert.equal(report.cases.filter((c) => c.matchesPreregistration).length, 11);
+  assert.equal(report.cases.filter((c) => c.matchesPreregistration).length, 12);
 });
 
 test("apparatus: unreachable cases are DECLARED, never silently dropped", () => {
@@ -428,11 +415,17 @@ test("apparatus: 2 of the 5 fingerprint layers are CONSTANT on this fixture (FIN
   );
   // `spine` appears ONLY as the precedence winner on an added/removed claim (an absent side moves
   // all five layers) — never because a spineRef actually changed. That is not spine coverage.
-  const spineReports = CASES.flatMap((c) => runCase(c).observations).filter((o) => o.layer === "spine");
+  // ONE exception since 2026-09-05, and it is not spine COVERAGE either: the reorder signal (G22)
+  // reports `layer: "spine"` on a MATCHED anchored claim because ordering is prerequisite structure
+  // (spec §5's spine row) — a synthetic move, not a spineRef change. It appears on the reorder case
+  // only, always as RECHECK. Every other matched claim still never moves `spine`.
+  const spineReports = CASES.flatMap((c) => runCase(c).observations.map((o) => ({ ...o, caseName: c.name }))).filter((o) => o.layer === "spine");
+  const matchedSpine = spineReports.filter((o) => o.lifecycle === "matched");
+  assert.equal(matchedSpine.length > 0, true, "the reorder signal reports the spine layer on a matched claim");
   assert.equal(
-    spineReports.every((o) => o.lifecycle !== "matched"),
+    matchedSpine.every((o) => o.caseName === "real-reorder" && o.verdict === "RECHECK"),
     true,
-    "no matched claim ever moves `spine`: there are no spineRefs to move",
+    `spine on a matched claim is the reorder RECHECK and nothing else: ${JSON.stringify(matchedSpine.map((o) => [o.caseName, o.verdict]))}`,
   );
 });
 

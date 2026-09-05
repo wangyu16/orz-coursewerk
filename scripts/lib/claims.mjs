@@ -145,7 +145,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { slugify } from "./slug.mjs";
 import { artifactDeclarations, claimSidecarPath, frontMatterLength } from "./contract.mjs";
-import { resolve as resolveTerm, labelMatcher } from "./terms.mjs";
+import { resolve as resolveTerm, labelMatcher, splitAnchorMarker } from "./terms.mjs";
 import { fingerprints } from "./fingerprint.mjs";
 import { scanProjection } from "./units.mjs";
 import { loadOverridesFile, findOverride, overrideIdOf } from "./overrides.mjs";
@@ -328,12 +328,16 @@ function parseBlocks(body, base = 0) {
     if (lines.length === 0) return;
 
     const raw = src.slice(lines[0].start, lines[lines.length - 1].end);
-    const text = raw.trim();
+    // G22: a trailing `[anchor: slug]` is identity metadata, lifted off BEFORE the text is taken
+    // (so no fingerprint layer sees it) and carried as `slug`. The positional anchor is still
+    // minted — it says WHERE the block is now; the slug says WHICH block it is.
+    const { text, slug } = splitAnchorMarker(raw.trim());
     if (!text) return;
     ordinal += 1;
     blocks.push({
       anchor: `${section || "body"}#${ordinal}`,
       section,
+      slug,
       text,
       // trimStart's width is exactly what the leading whitespace cost, so the invariant
       // `src.slice(offset, offset + text.length) === text` holds by construction.
@@ -428,9 +432,77 @@ export function artifactAnchors(root) {
     const fileText = readText(root, rel);
     if (fileText == null) continue;
     const base = frontMatterLength(fileText);
-    out.push({ file: rel, anchors: strSet(parseBlocks(fileText.slice(base), base).map((b) => b.anchor)) });
+    const blocks = parseBlocks(fileText.slice(base), base);
+    out.push({ file: rel, anchors: strSet(blocks.flatMap((b) => (b.slug ? [b.anchor, `@${b.slug}`] : [b.anchor]))) });
   }
   return out;
+}
+
+/**
+ * G22g — the SLUG-COVERAGE gate. A section that declares ANY inline `[anchor: slug]` on a list
+ * item has opted into slug identity for that list, so EVERY item in it must carry one (a mix
+ * would leave the unanchored items positional — and a reorder would strand exactly those), and
+ * slugs must be unique within the file (identity is file-qualified). Inactive on a file with no
+ * markers: the positional regime is still supported. Returns only the failures.
+ * @returns {Array<{file:string, section:string, unanchored:string[], duplicateSlugs:string[]}>}
+ */
+export function anchorCoverage(root) {
+  const out = [];
+  for (const rel of ARTIFACT_FOLDERS.flatMap((folder) => markdownIn(root, folder))) {
+    const fileText = readText(root, rel);
+    if (fileText == null) continue;
+    const base = frontMatterLength(fileText);
+    const blocks = parseBlocks(fileText.slice(base), base);
+    const slugs = blocks.map((b) => b.slug).filter(Boolean);
+    const duplicateSlugs = strSet(slugs.filter((x, i) => slugs.indexOf(x) !== i));
+    const bySection = new Map();
+    for (const b of blocks) {
+      if (!b.isItem) continue;
+      if (!bySection.has(b.section)) bySection.set(b.section, []);
+      bySection.get(b.section).push(b);
+    }
+    for (const [section, items] of bySection) {
+      if (!items.some((b) => b.slug)) continue;
+      const unanchored = items.filter((b) => !b.slug).map((b) => b.anchor);
+      const dupHere = duplicateSlugs.filter((d) => items.some((b) => b.slug === d));
+      if (unanchored.length || dupHere.length) out.push({ file: rel, section: section || "body", unanchored, duplicateSlugs: dupHere });
+    }
+    const orphanDups = duplicateSlugs.filter((d) => !out.some((o) => o.file === rel && o.duplicateSlugs.includes(d)));
+    if (orphanDups.length) out.push({ file: rel, section: "(file)", unanchored: [], duplicateSlugs: orphanDups });
+  }
+  return out.sort((a, b) => byString(a.file, b.file) || byString(a.section, b.section));
+}
+
+/**
+ * G22d — positional declarations on an ANCHORED list are refused.
+ *
+ * The mis-binding G22 measured: a positional sidecar (`objectives#1`) keeps vouching for whatever
+ * block now stands at #1 after a reorder — metadata rewarding prose it no longer matches. A prose
+ * "support" check (re-deriving type/termRefs from the block) was prototyped and DISMISSED: the
+ * structural scan cannot tell an answer key from a fact, and an author may rightly declare a term
+ * the block is about without naming it, so that check fires on the clean reference package — the
+ * alarm-fatigue trap. The precise rule is the contract's own: once a list carries inline slugs, a
+ * declaration about one of its items must address it by `@slug` (which travels with the prose), so
+ * a positional declaration there is refused. Zero false positives on an unanchored package.
+ * @returns {Array<{file:string, anchor:string, slug:string, declaredType:string}>}
+ */
+export function positionalDeclarationsOnAnchoredItems(root) {
+  const out = [];
+  for (const rel of ARTIFACT_FOLDERS.flatMap((folder) => markdownIn(root, folder))) {
+    const fileText = readText(root, rel);
+    if (fileText == null) continue;
+    const base = frontMatterLength(fileText);
+    const blocks = parseBlocks(fileText.slice(base), base);
+    const byAnchor = new Map(blocks.map((b) => [b.anchor, b]));
+    const declarations = artifactDeclarations({ fileText, sidecarText: readText(root, claimSidecarPath(rel)) });
+    for (const decl of declarations) {
+      if (decl.anchor.startsWith("@")) continue;
+      const block = byAnchor.get(decl.anchor);
+      if (!block || !block.slug) continue;
+      out.push({ file: rel, anchor: decl.anchor, slug: block.slug, declaredType: decl.type });
+    }
+  }
+  return out.sort((a, b) => byString(a.file, b.file) || byString(a.anchor, b.anchor));
 }
 
 /** Whether a block asserts a quantity (a number bound to a recognized unit). */
@@ -525,7 +597,8 @@ const claimAnchor = (claim) => String(claim?.locations?.[0]?.anchor ?? "");
  * have a `## Objectives`, so the bare anchor collides two distinct claims into ONE id and silently
  * merges them — a granularity defect in the module built to fix granularity defects.
  */
-const fileQualifiedAnchor = (claim) => `${claimFile(claim)}|${claimAnchor(claim)}`;
+const fileQualifiedAnchor = (claim) =>
+  `${claimFile(claim)}|${claim?.anchorSlug ? `@${String(claim.anchorSlug)}` : claimAnchor(claim)}`;
 
 /** §4's match key: (spineRef + fileQualifiedAnchor + identityLabel). Never `content` (that is the
  *  change signal), never M3's `label` fingerprint (§4b). */
@@ -584,6 +657,10 @@ function finalizeDraft(draft, terms, chapters, takenIds, overrides = null) {
     // "no offset" from "offset 0", and the safe reading of a missing one is to REFUSE the edit, so
     // omitting it would silently degrade M9 into never auto-applying anything.
     locations: [{ file: draft.file, anchor: draft.anchor, offset: draft.offset }],
+    // G22: the inline identity slug, when the author declared one. Identity (and the id) key on
+    // it instead of the positional anchor, so a reorder keeps the claim; `locations[].anchor`
+    // still says where the block stands now.
+    ...(draft.anchorSlug ? { anchorSlug: draft.anchorSlug } : {}),
     provenanceDeclared: draft.provenanceDeclared,
   };
   // Minted from the assembled claim — the same value `matchClaims` will read back from the stored
@@ -633,7 +710,9 @@ export function extractClaims(root, terms) {
     // grammar, so the same module must define where it ends and the assertions begin.
     const base = frontMatterLength(fileText);
     const blocks = parseBlocks(fileText.slice(base), base);
-    const blockByAnchor = new Map(blocks.map((b) => [b.anchor, b]));
+    // A declaration may address a block positionally (`<section>#<n>`) or by its inline slug
+    // (`@<slug>`); the slug form travels with the prose, so the author never has to move it.
+    const blockByAnchor = new Map(blocks.flatMap((b) => (b.slug ? [[b.anchor, b], [`@${b.slug}`, b]] : [[b.anchor, b]])));
     const claimedAnchors = new Set();
 
     // 1. DECLARED — authoritative. The grammar and the sidecar-beats-front-matter precedence rule
@@ -645,15 +724,16 @@ export function extractClaims(root, terms) {
     for (const decl of declarations) {
       // Two declarations for one anchor is a conflict, not a merge: the first in document order
       // stands. Deterministic, and it refuses to fabricate a reconciliation nobody authored.
-      if (claimedAnchors.has(decl.anchor)) continue;
       const block = blockByAnchor.get(decl.anchor);
       if (!block) continue; // dangling anchor: we do not invent the prose it named
-      claimedAnchors.add(decl.anchor);
+      if (claimedAnchors.has(block.anchor)) continue;
+      claimedAnchors.add(block.anchor);
       drafts.push({
         type: decl.type,
         text: block.text,
         file: rel,
-        anchor: decl.anchor,
+        anchor: block.anchor,
+        anchorSlug: block.slug,
         offset: block.offset,
         spineRefs: decl.spineRefs,
         sourceRefs: decl.sourceRefs,
@@ -673,6 +753,7 @@ export function extractClaims(root, terms) {
         text: block.text,
         file: rel,
         anchor: block.anchor,
+        anchorSlug: block.slug,
         offset: block.offset,
         spineRefs: [], // NEVER invented — see the header's refusal 1
         sourceRefs: [],

@@ -10,8 +10,8 @@ Melting and boiling of water at standard pressure.
 - Temperature and thermal energy
 
 ## Objectives
-1. State the melting point of water at standard pressure.
-2. Explain why temperature is constant during a phase change.
+1. State the melting point of water at standard pressure. [anchor: obj-melting-point]
+2. Explain why temperature is constant during a phase change. [anchor: obj-constant-temperature]
 
 ## Concept sequence
 1. A solid melts at a characteristic temperature.

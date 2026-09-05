@@ -223,6 +223,11 @@ const DETECTOR_TO_QUEUE = {
   "dangling-spine-ref": "dangling-reference",
   "dangling-derived-from": "dangling-reference",
   "declaration-refusal": "declaration-refused",
+  // G22g/G22d: an anchored list that is not FULLY anchored (or repeats a slug), and a declaration
+  // whose prose no longer supports its declared type/termRefs. Both are "your assertion about the
+  // prose does not hold" — the question `declaration-refused` already asks a human.
+  "anchor-coverage": "declaration-refused",
+  "declaration-unsupported": "declaration-refused",
 
   // The M11 gate's CONTROL rows (§C2) — the two directions of "the instructor decides what is
   // taught", which is the claim the whole product makes and the one nothing verified.

@@ -47,7 +47,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "8576d7afed3aaf2fe9558c6ed377d1b0b688900dc54d876ffbc1ed11f8f7bad5"
+      "hash": "8e958d1ebe564c0e632f560be3ac793230574e14cf908163b00fcdadb7ab9b18"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -113,7 +113,7 @@
       "id": "repo:docs/walkthrough.md",
       "path": "docs/walkthrough.md",
       "type": "documentation",
-      "hash": "0b50189cbfda05f135971669bb9f6dd38e22c93db85485089ff1159a379a863e"
+      "hash": "2deacc904bf06231cbb67a8a010b219e7bfea71505429d65b08d6ad20f85551d"
     },
     {
       "id": "repo:docs/wikipedia-science-topic.md",
@@ -131,7 +131,7 @@
       "id": "repo:format-contracts/deliverables.md",
       "path": "format-contracts/deliverables.md",
       "type": "documentation",
-      "hash": "0d7b2dc63367130939233c1b55971ae8ccd55f6d563133a9ed3fb32da9a6b64e"
+      "hash": "41ae65e61e3edb8780cabd4acf3215822149f09eed3ea89d608846e0d00073c3"
     },
     {
       "id": "repo:GEMINI.md",
@@ -221,7 +221,7 @@
       "id": "repo:scripts/check_oer.mjs",
       "path": "scripts/check_oer.mjs",
       "type": "executable",
-      "hash": "38ac0971bfcb2823dcf570211cd90a299fca5c96ed4f7a9d658a808ca2796352"
+      "hash": "a279cb43bfc9b2c159bd15b9fcfeda44d1500637f588cf8c804fe74b4060b946"
     },
     {
       "id": "repo:scripts/coursewerk_impact.mjs",
@@ -323,7 +323,7 @@
       "id": "repo:scripts/lib/claims.mjs",
       "path": "scripts/lib/claims.mjs",
       "type": "kernel",
-      "hash": "828db27dcd648415fcd721b53f48dcbbe150b5a99c59e82ca58d308bca9a57c0"
+      "hash": "22ab411543496a29a5e1c9106e369091f82caed713c73c188804b77b97c96423"
     },
     {
       "id": "repo:scripts/lib/classify.mjs",
@@ -335,7 +335,7 @@
       "id": "repo:scripts/lib/coherence.mjs",
       "path": "scripts/lib/coherence.mjs",
       "type": "kernel",
-      "hash": "aa95b077d51387206e73640210d62042c4d3aea1c54126236493c2c01a74da8b"
+      "hash": "267c615c201a0812653919e81c9293515b63e492c95811a5fda3c45183db1793"
     },
     {
       "id": "repo:scripts/lib/consistency.mjs",
@@ -353,7 +353,7 @@
       "id": "repo:scripts/lib/escalation.mjs",
       "path": "scripts/lib/escalation.mjs",
       "type": "kernel",
-      "hash": "8b68aba7767a9f0769d44f995e8994f92ba4bd6bda8655bb43f395176ddbf168"
+      "hash": "9a50212a3027ec6b4069bf71890197daa5125453b90c03d759c163d71960becb"
     },
     {
       "id": "repo:scripts/lib/fingerprint.mjs",
@@ -431,7 +431,7 @@
       "id": "repo:scripts/lib/spine.mjs",
       "path": "scripts/lib/spine.mjs",
       "type": "kernel",
-      "hash": "7cc065fb327cd7441e86a7295afb96d07edc5197428ff21d34a4a5c2bb462303"
+      "hash": "0715ad8d48bba0a52006f4817aed8921937c93582251eb880197bea88ee91b37"
     },
     {
       "id": "repo:scripts/lib/system_index.mjs",
@@ -443,7 +443,7 @@
       "id": "repo:scripts/lib/terms.mjs",
       "path": "scripts/lib/terms.mjs",
       "type": "kernel",
-      "hash": "8e4c10e25d3eb70a1dd4fa3fe805c7a8d6fc7b6802b6401523b74c3a528147d9"
+      "hash": "e0c4ec552f588b34b3a9f48aeaffeb0c2c347a6d597513cda322e9d189f375bf"
     },
     {
       "id": "repo:scripts/lib/units.mjs",
@@ -503,7 +503,7 @@
       "id": "repo:scripts/study_pairs.mjs",
       "path": "scripts/study_pairs.mjs",
       "type": "executable",
-      "hash": "a88326526c6795924b175c9c9659ee65389992a215690576f091c593579945d5"
+      "hash": "5c4e17255b78d026eead4878185bf3385a2f5c3deb6987db397b84495fb3963f"
     },
     {
       "id": "repo:scripts/verify_coursewerk.mjs",
@@ -641,7 +641,7 @@
       "id": "repo:system/CLAIMS.json",
       "path": "system/CLAIMS.json",
       "type": "system-governance",
-      "hash": "bd3b983a2f7e738e03f9bfe9fec17514109bc87e0744adbe2752df2753574d5d"
+      "hash": "2cf7315a05a33d886223341a7cca49c5f5e1ae66bac3e9a8a53faa91a09b6e7e"
     },
     {
       "id": "repo:system/COMPONENTS.json",
@@ -758,6 +758,12 @@
       "hash": "2c7afd5d5423364c1a414bc0c73b1c0d905af8aa851f257c4a2a6436bac43552"
     },
     {
+      "id": "repo:tests/anchors.test.mjs",
+      "path": "tests/anchors.test.mjs",
+      "type": "test",
+      "hash": "5cd9915d7829872ab70a3728e67988e2eb7eae7badab12ae1a1da27cde50394e"
+    },
+    {
       "id": "repo:tests/assurance.test.mjs",
       "path": "tests/assurance.test.mjs",
       "type": "test",
@@ -797,7 +803,7 @@
       "id": "repo:tests/check-oer-semantic.test.mjs",
       "path": "tests/check-oer-semantic.test.mjs",
       "type": "test",
-      "hash": "754c0703f6bed317f784c94f7f879d72520506cd219e4ab252bfbb35b9231a73"
+      "hash": "7432af18fa84ede7854167bed2470bc264485956a647114786abc1275cd01d78"
     },
     {
       "id": "repo:tests/claims.test.mjs",
@@ -869,7 +875,7 @@
       "id": "repo:tests/fixtures/mini-package/concepts/phase-change.md",
       "path": "tests/fixtures/mini-package/concepts/phase-change.md",
       "type": "test",
-      "hash": "2bac5f48298c938a351be6666e00126e67991dddd3171894ae37c2ee7726f319"
+      "hash": "be2a455a6097d591ee60c815d46c0c24516e84204985213ca85e58d3143211e6"
     },
     {
       "id": "repo:tests/fixtures/mini-package/metadata/SOURCE_RECORD.json",
@@ -887,7 +893,7 @@
       "id": "repo:tests/fixtures/mini-package/study-guide/phase-change.md",
       "path": "tests/fixtures/mini-package/study-guide/phase-change.md",
       "type": "test",
-      "hash": "a886401d9ae630d55d08297f0248e118b546d616a1a102ebde78046e6ba901de"
+      "hash": "749d25c22bf5790087a75c7e4751dd6d2f6b3b5cc5361ce21daa5f5970eb8f8a"
     },
     {
       "id": "repo:tests/fixtures/usage-package/alembic.json",
@@ -1013,7 +1019,7 @@
       "id": "repo:tests/integration-study-pairs.test.mjs",
       "path": "tests/integration-study-pairs.test.mjs",
       "type": "test",
-      "hash": "7d19df2ae5e670a249df0cc6de320bb125e0fb0844e2d8d0b752072d5a3fc0cc"
+      "hash": "db89b4aa69feaecf588ec4f48d46c3a28697f2784a02fe7a2739e616ea168e73"
     },
     {
       "id": "repo:tests/key-fact-bindings.test.mjs",
@@ -1620,6 +1626,29 @@
       "documentation": [
         "FEATURES.md",
         "README.md"
+      ]
+    },
+    {
+      "id": "claim.coherence.anchors",
+      "assuranceLevel": "hard-gate",
+      "statement": "An inline [anchor: slug] on a list item or paragraph is position-independent identity: it is stripped before any text or fingerprint is taken, a reorder keeps the claim id and is reported as RECHECK, an insert or delete elsewhere rechecks nobody, a partially anchored list or a repeated slug is refused, a declaration may address the block as @slug, and a positional declaration on an anchored item is refused.",
+      "implementation": [
+        "scripts/lib/terms.mjs",
+        "scripts/lib/claims.mjs",
+        "scripts/lib/spine.mjs",
+        "scripts/lib/coherence.mjs",
+        "scripts/check_oer.mjs",
+        "system/schemas/package/claims.schema.json"
+      ],
+      "tests": [
+        "tests/anchors.test.mjs",
+        "tests/integration-study-pairs.test.mjs",
+        "tests/check-oer-semantic.test.mjs"
+      ],
+      "documentation": [
+        "format-contracts/deliverables.md",
+        "docs/walkthrough.md",
+        "CHANGELOG.md"
       ]
     },
     {

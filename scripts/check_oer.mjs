@@ -36,7 +36,7 @@ import { auditCoherence, claimImpact } from "./lib/coherence.mjs";
 import { auditSourceRecord } from "./lib/source_record.mjs";
 import { auditKeyFactReview } from "./lib/key_fact_review.mjs";
 import { auditVisualReview } from "./lib/visual_review.mjs";
-import { artifactAnchors, matchClaims } from "./lib/claims.mjs";
+import { artifactAnchors, matchClaims, anchorCoverage, positionalDeclarationsOnAnchoredItems } from "./lib/claims.mjs";
 import { danglingSpineRefs } from "./lib/spine.mjs";
 import { buildQueue, REVIEW_QUEUE_PATH } from "./lib/escalation.mjs";
 import { scanConsistency, rangeAudit } from "./lib/consistency.mjs";
@@ -1620,6 +1620,28 @@ function revisionFindings(stored, fresh) {
  * (`revisionFindings`) is the one that needs BOTH, and it is what makes the stored index more than
  * a file nobody reads.
  */
+function anchorFindings() {
+  return anchorCoverage(pkg).map((f) => ({
+    kind: "anchor-coverage",
+    evidence: [
+      `${f.file} §${f.section}: the list declares inline [anchor: …] slugs but is not fully anchored — ` +
+        (f.unanchored.length ? `unanchored items ${f.unanchored.join(", ")}; ` : "") +
+        (f.duplicateSlugs.length ? `duplicate slugs ${f.duplicateSlugs.join(", ")}; ` : "") +
+        "a mixed list leaves the unanchored items positional (a reorder would strand exactly those) and a repeated slug is two claims with one identity. Anchor every item with a unique slug, or none.",
+    ],
+  }));
+}
+
+function declarationSupportFindings() {
+  return positionalDeclarationsOnAnchoredItems(pkg).map((d) => ({
+    kind: "declaration-unsupported",
+    evidence: [
+      `${d.file} @ ${d.anchor}: a POSITIONAL declaration ("${d.declaredType}") on an item that carries the inline anchor [anchor: ${d.slug}] — ` +
+        "after a reorder this declaration would vouch for whatever block stands at that ordinal. Address it as \"@" + d.slug + "\" so it travels with the prose.",
+    ],
+  }));
+}
+
 function semanticAudit(verbatim) {
   const stored = loadSemanticIndex(pkg);
   if (!stored.present) {
@@ -1665,6 +1687,12 @@ function semanticAudit(verbatim) {
   const coverage = coverageAudit(fresh);
   const findings = [
     ...declarationFindings(),
+    // G22g — a list that opted into slug anchors must be fully and uniquely anchored; G22d — a
+    // declaration about an anchored item must address it by @slug, never by position.
+    // Both are "the author asserted something about the prose and it does not hold", so both are
+    // asked as `declaration-refused`. Referential: they read `fresh` and the files, never the store.
+    ...anchorFindings(),
+    ...declarationSupportFindings(),
     ...spineRefFindings(fresh),
     ...derivedFromFindings(fresh),
     ...orphanClaimFindings(fresh),

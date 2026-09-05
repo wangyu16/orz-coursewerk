@@ -9,6 +9,12 @@
   only; each claim carries five fingerprints (format, label, content, spine, provenance); a whitespace reflow costs
   zero flags, a rename keeps every id, a value change reaches every dependent claim and names the ones it did not
   move (`silentRisk`). Instructor-declared `[prereq: …]` edges make prerequisite order a first-class spine input.
+- **Inline anchors — identity that travels with the prose.** A list item or paragraph may end with
+  `[anchor: <slug>]`; identity keys on the slug instead of the position, so a reorder keeps every claim id
+  and is reported as RECHECK (order is prerequisite structure) instead of removed + added. All-or-none per
+  list and unique per file, enforced; a declaration may address a block as `@slug` and never needs moving;
+  a positional declaration on an anchored list is refused. The preregistered `study_pairs` apparatus goes
+  from 11/12 to 12/12 with zero unexpected flags on real edits.
 - **Freshness gate.** A committed index that no longer describes the package (a concept-map edit never
   re-indexed) is queued as one `stale-index` decision and blocks release; mid-edit staleness is reported only.
 - **Trust layers.** Deterministic cross-artifact consistency (the study guide and the answer key must agree),

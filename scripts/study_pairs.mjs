@@ -103,8 +103,8 @@ function edit(root, file, from, to) {
 }
 
 const FACT = "At standard pressure the melting point of water is 100 °C.";
-const OBJ1 = "1. State the melting point of water at standard pressure.";
-const OBJ2 = "2. Explain why temperature is constant during a phase change.";
+const OBJ1 = "1. State the melting point of water at standard pressure. [anchor: obj-melting-point]";
+const OBJ2 = "2. Explain why temperature is constant during a phase change. [anchor: obj-constant-temperature]";
 
 /** A human-openable locator. Ids are hashes; a preregistration keyed on one is unreadable. */
 const where = (claim) => `${claim.locations[0].file}#${claim.locations[0].anchor}`;

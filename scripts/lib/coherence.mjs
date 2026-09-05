@@ -808,6 +808,37 @@ function findCycles(nodes, edges) {
  *
  * @returns {Map<string, Set<string>>} reached id -> the relation kinds that reached it
  */
+/**
+ * G22c: the ids of matched, slug-anchored claims whose RELATIVE rank among co-present anchored
+ * siblings (same file, same section) changed between old and new. Rank is taken over the
+ * positional anchor's ordinal on each side, restricted to slugs present on BOTH sides, so an
+ * insert or delete elsewhere in the list moves nobody's relative rank.
+ */
+function reorderedAnchoredSiblings(nodes) {
+  const groups = new Map(); // file|section -> [{id, slug, before, after}]
+  for (const [id, n] of nodes) {
+    if (!n.old || !n.new) continue;
+    const slug = n.new.anchorSlug;
+    if (!slug || n.old.anchorSlug !== slug) continue;
+    const locOld = n.old.locations?.[0], locNew = n.new.locations?.[0];
+    if (!locOld || !locNew || locOld.file !== locNew.file) continue;
+    const sec = (a) => String(a ?? "").split("#")[0];
+    const ord = (a) => Number(String(a ?? "").split("#")[1]) || 0;
+    if (sec(locOld.anchor) !== sec(locNew.anchor)) continue;
+    const key = `${locNew.file}|${sec(locNew.anchor)}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push({ id, before: ord(locOld.anchor), after: ord(locNew.anchor) });
+  }
+  const out = new Set();
+  for (const members of groups.values()) {
+    if (members.length < 2) continue;
+    const rankBefore = new Map([...members].sort((a, b) => a.before - b.before).map((m, i) => [m.id, i]));
+    const rankAfter = new Map([...members].sort((a, b) => a.after - b.after).map((m, i) => [m.id, i]));
+    for (const m of members) if (rankBefore.get(m.id) !== rankAfter.get(m.id)) out.add(m.id);
+  }
+  return out;
+}
+
 function reachFrom(seedId, nodes, edges, refIndex, refsByNode, moved, quantityByNode) {
   const reached = new Map([[seedId, new Set(["seed"])]]);
   const note = (id, kind) => {
@@ -910,6 +941,15 @@ export function claimImpact(root, oldClaims, newClaims, terms, ctx) {
   // nothing. That single line is the product's #1 requirement — a cosmetic edit costs zero — and
   // dropping it would rebuild the byte-hash bug at claim granularity, carrying this index's
   // authority while doing it.
+  // G22c — a REORDER among slug-anchored siblings. Nothing in a reordered claim moves (same
+  // text, same refs), so no fingerprint layer can see it; but ordering is prerequisite structure
+  // (spec §5's spine row: reorder -> RECHECK). The signal is the RELATIVE rank among CO-PRESENT
+  // matched slugs in one file section — insert/delete invariant, so adding an objective at the
+  // top rechecks nothing that kept its order. Reordered claims become seeds with a synthetic
+  // `spine` move, and their verdict is RECHECK regardless of what M4 says about the fingerprints.
+  const reordered = reorderedAnchoredSiblings(nodes);
+  for (const id of reordered) movedByNode.set(id, [...new Set([...movedByNode.get(id), "spine"])]);
+
   const seeds = [...nodes.keys()]
     .filter((id) => movedByNode.get(id).some((layer) => layer !== INERT_LAYER))
     .sort(cmp);
@@ -935,6 +975,14 @@ export function claimImpact(root, oldClaims, newClaims, terms, ctx) {
     .map((id) => {
       const node = nodes.get(id);
       const verdict = classify(node.old?.fingerprints, node.new?.fingerprints, ctxForClaim(ctx, id));
+      if (reordered.has(id) && verdict.action === "NONE") {
+        return {
+          claimId: id,
+          action: "RECHECK",
+          layer: "spine",
+          reason: "Relative order among anchored siblings changed (G22): the claim is unchanged, but the sequence it sits in is prerequisite structure — verify the ordering is still coherent.",
+        };
+      }
       return { claimId: id, ...verdict };
     })
     .sort(byClaimId);

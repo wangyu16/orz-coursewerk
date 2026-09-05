@@ -115,6 +115,22 @@
 
 import { slugify } from "./slug.mjs";
 
+// ---- THE inline anchor marker (G22) -------------------------------------------------------
+// A list item or paragraph MAY end with `[anchor: <slug>]` — a position-independent identity that
+// TRAVELS WITH THE PROSE. A positional anchor (`<section>#<ordinal>`) moves when a block is inserted
+// before it or the list is reordered, so a reorder reads as delete-and-recreate; a declared slug
+// does not. The marker is METADATA: it is lifted off before any label, text or fingerprint is taken,
+// and it is one grammar for the concept map (spine.mjs) and the deliverables (claims.mjs) so both
+// sides of an objective strip exactly the same thing. Slugs are lowercase `[a-z0-9-]`.
+export const ANCHOR_MARKER = /[ \t]*\[anchor:\s*([A-Za-z0-9][A-Za-z0-9-]*)\s*\][ \t]*$/;
+/** Split a trailing `[anchor: slug]` off `text`: `{text, slug}` (slug null when absent). */
+export function splitAnchorMarker(text) {
+  const t = String(text ?? "");
+  const m = ANCHOR_MARKER.exec(t);
+  if (!m) return { text: t, slug: null };
+  return { text: t.slice(0, m.index).trimEnd(), slug: m[1].toLowerCase() };
+}
+
 // ---- THE label matcher (W14) ---------------------------------------------------------------
 // "Does this label occur here, as a whole word?" was implemented four times (M2, M6 twice, M9),
 // none exported — four places able to disagree, silently, about whether a term is mentioned.

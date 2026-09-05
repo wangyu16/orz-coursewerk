@@ -159,7 +159,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { listItems, parseSections } from "./terms.mjs";
+import { listItems, parseSections, splitAnchorMarker } from "./terms.mjs";
 import { slugify } from "./slug.mjs";
 
 const SCHEMA_VERSION = 1;
@@ -304,12 +304,14 @@ export function buildSpine(conceptMaps) {
         // prerequisites of THIS item. Lift it off before the label is taken (it is metadata, not
         // prose), then record each ref verbatim so a dangling one stays reportable. Only the
         // concept section carries this bracket; other sections read the item as-is.
-        let itemText = item;
+        // G22: an inline `[anchor: slug]` is identity metadata for the deliverables (claims.mjs
+        // keys the restated objective on it); the spine lifts it off so the node label is prose.
+        let itemText = splitAnchorMarker(item).text;
         if (kind === "concept") {
-          const pm = CONCEPT_PREREQ.exec(item);
+          const pm = CONCEPT_PREREQ.exec(itemText);
           if (pm) {
             mapDeclaresSemanticPrereqs = true;
-            itemText = item.slice(0, pm.index);
+            itemText = itemText.slice(0, CONCEPT_PREREQ.exec(itemText)?.index ?? itemText.length);
             for (const token of pm[1].split(",").map((s) => s.trim()).filter(Boolean)) {
               const rm = CONCEPT_PREREQ_REF.exec(token);
               // Malformed tokens are KEPT verbatim (ref stays the raw token) so the record still

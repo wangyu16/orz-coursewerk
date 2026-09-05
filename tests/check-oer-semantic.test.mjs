@@ -256,7 +256,7 @@ test("CHECK 4 — a dangling derivedFrom is flagged (M5 mints no edge, so the de
 
 test("CHECK 5 — a REFUSED declaration says 'malformed', not 'you didn't declare'", () => {
   const { semantic } = gateOn((root) =>
-    declare(root, [{ type: "WRONG-TYPE", anchor: "objectives#1", spineRefs: [], sourceRefs: [] }]),
+    declare(root, [{ type: "WRONG-TYPE", anchor: "@obj-melting-point", spineRefs: [], sourceRefs: [] }]),
   );
 
   const items = semantic.queue.items.filter((i) => i.detectorKinds.includes("declaration-refusal"));
@@ -277,7 +277,7 @@ test("CHECK 5 — a REFUSED declaration says 'malformed', not 'you didn't declar
 
   // THE NEGATIVE: a well-formed declaration is not a refusal.
   const ok = gateOn((root) =>
-    declare(root, [{ type: "fact", anchor: "objectives#1", spineRefs: [], sourceRefs: [] }]),
+    declare(root, [{ type: "fact", anchor: "@obj-melting-point", spineRefs: [], sourceRefs: [] }]),
   );
   assert.equal(ok.semantic.queue.items.filter((i) => i.kind === "declaration-refused").length, 0);
   // …and an artifact with NO declaration at all is not a refusal either. This is the whole reason
@@ -300,7 +300,7 @@ test("no two checks share a message: five defects, five distinct reasons", () =>
       { type: "fact", anchor: "no-such-block#7", spineRefs: ["concept.phase-change.1"], sourceRefs: [] },
       { type: "fact", anchor: "melting-point-of-water#1", spineRefs: ["concept.phase-change.42"], sourceRefs: [] },
       { type: "fact", anchor: "latent-heat#1", spineRefs: ["concept.phase-change.2"], sourceRefs: [], derivedFrom: ["claim.ghost.deadbeef"] },
-      { type: "WRONG-TYPE", anchor: "objectives#1", spineRefs: [], sourceRefs: [] },
+      { type: "WRONG-TYPE", anchor: "@obj-melting-point", spineRefs: [], sourceRefs: [] },
     ]);
   });
 
@@ -429,7 +429,7 @@ test("the emitted queue validates against review_queue.schema.json", () => {
   const { root, semantic } = gateOn((root) => {
     declare(root, [
       { type: "fact", anchor: "no-such-block#7", spineRefs: [], sourceRefs: [] },
-      { type: "WRONG-TYPE", anchor: "objectives#1", spineRefs: [], sourceRefs: [] },
+      { type: "WRONG-TYPE", anchor: "@obj-melting-point", spineRefs: [], sourceRefs: [] },
     ]);
   });
   const onDisk = JSON.parse(readPkg(root, REVIEW_QUEUE_PATH));
@@ -556,7 +556,7 @@ test("DETERMINISM: the same package yields a byte-identical queue, twice, from t
     declare(root, [
       { type: "fact", anchor: "no-such-block#7", spineRefs: ["concept.phase-change.1"], sourceRefs: [] },
       { type: "fact", anchor: "melting-point-of-water#1", spineRefs: ["concept.phase-change.42"], sourceRefs: [] },
-      { type: "WRONG-TYPE", anchor: "objectives#1", spineRefs: [], sourceRefs: [] },
+      { type: "WRONG-TYPE", anchor: "@obj-melting-point", spineRefs: [], sourceRefs: [] },
     ]);
   };
 
@@ -596,7 +596,9 @@ test("artifactAnchors exports M2's OWN anchor vocabulary and artifact set", () =
   assert.equal(files.some((f) => f.startsWith("concepts/")), false, "concept maps are not claim artifacts");
 
   const guide = got.find((a) => a.file === "study-guide/phase-change.md");
-  assert.deepEqual(guide.anchors, ["latent-heat#1", "melting-point-of-water#1", "melting-point-of-water#2", "objectives#1", "objectives#2"]);
+  // G22: the fixture's objectives carry inline slugs, so the vocabulary also names them by `@slug`
+  // (a declaration may address either form). Sorted: `@` sorts before letters.
+  assert.deepEqual(guide.anchors, ["@obj-constant-temperature", "@obj-melting-point", "latent-heat#1", "melting-point-of-water#1", "melting-point-of-water#2", "objectives#1", "objectives#2"]);
   assert.deepEqual([...guide.anchors].sort(), guide.anchors, "sorted — the artifact is byte-stable");
 
   // The anchors are the BODY's, not the front matter's: `extractClaims` anchors

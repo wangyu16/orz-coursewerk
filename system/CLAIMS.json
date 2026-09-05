@@ -508,6 +508,29 @@
         "PROCEDURE.md",
         "docs/walkthrough.md"
       ]
+    },
+    {
+      "id": "claim.coherence.anchors",
+      "assuranceLevel": "hard-gate",
+      "statement": "An inline [anchor: slug] on a list item or paragraph is position-independent identity: it is stripped before any text or fingerprint is taken, a reorder keeps the claim id and is reported as RECHECK, an insert or delete elsewhere rechecks nobody, a partially anchored list or a repeated slug is refused, a declaration may address the block as @slug, and a positional declaration on an anchored item is refused.",
+      "implementation": [
+        "scripts/lib/terms.mjs",
+        "scripts/lib/claims.mjs",
+        "scripts/lib/spine.mjs",
+        "scripts/lib/coherence.mjs",
+        "scripts/check_oer.mjs",
+        "system/schemas/package/claims.schema.json"
+      ],
+      "tests": [
+        "tests/anchors.test.mjs",
+        "tests/integration-study-pairs.test.mjs",
+        "tests/check-oer-semantic.test.mjs"
+      ],
+      "documentation": [
+        "format-contracts/deliverables.md",
+        "docs/walkthrough.md",
+        "CHANGELOG.md"
+      ]
     }
   ]
 }

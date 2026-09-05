@@ -129,6 +129,11 @@
             "type": "boolean",
             "default": false
           },
+          "anchorSlug": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "description": "G22: the inline `[anchor: slug]` the author placed on this block, when any. Identity and the id key on `<file>|@<slug>` instead of the positional anchor, so a reorder keeps the claim. `locations[].anchor` still says where the block stands now."
+          },
           "provenanceDeclared": {
             "type": "boolean",
             "description": "true = declared by the generator per contract; false = found by the deterministic scan backstop (indexed + WARN, never hard-fail)"

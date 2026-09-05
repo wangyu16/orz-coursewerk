@@ -144,7 +144,7 @@ Adapts the version-pinned article **<Source>**.
 
 | Section | Shape | Becomes | Notes |
 |---|---|---|---|
-| `## Objectives` | **ordered** list | `objective.<slug>.<n>` | ordinals are identity — **inserting in the middle renumbers the ones after it** |
+| `## Objectives` | **ordered** list | `objective.<slug>.<n>` | ordinals are identity — **inserting in the middle renumbers the ones after it**. An item MAY end with `[anchor: <slug>]` — see *Inline anchors* below; the spine lifts it off, the deliverables key on it |
 | `## Concept sequence` | **ordered** list | `concept.<slug>.<n>` | written as **sentences**, not noun phrases; the order IS the prerequisite chain |
 | `## Key terms` | unordered list | `term.<slug>` | **the vocabulary authority** — see below |
 | `## Misconceptions to surface` | unordered list | `misconception.<slug>.<n>` | **negative claims**: state the misconception, not its correction |
@@ -235,6 +235,35 @@ declaration is structural, and the reader never sees it.
 > empty sidecar is the artifact saying "nothing here is declared", which is an answer. This is a
 > RULE, not a tie-break: merging two sources would let them disagree about a single anchor and leave
 > the parser picking a winner, which is the one thing it may never do. **Write one or the other.**
+
+### Inline anchors — identity that travels with the prose
+
+A positional anchor (`<heading-slug>#<ordinal>`) says *where* a block stands; it moves when a block is
+inserted before it or a list is reordered, so a reorder reads as delete-and-recreate (two strangers
+added, two claims removed). To make a block's identity **independent of its position**, end it with an
+inline marker:
+
+```markdown
+## Objectives
+1. State the melting point of water at standard pressure. [anchor: obj-melting-point]
+2. Explain why temperature is constant during a phase change. [anchor: obj-constant-temperature]
+```
+
+- Slug grammar: `[a-z0-9][a-z0-9-]*`, case-insensitive, **unique within the file**. The marker is
+  metadata: it is stripped before any label, text, or fingerprint is taken (a marker never changes a
+  fingerprint), and the same rule applies in the concept map, so an objective restated in the study
+  guide can carry the same slug on both sides.
+- Identity keys on `<file>|@<slug>` instead of the positional anchor: a reordered anchored item keeps
+  its claim id; the gate reports the reorder as **RECHECK** (order is prerequisite structure), never
+  as removed + added. `locations[].anchor` still records the current positional anchor.
+- **All or none, per list.** Once any item in a section's list carries a marker, every item in that
+  list must (a mixed list would leave the unanchored items positional), and no slug may repeat in the
+  file. A partially anchored list or a duplicate slug is refused as `declaration-refused`.
+- A declaration (below) may name a block by its slug — `"anchor": "@obj-melting-point"` — and then
+  never needs to be moved when the prose moves.
+- On an anchored list, a declaration **must** use the `@slug` form: a positional declaration there
+  would vouch for whatever block stands at that ordinal after a reorder, and is refused as
+  `declaration-refused`.
 
 ### The grammar (identical in both carriers)
 
