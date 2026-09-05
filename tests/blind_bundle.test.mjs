@@ -116,3 +116,131 @@ test("assembler is robust to a minimal package (no FOUNDATION / LICENSE)", () =>
   // Its lone metadata file (SOURCE_RECORD) is a projected input, not an exclusion; nothing raw leaks.
   assert.ok(bundle.sourceRecord && bundle.sourceRecord.schemaVersion === 1);
 });
+
+// ---- the PRODUCT PATH (W18 closed): a documented command, a digest, and a gate that binds to it ----
+import { spawnSync } from "node:child_process";
+import { auditKeyFactReview, makeKeyFactBindings } from "../scripts/lib/key_fact_review.mjs";
+import crypto from "node:crypto";
+import { blindBundleDigest, serializeBlindBundle, serializeJudgedSurface } from "../scripts/lib/blind_bundle.mjs";
+
+function cli(script, args) {
+  const res = spawnSync(process.execPath, [path.join(repo, "scripts", script), ...args], { cwd: repo, encoding: "utf8" });
+  return { code: res.status, stdout: res.stdout ?? "", stderr: res.stderr ?? "" };
+}
+function usagePackage() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "blind-bundle-cli-"));
+  const pkg = path.join(dir, "package");
+  fs.cpSync(path.join(repo, "tests/fixtures/usage-package"), pkg, { recursive: true });
+  return { dir, pkg };
+}
+
+test("PRODUCT PATH · the documented command writes the bundle OUTSIDE the package and prints its digest", () => {
+  const { dir, pkg } = usagePackage();
+  const out = path.join(dir, "reports", "blind-bundle");
+  const res = cli("assemble_blind_bundle.mjs", ["--root", pkg, "--out", out]);
+  assert.equal(res.code, 0, res.stderr);
+  const printed = JSON.parse(res.stdout);
+  assert.match(printed.bundleSha256, /^[a-f0-9]{64}$/);
+  for (const f of ["bundle.json", "bundle.md", "MANIFEST.json"]) assert.ok(fs.existsSync(path.join(out, f)), f);
+  // the package gained NOTHING — the bundle is a report, never a component
+  const inPkg = fs.readdirSync(pkg).filter((n) => /bundle/i.test(n));
+  assert.deepEqual(inPkg, []);
+  // the rendered document carries the digest a reviewer copies into the review
+  assert.ok(fs.readFileSync(path.join(out, "bundle.md"), "utf8").includes(`bundleSha256: ${printed.bundleSha256}`));
+  // the written bundle is the judged surface + the withheld audit trail; the digest is over the
+  // judged surface ONLY, so writing the review (a withheld file) can never move it
+  const bytes = fs.readFileSync(path.join(out, "bundle.json"), "utf8");
+  assert.equal(bytes, serializeBlindBundle(assembleBlindBundle(pkg)));
+  assert.equal(printed.bundleSha256, crypto.createHash("sha256").update(serializeJudgedSurface(assembleBlindBundle(pkg))).digest("hex"));
+  assert.equal(printed.bundleSha256, blindBundleDigest(pkg));
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test("PRODUCT PATH · the command REFUSES to write inside the package", () => {
+  const { dir, pkg } = usagePackage();
+  const res = cli("assemble_blind_bundle.mjs", ["--root", pkg, "--out", path.join(pkg, "metadata", "bundle")]);
+  assert.notEqual(res.code, 0);
+  assert.match(res.stderr, /OUTSIDE the package root/);
+  assert.equal(fs.existsSync(path.join(pkg, "metadata", "bundle")), false);
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test("DIGEST · deterministic across runs, and moves when the RESULT moves — never when process context moves", () => {
+  const { dir, pkg } = usagePackage();
+  const d1 = blindBundleDigest(pkg);
+  assert.equal(blindBundleDigest(pkg), d1, "same package, same bytes");
+  // process context changes (a new generation log) must NOT move the digest — the reviewer never sees it
+  fs.writeFileSync(path.join(pkg, "metadata/PROVENANCE.json"), JSON.stringify({ schemaVersion: 1, items: [{ note: "regenerated" }] }));
+  assert.equal(blindBundleDigest(pkg), d1, "process context is outside the bundle, so outside the digest");
+  // recording the review itself (a withheld process file) must not move it either — self-binding is forbidden
+  fs.writeFileSync(path.join(pkg, "metadata/KEY_FACT_REVIEW.json"), JSON.stringify({ schemaVersion: 1, mode: "light" }));
+  assert.equal(blindBundleDigest(pkg), d1, "the review is not bound into itself");
+  // a deliverable edit MUST move it — the reviewer would be judging a different result
+  const sg = path.join(pkg, "study-guide/melting.md");
+  fs.writeFileSync(sg, fs.readFileSync(sg, "utf8").replace("0 °C", "5 °C"));
+  assert.notEqual(blindBundleDigest(pkg), d1);
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test("GATE · a key-fact review that does not name the bundle it judged, or names a different one, is refused", () => {
+  const { dir, pkg } = usagePackage();
+  const foundation = JSON.parse(fs.readFileSync(path.join(pkg, "metadata/FOUNDATION.json"), "utf8"));
+  const reviewFile = path.join(pkg, "metadata/KEY_FACT_REVIEW.json");
+  const base = {
+    schemaVersion: 1, mode: "light", reviewKind: "same-model-independent-pass",
+    authoringSystem: "author-x", authoringModelId: "model-1",
+    reviewer: { type: "ai", name: "reviewer-x", modelId: "model-1" },
+    independence: { separatePass: true, contextReset: true, approach: "A fresh context reviewed the completed materials independently after drafting ended." },
+    reviewedAt: "2026-09-05",
+    checks: REQUIRED_KEY_FACT_CHECKS.map((id) => ({ id, status: "passed", note: "Examined independently against the bundle; nothing to qualify." })),
+    keyFacts: [{ id: "fact-1", claim: "Pure water melts at 0 °C at standard pressure.", status: "verified",
+      evidenceSourceIds: [foundation.sources[0].id], usedIn: ["study-guide/melting.md"], note: "Traced to the declared source; consistent across the study guide and practice sheet." }],
+  };
+  const write = (review) => fs.writeFileSync(reviewFile, JSON.stringify({ ...review, bindings: makeKeyFactBindings(pkg) }, null, 2));
+
+  write(base);                                           // no digest declared
+  let audit = auditKeyFactReview(pkg, foundation);
+  assert.equal(audit.ready, false);
+  assert.ok(audit.failures.some((f) => /bundleSha256 must record/.test(f)), audit.failures.join("\n"));
+
+  write({ ...base, independence: { ...base.independence, bundleSha256: "0".repeat(64) } });   // a different bundle
+  audit = auditKeyFactReview(pkg, foundation);
+  assert.equal(audit.ready, false);
+  assert.ok(audit.failures.some((f) => /does not match the current blind bundle/.test(f)), audit.failures.join("\n"));
+
+  write({ ...base, independence: { ...base.independence, bundleSha256: blindBundleDigest(pkg) } });  // the real one
+  audit = auditKeyFactReview(pkg, foundation);
+  assert.deepEqual(audit.failures, []);
+  assert.equal(audit.ready, true);
+
+  // and the binding is LIVE: edit a deliverable after the review and the review is stale on both counts
+  const sg = path.join(pkg, "study-guide/melting.md");
+  fs.writeFileSync(sg, fs.readFileSync(sg, "utf8") + "\nA sentence added after the review.\n");
+  audit = auditKeyFactReview(pkg, foundation);
+  assert.equal(audit.ready, false);
+  assert.ok(audit.failures.some((f) => /bindings are stale/.test(f)));
+  assert.ok(audit.failures.some((f) => /does not match the current blind bundle/.test(f)));
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test("GATE · bind:key-fact-review can stamp the digest the reviewer was handed", () => {
+  const { dir, pkg } = usagePackage();
+  const digest = blindBundleDigest(pkg);
+  const reviewFile = path.join(pkg, "metadata/KEY_FACT_REVIEW.json");
+  const foundation = JSON.parse(fs.readFileSync(path.join(pkg, "metadata/FOUNDATION.json"), "utf8"));
+  fs.writeFileSync(reviewFile, JSON.stringify({
+    schemaVersion: 1, mode: "light", reviewKind: "same-model-independent-pass",
+    authoringSystem: "author-x", authoringModelId: "model-1", reviewer: { type: "ai", name: "reviewer-x", modelId: "model-1" },
+    independence: { separatePass: true, contextReset: true, approach: "A fresh context reviewed the completed materials independently after drafting ended." },
+    reviewedAt: "2026-09-05",
+    checks: REQUIRED_KEY_FACT_CHECKS.map((id) => ({ id, status: "passed", note: "Examined independently against the bundle; nothing to qualify." })),
+    keyFacts: [{ id: "fact-1", claim: "Pure water melts at 0 °C at standard pressure.", status: "verified",
+      evidenceSourceIds: [foundation.sources[0].id], usedIn: ["study-guide/melting.md"], note: "Traced to the declared source; consistent across the study guide and practice sheet." }],
+  }, null, 2));
+  const res = cli("bind_key_fact_review.mjs", ["--root", pkg, "--bundle-sha256", digest]);
+  assert.equal(res.code, 0, res.stderr);
+  const bound = JSON.parse(fs.readFileSync(reviewFile, "utf8"));
+  assert.equal(bound.independence.bundleSha256, digest);
+  assert.equal(auditKeyFactReview(pkg, foundation).ready, true, "a stamped, matching digest passes the gate");
+  fs.rmSync(dir, { recursive: true, force: true });
+});

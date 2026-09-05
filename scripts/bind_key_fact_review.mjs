@@ -16,6 +16,7 @@ review.authoringSystem = opt("--authoring-system", review.authoringSystem);
 review.authoringModelId = opt("--authoring-model-id", review.authoringModelId);
 review.reviewer = { name: opt("--reviewer-name", review.reviewer?.name), type: opt("--reviewer-type", review.reviewer?.type), modelId: opt("--reviewer-model-id", review.reviewer?.modelId) };
 review.reviewedAt = opt("--reviewed-at", review.reviewedAt);
+if (opt("--bundle-sha256") !== null) review.independence = { ...(review.independence || {}), bundleSha256: opt("--bundle-sha256") };
 review.bindings = makeKeyFactBindings(root);
 fs.writeFileSync(file, JSON.stringify(review, null, 2) + "\n");
 const foundation = JSON.parse(fs.readFileSync(path.join(root, "metadata", "FOUNDATION.json"), "utf8"));

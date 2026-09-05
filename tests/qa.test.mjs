@@ -12,6 +12,7 @@ import { computeComponentGraph, makeComponentIndex, recordAcceptedCoherence, wri
 import { commitOutput, ensureOutputGit } from "../scripts/lib/output_git.mjs";
 import { writeSourceRecord } from "../scripts/lib/source_record.mjs";
 import { makeKeyFactBindings } from "../scripts/lib/key_fact_review.mjs";
+import { blindBundleDigest } from "../scripts/lib/blind_bundle.mjs";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sha = (value) => crypto.createHash("sha256").update(value).digest("hex");
@@ -50,7 +51,7 @@ function addReleaseReviews(root, foundation) {
     authoringSystem: "QA fixture model",
     authoringModelId: "qa-fixture-model-v1",
     reviewer: { type: "ai", name: "QA fixture model", modelId: "qa-fixture-model-v1" },
-    independence: { separatePass: true, contextReset: true, approach: "A fresh review context examined the completed fixture after the drafting pass had ended." },
+    independence: { separatePass: true, contextReset: true, bundleSha256: blindBundleDigest(root), approach: "A fresh review context examined the completed fixture after the drafting pass had ended." },
     reviewedAt: "2026-07-13",
     bindings: makeKeyFactBindings(root),
     checks: ["accountable-identity", "source-identity-version", "source-license-evidence", "external-media-rights", "output-license-compatibility", "attribution-obligations", "scientific-key-facts"].map((id) => ({ id, status: "passed", note: `Independently reviewed ${id} against the bound fixture records and found it internally consistent.` })),

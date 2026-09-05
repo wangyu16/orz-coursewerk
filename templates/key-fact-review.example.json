@@ -12,6 +12,7 @@
   "independence": {
     "separatePass": true,
     "contextReset": true,
+    "bundleSha256": "COPY-FROM-THE-HEADER-OF-reports/blind-bundle/bundle.md",
     "approach": "REPLACE-WITH-HOW-THE-REVIEW-WAS-RUN-SEPARATELY-FROM-DRAFTING"
   },
   "reviewedAt": "REPLACE-WITH-YYYY-MM-DD",

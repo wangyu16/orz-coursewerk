@@ -22,7 +22,8 @@
 // bundle; it is not this module.
 import fs from "node:fs";
 import path from "node:path";
-import { REQUIRED_KEY_FACT_CHECKS } from "./key_fact_review.mjs";
+import crypto from "node:crypto";
+import { REQUIRED_KEY_FACT_CHECKS } from "./key_fact_checks.mjs";
 
 // The five student-facing deliverable trees — the RESULT the blind reviewer evaluates.
 const DELIVERABLE_TOPS = new Set(["concepts", "study-guide", "slides", "assessment-support", "practice"]);
@@ -134,4 +135,68 @@ export function assembleBlindBundle(root) {
     sourceRecord: readJson(root, SOURCE_RECORD_FILE),
     excluded,
   };
+}
+
+/**
+ * The JUDGED SURFACE — exactly what the reviewer evaluates, in a fixed key order: the criteria,
+ * the deliverables, and the factual verification inputs. This is what the digest is taken over.
+ *
+ * NOT the `excluded` audit trail. That trail names every process file that EXISTS (a prior
+ * KEY_FACT_REVIEW.json, the review queue, the indexes), so it moves when the review itself is
+ * written — and a digest over it would let recording the review invalidate the review, the
+ * self-binding defect `key-fact-bindings.test.mjs` exists to forbid. The trail is still written to
+ * `bundle.json` (a reviewer may audit what was withheld), it is just not part of the identity.
+ */
+export function serializeJudgedSurface(bundle) {
+  const ordered = {
+    schemaVersion: 1,
+    criteria: bundle.criteria,
+    deliverables: bundle.deliverables.map((d) => ({ path: d.path, text: d.text })),
+    sources: bundle.sources,
+    license: bundle.license,
+    attribution: bundle.attribution,
+    mediaPlan: bundle.mediaPlan,
+    sourceRecord: bundle.sourceRecord,
+  };
+  return JSON.stringify(ordered, null, 2) + "\n";
+}
+
+/** The full on-disk bundle: the judged surface plus the withheld-files audit trail. */
+export function serializeBlindBundle(bundle) {
+  const judged = JSON.parse(serializeJudgedSurface(bundle));
+  return JSON.stringify({ ...judged, excluded: bundle.excluded.map((e) => ({ path: e.path, class: e.class, reason: e.reason })) }, null, 2) + "\n";
+}
+
+/** sha256 of the JUDGED SURFACE for `root` — the key-fact review's `blindBundleSha256` binding. */
+export function blindBundleDigest(root) {
+  return crypto.createHash("sha256").update(serializeJudgedSurface(assembleBlindBundle(root))).digest("hex");
+}
+/**
+ * A human/agent-readable rendering of the bundle: the criteria first, then the verification
+ * inputs, then every deliverable verbatim under its path. This is the document the fresh reviewer
+ * reads. It carries the digest in its header so the reviewer can copy it into
+ * `independence.bundleSha256` without recomputing anything.
+ */
+export function renderBlindBundle(bundle, digest) {
+  const L = [];
+  L.push("# Blind key-fact review bundle", "");
+  L.push(`bundleSha256: ${digest}`, "");
+  L.push("You are reviewing a completed course package. You have NOT been shown how it was produced —",
+    "no generation log, no prior reviewer's verdicts, no authoring disclosure — and you must not ask.",
+    "Judge only what is below against the criteria. Record your verdicts in KEY_FACT_REVIEW.json and",
+    "copy the bundleSha256 above into `independence.bundleSha256`.", "");
+  L.push("## Criteria (every one must be examined)", "");
+  for (const c of bundle.criteria) L.push(`- ${c}`);
+  L.push("", "## Declared sources (identity + rights facts only)", "");
+  L.push("```json", JSON.stringify(bundle.sources, null, 2), "```", "");
+  if (bundle.license != null) L.push("## LICENSE", "", "```", bundle.license.trimEnd(), "```", "");
+  if (bundle.attribution != null) L.push("## metadata/ATTRIBUTION.md", "", bundle.attribution.trimEnd(), "");
+  if (bundle.mediaPlan != null) L.push("## metadata/MEDIA_PLAN.json", "", "```json", JSON.stringify(bundle.mediaPlan, null, 2), "```", "");
+  if (bundle.sourceRecord != null) L.push("## metadata/SOURCE_RECORD.json", "", "```json", JSON.stringify(bundle.sourceRecord, null, 2), "```", "");
+  L.push("## Deliverables (the RESULT, verbatim)", "");
+  for (const d of bundle.deliverables) L.push(`### ${d.path}`, "", "````markdown", d.text.trimEnd(), "````", "");
+  L.push("## Withheld from this bundle (audit trail)", "");
+  for (const e of bundle.excluded) L.push(`- \`${e.path}\` — ${e.class}: ${e.reason}`);
+  L.push("");
+  return L.join("\n");
 }

@@ -5,6 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { auditKeyFactReview, makeKeyFactBindings } from "../scripts/lib/key_fact_review.mjs";
+import { blindBundleDigest } from "../scripts/lib/blind_bundle.mjs";
 import { auditVisualReview, carrierReviewRecords, verifyVisualReviewAgainstCarrierReceipt } from "../scripts/lib/visual_review.mjs";
 
 const sha = (value) => crypto.createHash("sha256").update(value).digest("hex");
@@ -30,7 +31,7 @@ function keyFactFixture(chapters = ["one"]) {
     authoringSystem: "fixture model",
     authoringModelId: "fixture-model-v1",
     reviewer: { type: "ai", name: "fixture model", modelId: "fixture-model-v1" },
-    independence: { separatePass: true, contextReset: true, approach: "A fresh context reviewed the completed materials independently after drafting ended." },
+    independence: { separatePass: true, contextReset: true, bundleSha256: blindBundleDigest(root), approach: "A fresh context reviewed the completed materials independently after drafting ended." },
     reviewedAt: "2026-07-14",
     bindings: makeKeyFactBindings(root),
     checks: ["accountable-identity", "source-identity-version", "source-license-evidence", "external-media-rights", "output-license-compatibility", "attribution-obligations", "scientific-key-facts"].map((id) => ({ id, status: "passed", note: `The separate pass reviewed ${id} against the current bound records and teaching materials.` })),

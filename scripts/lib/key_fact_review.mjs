@@ -2,16 +2,11 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
+import { REQUIRED_KEY_FACT_CHECKS } from "./key_fact_checks.mjs";
+import { blindBundleDigest } from "./blind_bundle.mjs";
+
 export const KEY_FACT_REVIEW_PATH = "metadata/KEY_FACT_REVIEW.json";
-export const REQUIRED_KEY_FACT_CHECKS = [
-  "accountable-identity",
-  "source-identity-version",
-  "source-license-evidence",
-  "external-media-rights",
-  "output-license-compatibility",
-  "attribution-obligations",
-  "scientific-key-facts",
-];
+export { REQUIRED_KEY_FACT_CHECKS };
 const DELIVERABLE_TOPS = new Set(["concepts", "study-guide", "slides", "assessment-support", "practice"]);
 const sha256 = (value) => crypto.createHash("sha256").update(value).digest("hex");
 
@@ -79,6 +74,18 @@ export function auditKeyFactReview(root, foundation) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(review.reviewedAt || ""))) failures.push(`${KEY_FACT_REVIEW_PATH}: reviewedAt must be YYYY-MM-DD.`);
   if (JSON.stringify(review.bindings || {}) !== JSON.stringify(makeKeyFactBindings(root)))
     failures.push(`${KEY_FACT_REVIEW_PATH}: bindings are stale; repeat the key-fact critique after the latest source, provenance, or deliverable change.`);
+  // INDEPENDENCE IS ASSEMBLED, NOT DECLARED. `separatePass`/`contextReset` are the reviewer's word
+  // about itself; the gate cannot verify a word. What it CAN verify is that the review names the
+  // digest of the one surface a blind reviewer is given — the bundle `review:blind-bundle` assembles
+  // by allowlist, with every process file withheld — and that this digest is the CURRENT package's.
+  // A review that cannot name it either never saw the bundle or saw a different package.
+  // Not a `bindings` entry: each binding tracks ONE record; the bundle is a composite of several
+  // (deliverables, license, attribution, source record, projected sources) and is compared live.
+  const declaredBundle = String(review.independence?.bundleSha256 || "").trim().toLowerCase();
+  if (!/^[a-f0-9]{64}$/.test(declaredBundle))
+    failures.push(`${KEY_FACT_REVIEW_PATH}: independence.bundleSha256 must record the digest of the blind bundle the reviewer judged (run \`npm run review:blind-bundle\`).`);
+  else if (declaredBundle !== blindBundleDigest(root))
+    failures.push(`${KEY_FACT_REVIEW_PATH}: independence.bundleSha256 does not match the current blind bundle — the reviewer judged a different result; re-assemble the bundle and repeat the critique.`);
   const checks = new Map((review.checks || []).map((check) => [check.id, check]));
   for (const id of REQUIRED_KEY_FACT_CHECKS) {
     const check = checks.get(id);

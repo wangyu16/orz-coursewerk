@@ -20,6 +20,7 @@ import {
 import { commitOutput, ensureOutputGit, outputGitState } from "../scripts/lib/output_git.mjs";
 import { writeSourceRecord } from "../scripts/lib/source_record.mjs";
 import { makeKeyFactBindings } from "../scripts/lib/key_fact_review.mjs";
+import { blindBundleDigest } from "../scripts/lib/blind_bundle.mjs";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -547,7 +548,7 @@ test("pack succeeds only after a valid public assurance pass", () => {
     authoringSystem: "test authoring model",
     authoringModelId: "fixture-model-v1",
     reviewer: { type: "ai", name: "test authoring model", modelId: "fixture-model-v1" },
-    independence: { separatePass: true, contextReset: true, approach: "A fresh review context checked the completed fixture only after drafting had ended." },
+    independence: { separatePass: true, contextReset: true, bundleSha256: blindBundleDigest(f.root), approach: "A fresh review context checked the completed fixture only after drafting had ended." },
     reviewedAt: "2026-07-13",
     bindings: makeKeyFactBindings(f.root),
     checks: ["accountable-identity", "source-identity-version", "source-license-evidence", "external-media-rights", "output-license-compatibility", "attribution-obligations", "scientific-key-facts"].map((id) => ({

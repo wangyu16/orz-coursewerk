@@ -16,6 +16,7 @@
     "prepare:wikipedia-topic": "node scripts/prepare_wikipedia_topic.mjs",
     "capture:rights": "node scripts/capture_rights_evidence.mjs",
     "capture:media": "node scripts/capture_media_evidence.mjs",
+    "review:blind-bundle": "node scripts/assemble_blind_bundle.mjs --root package --out reports/blind-bundle",
     "bind:key-fact-review": "node scripts/bind_key_fact_review.mjs",
     "record:override": "node scripts/record_override.mjs --root package",
     "attest:visual-review": "node scripts/attest_visual_review.mjs",

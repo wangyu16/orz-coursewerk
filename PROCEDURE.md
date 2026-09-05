@@ -202,22 +202,36 @@ structure, assessment labels, and spelling/grammar. Resolve accidental drift bef
 
 Complete the mode-independent release reviews before indexing the accepted baseline:
 
-1. Draft `package/metadata/KEY_FACT_REVIEW.json` from `templates/key-fact-review.example.json`. In Light mode,
-   make a fresh, context-separated same-model pass and use `mode: light` plus
-   `reviewKind: same-model-independent-pass`. In Full mode, use the different reviewer/model and record
-   `mode: full` plus `reviewKind: cross-model`. Examine every required check and trace representative
-   chapter-level scientific facts to declared source IDs and every listed use. Light mode must use a genuine
-   context reset/fresh review pass and record matching exact author/reviewer model IDs; Full must record different
-   exact model IDs. Describe that separation; every declared chapter needs at least one key fact traced to its
-   study guide. Then bind and validate it:
+1. **Assemble the blind bundle first, and hand the reviewer ONLY that.** The critique's power is
+   independence — a reviewer blind to how the result was produced, judging only the result against the
+   criteria — and independence is assembled, not declared:
 
    ```bash
-   npm run bind:key-fact-review -- --root package
+   npm run review:blind-bundle          # writes reports/blind-bundle/{bundle.md,bundle.json,MANIFEST.json}
+   ```
+
+   `bundle.md` carries the criteria, the declared sources projected to identity + rights facts, the
+   license/attribution/source record, and every deliverable verbatim — and nothing else: no generation
+   log, no prior verdicts, no authoring disclosure (those are listed as *withheld* in the manifest). Its
+   header prints `bundleSha256`. Give the fresh reviewer that file and nothing from your own context.
+2. Draft `package/metadata/KEY_FACT_REVIEW.json` from `templates/key-fact-review.example.json`. In Light mode,
+   the reviewer is a fresh, context-separated same-model pass (a new subagent/session given only `bundle.md`);
+   use `mode: light` plus `reviewKind: same-model-independent-pass`. In Full mode, use the different
+   reviewer/model and record `mode: full` plus `reviewKind: cross-model`. Examine every required check and trace
+   representative chapter-level scientific facts to declared source IDs and every listed use. Light mode must
+   record matching exact author/reviewer model IDs; Full must record different exact model IDs. Describe that
+   separation and copy the bundle's `bundleSha256` into `independence.bundleSha256`; every declared chapter needs
+   at least one key fact traced to its study guide. Then bind and validate it:
+
+   ```bash
+   npm run bind:key-fact-review -- --root package --bundle-sha256 <bundleSha256>
    ```
 
    Do not pre-fill “passed” mechanically; the review notes are evidence of an actual critique. Any later change
-   to foundation, provenance, source record, or a teaching deliverable makes the binding stale.
-2. Build all carriers with a receipt, open every carrier in a browser, inspect visible rendering and DOM behavior
+   to foundation, provenance, source record, or a teaching deliverable makes the binding stale, and changes the
+   bundle digest — so the fix path is always *re-assemble → re-review → re-bind*, never re-bind alone. The gate
+   refuses a review that names no bundle digest or names a different package's.
+3. Build all carriers with a receipt, open every carrier in a browser, inspect visible rendering and DOM behavior
    including runtime diagrams, local images, layout, interaction, overflow, and readable alternatives, then let
    the identified human record the attestation:
 

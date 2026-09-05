@@ -34,6 +34,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { auditKeyFactReview, makeKeyFactBindings } from "../scripts/lib/key_fact_review.mjs";
+import { blindBundleDigest } from "../scripts/lib/blind_bundle.mjs";
 
 const writeJson = (file, value) => {
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -61,7 +62,7 @@ function fixture(temp) {
     authoringSystem: "fixture model",
     authoringModelId: "fixture-model-v1",
     reviewer: { type: "ai", name: "fixture model", modelId: "fixture-model-v1" },
-    independence: { separatePass: true, contextReset: true, approach: "A fresh context reviewed the completed materials independently after drafting ended." },
+    independence: { separatePass: true, contextReset: true, bundleSha256: blindBundleDigest(root), approach: "A fresh context reviewed the completed materials independently after drafting ended." },
     reviewedAt: "2026-07-14",
     bindings: makeKeyFactBindings(root),
     checks: ["accountable-identity", "source-identity-version", "source-license-evidence", "external-media-rights", "output-license-compatibility", "attribution-obligations", "scientific-key-facts"]
@@ -75,6 +76,9 @@ function fixture(temp) {
 /** Re-run the binding step against the package as it now stands — what bind_key_fact_review.mjs does. */
 function rebind(fixtureUnderTest) {
   fixtureUnderTest.review.bindings = makeKeyFactBindings(fixtureUnderTest.root);
+  // The reviewer re-judges the RE-ASSEMBLED bundle after the fix and records its digest — the
+  // refresh path is "re-assemble, re-review, re-bind", never "re-bind alone".
+  fixtureUnderTest.review.independence.bundleSha256 = blindBundleDigest(fixtureUnderTest.root);
   writeJson(path.join(fixtureUnderTest.root, ...REVIEW_FILE), fixtureUnderTest.review);
 }
 
