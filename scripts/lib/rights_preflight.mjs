@@ -34,6 +34,10 @@ export function normalizeEvidenceText(value) {
     .replace(/[\u00AD\u200B\u200C\u200D\uFEFF]/g, "") // soft hyphens / zero-width joiners split "train­ing" (L4)
     .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
     .replace(/<style\b[\s\S]*?<\/style>/gi, " ")
+    // Round-4 audit: text a browser never shows is not visible evidence either.
+    .replace(/<(?:noscript|template)\b[\s\S]*?<\/(?:noscript|template)>/gi, " ")
+    .replace(/<(\w+)\b[^>]*(?:\bhidden\b|aria-hidden\s*=\s*["']?true|display\s*:\s*none|visibility\s*:\s*hidden|font-size\s*:\s*0)[^>]*>[\s\S]*?<\/\1>/gi, " ")
+    .replace(/<!--[\s\S]*?-->/g, " ")
     .replace(/<[^>]+>/g, " ")
     .replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (_, entity) => {
       if (entity[0] === "#") {

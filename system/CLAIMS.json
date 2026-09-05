@@ -313,7 +313,7 @@
     {
       "id": "claim.control.coverage",
       "assuranceLevel": "hard-gate",
-      "statement": "The gate verifies the package against the instructor's concept map in both directions: an objective is taught only by a claim outside the deliverable's own objectives list that is not itself an objective and that carries the objective's bracketed vocabulary (declared termRef or in prose); an objective with no such claim and none of its key terms taught is a fail-closed missing-coverage block in every mode; a deliverable tagging an undeclared objective fails the format contract; a spine label moved under an unchanged id while claims are declared under it is blocking; a prerequisite cycle is blocking; coverage is reported as a floor with denominators and the chapters where the check is undefined are named.",
+      "statement": "The gate verifies the package against the instructor's concept map in both directions: an objective is taught only by a claim that is not itself an objective, does not sit in an objectives list, does not restate the objective's own statement under any heading and that carries the objective's bracketed vocabulary (declared termRef or in prose); an objective with no such claim and none of its key terms taught is a fail-closed missing-coverage block in every mode; a deliverable tagging an undeclared objective fails the format contract; a spine label moved under an unchanged id while claims are declared under it is blocking; a prerequisite cycle is blocking; coverage is reported as a floor with denominators and the chapters where the check is undefined are named. A relabeled objective that still carries declared claims cannot be accepted into the baseline without an explicit acknowledgment.",
       "implementation": [
         "scripts/check_oer.mjs",
         "scripts/lib/spine.mjs",
@@ -322,7 +322,8 @@
       "tests": [
         "tests/check-oer-control.test.mjs",
         "tests/usage-e2e.test.mjs",
-        "tests/spine.test.mjs"
+        "tests/spine.test.mjs",
+        "tests/audit-round-4.test.mjs"
       ],
       "documentation": [
         "FEATURES.md",
@@ -407,7 +408,7 @@
     {
       "id": "claim.trust.consistency",
       "assuranceLevel": "hard-gate",
-      "statement": "Cross-artifact disagreements on a shared term or quantity are found deterministically with no declared edge required \u2014 the answer tab or Answer line of a block is the assertion and its first value per dimension is compared, unit look-alikes and spelled-out units are recognized, a declared type or extra declared terms cannot opt an answer out \u2014 physically impossible values are flagged by a conservative range audit, and asserting the map's own misconception is blocking.",
+      "statement": "Cross-artifact disagreements on a shared term or quantity are found deterministically with no declared edge required \u2014 the answer tab or Answer line of a block is the assertion and its single value per dimension is compared and an answer carrying two different values is an ambiguous-answer review item, unit look-alikes and spelled-out units are recognized, a declared type or extra declared terms cannot opt an answer out \u2014 physically impossible values are flagged by a conservative range audit, and asserting the map's own misconception is blocking. A scan-found claim's subject carries only the dimensions declared claims give the term.",
       "implementation": [
         "scripts/lib/consistency.mjs",
         "scripts/lib/units.mjs",
@@ -418,7 +419,8 @@
         "tests/units.test.mjs",
         "tests/range.test.mjs",
         "tests/check-oer-consistency.test.mjs",
-        "tests/usage-e2e.test.mjs"
+        "tests/usage-e2e.test.mjs",
+        "tests/audit-round-4.test.mjs"
       ],
       "documentation": [
         "FEATURES.md",
@@ -461,7 +463,8 @@
       "tests": [
         "tests/blind_bundle.test.mjs",
         "tests/key-fact-bindings.test.mjs",
-        "tests/reviews.test.mjs"
+        "tests/reviews.test.mjs",
+        "tests/audit-round-4.test.mjs"
       ],
       "documentation": [
         "FEATURES.md",

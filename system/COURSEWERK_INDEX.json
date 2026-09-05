@@ -47,7 +47,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "09badee9ed7fafa786a6b3ccc49c2ed945a87fd21c8c9607ef180ef2f5035d18"
+      "hash": "88b31fb7dea5ed1fa49c621aeaf7670d8083f9d71935cce64047b9c062258562"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -77,7 +77,7 @@
       "id": "repo:docs/closed-loop-rounds.md",
       "path": "docs/closed-loop-rounds.md",
       "type": "documentation",
-      "hash": "d0d790e674fb09e0e2d7894dcdaf9e8437ce6266a9faed12197ce043603fa4ba"
+      "hash": "397b36275883f8dd5ad99cae39a54da76588af1dfc55a0b5349fa90469b2b77a"
     },
     {
       "id": "repo:docs/coherence-index.md",
@@ -227,7 +227,7 @@
       "id": "repo:scripts/check_oer.mjs",
       "path": "scripts/check_oer.mjs",
       "type": "executable",
-      "hash": "36a4bdc903581ad49d89df3b7fd1b1074b8f2968db800ffc8935eeeddd4cbb95"
+      "hash": "17a9a2ca39cf6d5e310276286df671bce5201aed1bb1959e964e0e5ffe03e3d0"
     },
     {
       "id": "repo:scripts/coursewerk_impact.mjs",
@@ -305,7 +305,7 @@
       "id": "repo:scripts/index_semantic.mjs",
       "path": "scripts/index_semantic.mjs",
       "type": "executable",
-      "hash": "977d398ab1a74ff75e2e5f3d293695f921d58a4868ec2ff8626b47826aec3cfc"
+      "hash": "51dbda833116f47433063d46c481dbdb1ca41634b62ca38e64c48b92242c6df4"
     },
     {
       "id": "repo:scripts/init_output_git.mjs",
@@ -347,7 +347,7 @@
       "id": "repo:scripts/lib/consistency.mjs",
       "path": "scripts/lib/consistency.mjs",
       "type": "kernel",
-      "hash": "bb7120e57af396cd8399d641b4b91f2767c7760b6a46bf697dc2b45b843f591d"
+      "hash": "d392d9a9bb77b8754606dd147d29aa80ba25f6212564ef84b088cabb92cdd859"
     },
     {
       "id": "repo:scripts/lib/contract.mjs",
@@ -359,7 +359,7 @@
       "id": "repo:scripts/lib/escalation.mjs",
       "path": "scripts/lib/escalation.mjs",
       "type": "kernel",
-      "hash": "94fea03a63f251c1ac98d3af2948b9f65fbb3893f10c6c88580c0f6f2dd92f78"
+      "hash": "43e4e1dced835b2e432c4a1a8dd6cfa273d30a6e7ebc6d86d4621f778a29c93a"
     },
     {
       "id": "repo:scripts/lib/fingerprint.mjs",
@@ -371,7 +371,7 @@
       "id": "repo:scripts/lib/identity.mjs",
       "path": "scripts/lib/identity.mjs",
       "type": "kernel",
-      "hash": "e8ed807d5001d677205b7e49dbd48e855409afa81b854342248c6ff57578d93e"
+      "hash": "2fd35a2a3b9a6aa6bffe13b730e87c7f91444b4787065814155bccb67908fa55"
     },
     {
       "id": "repo:scripts/lib/immutable.mjs",
@@ -389,7 +389,7 @@
       "id": "repo:scripts/lib/key_fact_review.mjs",
       "path": "scripts/lib/key_fact_review.mjs",
       "type": "kernel",
-      "hash": "f50e5427554abfa9adb5569c44a8672341177e285d7efa4e208eac11939e1a8c"
+      "hash": "dd2a39e70546068ca2d426233380a7c3100b220a6c18881ad4dac6e11d92aaf9"
     },
     {
       "id": "repo:scripts/lib/output_git.mjs",
@@ -419,13 +419,13 @@
       "id": "repo:scripts/lib/rights_preflight.mjs",
       "path": "scripts/lib/rights_preflight.mjs",
       "type": "kernel",
-      "hash": "8e1a62241a13774775aaa44f9cc5ae46a4d833285f340ba674af1af80e5264dd"
+      "hash": "58bbf984e2f2ba2a630b8dc86c695a0de8584a984d07bcb1fc901bf7a821b2d9"
     },
     {
       "id": "repo:scripts/lib/semantic_index.mjs",
       "path": "scripts/lib/semantic_index.mjs",
       "type": "kernel",
-      "hash": "ab73685ec476a456bc7473f92227539f6b998c9db3d40930cc99cca39b7945fa"
+      "hash": "cd809a2391c389188d33ff0abee6c70374c2803fb3b1b2a0378c648d9d128035"
     },
     {
       "id": "repo:scripts/lib/slug.mjs",
@@ -443,7 +443,7 @@
       "id": "repo:scripts/lib/spine.mjs",
       "path": "scripts/lib/spine.mjs",
       "type": "kernel",
-      "hash": "f8871667d3a9fe009dfcd833f930e3a2466c3aa76196a26bd32794baa421142b"
+      "hash": "2a967517c4f4675d83c8fa5a85e36523f250d0358c4b98527e9156d28878c943"
     },
     {
       "id": "repo:scripts/lib/system_index.mjs",
@@ -479,7 +479,7 @@
       "id": "repo:scripts/pack.mjs",
       "path": "scripts/pack.mjs",
       "type": "executable",
-      "hash": "740de070f3c954ceec95e56e6cfaa99516aed18475bbfff4c2ffb9a4ac4f6064"
+      "hash": "46760b25c489c33a2e40d0d48466d0cfb1cd731446a9e66ab38e09baea725e04"
     },
     {
       "id": "repo:scripts/prepare_source_corpus.mjs",
@@ -653,7 +653,7 @@
       "id": "repo:system/CLAIMS.json",
       "path": "system/CLAIMS.json",
       "type": "system-governance",
-      "hash": "1e458e8c3cf905e3606d301263d476047ee6332d2ef45e870e10370a5b059375"
+      "hash": "c32de90f2ada3e1b99f1f8fe13f3dce49217dcad419c482925e653aa26326e0b"
     },
     {
       "id": "repo:system/COMPONENTS.json",
@@ -792,6 +792,12 @@
       "path": "tests/audit-round-3.test.mjs",
       "type": "test",
       "hash": "93936b7e6c95ac09031be2b6aeb9268a3986a3d91be4ba64b2ab345b275d0e4b"
+    },
+    {
+      "id": "repo:tests/audit-round-4.test.mjs",
+      "path": "tests/audit-round-4.test.mjs",
+      "type": "test",
+      "hash": "57c168d903765d252a2e107d39c50e25f3b35546d145462554500c65054d0245"
     },
     {
       "id": "repo:tests/blind_bundle.test.mjs",
@@ -1768,7 +1774,7 @@
     {
       "id": "claim.control.coverage",
       "assuranceLevel": "hard-gate",
-      "statement": "The gate verifies the package against the instructor's concept map in both directions: an objective is taught only by a claim outside the deliverable's own objectives list that is not itself an objective and that carries the objective's bracketed vocabulary (declared termRef or in prose); an objective with no such claim and none of its key terms taught is a fail-closed missing-coverage block in every mode; a deliverable tagging an undeclared objective fails the format contract; a spine label moved under an unchanged id while claims are declared under it is blocking; a prerequisite cycle is blocking; coverage is reported as a floor with denominators and the chapters where the check is undefined are named.",
+      "statement": "The gate verifies the package against the instructor's concept map in both directions: an objective is taught only by a claim that is not itself an objective, does not sit in an objectives list, does not restate the objective's own statement under any heading and that carries the objective's bracketed vocabulary (declared termRef or in prose); an objective with no such claim and none of its key terms taught is a fail-closed missing-coverage block in every mode; a deliverable tagging an undeclared objective fails the format contract; a spine label moved under an unchanged id while claims are declared under it is blocking; a prerequisite cycle is blocking; coverage is reported as a floor with denominators and the chapters where the check is undefined are named. A relabeled objective that still carries declared claims cannot be accepted into the baseline without an explicit acknowledgment.",
       "implementation": [
         "scripts/check_oer.mjs",
         "scripts/lib/spine.mjs",
@@ -1777,7 +1783,8 @@
       "tests": [
         "tests/check-oer-control.test.mjs",
         "tests/usage-e2e.test.mjs",
-        "tests/spine.test.mjs"
+        "tests/spine.test.mjs",
+        "tests/audit-round-4.test.mjs"
       ],
       "documentation": [
         "FEATURES.md",
@@ -1940,7 +1947,8 @@
       "tests": [
         "tests/blind_bundle.test.mjs",
         "tests/key-fact-bindings.test.mjs",
-        "tests/reviews.test.mjs"
+        "tests/reviews.test.mjs",
+        "tests/audit-round-4.test.mjs"
       ],
       "documentation": [
         "FEATURES.md",
@@ -2059,7 +2067,7 @@
     {
       "id": "claim.trust.consistency",
       "assuranceLevel": "hard-gate",
-      "statement": "Cross-artifact disagreements on a shared term or quantity are found deterministically with no declared edge required — the answer tab or Answer line of a block is the assertion and its first value per dimension is compared, unit look-alikes and spelled-out units are recognized, a declared type or extra declared terms cannot opt an answer out — physically impossible values are flagged by a conservative range audit, and asserting the map's own misconception is blocking.",
+      "statement": "Cross-artifact disagreements on a shared term or quantity are found deterministically with no declared edge required — the answer tab or Answer line of a block is the assertion and its single value per dimension is compared and an answer carrying two different values is an ambiguous-answer review item, unit look-alikes and spelled-out units are recognized, a declared type or extra declared terms cannot opt an answer out — physically impossible values are flagged by a conservative range audit, and asserting the map's own misconception is blocking. A scan-found claim's subject carries only the dimensions declared claims give the term.",
       "implementation": [
         "scripts/lib/consistency.mjs",
         "scripts/lib/units.mjs",
@@ -2070,7 +2078,8 @@
         "tests/units.test.mjs",
         "tests/range.test.mjs",
         "tests/check-oer-consistency.test.mjs",
-        "tests/usage-e2e.test.mjs"
+        "tests/usage-e2e.test.mjs",
+        "tests/audit-round-4.test.mjs"
       ],
       "documentation": [
         "FEATURES.md",

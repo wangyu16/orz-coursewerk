@@ -23,6 +23,7 @@ import {
   writeSemanticIndex,
 } from "./lib/semantic_index.mjs";
 import { commitOutput, ensureOutputGit } from "./lib/output_git.mjs";
+import { loadSemanticIndex, spineRelabels } from "./lib/semantic_index.mjs";
 
 const args = process.argv.slice(2);
 const opt = (n, d = null) => {
@@ -52,6 +53,21 @@ if (index.conceptMaps.length === 0) {
   process.exit(2);
 }
 
+// Round-4 audit (atk11): the accept step took a RELABELED objective — one that still has claims
+// declared under its id — with no attestation, so the stale declarations counted as coverage of
+// a statement they never taught. Accepting a relabel is a decision; name the ids to make it.
+{
+  const stored = loadSemanticIndex(root);
+  const relabels = spineRelabels(stored.spine.index, index.spine, index.claims);
+  const acknowledged = new Set(String(opt("--acknowledge-relabel", "")).split(",").map((x) => x.trim()).filter(Boolean));
+  const unacknowledged = relabels.filter((r) => !acknowledged.has(r.id));
+  if (unacknowledged.length) {
+    console.error("index-semantic: REFUSED — spine statements changed under ids that still carry declared claims:");
+    for (const r of unacknowledged) console.error(`- ${r.id}: "${r.before}" → "${r.after}"`);
+    console.error("Re-declare the claims under the ids that now carry their statements, or accept the relabel explicitly:\n  npm run index:semantic -- --root <root> --acknowledge-relabel " + unacknowledged.map((r) => r.id).join(","));
+    process.exit(3);
+  }
+}
 writeSemanticIndex(root, index);
 // PATH-SCOPED to the artifacts this command writes. The author asked to reindex; they did not ask to
 // commit their prose. Scoping also keeps the receipt honest — `committed: true` now means "the index

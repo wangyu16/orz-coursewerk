@@ -114,7 +114,7 @@ const zipPath = path.join(outDir, `${base}.alembic.zip`);
 fs.rmSync(zipPath, { force: true });
 
 // zip from inside the staged dir so alembic.json sits at the archive root
-const res = spawnSync("zip", ["-r", "-q", "-X", zipPath, "."], { cwd: staged, encoding: "utf8" });
+const res = spawnSync("zip", ["-r", "-q", "-X", "-D", zipPath, "."], { cwd: staged, encoding: "utf8" }); // -D: no directory entries (their mtimes broke reproducibility)
 fs.rmSync(staged, { recursive: true, force: true });
 if (res.status !== 0) {
   fs.rmSync(work, { recursive: true, force: true });

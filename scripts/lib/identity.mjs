@@ -3,7 +3,7 @@
 // of them accepted "Your Name", "Jane Doe", "Anonymous", "N/A", and the vendor names of the very
 // models that may not be the accountable author ("Claude", "ChatGPT", "Gemini").
 const PLACEHOLDER = /\b(?:replace(?:-with)?|placeholder|temporary|trial maintainer|pending|unassigned|tbd|todo|unknown|fixme|changeme|insert(?: name)?(?: here)?|your name|author name|reviewer name|sample|example|lorem|ipsum|anonymous|n\/a|none|null|undefined|doe)\b/i;
-const MACHINE = /\b(?:coursewerk|agent|language model|llm|claude|chatgpt|gpt-?\d[\w.-]*|gemini|copilot|openai|anthropic|llama|mistral|deepseek|bard|assistant)\b/i;
+const MACHINE = /\b(?:ai|coursewerk|agent|language model|llm|claude(?:code)?|chatgpt|gpt-?\d[\w.-]*|gemini|copilot|openai|anthropic|llama|mistral|deepseek|bard|assistant|grok|qwen|codex|opus|sonnet|haiku|fable|mythos|bot|automated|automation|pipeline|model)\b/i;
 /**
  * @param {string} name
  * @returns {string|null} a reason the name is not an accountable identity, or null when it may be

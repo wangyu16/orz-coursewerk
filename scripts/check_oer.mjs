@@ -27,7 +27,7 @@ import { artifactAnchors, matchClaims, anchorCoverage, positionalDeclarationsOnA
 import { danglingSpineRefs } from "./lib/spine.mjs";
 import { buildQueue, REVIEW_QUEUE_PATH } from "./lib/escalation.mjs";
 import { scanConsistency, rangeAudit } from "./lib/consistency.mjs";
-import { computeSemanticIndex, loadSemanticIndex, auditIndexFreshness, CLAIMS_PATH } from "./lib/semantic_index.mjs";
+import { computeSemanticIndex, loadSemanticIndex, auditIndexFreshness, spineRelabels, CLAIMS_PATH } from "./lib/semantic_index.mjs";
 import { parseSections, labelMatcher } from "./lib/terms.mjs";
 import { spineCycles } from "./lib/spine.mjs";
 import { isAuthorizedDivergence, OVERRIDES_PATH } from "./lib/overrides.mjs";
@@ -338,17 +338,24 @@ function linkAudit() {
     // tag, with any spacing or quoting; CSS url(); protocol-relative `//host`; and reference-style
     // images whose definition points off-package.
     const REMOTE = /^(?:https?:)?\/\//i;
-    const attrMedia = /<(?:img|video|audio|source|picture|embed|iframe|object|track)\b[^>]*?\b(?:src|srcset|poster|data)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi;
+    // Fenced code renders as text, not as a resource load (round-4 audit L): scan prose only.
+    const prose = text.replace(/^[ \t]{0,3}(?:```|~~~)[\s\S]*?^[ \t]{0,3}(?:```|~~~)[ \t]*$/gm, " ");
+    // Round-4 audit (atk6): SVG <image href>, <use href>, <link href>, <script src> and the orz
+    // {{youtube …}} directive (rendered as an iframe) all load a remote resource.
+    const attrMedia = /<(?:img|video|audio|source|picture|embed|iframe|object|track|image|use|link|script)\b[^>]*?\b(?:src|srcset|poster|data|href|xlink:href)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi;
     let mediaMatch;
-    while ((mediaMatch = attrMedia.exec(text))) {
+    for (const d of prose.matchAll(/\{\{\s*(youtube|vimeo|embed|iframe|video)\b([^}]*)\}\}/gi)) remoteMedia.push({ file: rel(f), target: `{{${d[1]}${d[2].trim() ? " " + d[2].trim().split(/\s+/)[0] : ""}}}`, kind: "orz-directive" });
+    for (const d of prose.matchAll(/\{\{[^}]*?((?:https?:)?\/\/[^\s}]+)[^}]*\}\}/gi)) remoteMedia.push({ file: rel(f), target: d[1], kind: "orz-directive" });
+    for (const d of prose.matchAll(/!\[[^\]]*\]\((data:[^)\s]+)/g)) remoteMedia.push({ file: rel(f), target: d[1].slice(0, 40) + "…", kind: "data-uri (embedded media needs provenance under assets/)" });
+    while ((mediaMatch = attrMedia.exec(prose))) {
       const value = mediaMatch[1] ?? mediaMatch[2] ?? mediaMatch[3] ?? "";
       for (const candidate of value.split(",").map((v) => v.trim().split(/\s+/)[0]).filter(Boolean))
         if (REMOTE.test(candidate)) remoteMedia.push({ file: rel(f), target: candidate, kind: "html-media" });
     }
     const cssUrl = /\burl\(\s*["']?((?:https?:)?\/\/[^"')\s]+)/gi;
-    while ((mediaMatch = cssUrl.exec(text))) remoteMedia.push({ file: rel(f), target: mediaMatch[1], kind: "css-url" });
+    while ((mediaMatch = cssUrl.exec(prose))) remoteMedia.push({ file: rel(f), target: mediaMatch[1], kind: "css-url" });
     const refDefs = new Map();
-    for (const d of text.matchAll(/^[ \t]{0,3}\[([^\]]+)\]:[ \t]*<?((?:https?:)?\/\/[^\s>]+)>?/gim)) refDefs.set(d[1].toLowerCase(), d[2]);
+    for (const d of prose.matchAll(/^[ \t]{0,3}\[([^\]]+)\]:[ \t]*<?((?:https?:)?\/\/[^\s>]+)>?/gim)) refDefs.set(d[1].toLowerCase(), d[2]);
     for (const use of text.matchAll(/!\[[^\]]*\]\[([^\]]*)\]/g)) {
       const target = refDefs.get(use[1].toLowerCase());
       if (target) remoteMedia.push({ file: rel(f), target, kind: "markdown-reference-image" });
@@ -1079,10 +1086,17 @@ function coverageAudit(fresh) {
   //      under the objective, the claim must name one (by declared termRef or in its prose);
   //      when no term is bracketed under it, the declaration alone is the evidence (a floor).
   const OBJECTIVES_SECTION = /^(?:learning-)?objectives?$/i;
+  // Round-4 audit (atk2c/2d): a restatement under `## Goals` or in a slide outline is still a
+  // restatement. A block whose text CONTAINS an objective's own statement never teaches it,
+  // whatever heading it sits under and whatever type its declaration claims.
+  const normStmt = (t) => String(t ?? "").toLowerCase().replace(/^\s*(?:[-*+]|\d+[.)])\s+/, "").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  const objectiveStatements = (spine.nodes ?? []).filter((n) => n.kind === "objective").map((n) => normStmt(n.label)).filter((x) => x.length >= 20);
+  const isRestatement = (claim) => { const t = normStmt(claim.text); return objectiveStatements.some((o) => t.includes(o)); };
   const teaches = (claim, nodeId) => {
     if (claim.type === "objective") return false;
     const section = String(claim.locations?.[0]?.anchor ?? "").split("#")[0];
     if (OBJECTIVES_SECTION.test(section)) return false;
+    if (isRestatement(claim)) return false;
     const under = termsUnder.get(nodeId) ?? [];
     if (under.length === 0) return true;
     const refs = new Set(Array.isArray(claim.termRefs) ? claim.termRefs : []);
@@ -1714,27 +1728,15 @@ function revisionFindings(stored, fresh) {
  * until the instructor either restores the order or re-declares the claims under it.
  */
 function spineDriftFindings(stored, fresh) {
-  const before = stored?.spine?.index?.nodes;
-  if (!Array.isArray(before)) return [];
-  const norm = (label) => String(label ?? "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
-  const byId = new Map(before.map((n) => [n.id, n]));
-  const referenced = new Set((fresh.claims.claims ?? []).flatMap((c) => (Array.isArray(c.spineRefs) ? c.spineRefs : [])));
-  const out = [];
-  for (const node of fresh.spine.nodes ?? []) {
-    const old = byId.get(node.id);
-    if (!old || norm(old.label) === norm(node.label)) continue;
-    if (!referenced.has(node.id)) continue; // nothing declared under it — nothing was re-parented
-    out.push({
-      kind: "spine-relabeled",
-      severity: "blocking",
-      evidence: [
-        `${node.id} now reads "${node.label}" but the accepted spine had "${old.label}" — the ordinals of \`## ${node.kind === "objective" ? "Objectives" : "Concept sequence"}\` moved, ` +
-          "so every claim declared under this id now hangs under a different statement (silent re-parenting).",
-        "Restore the order, or re-declare the affected claims under the ids that now carry their statements, then re-index.",
-      ],
-    });
-  }
-  return out;
+  return spineRelabels(stored?.spine?.index, fresh.spine, fresh.claims).map((r) => ({
+    kind: "spine-relabeled",
+    severity: "blocking",
+    evidence: [
+      `${r.id} now reads "${r.after}" but the accepted spine had "${r.before}" — the ordinals of \`## ${r.kind === "objective" ? "Objectives" : "Concept sequence"}\` moved (or the statement was rewritten), ` +
+        "so every claim declared under this id now hangs under a different statement (silent re-parenting).",
+      "Restore the order, or re-declare the affected claims under the ids that now carry their statements, then re-index (`index:semantic` refuses to accept the relabel without --acknowledge-relabel).",
+    ],
+  }));
 }
 
 /**

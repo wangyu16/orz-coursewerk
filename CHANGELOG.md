@@ -47,6 +47,10 @@
   identities are refused; license evidence is read as visible text with contradictions and redirects named;
   homographs, alias collisions and prerequisite cycles are reported; nested deliverables are attestable;
   the attested theme survives the pack rebuild; in-package report paths and non-UTF-8 files are refused.
+  Round four: a restatement never teaches under any heading; SVG/link/script/orz-directive embeds are remote
+  media; an answer stating two values is an ambiguous-answer decision; a relabeled objective cannot be accepted
+  without `--acknowledge-relabel`; negated key facts and hidden evidence text are refused; scan-found subjects
+  carry only declared dimensions.
   Every finding and its probe or dismissal: `docs/closed-loop-rounds.md`.
 - **Procedure.** Stage 4 opens the critique with the blind bundle; a new Stage 5b documents the revision loop,
   overrides, and propagation. The system claim register now covers every semantic-index mechanism.

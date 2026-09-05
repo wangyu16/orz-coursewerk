@@ -426,7 +426,7 @@ export function buildSpine(conceptMaps) {
   // vanished. `derivational` rides on the edge so a consumer can score optional deps separately.
   for (const s of semanticPrereqs) {
     const to = `concept.${s.scope}.${s.ordinal}`;
-    if (!s.ref.startsWith("concept.") || s.ref === to) continue;
+    if (!s.ref.startsWith("concept.") || s.ref === to) continue; // a self-ref mints no edge; `spineCycles` reads the record
     if (!byId.has(s.ref) || !byId.has(to)) continue;
     const edge = { from: s.ref, to, kind: "prereq", reason: "declared semantic prerequisite" };
     if (s.derivational) edge.derivational = true;
@@ -548,6 +548,12 @@ export function danglingSpineRefs(spine, refs) {
  */
 export function spineCycles(spine) {
   const adj = new Map();
+  // A self-referential `[prereq:]` mints no edge (verified-or-dropped) but survives as a record;
+  // it is a cycle of one and is reported as such (round-4 audit).
+  for (const s of spine?.semanticPrereqs ?? []) {
+    const self = `concept.${s.scope}.${s.ordinal}`;
+    if (s.ref === self) { if (!adj.has(self)) adj.set(self, new Set()); adj.get(self).add(self); }
+  }
   for (const e of spine?.edges ?? []) {
     if (!e?.from || !e?.to) continue;
     if (!adj.has(e.from)) adj.set(e.from, new Set());

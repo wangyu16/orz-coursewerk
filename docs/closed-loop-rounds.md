@@ -135,3 +135,29 @@ H8 migration tolerance (legacy raw-byte hashes), and the ledger restore for clon
 **Verification:** full offline suite after the last edit: 597 tests, all passing; `system:verify` ready.
 
 **Verification:** full offline suite after the last edit (see the commit), `system:verify` ready.
+
+## Round 4 — 2026-09-05: the round-3 fixes re-attacked (3 HIGH, 3 MEDIUM, 6 LOW; 3 dismissals disputed)
+
+| finding | severity | outcome |
+|---|---|---|
+| R4-1 a restated objective under `## Goals` or in a slide outline counts as coverage | HIGH | fixed: a block whose text contains an objective's own statement never teaches it, under any heading, whatever its declared type; probe R4-1 |
+| R4-2 SVG `<image href>`, `<use>`, `<link>`, `<script>`, `{{youtube}}` ship remote resources | HIGH | fixed: every resource attribute on those tags, orz embedding directives, any `{{…}}` carrying a URL; fenced examples excluded; `data:` images refused as embedded media; probe R4-2 |
+| R4-3 "0 °C is the reference… therefore 5 °C" packed; "Not 5 °C … is 0 °C" was refused | HIGH | fixed: an answer with two different values of one dimension is an `ambiguous-answer` review item — never picked first or last, never a guessed contradiction; probe R4-3 |
+| R4-4 relabel of an UNBRACKETED objective accepted with no attestation (dismissal disputed) | MEDIUM | fixed: `index:semantic` refuses to accept a spine relabel under declared claims without `--acknowledge-relabel <ids>`; the gate's blocking item names the flag; probe R4-5. The A5 dismissal is withdrawn in favour of this |
+| R4-5 a negated key fact ("…is NOT 0 °C") passed | MEDIUM | fixed: a negated fact needs a sentence carrying the same negation beside the same token; probe R4-6 |
+| R4-6 two worked energy answers compared as a temperature term | MEDIUM | fixed: a scan-found claim's subject carries only the dimensions declared claims give the term; probe R4-4 |
+| R4-L fenced `<img>` counted as shipped media | LOW | fixed (scan prose only) |
+| R4-L directory mtimes in the zip | LOW | fixed (`zip -D`) |
+| R4-L `data:` images refused as broken links | LOW | fixed (named as embedded media) |
+| R4-L a genuine note containing "placeholder" refused | LOW | fixed (notes are checked for template tokens only) |
+| R4-L self-referential `[prereq:]` vanished | LOW | fixed: reported as a cycle of one from the record (no edge is minted — the verified-or-dropped contract holds) |
+| R4-L "AI Reviewer", "Grok", "Sonnet 4.5", "ClaudeCode" pass the identity check | LOW | fixed (denylist widened). **Structural, disclosed:** a denylist cannot prove a human; the accountable author's `accountabilityConfirmedByUser` and the visual reviewer's `type: human` remain self-reports named in the evaluation |
+| U-M2 "visible text" overclaimed (`display:none`, `hidden`, `<noscript>`, `<template>`) | LOW | fixed: those are stripped before the needle search; probe R4-7 |
+| U-M10 unknown theme silently ignored | LOW | **open by choice:** the orz builders own theme validation; the receipt and attestation record the theme string |
+
+**Two structural facts the adversaries keep returning to** (owner's call, not a fix): the agent that authors
+a package also fills the revision review and the key-fact review, and the gate can only bind those to the
+surface they name; and `index:semantic` accepts claim-level movement with no attestation (a relabel now
+needs an explicit acknowledgment; other movement is reviewed through the revision loop before release).
+
+**Verification:** full offline suite after the last edit: 604 tests, all passing; `system:verify` ready.

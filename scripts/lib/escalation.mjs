@@ -190,6 +190,8 @@ const DEFAULT_SEVERITY = {
  */
 const DETECTOR_TO_QUEUE = {
   "value-disagreement": "internal-inconsistency",
+  // Round-4: an answer carrying two different values is a decision, not a contradiction.
+  "ambiguous-answer": "sanity-check",
   "definition-drift": "internal-inconsistency",
   "cross-artifact-mismatch": "internal-inconsistency",
   // M6b's RANGE audit. A physically-impossible value (a temperature below absolute zero, a negative

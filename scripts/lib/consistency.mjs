@@ -337,6 +337,11 @@ function quantitiesByDimension(text) {
   // ("5 °C, i.e. 278 K") must not drop the dimension (round-3 verify B3). In prose, two different
   // values for one dimension stay a range/worked example and are dropped (non-flag 4).
   const inAnswer = answers.length > 0;
+  // Round-4 audit (atk3/atk4): picking the FIRST value in an answer let "0 °C is the reference…
+  // therefore 5 °C" pack, and refused "Not 5 °C … is 0 °C". An answer that carries two DIFFERENT
+  // values of one dimension is neither compared nor trusted: it is an `ambiguous` decision for a
+  // human (a review item), never a guess in either direction.
+  const ambiguous = new Set();
   QUANTITY_RE.lastIndex = 0;
   let m;
   while ((m = QUANTITY_RE.exec(scanned))) {
@@ -345,9 +350,10 @@ function quantitiesByDimension(text) {
     const key = valueKey(entry.to(Number(m[1])));
     const prior = byDim.get(entry.dim);
     if (!prior) byDim.set(entry.dim, { key, raw: m[0].trim() });
-    else if (prior.key !== key && !inAnswer) dropped.add(entry.dim);
+    else if (prior.key !== key) { dropped.add(entry.dim); if (inAnswer) ambiguous.add(`${entry.dim}: ${prior.raw} vs ${m[0].trim()}`); }
   }
   for (const dim of dropped) byDim.delete(dim);
+  byDim.ambiguous = ambiguous;
   return byDim;
 }
 
@@ -382,20 +388,42 @@ function snippet(text, max = 140) {
  */
 function valueDisagreements(list, terms) {
   const groups = new Map(); // `${termId}|${dim}` -> [{claim, key, raw}]
+  const findings = [];
+  // Round-4 audit (atk1b): two worked ENERGY answers were compared as values of a TEMPERATURE term
+  // because both mention "melting point". A scan-found claim's subject carries only the dimensions
+  // that DECLARED claims give that term; with no declared claim about the term, the old rule holds.
+  const declaredDims = new Map();
+  for (const claim of comparableClaims(list)) {
+    if (claim.provenanceDeclared !== true) continue;
+    for (const termId of subjectTerms(claim, terms, claimScope(claim)))
+      for (const [dim] of quantitiesByDimension(claimText(claim))) { if (!declaredDims.has(termId)) declaredDims.set(termId, new Set()); declaredDims.get(termId).add(dim); }
+  }
   for (const claim of comparableClaims(list)) {
     const scope = claimScope(claim);
     const subjects = subjectTerms(claim, terms, scope);
     if (subjects.length === 0) continue;
-    for (const [dim, q] of quantitiesByDimension(claimText(claim))) {
+    const quantities = quantitiesByDimension(claimText(claim));
+    if (quantities.ambiguous?.size) {
+      findings.push({
+        kind: "ambiguous-answer",
+        claimIds: [String(claim.id)],
+        evidence: [
+          `${claimFile(claim)}: the answer states two different values of one dimension (${[...quantities.ambiguous].join("; ")}) — it cannot be compared and a student cannot tell which is the answer.`,
+          `${claim.id} (${claim.type}) at ${claimFile(claim)}: "${snippet(claimText(claim))}"`,
+          "Leave exactly one value as the answer, or move the other into the question or an explanation outside the answer.",
+        ],
+        _sort: `ambiguous|${claim.id}`,
+      });
+    }
+    for (const [dim, q] of quantities) {
       for (const termId of subjects) {
+        if (claim.provenanceDeclared !== true && declaredDims.has(termId) && !declaredDims.get(termId).has(dim)) continue;
         const key = `${termId}|${dim}`;
         if (!groups.has(key)) groups.set(key, []);
         groups.get(key).push({ claim, ...q });
       }
     }
   }
-
-  const findings = [];
   for (const [key, members] of groups) {
     if (new Set(members.map((m) => m.key)).size < 2) continue; // agreement ⇒ silence
     const termId = key.slice(0, key.lastIndexOf("|"));

@@ -238,6 +238,27 @@ export function loadSemanticIndex(root) {
 }
 
 /**
+ * Spine nodes whose LABEL moved under an unchanged id while claims are declared under them (the
+ * silent re-parenting of design audit H6). Shared by the gate (blocking finding) and the accept
+ * step (`index:semantic` refuses to accept it without an explicit acknowledgment).
+ * @returns {Array<{id:string, kind:string, before:string, after:string}>}
+ */
+export function spineRelabels(storedSpine, freshSpine, freshClaims) {
+  const before = storedSpine?.nodes;
+  if (!Array.isArray(before)) return [];
+  const norm = (label) => String(label ?? "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  const byId = new Map(before.map((n) => [n.id, n]));
+  const referenced = new Set((freshClaims?.claims ?? []).flatMap((c) => (Array.isArray(c.spineRefs) ? c.spineRefs : [])));
+  const out = [];
+  for (const node of freshSpine?.nodes ?? []) {
+    const old = byId.get(node.id);
+    if (!old || norm(old.label) === norm(node.label) || !referenced.has(node.id)) continue;
+    out.push({ id: node.id, kind: node.kind, before: old.label, after: node.label });
+  }
+  return out;
+}
+
+/**
  * FRESHNESS — is the STORED index byte-equal to a fresh recompute?
  *
  * The revision layer compares stored claims to fresh claims and flags what MOVED. That is a

@@ -99,8 +99,11 @@ export function auditKeyFactReview(root, foundation) {
   ];
   for (const [name, value] of identityFields)
     if (PLACEHOLDER.test(String(value || ""))) failures.push(`${KEY_FACT_REVIEW_PATH}: ${name} still carries a template placeholder.`);
+  // Notes are prose: only the template's own tokens count as placeholders there (a genuine note may
+  // say "no placeholder identity is present").
+  const TEMPLATE_TOKEN = /REPLACE-WITH|GENERATED-BY|COPY-FROM|\bTBD\b|\bTODO\b|\bREPLACE\b/;
   for (const check of review.checks || [])
-    if (PLACEHOLDER.test(String(check?.note || ""))) failures.push(`${KEY_FACT_REVIEW_PATH}: check ${check?.id} note still carries a template placeholder.`);
+    if (TEMPLATE_TOKEN.test(String(check?.note || ""))) failures.push(`${KEY_FACT_REVIEW_PATH}: check ${check?.id} note still carries a template placeholder.`);
   const notes = (review.checks || []).map((check) => String(check?.note || "").trim().toLowerCase()).filter(Boolean);
   if (new Set(notes).size < notes.length)
     failures.push(`${KEY_FACT_REVIEW_PATH}: two or more checks carry the identical note — boilerplate is not evidence of examining each criterion.`);
@@ -129,7 +132,7 @@ export function auditKeyFactReview(root, foundation) {
         failures.push(`${label} usedIn must name a deliverable (concepts/, study-guide/, slides/, assessment-support/, practice/), not ${rel} — a fact cannot be supported by the review that asserts it.`);
     }
     if (String(fact.note || "").trim().length < 20) failures.push(`${label} requires a substantive critique note.`);
-    if (PLACEHOLDER.test(String(fact.claim || "")) || PLACEHOLDER.test(String(fact.note || "")))
+    if (TEMPLATE_TOKEN.test(String(fact.claim || "")) || TEMPLATE_TOKEN.test(String(fact.note || "")))
       failures.push(`${label} still carries a template placeholder.`);
     // The fact must be ABOUT the deliverables it names: its numbers must appear there, and most of
     // its content words must. A fact nobody could locate in the package is not a reviewed fact.
@@ -155,6 +158,16 @@ export function auditKeyFactReview(root, foundation) {
       const need = words.length < 3 ? 0 : words.length < 6 ? words.length : Math.ceil(words.length * 0.6);
       if (missingNumbers.length || present < need)
         failures.push(`${label} is not supported by its usedIn deliverables (${missingNumbers.length ? `quantities ${missingNumbers.join(", ")} not found as stated` : `${present}/${words.length} content words found`}); trace the fact to prose that states it.`);
+      // Round-4 audit (atk5): "…is NOT 0 °C" passed because "not" is not a content word. A negated
+      // fact is supported only by a sentence that carries the same negation beside the same token.
+      const NEG = /\b(?:not|never|no|cannot|isn't|aren't|doesn't|false)\b/i;
+      if (NEG.test(claim) && quantities.length) {
+        const sentences = corpus.split(/(?<=[.!?])\s+|\n+/);
+        const anchor = quantities[0];
+        const tokenRe = new RegExp(`(?<![\\d.])${esc(anchor[1].replace(",", "."))}${anchor[2] ? `\\s*${esc(anchor[2].toLowerCase())}` : ""}(?![\\d])`, "i");
+        if (!sentences.some((sentence) => tokenRe.test(sentence) && NEG.test(sentence)))
+          failures.push(`${label} asserts a NEGATION ("${claim.slice(0, 80)}") that no sentence in its usedIn deliverables states beside ${anchor[0].trim()}.`);
+      }
     }
   }
   let manifest = null;
