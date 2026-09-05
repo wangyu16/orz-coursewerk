@@ -137,6 +137,11 @@ const KIND_ORDER = [
   // Re-slotting it by consequence would silently renumber a FROZEN enum every stored queue was
   // written against; that trade is the schema's to make, not this table's.
   "missing-coverage",
+  // APPENDED 2026-09-05 (G15h): the stored semantic index no longer describes the package — a
+  // committed-but-stale CLAIMS/SPINE/TERMS. Not `sanity-check` (that is about a CLAIM's value; this
+  // is about the INDEX the whole revision layer reads its "before" from) and not `derived-diff` (no
+  // claim moved — that is exactly why it is silent). One human decision: re-index and re-attest.
+  "stale-index",
 ];
 const KIND_SET = new Set(KIND_ORDER);
 
@@ -171,6 +176,10 @@ const DEFAULT_SEVERITY = {
   // registered term, which is exactly "a human must decide but nothing is provably wrong yet".
   "missing-coverage": "review",
   "term-proposal": "info",
+  // `review`: no student meets a falsehood — the prose is untouched — but every revision verdict
+  // the gate can give is computed against a "before" that is not the package's, so a human must
+  // re-baseline before any of them can be trusted.
+  "stale-index": "review",
 };
 
 /**
@@ -232,6 +241,10 @@ const DETECTOR_TO_QUEUE = {
   //     the queue kind names the DECISION ("what concept does this belong under?") — the two-
   //     vocabulary rule this table exists for, rather than a detector speaking a queue kind.
   "spine-uncovered": "missing-coverage",
+  // The freshness audit (semantic_index.mjs `auditIndexFreshness`, G15h): the committed index
+  // does not describe the package. Its own queue kind, because the next action — re-index and
+  // re-attest — is neither "decide a value" nor "review a derived diff".
+  "stale-semantic-index": "stale-index",
   "claim-without-parent": "orphan-claim",
 
   // The M11 gate's REVISION rows (fresh compute vs stored index) — the detector that reports M4's

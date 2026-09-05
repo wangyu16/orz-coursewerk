@@ -40,7 +40,7 @@ import { artifactAnchors, matchClaims } from "./lib/claims.mjs";
 import { danglingSpineRefs } from "./lib/spine.mjs";
 import { buildQueue, REVIEW_QUEUE_PATH } from "./lib/escalation.mjs";
 import { scanConsistency, rangeAudit } from "./lib/consistency.mjs";
-import { computeSemanticIndex, loadSemanticIndex, CLAIMS_PATH } from "./lib/semantic_index.mjs";
+import { computeSemanticIndex, loadSemanticIndex, auditIndexFreshness, CLAIMS_PATH } from "./lib/semantic_index.mjs";
 import { isAuthorizedDivergence, OVERRIDES_PATH } from "./lib/overrides.mjs";
 import { commitOutput, outputGitState } from "./lib/output_git.mjs";
 import { md as orzMarkdown } from "orz-markdown";
@@ -1630,6 +1630,35 @@ function semanticAudit(verbatim) {
   }
   const fresh = computeSemanticIndex(pkg);
   const revision = revisionFindings(stored, fresh);
+  // FRESHNESS (G15h) — does the STORED index describe the package as it stands? The revision layer
+  // above flags what MOVED between stored and fresh claims; it cannot see a committed SPINE/TERMS
+  // that drifted, or a CLAIMS whose text drifted under unchanged fingerprints. Byte-compare each
+  // stored artifact against a fresh serialization. Stale + no movement signal = a SILENT strand:
+  // every revision verdict above was computed against a "before" that is not this package's, so it
+  // enters the queue as one human decision — re-index and re-attest. Stale + movement is the normal
+  // mid-edit state (the revision findings already ask for review, and the accept step re-indexes),
+  // so it is reported, not queued. At release any staleness blocks — see the discover blockers.
+  const freshness = auditIndexFreshness(pkg, fresh);
+  const movement = revision.compared &&
+    (revision.actions + revision.added + revision.removed + revision.split + revision.merged) > 0;
+  // COMMITTED is part of the definition. An uncommitted edit that has not been re-indexed yet is
+  // the author mid-sentence — a whitespace reflow must still cost ZERO flags (the headline null-edit
+  // guarantee). The strand is the state git calls clean: "every file is committed" while the index
+  // describes some earlier package. No output git = no way to tell the two apart = not queued.
+  const outputGit = outputGitState(pkg);
+  const committed = outputGit.available && outputGit.clean;
+  const freshnessFindings = !freshness.fresh && !movement && committed
+    ? [{
+        kind: "stale-semantic-index",
+        severity: "review",
+        evidence: [
+          `stored semantic index is stale and no claim moved: ${freshness.stale.map((s) => s.path).join(", ")} ` +
+            "no longer describe the package as it stands (a committed concept-map, term or claim change was never re-indexed).",
+          "Every revision verdict in this run was computed against a \"before\" that is not this package's.",
+          "Fix: run `npm run index:semantic` to re-baseline the index, then re-run the gate and re-attest coherence.",
+        ],
+      }]
+    : [];
   // CONTROL (§C2) is REFERENTIAL in the same sense as the §5b rows — both directions are questions
   // about the package as it stands NOW, not about what moved — so it takes `fresh` alone and never
   // looks at the stored index.
@@ -1659,6 +1688,7 @@ function semanticAudit(verbatim) {
     // to fire only when a real automatic corpus is pinned — a clean package flags nothing.
     ...quotationFindings(verbatim),
     ...revision.findings,
+    ...freshnessFindings,
   ];
   // `fresh.claims` supplies the locations AND the burden denominator. Deliberately NOT a union with
   // the stored claims: `artifactCount` is "the whole reviewable surface of the package", and a claim
@@ -1679,6 +1709,9 @@ function semanticAudit(verbatim) {
     // A stored artifact that is CORRUPT is a real fault and must never read as "no claims" — that
     // would be a clean bill of health manufactured by a parse error.
     indexErrors: stored.errors,
+    // G15h: byte-equality of each stored artifact with a fresh recompute. `fresh:false` with
+    // movement is mid-edit; `fresh:false` without movement is the silent strand (queued above).
+    freshness: { ...freshness, committed },
     warnings: fresh.warnings,
     spineNodes: fresh.spine.nodes.length,
     terms: fresh.terms.terms.length,
@@ -1811,6 +1844,10 @@ if (!visualReview.ready) discoverBlockers.push(`visual review has ${visualReview
 // require the index; while authoring (no --for-discovery) the layer stays additive-when-off (spec §6.2).
 if (forDiscovery && !semantic.ran) discoverBlockers.push("no stored semantic index (metadata/{CLAIMS,SPINE,TERMS}.json) — the TRUST layers (consistency, range, unverifiable-quotation) and the CONTROL coverage audit cannot run at release; run `npm run index:semantic` before release");
 if (semantic.ran && semantic.indexErrors.length) discoverBlockers.push(`stored semantic index is corrupt: ${semantic.indexErrors.join("; ")}`);
+// G15h: at release the accepted index must BE the package's index. A stale artifact means the
+// attested baseline describes some other state of the package; re-index and re-attest.
+if (semantic.ran && semantic.freshness && !semantic.freshness.fresh)
+  discoverBlockers.push(`stored semantic index is stale: ${semantic.freshness.stale.map((s) => s.path).join(", ")} differ from a fresh recompute — run \`npm run index:semantic\` and re-attest coherence`);
 if (semantic.ran && semantic.blockingFlags + semantic.reviewFlags > 0)
   discoverBlockers.push(`semantic review queue has ${semantic.blockingFlags + semantic.reviewFlags} unresolved item(s) — see ${REVIEW_QUEUE_PATH}`);
 r.discoverability = {

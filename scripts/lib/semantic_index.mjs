@@ -233,6 +233,44 @@ export function loadSemanticIndex(root) {
 }
 
 /**
+ * FRESHNESS — is the STORED index byte-equal to a fresh recompute?
+ *
+ * The revision layer compares stored claims to fresh claims and flags what MOVED. That is a
+ * change signal, not a freshness signal: a committed SPINE.json missing an edge the concept map
+ * still declares, a TERMS.json with a stale preferred label, or a CLAIMS.json whose text drifted
+ * while its fingerprints did not, all read as "nothing moved" — and the package is a silent strand
+ * (coursewerk-caeai G15h: invisible to both the component gate and the claim-level gate). Three
+ * byte-compares over objects the gate already holds in hand answer it exactly, with no heuristic
+ * and no false positive: `writeSemanticIndex` is deterministic, so a fresh compute serializes to
+ * the stored bytes if and only if the stored index describes the package as it stands.
+ *
+ * Absence is an answer, not staleness (a partial index is reported by `loadSemanticIndex`); a
+ * CORRUPT artifact is `loadSemanticIndex`'s error, not this function's — both are excluded here so
+ * one fault is never reported twice under two names.
+ *
+ * @param {string} root package root
+ * @param {{spine:object, terms:object, claims:object}} fresh a `computeSemanticIndex` result
+ * @returns {{checked:boolean, fresh:boolean, stale:Array<{path:string, storedBytes:number, freshBytes:number}>}}
+ */
+export function auditIndexFreshness(root, fresh) {
+  root = path.resolve(root);
+  const byPath = { [CLAIMS_PATH]: fresh.claims, [SPINE_PATH]: fresh.spine, [TERMS_PATH]: fresh.terms };
+  const stale = [];
+  let checked = false;
+  for (const rel of SEMANTIC_INDEX_PATHS) {
+    const file = path.join(root, rel);
+    if (!fs.existsSync(file)) continue;
+    let storedBytes;
+    try { storedBytes = fs.readFileSync(file, "utf8"); } catch { continue; }
+    try { JSON.parse(storedBytes); } catch { continue; } // corrupt: loadSemanticIndex owns that report
+    checked = true;
+    const freshBytes = serialize(byPath[rel]);
+    if (storedBytes !== freshBytes) stale.push({ path: rel, storedBytes: storedBytes.length, freshBytes: freshBytes.length });
+  }
+  return { checked, fresh: stale.length === 0, stale };
+}
+
+/**
  * Write the three artifacts — the ACCEPT step.
  *
  * Serializes ONLY the artifacts, never the envelope: `root`/`conceptMaps`/`warnings` are this
