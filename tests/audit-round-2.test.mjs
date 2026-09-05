@@ -308,3 +308,20 @@ test("#4/#5/#6/#7/#8 · propagate reaches prose, binds --apply to the plan you r
   cli("propagate.mjs", ["--root", p3, "--out", path.join(d3, "reports"), ...RENAME]);
   assert.equal(cli("propagate.mjs", ["--root", p3, "--out", path.join(d3, "reports"), ...RENAME, "--apply"]).code, 3);
 });
+
+test("H8-migration · an index accepted with legacy raw-byte hashes does not read as 'every component changed' after the upgrade", async (t) => {
+  const { pkg } = pkgCopy(t);
+  const crypto = await import("node:crypto");
+  const { recordAcceptedCoherence, auditCoherence } = await import("../scripts/lib/coherence.mjs");
+  const indexFile = path.join(pkg, "metadata/COMPONENT_INDEX.json");
+  const index = JSON.parse(read(pkg, "metadata/COMPONENT_INDEX.json"));
+  const byId = new Map(index.components.map((c) => [c.id, c]));
+  for (const c of index.components) c.hash = crypto.createHash("sha256").update(fs.readFileSync(path.join(pkg, c.path))).digest("hex");
+  for (const c of index.components) for (const dep of Object.keys(c.dependencies || {})) c.dependencies[dep] = byId.get(dep)?.hash ?? c.dependencies[dep];
+  fs.writeFileSync(indexFile, JSON.stringify(index, null, 2) + "\n");
+  commitAll(pkg, "legacy index");
+  recordAcceptedCoherence(pkg, index, git(pkg, "rev-parse", "HEAD").stdout.trim(), { action: "refresh" });
+  const audit = auditCoherence(pkg);
+  assert.deepEqual(audit.changed, [], audit.hardFailures.join("\n"));
+  assert.deepEqual(audit.staleDependents, []);
+});

@@ -301,12 +301,23 @@ export function auditCoherence(root) {
   }
   failures.push(...structuralCoherenceFailures(root, graph));
 
+  // Indexes accepted before 2026-09-05 hold RAW-BYTE hashes (H8 moved markdown to normalized-text
+  // hashes). A component whose bytes did not change still matches its legacy hash, so an upgrade
+  // never reads as "every component changed"; the next refresh writes the normalized hashes.
+  const legacyCache = new Map();
+  const legacyHash = (relPath) => {
+    if (!legacyCache.has(relPath)) {
+      try { legacyCache.set(relPath, HASH(fs.readFileSync(path.join(root, relPath)))); } catch { legacyCache.set(relPath, null); }
+    }
+    return legacyCache.get(relPath);
+  };
+  const same = (storedHash, component) => storedHash === component.hash || storedHash === legacyHash(component.path);
   for (const [id, c] of cur.components) {
     const prior = old.components.get(id);
     if (!prior) {
       changed.push(id);
       failures.push(`${c.path}: new component is not in the coherence index.`);
-    } else if (prior.hash !== c.hash) {
+    } else if (!same(prior.hash, c)) {
       changed.push(id);
       failures.push(`${c.path}: content changed after the last coherence review.`);
     }
@@ -324,7 +335,7 @@ export function auditCoherence(root) {
     }
     const dependent = old.components.get(e.to);
     const source = cur.components.get(e.from);
-    if (dependent && source && dependent.dependencies?.[e.from] !== source.hash) {
+    if (dependent && source && !same(dependent.dependencies?.[e.from], source)) {
       stale.push(e.to);
       failures.push(`${dependent.path}: stale against changed dependency ${source.path}.`);
     }
