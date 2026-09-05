@@ -343,7 +343,7 @@ a distinction mattered while only one side of it existed.** Scoped per the opera
 only** — a scan-found claim is not an orphan, or a clean package gains 6 flags for a gap already reported
 elsewhere.
 
-### W14 — "does this label occur here" is implemented **FOUR** times, none exported. *(open)*
+### W14 — "does this label occur here" is implemented **FOUR** times, none exported. *(FIXED 2026-09-05 — `terms.mjs` exports `labelMatcher`/`findLabelOccurrences`; M2, M6, M9 import it; `tests/wiring.test.mjs` forbids a private copy)*
 `claims.mjs labelRe`, `consistency.mjs labelRe`, its inline `replace`, `propagate.mjs findOccurrences`. The
 CONTROL agent **refused to add a fifth inside the gate built to catch that defect** and read M2's stored
 `claim.termRefs` instead — §5d's own prescription. Cost, stated in its code: `termRefs` is claim-block
@@ -359,11 +359,11 @@ The coordinator's brief asserted scan-found claims "are reported through that ch
 the field appeared nowhere outside `claims.mjs` and its tests. The CONTROL check is its first consumer. The
 reasoning for exempting scan-found claims from orphan analysis holds regardless; the premise was wrong.
 
-### W17 — `formatContractAudit`'s objective cross-check is vacuous. *(open)*
+### W17 — `formatContractAudit`'s objective cross-check is vacuous. *(FIXED 2026-08-11, `65d8ef2` — reverse objective containment)*
 It requires literal `Objective N` text in the concept map, which the format contract's `## Objectives` items
 do not carry. W12's probe was therefore silent **twice over**.
 
-### W18 — **THE OBEDIENCE-DECOUPLED REVIEWER WAS NEVER BUILT.** *(critical; specced — task #60)*
+### W18 — **THE OBEDIENCE-DECOUPLED REVIEWER WAS NEVER BUILT.** *(critical; product path CLOSED 2026-09-05 — `review:blind-bundle` assembles the blind surface and the key-fact gate binds its digest; the `challengesSource` slot remains open, see below)*
 The largest claim gap in the project. `docs/reliability_recovery_design.md` §4/§5.2 calls it **"the top
 method"** and S-F's **centerpiece**. It exists **only in comments — in three modules, each DEFERRING to it**:
 - `claims.mjs`: *"the decoupled reviewer covers it, not the graph"*
@@ -412,7 +412,7 @@ dimension **must** have declared itself `spellingOnly` — a row that merely for
 caller outside `lib/` and tests was `study_pairs.mjs`, **the study harness**. Same shape as W8: a package
 could ship with its own study guide and answer key contradicting each other and the gate said nothing.
 
-### W3 — `false_flag_rate` = 0.125, target 0 (orz `:::info` bump). *(open — task #58)*
+### W3 — `false_flag_rate` = 0.125, target 0 (orz `:::info` bump). *(FIXED 2026-08-11, `bab7dc6` — orz containers stripped in the format layer; `false_flag_rate` = 0)*
 `stripMarkup` has no orz rule, so the bare word `info` enters the semantic core and `content` moves.
 orz-markdown is the house standard, so this fires on ordinary styling — the "whitespace flags everything"
 complaint in a different costume.
@@ -422,7 +422,7 @@ Every claim in the golden fixture is scan-found, so `spineRefs`/`sourceRefs`/`de
 design: `spine` and `provenance` are the hash of the empty set and **cannot move under any edit**, and the
 derivation graph is empty, so every metric rests on co-mention alone. The manuscript must say so.
 
-### W5 — `overrideId` has no producer. *(open)*
+### W5 — `overrideId` has no producer. *(FIXED 2026-09-05 — `claims.mjs` stamps `overrideIdOf(entry)` before fingerprinting; provenance moves on override; `tests/wiring.test.mjs` W.4)*
 Fourth instance of the no-producer family. §2.4 says `provenance` "moves on override"; `fingerprint.mjs`
 reads `claim.overrideId`; the schema declares it; **nothing writes it**. It survives because the override
 reaches M4 through a different channel (`ctx.authorized`) — the working path masks the dead one.
@@ -430,3 +430,15 @@ reaches M4 through a different channel (`ctx.authorized`) — the working path m
 ### W6 — a reorder is a mass delete-and-recreate. *(open)*
 1 edit → 6 flags on a 4-claim package: spec §0's founding defect (the S-C pilot's exact number) at claim
 granularity, now wearing this index's authority.
+
+### F-B — no documented command auto-applied anything. *(FIXED 2026-09-05)*
+`applyMechanical` (M9) was reachable only from `scripts/study_pairs.mjs`, so usage test 11 ("an edit is never
+auto-applied inside a direct quotation") passed vacuously. `scripts/propagate.mjs` (`npm run revision:propagate`)
+is the product caller: dry-run by default, `--apply` refuses a dirty tree, writes and commits only the planned
+files, and files a receipt with before/after text and file hashes on both sides. Test 11 now drives it; the
+receipt contract is `tests/propagate-cli.test.mjs`.
+
+### G15h — a committed-but-stale semantic index was invisible to both gates. *(FIXED 2026-09-05)*
+`auditIndexFreshness` byte-compares each stored artifact against a fresh recompute. Stale + no movement + clean
+output tree = a silent strand → one `stale-index` queue item; any staleness blocks `--for-discovery`; mid-edit
+staleness is reported, never queued (the null-edit guarantee holds). `tests/index-freshness.test.mjs`.

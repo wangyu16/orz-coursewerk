@@ -1,5 +1,29 @@
 # Coursewerk changelog
 
+## v0.12.0 (2026-09-05)
+- **CONTROL is verified, not hoped for.** The gate checks the package against the instructor's concept map in both
+  directions: a declared objective nothing teaches is a fail-closed `missing-coverage` block in every mode (a
+  whole dropped chapter is caught through its own key-term anchors); a deliverable tagging an undeclared objective
+  fails the format contract. Coverage is reported as a floor with its denominators, never as an accusation.
+- **A semantic, claim-level index beneath the file graph.** SPINE/TERMS/CLAIMS are minted from the concept maps
+  only; each claim carries five fingerprints (format, label, content, spine, provenance); a whitespace reflow costs
+  zero flags, a rename keeps every id, a value change reaches every dependent claim and names the ones it did not
+  move (`silentRisk`). Instructor-declared `[prereq: …]` edges make prerequisite order a first-class spine input.
+- **Freshness gate.** A committed index that no longer describes the package (a concept-map edit never
+  re-indexed) is queued as one `stale-index` decision and blocks release; mid-edit staleness is reported only.
+- **Trust layers.** Deterministic cross-artifact consistency (the study guide and the answer key must agree),
+  physical-range sanity, and an unverifiable-quotation scan (a quotation that appears in no pinned source is
+  refused) are wired into the publish check with an escalation queue whose reviewer burden is measured.
+- **Independence is assembled.** `npm run review:blind-bundle` builds the blind reviewer's surface by allowlist
+  outside the package and prints its digest; the key-fact review must declare that digest and the gate binds it.
+- **Propagation with a receipt.** `npm run revision:propagate` plans and, with `--apply`, applies a mechanical
+  terminology rename — never inside a quotation, citation, code fence, or source-reproduced span — refuses a
+  dirty tree, commits only the planned files, and files a receipt that can verify and reverse every edit.
+- **Overrides are provenance.** `record:override` gives a deliberate divergence from the source an id that the
+  claim carries and the provenance fingerprint hashes; the gate stops asking, the change stays tracked.
+- **Procedure.** Stage 4 opens the critique with the blind bundle; a new Stage 5b documents the revision loop,
+  overrides, and propagation. The system claim register now covers every semantic-index mechanism.
+
 ## v0.11.0 (2026-07-14)
 - **Focused critique survives Light mode.** Every completed package now carries a hash-bound review of accountable
   identity, source/version, licenses, external-media rights, attribution, output-license compatibility, and

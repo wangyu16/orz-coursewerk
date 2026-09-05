@@ -153,6 +153,10 @@ scripts/generate_attribution.mjs    # render attribution deterministically from 
 scripts/init_output_git.mjs    # initialize an independent Git ledger for an output root
 scripts/index_components.mjs   # initialize/refresh the output dependency index
 scripts/revision_impact.mjs    # compute every component affected by revisions
+scripts/propagate.mjs          # plan/apply a mechanical terminology rename with a verifiable receipt (never inside quotations)
+scripts/record_override.mjs    # record an authorized divergence from the source once; the gate stops asking
+scripts/index_semantic.mjs     # write/accept the claim-level baseline (SPINE/TERMS/CLAIMS)
+scripts/assemble_blind_bundle.mjs # assemble the blind key-fact review bundle outside the package; prints the digest the review must declare
 scripts/build_carriers.mjs     # build the orz framework carriers into preview/ (local reading + QA)
 scripts/pack.mjs               # produce the lean Alembic upload zip in dist/
 scripts/lib/contract.mjs       # local mirror of the Alembic package contract

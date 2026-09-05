@@ -51,7 +51,9 @@ warnings, and do not claim that publication has been cleared. For public authori
    snapshot, raw hash, canonical URL, retrieval time, extractor metadata, extracted text, and text hash. The
    scaffold `inputs/README.md` never counts as source evidence.
    Source preparation also writes `metadata/SOURCE_RECORD.json`, a compact exact mirror of the public revision,
-   retrieval, extractor, and digest facts that must ship with the package. Wikipedia preparation rejects two
+   retrieval, extractor, and digest facts that must ship with the package (regenerate it from the corpus manifest
+   at any time with `npm run generate:source-record -- --root package --inputs inputs`; the gate refuses a
+   record that does not match `inputs/SOURCE_CORPUS.json`). Wikipedia preparation rejects two
    declarations that resolve to the same page ID, revision ID, or extracted text.
 
 - Personal/restricted work lives under `personal/`, has no open output license, and is never packed for Alembic.
@@ -310,6 +312,60 @@ report `failed: 0` (proves each lean source reassembles into a valid framework d
 **Discoverability** bar is enforced for public OER: incompatible licensing, incomplete provenance/attribution,
 a missing source scan, or near-verbatim spans are release-blocking. Flag any non-auto-fixable issue in `reports/qa_report.md`
 — never fabricate a fix.
+
+## Stage 5b — Revising after the baseline (the revision loop)
+
+Every edit after Stage 4 — yours, the instructor's, or an automatic one — runs the same loop. Git answers
+*what changed*; the two indexes answer *what else can no longer be trusted*; nothing packs until a human
+has attested the whole impact set. **A clean `git status` is not a coherent package.**
+
+```bash
+node scripts/check_oer.mjs --package package            # 1. the gate names what moved (claim-level) and what is stale (file-level)
+npm run revision:impact -- --root package                # 2. the exact review set → reports/revision-impact.{json,md}
+#    review every listed component; fill `reviewed` + a substantive `attestation` in the JSON
+node scripts/index_components.mjs --root package --refresh --review reports/revision-impact.json   # 3. accept the file-level state
+npm run index:semantic -- --root package                 # 4. accept the claim-level baseline (SPINE/TERMS/CLAIMS)
+node scripts/check_oer.mjs --package package            # 5. must come back clean; then the queue is empty
+```
+
+What the gate reports between steps 1 and 4, and what each means:
+
+- **`metadata/REVIEW_QUEUE.json`** — one item per human decision, ordered by severity: a value the study guide and
+  the answer key disagree on, a claim the change reaches but did not move (`silentRisk`), a dropped objective,
+  an unverifiable quotation, a dangling reference. Read it top-down; the `burden` count is the alarm-fatigue meter.
+- **`semantic.freshness`** — whether the committed SPINE/TERMS/CLAIMS are byte-fresh. Stale while you are mid-edit
+  is normal. **Stale with nothing moved and everything committed is a silent strand** (a concept-map edit that was
+  never re-indexed): it enters the queue as `stale-index`, and release refuses it. Step 4 clears it.
+- **`coherenceFailures`** — components changed after the last attested review. Step 3 clears them.
+
+**Deliberate divergence from the source.** When the package must say something the pinned source does not —
+a newer value, a correction of a source error, a pedagogical simplification — record it once, and the gate stops
+asking:
+
+```bash
+npm run record:override -- --root package --claim-id <claim.id from CLAIMS.json> \
+  --diverges-from "<source anchor>" --basis instructor-expertise|cited|pedagogical-choice \
+  --authorized-by "<name>" --date YYYY-MM-DD --rationale "<why, for the next maintainer>" [--justified-by "<newer source>"]
+```
+
+The claim then carries `overrideId`, its provenance fingerprint moves (so the override is itself a tracked
+change), and `suspected-error` flags for that claim become authorized divergence. Never edit the source
+snapshot or the fidelity checker to make a divergence disappear; the override IS the record.
+
+**Terminology renames.** A rename is the one edit the harness can apply for you, because it is mechanical:
+one registered label to another, resolved through the term registry, never inside a quotation, citation, code
+fence, orz payload, or a span reproduced from the source. Plan first, then apply with a receipt:
+
+```bash
+npm run revision:propagate -- --root package --term <term.id> --from "<old label>" --to "<new label>" [--inputs inputs]
+npm run revision:propagate -- --root package --term <term.id> --from "<old label>" --to "<new label>" --apply --authorized-by "<name>"
+```
+
+The dry run writes `reports/propagation-plan.json` and touches nothing. `--apply` refuses an uncommitted tree,
+writes only the planned files, commits only those, and files `reports/propagation-receipt.json` with the exact
+before/after text and file hashes on both sides — enough to verify every edit and to reverse it. Everything
+that needs judgment (a re-derived explanation, a coverage recheck) is *held for review* in the receipt, never
+guessed. Then run the loop above: the component gate demands the review, and the accept steps re-baseline.
 
 ## Stage 6 — Honest evaluation report
 Write `reports/evaluation.md` — an **honest artifact-quality evaluation** of the package, so the user

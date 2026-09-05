@@ -47,7 +47,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "c19ee16356a9d9ce9f90f143101abf529263549abcfbc4f635f8af4d9cd622b2"
+      "hash": "8576d7afed3aaf2fe9558c6ed377d1b0b688900dc54d876ffbc1ed11f8f7bad5"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -113,7 +113,7 @@
       "id": "repo:docs/walkthrough.md",
       "path": "docs/walkthrough.md",
       "type": "documentation",
-      "hash": "d5aced14fafa050878062f4826244a7ed003ae585416a84481dc4d47640b7a2d"
+      "hash": "0b50189cbfda05f135971669bb9f6dd38e22c93db85485089ff1159a379a863e"
     },
     {
       "id": "repo:docs/wikipedia-science-topic.md",
@@ -125,7 +125,7 @@
       "id": "repo:FEATURES.md",
       "path": "FEATURES.md",
       "type": "product-claim",
-      "hash": "14af71457d9872d1b3239b11a146ef74914a34d47bbc636e2bc5ff1ca178c8eb"
+      "hash": "0f2121237d8ced24282726fc8424d69f3a134a001345058b93cdb24011fc390f"
     },
     {
       "id": "repo:format-contracts/deliverables.md",
@@ -155,25 +155,31 @@
       "id": "repo:package.json",
       "path": "package.json",
       "type": "release-metadata",
-      "hash": "0120a97f19166a571c994439ab9dde9758fbf1502753f2a4ce24453ef63e57cf"
+      "hash": "994ffcb9a7ff4f5ea1f1599e9a4e8586f17822bdb233657fe2f653eb6f88d09b"
     },
     {
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "10f37d2fcdde62e1263b10d20182ac2f28a113c3f38231e5e89ff9802bcf399f"
+      "hash": "8d68f43afd35dad2aad181bf02d794c932daa68d2f86540530cb57076ba691fc"
     },
     {
       "id": "repo:README.md",
       "path": "README.md",
       "type": "product-claim",
-      "hash": "fab8308adf7c4a48c34116c952e7d8ec4893e67f4e7bc796c1b8764d7fdaac01"
+      "hash": "6b21e8e2b2f1e7b510d0c20647d668401daa33a47333a57842c9454af26fd59c"
     },
     {
       "id": "repo:scripts/accept_coursewerk_revision.mjs",
       "path": "scripts/accept_coursewerk_revision.mjs",
       "type": "executable",
       "hash": "5b6f259b38b8f382948ca0278fcf434ff069dfd48f4e0698c451619c8846a6ae"
+    },
+    {
+      "id": "repo:scripts/assemble_blind_bundle.mjs",
+      "path": "scripts/assemble_blind_bundle.mjs",
+      "type": "executable",
+      "hash": "63a9e5d8259be6c41b852f9594f38e25937784fcaa10e5b6984e29e186b34280"
     },
     {
       "id": "repo:scripts/attest_visual_review.mjs",
@@ -185,7 +191,7 @@
       "id": "repo:scripts/bind_key_fact_review.mjs",
       "path": "scripts/bind_key_fact_review.mjs",
       "type": "executable",
-      "hash": "75effef542d56ffe5bd2d179b60e64ea1f1a0f9ebcf1627e3eac24329756f3d7"
+      "hash": "2b646b56cd164bfd6fa104ef612440a3c6c39e7deb28cfb5e47238ac22ff9360"
     },
     {
       "id": "repo:scripts/build_carriers.mjs",
@@ -215,7 +221,7 @@
       "id": "repo:scripts/check_oer.mjs",
       "path": "scripts/check_oer.mjs",
       "type": "executable",
-      "hash": "273a674e7bcc52248539488f050b8c4c4ea44c28ae0cbcde0542c7acbe6b47fa"
+      "hash": "38ac0971bfcb2823dcf570211cd90a299fca5c96ed4f7a9d658a808ca2796352"
     },
     {
       "id": "repo:scripts/coursewerk_impact.mjs",
@@ -311,13 +317,13 @@
       "id": "repo:scripts/lib/blind_bundle.mjs",
       "path": "scripts/lib/blind_bundle.mjs",
       "type": "kernel",
-      "hash": "a2042ed0c3c131204efae466deb611302fb7835d65f8f7373ff6a6cec5c28c66"
+      "hash": "8e553d50fd163598d1f7205e1d1183c9e5e75d4837fead2ceef7b54157eb5568"
     },
     {
       "id": "repo:scripts/lib/claims.mjs",
       "path": "scripts/lib/claims.mjs",
       "type": "kernel",
-      "hash": "b2fd6b08a2208cf58dcd70071a405951d8ce2ba8ec8d463d018a45c14d72f9a9"
+      "hash": "828db27dcd648415fcd721b53f48dcbbe150b5a99c59e82ca58d308bca9a57c0"
     },
     {
       "id": "repo:scripts/lib/classify.mjs",
@@ -335,7 +341,7 @@
       "id": "repo:scripts/lib/consistency.mjs",
       "path": "scripts/lib/consistency.mjs",
       "type": "kernel",
-      "hash": "57314f8acd843812c3d3a5975c9bd56e36bc9862db5bff659b60da5449368e10"
+      "hash": "2194dd96e4326f97107578f3bd8f384acc3e6be9c86bf67c4e8ecc32f34a8d42"
     },
     {
       "id": "repo:scripts/lib/contract.mjs",
@@ -347,7 +353,7 @@
       "id": "repo:scripts/lib/escalation.mjs",
       "path": "scripts/lib/escalation.mjs",
       "type": "kernel",
-      "hash": "a54e7b36372146aae3c33e3b2aa8654658f97a300e516cfe50c2ab075072498a"
+      "hash": "8b68aba7767a9f0769d44f995e8994f92ba4bd6bda8655bb43f395176ddbf168"
     },
     {
       "id": "repo:scripts/lib/fingerprint.mjs",
@@ -362,10 +368,16 @@
       "hash": "5a47d0b88df9145b66416682a4e99b3de5a529f72fe48b57ae32a174e229cdbf"
     },
     {
+      "id": "repo:scripts/lib/key_fact_checks.mjs",
+      "path": "scripts/lib/key_fact_checks.mjs",
+      "type": "kernel",
+      "hash": "314bf8f823b70a7118b94d06fc42b2d9e8675e7f7615f00163fbcfe924c017d5"
+    },
+    {
       "id": "repo:scripts/lib/key_fact_review.mjs",
       "path": "scripts/lib/key_fact_review.mjs",
       "type": "kernel",
-      "hash": "e1526f4cc3573e5163810a91c7ad383c2916e42ac9b64ff7d0e77059046a7883"
+      "hash": "2b8f909cb93de860fca15cd1833b52cb91c4b15326466c862f29dbc98bf3466f"
     },
     {
       "id": "repo:scripts/lib/output_git.mjs",
@@ -377,7 +389,7 @@
       "id": "repo:scripts/lib/overrides.mjs",
       "path": "scripts/lib/overrides.mjs",
       "type": "kernel",
-      "hash": "e1e3d8f4391e271d9d998c3df67cccd2dac14d736279a846fec094fd68b17d65"
+      "hash": "7319e55c2dfbf9f3290d76ade8b8163d5bc8a63691acfae78d4744904caa6d98"
     },
     {
       "id": "repo:scripts/lib/pre_ingestion.mjs",
@@ -389,7 +401,7 @@
       "id": "repo:scripts/lib/propagate.mjs",
       "path": "scripts/lib/propagate.mjs",
       "type": "kernel",
-      "hash": "be30211ca9e15be73a482f3274d37841534524e55d8f2f7246e334e1c9037269"
+      "hash": "25f932e57b6a2ae4f7ae7f796b96a73c3d6e1f411a0d74af75a57eff3d76179f"
     },
     {
       "id": "repo:scripts/lib/rights_preflight.mjs",
@@ -401,7 +413,7 @@
       "id": "repo:scripts/lib/semantic_index.mjs",
       "path": "scripts/lib/semantic_index.mjs",
       "type": "kernel",
-      "hash": "da0248cb6bb2ccb4b2bf3c51bc9c69a75179ed0e336ba11021bf2d8a07c2a9b3"
+      "hash": "6c8e8795333502e77f53122abd042d2d2e9edf351f4864106e37fc9bd2b092d5"
     },
     {
       "id": "repo:scripts/lib/slug.mjs",
@@ -431,7 +443,7 @@
       "id": "repo:scripts/lib/terms.mjs",
       "path": "scripts/lib/terms.mjs",
       "type": "kernel",
-      "hash": "b08e75f2d205bfeafbb5c7c4f0eb02cb86c114a7df494346b4afb9c0841fdc47"
+      "hash": "8e4c10e25d3eb70a1dd4fa3fe805c7a8d6fc7b6802b6401523b74c3a528147d9"
     },
     {
       "id": "repo:scripts/lib/units.mjs",
@@ -468,6 +480,12 @@
       "path": "scripts/prepare_wikipedia_topic.mjs",
       "type": "executable",
       "hash": "a887bd6fc9e06a92b08961af7dda8b78c8fbb2628e58529902e5af923d4d9ac6"
+    },
+    {
+      "id": "repo:scripts/propagate.mjs",
+      "path": "scripts/propagate.mjs",
+      "type": "executable",
+      "hash": "68134808d08385c66bd2143ec7057525b6f2b94cdd01c7576ef1309514eb0c84"
     },
     {
       "id": "repo:scripts/record_override.mjs",
@@ -623,7 +641,7 @@
       "id": "repo:system/CLAIMS.json",
       "path": "system/CLAIMS.json",
       "type": "system-governance",
-      "hash": "172a70b6b78e15f8013972cfdbc01b9383c823eb8937ea1371a5c09a5b664566"
+      "hash": "bd3b983a2f7e738e03f9bfe9fec17514109bc87e0744adbe2752df2753574d5d"
     },
     {
       "id": "repo:system/COMPONENTS.json",
@@ -635,7 +653,7 @@
       "id": "repo:system/KNOWN_FINDINGS.json",
       "path": "system/KNOWN_FINDINGS.json",
       "type": "system-governance",
-      "hash": "c6eeca0d48ade76acb7fe02d1522a4be51f652ce48d9040aa910e868813ce46d"
+      "hash": "1830864ddea3da2ef34c30c36575c0e1c69a6539013d70a3852d7d326571b1a9"
     },
     {
       "id": "repo:system/QUALITY_PROFILES.json",
@@ -707,7 +725,7 @@
       "id": "repo:templates/key-fact-review.example.json",
       "path": "templates/key-fact-review.example.json",
       "type": "template",
-      "hash": "43e466e8bc8040d38b1a03d230bee26d4bebb17296e8e747a58fde63357d53e9"
+      "hash": "1bba4b2654298aeb25550017d3e1172e191033ec10161500c9ad4b269062bf09"
     },
     {
       "id": "repo:templates/media-plan.example.json",
@@ -743,13 +761,13 @@
       "id": "repo:tests/assurance.test.mjs",
       "path": "tests/assurance.test.mjs",
       "type": "test",
-      "hash": "4b348488ca63fe67f47f0ea583e1d6ad59edd0b7fd62e3c34cf550bcf1029795"
+      "hash": "d7db0d40eba9b2ed5a12880625019de1a8818ffef67efa83881fd6f9689f6e73"
     },
     {
       "id": "repo:tests/blind_bundle.test.mjs",
       "path": "tests/blind_bundle.test.mjs",
       "type": "test",
-      "hash": "764038d7c32fddabca0f74e0ca13dc478f82fd095e742bec09df1947d083e66a"
+      "hash": "dabf69a581f4042b1235d347897f8ad99702ead6fbff75f7335c140ac8bfc6d3"
     },
     {
       "id": "repo:tests/carriers.test.mjs",
@@ -986,6 +1004,12 @@
       "hash": "ea9ab653038e9da5b2f31a1eb69e9dce44d7410739a03f65e1afc1fd6d428e06"
     },
     {
+      "id": "repo:tests/index-freshness.test.mjs",
+      "path": "tests/index-freshness.test.mjs",
+      "type": "test",
+      "hash": "1d082af0a3633e503241353101e8b2036ad856ff9286a789e1cd9e09b6f060e0"
+    },
+    {
       "id": "repo:tests/integration-study-pairs.test.mjs",
       "path": "tests/integration-study-pairs.test.mjs",
       "type": "test",
@@ -995,13 +1019,19 @@
       "id": "repo:tests/key-fact-bindings.test.mjs",
       "path": "tests/key-fact-bindings.test.mjs",
       "type": "test",
-      "hash": "05b2441ef480ce602af017822baa146448073a84d3bee1b65bb704c990143bdb"
+      "hash": "c2c52ad0b0189ce99b27878cc119715fdd95095ec7e8de2828b483eb9b10bd8e"
     },
     {
       "id": "repo:tests/overrides.test.mjs",
       "path": "tests/overrides.test.mjs",
       "type": "test",
       "hash": "922281b84c68345a73e22fb9ad45ec19053a7b3879c0ea2d8b836b89bc79230b"
+    },
+    {
+      "id": "repo:tests/propagate-cli.test.mjs",
+      "path": "tests/propagate-cli.test.mjs",
+      "type": "test",
+      "hash": "dfa491dd6fb6fcf0d2e36ff590d18ea4b6d0f4075ada29e2c360051e9bf830ab"
     },
     {
       "id": "repo:tests/propagate.test.mjs",
@@ -1013,7 +1043,7 @@
       "id": "repo:tests/qa.test.mjs",
       "path": "tests/qa.test.mjs",
       "type": "test",
-      "hash": "89429ef35c05786b1f4cf4181ece68c9e9ce541478e81f565503600337dc85a5"
+      "hash": "abc46b46004fa173142bdfc45168f0e93d9d7a75418bce6795eedcfad7a711b7"
     },
     {
       "id": "repo:tests/range.test.mjs",
@@ -1025,7 +1055,7 @@
       "id": "repo:tests/reviews.test.mjs",
       "path": "tests/reviews.test.mjs",
       "type": "test",
-      "hash": "af664d0659d4205570ded337805606dd1b42c8ddde87303b70bbc752a27097ca"
+      "hash": "98bfd1852d2a96128c73092afe8f7b8586fb5bc35a033b3b9ea6337ba5a85bcb"
     },
     {
       "id": "repo:tests/semantic-index-artifact.test.mjs",
@@ -1079,13 +1109,19 @@
       "id": "repo:tests/usage-e2e.test.mjs",
       "path": "tests/usage-e2e.test.mjs",
       "type": "test",
-      "hash": "a3a3a060923c0041f21acd399a9fb10e222c4fbc5fe139c64f4551a17b49f497"
+      "hash": "1d5e45dd3580e09e3092c7ae23d1ad4700aa3b779def32837d6474211dfde2e2"
+    },
+    {
+      "id": "repo:tests/wiring.test.mjs",
+      "path": "tests/wiring.test.mjs",
+      "type": "test",
+      "hash": "a5c0685ff485d8caea04fea3d87f2caf5c27adc68010cc0fb51d47efd1b22650"
     },
     {
       "id": "repo:VERSION",
       "path": "VERSION",
       "type": "release-metadata",
-      "hash": "9ccb2326fed99f74bb391024235c8ed68bd67b8d478f2e27975b2786a05d3f16"
+      "hash": "a3f2c68bcd98fbd9d80baa8ab17a9db4213ae13882562913ef0a5f065c69cc63"
     }
   ],
   "relationships": [
@@ -1587,6 +1623,79 @@
       ]
     },
     {
+      "id": "claim.coherence.claims",
+      "assuranceLevel": "hard-gate",
+      "statement": "Every claim carries five fingerprints (format, label, content, spine, provenance); a null edit costs zero flags, a rename keeps every claim id, a meaning change reaches every dependent claim and names the reached-but-unmoved ones as silentRisk; findings land in a deduplicated, severity-ordered review queue whose burden is measured.",
+      "implementation": [
+        "scripts/lib/fingerprint.mjs",
+        "scripts/lib/classify.mjs",
+        "scripts/lib/coherence.mjs",
+        "scripts/lib/claims.mjs",
+        "scripts/lib/terms.mjs",
+        "scripts/lib/escalation.mjs",
+        "scripts/lib/semantic_index.mjs",
+        "scripts/index_semantic.mjs",
+        "scripts/check_oer.mjs"
+      ],
+      "tests": [
+        "tests/fingerprint.test.mjs",
+        "tests/classify.test.mjs",
+        "tests/coherence-claims.test.mjs",
+        "tests/claims.test.mjs",
+        "tests/terms.test.mjs",
+        "tests/escalation.test.mjs",
+        "tests/check-oer-revision.test.mjs",
+        "tests/semantic-index-artifact.test.mjs",
+        "tests/usage-e2e.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "PROCEDURE.md",
+        "docs/walkthrough.md",
+        "docs/semantic-index-spec.md",
+        "docs/semantic-index-interfaces.md"
+      ]
+    },
+    {
+      "id": "claim.coherence.index-fresh",
+      "assuranceLevel": "hard-gate",
+      "statement": "The gate byte-compares each stored SPINE/TERMS/CLAIMS artifact against a fresh recompute; a stale artifact with no movement signal over a clean output tree is queued as one stale-index decision, any staleness blocks --for-discovery, and mid-edit staleness is reported without a flag.",
+      "implementation": [
+        "scripts/lib/semantic_index.mjs",
+        "scripts/check_oer.mjs",
+        "scripts/lib/escalation.mjs",
+        "system/schemas/package/review_queue.schema.json"
+      ],
+      "tests": [
+        "tests/index-freshness.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "PROCEDURE.md",
+        "docs/walkthrough.md"
+      ]
+    },
+    {
+      "id": "claim.coherence.prerequisites",
+      "assuranceLevel": "hard-gate",
+      "statement": "Prerequisite order is an instructor-declared spine input: a concept-sequence item may declare its genuine prerequisites in a [prereq: …] bracket, a map that declares any owns its graph (no ordinal chain is minted), and a dangling prerequisite reference is refutable and reported.",
+      "implementation": [
+        "scripts/lib/spine.mjs",
+        "system/schemas/package/spine.schema.json",
+        "scripts/check_oer.mjs"
+      ],
+      "tests": [
+        "tests/spine.test.mjs",
+        "tests/check-oer-semantic.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "PROCEDURE.md",
+        "docs/walkthrough.md",
+        "format-contracts/deliverables.md"
+      ]
+    },
+    {
       "id": "claim.coherence.revisions",
       "statement": "Direct edits calculate and gate the complete downstream consistency review set.",
       "assuranceLevel": "hard-gate",
@@ -1601,6 +1710,49 @@
       "documentation": [
         "FEATURES.md",
         "docs/coherence-index.md"
+      ]
+    },
+    {
+      "id": "claim.control.coverage",
+      "assuranceLevel": "hard-gate",
+      "statement": "The gate verifies the package against the instructor's concept map in both directions: a declared objective nothing teaches is a fail-closed missing-coverage block in every mode, and a deliverable tagging an undeclared objective fails the format contract; coverage is reported as a floor with denominators.",
+      "implementation": [
+        "scripts/check_oer.mjs",
+        "scripts/lib/spine.mjs",
+        "scripts/lib/escalation.mjs"
+      ],
+      "tests": [
+        "tests/check-oer-control.test.mjs",
+        "tests/usage-e2e.test.mjs",
+        "tests/spine.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "PROCEDURE.md",
+        "docs/walkthrough.md",
+        "docs/semantic-index-spec.md"
+      ]
+    },
+    {
+      "id": "claim.control.overrides",
+      "assuranceLevel": "hard-gate",
+      "statement": "An instructor's deliberate divergence from the source is recorded once with a basis and rationale; the claim then carries a content-derived overrideId that the provenance fingerprint hashes, and the gate treats the divergence as authorized instead of re-asking.",
+      "implementation": [
+        "scripts/lib/overrides.mjs",
+        "scripts/record_override.mjs",
+        "scripts/lib/claims.mjs",
+        "scripts/lib/fingerprint.mjs",
+        "scripts/check_oer.mjs"
+      ],
+      "tests": [
+        "tests/overrides.test.mjs",
+        "tests/wiring.test.mjs",
+        "tests/check-oer-revision.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "PROCEDURE.md",
+        "docs/walkthrough.md"
       ]
     },
     {
@@ -1704,6 +1856,28 @@
       ]
     },
     {
+      "id": "claim.review.blind-bundle",
+      "assuranceLevel": "hard-gate",
+      "statement": "A documented command assembles the blind key-fact reviewer's surface by allowlist outside the package, withholding every process file by name; the key-fact review must declare the digest of that surface and the gate compares it live, so independence is assembled and verified rather than declared.",
+      "implementation": [
+        "scripts/lib/blind_bundle.mjs",
+        "scripts/assemble_blind_bundle.mjs",
+        "scripts/lib/key_fact_review.mjs",
+        "scripts/bind_key_fact_review.mjs"
+      ],
+      "tests": [
+        "tests/blind_bundle.test.mjs",
+        "tests/key-fact-bindings.test.mjs",
+        "tests/reviews.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "PROCEDURE.md",
+        "docs/walkthrough.md",
+        "templates/key-fact-review.example.json"
+      ]
+    },
+    {
       "id": "claim.review.key-facts",
       "statement": "Every completed teaching package receives a hash-bound focused critique of identity, source/version, licenses, media rights, attribution, and chapter key facts; Light uses a context-reset same-model pass and Full uses cross-model review.",
       "assuranceLevel": "hard-gate",
@@ -1726,6 +1900,25 @@
         "docs/assurance-kernel.md",
         "docs/lite-path.md",
         "site/index.html"
+      ]
+    },
+    {
+      "id": "claim.revision.propagation",
+      "assuranceLevel": "hard-gate",
+      "statement": "A documented command plans and, with --apply, applies only the mechanical rename tier, refuses an uncommitted output tree, writes and commits only the planned files, and files a receipt with before/after text and file hashes on both sides that can verify and reverse every edit; everything needing judgment is held for review.",
+      "implementation": [
+        "scripts/propagate.mjs",
+        "scripts/lib/propagate.mjs"
+      ],
+      "tests": [
+        "tests/propagate-cli.test.mjs",
+        "tests/propagate.test.mjs",
+        "tests/usage-e2e.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "PROCEDURE.md",
+        "docs/walkthrough.md"
       ]
     },
     {
@@ -1787,6 +1980,50 @@
       ],
       "documentation": [
         "docs/coursewerk-system-index.md"
+      ]
+    },
+    {
+      "id": "claim.trust.consistency",
+      "assuranceLevel": "hard-gate",
+      "statement": "Cross-artifact disagreements on a shared term or quantity are found deterministically with no declared edge required, physically impossible values are flagged by a conservative range audit, and both enter the review queue through the publish check.",
+      "implementation": [
+        "scripts/lib/consistency.mjs",
+        "scripts/lib/units.mjs",
+        "scripts/check_oer.mjs"
+      ],
+      "tests": [
+        "tests/consistency.test.mjs",
+        "tests/units.test.mjs",
+        "tests/range.test.mjs",
+        "tests/check-oer-consistency.test.mjs",
+        "tests/usage-e2e.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "PROCEDURE.md",
+        "docs/walkthrough.md"
+      ]
+    },
+    {
+      "id": "claim.trust.immutable",
+      "assuranceLevel": "hard-gate",
+      "statement": "Quotations, citations, code fences, orz payloads, and source-reproduced spans are never rewritten by an automatic edit on any product path, and a quotation that appears in no pinned source is refused at the publish check as unverifiable.",
+      "implementation": [
+        "scripts/lib/immutable.mjs",
+        "scripts/lib/propagate.mjs",
+        "scripts/propagate.mjs",
+        "scripts/check_oer.mjs"
+      ],
+      "tests": [
+        "tests/immutable.test.mjs",
+        "tests/unverifiable_quotation.test.mjs",
+        "tests/propagate-cli.test.mjs",
+        "tests/usage-e2e.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "PROCEDURE.md",
+        "docs/walkthrough.md"
       ]
     },
     {
@@ -2028,6 +2265,48 @@
       "status": "resolved",
       "summary": "Wikipedia redirects or aliases can be counted as distinct source pages.",
       "resolution": "Preparation and public QA reject duplicate page IDs, revision IDs, and extracted-text hashes before authoring or release."
+    },
+    {
+      "id": "WIRE-BLIND-BUNDLE-001",
+      "severity": "P0",
+      "status": "resolved",
+      "summary": "The blind-bundle assembler had no product caller; independence was declared by the reviewer, never assembled or verified.",
+      "resolution": "scripts/assemble_blind_bundle.mjs (npm run review:blind-bundle) writes the bundle outside the package; the key-fact gate requires and live-compares independence.bundleSha256."
+    },
+    {
+      "id": "WIRE-INDEX-FRESHNESS-001",
+      "severity": "P1",
+      "status": "resolved",
+      "summary": "A committed-but-stale semantic index was invisible to both the component gate and the claim gate.",
+      "resolution": "auditIndexFreshness byte-compares stored artifacts; stale-index queue kind; release blocks on any staleness."
+    },
+    {
+      "id": "WIRE-LABEL-MATCHER-001",
+      "severity": "P3",
+      "status": "resolved",
+      "summary": "The whole-word label matcher was implemented four times, none exported (W14).",
+      "resolution": "terms.mjs exports labelMatcher/findLabelOccurrences; M2, M6, M9 import it; tests/wiring.test.mjs forbids private copies."
+    },
+    {
+      "id": "WIRE-OVERRIDE-ID-001",
+      "severity": "P2",
+      "status": "resolved",
+      "summary": "claim.overrideId was declared and hashed but nothing produced it (W5).",
+      "resolution": "claims.mjs stamps overrideIdOf(entry) before fingerprinting; provenance moves on override."
+    },
+    {
+      "id": "WIRE-PROCEDURE-001",
+      "severity": "P2",
+      "status": "resolved",
+      "summary": "record_override, revision_impact, index_semantic and propagate were scripts nobody was told to run; PROCEDURE had no revision loop.",
+      "resolution": "PROCEDURE Stage 5b documents the loop, overrides and propagation; tests/wiring.test.mjs requires every product script to be documented."
+    },
+    {
+      "id": "WIRE-PROPAGATE-001",
+      "severity": "P1",
+      "status": "resolved",
+      "summary": "The propagation engine was reachable only from the study harness, so the immutable-region guard had no product path and usage test 11 passed vacuously.",
+      "resolution": "scripts/propagate.mjs (npm run revision:propagate): dry-run plan, --apply with receipt, refuses a dirty tree, commits only planned files; usage test 11 drives it."
     }
   ],
   "componentPolicy": {

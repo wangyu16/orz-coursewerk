@@ -5,129 +5,289 @@
       "id": "claim.release.fail-closed",
       "statement": "Public packing refuses unresolved assurance, quality, source-comparison, key-fact critique, human carrier-review, or coherence failures and binds the accepted evidence to its receipt.",
       "assuranceLevel": "hard-gate",
-      "implementation": ["scripts/pack.mjs", "scripts/check_oer.mjs", "scripts/lib/key_fact_review.mjs", "scripts/lib/visual_review.mjs"],
-      "tests": ["tests/assurance.test.mjs"],
-      "documentation": ["FEATURES.md", "CLAUDE.md", "PROCEDURE.md"]
+      "implementation": [
+        "scripts/pack.mjs",
+        "scripts/check_oer.mjs",
+        "scripts/lib/key_fact_review.mjs",
+        "scripts/lib/visual_review.mjs"
+      ],
+      "tests": [
+        "tests/assurance.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "CLAUDE.md",
+        "PROCEDURE.md"
+      ]
     },
     {
       "id": "claim.rights.verified",
       "statement": "Public sources have hash-bound, known-policy-aware receipts separating verified copyright-license facts from access/AI-use notices; non-published source use remains advisory and public outputs enforce honest attribution and compatible licensing of copied or adapted expression.",
       "assuranceLevel": "hard-gate",
-      "implementation": ["scripts/lib/assurance.mjs", "scripts/lib/pre_ingestion.mjs", "scripts/lib/rights_preflight.mjs", "scripts/data/source-policies.json", "scripts/capture_rights_evidence.mjs", "scripts/prepare_source_corpus.mjs"],
-      "tests": ["tests/assurance.test.mjs", "tests/evidence-tools.test.mjs"],
-      "documentation": ["FEATURES.md", "CLAUDE.md", "PROCEDURE.md", "docs/assurance-kernel.md", "docs/wikipedia-science-topic.md", "site/index.html"]
+      "implementation": [
+        "scripts/lib/assurance.mjs",
+        "scripts/lib/pre_ingestion.mjs",
+        "scripts/lib/rights_preflight.mjs",
+        "scripts/data/source-policies.json",
+        "scripts/capture_rights_evidence.mjs",
+        "scripts/prepare_source_corpus.mjs"
+      ],
+      "tests": [
+        "tests/assurance.test.mjs",
+        "tests/evidence-tools.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "CLAUDE.md",
+        "PROCEDURE.md",
+        "docs/assurance-kernel.md",
+        "docs/wikipedia-science-topic.md",
+        "site/index.html"
+      ]
     },
     {
       "id": "claim.authorship.accountable",
       "statement": "Public output identifies a final accountable non-AI person or institution with explicit rights-holder status and user confirmation; placeholders are rejected.",
       "assuranceLevel": "hard-gate",
-      "implementation": ["scripts/lib/assurance.mjs"],
-      "tests": ["tests/assurance.test.mjs"],
-      "documentation": ["FEATURES.md", "docs/assurance-kernel.md", "format-contracts/deliverables.md", "site/index.html"]
+      "implementation": [
+        "scripts/lib/assurance.mjs"
+      ],
+      "tests": [
+        "tests/assurance.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "docs/assurance-kernel.md",
+        "format-contracts/deliverables.md",
+        "site/index.html"
+      ]
     },
     {
       "id": "claim.provenance.complete",
       "statement": "Every incorporated media item is traceable to structured provenance and public attribution, and verified external media retains hash-bound authoritative rights evidence.",
       "assuranceLevel": "hard-gate",
-      "implementation": ["scripts/lib/assurance.mjs", "scripts/check_oer.mjs", "scripts/capture_media_evidence.mjs"],
-      "tests": ["tests/assurance.test.mjs", "tests/evidence-tools.test.mjs"],
-      "documentation": ["FEATURES.md", "docs/assurance-kernel.md"]
+      "implementation": [
+        "scripts/lib/assurance.mjs",
+        "scripts/check_oer.mjs",
+        "scripts/capture_media_evidence.mjs"
+      ],
+      "tests": [
+        "tests/assurance.test.mjs",
+        "tests/evidence-tools.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "docs/assurance-kernel.md"
+      ]
     },
     {
       "id": "claim.source.comparison",
       "statement": "Discovery release binds raw and extracted source evidence with structured retrieval metadata, rejects duplicate source identities/content, and retains an exact compact source revision record in the package.",
       "assuranceLevel": "hard-gate",
-      "implementation": ["scripts/check_oer.mjs", "scripts/lib/verbatim.mjs", "scripts/lib/source_record.mjs", "scripts/prepare_source_corpus.mjs", "scripts/prepare_wikipedia_topic.mjs"],
-      "tests": ["tests/assurance.test.mjs", "tests/evidence-tools.test.mjs"],
-      "documentation": ["FEATURES.md", "docs/assurance-kernel.md"]
+      "implementation": [
+        "scripts/check_oer.mjs",
+        "scripts/lib/verbatim.mjs",
+        "scripts/lib/source_record.mjs",
+        "scripts/prepare_source_corpus.mjs",
+        "scripts/prepare_wikipedia_topic.mjs"
+      ],
+      "tests": [
+        "tests/assurance.test.mjs",
+        "tests/evidence-tools.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "docs/assurance-kernel.md"
+      ]
     },
     {
       "id": "claim.review.key-facts",
       "statement": "Every completed teaching package receives a hash-bound focused critique of identity, source/version, licenses, media rights, attribution, and chapter key facts; Light uses a context-reset same-model pass and Full uses cross-model review.",
       "assuranceLevel": "hard-gate",
-      "implementation": ["scripts/lib/key_fact_review.mjs", "scripts/bind_key_fact_review.mjs", "scripts/check_oer.mjs", "scripts/check_assurance.mjs"],
-      "tests": ["tests/reviews.test.mjs", "tests/qa.test.mjs", "tests/assurance.test.mjs"],
-      "documentation": ["FEATURES.md", "README.md", "CLAUDE.md", "PROCEDURE.md", "docs/assurance-kernel.md", "docs/lite-path.md", "site/index.html"]
+      "implementation": [
+        "scripts/lib/key_fact_review.mjs",
+        "scripts/bind_key_fact_review.mjs",
+        "scripts/check_oer.mjs",
+        "scripts/check_assurance.mjs"
+      ],
+      "tests": [
+        "tests/reviews.test.mjs",
+        "tests/qa.test.mjs",
+        "tests/assurance.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "README.md",
+        "CLAUDE.md",
+        "PROCEDURE.md",
+        "docs/assurance-kernel.md",
+        "docs/lite-path.md",
+        "site/index.html"
+      ]
     },
     {
       "id": "claim.coherence.revisions",
       "statement": "Direct edits calculate and gate the complete downstream consistency review set.",
       "assuranceLevel": "hard-gate",
-      "implementation": ["scripts/lib/coherence.mjs", "scripts/index_components.mjs", "scripts/revision_impact.mjs"],
-      "tests": ["tests/assurance.test.mjs"],
-      "documentation": ["FEATURES.md", "docs/coherence-index.md"]
+      "implementation": [
+        "scripts/lib/coherence.mjs",
+        "scripts/index_components.mjs",
+        "scripts/revision_impact.mjs"
+      ],
+      "tests": [
+        "tests/assurance.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "docs/coherence-index.md"
+      ]
     },
     {
       "id": "claim.accessibility.floor",
       "statement": "The defined accessibility floor, including visible alternatives for runtime diagrams and charts, is checked before public release.",
       "assuranceLevel": "hard-gate",
-      "implementation": ["scripts/check_oer.mjs"],
-      "tests": ["tests/qa.test.mjs"],
-      "documentation": ["FEATURES.md", "docs/authoring-guidelines.md"]
+      "implementation": [
+        "scripts/check_oer.mjs"
+      ],
+      "tests": [
+        "tests/qa.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "docs/authoring-guidelines.md"
+      ]
     },
     {
       "id": "claim.format.contracts",
       "statement": "Every declared chapter has five structurally valid, mutually related deliverables.",
       "assuranceLevel": "hard-gate",
-      "implementation": ["scripts/check_oer.mjs", "scripts/lib/coherence.mjs"],
-      "tests": ["tests/qa.test.mjs", "tests/assurance.test.mjs"],
-      "documentation": ["FEATURES.md", "format-contracts/deliverables.md"]
+      "implementation": [
+        "scripts/check_oer.mjs",
+        "scripts/lib/coherence.mjs"
+      ],
+      "tests": [
+        "tests/qa.test.mjs",
+        "tests/assurance.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "format-contracts/deliverables.md"
+      ]
     },
     {
       "id": "claim.media.decision",
       "statement": "A chapter without a rights-cleared real photograph records an accountable, substantive media decision.",
       "assuranceLevel": "hard-gate",
-      "implementation": ["scripts/check_oer.mjs"],
-      "tests": ["tests/qa.test.mjs"],
-      "documentation": ["PROCEDURE.md", "docs/authoring-guidelines.md", "format-contracts/deliverables.md"]
+      "implementation": [
+        "scripts/check_oer.mjs"
+      ],
+      "tests": [
+        "tests/qa.test.mjs"
+      ],
+      "documentation": [
+        "PROCEDURE.md",
+        "docs/authoring-guidelines.md",
+        "format-contracts/deliverables.md"
+      ]
     },
     {
       "id": "claim.carriers.three-shapes",
       "statement": "Coursewerk builds editable continuous, slide, and paged preview carriers from declared lean sources.",
       "assuranceLevel": "automated-check",
-      "implementation": ["scripts/build_carriers.mjs", "scripts/lib/contract.mjs"],
-      "tests": ["tests/carriers.test.mjs"],
-      "documentation": ["FEATURES.md", "README.md"]
+      "implementation": [
+        "scripts/build_carriers.mjs",
+        "scripts/lib/contract.mjs"
+      ],
+      "tests": [
+        "tests/carriers.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "README.md"
+      ]
     },
     {
       "id": "claim.carriers.honest-portability",
       "statement": "Carrier receipts persist, distinguish single-file output from carrier-plus-assets output, retain local-asset digests, and public release verifies rebuilt stable carrier fingerprints against an identified human browser/DOM review.",
       "assuranceLevel": "automated-check",
-      "implementation": ["scripts/build_carriers.mjs", "scripts/lib/visual_review.mjs", "scripts/attest_visual_review.mjs", "scripts/pack.mjs"],
-      "tests": ["tests/carriers.test.mjs", "tests/reviews.test.mjs", "tests/assurance.test.mjs"],
-      "documentation": ["FEATURES.md", "README.md", "site/index.html"]
+      "implementation": [
+        "scripts/build_carriers.mjs",
+        "scripts/lib/visual_review.mjs",
+        "scripts/attest_visual_review.mjs",
+        "scripts/pack.mjs"
+      ],
+      "tests": [
+        "tests/carriers.test.mjs",
+        "tests/reviews.test.mjs",
+        "tests/assurance.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "README.md",
+        "site/index.html"
+      ]
     },
     {
       "id": "claim.git.visible-edits",
       "statement": "Output roots use Git and accepted component hashes so direct edits remain visible.",
       "assuranceLevel": "hard-gate",
-      "implementation": ["scripts/lib/output_git.mjs", "scripts/lib/coherence.mjs"],
-      "tests": ["tests/assurance.test.mjs"],
-      "documentation": ["FEATURES.md", "docs/coherence-index.md"]
+      "implementation": [
+        "scripts/lib/output_git.mjs",
+        "scripts/lib/coherence.mjs"
+      ],
+      "tests": [
+        "tests/assurance.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "docs/coherence-index.md"
+      ]
     },
     {
       "id": "claim.language.editorial",
       "statement": "Language polishing is an agent editorial workflow with human approval, not a deterministic QA result.",
       "assuranceLevel": "agent-workflow",
-      "implementation": ["PROCEDURE.md", "skills/courseguide-standards/SKILL.md"],
+      "implementation": [
+        "PROCEDURE.md",
+        "skills/courseguide-standards/SKILL.md"
+      ],
       "tests": [],
-      "documentation": ["FEATURES.md", "docs/authoring-guidelines.md"]
+      "documentation": [
+        "FEATURES.md",
+        "docs/authoring-guidelines.md"
+      ]
     },
     {
       "id": "claim.system.branch-coherence",
       "statement": "Coursewerk repository changes are impact-indexed against their target branch merge base.",
       "assuranceLevel": "hard-gate",
-      "implementation": ["scripts/lib/system_index.mjs", "scripts/verify_coursewerk.mjs", "scripts/coursewerk_impact.mjs"],
-      "tests": ["tests/system-index.test.mjs"],
-      "documentation": ["docs/coursewerk-system-index.md"]
+      "implementation": [
+        "scripts/lib/system_index.mjs",
+        "scripts/verify_coursewerk.mjs",
+        "scripts/coursewerk_impact.mjs"
+      ],
+      "tests": [
+        "tests/system-index.test.mjs"
+      ],
+      "documentation": [
+        "docs/coursewerk-system-index.md"
+      ]
     },
     {
       "id": "claim.website.published",
       "statement": "Coursewerk has a structured, accessible, dependency-free product website deployed from the repository through GitHub Pages.",
       "assuranceLevel": "automated-check",
-      "implementation": ["site/index.html", "site/styles.css", ".github/workflows/pages.yml"],
-      "tests": ["tests/site.test.mjs"],
-      "documentation": ["README.md"]
+      "implementation": [
+        "site/index.html",
+        "site/styles.css",
+        ".github/workflows/pages.yml"
+      ],
+      "tests": [
+        "tests/site.test.mjs"
+      ],
+      "documentation": [
+        "README.md"
+      ]
     },
     {
       "id": "claim.website.showcase",
@@ -140,8 +300,214 @@
         "site/assets/showcase-plate-tectonics-study-guide.png",
         "site/assets/showcase-plate-tectonics-slides.png"
       ],
-      "tests": ["tests/site.test.mjs"],
-      "documentation": ["README.md", "FEATURES.md"]
+      "tests": [
+        "tests/site.test.mjs"
+      ],
+      "documentation": [
+        "README.md",
+        "FEATURES.md"
+      ]
+    },
+    {
+      "id": "claim.control.coverage",
+      "assuranceLevel": "hard-gate",
+      "statement": "The gate verifies the package against the instructor's concept map in both directions: a declared objective nothing teaches is a fail-closed missing-coverage block in every mode, and a deliverable tagging an undeclared objective fails the format contract; coverage is reported as a floor with denominators.",
+      "implementation": [
+        "scripts/check_oer.mjs",
+        "scripts/lib/spine.mjs",
+        "scripts/lib/escalation.mjs"
+      ],
+      "tests": [
+        "tests/check-oer-control.test.mjs",
+        "tests/usage-e2e.test.mjs",
+        "tests/spine.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "PROCEDURE.md",
+        "docs/walkthrough.md",
+        "docs/semantic-index-spec.md"
+      ]
+    },
+    {
+      "id": "claim.coherence.claims",
+      "assuranceLevel": "hard-gate",
+      "statement": "Every claim carries five fingerprints (format, label, content, spine, provenance); a null edit costs zero flags, a rename keeps every claim id, a meaning change reaches every dependent claim and names the reached-but-unmoved ones as silentRisk; findings land in a deduplicated, severity-ordered review queue whose burden is measured.",
+      "implementation": [
+        "scripts/lib/fingerprint.mjs",
+        "scripts/lib/classify.mjs",
+        "scripts/lib/coherence.mjs",
+        "scripts/lib/claims.mjs",
+        "scripts/lib/terms.mjs",
+        "scripts/lib/escalation.mjs",
+        "scripts/lib/semantic_index.mjs",
+        "scripts/index_semantic.mjs",
+        "scripts/check_oer.mjs"
+      ],
+      "tests": [
+        "tests/fingerprint.test.mjs",
+        "tests/classify.test.mjs",
+        "tests/coherence-claims.test.mjs",
+        "tests/claims.test.mjs",
+        "tests/terms.test.mjs",
+        "tests/escalation.test.mjs",
+        "tests/check-oer-revision.test.mjs",
+        "tests/semantic-index-artifact.test.mjs",
+        "tests/usage-e2e.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "PROCEDURE.md",
+        "docs/walkthrough.md",
+        "docs/semantic-index-spec.md",
+        "docs/semantic-index-interfaces.md"
+      ]
+    },
+    {
+      "id": "claim.coherence.prerequisites",
+      "assuranceLevel": "hard-gate",
+      "statement": "Prerequisite order is an instructor-declared spine input: a concept-sequence item may declare its genuine prerequisites in a [prereq: \u2026] bracket, a map that declares any owns its graph (no ordinal chain is minted), and a dangling prerequisite reference is refutable and reported.",
+      "implementation": [
+        "scripts/lib/spine.mjs",
+        "system/schemas/package/spine.schema.json",
+        "scripts/check_oer.mjs"
+      ],
+      "tests": [
+        "tests/spine.test.mjs",
+        "tests/check-oer-semantic.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "PROCEDURE.md",
+        "docs/walkthrough.md",
+        "format-contracts/deliverables.md"
+      ]
+    },
+    {
+      "id": "claim.coherence.index-fresh",
+      "assuranceLevel": "hard-gate",
+      "statement": "The gate byte-compares each stored SPINE/TERMS/CLAIMS artifact against a fresh recompute; a stale artifact with no movement signal over a clean output tree is queued as one stale-index decision, any staleness blocks --for-discovery, and mid-edit staleness is reported without a flag.",
+      "implementation": [
+        "scripts/lib/semantic_index.mjs",
+        "scripts/check_oer.mjs",
+        "scripts/lib/escalation.mjs",
+        "system/schemas/package/review_queue.schema.json"
+      ],
+      "tests": [
+        "tests/index-freshness.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "PROCEDURE.md",
+        "docs/walkthrough.md"
+      ]
+    },
+    {
+      "id": "claim.trust.consistency",
+      "assuranceLevel": "hard-gate",
+      "statement": "Cross-artifact disagreements on a shared term or quantity are found deterministically with no declared edge required, physically impossible values are flagged by a conservative range audit, and both enter the review queue through the publish check.",
+      "implementation": [
+        "scripts/lib/consistency.mjs",
+        "scripts/lib/units.mjs",
+        "scripts/check_oer.mjs"
+      ],
+      "tests": [
+        "tests/consistency.test.mjs",
+        "tests/units.test.mjs",
+        "tests/range.test.mjs",
+        "tests/check-oer-consistency.test.mjs",
+        "tests/usage-e2e.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "PROCEDURE.md",
+        "docs/walkthrough.md"
+      ]
+    },
+    {
+      "id": "claim.trust.immutable",
+      "assuranceLevel": "hard-gate",
+      "statement": "Quotations, citations, code fences, orz payloads, and source-reproduced spans are never rewritten by an automatic edit on any product path, and a quotation that appears in no pinned source is refused at the publish check as unverifiable.",
+      "implementation": [
+        "scripts/lib/immutable.mjs",
+        "scripts/lib/propagate.mjs",
+        "scripts/propagate.mjs",
+        "scripts/check_oer.mjs"
+      ],
+      "tests": [
+        "tests/immutable.test.mjs",
+        "tests/unverifiable_quotation.test.mjs",
+        "tests/propagate-cli.test.mjs",
+        "tests/usage-e2e.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "PROCEDURE.md",
+        "docs/walkthrough.md"
+      ]
+    },
+    {
+      "id": "claim.review.blind-bundle",
+      "assuranceLevel": "hard-gate",
+      "statement": "A documented command assembles the blind key-fact reviewer's surface by allowlist outside the package, withholding every process file by name; the key-fact review must declare the digest of that surface and the gate compares it live, so independence is assembled and verified rather than declared.",
+      "implementation": [
+        "scripts/lib/blind_bundle.mjs",
+        "scripts/assemble_blind_bundle.mjs",
+        "scripts/lib/key_fact_review.mjs",
+        "scripts/bind_key_fact_review.mjs"
+      ],
+      "tests": [
+        "tests/blind_bundle.test.mjs",
+        "tests/key-fact-bindings.test.mjs",
+        "tests/reviews.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "PROCEDURE.md",
+        "docs/walkthrough.md",
+        "templates/key-fact-review.example.json"
+      ]
+    },
+    {
+      "id": "claim.revision.propagation",
+      "assuranceLevel": "hard-gate",
+      "statement": "A documented command plans and, with --apply, applies only the mechanical rename tier, refuses an uncommitted output tree, writes and commits only the planned files, and files a receipt with before/after text and file hashes on both sides that can verify and reverse every edit; everything needing judgment is held for review.",
+      "implementation": [
+        "scripts/propagate.mjs",
+        "scripts/lib/propagate.mjs"
+      ],
+      "tests": [
+        "tests/propagate-cli.test.mjs",
+        "tests/propagate.test.mjs",
+        "tests/usage-e2e.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "PROCEDURE.md",
+        "docs/walkthrough.md"
+      ]
+    },
+    {
+      "id": "claim.control.overrides",
+      "assuranceLevel": "hard-gate",
+      "statement": "An instructor's deliberate divergence from the source is recorded once with a basis and rationale; the claim then carries a content-derived overrideId that the provenance fingerprint hashes, and the gate treats the divergence as authorized instead of re-asking.",
+      "implementation": [
+        "scripts/lib/overrides.mjs",
+        "scripts/record_override.mjs",
+        "scripts/lib/claims.mjs",
+        "scripts/lib/fingerprint.mjs",
+        "scripts/check_oer.mjs"
+      ],
+      "tests": [
+        "tests/overrides.test.mjs",
+        "tests/wiring.test.mjs",
+        "tests/check-oer-revision.test.mjs"
+      ],
+      "documentation": [
+        "FEATURES.md",
+        "PROCEDURE.md",
+        "docs/walkthrough.md"
+      ]
     }
   ]
 }

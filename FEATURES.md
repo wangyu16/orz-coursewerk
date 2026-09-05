@@ -217,6 +217,14 @@ generates an impact plan, requires review of the complete transitive set represe
 edit, and accepts the new state only with a substantive attestation. QA and public packing fail while that state
 is missing or stale.
 
+Beneath the file graph sits a claim-level index (SPINE, TERMS, CLAIMS). Each claim carries five fingerprints —
+format, label, content, spine, provenance — so a whitespace reflow costs nothing, a rename is a rename, and a
+value change reaches every claim that depends on it, including the ones the change did not move (`silentRisk`).
+Three things keep that index honest: a **freshness gate** (a committed index that no longer describes the package
+is queued as one decision and blocks release), a **propagation command** that applies only mechanical renames,
+never inside quotations or source-reproduced spans, and files a verifiable, reversible receipt, and an **override
+record** that turns a deliberate divergence from the source into tracked provenance instead of a recurring flag.
+
 Coursewerk applies the same model to its own repository. `system/COURSEWERK_INDEX.json` maps product claims,
 implementation, tests, instructions, templates, skills, contracts, and release metadata. Branch impact is
 computed from the target Git merge base, so concurrent work cannot silently preserve a stale review.
@@ -230,7 +238,7 @@ Coursewerk is deliberately explicit about assurance boundaries:
 | Package and format | Required files, manifest structure, allowed paths, syntax, links, asset references, carrier builds, and whether a current human visual attestation covers every carrier/source/asset fingerprint | Whether the attested visual hierarchy, interaction, and density actually work for the learners |
 | Accessibility | Missing alt attributes, diagram/chart text alternatives, heading jumps, weak link text, and rule compliance proxies | Post-render DOM behavior, quality of alternatives, cognitive accessibility, captions/transcripts, assistive-technology testing, accommodation fit |
 | Language | Placeholders and structural issues; agent passes can proofread | Nuance, disciplinary voice, inclusive language, and final editorial acceptance |
-| Accuracy | Source identity and `[VERIFY]` discipline; every mode requires a structured critique of representative key facts, with same-model review in Light and cross-model review in Full | Expert confirmation of facts, calculations, examples, and pedagogy |
+| Accuracy | Source identity and `[VERIFY]` discipline; every mode requires a structured critique of representative key facts by a reviewer handed only the assembled blind bundle (its digest is bound into the review), with same-model context-reset review in Light and cross-model review in Full; deterministic cross-artifact consistency, physical-range, and unverifiable-quotation scans | Expert confirmation of facts, calculations, examples, and pedagogy |
 | Rights | Recorded source evidence, license agreement, attribution completeness, publication blockers | Jurisdiction-specific legal interpretation and authority to disclose private data |
 | Coherence | Changed hashes, dependency impact, structural completeness, stale plans | Whether a reviewed dependent is substantively aligned and educationally effective |
 
