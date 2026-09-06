@@ -46,6 +46,7 @@ import {
 } from "../scripts/lib/coherence.mjs";
 import { commitOutput, ensureOutputGit } from "../scripts/lib/output_git.mjs";
 import { matchClaims } from "../scripts/lib/claims.mjs";
+import { acceptBaseline } from "./helpers/baseline.mjs";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const FIXTURE = path.join(repo, "tests/fixtures/mini-package");
@@ -326,9 +327,13 @@ test("EXCLUDE PROOF: a package carrying the semantic artifacts still passes the 
   const paths = computeComponentGraph(root).components.map((c) => c.path);
   for (const rel of SEMANTIC_INDEX_PATHS) assert.equal(paths.includes(rel), false, `${rel} is not a component`);
 
-  // Reindexing is repeatable — the property the attestation-free design promises.
-  const again = spawnSync(process.execPath, [CLI, "--root", root], { encoding: "utf8" });
-  assert.equal(again.status, 0, `${again.stdout}\n${again.stderr}`);
+  // Re-accepting is repeatable — but it is a DECISION, not a command (option 1, 2026-09-06): once a
+  // package has a stored index, the accept step consumes the last gate run's queue. Bare re-index is
+  // refused; the documented path (gate → decide the sheet → accept) leaves the audit clean.
+  const bare = spawnSync(process.execPath, [CLI, "--root", root], { encoding: "utf8" });
+  assert.equal(bare.status, 3, "a stored index with no gate run since is refused");
+  const { accept } = acceptBaseline(repo, root);
+  assert.equal(accept.status ?? accept.code, 0, `${accept.stdout}\n${accept.stderr}`);
   assert.deepEqual(auditCoherence(root).hardFailures, []);
 });
 

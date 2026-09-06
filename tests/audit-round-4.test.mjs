@@ -12,6 +12,7 @@ import { identityProblem } from "../scripts/lib/identity.mjs";
 import { normalizeEvidenceText } from "../scripts/lib/rights_preflight.mjs";
 import { auditKeyFactReview, makeKeyFactBindings } from "../scripts/lib/key_fact_review.mjs";
 import { blindBundleDigest } from "../scripts/lib/blind_bundle.mjs";
+import { acceptBaseline } from "./helpers/baseline.mjs";
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const FIXTURE = path.join(REPO, "tests", "fixtures", "usage-package");
@@ -85,9 +86,13 @@ test("R4-5 · index:semantic refuses to accept a relabeled objective that still 
   const { pkg } = pkgCopy(t);
   const map = read(pkg, "concepts/melting.md");
   write(pkg, "concepts/melting.md", map.replace("State the melting point of pure water", "State the boiling point of pure water"));
+  gate(pkg); // the accept step consumes the last gate run's queue (option 1)
   const refused = cli("index_semantic.mjs", ["--root", pkg]);
-  assert.equal(refused.code, 3, refused.stderr); assert.match(refused.stderr, /objective\.melting\.1/);
-  const accepted = cli("index_semantic.mjs", ["--root", pkg, "--acknowledge-relabel", "objective.melting.1"]);
+  assert.equal(refused.code, 3, refused.stderr);
+  // deciding the queue is not enough: the relabel must ALSO be acknowledged by id
+  const undecidedRelabel = acceptBaseline(REPO, pkg).accept;
+  assert.equal(undecidedRelabel.code, 3); assert.match(undecidedRelabel.stderr, /objective\.melting\.1/);
+  const accepted = acceptBaseline(REPO, pkg, { acceptArgs: ["--acknowledge-relabel", "objective.melting.1"] }).accept;
   assert.equal(accepted.code, 0, accepted.stderr);
 });
 
@@ -113,4 +118,37 @@ test("R4-7 · self-referential prerequisite, hidden evidence text, and more AI-v
   const hidden = normalizeEvidenceText('<html><body><p style="display:none">Attribution 4.0</p><noscript>Attribution 4.0</noscript><div hidden>Attribution 4.0</div><p>Commercial.</p></body></html>');
   assert.ok(!/attribution 4\.0/i.test(hidden), hidden);
   for (const bad of ["AI Reviewer", "Automated pipeline", "Reviewer bot", "Grok", "Qwen", "Codex", "Opus", "Sonnet 4.5", "Fable 5.1", "ClaudeCode"]) assert.ok(identityProblem(bad), bad);
+});
+
+test("R4-8 · OPTION 1: accepting a baseline consumes the decided queue — refused without a gate run, with a stale queue, or with an undecided item", (t) => {
+  const { pkg, dir } = pkgCopy(t);
+  // an edit that queues a review item
+  write(pkg, "study-guide/melting.md", read(pkg, "study-guide/melting.md").replace("pure water is 0 °C.", "pure water is 5 °C."));
+  git(pkg, "add", "-A"); git(pkg, "commit", "-qm", "edit");
+  // (a) no gate since the edit → the stored queue is stale
+  const stale = cli("index_semantic.mjs", ["--root", pkg]);
+  assert.equal(stale.code, 3); assert.match(stale.stderr, /STALE|no review queue/);
+  // (b) gate ran, items pending, no sheet
+  const g = gate(pkg);
+  assert.ok((g.json.semantic.queue.items ?? []).some((i) => i.severity !== "info"), "the edit queues something to decide");
+  const undecided = cli("index_semantic.mjs", ["--root", pkg]);
+  assert.equal(undecided.code, 3); assert.match(undecided.stderr, /await a decision/);
+  // (c) a sheet with an empty decision is still undecided
+  const sheetFile = path.join(dir, "reports", "queue-review.json");
+  fs.mkdirSync(path.dirname(sheetFile), { recursive: true });
+  assert.equal(cli("queue_review.mjs", ["--root", pkg, "--out", sheetFile]).code, 0);
+  const sheet = JSON.parse(fs.readFileSync(sheetFile, "utf8"));
+  assert.ok(sheet.decisions.length > 0 && sheet.decisions.every((d) => d.id && d.decision === ""));
+  const half = cli("index_semantic.mjs", ["--root", pkg, "--review", sheetFile]);
+  assert.equal(half.code, 3); assert.match(half.stderr, /still undecided/);
+  // (d) every row decided with a real note → accepted, and the commit names the review
+  for (const d of sheet.decisions) { d.decision = "accepted"; d.note = "The new value is the instructor's deliberate correction; downstream answer keys were re-derived."; }
+  fs.writeFileSync(sheetFile, JSON.stringify(sheet));
+  const ok = cli("index_semantic.mjs", ["--root", pkg, "--review", sheetFile]);
+  assert.equal(ok.code, 0, ok.stderr);
+  assert.match(git(pkg, "log", "-1", "--format=%s").stdout, /accept semantic baseline \(review [0-9a-f]{12}: \d+ decided\)/);
+  // (e) a sheet answering an OLDER queue is refused after the gate runs again
+  gate(pkg);
+  const again = cli("index_semantic.mjs", ["--root", pkg, "--review", sheetFile]);
+  assert.ok(again.code === 0 || /DIFFERENT queue/.test(again.stderr), again.stderr); // clean queue → nothing pending → accepted; pending → old sheet refused
 });

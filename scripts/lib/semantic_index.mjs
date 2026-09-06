@@ -63,6 +63,7 @@
 // refuses outright when there is nothing to index.
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 import { readConceptMaps, buildSpine } from "./spine.mjs";
 import { buildTermsReport } from "./terms.mjs";
 import { extractClaims } from "./claims.mjs";
@@ -83,6 +84,10 @@ export const SEMANTIC_INDEX_PATHS = Object.freeze([CLAIMS_PATH, SPINE_PATH, TERM
 
 /** The house serialization, byte-for-byte identical to `writeComponentIndex`'s. */
 const serialize = (value) => JSON.stringify(value, null, 2) + "\n";
+/** sha256 of the serialized CLAIMS — the gate stamps it on the queue, the accept step compares. */
+export function claimsDigest(claims) {
+  return crypto.createHash("sha256").update(serialize(claims)).digest("hex");
+}
 
 /**
  * Name the gaps that would make an empty index look like a working one.

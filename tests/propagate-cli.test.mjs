@@ -15,6 +15,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { acceptBaseline } from "./helpers/baseline.mjs";
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const FIXTURE = path.join(REPO, "tests", "fixtures", "usage-package");
@@ -160,8 +161,8 @@ test("P.4 · the documented REVISION LOOP closes it: gate refuses → impact →
   const refresh = cli("index_components.mjs", ["--root", pkg, "--refresh", "--review", planFile]);
   assert.equal(refresh.code, 0, refresh.stderr);
 
-  // (4) accept the semantic baseline, and the gate passes clean
-  assert.equal(cli("index_semantic.mjs", ["--root", pkg]).code, 0);
+  // (4) accept the semantic baseline — through the decision sheet — and the gate passes clean
+  assert.equal(acceptBaseline(REPO, pkg).accept.code, 0);
   const last = cli("check_oer.mjs", ["--package", pkg, "--json", json]);
   assert.equal(last.code, 0, last.stderr);
   const r2 = JSON.parse(fs.readFileSync(json, "utf8"));

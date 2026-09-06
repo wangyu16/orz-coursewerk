@@ -325,9 +325,17 @@ node scripts/check_oer.mjs --package package            # 1. the gate names what
 npm run revision:impact -- --root package                # 2. the exact review set → reports/revision-impact.{json,md}
 #    review every listed component; fill `reviewed` + a substantive `attestation` in the JSON
 node scripts/index_components.mjs --root package --refresh --review reports/revision-impact.json   # 3. accept the file-level state
-npm run index:semantic -- --root package                 # 4. accept the claim-level baseline (SPINE/TERMS/CLAIMS)
+npm run queue:review -- --root package                   # 4a. the decision sheet for the queue → reports/queue-review.json
+#    decide every row: fixed | accepted | dismissed, with a note of 20+ characters
+npm run index:semantic -- --root package --review reports/queue-review.json   # 4b. accept the claim-level baseline
 node scripts/check_oer.mjs --package package            # 5. must come back clean; then the queue is empty
 ```
+
+**Accepting is a decision, not a command.** Once a package has a stored index, `index:semantic` consumes the
+last gate run's queue: it refuses when no gate ran after your last edit (the queue's `basisSha256` no longer
+matches), and it refuses while any `blocking` or `review` item is undecided on the sheet. The queue therefore
+keeps its memory across runs — nothing is cleared by re-indexing past it. A relabeled objective that still
+carries declared claims additionally needs `--acknowledge-relabel <ids>`.
 
 A **clone** of a package carries the committed `COMPONENT_INDEX.json` but not the external ledger under
 `.coursewerk/`, so it cannot be gated. Never delete the index and re-initialize (the gate refuses an

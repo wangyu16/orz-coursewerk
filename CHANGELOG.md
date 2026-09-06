@@ -52,6 +52,9 @@
   without `--acknowledge-relabel`; negated key facts and hidden evidence text are refused; scan-found subjects
   carry only declared dimensions.
   Every finding and its probe or dismissal: `docs/closed-loop-rounds.md`.
+- **Accepting a baseline is a decision.** `index:semantic` consumes the last gate run's review queue: the
+  gate must have run after the last edit, and every blocking or review item must carry a decision on the
+  sheet `queue:review` writes. The queue keeps its memory; nothing is cleared by re-indexing past it.
 - **Procedure.** Stage 4 opens the critique with the blind bundle; a new Stage 5b documents the revision loop,
   overrides, and propagation. The system claim register now covers every semantic-index mechanism.
 

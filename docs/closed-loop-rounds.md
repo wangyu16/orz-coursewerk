@@ -161,3 +161,14 @@ surface they name; and `index:semantic` accepts claim-level movement with no att
 needs an explicit acknowledgment; other movement is reviewed through the revision loop before release).
 
 **Verification:** full offline suite after the last edit: 604 tests, all passing; `system:verify` ready.
+
+## Option 1 — 2026-09-06: accepting a baseline is a decision
+
+The operator chose the first of the three options for the structural gap "the accept step takes claim-level
+movement with no attestation". `index:semantic` now consumes the last gate run's queue: the gate stamps the
+queue with `basisSha256` (the claims it was computed from) and every item carries a stable id; `queue:review`
+writes a decision sheet; the accept step refuses when no gate ran after the last edit, when the sheet answers
+an older queue, or while any blocking/review item is undecided (`fixed | accepted | dismissed` plus a note).
+The accepting commit names the review. The queue therefore keeps its memory across runs. Probe R4-8; every
+test that re-indexed an indexed package now goes through `tests/helpers/baseline.mjs`, the documented path.
+The second structural fact (the author fills its own reviews) is unchanged and still disclosed as declared.

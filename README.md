@@ -155,7 +155,8 @@ scripts/index_components.mjs   # initialize/refresh the output dependency index;
 scripts/revision_impact.mjs    # compute every component affected by revisions
 scripts/propagate.mjs          # plan/apply a mechanical terminology rename with a verifiable receipt (never inside quotations)
 scripts/record_override.mjs    # record an authorized divergence from the source once; the gate stops asking
-scripts/index_semantic.mjs     # write/accept the claim-level baseline (SPINE/TERMS/CLAIMS)
+scripts/index_semantic.mjs     # accept the claim-level baseline (SPINE/TERMS/CLAIMS) — consumes the decided queue
+scripts/queue_review.mjs       # write the decision sheet for the last gate run's review queue
 scripts/assemble_blind_bundle.mjs # assemble the blind key-fact review bundle outside the package; prints the digest the review must declare
 scripts/build_carriers.mjs     # build the orz framework carriers into preview/ (local reading + QA)
 scripts/pack.mjs               # produce the lean Alembic upload zip in dist/

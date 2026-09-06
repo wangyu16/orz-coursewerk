@@ -37,7 +37,7 @@ function validateQueue(q) {
   if (errs.length) return errs;
 
   for (const key of ["schemaVersion", "items", "burden"]) ok(key in q, `missing required "${key}"`);
-  for (const key of Object.keys(q)) ok(["schemaVersion", "items", "burden"].includes(key), `additionalProperty "${key}"`);
+  for (const key of Object.keys(q)) ok(["schemaVersion", "items", "burden", "basisSha256"].includes(key), `additionalProperty "${key}"`);
   ok(q.schemaVersion === 1, "schemaVersion must be const 1");
   ok(Array.isArray(q.items), "items must be an array");
 
@@ -48,7 +48,7 @@ function validateQueue(q) {
       // additionalProperties:false — this now REJECTS a stray singular `claimId`, which
       // the schema REPLACED with `claimIds`. Two ways to say one thing would drift.
       ok(
-        ["kind", "claimIds", "detectorKinds", "severity", "evidence", "proposal"].includes(key),
+        ["kind", "id", "claimIds", "detectorKinds", "severity", "evidence", "proposal"].includes(key),
         `items[${i}] additionalProperty "${key}"`,
       );
     }

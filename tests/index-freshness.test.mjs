@@ -15,6 +15,7 @@ import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { acceptBaseline } from "./helpers/baseline.mjs";
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const FIXTURE = path.join(REPO, "tests", "fixtures", "usage-package");
@@ -122,7 +123,10 @@ test("F.4 · re-indexing restores freshness — the fix the queue item names act
   write(pkg, SPINE, JSON.stringify(spine, null, 2) + "\n");
   commitAll(pkg, "stale spine");
   assert.equal(staleItems((gate(pkg), pkg)).length, 1);
-  assert.equal(cli("index_semantic.mjs", ["--root", pkg]).code, 0);
+  // accepting is a decision: the stale-index item must be decided on the sheet first
+  assert.equal(cli("index_semantic.mjs", ["--root", pkg]).code, 3, "undecided queue → refused");
+  const { accept } = acceptBaseline(REPO, pkg, { decision: "fixed", note: "Re-indexing is the fix the item names; the concept map is the authority." });
+  assert.equal(accept.code, 0, accept.stderr);
   const r = gate(pkg);
   assert.equal(r.json.semantic.freshness.fresh, true);
   assert.equal(staleItems(pkg).length, 0);

@@ -23,7 +23,11 @@ import {
   writeSemanticIndex,
 } from "./lib/semantic_index.mjs";
 import { commitOutput, ensureOutputGit } from "./lib/output_git.mjs";
-import { loadSemanticIndex, spineRelabels } from "./lib/semantic_index.mjs";
+import { loadSemanticIndex, spineRelabels, claimsDigest } from "./lib/semantic_index.mjs";
+import { REVIEW_QUEUE_PATH } from "./lib/escalation.mjs";
+import fs from "node:fs";
+import crypto from "node:crypto";
+let acceptedReview = null;
 
 const args = process.argv.slice(2);
 const opt = (n, d = null) => {
@@ -53,6 +57,48 @@ if (index.conceptMaps.length === 0) {
   process.exit(2);
 }
 
+// OPTION 1 (operator, 2026-09-06): accepting a baseline is a DECISION, not a command. Once a package
+// has a stored index, `index:semantic` consumes the last gate run's queue: the gate must have run
+// after the last edit (the queue's `basisSha256` equals the claims computed now), and every
+// blocking/review item must carry a decision in the review sheet (`queue:review`). Without a queue,
+// with a stale one, or with an undecided item, the baseline is refused and the queue keeps its memory.
+{
+  const storedNow = loadSemanticIndex(root);
+  if (storedNow.present) {
+    const queueFile = path.join(root, REVIEW_QUEUE_PATH);
+    if (!fs.existsSync(queueFile)) {
+      console.error("index-semantic: REFUSED — this package has a stored index but no review queue; run the gate (check_oer) after your last edit, then accept.");
+      process.exit(3);
+    }
+    const queueBytes = fs.readFileSync(queueFile);
+    let queue;
+    try { queue = JSON.parse(queueBytes.toString("utf8")); } catch (e) { console.error(`index-semantic: REFUSED — ${REVIEW_QUEUE_PATH} is invalid JSON: ${e.message}`); process.exit(3); }
+    if (queue.basisSha256 !== claimsDigest(index.claims)) {
+      console.error("index-semantic: REFUSED — the review queue is STALE: the package changed after the last gate run. Run the gate after your last edit, decide the queue, then accept.");
+      process.exit(3);
+    }
+    const pending = (queue.items ?? []).filter((it) => it.severity === "blocking" || it.severity === "review");
+    if (pending.length) {
+      const reviewFile = opt("--review");
+      const sheet = reviewFile && fs.existsSync(reviewFile) ? JSON.parse(fs.readFileSync(reviewFile, "utf8")) : null;
+      const queueSha = crypto.createHash("sha256").update(queueBytes).digest("hex");
+      const decided = new Map((sheet?.decisions ?? []).map((d) => [d.id, d]));
+      const OK = new Set(["fixed", "accepted", "dismissed"]);
+      const undecided = pending.filter((it) => { const d = decided.get(it.id); return !d || !OK.has(d.decision) || String(d.note || "").trim().length < 20; });
+      if (!sheet) {
+        console.error(`index-semantic: REFUSED — ${pending.length} queue item(s) await a decision. Write the sheet and decide each row:\n  npm run queue:review -- --root ${path.relative(process.cwd(), root) || "."}\n  npm run index:semantic -- --root ${path.relative(process.cwd(), root) || "."} --review reports/queue-review.json`);
+        process.exit(3);
+      }
+      if (sheet.queueSha256 !== queueSha) { console.error("index-semantic: REFUSED — the review sheet answers a DIFFERENT queue (the gate ran again since); write it again with queue:review."); process.exit(3); }
+      if (undecided.length) {
+        console.error(`index-semantic: REFUSED — ${undecided.length} item(s) still undecided (decision must be fixed | accepted | dismissed, with a note of 20+ characters):`);
+        for (const it of undecided) console.error(`- ${it.id} ${it.kind} (${it.severity}): ${String(it.evidence?.[0] ?? "").slice(0, 120)}`);
+        process.exit(3);
+      }
+      acceptedReview = { file: reviewFile, queueSha256: queueSha, decided: pending.length, decisions: Object.fromEntries(pending.map((it) => [it.id, decided.get(it.id).decision])) };
+    }
+  }
+}
 // Round-4 audit (atk11): the accept step took a RELABELED objective — one that still has claims
 // declared under its id — with no attestation, so the stale declarations counted as coverage of
 // a statement they never taught. Accepting a relabel is a decision; name the ids to make it.
@@ -74,7 +120,7 @@ writeSemanticIndex(root, index);
 // moved", not "something in the tree moved". An author's own uncommitted deliverable stays
 // uncommitted and is reported by the coherence gate, which is exactly correct: it is their change to
 // review, not ours to bury in a reindex commit.
-const git = commit ? commitOutput(root, "coursewerk: reindex semantic index", { paths: SEMANTIC_INDEX_PATHS }) : null;
+const git = commit ? commitOutput(root, acceptedReview ? `coursewerk: accept semantic baseline (review ${acceptedReview.queueSha256.slice(0, 12)}: ${acceptedReview.decided} decided)` : "coursewerk: reindex semantic index", { paths: SEMANTIC_INDEX_PATHS }) : null;
 
 // Warnings go to stderr and the receipt, and do NOT change the exit code: they name real gaps in
 // the package (no `## Key terms`, no claims) that a half-written but legitimately-in-progress
@@ -90,6 +136,7 @@ console.log(JSON.stringify({
   terms: index.terms.terms.length,
   claims: index.claims.claims.length,
   warnings: index.warnings,
+  ...(acceptedReview ? { review: acceptedReview } : {}),
   // Provenance lives HERE, in the receipt, and never inside an artifact: a timestamp in a
   // derived file would make two runs over identical bytes differ, and the delta the whole
   // semantic layer rests on depends on that byte-identity.

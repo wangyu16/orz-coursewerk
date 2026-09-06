@@ -47,7 +47,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "88b31fb7dea5ed1fa49c621aeaf7670d8083f9d71935cce64047b9c062258562"
+      "hash": "a110a5e235581560bef7e1c71495adb54cf7dbbe7fdc4a62801c7990720bb561"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -77,7 +77,7 @@
       "id": "repo:docs/closed-loop-rounds.md",
       "path": "docs/closed-loop-rounds.md",
       "type": "documentation",
-      "hash": "397b36275883f8dd5ad99cae39a54da76588af1dfc55a0b5349fa90469b2b77a"
+      "hash": "297bad7db29a495583301cc8efde2c6616734fcf79a93c5591c367ac6222c4b0"
     },
     {
       "id": "repo:docs/coherence-index.md",
@@ -161,19 +161,19 @@
       "id": "repo:package.json",
       "path": "package.json",
       "type": "release-metadata",
-      "hash": "994ffcb9a7ff4f5ea1f1599e9a4e8586f17822bdb233657fe2f653eb6f88d09b"
+      "hash": "bdd81390d40a43746ed46eb53210496054a46c9e2fe503162641ae0e95bfc00e"
     },
     {
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "c79eb8248798138c8cbd964fc2f072a018f015a1145be05cd149c2acd9c31c95"
+      "hash": "628c997f32c91c2b3d56ac9268254cee3e446a50c0bc5e3ce36aecf640970a47"
     },
     {
       "id": "repo:README.md",
       "path": "README.md",
       "type": "product-claim",
-      "hash": "ddeda6e7f42253c1ee7746d8efc0b0a89904fcfe931a7ae959b854465640a67f"
+      "hash": "585b9f8c92d220d3050892044d0ced5992516b8d68f8382e4b83774d290a5871"
     },
     {
       "id": "repo:scripts/accept_coursewerk_revision.mjs",
@@ -227,7 +227,7 @@
       "id": "repo:scripts/check_oer.mjs",
       "path": "scripts/check_oer.mjs",
       "type": "executable",
-      "hash": "17a9a2ca39cf6d5e310276286df671bce5201aed1bb1959e964e0e5ffe03e3d0"
+      "hash": "a9c7b1cd31c083b076879fda29042dff766e669815faccece77879424c391fb4"
     },
     {
       "id": "repo:scripts/coursewerk_impact.mjs",
@@ -305,7 +305,7 @@
       "id": "repo:scripts/index_semantic.mjs",
       "path": "scripts/index_semantic.mjs",
       "type": "executable",
-      "hash": "51dbda833116f47433063d46c481dbdb1ca41634b62ca38e64c48b92242c6df4"
+      "hash": "cdb2ae46498cf13498298e27f4666a9658d2c91134f3350daa2e4933e5349edb"
     },
     {
       "id": "repo:scripts/init_output_git.mjs",
@@ -359,7 +359,7 @@
       "id": "repo:scripts/lib/escalation.mjs",
       "path": "scripts/lib/escalation.mjs",
       "type": "kernel",
-      "hash": "43e4e1dced835b2e432c4a1a8dd6cfa273d30a6e7ebc6d86d4621f778a29c93a"
+      "hash": "eb8a0e447497421222b2d9d26a703e9ee1b7f62efbe499a5b9a0ab3fa2a66ea0"
     },
     {
       "id": "repo:scripts/lib/fingerprint.mjs",
@@ -425,7 +425,7 @@
       "id": "repo:scripts/lib/semantic_index.mjs",
       "path": "scripts/lib/semantic_index.mjs",
       "type": "kernel",
-      "hash": "cd809a2391c389188d33ff0abee6c70374c2803fb3b1b2a0378c648d9d128035"
+      "hash": "29b9ae90707a0a826bdac414c18135e0e671ccdc8c09d6aeb24efb04e4f38932"
     },
     {
       "id": "repo:scripts/lib/slug.mjs",
@@ -498,6 +498,12 @@
       "path": "scripts/propagate.mjs",
       "type": "executable",
       "hash": "c70c0572850d6d2a85cbb33f4447bee5c1604058f674fb9ff9a59b5f84bcfdec"
+    },
+    {
+      "id": "repo:scripts/queue_review.mjs",
+      "path": "scripts/queue_review.mjs",
+      "type": "executable",
+      "hash": "7a231ccdf9fd07df0630c91848871769e8c015c83dc33f17ef2051f26401f2a4"
     },
     {
       "id": "repo:scripts/record_override.mjs",
@@ -653,7 +659,7 @@
       "id": "repo:system/CLAIMS.json",
       "path": "system/CLAIMS.json",
       "type": "system-governance",
-      "hash": "c32de90f2ada3e1b99f1f8fe13f3dce49217dcad419c482925e653aa26326e0b"
+      "hash": "16ebb80f34bf6263d932aa0933d2cdba2dcb6a4da197dca89a44aabd0ba1642c"
     },
     {
       "id": "repo:system/COMPONENTS.json",
@@ -797,7 +803,7 @@
       "id": "repo:tests/audit-round-4.test.mjs",
       "path": "tests/audit-round-4.test.mjs",
       "type": "test",
-      "hash": "57c168d903765d252a2e107d39c50e25f3b35546d145462554500c65054d0245"
+      "hash": "e5377caa5c6c44196ac49d01254b9482ce889e4809004f211b37412b6e73923f"
     },
     {
       "id": "repo:tests/blind_bundle.test.mjs",
@@ -815,25 +821,25 @@
       "id": "repo:tests/check-oer-consistency.test.mjs",
       "path": "tests/check-oer-consistency.test.mjs",
       "type": "test",
-      "hash": "a308d3b0789c40b60eb3c65e4258449d8e52b7d9ca065a68d3c62691c04e642d"
+      "hash": "c91c58402c5e8fc84ce4fedc62b9854d50325869c517256ecf8b4cb4978e4816"
     },
     {
       "id": "repo:tests/check-oer-control.test.mjs",
       "path": "tests/check-oer-control.test.mjs",
       "type": "test",
-      "hash": "7d3a2e97724bc1f3274a4cf42a390ed99c4756997b669c31c5d2f36f20ef6817"
+      "hash": "8f40e50ce6704f034043339ea5350d59078bc982673d0a65631ef7f6a68a3a35"
     },
     {
       "id": "repo:tests/check-oer-revision.test.mjs",
       "path": "tests/check-oer-revision.test.mjs",
       "type": "test",
-      "hash": "9b6863cbb855dc8e7c30148222acf42ea77da861193b736b1669395ce720ce27"
+      "hash": "222e78de6b195489c54b25c43f28b62398b0e174969ee9c42c753115ef8c8ee7"
     },
     {
       "id": "repo:tests/check-oer-semantic.test.mjs",
       "path": "tests/check-oer-semantic.test.mjs",
       "type": "test",
-      "hash": "7432af18fa84ede7854167bed2470bc264485956a647114786abc1275cd01d78"
+      "hash": "1ffc358981b6ac26685c51c48747fccfe890d6ab78a1bb7d9763b93f0a830771"
     },
     {
       "id": "repo:tests/claims.test.mjs",
@@ -875,7 +881,7 @@
       "id": "repo:tests/escalation.test.mjs",
       "path": "tests/escalation.test.mjs",
       "type": "test",
-      "hash": "02c5f1a24b9c9224b3e590bbc3a8ece6136e7e83eba254b5199b7ad7ec447b0a"
+      "hash": "64ca9d9be2b0caccddf7cd5deb213704f6b1808625700086cd6bb9800d01c5bb"
     },
     {
       "id": "repo:tests/evidence-tools.test.mjs",
@@ -1034,6 +1040,12 @@
       "hash": "09dee7d859b12f23c400e7391c41bb9f20a7663eee6e793bf54c992684086987"
     },
     {
+      "id": "repo:tests/helpers/baseline.mjs",
+      "path": "tests/helpers/baseline.mjs",
+      "type": "test",
+      "hash": "f2d7cd3366eaf79bc45db4bc41a6d48c749c1ba00b3bb4b71f59ad68935cbdd4"
+    },
+    {
       "id": "repo:tests/immutable.test.mjs",
       "path": "tests/immutable.test.mjs",
       "type": "test",
@@ -1043,7 +1055,7 @@
       "id": "repo:tests/index-freshness.test.mjs",
       "path": "tests/index-freshness.test.mjs",
       "type": "test",
-      "hash": "1d082af0a3633e503241353101e8b2036ad856ff9286a789e1cd9e09b6f060e0"
+      "hash": "17db9c7b8d009176e8b340ce853b0c86128b60b730ead09015c951037b8567e3"
     },
     {
       "id": "repo:tests/integration-study-pairs.test.mjs",
@@ -1067,7 +1079,7 @@
       "id": "repo:tests/propagate-cli.test.mjs",
       "path": "tests/propagate-cli.test.mjs",
       "type": "test",
-      "hash": "b82a3a28c6a65e44c1a538d986619b60ce6820dbd73d11cfbfcd920b0f64db62"
+      "hash": "f5f7ab849651e4fe188fd554e875dded05511c30689810878b5b3a92f461abf4"
     },
     {
       "id": "repo:tests/propagate.test.mjs",
@@ -1097,7 +1109,7 @@
       "id": "repo:tests/semantic-index-artifact.test.mjs",
       "path": "tests/semantic-index-artifact.test.mjs",
       "type": "test",
-      "hash": "673ef3a31333fbbfdc58830e0adae06684b2110186a9fbc5b3ffe869f15eaf8c"
+      "hash": "7d30e89cf3936586ba6b888dc2c35264f0188a08260f26184a3f0469784fc8b8"
     },
     {
       "id": "repo:tests/site.test.mjs",
@@ -1145,7 +1157,7 @@
       "id": "repo:tests/usage-e2e.test.mjs",
       "path": "tests/usage-e2e.test.mjs",
       "type": "test",
-      "hash": "972d9a3d920539c6274c0957127df69021828a7e624c17073b212255fc4ada12"
+      "hash": "21dc406935f31c36ff8b3c4f41a574df68c506c66fe93bbf090be0fe3150f9c1"
     },
     {
       "id": "repo:tests/wiring.test.mjs",
@@ -1684,27 +1696,30 @@
     {
       "id": "claim.coherence.claims",
       "assuranceLevel": "hard-gate",
-      "statement": "Every claim carries five fingerprints (format, label, content, spine, provenance); a null edit costs zero flags, a rename keeps every claim id, a meaning change reaches every dependent claim and names the reached-but-unmoved ones as silentRisk; findings land in a deduplicated, severity-ordered review queue whose burden is measured.",
+      "statement": "Every claim carries five fingerprints (format, label, content, spine, provenance); a null edit costs zero flags, a rename keeps every claim id, a meaning change reaches every dependent claim and names the reached-but-unmoved ones as silentRisk; findings land in a deduplicated, severity-ordered review queue whose burden is measured; accepting a new baseline consumes the last gate run's queue — refused when the gate did not run after the last edit or while any blocking/review item is undecided on the review sheet — so the queue keeps its memory.",
       "implementation": [
-        "scripts/lib/fingerprint.mjs",
+        "scripts/check_oer.mjs",
+        "scripts/index_semantic.mjs",
+        "scripts/lib/claims.mjs",
         "scripts/lib/classify.mjs",
         "scripts/lib/coherence.mjs",
-        "scripts/lib/claims.mjs",
-        "scripts/lib/terms.mjs",
         "scripts/lib/escalation.mjs",
+        "scripts/lib/fingerprint.mjs",
         "scripts/lib/semantic_index.mjs",
-        "scripts/index_semantic.mjs",
-        "scripts/check_oer.mjs"
+        "scripts/lib/terms.mjs",
+        "scripts/queue_review.mjs"
       ],
       "tests": [
-        "tests/fingerprint.test.mjs",
+        "tests/audit-round-4.test.mjs",
+        "tests/check-oer-revision.test.mjs",
+        "tests/claims.test.mjs",
         "tests/classify.test.mjs",
         "tests/coherence-claims.test.mjs",
-        "tests/claims.test.mjs",
-        "tests/terms.test.mjs",
         "tests/escalation.test.mjs",
-        "tests/check-oer-revision.test.mjs",
+        "tests/fingerprint.test.mjs",
+        "tests/index-freshness.test.mjs",
         "tests/semantic-index-artifact.test.mjs",
+        "tests/terms.test.mjs",
         "tests/usage-e2e.test.mjs"
       ],
       "documentation": [

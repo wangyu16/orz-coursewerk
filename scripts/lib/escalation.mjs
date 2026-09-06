@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 // Escalation queue — where DETECTION becomes RECOVERY.
 //
 // The whole design refuses a promise it cannot keep. Nothing here is an error-free
@@ -618,7 +619,9 @@ export function buildQueue(findings, claims) {
   // Canonical field order per item (kind, claimIds?, detectorKinds, severity, evidence,
   // proposal?).
   const ordered = items.sort(cmpItems).map((it) => {
-    const out = { kind: it.kind };
+    // A stable, content-derived id so a decision can name the item across gate runs (option 1,
+    // 2026-09-06): the accept step consumes the queue and needs to know WHICH item was decided.
+    const out = { kind: it.kind, id: createHash("sha256").update(`${it.kind}|${(it.claimIds ?? []).join(",")}|${(it.evidence ?? []).join("\n")}`).digest("hex").slice(0, 12) };
     if (it.claimIds !== undefined) out.claimIds = it.claimIds;
     out.detectorKinds = it.detectorKinds;
     out.severity = it.severity;

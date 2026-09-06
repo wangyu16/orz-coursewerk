@@ -41,6 +41,7 @@ import { auditCoherence, computeComponentGraph, makeComponentIndex, recordAccept
 import { commitOutput, ensureOutputGit } from "../scripts/lib/output_git.mjs";
 import { REVIEW_QUEUE_PATH } from "../scripts/lib/escalation.mjs";
 import { artifactAnchors } from "../scripts/lib/claims.mjs";
+import { acceptBaseline } from "./helpers/baseline.mjs";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const FIXTURE = path.join(repo, "tests/fixtures/mini-package");
@@ -72,8 +73,16 @@ const declare = (root, claims) => writePkg(root, SIDECAR, { schemaVersion: 1, cl
 
 /** The package as an INDEXED package: without a stored index the layer is off by design. */
 function reindex(root) {
-  const run = spawnSync(process.execPath, [REINDEX, "--root", root, "--no-commit"], { encoding: "utf8" });
-  assert.equal(run.status, 0, `reindex failed: ${run.stdout}\n${run.stderr}`);
+  // First baseline: the CLI directly. Any later re-baseline goes through the documented decision
+  // sheet (option 1, 2026-09-06): gate → queue:review → index:semantic --review.
+  const stored = fs.existsSync(path.join(root, "metadata", "CLAIMS.json"));
+  if (!stored) {
+    const run = spawnSync(process.execPath, [REINDEX, "--root", root, "--no-commit"], { encoding: "utf8" });
+    assert.equal(run.status, 0, `reindex failed: ${run.stdout}\n${run.stderr}`);
+    return root;
+  }
+  const { accept } = acceptBaseline(repo, root, { acceptArgs: ["--no-commit"] });
+  assert.equal(accept.code, 0, `re-baseline failed: ${accept.stdout}\n${accept.stderr}`);
   return root;
 }
 
@@ -433,7 +442,7 @@ test("the emitted queue validates against review_queue.schema.json", () => {
     ]);
   });
   const onDisk = JSON.parse(readPkg(root, REVIEW_QUEUE_PATH));
-  assert.deepEqual(onDisk, semantic.queue, "what the gate reports IS what it wrote");
+  assert.deepEqual(onDisk, { ...semantic.queue, basisSha256: semantic.basisSha256 }, "what the gate reports IS what it wrote (plus the basis the accept step compares)");
 
   const schema = JSON.parse(fs.readFileSync(path.join(repo, "system/schemas/package/review_queue.schema.json"), "utf8"));
   validate(onDisk, schema, "REVIEW_QUEUE");

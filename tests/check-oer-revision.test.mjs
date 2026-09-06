@@ -29,6 +29,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { acceptBaseline } from "./helpers/baseline.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..");
@@ -58,8 +59,14 @@ function freshPackage(t) {
 
 /** PROCEDURE Stage 4 — the STORED index is the "before". */
 function index(pkg) {
-  const res = cli("index_semantic.mjs", ["--root", pkg]);
-  assert.equal(res.code, 0, `index:semantic failed: ${res.stderr}`);
+  // First baseline: the CLI directly. A re-baseline goes through the decision sheet (option 1).
+  if (!fs.existsSync(path.join(pkg, "metadata", "CLAIMS.json"))) {
+    const res = cli("index_semantic.mjs", ["--root", pkg]);
+    assert.equal(res.code, 0, `index:semantic failed: ${res.stderr}`);
+    return;
+  }
+  const { accept } = acceptBaseline(REPO, pkg);
+  assert.equal(accept.code, 0, `re-baseline failed: ${accept.stderr}`);
 }
 
 /** PROCEDURE Stage 5 — the gate. `--no-commit`: these packages carry no git history. */
@@ -214,7 +221,7 @@ test("a RENAME is OBSERVABLE, the claim ids HOLD, and the message names the labe
 
   // IDS HELD — the other half. `identityLabel` hashes sorted term IDS, which a rename must not move.
   // A rename that lost the ids would report added+removed and RENAME would never fire at all.
-  cli("index_semantic.mjs", ["--root", pkg]);
+  index(pkg);
   assert.deepEqual(claimsOf(pkg).map((c) => c.id).sort(), idsBefore,
     "a rename changed claim ids — the terminology migration this feature exists for is broken");
 

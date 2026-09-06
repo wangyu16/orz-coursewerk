@@ -335,27 +335,30 @@
     {
       "id": "claim.coherence.claims",
       "assuranceLevel": "hard-gate",
-      "statement": "Every claim carries five fingerprints (format, label, content, spine, provenance); a null edit costs zero flags, a rename keeps every claim id, a meaning change reaches every dependent claim and names the reached-but-unmoved ones as silentRisk; findings land in a deduplicated, severity-ordered review queue whose burden is measured.",
+      "statement": "Every claim carries five fingerprints (format, label, content, spine, provenance); a null edit costs zero flags, a rename keeps every claim id, a meaning change reaches every dependent claim and names the reached-but-unmoved ones as silentRisk; findings land in a deduplicated, severity-ordered review queue whose burden is measured; accepting a new baseline consumes the last gate run's queue \u2014 refused when the gate did not run after the last edit or while any blocking/review item is undecided on the review sheet \u2014 so the queue keeps its memory.",
       "implementation": [
-        "scripts/lib/fingerprint.mjs",
+        "scripts/check_oer.mjs",
+        "scripts/index_semantic.mjs",
+        "scripts/lib/claims.mjs",
         "scripts/lib/classify.mjs",
         "scripts/lib/coherence.mjs",
-        "scripts/lib/claims.mjs",
-        "scripts/lib/terms.mjs",
         "scripts/lib/escalation.mjs",
+        "scripts/lib/fingerprint.mjs",
         "scripts/lib/semantic_index.mjs",
-        "scripts/index_semantic.mjs",
-        "scripts/check_oer.mjs"
+        "scripts/lib/terms.mjs",
+        "scripts/queue_review.mjs"
       ],
       "tests": [
-        "tests/fingerprint.test.mjs",
+        "tests/audit-round-4.test.mjs",
+        "tests/check-oer-revision.test.mjs",
+        "tests/claims.test.mjs",
         "tests/classify.test.mjs",
         "tests/coherence-claims.test.mjs",
-        "tests/claims.test.mjs",
-        "tests/terms.test.mjs",
         "tests/escalation.test.mjs",
-        "tests/check-oer-revision.test.mjs",
+        "tests/fingerprint.test.mjs",
+        "tests/index-freshness.test.mjs",
         "tests/semantic-index-artifact.test.mjs",
+        "tests/terms.test.mjs",
         "tests/usage-e2e.test.mjs"
       ],
       "documentation": [

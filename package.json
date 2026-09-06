@@ -24,6 +24,7 @@
     "init:output-git": "node scripts/init_output_git.mjs --root package",
     "index:components": "node scripts/index_components.mjs --root package --initialize",
     "index:semantic": "node scripts/index_semantic.mjs --root package",
+    "queue:review": "node scripts/queue_review.mjs --root package --out reports/queue-review.json",
     "revision:impact": "node scripts/revision_impact.mjs --root package",
     "revision:propagate": "node scripts/propagate.mjs --root package --out reports",
     "study:pairs": "node scripts/study_pairs.mjs",

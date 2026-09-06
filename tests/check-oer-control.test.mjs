@@ -62,6 +62,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { acceptBaseline } from "./helpers/baseline.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..");
@@ -90,8 +91,14 @@ function freshPackage(t) {
 
 /** PROCEDURE Stage 4. */
 function index(pkg) {
-  const res = cli("index_semantic.mjs", ["--root", pkg]);
-  assert.equal(res.code, 0, `index:semantic failed: ${res.stderr}`);
+  // First baseline: the CLI directly. A re-baseline goes through the decision sheet (option 1).
+  if (!fs.existsSync(path.join(pkg, "metadata", "CLAIMS.json"))) {
+    const res = cli("index_semantic.mjs", ["--root", pkg]);
+    assert.equal(res.code, 0, `index:semantic failed: ${res.stderr}`);
+    return;
+  }
+  const { accept } = acceptBaseline(REPO, pkg);
+  assert.equal(accept.code, 0, `re-baseline failed: ${accept.stderr}`);
 }
 
 /** PROCEDURE Stage 5 — the gate. `--no-commit`: these copies carry no git history. */

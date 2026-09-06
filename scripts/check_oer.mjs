@@ -27,7 +27,7 @@ import { artifactAnchors, matchClaims, anchorCoverage, positionalDeclarationsOnA
 import { danglingSpineRefs } from "./lib/spine.mjs";
 import { buildQueue, REVIEW_QUEUE_PATH } from "./lib/escalation.mjs";
 import { scanConsistency, rangeAudit } from "./lib/consistency.mjs";
-import { computeSemanticIndex, loadSemanticIndex, auditIndexFreshness, spineRelabels, CLAIMS_PATH } from "./lib/semantic_index.mjs";
+import { computeSemanticIndex, loadSemanticIndex, auditIndexFreshness, spineRelabels, claimsDigest, CLAIMS_PATH } from "./lib/semantic_index.mjs";
 import { parseSections, labelMatcher } from "./lib/terms.mjs";
 import { spineCycles } from "./lib/spine.mjs";
 import { isAuthorizedDivergence, OVERRIDES_PATH } from "./lib/overrides.mjs";
@@ -1950,6 +1950,7 @@ function semanticAudit(verbatim) {
     // G15h: byte-equality of each stored artifact with a fresh recompute. `fresh:false` with
     // movement is mid-edit; `fresh:false` without movement is the silent strand (queued above).
     freshness: { ...freshness, committed },
+    basisSha256: claimsDigest(fresh.claims),
     warnings: fresh.warnings,
     spineNodes: fresh.spine.nodes.length,
     terms: fresh.terms.terms.length,
@@ -1995,8 +1996,11 @@ function emitReviewQueue(semantic) {
   if (!semantic.ran || !writeQueue) return null;
   const file = path.join(pkg, REVIEW_QUEUE_PATH);
   fs.mkdirSync(path.dirname(file), { recursive: true });
-  // The house serialization, byte-identical to every other emitted artifact's.
-  fs.writeFileSync(file, JSON.stringify(semantic.queue, null, 2) + "\n");
+  // The house serialization, byte-identical to every other emitted artifact's. `basisSha256`: the
+  // claims this queue was computed from — the accept step (index:semantic) refuses a baseline whose
+  // claims differ (the gate must run after the last edit) and refuses while any blocking/review item
+  // here is undecided. The queue is the loop's memory (option 1, 2026-09-06).
+  fs.writeFileSync(file, JSON.stringify({ ...semantic.queue, basisSha256: semantic.basisSha256 }, null, 2) + "\n");
   const tracked = outputGitState(pkg).available;
   // PATH-SCOPED, deliberately (see output_git.mjs `opts.paths`). This is a CHECKER. It must commit the
   // queue — an uncommitted emitted artifact trips auditCoherence's unfiltered `Git ??` loop and the

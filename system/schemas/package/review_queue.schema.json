@@ -37,7 +37,7 @@
               "missing-coverage",
               "stale-index"
             ],
-            "description": "The DECISION the human is asked (not what was observed — that is `detectorKinds`), and part of M10's dedupe key so one decision = one item. `dangling-reference` and `declaration-refused` were ADDED 2026-07-17: the M11 gate's own §5b findings had no member, and folding them into `internal-inconsistency` would have asked the wrong question — 'these two artifacts disagree' is not 'this reference points at nothing' or 'your declaration was malformed', and the instructor's next action differs for each. A gate that must misname its finding to fit an enum is an enum that is wrong. `missing-coverage` was ADDED 2026-07-17 with the CONTROL checks (W12), and is the spine->package direction: 'you wrote this objective into your own map and nothing in the package teaches it — teach it or remove it'. It is NOT `dangling-reference` (opposite direction: that is a pointer aimed at nothing, this is a promise nothing delivers) and NOT `sanity-check` (which fits loosely, and would bury the one check that verifies the product's central claim — that the instructor decides what is taught — in the bucket an instructor cannot filter). Its counterpart in the package->spine direction is `orphan-claim`, which needed no new member: it had the right name from the start and simply had no producer until now (W13). Members are APPENDED, never slotted in by consequence — the order is frozen and doubles as M10's intra-severity triage order."
+            "description": "The DECISION the human is asked (not what was observed \u2014 that is `detectorKinds`), and part of M10's dedupe key so one decision = one item. `dangling-reference` and `declaration-refused` were ADDED 2026-07-17: the M11 gate's own \u00a75b findings had no member, and folding them into `internal-inconsistency` would have asked the wrong question \u2014 'these two artifacts disagree' is not 'this reference points at nothing' or 'your declaration was malformed', and the instructor's next action differs for each. A gate that must misname its finding to fit an enum is an enum that is wrong. `missing-coverage` was ADDED 2026-07-17 with the CONTROL checks (W12), and is the spine->package direction: 'you wrote this objective into your own map and nothing in the package teaches it \u2014 teach it or remove it'. It is NOT `dangling-reference` (opposite direction: that is a pointer aimed at nothing, this is a promise nothing delivers) and NOT `sanity-check` (which fits loosely, and would bury the one check that verifies the product's central claim \u2014 that the instructor decides what is taught \u2014 in the bucket an instructor cannot filter). Its counterpart in the package->spine direction is `orphan-claim`, which needed no new member: it had the right name from the start and simply had no producer until now (W13). Members are APPENDED, never slotted in by consequence \u2014 the order is frozen and doubles as M10's intra-severity triage order."
           },
           "claimIds": {
             "type": "array",
@@ -53,7 +53,7 @@
               "type": "string"
             },
             "minItems": 1,
-            "description": "Sorted, deduped DETECTOR kinds that produced this item (e.g. value-disagreement, definition-drift). `kind` above is the DECISION the human is asked, and is part of the dedupe key so that one decision = one item; this field preserves WHAT WAS OBSERVED, which that fold would otherwise destroy (interfaces §5c). Unioned on merge; NOT in the dedupe key. This is what lets S-F report detection recall PER LAYER."
+            "description": "Sorted, deduped DETECTOR kinds that produced this item (e.g. value-disagreement, definition-drift). `kind` above is the DECISION the human is asked, and is part of the dedupe key so that one decision = one item; this field preserves WHAT WAS OBSERVED, which that fold would otherwise destroy (interfaces \u00a75c). Unioned on merge; NOT in the dedupe key. This is what lets S-F report detection recall PER LAYER."
           },
           "severity": {
             "enum": [
@@ -73,6 +73,11 @@
           "proposal": {
             "type": "string",
             "description": "for term-proposal: the suggested concept-map placement (placement, not yes/no)"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{12}$",
+            "description": "Stable content-derived id (kind + claimIds + evidence) so a review decision can name the item."
           }
         },
         "additionalProperties": false
@@ -97,6 +102,11 @@
         }
       },
       "additionalProperties": false
+    },
+    "basisSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "sha256 of the fresh CLAIMS the gate computed this queue from; index:semantic refuses to accept a baseline whose claims differ (the gate must run after the last edit)."
     }
   },
   "additionalProperties": false

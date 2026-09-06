@@ -69,6 +69,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { acceptBaseline } from "./helpers/baseline.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..");
@@ -351,9 +352,9 @@ test("6a · a RENAME holds every claim id (the ids survive the migration)", (t) 
     "- **fusion point** (melting point) —",
   ));
 
-  // Re-accept the baseline, as PROCEDURE Stage 4 says to after an edit.
-  const re = cli("index_semantic.mjs", ["--root", pkg]);
-  assert.equal(re.code, 0, `reindex failed: ${re.stderr}`);
+  // Re-accept the baseline, as PROCEDURE Stage 5b says to after an edit: gate, decide the queue, accept.
+  const re = acceptBaseline(REPO, pkg).accept;
+  assert.equal(re.code, 0, `re-baseline failed: ${re.stderr}`);
 
   const terms = JSON.parse(read(pkg, "metadata/TERMS.json"));
   const mp = terms.terms.find((x) => x.id === "term.melting-point");
@@ -424,7 +425,7 @@ test("7 · determinism — two identical runs produce a byte-identical queue", (
       { type: "fact", anchor: "no-such-heading#7", spineRefs: ["objective.melting.1"], sourceRefs: [] },
     ],
   }, null, 2));
-  cli("index_semantic.mjs", ["--root", pkg]);
+  acceptBaseline(REPO, pkg); // re-baseline the documented way (gate → decide → accept)
 
   gate(pkg);
   const dirtyFirst = read(pkg, "metadata/REVIEW_QUEUE.json");
@@ -488,7 +489,7 @@ test("9 · a dangling spineRef is flagged, and the message NAMES the offending r
   write(pkg, "concepts/melting.md", read(pkg, "concepts/melting.md").replace(
     "[concept.melting.2]", "[concept.melting.87]",
   ));
-  cli("index_semantic.mjs", ["--root", pkg]);
+  acceptBaseline(REPO, pkg); // re-baseline the documented way (gate → decide → accept)
 
   const g = gate(pkg);
   const q = queueOf(pkg);
@@ -528,7 +529,7 @@ test("10 · a MALFORMED declaration is refused AND reported — as malformed, no
       { type: "fact", anchor: "what-the-source-says#1", spineRefs: ["objective.melting.1"], sourceRefs: ["src.synthetic.handbook.rev1"], termRefs: ["term.melting-point"] },
     ],
   }, null, 2));
-  cli("index_semantic.mjs", ["--root", pkg]);
+  acceptBaseline(REPO, pkg); // re-baseline the documented way (gate → decide → accept)
 
   const g = gate(pkg);
   const q = queueOf(pkg);
@@ -581,7 +582,7 @@ test("11 · an edit is never auto-applied inside a direct QUOTATION", (t) => {
     "At standard pressure the melting point of pure water is 0 °C.",
     "At standard pressure the melting point of pure water is 4 °C.",
   ));
-  cli("index_semantic.mjs", ["--root", pkg]);
+  acceptBaseline(REPO, pkg); // re-baseline the documented way (gate → decide → accept)
   cli("revision_impact.mjs", ["--root", pkg, "--json", path.join(pkg, "..", "ri.json"), "--report", path.join(pkg, "..", "ri.md")]);
   gate(pkg);
 
