@@ -1,4 +1,5 @@
 // Where each governed record lives — always inside the package root (skeleton §1, §5; req.records.in-package).
+import fs from "node:fs";
 import path from "node:path";
 
 export const RECORD_PATHS = Object.freeze({
@@ -23,4 +24,13 @@ export function recordFile(root, rel) {
   const full = path.resolve(base, rel);
   if (full !== base && !full.startsWith(base + path.sep)) throw new Error(`record path escapes the package: ${rel}`);
   return full;
+}
+
+/** Read a record file only if it is a regular file (not a symlink, FIFO or directory) within a size limit. */
+export function readRegularFile(file, maxBytes = 16 * 1024 * 1024) {
+  if (!fs.existsSync(file)) return null;
+  const st = fs.lstatSync(file);
+  if (!st.isFile()) throw new Error(`${path.basename(file)} must be a regular file (found ${st.isSymbolicLink() ? "a symbolic link" : "another kind of entry"})`);
+  if (st.size > maxBytes) throw new Error(`${path.basename(file)} is larger than ${maxBytes} bytes`);
+  return fs.readFileSync(file, "utf8");
 }

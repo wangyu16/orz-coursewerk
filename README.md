@@ -169,6 +169,14 @@ scripts/verify_coursewerk.mjs  # verify canonical self-index and accepted revisi
 system/                        # Coursewerk claims, correlations, accepted index + revision evidence
 ```
 
+## Redesign preview (not yet the release gate)
+
+A skeleton-and-modules redesign is being built on this branch. Its gate can already be run on a package —
+`node scripts/gate.mjs --root package` (exit 0 = can publish, 1 = blocked, 2 = usage, 3 = the gate itself failed) —
+but it does not replace `check_oer.mjs` and `pack.mjs` until the redesign's workflow lands. Checks are modules under
+`scripts/modules/`, each run in its own process; see `system/REQUIREMENTS.json` for what the redesign must deliver
+and the evidence that closes each requirement.
+
 ## License
 
 Coursewerk (the harness) is released under the MIT License. Teaching packages use an output license compatible

@@ -59,3 +59,11 @@ test("duplicate ids are refused, and a closed requirement with proper evidence p
   assert.match(validateRequirements(root, reg([req(), req()])).join("\n"), /duplicate requirement id/);
   assert.deepEqual(validateRequirements(root, reg([req({ status: "closed", evidence: { T1: ["tests/a.test.mjs"] } })], ["P1"])), []);
 });
+
+test("a requirement deferred to a later phase must be closed when that phase completes", (t) => {
+  const root = scratch(t);
+  const deferred = req({ status: "deferred", reason: "T2 needs real modules", deferredTo: "P6" });
+  assert.deepEqual(validateRequirements(root, reg([deferred], ["P1"])), []);
+  assert.match(validateRequirements(root, reg([deferred], ["P1", "P6"])).join(), /deferred to P6, which is complete, but still not closed/);
+  assert.match(validateRequirements(root, reg([{ ...deferred, deferredTo: "later" }], ["P1"])).join(), /deferredTo must be P<n>/);
+});

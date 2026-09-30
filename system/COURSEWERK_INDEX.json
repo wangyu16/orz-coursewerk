@@ -161,7 +161,7 @@
       "id": "repo:package.json",
       "path": "package.json",
       "type": "release-metadata",
-      "hash": "bdd81390d40a43746ed46eb53210496054a46c9e2fe503162641ae0e95bfc00e"
+      "hash": "b0c0fcfd19f2cf485022a3d212f3b039ff9975161b42d6261e499b238e7345e9"
     },
     {
       "id": "repo:PROCEDURE.md",
@@ -173,7 +173,7 @@
       "id": "repo:README.md",
       "path": "README.md",
       "type": "product-claim",
-      "hash": "585b9f8c92d220d3050892044d0ced5992516b8d68f8382e4b83774d290a5871"
+      "hash": "ca7bd7b2bc63c8505f4fd061bf7517e4d9c4e954182d453012fa56c9ab3f2b5f"
     },
     {
       "id": "repo:scripts/accept_coursewerk_revision.mjs",
@@ -276,6 +276,12 @@
       "path": "scripts/data/source-policies.json",
       "type": "executable",
       "hash": "778485a4005437112b8a53d2f9b29d0556e9d69fd5c03fcdb5109d67e0e089f7"
+    },
+    {
+      "id": "repo:scripts/gate.mjs",
+      "path": "scripts/gate.mjs",
+      "type": "executable",
+      "hash": "f7397e68d392cc268a69be65441524521af95f0f72a05cad88a26be19665ff93"
     },
     {
       "id": "repo:scripts/generate_attribution.mjs",
@@ -425,7 +431,7 @@
       "id": "repo:scripts/lib/records/findings.mjs",
       "path": "scripts/lib/records/findings.mjs",
       "type": "kernel",
-      "hash": "924e83c5186488f83f5fe1c8e8ed6911be1ddecdcdf4abf65aa32d93eb75a42d"
+      "hash": "c9f76af3343dd8755cf4ef619b1f39462b54c913468257aca030ee95f2060533"
     },
     {
       "id": "repo:scripts/lib/records/log.mjs",
@@ -437,13 +443,13 @@
       "id": "repo:scripts/lib/records/paths.mjs",
       "path": "scripts/lib/records/paths.mjs",
       "type": "kernel",
-      "hash": "0ed270b995bb0e514803609605df14c12f0bb5b21874270f848bbda3b4890384"
+      "hash": "0df78024e381e4f9cfdfebaa638fb86d5ed650f49742dedaa447295b0757d548"
     },
     {
       "id": "repo:scripts/lib/records/registry.mjs",
       "path": "scripts/lib/records/registry.mjs",
       "type": "kernel",
-      "hash": "71709abc901f154b41f1d43a29ff67f08de8b9bcaae223a3ae0f478549d757de"
+      "hash": "bcaea240d2bf0c703503b42c5fcaef0ac5beececde892b0d9c5d1243c5e1c258"
     },
     {
       "id": "repo:scripts/lib/records/steering.mjs",
@@ -470,6 +476,48 @@
       "hash": "29b9ae90707a0a826bdac414c18135e0e671ccdc8c09d6aeb24efb04e4f38932"
     },
     {
+      "id": "repo:scripts/lib/skeleton/gate.mjs",
+      "path": "scripts/lib/skeleton/gate.mjs",
+      "type": "kernel",
+      "hash": "b30b6e8392011c5162636cee8afa53bab15b77df92f10cd71c44d6134032d577"
+    },
+    {
+      "id": "repo:scripts/lib/skeleton/manifest.mjs",
+      "path": "scripts/lib/skeleton/manifest.mjs",
+      "type": "kernel",
+      "hash": "e1cac7a1647e8d7949fa5578d39931bbcd352f7c1ab264119d1214387e3c9471"
+    },
+    {
+      "id": "repo:scripts/lib/skeleton/module_host.mjs",
+      "path": "scripts/lib/skeleton/module_host.mjs",
+      "type": "kernel",
+      "hash": "ed85ab23be8d0d72f5325c8c75a2c68e9ac0ada2cf91868af45cca2eefeabac2"
+    },
+    {
+      "id": "repo:scripts/lib/skeleton/promotion.mjs",
+      "path": "scripts/lib/skeleton/promotion.mjs",
+      "type": "kernel",
+      "hash": "fd8ec30f170597ce406f12c0c0339bad10981f25c02dd86c2fd6166767c6a3d9"
+    },
+    {
+      "id": "repo:scripts/lib/skeleton/runner.mjs",
+      "path": "scripts/lib/skeleton/runner.mjs",
+      "type": "kernel",
+      "hash": "8f5472ccc7b5ecebfb32acd2364efba10885d017c6f0bb511fbd0fa335b4aa29"
+    },
+    {
+      "id": "repo:scripts/lib/skeleton/snapshot.mjs",
+      "path": "scripts/lib/skeleton/snapshot.mjs",
+      "type": "kernel",
+      "hash": "1f69e91b085282c74981aba188b0ea6c1b33fc500af36b3fe29d4526299c5bf3"
+    },
+    {
+      "id": "repo:scripts/lib/skeleton/wiring.mjs",
+      "path": "scripts/lib/skeleton/wiring.mjs",
+      "type": "kernel",
+      "hash": "4e694029d5645e237bd87c256d8ae6b7d0cb52fafdaaf54c87166fc21b2c7273"
+    },
+    {
       "id": "repo:scripts/lib/slug.mjs",
       "path": "scripts/lib/slug.mjs",
       "type": "kernel",
@@ -491,7 +539,7 @@
       "id": "repo:scripts/lib/system_index.mjs",
       "path": "scripts/lib/system_index.mjs",
       "type": "kernel",
-      "hash": "731abb9bdc839e7a3606a87fab9ed7528825a04e4450bb0463bd5ae0ed163de8"
+      "hash": "e3af251a00f6eb8a1c6764aad568a333392bcd4915ea25a09af1fd4c4f21ef90"
     },
     {
       "id": "repo:scripts/lib/terms.mjs",
@@ -516,6 +564,12 @@
       "path": "scripts/lib/visual_review.mjs",
       "type": "kernel",
       "hash": "7d21354430e6c4d7ff305a2f89f8c913a8ab2c960a62c6ee2daf4d0fbfdb8fef"
+    },
+    {
+      "id": "repo:scripts/modules/README.md",
+      "path": "scripts/modules/README.md",
+      "type": "executable",
+      "hash": "fd29545639a6520bc7332ec04ebbc03d0209fc19cc97815ed80e50152a3ff214"
     },
     {
       "id": "repo:scripts/pack.mjs",
@@ -731,13 +785,19 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "58a58f84de041700471420f91069b073674bf80767ec4feddf9dc98cc1994601"
+      "hash": "da3a4606ad0bce5f7b2ab413dd36391aaaea573f3745e86ac934f59152f50cd4"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
       "path": "system/rounds/P1-records.md",
       "type": "system-governance",
       "hash": "5a4cf8f911ac262cbd6f575bda1032e94807b102067cb566955e8e61fd93d1a1"
+    },
+    {
+      "id": "repo:system/rounds/P2-runner.md",
+      "path": "system/rounds/P2-runner.md",
+      "type": "system-governance",
+      "hash": "87de6cd08a3d20c8716b94c89a6630218a2ef1be03a7db3309949cef681edf4a"
     },
     {
       "id": "repo:system/schemas/claim.schema.json",
@@ -1112,6 +1172,12 @@
       "hash": "09dee7d859b12f23c400e7391c41bb9f20a7663eee6e793bf54c992684086987"
     },
     {
+      "id": "repo:tests/gate-cli.test.mjs",
+      "path": "tests/gate-cli.test.mjs",
+      "type": "test",
+      "hash": "b6d4f306c10a87e24241e2a9dece4d5ddc0aea52a5efba32502e7b7c10540f0f"
+    },
+    {
       "id": "repo:tests/helpers/baseline.mjs",
       "path": "tests/helpers/baseline.mjs",
       "type": "test",
@@ -1181,13 +1247,19 @@
       "id": "repo:tests/requirements.test.mjs",
       "path": "tests/requirements.test.mjs",
       "type": "test",
-      "hash": "85446b8ecba97735412dd1abc0ea907c57d3c42aa0401a6e9704cf3af5f741d4"
+      "hash": "fab74d17deed938686e9774485649f89bb7fdbe54776423c86450405bb711c09"
     },
     {
       "id": "repo:tests/reviews.test.mjs",
       "path": "tests/reviews.test.mjs",
       "type": "test",
       "hash": "9601bac01b85d4374098d665deeb4e932749a519e6a6fa4e0e1dd66dc02ec4db"
+    },
+    {
+      "id": "repo:tests/runner.test.mjs",
+      "path": "tests/runner.test.mjs",
+      "type": "test",
+      "hash": "0635ce6582a2d752acea6cefc202166ce2440c2fd420a79b45129d33c70f7d9c"
     },
     {
       "id": "repo:tests/semantic-index-artifact.test.mjs",
@@ -2508,7 +2580,8 @@
   "requirements": {
     "completedPhases": [
       "P0",
-      "P1"
+      "P1",
+      "P2"
     ],
     "requirements": [
       {
@@ -2694,7 +2767,7 @@
         "tiers": [
           "T1"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.gate.log-verified",
@@ -2703,7 +2776,7 @@
           "T1",
           "T2"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.gate.rule",
@@ -2711,7 +2784,7 @@
         "tiers": [
           "T1"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.knowledge.no-autochange",
@@ -2738,7 +2811,7 @@
           "T1",
           "T4"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.modules.manifest",
@@ -2746,7 +2819,7 @@
         "tiers": [
           "T1"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.modules.maturity",
@@ -2754,7 +2827,7 @@
         "tiers": [
           "T1"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.modules.no-writes",
@@ -2763,7 +2836,7 @@
           "T1",
           "T2"
         ],
-        "status": "planned"
+        "status": "deferred"
       },
       {
         "id": "req.modules.profiles",
@@ -2771,7 +2844,7 @@
         "tiers": [
           "T1"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.modules.promotion",
@@ -2779,7 +2852,7 @@
         "tiers": [
           "T1"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.modules.snapshot",
@@ -2787,7 +2860,7 @@
         "tiers": [
           "T1"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.modules.wiring-report",
@@ -2795,7 +2868,7 @@
         "tiers": [
           "T2"
         ],
-        "status": "planned"
+        "status": "deferred"
       },
       {
         "id": "req.moments.only",

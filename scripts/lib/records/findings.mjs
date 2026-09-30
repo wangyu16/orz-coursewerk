@@ -26,6 +26,8 @@ export function validateFinding(finding) {
   if (!Array.isArray(finding?.units)) failures.push(`${where}: units must be a list`);
   if (!STATUS_CLASSES.includes(finding?.statusClass)) failures.push(`${where}: statusClass must be defect, obligation or question`);
   if (!ROUTES.includes(finding?.route)) failures.push(`${where}: route must be agent, digest or interrupt`);
+  if (finding?.route === "interrupt" && !["spine-scope-conflict", "missing-input", "rights-blocker", "spine-change-request"].includes(finding?.interruptReason))
+    failures.push(`${where}: an interrupt must name one of the four interrupt reasons`);
   if (!FINDING_STATUSES.includes(finding?.status)) failures.push(`${where}: status must be open, resolved or answered`);
   const type = finding?.evidence?.type;
   if (!EVIDENCE_TYPES.includes(type)) failures.push(`${where}: evidence.type must be one of ${EVIDENCE_TYPES.join(", ")}`);

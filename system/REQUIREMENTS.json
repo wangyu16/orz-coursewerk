@@ -3,7 +3,8 @@
   "description": "Requirement register for the skeleton-and-modules redesign (D22). Each requirement names the evidence tiers that close it: T1 mechanism tests, T2 wiring (a report from real runs), T3 agent-in-the-loop scenarios, T4 adversarial rounds. A closed requirement lists, per tier, repository files that exist and contain its id. Every requirement of a completed phase must be closed or deferred with a reason.",
   "completedPhases": [
     "P0",
-    "P1"
+    "P1",
+    "P2"
   ],
   "requirements": [
     {
@@ -187,8 +188,12 @@
       ],
       "statement": "Every module declares name, version, serves (Control|Confidence|Coherence), checkpoints (V0–V8), reads, emits (kind, evidence type, default route), mayBlock, method, cost, profiles and maturity; a module without a valid manifest is not run.",
       "source": "skeleton §6",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/runner.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.modules.snapshot",
@@ -198,8 +203,12 @@
       ],
       "statement": "A module is a function from a package snapshot to findings; a deterministic module gives byte-identical findings on the same snapshot.",
       "source": "skeleton §6",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/runner.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.modules.no-writes",
@@ -210,8 +219,14 @@
       ],
       "statement": "Modules only emit findings; they never write deliverables, the spine, steering or the log.",
       "source": "skeleton §6",
-      "status": "planned",
-      "evidence": {}
+      "status": "deferred",
+      "evidence": {
+        "T1": [
+          "tests/runner.test.mjs"
+        ]
+      },
+      "deferredTo": "P6",
+      "reason": "Mechanism closed at T1 in P2 (tests/runner.test.mjs); T2 needs a wiring report from real runs of real modules, which first exist in P6."
     },
     {
       "id": "req.modules.admission",
@@ -222,8 +237,15 @@
       ],
       "statement": "A defect is admitted only after the harness re-runs its evidence; evidence that is missing or fails the re-run turns it into a question (S1).",
       "source": "F2; charter §5; D14",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/runner.test.mjs"
+        ],
+        "T4": [
+          "system/rounds/P2-runner.md"
+        ]
+      }
     },
     {
       "id": "req.modules.maturity",
@@ -233,8 +255,12 @@
       ],
       "statement": "Trial findings are delivered as questions and never block; experimental modules are off unless enabled; stable findings keep their declared class.",
       "source": "skeleton §6; D13",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/runner.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.modules.profiles",
@@ -244,8 +270,12 @@
       ],
       "statement": "A module runs only in the use profiles it declares (e.g. rights checks only in public packages).",
       "source": "skeleton §6; D1 Q2",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/runner.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.modules.promotion",
@@ -255,8 +285,12 @@
       ],
       "statement": "Promotion trial → stable is a logged module-change decision that cites the module's study bar met on development cases.",
       "source": "skeleton §6; D19-G",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/runner.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.modules.wiring-report",
@@ -266,8 +300,14 @@
       ],
       "statement": "Each run produces a wiring report: which modules ran at which checkpoint, which finding kinds were produced and routed, which record types were written and read; a registered module, finding kind or record type with no producer or no consumer on the fixtures is flagged.",
       "source": "D22 T2",
-      "status": "planned",
-      "evidence": {}
+      "status": "deferred",
+      "evidence": {
+        "T1": [
+          "tests/runner.test.mjs"
+        ]
+      },
+      "deferredTo": "P6",
+      "reason": "Mechanism closed at T1 in P2 (tests/runner.test.mjs); T2 needs a wiring report from real runs of real modules, which first exist in P6."
     },
     {
       "id": "req.gate.rule",
@@ -277,8 +317,12 @@
       ],
       "statement": "The gate blocks publishing exactly when there is an open defect or obligation from a stable module or the skeleton core, an invalid approval, or a broken log chain; questions never block.",
       "source": "skeleton §7; D14, D19-A",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/runner.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.gate.log-verified",
@@ -289,8 +333,15 @@
       ],
       "statement": "Every gate run verifies the decision log against the committed log (verifyAgainstCommitted); any failure is a blocking skeleton finding.",
       "source": "skeleton §5, §7; round P1-2",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/runner.test.mjs"
+        ],
+        "T2": [
+          "tests/gate-cli.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.findings.routing",
@@ -300,8 +351,12 @@
       ],
       "statement": "Every finding is routed agent, digest or interrupt; interrupt is used only for the four D14 reasons (unresolvable spine-scope conflict, missing input, rights blocker in a public package, a request that would change the spine).",
       "source": "skeleton §3; D14",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/runner.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.spine.documents",

@@ -121,6 +121,8 @@ export function validateRequirements(root, registry) {
     if (!tiers.length || tiers.some((t) => !REQUIREMENT_TIERS.includes(t))) failures.push(`${id}: tiers must be a non-empty subset of ${REQUIREMENT_TIERS.join(", ")}`);
     if (!REQUIREMENT_STATUSES.includes(req.status)) failures.push(`${id}: invalid status ${req.status}`);
     if (req.status === "deferred" && !String(req.reason || "").trim()) failures.push(`${id}: a deferred requirement needs a reason`);
+    if (req.status === "deferred" && req.deferredTo !== undefined && !/^P\d+$/.test(String(req.deferredTo))) failures.push(`${id}: deferredTo must be P<n>`);
+    if (req.status === "deferred" && req.deferredTo && completed.has(req.deferredTo)) failures.push(`${id}: deferred to ${req.deferredTo}, which is complete, but still not closed`);
     if (req.status === "closed") {
       for (const tier of tiers) {
         const cited = Array.isArray(req.evidence?.[tier]) ? req.evidence[tier] : [];
