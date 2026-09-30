@@ -1,0 +1,579 @@
+{
+  "schemaVersion": 1,
+  "components": [
+    {
+      "id": "component:alembic.json",
+      "path": "alembic.json",
+      "type": "manifest",
+      "chapter": null,
+      "hash": "96634ff4d20631beb20581a7b3c2d2152b2b205b8405c634fb6885bc8f556f4c",
+      "dependencies": {
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b"
+      }
+    },
+    {
+      "id": "component:assessment-support/chemical-equilibrium.md",
+      "path": "assessment-support/chemical-equilibrium.md",
+      "type": "assessment-support",
+      "chapter": "chemical-equilibrium",
+      "hash": "ad39723f2028efdf56ea3d94ce4073b1da66e1ecb1e3edc5860e162bc9c4d0de",
+      "dependencies": {
+        "component:alembic.json": "96634ff4d20631beb20581a7b3c2d2152b2b205b8405c634fb6885bc8f556f4c",
+        "component:concepts/chemical-equilibrium.md": "300db1227ce376479e125db86e7175cfd7636a260ee1cdc88d07650500449a9b",
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b",
+        "component:metadata/SOURCE_RECORD.json": "61b23361ee7be6f92b7448a99f3eb7d0acf892f3abba72dd96bfdea6ced8ad12",
+        "component:study-guide/chemical-equilibrium.md": "96bb231299246131438b98e2644e03517c0a567216ebb9a243added1dbeb9088"
+      }
+    },
+    {
+      "id": "component:assessment-support/le-chatelier.md",
+      "path": "assessment-support/le-chatelier.md",
+      "type": "assessment-support",
+      "chapter": "le-chatelier",
+      "hash": "73eb8948519160579c5c0087e693f05493d1d0e648ea8fc97f1cef10898d7e67",
+      "dependencies": {
+        "component:alembic.json": "96634ff4d20631beb20581a7b3c2d2152b2b205b8405c634fb6885bc8f556f4c",
+        "component:concepts/le-chatelier.md": "12ea67954ff29476162dc7cb796529dcf614e6c79844225f8baa224cf672205f",
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b",
+        "component:metadata/SOURCE_RECORD.json": "61b23361ee7be6f92b7448a99f3eb7d0acf892f3abba72dd96bfdea6ced8ad12",
+        "component:study-guide/le-chatelier.md": "967002aa3f4ade33cbb1833e7cafa58af23109b5da02f64dac97c25eec2b267c"
+      }
+    },
+    {
+      "id": "component:concepts/chemical-equilibrium.md",
+      "path": "concepts/chemical-equilibrium.md",
+      "type": "concepts",
+      "chapter": "chemical-equilibrium",
+      "hash": "300db1227ce376479e125db86e7175cfd7636a260ee1cdc88d07650500449a9b",
+      "dependencies": {
+        "component:alembic.json": "96634ff4d20631beb20581a7b3c2d2152b2b205b8405c634fb6885bc8f556f4c",
+        "component:concepts/course.md": "3b555307ece22ad6394123d377df46d31d0fe9581c1ae3a69e7ddb71d15d82da",
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b",
+        "component:metadata/SOURCE_RECORD.json": "61b23361ee7be6f92b7448a99f3eb7d0acf892f3abba72dd96bfdea6ced8ad12"
+      }
+    },
+    {
+      "id": "component:concepts/course.md",
+      "path": "concepts/course.md",
+      "type": "concepts",
+      "chapter": null,
+      "hash": "3b555307ece22ad6394123d377df46d31d0fe9581c1ae3a69e7ddb71d15d82da",
+      "dependencies": {
+        "component:alembic.json": "96634ff4d20631beb20581a7b3c2d2152b2b205b8405c634fb6885bc8f556f4c",
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b",
+        "component:metadata/SOURCE_RECORD.json": "61b23361ee7be6f92b7448a99f3eb7d0acf892f3abba72dd96bfdea6ced8ad12"
+      }
+    },
+    {
+      "id": "component:concepts/le-chatelier.md",
+      "path": "concepts/le-chatelier.md",
+      "type": "concepts",
+      "chapter": "le-chatelier",
+      "hash": "12ea67954ff29476162dc7cb796529dcf614e6c79844225f8baa224cf672205f",
+      "dependencies": {
+        "component:alembic.json": "96634ff4d20631beb20581a7b3c2d2152b2b205b8405c634fb6885bc8f556f4c",
+        "component:concepts/course.md": "3b555307ece22ad6394123d377df46d31d0fe9581c1ae3a69e7ddb71d15d82da",
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b",
+        "component:metadata/SOURCE_RECORD.json": "61b23361ee7be6f92b7448a99f3eb7d0acf892f3abba72dd96bfdea6ced8ad12"
+      }
+    },
+    {
+      "id": "component:LICENSE",
+      "path": "LICENSE",
+      "type": "license",
+      "chapter": null,
+      "hash": "28a9529c7d0bb4dc51f4bf5c116a3d16ef247a052f7591466768ddf563fd1cf5",
+      "dependencies": {
+        "component:alembic.json": "96634ff4d20631beb20581a7b3c2d2152b2b205b8405c634fb6885bc8f556f4c",
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b"
+      }
+    },
+    {
+      "id": "component:metadata/ATTRIBUTION.md",
+      "path": "metadata/ATTRIBUTION.md",
+      "type": "attribution",
+      "chapter": null,
+      "hash": "8ccd32471f7cc9cf19a60e0dd9a6d52190c46d0f05337065cb08dd73739664b8",
+      "dependencies": {
+        "component:alembic.json": "96634ff4d20631beb20581a7b3c2d2152b2b205b8405c634fb6885bc8f556f4c",
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b",
+        "component:metadata/PROVENANCE.json": "cb5a94e721572d60d28e71464a5149de7cdf0371d46f6227788050b77152d122"
+      }
+    },
+    {
+      "id": "component:metadata/claims/study-guide/chemical-equilibrium.json",
+      "path": "metadata/claims/study-guide/chemical-equilibrium.json",
+      "type": "support",
+      "chapter": null,
+      "hash": "8465b5e965804799bcf4128a69aa74960f78632a657fa667c4c0095b7e8278a6",
+      "dependencies": {
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b"
+      }
+    },
+    {
+      "id": "component:metadata/claims/study-guide/le-chatelier.json",
+      "path": "metadata/claims/study-guide/le-chatelier.json",
+      "type": "support",
+      "chapter": null,
+      "hash": "6829dcd1bce8a2e35612a3cbb04e2404087540c16029410ae7cd97a27db5a217",
+      "dependencies": {
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b"
+      }
+    },
+    {
+      "id": "component:metadata/evidence/wikipedia-anchor.html",
+      "path": "metadata/evidence/wikipedia-anchor.html",
+      "type": "support",
+      "chapter": null,
+      "hash": "d884eb303cb5724dbbeef8741cad789aff100e27e9dabc3f1bfecaf70dd81a1f",
+      "dependencies": {
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b"
+      }
+    },
+    {
+      "id": "component:metadata/FOUNDATION.json",
+      "path": "metadata/FOUNDATION.json",
+      "type": "foundation",
+      "chapter": null,
+      "hash": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b",
+      "dependencies": {}
+    },
+    {
+      "id": "component:metadata/MEDIA_PLAN.json",
+      "path": "metadata/MEDIA_PLAN.json",
+      "type": "support",
+      "chapter": null,
+      "hash": "98ddf4b73dbb74aff3bb92433ced8cffe986e4dd0d21716788a986c8daae70ea",
+      "dependencies": {
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b"
+      }
+    },
+    {
+      "id": "component:metadata/preflight/wikipedia-anchor.json",
+      "path": "metadata/preflight/wikipedia-anchor.json",
+      "type": "support",
+      "chapter": null,
+      "hash": "e7f9ffb8daf6841ffc4b2d9c9cd6cb2ec055acf132db1f2be3ace1f46ccbf826",
+      "dependencies": {
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b"
+      }
+    },
+    {
+      "id": "component:metadata/preflight/wikipedia-support-1.json",
+      "path": "metadata/preflight/wikipedia-support-1.json",
+      "type": "support",
+      "chapter": null,
+      "hash": "b102f97a02a8c606de8a5a5491853760e00b991486b551617b1050ae851f032d",
+      "dependencies": {
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b"
+      }
+    },
+    {
+      "id": "component:metadata/PROVENANCE.json",
+      "path": "metadata/PROVENANCE.json",
+      "type": "provenance",
+      "chapter": null,
+      "hash": "cb5a94e721572d60d28e71464a5149de7cdf0371d46f6227788050b77152d122",
+      "dependencies": {
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b"
+      }
+    },
+    {
+      "id": "component:metadata/SOURCE_RECORD.json",
+      "path": "metadata/SOURCE_RECORD.json",
+      "type": "source-record",
+      "chapter": null,
+      "hash": "61b23361ee7be6f92b7448a99f3eb7d0acf892f3abba72dd96bfdea6ced8ad12",
+      "dependencies": {
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b"
+      }
+    },
+    {
+      "id": "component:practice/chemical-equilibrium.md",
+      "path": "practice/chemical-equilibrium.md",
+      "type": "practice",
+      "chapter": "chemical-equilibrium",
+      "hash": "21de1b434ea094a1d610bb3a59ab793fc998deb0e5a1f669bd8136fbb56aa909",
+      "dependencies": {
+        "component:alembic.json": "96634ff4d20631beb20581a7b3c2d2152b2b205b8405c634fb6885bc8f556f4c",
+        "component:assessment-support/chemical-equilibrium.md": "ad39723f2028efdf56ea3d94ce4073b1da66e1ecb1e3edc5860e162bc9c4d0de",
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b",
+        "component:metadata/SOURCE_RECORD.json": "61b23361ee7be6f92b7448a99f3eb7d0acf892f3abba72dd96bfdea6ced8ad12",
+        "component:study-guide/chemical-equilibrium.md": "96bb231299246131438b98e2644e03517c0a567216ebb9a243added1dbeb9088"
+      }
+    },
+    {
+      "id": "component:practice/le-chatelier.md",
+      "path": "practice/le-chatelier.md",
+      "type": "practice",
+      "chapter": "le-chatelier",
+      "hash": "f3ce818561af3244fc0cef63fe24e5f66dbc26cbc2b7ebe10ab139aa79beaa10",
+      "dependencies": {
+        "component:alembic.json": "96634ff4d20631beb20581a7b3c2d2152b2b205b8405c634fb6885bc8f556f4c",
+        "component:assessment-support/le-chatelier.md": "73eb8948519160579c5c0087e693f05493d1d0e648ea8fc97f1cef10898d7e67",
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b",
+        "component:metadata/SOURCE_RECORD.json": "61b23361ee7be6f92b7448a99f3eb7d0acf892f3abba72dd96bfdea6ced8ad12",
+        "component:study-guide/le-chatelier.md": "967002aa3f4ade33cbb1833e7cafa58af23109b5da02f64dac97c25eec2b267c"
+      }
+    },
+    {
+      "id": "component:slides/chemical-equilibrium.md",
+      "path": "slides/chemical-equilibrium.md",
+      "type": "slides",
+      "chapter": "chemical-equilibrium",
+      "hash": "c6d4ad11c1973882d74989fc519bb1612eefc120ef973ccf6e516d2dc5e4fb26",
+      "dependencies": {
+        "component:alembic.json": "96634ff4d20631beb20581a7b3c2d2152b2b205b8405c634fb6885bc8f556f4c",
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b",
+        "component:metadata/SOURCE_RECORD.json": "61b23361ee7be6f92b7448a99f3eb7d0acf892f3abba72dd96bfdea6ced8ad12",
+        "component:study-guide/chemical-equilibrium.md": "96bb231299246131438b98e2644e03517c0a567216ebb9a243added1dbeb9088"
+      }
+    },
+    {
+      "id": "component:slides/le-chatelier.md",
+      "path": "slides/le-chatelier.md",
+      "type": "slides",
+      "chapter": "le-chatelier",
+      "hash": "6d3cf5f2d0cf283fd79e0a4f5a03a239a1d217bd17b2f68958dbcf2296a1f2e6",
+      "dependencies": {
+        "component:alembic.json": "96634ff4d20631beb20581a7b3c2d2152b2b205b8405c634fb6885bc8f556f4c",
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b",
+        "component:metadata/SOURCE_RECORD.json": "61b23361ee7be6f92b7448a99f3eb7d0acf892f3abba72dd96bfdea6ced8ad12",
+        "component:study-guide/le-chatelier.md": "967002aa3f4ade33cbb1833e7cafa58af23109b5da02f64dac97c25eec2b267c"
+      }
+    },
+    {
+      "id": "component:study-guide/chemical-equilibrium.md",
+      "path": "study-guide/chemical-equilibrium.md",
+      "type": "study-guide",
+      "chapter": "chemical-equilibrium",
+      "hash": "96bb231299246131438b98e2644e03517c0a567216ebb9a243added1dbeb9088",
+      "dependencies": {
+        "component:alembic.json": "96634ff4d20631beb20581a7b3c2d2152b2b205b8405c634fb6885bc8f556f4c",
+        "component:concepts/chemical-equilibrium.md": "300db1227ce376479e125db86e7175cfd7636a260ee1cdc88d07650500449a9b",
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b",
+        "component:metadata/SOURCE_RECORD.json": "61b23361ee7be6f92b7448a99f3eb7d0acf892f3abba72dd96bfdea6ced8ad12"
+      }
+    },
+    {
+      "id": "component:study-guide/le-chatelier.md",
+      "path": "study-guide/le-chatelier.md",
+      "type": "study-guide",
+      "chapter": "le-chatelier",
+      "hash": "967002aa3f4ade33cbb1833e7cafa58af23109b5da02f64dac97c25eec2b267c",
+      "dependencies": {
+        "component:alembic.json": "96634ff4d20631beb20581a7b3c2d2152b2b205b8405c634fb6885bc8f556f4c",
+        "component:concepts/le-chatelier.md": "12ea67954ff29476162dc7cb796529dcf614e6c79844225f8baa224cf672205f",
+        "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b",
+        "component:metadata/SOURCE_RECORD.json": "61b23361ee7be6f92b7448a99f3eb7d0acf892f3abba72dd96bfdea6ced8ad12"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "from": "component:alembic.json",
+      "to": "component:assessment-support/chemical-equilibrium.md",
+      "reason": "manifest identity/scope/license constrains component"
+    },
+    {
+      "from": "component:alembic.json",
+      "to": "component:assessment-support/le-chatelier.md",
+      "reason": "manifest identity/scope/license constrains component"
+    },
+    {
+      "from": "component:alembic.json",
+      "to": "component:concepts/chemical-equilibrium.md",
+      "reason": "manifest identity/scope/license constrains component"
+    },
+    {
+      "from": "component:alembic.json",
+      "to": "component:concepts/course.md",
+      "reason": "manifest identity/scope/license constrains component"
+    },
+    {
+      "from": "component:alembic.json",
+      "to": "component:concepts/le-chatelier.md",
+      "reason": "manifest identity/scope/license constrains component"
+    },
+    {
+      "from": "component:alembic.json",
+      "to": "component:LICENSE",
+      "reason": "manifest identity/scope/license constrains component"
+    },
+    {
+      "from": "component:alembic.json",
+      "to": "component:metadata/ATTRIBUTION.md",
+      "reason": "manifest identity/scope/license constrains component"
+    },
+    {
+      "from": "component:alembic.json",
+      "to": "component:practice/chemical-equilibrium.md",
+      "reason": "manifest identity/scope/license constrains component"
+    },
+    {
+      "from": "component:alembic.json",
+      "to": "component:practice/le-chatelier.md",
+      "reason": "manifest identity/scope/license constrains component"
+    },
+    {
+      "from": "component:alembic.json",
+      "to": "component:slides/chemical-equilibrium.md",
+      "reason": "manifest identity/scope/license constrains component"
+    },
+    {
+      "from": "component:alembic.json",
+      "to": "component:slides/le-chatelier.md",
+      "reason": "manifest identity/scope/license constrains component"
+    },
+    {
+      "from": "component:alembic.json",
+      "to": "component:study-guide/chemical-equilibrium.md",
+      "reason": "manifest identity/scope/license constrains component"
+    },
+    {
+      "from": "component:alembic.json",
+      "to": "component:study-guide/le-chatelier.md",
+      "reason": "manifest identity/scope/license constrains component"
+    },
+    {
+      "from": "component:assessment-support/chemical-equilibrium.md",
+      "to": "component:practice/chemical-equilibrium.md",
+      "reason": "practice instantiates assessment design"
+    },
+    {
+      "from": "component:assessment-support/le-chatelier.md",
+      "to": "component:practice/le-chatelier.md",
+      "reason": "practice instantiates assessment design"
+    },
+    {
+      "from": "component:concepts/chemical-equilibrium.md",
+      "to": "component:assessment-support/chemical-equilibrium.md",
+      "reason": "chapter objectives drive assessment"
+    },
+    {
+      "from": "component:concepts/chemical-equilibrium.md",
+      "to": "component:study-guide/chemical-equilibrium.md",
+      "reason": "chapter concepts drive study guide"
+    },
+    {
+      "from": "component:concepts/course.md",
+      "to": "component:concepts/chemical-equilibrium.md",
+      "reason": "course logic constrains chapter logic"
+    },
+    {
+      "from": "component:concepts/course.md",
+      "to": "component:concepts/le-chatelier.md",
+      "reason": "course logic constrains chapter logic"
+    },
+    {
+      "from": "component:concepts/le-chatelier.md",
+      "to": "component:assessment-support/le-chatelier.md",
+      "reason": "chapter objectives drive assessment"
+    },
+    {
+      "from": "component:concepts/le-chatelier.md",
+      "to": "component:study-guide/le-chatelier.md",
+      "reason": "chapter concepts drive study guide"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:alembic.json",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:assessment-support/chemical-equilibrium.md",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:assessment-support/le-chatelier.md",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:concepts/chemical-equilibrium.md",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:concepts/course.md",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:concepts/le-chatelier.md",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:LICENSE",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:metadata/ATTRIBUTION.md",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:metadata/claims/study-guide/chemical-equilibrium.json",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:metadata/claims/study-guide/le-chatelier.json",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:metadata/evidence/wikipedia-anchor.html",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:metadata/MEDIA_PLAN.json",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:metadata/preflight/wikipedia-anchor.json",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:metadata/preflight/wikipedia-support-1.json",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:metadata/PROVENANCE.json",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:metadata/SOURCE_RECORD.json",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:practice/chemical-equilibrium.md",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:practice/le-chatelier.md",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:slides/chemical-equilibrium.md",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:slides/le-chatelier.md",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:study-guide/chemical-equilibrium.md",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/FOUNDATION.json",
+      "to": "component:study-guide/le-chatelier.md",
+      "reason": "foundation facts constrain component"
+    },
+    {
+      "from": "component:metadata/PROVENANCE.json",
+      "to": "component:metadata/ATTRIBUTION.md",
+      "reason": "human attribution mirrors provenance"
+    },
+    {
+      "from": "component:metadata/SOURCE_RECORD.json",
+      "to": "component:assessment-support/chemical-equilibrium.md",
+      "reason": "revision-bound sources constrain teaching content"
+    },
+    {
+      "from": "component:metadata/SOURCE_RECORD.json",
+      "to": "component:assessment-support/le-chatelier.md",
+      "reason": "revision-bound sources constrain teaching content"
+    },
+    {
+      "from": "component:metadata/SOURCE_RECORD.json",
+      "to": "component:concepts/chemical-equilibrium.md",
+      "reason": "revision-bound sources constrain teaching content"
+    },
+    {
+      "from": "component:metadata/SOURCE_RECORD.json",
+      "to": "component:concepts/course.md",
+      "reason": "revision-bound sources constrain teaching content"
+    },
+    {
+      "from": "component:metadata/SOURCE_RECORD.json",
+      "to": "component:concepts/le-chatelier.md",
+      "reason": "revision-bound sources constrain teaching content"
+    },
+    {
+      "from": "component:metadata/SOURCE_RECORD.json",
+      "to": "component:practice/chemical-equilibrium.md",
+      "reason": "revision-bound sources constrain teaching content"
+    },
+    {
+      "from": "component:metadata/SOURCE_RECORD.json",
+      "to": "component:practice/le-chatelier.md",
+      "reason": "revision-bound sources constrain teaching content"
+    },
+    {
+      "from": "component:metadata/SOURCE_RECORD.json",
+      "to": "component:slides/chemical-equilibrium.md",
+      "reason": "revision-bound sources constrain teaching content"
+    },
+    {
+      "from": "component:metadata/SOURCE_RECORD.json",
+      "to": "component:slides/le-chatelier.md",
+      "reason": "revision-bound sources constrain teaching content"
+    },
+    {
+      "from": "component:metadata/SOURCE_RECORD.json",
+      "to": "component:study-guide/chemical-equilibrium.md",
+      "reason": "revision-bound sources constrain teaching content"
+    },
+    {
+      "from": "component:metadata/SOURCE_RECORD.json",
+      "to": "component:study-guide/le-chatelier.md",
+      "reason": "revision-bound sources constrain teaching content"
+    },
+    {
+      "from": "component:study-guide/chemical-equilibrium.md",
+      "to": "component:assessment-support/chemical-equilibrium.md",
+      "reason": "terminology/examples constrain assessment"
+    },
+    {
+      "from": "component:study-guide/chemical-equilibrium.md",
+      "to": "component:practice/chemical-equilibrium.md",
+      "reason": "practice must remain consistent with teaching content"
+    },
+    {
+      "from": "component:study-guide/chemical-equilibrium.md",
+      "to": "component:slides/chemical-equilibrium.md",
+      "reason": "slides derive from study guide"
+    },
+    {
+      "from": "component:study-guide/le-chatelier.md",
+      "to": "component:assessment-support/le-chatelier.md",
+      "reason": "terminology/examples constrain assessment"
+    },
+    {
+      "from": "component:study-guide/le-chatelier.md",
+      "to": "component:practice/le-chatelier.md",
+      "reason": "practice must remain consistent with teaching content"
+    },
+    {
+      "from": "component:study-guide/le-chatelier.md",
+      "to": "component:slides/le-chatelier.md",
+      "reason": "slides derive from study guide"
+    }
+  ]
+}

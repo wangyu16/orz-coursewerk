@@ -1,0 +1,1162 @@
+{
+  "schemaVersion": 1,
+  "claims": [
+    {
+      "id": "claim.chemical-equilibrium.550e3f2786e2",
+      "type": "fact",
+      "text": "*Adapted from the version-pinned English Wikipedia articles \"Chemical equilibrium\" (<https://en.wikipedia.org/wiki/Chemical_equilibrium>) and \"Le Chatelier's principle\" (<https://en.wikipedia.org/wiki/Le_Chatelier%27s_principle>) by Wikipedia contributors, licensed CC-BY-SA-4.0 (<https://creativecommons.org/licenses/by-sa/4.0/>). Adapted and reorganized for this teaching resource.*",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "9e16b97eec12d8a15a1f05aa7a422ffe2a5b4dec9355e6660c1cd9c84e98af5d",
+        "label": "a20c5c26720abfe091683ab37cea43568c20d20c01017fd2eb58de89675e6ea5",
+        "content": "48407bc7eb4b5fa7a398f74c249356ab977c038448378aff34ad70756ee90863",
+        "spine": "4d5e1ca6501f5cfca1da078dfc47f9d14d08b3f58b57dfcde4f16a38745c9254",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.chemical-equilibrium"
+      ],
+      "locations": [
+        {
+          "file": "assessment-support/chemical-equilibrium.md",
+          "anchor": "designing-a-whole-assessment#6",
+          "offset": 6687
+        }
+      ],
+      "provenanceDeclared": false
+    },
+    {
+      "id": "claim.le-chatelier.dfff8c8d2ab1",
+      "type": "fact",
+      "text": "*Adapted from the version-pinned English Wikipedia articles \"Chemical equilibrium\" (<https://en.wikipedia.org/wiki/Chemical_equilibrium>) and \"Le Chatelier's principle\" (<https://en.wikipedia.org/wiki/Le_Chatelier%27s_principle>) by Wikipedia contributors, licensed CC-BY-SA-4.0 (<https://creativecommons.org/licenses/by-sa/4.0/>). Adapted and reorganized for this teaching resource.*",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "9e16b97eec12d8a15a1f05aa7a422ffe2a5b4dec9355e6660c1cd9c84e98af5d",
+        "label": "7062fe6bb72de2aa9184561f3b71518322649f028b4fdf5f725b3429f840858a",
+        "content": "8ce74e7169597959551634bfff25061c59ed56c714888204e9cf710fad8c1244",
+        "spine": "4d5e1ca6501f5cfca1da078dfc47f9d14d08b3f58b57dfcde4f16a38745c9254",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.le-chatelier-s-principle"
+      ],
+      "locations": [
+        {
+          "file": "assessment-support/le-chatelier.md",
+          "anchor": "designing-a-whole-assessment#7",
+          "offset": 6188
+        }
+      ],
+      "provenanceDeclared": false
+    },
+    {
+      "id": "claim.chemical-equilibrium.866511a4141b",
+      "type": "fact",
+      "text": ":::: tabs\n::: tab Q 15\nA system at equilibrium undergoes two separate experiments: in the first the concentration of a\nreactant is doubled, in the second the temperature is raised by 20 K. In which experiment does the\nvalue of $K$ change? *(Objective 6)*\n:::\n::: tab Answer 15\nOnly in the second. A concentration change moves $Q_r$ away from $K$, and the system shifts until\n$Q_r$ equals the **same** $K$ again. A temperature change is the one disturbance that alters the\nvalue of $K$ itself. Confusing these two is the most common error in the chapter.\n:::\n::::",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "723cc97a951c67f40b8c8b58d279e0578aa41c999fd9b6205dc3d8cd8192b8fc",
+        "label": "89d97482e1e494ef3f355c40b28e37663fcb2652cf13eb249c6833f33264f3af",
+        "content": "21022503d3dfdd1a67f5c10dd387168b569797b49e4fc9db2913144043875550",
+        "spine": "4d5e1ca6501f5cfca1da078dfc47f9d14d08b3f58b57dfcde4f16a38745c9254",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.equilibrium-constant"
+      ],
+      "locations": [
+        {
+          "file": "practice/chemical-equilibrium.md",
+          "anchor": "questions#18",
+          "offset": 6374
+        }
+      ],
+      "provenanceDeclared": false
+    },
+    {
+      "id": "claim.chemical-equilibrium.3ee170482562",
+      "type": "fact",
+      "text": "*Adapted from the version-pinned English Wikipedia articles \"Chemical equilibrium\" (<https://en.wikipedia.org/wiki/Chemical_equilibrium>) and \"Le Chatelier's principle\" (<https://en.wikipedia.org/wiki/Le_Chatelier%27s_principle>) by Wikipedia contributors, licensed CC-BY-SA-4.0 (<https://creativecommons.org/licenses/by-sa/4.0/>). Adapted and reorganized for this teaching resource.*",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "9e16b97eec12d8a15a1f05aa7a422ffe2a5b4dec9355e6660c1cd9c84e98af5d",
+        "label": "a20c5c26720abfe091683ab37cea43568c20d20c01017fd2eb58de89675e6ea5",
+        "content": "48407bc7eb4b5fa7a398f74c249356ab977c038448378aff34ad70756ee90863",
+        "spine": "4d5e1ca6501f5cfca1da078dfc47f9d14d08b3f58b57dfcde4f16a38745c9254",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.chemical-equilibrium"
+      ],
+      "locations": [
+        {
+          "file": "practice/chemical-equilibrium.md",
+          "anchor": "questions#20",
+          "offset": 6943
+        }
+      ],
+      "provenanceDeclared": false
+    },
+    {
+      "id": "claim.le-chatelier.97cacef9a189",
+      "type": "fact",
+      "text": "*Adapted from the version-pinned English Wikipedia articles \"Chemical equilibrium\" (<https://en.wikipedia.org/wiki/Chemical_equilibrium>) and \"Le Chatelier's principle\" (<https://en.wikipedia.org/wiki/Le_Chatelier%27s_principle>) by Wikipedia contributors, licensed CC-BY-SA-4.0 (<https://creativecommons.org/licenses/by-sa/4.0/>). Adapted and reorganized for this teaching resource.*",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "9e16b97eec12d8a15a1f05aa7a422ffe2a5b4dec9355e6660c1cd9c84e98af5d",
+        "label": "7062fe6bb72de2aa9184561f3b71518322649f028b4fdf5f725b3429f840858a",
+        "content": "8ce74e7169597959551634bfff25061c59ed56c714888204e9cf710fad8c1244",
+        "spine": "4d5e1ca6501f5cfca1da078dfc47f9d14d08b3f58b57dfcde4f16a38745c9254",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.le-chatelier-s-principle"
+      ],
+      "locations": [
+        {
+          "file": "practice/le-chatelier.md",
+          "anchor": "questions#17",
+          "offset": 7244
+        }
+      ],
+      "provenanceDeclared": false
+    },
+    {
+      "id": "claim.chemical-equilibrium.c63ec77b0fb0",
+      "type": "fact",
+      "text": "*Adapted from the version-pinned English Wikipedia articles \"Chemical equilibrium\" (<https://en.wikipedia.org/wiki/Chemical_equilibrium>) and \"Le Chatelier's principle\" (<https://en.wikipedia.org/wiki/Le_Chatelier%27s_principle>) by Wikipedia contributors, licensed CC-BY-SA-4.0 (<https://creativecommons.org/licenses/by-sa/4.0/>). Adapted and reorganized for this teaching resource.*",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "9e16b97eec12d8a15a1f05aa7a422ffe2a5b4dec9355e6660c1cd9c84e98af5d",
+        "label": "a20c5c26720abfe091683ab37cea43568c20d20c01017fd2eb58de89675e6ea5",
+        "content": "48407bc7eb4b5fa7a398f74c249356ab977c038448378aff34ad70756ee90863",
+        "spine": "4d5e1ca6501f5cfca1da078dfc47f9d14d08b3f58b57dfcde4f16a38745c9254",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.chemical-equilibrium"
+      ],
+      "locations": [
+        {
+          "file": "slides/chemical-equilibrium.md",
+          "anchor": "next-disturbing-the-equilibrium#3",
+          "offset": 4833
+        }
+      ],
+      "provenanceDeclared": false
+    },
+    {
+      "id": "claim.le-chatelier.f9eb3794f1e0",
+      "type": "fact",
+      "text": "*Adapted from the version-pinned English Wikipedia articles \"Chemical equilibrium\" (<https://en.wikipedia.org/wiki/Chemical_equilibrium>) and \"Le Chatelier's principle\" (<https://en.wikipedia.org/wiki/Le_Chatelier%27s_principle>) by Wikipedia contributors, licensed CC-BY-SA-4.0 (<https://creativecommons.org/licenses/by-sa/4.0/>). Adapted and reorganized for this teaching resource.*",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "9e16b97eec12d8a15a1f05aa7a422ffe2a5b4dec9355e6660c1cd9c84e98af5d",
+        "label": "7062fe6bb72de2aa9184561f3b71518322649f028b4fdf5f725b3429f840858a",
+        "content": "8ce74e7169597959551634bfff25061c59ed56c714888204e9cf710fad8c1244",
+        "spine": "4d5e1ca6501f5cfca1da078dfc47f9d14d08b3f58b57dfcde4f16a38745c9254",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.le-chatelier-s-principle"
+      ],
+      "locations": [
+        {
+          "file": "slides/le-chatelier.md",
+          "anchor": "the-two-chapters-together#3",
+          "offset": 4247
+        }
+      ],
+      "provenanceDeclared": false
+    },
+    {
+      "id": "claim.concept-chemical-equilibrium-8.b35c00cc3708",
+      "type": "fact",
+      "text": "A **catalyst** speeds up the forward and reverse reactions by the same factor. It lowers the time needed to *reach* equilibrium but changes **neither the equilibrium constant nor the position of equilibrium**. This is a frequent source of error and is revisited in the misconceptions below.",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "409531b85503b50db324cfd283874c718dad9fdf849365bc5e70a1d953633738",
+        "label": "6f2b66d48b26863f7e32de5e5f99127037798068939fbaf10c910fb07cf46615",
+        "content": "1859168040802501edc8d6998c27e98bd1d65455337b0be2cf2abf24fddc6c78",
+        "spine": "adcba18358eb366bbab504fa58bf57a55d42b17e8e7775831af1ea84d3a1ebe2",
+        "provenance": "69ade25fc16b80c9b536925a3ede3ab8cc0e5acf584830ed9192ec12de59ddf0"
+      },
+      "spineRefs": [
+        "concept.chemical-equilibrium.8"
+      ],
+      "sourceRefs": [
+        "wikipedia-anchor"
+      ],
+      "termRefs": [
+        "term.catalyst"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/chemical-equilibrium.md",
+          "anchor": "catalysts-and-equilibrium#1",
+          "offset": 4473
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.chemical-equilibrium.821b5b237d40",
+      "type": "fact",
+      "text": "*Adapted from the version-pinned English Wikipedia articles \"Chemical equilibrium\" (<https://en.wikipedia.org/wiki/Chemical_equilibrium>) and \"Le Chatelier's principle\" (<https://en.wikipedia.org/wiki/Le_Chatelier%27s_principle>) by Wikipedia contributors, licensed CC-BY-SA-4.0 (<https://creativecommons.org/licenses/by-sa/4.0/>). Adapted and reorganized for this teaching resource.*",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "9e16b97eec12d8a15a1f05aa7a422ffe2a5b4dec9355e6660c1cd9c84e98af5d",
+        "label": "a20c5c26720abfe091683ab37cea43568c20d20c01017fd2eb58de89675e6ea5",
+        "content": "48407bc7eb4b5fa7a398f74c249356ab977c038448378aff34ad70756ee90863",
+        "spine": "4d5e1ca6501f5cfca1da078dfc47f9d14d08b3f58b57dfcde4f16a38745c9254",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.chemical-equilibrium"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/chemical-equilibrium.md",
+          "anchor": "common-misconceptions#7",
+          "offset": 7468
+        }
+      ],
+      "provenanceDeclared": false
+    },
+    {
+      "id": "claim.objective-chemical-equilibrium-1.03171c04b782",
+      "type": "definition",
+      "text": "Chemical equilibrium is the state of a reversible reaction in which the forward reaction proceeds at the same rate as the reverse reaction, so the reactant and product concentrations no longer change with time. The forward and reverse rates are generally **not zero** — they are simply equal — so individual molecules keep reacting in both directions even though the macroscopic concentrations stay constant. This is why the state is called *dynamic* equilibrium.",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "68432d03b66a8acd1d32f4b44912b0e81c3b0f2b18c39430d303f3d605c54480",
+        "label": "a20c5c26720abfe091683ab37cea43568c20d20c01017fd2eb58de89675e6ea5",
+        "content": "52340aadfbb724760acac8cb958c18b78f30d4907efbb7beec1121645c6711a2",
+        "spine": "27bcece32c72421249bb812c753637b80d4f1181441ed1b99de947897ccaf27b",
+        "provenance": "69ade25fc16b80c9b536925a3ede3ab8cc0e5acf584830ed9192ec12de59ddf0"
+      },
+      "spineRefs": [
+        "objective.chemical-equilibrium.1"
+      ],
+      "sourceRefs": [
+        "wikipedia-anchor"
+      ],
+      "termRefs": [
+        "term.chemical-equilibrium"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/chemical-equilibrium.md",
+          "anchor": "dynamic-equilibrium#1",
+          "offset": 912
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-chemical-equilibrium-5.77a3260399a2",
+      "type": "fact",
+      "text": "Equilibrium is reached when the Gibbs energy of the system is at its minimum, so the reaction Gibbs energy vanishes. The equilibrium constant is related to the **standard Gibbs energy change** of the reaction by",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "e19e846d39d9aa5641fa47da3dec7260ec6dad599c2ef9fe602188756a50aaec",
+        "label": "0e5eb7e98924f0f8b69f698a53f325926bfa20b443ed81d0b26f83dca9ca27f7",
+        "content": "a7c83f55e92fa7cd2ae67af976087f15c89960e11e3855a40042076d6a9d57fc",
+        "spine": "9b11bdcf9b39a74aab2109c0269ecd12db8db188c2808e42159fcaee298eea27",
+        "provenance": "69ade25fc16b80c9b536925a3ede3ab8cc0e5acf584830ed9192ec12de59ddf0"
+      },
+      "spineRefs": [
+        "objective.chemical-equilibrium.5"
+      ],
+      "sourceRefs": [
+        "wikipedia-anchor"
+      ],
+      "termRefs": [
+        "term.standard-gibbs-energy-change"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/chemical-equilibrium.md",
+          "anchor": "equilibrium-and-gibbs-energy#1",
+          "offset": 3567
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-chemical-equilibrium-1.1c198bc0d1e3",
+      "type": "objective",
+      "text": "1. Define chemical equilibrium as a dynamic state in which the forward and reverse reaction rates are equal and the concentrations no longer change.",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "88cd1c6eda536bc441bd98f368f9c19a8921469d8b5ff16844ffc9fe108ba638",
+        "label": "a20c5c26720abfe091683ab37cea43568c20d20c01017fd2eb58de89675e6ea5",
+        "content": "f4d22e762b97fdabcef36c4042eb376b36f80c3257a2440c207edb3da904cd6f",
+        "spine": "27bcece32c72421249bb812c753637b80d4f1181441ed1b99de947897ccaf27b",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [
+        "objective.chemical-equilibrium.1"
+      ],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.chemical-equilibrium"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/chemical-equilibrium.md",
+          "anchor": "learning-objectives#1",
+          "offset": 49
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-chemical-equilibrium-2.9807681b223a",
+      "type": "objective",
+      "text": "2. Write the equilibrium constant expression for a given balanced reaction, placing the products in the numerator and raising each concentration to its stoichiometric coefficient.",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "1d483ead36cb6b2cdc5a58b6bc9afc53743ecc33f0502b4dd6e2de93ec5c8ebf",
+        "label": "96f30dc6bee3fec68a2bb860710b469f33f37cb6bb3d1a5ddac3a9e35135718a",
+        "content": "1e47bbb49586458ad97333eecbacdff1bed286ececcbb694cf69f993abe3dcfe",
+        "spine": "ed92a78eb3030d52f97def9e351f2641f7e9643436b1898478c1a8fa3a4cbcc2",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [
+        "objective.chemical-equilibrium.2"
+      ],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.equilibrium-constant",
+        "term.stoichiometric-coefficient"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/chemical-equilibrium.md",
+          "anchor": "learning-objectives#2",
+          "offset": 198
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-chemical-equilibrium-3.18dcdd0b56e9",
+      "type": "objective",
+      "text": "3. Evaluate the reaction quotient and compare it to the equilibrium constant to predict which direction the reaction will shift.",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "c8d9cf986b70a7a49974585d595847b8046a3a3af48c65a50ad4eb921abc5291",
+        "label": "af4f5811acfc1e317ca2bc998adcb6b1c949c932d048f322dc3d6f8e8c095247",
+        "content": "e84ae59aa32a15eff18eca295aa8dfb72b63420c6acc0db7d7b4d099c9d92855",
+        "spine": "6893c0e395df97c567326938734965ae7a2832fe75a3c1fa564632afaaed1fe2",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [
+        "objective.chemical-equilibrium.3"
+      ],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.reaction-quotient"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/chemical-equilibrium.md",
+          "anchor": "learning-objectives#3",
+          "offset": 378
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-chemical-equilibrium-4.76b652e88f26",
+      "type": "objective",
+      "text": "4. Explain why pure solids and pure liquids, whose activity is taken as one, are omitted from the equilibrium constant expression.",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "98b585b0338061c99631ebaad088b480fe0cce77916fbd09cd52249359232031",
+        "label": "d83cf8fe8ea1f2265221d6c8bb5ded3c9d272157e59e8a22e3e24d8766b239f9",
+        "content": "1539521487682efec97bc4b0394ff8b0636d92080250aeae5b093a3a6e642b33",
+        "spine": "86df60a3bfbe60546e995a9b1f21b10706d8ef0b347ab9c5f5f1679d2cfa1061",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [
+        "objective.chemical-equilibrium.4"
+      ],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.activity"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/chemical-equilibrium.md",
+          "anchor": "learning-objectives#4",
+          "offset": 507
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-chemical-equilibrium-5.fe09ccda0219",
+      "type": "objective",
+      "text": "5. Relate the equilibrium constant to the standard Gibbs energy change using $\\Delta G^\\ominus = -RT \\ln K$.",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "9c2f84b2f422b3fd3e2009acb7ef8251d210552c5d19868deb1d9126c8d25b7a",
+        "label": "0e5eb7e98924f0f8b69f698a53f325926bfa20b443ed81d0b26f83dca9ca27f7",
+        "content": "8d83bf0aaf7bdb5e58c39f3b156fbd11e9ba681d149a29b1ac6b807ce7ef352f",
+        "spine": "9b11bdcf9b39a74aab2109c0269ecd12db8db188c2808e42159fcaee298eea27",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [
+        "objective.chemical-equilibrium.5"
+      ],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.standard-gibbs-energy-change"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/chemical-equilibrium.md",
+          "anchor": "learning-objectives#5",
+          "offset": 638
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-chemical-equilibrium-6.8a45d732e00c",
+      "type": "objective",
+      "text": "6. Predict how a change in temperature changes the equilibrium constant using the sign of the reaction enthalpy (the van 't Hoff relation).",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "c7bd104d5ec651440895961b48f0754de09666978cec1f53b37c4cdc2b12c431",
+        "label": "85a752f46d14318a34a593d4459dce2e1eaabaa6978e533f672e06c2188240d3",
+        "content": "362a6f11e03aeeb7f0436ef5d86d48d9018c8fc80be8499b036e44054589eb4b",
+        "spine": "b89b9afccbca2b1fd48b11e7c556b0214a1808977ca4f02955718814adc3b3fc",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [
+        "objective.chemical-equilibrium.6"
+      ],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.van-t-hoff-equation"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/chemical-equilibrium.md",
+          "anchor": "learning-objectives#6",
+          "offset": 747
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-chemical-equilibrium-4.87b37e073190",
+      "type": "fact",
+      "text": "The concentration terms in $K$ are strictly **activities**, the effective concentration of each species. A pure solid or a pure liquid has an **activity of one**, so it does not appear in the equilibrium constant expression. For a reaction in dilute aqueous solution the solvent water is treated as a pure liquid of activity one and is likewise omitted — which is why, for acetic acid dissociation, $K$ is written over the dissolved species alone:",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "8dcc17165f58fbaa7cd02f8d59a38543cb87d013e9ad94d529e6bf1266635cf6",
+        "label": "d83cf8fe8ea1f2265221d6c8bb5ded3c9d272157e59e8a22e3e24d8766b239f9",
+        "content": "8da02a62149d7a6bd87a1d05891883177590e222c7a701ef3a398f0b5d437cc6",
+        "spine": "86df60a3bfbe60546e995a9b1f21b10706d8ef0b347ab9c5f5f1679d2cfa1061",
+        "provenance": "69ade25fc16b80c9b536925a3ede3ab8cc0e5acf584830ed9192ec12de59ddf0"
+      },
+      "spineRefs": [
+        "objective.chemical-equilibrium.4"
+      ],
+      "sourceRefs": [
+        "wikipedia-anchor"
+      ],
+      "termRefs": [
+        "term.activity"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/chemical-equilibrium.md",
+          "anchor": "pure-solids-and-liquids#1",
+          "offset": 3027
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-chemical-equilibrium-6.09ddeac50630",
+      "type": "fact",
+      "text": "The equilibrium constant is genuinely constant with respect to composition, but it **does depend on temperature**, as described by the **van 't Hoff equation**. The direction of the dependence is fixed by the sign of the reaction enthalpy:",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "9567765bee814102f4efe54ae02be63d325732d903fc3b5fb46bddd06e80b81f",
+        "label": "85a752f46d14318a34a593d4459dce2e1eaabaa6978e533f672e06c2188240d3",
+        "content": "ad8d7200b675d2a6d3e8886446a41978d12e0503872c00cd214b051b6b4fb712",
+        "spine": "b89b9afccbca2b1fd48b11e7c556b0214a1808977ca4f02955718814adc3b3fc",
+        "provenance": "69ade25fc16b80c9b536925a3ede3ab8cc0e5acf584830ed9192ec12de59ddf0"
+      },
+      "spineRefs": [
+        "objective.chemical-equilibrium.6"
+      ],
+      "sourceRefs": [
+        "wikipedia-anchor"
+      ],
+      "termRefs": [
+        "term.van-t-hoff-equation"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/chemical-equilibrium.md",
+          "anchor": "temperature-dependence#1",
+          "offset": 4058
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-chemical-equilibrium-2.db0811c913b2",
+      "type": "fact",
+      "text": "the **equilibrium constant** collects the product concentrations in the numerator and the reactant concentrations in the denominator, each raised to its stoichiometric coefficient:",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "9cd0c80ade5358b28e75372bd5ae2d45c23290423dd19d7bb346699a71b71c07",
+        "label": "96f30dc6bee3fec68a2bb860710b469f33f37cb6bb3d1a5ddac3a9e35135718a",
+        "content": "e6bd716085a1d7c7cb09e40ad7f2bf19de648c3570a085b1a8ff3c8873dbc335",
+        "spine": "ed92a78eb3030d52f97def9e351f2641f7e9643436b1898478c1a8fa3a4cbcc2",
+        "provenance": "69ade25fc16b80c9b536925a3ede3ab8cc0e5acf584830ed9192ec12de59ddf0"
+      },
+      "spineRefs": [
+        "objective.chemical-equilibrium.2"
+      ],
+      "sourceRefs": [
+        "wikipedia-anchor"
+      ],
+      "termRefs": [
+        "term.equilibrium-constant",
+        "term.stoichiometric-coefficient"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/chemical-equilibrium.md",
+          "anchor": "the-equilibrium-constant#3",
+          "offset": 1866
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.concept-chemical-equilibrium-3.eca8e961b7ca",
+      "type": "fact",
+      "text": "This form follows from Guldberg and Waage's **law of mass action** (1865): the forward rate is $k_{+}[\\ce{A}]^{\\alpha}[\\ce{B}]^{\\beta}$ and the reverse rate is $k_{-}[\\ce{S}]^{\\sigma}[\\ce{T}]^{\\tau}$; setting them equal at equilibrium gives $K = k_{+}/k_{-}$. The equilibrium position lies \"far to the right\" when nearly all reactants are consumed, and \"far to the left\" when hardly any product forms.",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "cd7f927792be571ec563bf9b73d4fcf4bc0f4e98bf2f1381b5d18659ebfa63b6",
+        "label": "b1f09f366ceda4cb264452a2453075e22054f22cd5a345c1d70b5aae119cc204",
+        "content": "44f11fd2a2d1df95605e4c17b6d13e2377f49ba33af8abef25d363b6df9ccdca",
+        "spine": "3bbeb1eace5ddbdee3361ddc0ed80b04d9b9fce2f097acae747959ffd61637d6",
+        "provenance": "69ade25fc16b80c9b536925a3ede3ab8cc0e5acf584830ed9192ec12de59ddf0"
+      },
+      "spineRefs": [
+        "concept.chemical-equilibrium.3"
+      ],
+      "sourceRefs": [
+        "wikipedia-anchor"
+      ],
+      "termRefs": [
+        "term.law-of-mass-action"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/chemical-equilibrium.md",
+          "anchor": "the-equilibrium-constant#5",
+          "offset": 2136
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-chemical-equilibrium-3.b44ba3c0d670",
+      "type": "definition",
+      "text": "The **reaction quotient** $Q_r$ has exactly the same algebraic form as $K$, but is evaluated at *any* composition — not only at equilibrium. Comparing $Q_r$ to $K$ predicts the direction of change:",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "6ae59549471d058382bff21b4bc6da4ea2bf0d9513cf93b8aee0b53ad173ed46",
+        "label": "af4f5811acfc1e317ca2bc998adcb6b1c949c932d048f322dc3d6f8e8c095247",
+        "content": "44a133e8acc4feb17c4a02b93bfa492fdd4c04365b4fe729b2ef41516e66d9dd",
+        "spine": "6893c0e395df97c567326938734965ae7a2832fe75a3c1fa564632afaaed1fe2",
+        "provenance": "69ade25fc16b80c9b536925a3ede3ab8cc0e5acf584830ed9192ec12de59ddf0"
+      },
+      "spineRefs": [
+        "objective.chemical-equilibrium.3"
+      ],
+      "sourceRefs": [
+        "wikipedia-anchor"
+      ],
+      "termRefs": [
+        "term.reaction-quotient"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/chemical-equilibrium.md",
+          "anchor": "the-reaction-quotient#1",
+          "offset": 2565
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-chemical-equilibrium-2.6064728fc4f6",
+      "type": "derived",
+      "text": ":::: tabs\n::: tab Worked example 1\nWrite the equilibrium constant expression for the ammonia synthesis $\\ce{N2 + 3 H2 <=> 2 NH3}$.\n:::\n::: tab Solution 1\nProducts over reactants, each raised to its coefficient:\n$$K = \\frac{[\\ce{NH3}]^{2}}{[\\ce{N2}]\\,[\\ce{H2}]^{3}}.$$\n:::\n::::",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "7ee6aeb4b63d8a7c71afed8454f397266c715c58bf2e07b75af732a64d2c9165",
+        "label": "89d97482e1e494ef3f355c40b28e37663fcb2652cf13eb249c6833f33264f3af",
+        "content": "5b3899434cd374a343105a996c30bd8fc343ca966851bb551eb2cf136d682906",
+        "spine": "ed92a78eb3030d52f97def9e351f2641f7e9643436b1898478c1a8fa3a4cbcc2",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [
+        "objective.chemical-equilibrium.2"
+      ],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.equilibrium-constant"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/chemical-equilibrium.md",
+          "anchor": "worked-examples#1",
+          "offset": 5944
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-chemical-equilibrium-5.792d6dfb56fc",
+      "type": "derived",
+      "text": ":::: tabs\n::: tab Worked example 2\nSuppose a reaction has $K = 4.0$ at $T = 298\\ \\text{K}$. Using $R = 8.314\\ \\text{J mol}^{-1}\\text{K}^{-1}$, estimate the standard Gibbs energy change.\n:::\n::: tab Solution 2\n$\\Delta G^\\ominus = -RT\\ln K = -(8.314)(298)\\ln(4.0) = -3435\\ \\text{J mol}^{-1} \\approx -3.4\\ \\text{kJ mol}^{-1}$. The negative sign is consistent with $K > 1$ (products favoured). *(The value $K = 4.0$ is a teaching hypothetical, not a source datum.)*\n:::\n::::",
+      "scope": "chemical-equilibrium",
+      "fingerprints": {
+        "format": "6eee2af1b556dc8252810d9fffc322e48f8fdb5e00bec18d98d69a9733504db9",
+        "label": "0e5eb7e98924f0f8b69f698a53f325926bfa20b443ed81d0b26f83dca9ca27f7",
+        "content": "352426eafc0687f783b946cc7e42718381238961d3fad8621f41b56d3c1a8ffb",
+        "spine": "9b11bdcf9b39a74aab2109c0269ecd12db8db188c2808e42159fcaee298eea27",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [
+        "objective.chemical-equilibrium.5"
+      ],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.standard-gibbs-energy-change"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/chemical-equilibrium.md",
+          "anchor": "worked-examples#2",
+          "offset": 6222
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.concept-le-chatelier-7.651c1284ce17",
+      "type": "fact",
+      "text": "A catalyst speeds up a reaction without being consumed, and it accelerates the **forward and reverse reactions by the same factor.** It therefore changes **neither the position nor the composition** of the equilibrium — only the time taken to reach it. In the Haber process, an iron-based catalyst (metallic iron reduced from magnetite, with promoters such as potassium and aluminium oxides) accelerates the approach to equilibrium but leaves the equilibrium amounts of $\\ce{N2}$, $\\ce{H2}$, and $\\ce{NH3}$ exactly as they were. This is the same catalyst result met in Chapter 1, now seen from the Le Chatelier side.",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "6d1310561a1aae806550b2302e3d51ccb953327f1eae6a8e0550aaa2de38d4d4",
+        "label": "6f2b66d48b26863f7e32de5e5f99127037798068939fbaf10c910fb07cf46615",
+        "content": "70cf7e1e8efd0df1eec01442b664f738d055cf60e10584142da06b2c5a8fe31e",
+        "spine": "d24be0186d4fd8dad7c4c310131704189cdec8a9c8ae381d479790967508f09e",
+        "provenance": "77d7c847b6b34ccea91888e7cc953b6cadd66a6e6eeb9412ef75fc934f2f5701"
+      },
+      "spineRefs": [
+        "concept.le-chatelier.7"
+      ],
+      "sourceRefs": [
+        "wikipedia-support-1"
+      ],
+      "termRefs": [
+        "term.catalyst"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/le-chatelier.md",
+          "anchor": "adding-a-catalyst#1",
+          "offset": 5413
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-le-chatelier-5.a63fcc48b6cf",
+      "type": "fact",
+      "text": "Adding an inert (noble) gas to a gas-phase equilibrium **at constant volume does not shift it.** The inert gas takes no part in the reaction, so it does not change any *partial* pressure — and it is partial pressures, not the total pressure, that drive a shift. The total pressure of the vessel rises, but the equilibrium constant depends only on the reacting species, so the position is unchanged. (Only if the volume were allowed to expand would the partial pressures fall and a shift follow — toward the side with more moles of gas.)",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "ecb0c0d40de5c68beb27fcfdd67a13e7a5ed499f03146910e52701011b5b7c82",
+        "label": "e93857ff2942bee8c7ffecd2207099551ded87401364b4548f34b93bb86548cd",
+        "content": "64fdcf03f11b84e34c535a560e214d6064709bda698a7f8b773431e24cef0f51",
+        "spine": "f2f3c443175454a516a420f7473e91b047d5b180a4ec55308a52d99622606556",
+        "provenance": "77d7c847b6b34ccea91888e7cc953b6cadd66a6e6eeb9412ef75fc934f2f5701"
+      },
+      "spineRefs": [
+        "objective.le-chatelier.5"
+      ],
+      "sourceRefs": [
+        "wikipedia-support-1"
+      ],
+      "termRefs": [
+        "term.inert-gas"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/le-chatelier.md",
+          "anchor": "adding-an-inert-gas#1",
+          "offset": 4853
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-le-chatelier-2.899bca840787",
+      "type": "fact",
+      "text": "Changing the concentration of a species shifts the equilibrium toward the side that **opposes** the change. Add more of a species and the reaction favours the side that consumes it; remove a species and the reaction shifts to \"fill the gap\" and replace it.",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "36216e0fd88c864ae2dce8c5c41c1787e7ecd8110b177bc7dd9c3fbb0ddd2a80",
+        "label": "c616b1369468602e81a35a1ec079efd105864f01d93a6877ec787dcc91551e6a",
+        "content": "7bb212835cb9e1905a9431dff428dd9fdf3a2c65c5e74abe46d94d8fa512d422",
+        "spine": "e3bd303f34277587777a85c82987c8e364086ae4733b7b470fecbd0127c93d6b",
+        "provenance": "77d7c847b6b34ccea91888e7cc953b6cadd66a6e6eeb9412ef75fc934f2f5701"
+      },
+      "spineRefs": [
+        "objective.le-chatelier.2"
+      ],
+      "sourceRefs": [
+        "wikipedia-support-1"
+      ],
+      "termRefs": [
+        "term.equilibrium-shift"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/le-chatelier.md",
+          "anchor": "changing-a-concentration#1",
+          "offset": 1857
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-le-chatelier-3.5186582c882b",
+      "type": "fact",
+      "text": "A temperature change is handled by writing **heat as a participant** in the reaction, then reasoning exactly as for a concentration change:",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "f57ff877310d459d0fee9f2d9494ceda11c7a17e19f489a26d0f07ff67037c7e",
+        "label": "1485ba55f46766f65cfdeff04b3f25e1ba22c1c8341f0ad00f614ddbe4480327",
+        "content": "5afe0bebbe2c089866f4322d7df93049ef6dc996db5eb28fed5df40bbfc97681",
+        "spine": "66965abe36a36f5ca95b514a488f9a58e9d3d10f58a1c5cf32a20dd1f9f0d87f",
+        "provenance": "77d7c847b6b34ccea91888e7cc953b6cadd66a6e6eeb9412ef75fc934f2f5701"
+      },
+      "spineRefs": [
+        "objective.le-chatelier.3"
+      ],
+      "sourceRefs": [
+        "wikipedia-support-1"
+      ],
+      "termRefs": [
+        "term.endothermic-reaction",
+        "term.exothermic-reaction"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/le-chatelier.md",
+          "anchor": "changing-the-temperature#1",
+          "offset": 2690
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.concept-le-chatelier-4.473317747b95",
+      "type": "fact",
+      "text": "Temperature is the one disturbance that is different in kind. Concentration and pressure changes leave the equilibrium constant $K$ untouched — the system re-shifts back to the *same* $K$. A temperature change actually **changes the value of $K$**: for an exothermic reaction a temperature increase **decreases** $K$, and for an endothermic reaction it **increases** $K$. The direction is fixed by the sign of $\\Delta H$, and the quantitative law behind it is the van 't Hoff equation from Chapter 1.",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "bc731796c5a38b655016699fe93f6763869ce552cf80ea91b279ed2e7b3a706d",
+        "label": "85a752f46d14318a34a593d4459dce2e1eaabaa6978e533f672e06c2188240d3",
+        "content": "dbfcb00d9640b5ac4dd5bbf6f44be02ab6d82777b914c15dccc59fc7e04c7224",
+        "spine": "c19cd043213b1d15b69c10201c33a53c7855abfdaf46c423d08aa2f4092ea544",
+        "provenance": "77d7c847b6b34ccea91888e7cc953b6cadd66a6e6eeb9412ef75fc934f2f5701"
+      },
+      "spineRefs": [
+        "concept.le-chatelier.4"
+      ],
+      "sourceRefs": [
+        "wikipedia-support-1"
+      ],
+      "termRefs": [
+        "term.van-t-hoff-equation"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/le-chatelier.md",
+          "anchor": "changing-the-temperature#7",
+          "offset": 3403
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-le-chatelier-4.491362a37cab",
+      "type": "fact",
+      "text": "For a gas-phase equilibrium, what matters is the **partial pressures**, and those change when the volume changes. Compare the moles of gas on each side of the balanced equation:",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "d8afa43ccc8fd82c80038fafb05c72ff61474cf2550bc2d36af9eba85e851d65",
+        "label": "a04e42254d93a83663b8e0b21bf928b57bee3919972959b1f724610d06457699",
+        "content": "40a530ae5e5ff7835311f2c82cb47e39e57f967d19e023515c118fe1f3bfc9ee",
+        "spine": "01180a7ed1dd0e6143f5c7232129694a0d6e509c1814ddc606a34693c43745c5",
+        "provenance": "77d7c847b6b34ccea91888e7cc953b6cadd66a6e6eeb9412ef75fc934f2f5701"
+      },
+      "spineRefs": [
+        "objective.le-chatelier.4"
+      ],
+      "sourceRefs": [
+        "wikipedia-support-1"
+      ],
+      "termRefs": [
+        "term.partial-pressure"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/le-chatelier.md",
+          "anchor": "changing-the-volume-or-pressure#1",
+          "offset": 3941
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.le-chatelier.c317c1243163",
+      "type": "fact",
+      "text": "In the ammonia equilibrium the reactant side has 4 moles of gas ($\\ce{N2 + 3 H2}$) and the product side has 2 moles ($\\ce{2 NH3}$):",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "10e2a0090797ed8f39e37265309d0a3b46baacc5ab68df336af8812a0c8de45b",
+        "label": "fddff00a21a9dd387c38587ec588fba1a14b15e10348594f693749411b8d4d06",
+        "content": "b89c7e8565657e3ea529d38e0363468d01b5239776ce7e50206575821de7f89d",
+        "spine": "4d5e1ca6501f5cfca1da078dfc47f9d14d08b3f58b57dfcde4f16a38745c9254",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [],
+      "sourceRefs": [],
+      "termRefs": [],
+      "locations": [
+        {
+          "file": "study-guide/le-chatelier.md",
+          "anchor": "changing-the-volume-or-pressure#5",
+          "offset": 4467
+        }
+      ],
+      "provenanceDeclared": false
+    },
+    {
+      "id": "claim.le-chatelier.705fccd00020",
+      "type": "fact",
+      "text": "$$\\underset{\\text{4 mol gas}}{\\ce{N2 + 3 H2}} \\ce{<=>} \\underset{\\text{2 mol gas}}{\\ce{2 NH3}}$$",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "6d71dcb03bc4e75f4d766d647f49dc784f50279309293663564a0d9706813c99",
+        "label": "fddff00a21a9dd387c38587ec588fba1a14b15e10348594f693749411b8d4d06",
+        "content": "ce035cb9af9e736d8d7e5887702e1b2d4faa7ca5df3f20e53f8ef754150b0111",
+        "spine": "4d5e1ca6501f5cfca1da078dfc47f9d14d08b3f58b57dfcde4f16a38745c9254",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [],
+      "sourceRefs": [],
+      "termRefs": [],
+      "locations": [
+        {
+          "file": "study-guide/le-chatelier.md",
+          "anchor": "changing-the-volume-or-pressure#6",
+          "offset": 4600
+        }
+      ],
+      "provenanceDeclared": false
+    },
+    {
+      "id": "claim.le-chatelier.b104026ddc66",
+      "type": "fact",
+      "text": "*Adapted from the version-pinned English Wikipedia articles \"Chemical equilibrium\" (<https://en.wikipedia.org/wiki/Chemical_equilibrium>) and \"Le Chatelier's principle\" (<https://en.wikipedia.org/wiki/Le_Chatelier%27s_principle>) by Wikipedia contributors, licensed CC-BY-SA-4.0 (<https://creativecommons.org/licenses/by-sa/4.0/>). Adapted and reorganized for this teaching resource.*",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "9e16b97eec12d8a15a1f05aa7a422ffe2a5b4dec9355e6660c1cd9c84e98af5d",
+        "label": "7062fe6bb72de2aa9184561f3b71518322649f028b4fdf5f725b3429f840858a",
+        "content": "8ce74e7169597959551634bfff25061c59ed56c714888204e9cf710fad8c1244",
+        "spine": "4d5e1ca6501f5cfca1da078dfc47f9d14d08b3f58b57dfcde4f16a38745c9254",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.le-chatelier-s-principle"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/le-chatelier.md",
+          "anchor": "common-misconceptions#7",
+          "offset": 9336
+        }
+      ],
+      "provenanceDeclared": false
+    },
+    {
+      "id": "claim.objective-le-chatelier-1.d05d24af92f2",
+      "type": "objective",
+      "text": "1. State Le Chatelier's principle: a system at equilibrium that is disturbed shifts to a new equilibrium that partially counteracts the disturbance.",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "707483fb159643e0eabe4fd4a0880263b9972f181c30a3c966e9b8e9eb14a396",
+        "label": "7062fe6bb72de2aa9184561f3b71518322649f028b4fdf5f725b3429f840858a",
+        "content": "ba78a4b74f67956f2a89b02e74cfa04601035d6eb331aa9266ca9ca92fa674aa",
+        "spine": "48e56fe8126fed34d50b6a12098b492e89529247807bd97dcd804f2a2c6485c8",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [
+        "objective.le-chatelier.1"
+      ],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.le-chatelier-s-principle"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/le-chatelier.md",
+          "anchor": "learning-objectives#1",
+          "offset": 53
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-le-chatelier-2.608e8a8a4d6c",
+      "type": "objective",
+      "text": "2. Predict the direction an equilibrium shifts when the concentration of a reactant or product is increased or decreased.",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "f2c957ee87b9f698fab7ec164b8c41be3915e3bb37ed83dce9df82f5a16f0c53",
+        "label": "c616b1369468602e81a35a1ec079efd105864f01d93a6877ec787dcc91551e6a",
+        "content": "72fb6938bbcdcaa596e4738014e223e456469c9e01cc707866c071b01a710a62",
+        "spine": "e3bd303f34277587777a85c82987c8e364086ae4733b7b470fecbd0127c93d6b",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [
+        "objective.le-chatelier.2"
+      ],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.equilibrium-shift"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/le-chatelier.md",
+          "anchor": "learning-objectives#2",
+          "offset": 202
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-le-chatelier-3.e0a3f3e2b69e",
+      "type": "objective",
+      "text": "3. Predict the direction an equilibrium shifts when the temperature changes, by treating heat as a reactant for an endothermic reaction or a product for an exothermic one.",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "64f85fe5ea7c2b43600e735d5246ab6f0c1c1c3fe618235875a68ad6c308eac5",
+        "label": "1485ba55f46766f65cfdeff04b3f25e1ba22c1c8341f0ad00f614ddbe4480327",
+        "content": "242beae53123226a3c2095138db18ca302cecc5e9c88066f285c03dcf33ce4a4",
+        "spine": "66965abe36a36f5ca95b514a488f9a58e9d3d10f58a1c5cf32a20dd1f9f0d87f",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [
+        "objective.le-chatelier.3"
+      ],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.endothermic-reaction",
+        "term.exothermic-reaction"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/le-chatelier.md",
+          "anchor": "learning-objectives#3",
+          "offset": 324
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-le-chatelier-4.c75c683414b4",
+      "type": "objective",
+      "text": "4. Predict the effect of a volume or pressure change on a gas-phase equilibrium by comparing the moles of gas on each side of the equation.",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "5fa3c4363f33815ef7c92ec7b523e2416472e654a0bfecf7e3c39b89264a5dc0",
+        "label": "a04e42254d93a83663b8e0b21bf928b57bee3919972959b1f724610d06457699",
+        "content": "fd4cc4d3d8bef00214ce6f1bebcb6913453bccdfe2f1f121e28197f227b5306e",
+        "spine": "01180a7ed1dd0e6143f5c7232129694a0d6e509c1814ddc606a34693c43745c5",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [
+        "objective.le-chatelier.4"
+      ],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.partial-pressure"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/le-chatelier.md",
+          "anchor": "learning-objectives#4",
+          "offset": 496
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-le-chatelier-5.b3571eb409fa",
+      "type": "objective",
+      "text": "5. Explain why adding an inert gas at constant volume, and why adding a catalyst, do not shift the equilibrium.",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "c787857e71f681cc9ee606fe6689c1c1604f5a2320f306eb95843dd1acd8ff10",
+        "label": "646cfd9004f92bc43cb29613337728f5768951d7c27796270a55b592c2794274",
+        "content": "adc78ed673056487acc79b7b5113cec9d89dbb30bacf0412c40a4ed5d8c723e4",
+        "spine": "f2f3c443175454a516a420f7473e91b047d5b180a4ec55308a52d99622606556",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [
+        "objective.le-chatelier.5"
+      ],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.catalyst",
+        "term.inert-gas"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/le-chatelier.md",
+          "anchor": "learning-objectives#5",
+          "offset": 636
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-le-chatelier-1.48e000d96bf5",
+      "type": "definition",
+      "text": "Le Chatelier's principle predicts the effect of a change in conditions on a chemical equilibrium: **when something that determines an equilibrium is altered — the temperature, the pressure, or a concentration — the system moves to a new equilibrium whose shift works against the alteration, though only in part.** It is a qualitative shortcut: it tells you the *direction* a disturbed system moves without a full recalculation. Because the response only *partially* offsets the disturbance, the system never fully returns to its original state — it settles at a new equilibrium.",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "10b7dd1dc46ca91e8f051afdd8dcfbf592492960395934e05a45c566487e195d",
+        "label": "7062fe6bb72de2aa9184561f3b71518322649f028b4fdf5f725b3429f840858a",
+        "content": "8a5d66b2e1959e35d1e73078e6a02c32a30e2982d8ed3ddf0294cc5127d8a78d",
+        "spine": "48e56fe8126fed34d50b6a12098b492e89529247807bd97dcd804f2a2c6485c8",
+        "provenance": "77d7c847b6b34ccea91888e7cc953b6cadd66a6e6eeb9412ef75fc934f2f5701"
+      },
+      "spineRefs": [
+        "objective.le-chatelier.1"
+      ],
+      "sourceRefs": [
+        "wikipedia-support-1"
+      ],
+      "termRefs": [
+        "term.le-chatelier-s-principle"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/le-chatelier.md",
+          "anchor": "the-principle#1",
+          "offset": 767
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-le-chatelier-3.8d3aeb01515c",
+      "type": "derived",
+      "text": ":::: tabs\n::: tab Worked example 1\nFor the exothermic ammonia synthesis $\\ce{N2 + 3 H2 <=> 2 NH3}$ ($\\Delta H = -92\\ \\text{kJ mol}^{-1}$), predict what happens to the amount of ammonia at equilibrium if the temperature is **raised**.\n:::\n::: tab Solution 1\nWrite heat as a product (exothermic): $\\ce{N2 + 3 H2 <=> 2 NH3} + \\text{heat}$. Raising the temperature is like adding a product, so the equilibrium shifts **left** and the amount of ammonia **decreases**; equivalently, $K$ decreases. *(Reasoning is a teaching derivation applying Le Chatelier's principle; the reaction and $\\Delta H = -92\\ \\text{kJ mol}^{-1}$ are from the source.)*\n:::\n::::",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "525ca0a212d51f1cbc08bcb0005607b3eab666f282584d02966ce8a3d3ffaa41",
+        "label": "468d8f601f9f979f9dd613306ae4ea5f397f5d6d2d4eceae0362547ff949e6db",
+        "content": "35b56122f1b53ddbe961ead8111dc3c5b4786c0c7aff4d88ceedc69b7e503923",
+        "spine": "66965abe36a36f5ca95b514a488f9a58e9d3d10f58a1c5cf32a20dd1f9f0d87f",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [
+        "objective.le-chatelier.3"
+      ],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.exothermic-reaction"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/le-chatelier.md",
+          "anchor": "worked-examples#1",
+          "offset": 7224
+        }
+      ],
+      "provenanceDeclared": true
+    },
+    {
+      "id": "claim.objective-le-chatelier-4.20bd36435ff4",
+      "type": "derived",
+      "text": ":::: tabs\n::: tab Worked example 2\nFor the same reaction, predict the effect of **decreasing the volume** (increasing the pressure) on the yield of ammonia.\n:::\n::: tab Solution 2\nCount moles of gas: 4 on the reactant side, 2 on the product side. Decreasing the volume favours the side with **fewer** moles, so the equilibrium shifts **right** and the yield of ammonia **increases**. *(A teaching derivation; the reaction and its mole counts are from the source.)*\n:::\n::::",
+      "scope": "le-chatelier",
+      "fingerprints": {
+        "format": "1f2330fe73407ebfda3b49224c928c1da2935b3430bfa6df8b83690ca909eae3",
+        "label": "a04e42254d93a83663b8e0b21bf928b57bee3919972959b1f724610d06457699",
+        "content": "0954a6f9e3746be18c7dc63301ee8c8e67d4d76dd4bb3cd95100ea5b19180d36",
+        "spine": "01180a7ed1dd0e6143f5c7232129694a0d6e509c1814ddc606a34693c43745c5",
+        "provenance": "aee0b8b20576f2548dd17e9c204fbe6845c28f4b97b6827d8e3988959c064eca"
+      },
+      "spineRefs": [
+        "objective.le-chatelier.4"
+      ],
+      "sourceRefs": [],
+      "termRefs": [
+        "term.partial-pressure"
+      ],
+      "locations": [
+        {
+          "file": "study-guide/le-chatelier.md",
+          "anchor": "worked-examples#2",
+          "offset": 7875
+        }
+      ],
+      "provenanceDeclared": true
+    }
+  ]
+}

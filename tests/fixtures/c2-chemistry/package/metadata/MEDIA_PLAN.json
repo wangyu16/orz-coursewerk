@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "chapters": {
+    "chemical-equilibrium": {
+      "realImageDecision": "not-used",
+      "rationale": "The chapter teaches a state and a relationship, not an appearance: equal forward and reverse rates, the algebraic form of the equilibrium constant, the comparison of the reaction quotient with it, and the temperature dependence. None of these has a photographable referent that carries the teaching point. A photograph of a flask of an equilibrium mixture would show a colour, and the colour is precisely what the chapter warns is constant rather than informative about the rate. The instructional visual that does carry the point is the decision flow from a measured composition through the quotient to the direction of shift, which is authored as a diagram in the study guide with a visible text description. This package is also a revision-pinned corpus for a methodology evaluation, so an added photograph would introduce a rights receipt and a network dependency without adding teaching value.",
+      "reviewedBy": "PENDING OPERATOR REVIEW",
+      "reviewedAt": "2026-09-06"
+    },
+    "le-chatelier": {
+      "realImageDecision": "not-used",
+      "rationale": "The chapter's content is a set of predictions about direction: which way an equilibrium moves under a concentration, temperature or volume change, and which two disturbances move nothing. A photograph can show a colour change in a disturbed equilibrium, but the teaching burden here is the reasoning that produces the prediction, not the observation that something changed. The visual that carries the chapter is the branching diagram sorting the five disturbances by whether they move the position, the constant, or neither, which is authored in the study guide with a visible text description. As with chapter one, this is a revision-pinned corpus for a methodology evaluation, so an added photograph would introduce a rights receipt and a network dependency without adding teaching value.",
+      "reviewedBy": "PENDING OPERATOR REVIEW",
+      "reviewedAt": "2026-09-06"
+    }
+  }
+}

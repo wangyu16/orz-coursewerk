@@ -1,0 +1,268 @@
+{
+  "schemaVersion": 1,
+  "generatedFrom": [
+    "concepts/chemical-equilibrium.md",
+    "concepts/course.md",
+    "concepts/le-chatelier.md"
+  ],
+  "terms": [
+    {
+      "id": "term.chemical-equilibrium",
+      "canonical": "chemical equilibrium",
+      "preferredLabel": "chemical equilibrium",
+      "aliases": [
+        "dynamic equilibrium"
+      ],
+      "status": "confirmed",
+      "lifecycle": "active",
+      "spineRef": "concept.chemical-equilibrium.1",
+      "spineRefs": [
+        "concept.chemical-equilibrium.1"
+      ],
+      "gloss": "the state of a reversible reaction in which forward and reverse rates are equal and concentrations no longer change",
+      "scope": [
+        "chemical-equilibrium"
+      ]
+    },
+    {
+      "id": "term.equilibrium-constant",
+      "canonical": "equilibrium constant",
+      "preferredLabel": "equilibrium constant",
+      "aliases": [
+        "K",
+        "Keq",
+        "Kc"
+      ],
+      "status": "confirmed",
+      "lifecycle": "active",
+      "spineRef": "concept.chemical-equilibrium.3",
+      "spineRefs": [
+        "concept.chemical-equilibrium.3"
+      ],
+      "gloss": "the ratio of product to reactant concentrations at equilibrium, each raised to its stoichiometric coefficient, with products in the numerator",
+      "scope": [
+        "chemical-equilibrium"
+      ]
+    },
+    {
+      "id": "term.reaction-quotient",
+      "canonical": "reaction quotient",
+      "preferredLabel": "reaction quotient",
+      "aliases": [
+        "Qr"
+      ],
+      "status": "confirmed",
+      "lifecycle": "active",
+      "spineRef": "concept.chemical-equilibrium.5",
+      "spineRefs": [
+        "concept.chemical-equilibrium.5"
+      ],
+      "gloss": "the equilibrium-constant expression evaluated at an arbitrary, not-necessarily-equilibrium composition",
+      "scope": [
+        "chemical-equilibrium"
+      ]
+    },
+    {
+      "id": "term.law-of-mass-action",
+      "canonical": "law of mass action",
+      "preferredLabel": "law of mass action",
+      "aliases": [],
+      "status": "confirmed",
+      "lifecycle": "active",
+      "spineRef": "concept.chemical-equilibrium.3",
+      "spineRefs": [
+        "concept.chemical-equilibrium.3"
+      ],
+      "gloss": "Guldberg and Waage's rule relating reaction rate to the active masses of the species raised to their stoichiometric powers",
+      "scope": [
+        "chemical-equilibrium"
+      ]
+    },
+    {
+      "id": "term.stoichiometric-coefficient",
+      "canonical": "stoichiometric coefficient",
+      "preferredLabel": "stoichiometric coefficient",
+      "aliases": [],
+      "status": "confirmed",
+      "lifecycle": "active",
+      "spineRef": "concept.chemical-equilibrium.3",
+      "spineRefs": [
+        "concept.chemical-equilibrium.3"
+      ],
+      "gloss": "the number multiplying a species in a balanced equation, which becomes its exponent in the equilibrium expression",
+      "scope": [
+        "chemical-equilibrium"
+      ]
+    },
+    {
+      "id": "term.activity",
+      "canonical": "activity",
+      "preferredLabel": "activity",
+      "aliases": [],
+      "status": "confirmed",
+      "lifecycle": "active",
+      "spineRef": "concept.chemical-equilibrium.4",
+      "spineRefs": [
+        "concept.chemical-equilibrium.4"
+      ],
+      "gloss": "the effective concentration of a species; it is taken as one for a pure solid or pure liquid",
+      "scope": [
+        "chemical-equilibrium"
+      ]
+    },
+    {
+      "id": "term.standard-gibbs-energy-change",
+      "canonical": "standard gibbs energy change",
+      "preferredLabel": "standard Gibbs energy change",
+      "aliases": [
+        "ΔG°",
+        "standard Gibbs free energy change"
+      ],
+      "status": "confirmed",
+      "lifecycle": "active",
+      "spineRef": "concept.chemical-equilibrium.6",
+      "spineRefs": [
+        "concept.chemical-equilibrium.6"
+      ],
+      "gloss": "the free-energy change that is related to the equilibrium constant by ΔG° = −RT ln K",
+      "scope": [
+        "chemical-equilibrium"
+      ]
+    },
+    {
+      "id": "term.van-t-hoff-equation",
+      "canonical": "van 't hoff equation",
+      "preferredLabel": "van 't Hoff equation",
+      "aliases": [],
+      "status": "confirmed",
+      "lifecycle": "active",
+      "spineRef": "concept.chemical-equilibrium.7",
+      "spineRefs": [
+        "concept.chemical-equilibrium.7"
+      ],
+      "gloss": "the relation giving the temperature dependence of the equilibrium constant in terms of the reaction enthalpy",
+      "scope": [
+        "chemical-equilibrium"
+      ]
+    },
+    {
+      "id": "term.catalyst",
+      "canonical": "catalyst",
+      "preferredLabel": "catalyst",
+      "aliases": [],
+      "status": "confirmed",
+      "lifecycle": "active",
+      "spineRef": "concept.chemical-equilibrium.8",
+      "spineRefs": [
+        "concept.chemical-equilibrium.8",
+        "concept.le-chatelier.7"
+      ],
+      "gloss": "a substance that speeds up both the forward and reverse reactions equally without changing the equilibrium constant or position",
+      "scope": [
+        "chemical-equilibrium",
+        "le-chatelier"
+      ]
+    },
+    {
+      "id": "term.le-chatelier-s-principle",
+      "canonical": "le chatelier's principle",
+      "preferredLabel": "Le Chatelier's principle",
+      "aliases": [
+        "Le Chatelier–Braun principle",
+        "equilibrium law"
+      ],
+      "status": "confirmed",
+      "lifecycle": "active",
+      "spineRef": "concept.le-chatelier.1",
+      "spineRefs": [
+        "concept.le-chatelier.1"
+      ],
+      "gloss": "a system at equilibrium that is disturbed shifts to a new equilibrium that partially counteracts the change",
+      "scope": [
+        "le-chatelier"
+      ]
+    },
+    {
+      "id": "term.equilibrium-shift",
+      "canonical": "equilibrium shift",
+      "preferredLabel": "equilibrium shift",
+      "aliases": [],
+      "status": "confirmed",
+      "lifecycle": "active",
+      "spineRef": "concept.le-chatelier.2",
+      "spineRefs": [
+        "concept.le-chatelier.2"
+      ],
+      "gloss": "the movement of an equilibrium position toward the reactant or product side in response to a disturbance",
+      "scope": [
+        "le-chatelier"
+      ]
+    },
+    {
+      "id": "term.exothermic-reaction",
+      "canonical": "exothermic reaction",
+      "preferredLabel": "exothermic reaction",
+      "aliases": [],
+      "status": "confirmed",
+      "lifecycle": "active",
+      "spineRef": "concept.le-chatelier.3",
+      "spineRefs": [
+        "concept.le-chatelier.3"
+      ],
+      "gloss": "a reaction that releases heat (negative reaction enthalpy), so heat behaves as a product",
+      "scope": [
+        "le-chatelier"
+      ]
+    },
+    {
+      "id": "term.endothermic-reaction",
+      "canonical": "endothermic reaction",
+      "preferredLabel": "endothermic reaction",
+      "aliases": [],
+      "status": "confirmed",
+      "lifecycle": "active",
+      "spineRef": "concept.le-chatelier.3",
+      "spineRefs": [
+        "concept.le-chatelier.3"
+      ],
+      "gloss": "a reaction that absorbs heat (positive reaction enthalpy), so heat behaves as a reactant",
+      "scope": [
+        "le-chatelier"
+      ]
+    },
+    {
+      "id": "term.partial-pressure",
+      "canonical": "partial pressure",
+      "preferredLabel": "partial pressure",
+      "aliases": [],
+      "status": "confirmed",
+      "lifecycle": "active",
+      "spineRef": "concept.le-chatelier.5",
+      "spineRefs": [
+        "concept.le-chatelier.5"
+      ],
+      "gloss": "the pressure a single gas contributes in a mixture; a change in partial pressures is what drives a gas-phase shift",
+      "scope": [
+        "le-chatelier"
+      ]
+    },
+    {
+      "id": "term.inert-gas",
+      "canonical": "inert gas",
+      "preferredLabel": "inert gas",
+      "aliases": [
+        "noble gas"
+      ],
+      "status": "confirmed",
+      "lifecycle": "active",
+      "spineRef": "concept.le-chatelier.6",
+      "spineRefs": [
+        "concept.le-chatelier.6"
+      ],
+      "gloss": "a gas that does not react and, added at constant volume, does not shift a gas-phase equilibrium",
+      "scope": [
+        "le-chatelier"
+      ]
+    }
+  ]
+}

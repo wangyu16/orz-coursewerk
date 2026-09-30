@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "planId": "82cccd4c23087faaa32d5da2e84fd71be154c355ecab6b5896b73eda03100e54",
+  "baseRef": "HEAD",
+  "baseTip": "267645e563bc547776aa9ef0b64c293f9876b396",
+  "baseCommit": "267645e563bc547776aa9ef0b64c293f9876b396",
+  "reviewedHead": "267645e563bc547776aa9ef0b64c293f9876b396",
+  "changed": [
+    "tests/c2-baseline.test.mjs",
+    "tests/fixtures/c2-chemistry/BASELINE-v0.12.0.json",
+    "tests/fixtures/c2-chemistry/README.md"
+  ],
+  "requiredReview": [
+    "tests/c2-baseline.test.mjs",
+    "tests/fixtures/c2-chemistry/BASELINE-v0.12.0.json",
+    "tests/fixtures/c2-chemistry/README.md"
+  ],
+  "reviewed": [
+    "tests/c2-baseline.test.mjs",
+    "tests/fixtures/c2-chemistry/BASELINE-v0.12.0.json",
+    "tests/fixtures/c2-chemistry/README.md"
+  ],
+  "impactedClaims": [],
+  "testResults": [
+    {
+      "path": "tests/c2-baseline.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/*.test.mjs (full suite 606/606)",
+      "status": "passed"
+    }
+  ],
+  "attestation": "Redesign P0: froze the C2 chemistry package and its pinned corpus as a test fixture, recorded the v0.12.0 release-gate baseline (25 critical = 21 h5 false positives + 2 absent attestations + 2 copy-only coherence artifacts), and added a test that pins it; no product code changed.",
+  "generatedIndexHash": "2d28ce73af6d17b89cf4b4571e54286e095c3a5ad1d8a141149a806f76d6bdd4",
+  "acceptedAt": "2026-09-30T16:50:10.630Z"
+}

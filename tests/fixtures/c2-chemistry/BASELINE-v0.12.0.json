@@ -1,0 +1,187 @@
+{
+  "harness": "267645e (v0.12.0)",
+  "fixture": "tests/fixtures/c2-chemistry",
+  "mode": "--for-discovery --inputs",
+  "criticalTotal": 25,
+  "criticalCounts": {
+    "manifestErrors": 0,
+    "layoutErrors": 0,
+    "unmanifestedAssets": 0,
+    "rowsMissingLicenseOrAttribution": 0,
+    "brokenLocalLinks": 0,
+    "missingAssetRefs": 0,
+    "remoteMediaReferences": 0,
+    "orzSyntaxErrors": 0,
+    "missingAltText": 0,
+    "emptyHeadings": 0,
+    "headingLevelJumps": 0,
+    "filesFirstHeadingNotH1": 0,
+    "nonDescriptiveLinks": 0,
+    "diagramTextAlternativesMissing": 0,
+    "bodyPlaceholders": 0,
+    "formatContractFailures": 0,
+    "assuranceHardFailures": 0,
+    "coherenceFailures": 2,
+    "keyFactReviewFailures": 1,
+    "visualReviewFailures": 1,
+    "semanticIndexErrors": 0,
+    "semanticCoverageBlocks": 0,
+    "semanticReviewFlags": 21,
+    "additionalDiscoverBlockers": 0
+  },
+  "notes": {
+    "semanticReviewFlags": "21 false positives (h5): 18 quoted misconceptions + 3 Mermaid node labels",
+    "keyFactReviewFailures": "no KEY_FACT_REVIEW.json (by design, h5)",
+    "visualReviewFailures": "no human visual review (by design, h5)",
+    "coherenceFailures": "fixture artifact: the copy has no output git and no external ledger"
+  },
+  "falsePositives": [
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "5d51b146a0c4",
+      "file": null,
+      "evidence": "practice/le-chatelier.md presents a 11-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"because the total pressure went up, and pressure changes shift equilibria."
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "983086d8205c",
+      "file": null,
+      "evidence": "practice/le-chatelier.md presents a 7-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"the system undoes the change you made.\""
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "9afe47c0d3aa",
+      "file": null,
+      "evidence": "practice/le-chatelier.md presents a 9-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"Raising the temperature always increases the yield of product.\""
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "8b69eba865c6",
+      "file": null,
+      "evidence": "slides/chemical-equilibrium.md presents a 6-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"Adding a pure solid changes $K$\""
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "9bbcde5d5dc2",
+      "file": null,
+      "evidence": "slides/chemical-equilibrium.md presents a 6-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"At equilibrium the reactions have stopped\""
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "3ded713a2a72",
+      "file": null,
+      "evidence": "slides/le-chatelier.md presents a 10-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"An inert gas shifts the equilibrium because total pressure rises\""
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "c4414f508c1d",
+      "file": null,
+      "evidence": "slides/le-chatelier.md presents a 6-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"The system cancels the disturbance completely\""
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "9b01513ffe6b",
+      "file": null,
+      "evidence": "slides/le-chatelier.md presents a 7-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"Raising the temperature always increases the yield\""
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "ebe40e5432a7",
+      "file": null,
+      "evidence": "slides/le-chatelier.md presents a 9-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"A catalyst increases the amount of product at equilibrium\""
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "e6e6b250d77f",
+      "file": null,
+      "evidence": "study-guide/chemical-equilibrium.md presents a 10-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"A catalyst shifts equilibrium toward products and raises the yi"
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "9b16fbf59e80",
+      "file": null,
+      "evidence": "study-guide/chemical-equilibrium.md presents a 10-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"Adding more of a pure solid or liquid changes $K$.\""
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "bef3e0995ebb",
+      "file": null,
+      "evidence": "study-guide/chemical-equilibrium.md presents a 6-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"At equilibrium the reactions have stopped.\""
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "5d6ac823f910",
+      "file": null,
+      "evidence": "study-guide/chemical-equilibrium.md presents a 6-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"Too few products<br/>shift FORWARD\""
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "9be2cf619a84",
+      "file": null,
+      "evidence": "study-guide/chemical-equilibrium.md presents a 6-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"Too many products<br/>shift REVERSE\""
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "ac783391ebb4",
+      "file": null,
+      "evidence": "study-guide/chemical-equilibrium.md presents a 7-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"Already at equilibrium<br/>no net shift\""
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "46d690d24176",
+      "file": null,
+      "evidence": "study-guide/chemical-equilibrium.md presents a 8-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"At equilibrium reactant and product concentrations are equal.\""
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "6982ef5ad1fe",
+      "file": null,
+      "evidence": "study-guide/le-chatelier.md presents a 12-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"The system completely cancels the disturbance and returns to its origin"
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "48523242ac86",
+      "file": null,
+      "evidence": "study-guide/le-chatelier.md presents a 15-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"Adding an inert gas at constant volume shifts the equilibrium because t"
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "24056f93b46b",
+      "file": null,
+      "evidence": "study-guide/le-chatelier.md presents a 7-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"A pressure change shifts every gas-phase equilibrium.\""
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "d489dd419899",
+      "file": null,
+      "evidence": "study-guide/le-chatelier.md presents a 9-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"A catalyst increases the amount of product at equilibrium.\""
+    },
+    {
+      "kind": "source-conflict",
+      "severity": "review",
+      "id": "c4c46a45b7f6",
+      "file": null,
+      "evidence": "study-guide/le-chatelier.md presents a 9-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"Raising the temperature always increases the yield of product.\""
+    }
+  ]
+}

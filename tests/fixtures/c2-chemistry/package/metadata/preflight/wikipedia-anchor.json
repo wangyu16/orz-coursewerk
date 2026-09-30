@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 2,
+  "sourceId": "wikipedia-anchor",
+  "sourceBindingSha256": "564af1f20ecbb93c3706da188a79f32992ffa98a193e2ff94d294f04f515faf2",
+  "policyId": "english-wikipedia-text",
+  "evidence": {
+    "url": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use",
+    "snapshot": "metadata/evidence/wikipedia-anchor.html",
+    "sha256": "d884eb303cb5724dbbeef8741cad789aff100e27e9dabc3f1bfecaf70dd81a1f",
+    "retrieval": {
+      "captureMode": "network",
+      "requestedUrl": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use",
+      "finalUrl": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use",
+      "redirectChain": [],
+      "retrievedAt": "2026-08-11T09:00:43.958Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "byteLength": 152877,
+      "tool": {
+        "name": "coursewerk",
+        "version": "v0.11.0"
+      }
+    }
+  },
+  "operator": {
+    "type": "automation",
+    "name": "coursewerk-caeai-agent"
+  },
+  "processUseReview": {
+    "schemaVersion": 1,
+    "scannedAt": "2026-08-11T09:00:43.958Z",
+    "status": "no-notice-detected",
+    "legalEffectDetermined": false,
+    "notices": []
+  },
+  "noticeReviewComplete": true,
+  "policyChecksPassed": true,
+  "status": "cleared",
+  "warnings": [],
+  "blockers": [],
+  "generatedAt": "2026-08-11T09:00:43.958Z"
+}

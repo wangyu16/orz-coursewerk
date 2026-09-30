@@ -812,6 +812,12 @@
       "hash": "7de64117bb53f23165e3285d6b10f9c16f7b7550758250142d9686d679775d7b"
     },
     {
+      "id": "repo:tests/c2-baseline.test.mjs",
+      "path": "tests/c2-baseline.test.mjs",
+      "type": "test",
+      "hash": "8aef8867256a53f086e00059d4bbf3f1a7ca55c1c5cd95e641d7ad11a6879518"
+    },
+    {
       "id": "repo:tests/carriers.test.mjs",
       "path": "tests/carriers.test.mjs",
       "type": "test",
@@ -894,6 +900,18 @@
       "path": "tests/fingerprint.test.mjs",
       "type": "test",
       "hash": "b92d98b3b752323d1cd13383d572e43c4f00ac0ab9a730a465e4310cfb1aeeb3"
+    },
+    {
+      "id": "repo:tests/fixtures/c2-chemistry/BASELINE-v0.12.0.json",
+      "path": "tests/fixtures/c2-chemistry/BASELINE-v0.12.0.json",
+      "type": "test",
+      "hash": "2e1720e7d9d01c1d0dd4762d48e94aeb9a80987f3ab262a8bfcc111675abef80"
+    },
+    {
+      "id": "repo:tests/fixtures/c2-chemistry/README.md",
+      "path": "tests/fixtures/c2-chemistry/README.md",
+      "type": "test",
+      "hash": "f694cbbd8abcb6a7ce5e6bac5ef34538bf496fec0831365b869bb62627a2257d"
     },
     {
       "id": "repo:tests/fixtures/mini-package/assessment-support/phase-change.md",

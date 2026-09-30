@@ -1,0 +1,696 @@
+{
+  "schemaVersion": 1,
+  "generatedFrom": [
+    "concepts/chemical-equilibrium.md",
+    "concepts/course.md",
+    "concepts/le-chatelier.md"
+  ],
+  "chapters": [
+    "chemical-equilibrium",
+    "le-chatelier"
+  ],
+  "nodes": [
+    {
+      "id": "chapter.chemical-equilibrium",
+      "kind": "chapter",
+      "scope": "chemical-equilibrium",
+      "ordinal": null,
+      "label": null,
+      "negative": false,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "chapter.le-chatelier",
+      "kind": "chapter",
+      "scope": "le-chatelier",
+      "ordinal": null,
+      "label": null,
+      "negative": false,
+      "file": "concepts/le-chatelier.md"
+    },
+    {
+      "id": "concept.chemical-equilibrium.1",
+      "kind": "concept",
+      "scope": "chemical-equilibrium",
+      "ordinal": 1,
+      "label": "At chemical equilibrium the forward and reverse reactions proceed at equal, nonzero rates, so the reactant and product concentrations no longer change with time.",
+      "negative": false,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "concept.chemical-equilibrium.2",
+      "kind": "concept",
+      "scope": "chemical-equilibrium",
+      "ordinal": 2,
+      "label": "Equilibrium is dynamic: individual molecules keep reacting in both directions even though the macroscopic concentrations stay constant.",
+      "negative": false,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "concept.chemical-equilibrium.3",
+      "kind": "concept",
+      "scope": "chemical-equilibrium",
+      "ordinal": 3,
+      "label": "For a balanced reaction αA + βB ⇌ σS + τT, the equilibrium constant equals the product concentrations divided by the reactant concentrations, each raised to its stoichiometric coefficient, with the products written in the numerator.",
+      "negative": false,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "concept.chemical-equilibrium.4",
+      "kind": "concept",
+      "scope": "chemical-equilibrium",
+      "ordinal": 4,
+      "label": "Pure solids and pure liquids have an activity of one and therefore do not appear in the equilibrium constant expression.",
+      "negative": false,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "concept.chemical-equilibrium.5",
+      "kind": "concept",
+      "scope": "chemical-equilibrium",
+      "ordinal": 5,
+      "label": "The reaction quotient has the same form as the equilibrium constant but is evaluated at any composition, and comparing it to the equilibrium constant tells which direction the reaction will shift.",
+      "negative": false,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "concept.chemical-equilibrium.6",
+      "kind": "concept",
+      "scope": "chemical-equilibrium",
+      "ordinal": 6,
+      "label": "The equilibrium constant is related to the standard Gibbs energy change of the reaction by ΔG° = −RT ln K.",
+      "negative": false,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "concept.chemical-equilibrium.7",
+      "kind": "concept",
+      "scope": "chemical-equilibrium",
+      "ordinal": 7,
+      "label": "The equilibrium constant depends on temperature through the van 't Hoff equation: raising the temperature increases the equilibrium constant for an endothermic reaction and decreases it for an exothermic reaction.",
+      "negative": false,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "concept.chemical-equilibrium.8",
+      "kind": "concept",
+      "scope": "chemical-equilibrium",
+      "ordinal": 8,
+      "label": "A catalyst speeds up the forward and reverse reactions by the same factor and therefore changes neither the equilibrium constant nor the position of equilibrium.",
+      "negative": false,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "concept.course.1",
+      "kind": "concept",
+      "scope": "course",
+      "ordinal": 1,
+      "label": "A reversible reaction reaches a dynamic equilibrium where the forward and reverse reactions proceed at equal, nonzero rates.",
+      "negative": false,
+      "file": "concepts/course.md"
+    },
+    {
+      "id": "concept.course.2",
+      "kind": "concept",
+      "scope": "course",
+      "ordinal": 2,
+      "label": "The equilibrium constant quantifies the balance of products to reactants once a reaction has reached equilibrium.",
+      "negative": false,
+      "file": "concepts/course.md"
+    },
+    {
+      "id": "concept.course.3",
+      "kind": "concept",
+      "scope": "course",
+      "ordinal": 3,
+      "label": "Comparing the reaction quotient to the equilibrium constant predicts the direction in which a reaction not yet at equilibrium will move.",
+      "negative": false,
+      "file": "concepts/course.md"
+    },
+    {
+      "id": "concept.course.4",
+      "kind": "concept",
+      "scope": "course",
+      "ordinal": 4,
+      "label": "Le Chatelier's principle predicts qualitatively how an equilibrium already reached shifts to partially counteract a disturbance.",
+      "negative": false,
+      "file": "concepts/course.md"
+    },
+    {
+      "id": "concept.course.5",
+      "kind": "concept",
+      "scope": "course",
+      "ordinal": 5,
+      "label": "A temperature change both shifts the equilibrium position and changes the value of the equilibrium constant, whereas concentration, volume, and pressure changes shift the position without changing the equilibrium constant.",
+      "negative": false,
+      "file": "concepts/course.md"
+    },
+    {
+      "id": "concept.le-chatelier.1",
+      "kind": "concept",
+      "scope": "le-chatelier",
+      "ordinal": 1,
+      "label": "Le Chatelier's principle states that a system at equilibrium disturbed by a change in a determining factor adjusts to a new equilibrium that partially counteracts the change.",
+      "negative": false,
+      "file": "concepts/le-chatelier.md"
+    },
+    {
+      "id": "concept.le-chatelier.2",
+      "kind": "concept",
+      "scope": "le-chatelier",
+      "ordinal": 2,
+      "label": "Increasing the concentration of a species shifts the equilibrium toward the opposite side to consume the added species, and decreasing it shifts toward that side to replace it.",
+      "negative": false,
+      "file": "concepts/le-chatelier.md"
+    },
+    {
+      "id": "concept.le-chatelier.3",
+      "kind": "concept",
+      "scope": "le-chatelier",
+      "ordinal": 3,
+      "label": "A temperature change is handled by treating heat as a product for an exothermic reaction and as a reactant for an endothermic reaction, then applying the same reasoning as for a concentration change.",
+      "negative": false,
+      "file": "concepts/le-chatelier.md"
+    },
+    {
+      "id": "concept.le-chatelier.4",
+      "kind": "concept",
+      "scope": "le-chatelier",
+      "ordinal": 4,
+      "label": "A temperature change is unique in that it changes the value of the equilibrium constant, whereas concentration and pressure changes do not.",
+      "negative": false,
+      "file": "concepts/le-chatelier.md"
+    },
+    {
+      "id": "concept.le-chatelier.5",
+      "kind": "concept",
+      "scope": "le-chatelier",
+      "ordinal": 5,
+      "label": "For a gas-phase equilibrium, decreasing the volume (raising the pressure) shifts the equilibrium toward the side with fewer moles of gas, and increasing the volume shifts it toward the side with more moles of gas.",
+      "negative": false,
+      "file": "concepts/le-chatelier.md"
+    },
+    {
+      "id": "concept.le-chatelier.6",
+      "kind": "concept",
+      "scope": "le-chatelier",
+      "ordinal": 6,
+      "label": "Adding an inert gas at constant volume changes no partial pressure and therefore does not shift a gas-phase equilibrium.",
+      "negative": false,
+      "file": "concepts/le-chatelier.md"
+    },
+    {
+      "id": "concept.le-chatelier.7",
+      "kind": "concept",
+      "scope": "le-chatelier",
+      "ordinal": 7,
+      "label": "A catalyst speeds up the forward and reverse reactions by the same factor and therefore does not change the position or composition of the equilibrium.",
+      "negative": false,
+      "file": "concepts/le-chatelier.md"
+    },
+    {
+      "id": "misconception.chemical-equilibrium.1",
+      "kind": "misconception",
+      "scope": "chemical-equilibrium",
+      "ordinal": 1,
+      "label": "At equilibrium the forward and reverse reactions have stopped and nothing is happening at the molecular level.",
+      "negative": true,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "misconception.chemical-equilibrium.2",
+      "kind": "misconception",
+      "scope": "chemical-equilibrium",
+      "ordinal": 2,
+      "label": "At equilibrium the concentrations of reactants and products are equal to each other.",
+      "negative": true,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "misconception.chemical-equilibrium.3",
+      "kind": "misconception",
+      "scope": "chemical-equilibrium",
+      "ordinal": 3,
+      "label": "Adding a catalyst shifts the equilibrium toward the products and increases the yield.",
+      "negative": true,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "misconception.chemical-equilibrium.4",
+      "kind": "misconception",
+      "scope": "chemical-equilibrium",
+      "ordinal": 4,
+      "label": "Adding more of a pure solid or pure liquid changes the value of the equilibrium constant.",
+      "negative": true,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "misconception.chemical-equilibrium.5",
+      "kind": "misconception",
+      "scope": "chemical-equilibrium",
+      "ordinal": 5,
+      "label": "Changing the concentrations of the species changes the value of the equilibrium constant (rather than only temperature changing it).",
+      "negative": true,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "misconception.le-chatelier.1",
+      "kind": "misconception",
+      "scope": "le-chatelier",
+      "ordinal": 1,
+      "label": "Le Chatelier's principle lets the system completely cancel the disturbance and return to its original equilibrium.",
+      "negative": true,
+      "file": "concepts/le-chatelier.md"
+    },
+    {
+      "id": "misconception.le-chatelier.2",
+      "kind": "misconception",
+      "scope": "le-chatelier",
+      "ordinal": 2,
+      "label": "Adding a catalyst increases the amount of product present at equilibrium.",
+      "negative": true,
+      "file": "concepts/le-chatelier.md"
+    },
+    {
+      "id": "misconception.le-chatelier.3",
+      "kind": "misconception",
+      "scope": "le-chatelier",
+      "ordinal": 3,
+      "label": "Adding an inert gas at constant volume shifts a gas-phase equilibrium because the total pressure rises.",
+      "negative": true,
+      "file": "concepts/le-chatelier.md"
+    },
+    {
+      "id": "misconception.le-chatelier.4",
+      "kind": "misconception",
+      "scope": "le-chatelier",
+      "ordinal": 4,
+      "label": "Raising the temperature always increases the yield of product.",
+      "negative": true,
+      "file": "concepts/le-chatelier.md"
+    },
+    {
+      "id": "misconception.le-chatelier.5",
+      "kind": "misconception",
+      "scope": "le-chatelier",
+      "ordinal": 5,
+      "label": "A pressure change shifts every gas-phase equilibrium, even one with equal moles of gas on both sides.",
+      "negative": true,
+      "file": "concepts/le-chatelier.md"
+    },
+    {
+      "id": "objective.chemical-equilibrium.1",
+      "kind": "objective",
+      "scope": "chemical-equilibrium",
+      "ordinal": 1,
+      "label": "Define chemical equilibrium as a dynamic state in which the forward and reverse reaction rates are equal and the concentrations no longer change.",
+      "negative": false,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "objective.chemical-equilibrium.2",
+      "kind": "objective",
+      "scope": "chemical-equilibrium",
+      "ordinal": 2,
+      "label": "Write the equilibrium constant expression for a given balanced reaction, placing the products in the numerator and raising each concentration to its stoichiometric coefficient.",
+      "negative": false,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "objective.chemical-equilibrium.3",
+      "kind": "objective",
+      "scope": "chemical-equilibrium",
+      "ordinal": 3,
+      "label": "Evaluate the reaction quotient and compare it to the equilibrium constant to predict which direction the reaction will shift.",
+      "negative": false,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "objective.chemical-equilibrium.4",
+      "kind": "objective",
+      "scope": "chemical-equilibrium",
+      "ordinal": 4,
+      "label": "Explain why pure solids and pure liquids, whose activity is taken as one, are omitted from the equilibrium constant expression.",
+      "negative": false,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "objective.chemical-equilibrium.5",
+      "kind": "objective",
+      "scope": "chemical-equilibrium",
+      "ordinal": 5,
+      "label": "Relate the equilibrium constant to the standard Gibbs energy change using ΔG° = −RT ln K.",
+      "negative": false,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "objective.chemical-equilibrium.6",
+      "kind": "objective",
+      "scope": "chemical-equilibrium",
+      "ordinal": 6,
+      "label": "Predict how a change in temperature changes the equilibrium constant using the sign of the reaction enthalpy (the van 't Hoff relation).",
+      "negative": false,
+      "file": "concepts/chemical-equilibrium.md"
+    },
+    {
+      "id": "objective.le-chatelier.1",
+      "kind": "objective",
+      "scope": "le-chatelier",
+      "ordinal": 1,
+      "label": "State Le Chatelier's principle: a system at equilibrium that is disturbed shifts to a new equilibrium that partially counteracts the disturbance.",
+      "negative": false,
+      "file": "concepts/le-chatelier.md"
+    },
+    {
+      "id": "objective.le-chatelier.2",
+      "kind": "objective",
+      "scope": "le-chatelier",
+      "ordinal": 2,
+      "label": "Predict the direction an equilibrium shifts when the concentration of a reactant or product is increased or decreased.",
+      "negative": false,
+      "file": "concepts/le-chatelier.md"
+    },
+    {
+      "id": "objective.le-chatelier.3",
+      "kind": "objective",
+      "scope": "le-chatelier",
+      "ordinal": 3,
+      "label": "Predict the direction an equilibrium shifts when the temperature changes, by treating heat as a reactant for an endothermic reaction or a product for an exothermic one.",
+      "negative": false,
+      "file": "concepts/le-chatelier.md"
+    },
+    {
+      "id": "objective.le-chatelier.4",
+      "kind": "objective",
+      "scope": "le-chatelier",
+      "ordinal": 4,
+      "label": "Predict the effect of a volume or pressure change on a gas-phase equilibrium by comparing the moles of gas on each side of the equation.",
+      "negative": false,
+      "file": "concepts/le-chatelier.md"
+    },
+    {
+      "id": "objective.le-chatelier.5",
+      "kind": "objective",
+      "scope": "le-chatelier",
+      "ordinal": 5,
+      "label": "Explain why adding an inert gas at constant volume, and why adding a catalyst, do not shift the equilibrium.",
+      "negative": false,
+      "file": "concepts/le-chatelier.md"
+    }
+  ],
+  "edges": [
+    {
+      "from": "concept.chemical-equilibrium.1",
+      "to": "concept.chemical-equilibrium.2",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite"
+    },
+    {
+      "from": "concept.chemical-equilibrium.1",
+      "to": "concept.chemical-equilibrium.3",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite"
+    },
+    {
+      "from": "concept.chemical-equilibrium.1",
+      "to": "concept.chemical-equilibrium.8",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite"
+    },
+    {
+      "from": "concept.chemical-equilibrium.3",
+      "to": "concept.chemical-equilibrium.4",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite"
+    },
+    {
+      "from": "concept.chemical-equilibrium.3",
+      "to": "concept.chemical-equilibrium.5",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite"
+    },
+    {
+      "from": "concept.chemical-equilibrium.3",
+      "to": "concept.chemical-equilibrium.6",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite"
+    },
+    {
+      "from": "concept.chemical-equilibrium.3",
+      "to": "concept.chemical-equilibrium.7",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite"
+    },
+    {
+      "from": "concept.chemical-equilibrium.3",
+      "to": "concept.chemical-equilibrium.8",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite"
+    },
+    {
+      "from": "concept.chemical-equilibrium.6",
+      "to": "concept.chemical-equilibrium.7",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite",
+      "derivational": true
+    },
+    {
+      "from": "concept.course.1",
+      "to": "concept.course.2",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite"
+    },
+    {
+      "from": "concept.course.1",
+      "to": "concept.course.4",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite"
+    },
+    {
+      "from": "concept.course.2",
+      "to": "concept.course.3",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite"
+    },
+    {
+      "from": "concept.course.2",
+      "to": "concept.course.5",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite"
+    },
+    {
+      "from": "concept.course.4",
+      "to": "concept.course.5",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite"
+    },
+    {
+      "from": "concept.le-chatelier.1",
+      "to": "concept.le-chatelier.2",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite"
+    },
+    {
+      "from": "concept.le-chatelier.1",
+      "to": "concept.le-chatelier.5",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite"
+    },
+    {
+      "from": "concept.le-chatelier.1",
+      "to": "concept.le-chatelier.7",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite"
+    },
+    {
+      "from": "concept.le-chatelier.2",
+      "to": "concept.le-chatelier.3",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite"
+    },
+    {
+      "from": "concept.le-chatelier.3",
+      "to": "concept.le-chatelier.4",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite"
+    },
+    {
+      "from": "concept.le-chatelier.5",
+      "to": "concept.le-chatelier.6",
+      "kind": "prereq",
+      "reason": "declared semantic prerequisite"
+    }
+  ],
+  "prerequisites": [
+    {
+      "scope": "chemical-equilibrium",
+      "ordinal": 1,
+      "text": "Writing and balancing chemical equations, including stoichiometric coefficients.",
+      "ref": null
+    },
+    {
+      "scope": "chemical-equilibrium",
+      "ordinal": 2,
+      "text": "Concentration expressed in molarity.",
+      "ref": null
+    },
+    {
+      "scope": "chemical-equilibrium",
+      "ordinal": 3,
+      "text": "Reaction rate as the speed of a forward or reverse reaction.",
+      "ref": null
+    },
+    {
+      "scope": "le-chatelier",
+      "ordinal": 1,
+      "text": "Chemical equilibrium as a dynamic state (Chapter 1).",
+      "ref": null
+    },
+    {
+      "scope": "le-chatelier",
+      "ordinal": 2,
+      "text": "The equilibrium constant and reaction quotient (Chapter 1).",
+      "ref": null
+    },
+    {
+      "scope": "le-chatelier",
+      "ordinal": 3,
+      "text": "Reading a balanced equation to count moles of gas on each side.",
+      "ref": null
+    }
+  ],
+  "semanticPrereqs": [
+    {
+      "scope": "chemical-equilibrium",
+      "ordinal": 2,
+      "ref": "concept.chemical-equilibrium.1",
+      "derivational": false
+    },
+    {
+      "scope": "chemical-equilibrium",
+      "ordinal": 3,
+      "ref": "concept.chemical-equilibrium.1",
+      "derivational": false
+    },
+    {
+      "scope": "chemical-equilibrium",
+      "ordinal": 4,
+      "ref": "concept.chemical-equilibrium.3",
+      "derivational": false
+    },
+    {
+      "scope": "chemical-equilibrium",
+      "ordinal": 5,
+      "ref": "concept.chemical-equilibrium.3",
+      "derivational": false
+    },
+    {
+      "scope": "chemical-equilibrium",
+      "ordinal": 6,
+      "ref": "concept.chemical-equilibrium.3",
+      "derivational": false
+    },
+    {
+      "scope": "chemical-equilibrium",
+      "ordinal": 7,
+      "ref": "concept.chemical-equilibrium.3",
+      "derivational": false
+    },
+    {
+      "scope": "chemical-equilibrium",
+      "ordinal": 7,
+      "ref": "concept.chemical-equilibrium.6",
+      "derivational": true
+    },
+    {
+      "scope": "chemical-equilibrium",
+      "ordinal": 8,
+      "ref": "concept.chemical-equilibrium.1",
+      "derivational": false
+    },
+    {
+      "scope": "chemical-equilibrium",
+      "ordinal": 8,
+      "ref": "concept.chemical-equilibrium.3",
+      "derivational": false
+    },
+    {
+      "scope": "course",
+      "ordinal": 2,
+      "ref": "concept.course.1",
+      "derivational": false
+    },
+    {
+      "scope": "course",
+      "ordinal": 3,
+      "ref": "concept.course.2",
+      "derivational": false
+    },
+    {
+      "scope": "course",
+      "ordinal": 4,
+      "ref": "concept.course.1",
+      "derivational": false
+    },
+    {
+      "scope": "course",
+      "ordinal": 5,
+      "ref": "concept.course.2",
+      "derivational": false
+    },
+    {
+      "scope": "course",
+      "ordinal": 5,
+      "ref": "concept.course.4",
+      "derivational": false
+    },
+    {
+      "scope": "le-chatelier",
+      "ordinal": 2,
+      "ref": "concept.le-chatelier.1",
+      "derivational": false
+    },
+    {
+      "scope": "le-chatelier",
+      "ordinal": 3,
+      "ref": "concept.le-chatelier.2",
+      "derivational": false
+    },
+    {
+      "scope": "le-chatelier",
+      "ordinal": 4,
+      "ref": "concept.le-chatelier.3",
+      "derivational": false
+    },
+    {
+      "scope": "le-chatelier",
+      "ordinal": 5,
+      "ref": "concept.le-chatelier.1",
+      "derivational": false
+    },
+    {
+      "scope": "le-chatelier",
+      "ordinal": 6,
+      "ref": "concept.le-chatelier.5",
+      "derivational": false
+    },
+    {
+      "scope": "le-chatelier",
+      "ordinal": 7,
+      "ref": "concept.le-chatelier.1",
+      "derivational": false
+    }
+  ],
+  "chapterSequence": [
+    {
+      "ordinal": 1,
+      "text": "**chemical-equilibrium** — Chemical Equilibrium: the quantitative foundation (K, Q, ΔG°, temperature dependence).",
+      "slug": "chemical-equilibrium"
+    },
+    {
+      "ordinal": 2,
+      "text": "**le-chatelier** — Le Chatelier's Principle: the qualitative response of a disturbed equilibrium.",
+      "slug": "le-chatelier"
+    }
+  ]
+}
