@@ -88,6 +88,55 @@ function validateGovernanceRegistries({ claimsRegistry, relationsRegistry, findi
   return failures;
 }
 
+// REQUIREMENT REGISTER (redesign, D22). The claims above say what the harness promises; the register says what
+// the redesign must deliver and which tier of evidence closes each item: T1 mechanism tests, T2 wiring (a report
+// from real runs), T3 agent-in-the-loop scenarios, T4 adversarial rounds. The rule that keeps it honest: a closed
+// requirement lists, per required tier, repository files that exist AND contain the requirement's id — so a test
+// file cannot be cited for a requirement it never names. Every requirement of a completed phase must be closed,
+// or deferred with a reason. Absent register = nothing to check (the register is additive).
+const REQUIREMENT_TIERS = ["T1", "T2", "T3", "T4"];
+const REQUIREMENT_STATUSES = ["planned", "closed", "deferred"];
+
+export function validateRequirements(root, registry) {
+  const failures = [];
+  if (!registry) return failures;
+  if (registry.schemaVersion !== 1) failures.push("system/REQUIREMENTS.json requires schemaVersion 1");
+  if (!Array.isArray(registry.requirements)) return [...failures, "system/REQUIREMENTS.json requires a requirements array"];
+  const completed = new Set(Array.isArray(registry.completedPhases) ? registry.completedPhases : []);
+  const ids = new Set();
+  const contains = new Map();
+  const fileHas = (rel, id) => {
+    const full = path.join(root, rel);
+    if (!fs.existsSync(full) || !fs.statSync(full).isFile()) return null;
+    if (!contains.has(rel)) contains.set(rel, fs.readFileSync(full, "utf8"));
+    return contains.get(rel).includes(id);
+  };
+  for (const req of registry.requirements) {
+    const id = req?.id || "";
+    if (!/^req\.[a-z0-9.-]+$/.test(id) || !req.statement || !req.source) { failures.push(`requirement entries require a req.* id, statement and source: ${id || "(no id)"}`); continue; }
+    if (ids.has(id)) failures.push(`duplicate requirement id: ${id}`);
+    ids.add(id);
+    if (!/^P\d+$/.test(req.phase || "")) failures.push(`${id}: phase must be P<n>`);
+    const tiers = Array.isArray(req.tiers) ? req.tiers : [];
+    if (!tiers.length || tiers.some((t) => !REQUIREMENT_TIERS.includes(t))) failures.push(`${id}: tiers must be a non-empty subset of ${REQUIREMENT_TIERS.join(", ")}`);
+    if (!REQUIREMENT_STATUSES.includes(req.status)) failures.push(`${id}: invalid status ${req.status}`);
+    if (req.status === "deferred" && !String(req.reason || "").trim()) failures.push(`${id}: a deferred requirement needs a reason`);
+    if (req.status === "closed") {
+      for (const tier of tiers) {
+        const cited = Array.isArray(req.evidence?.[tier]) ? req.evidence[tier] : [];
+        if (!cited.length) { failures.push(`${id}: closed without ${tier} evidence`); continue; }
+        for (const rel of cited) {
+          const has = fileHas(rel, id);
+          if (has === null) failures.push(`${id}: ${tier} evidence does not exist: ${rel}`);
+          else if (!has) failures.push(`${id}: ${tier} evidence ${rel} never names ${id}`);
+        }
+      }
+    }
+    if (completed.has(req.phase) && req.status === "planned") failures.push(`${id}: phase ${req.phase} is marked complete but the requirement is still planned`);
+  }
+  return failures;
+}
+
 export function computeCoursewerkIndex(root) {
   root = path.resolve(root);
   const claimsFile = path.join(root, "system", "CLAIMS.json");
@@ -103,6 +152,8 @@ export function computeCoursewerkIndex(root) {
   const findings = findingsRegistry.findings || [];
   const componentPolicy = readJson(componentsFile);
   const qualityProfiles = readJson(qualityFile);
+  const requirementsFile = path.join(root, "system", "REQUIREMENTS.json");
+  const requirementsRegistry = fs.existsSync(requirementsFile) ? readJson(requirementsFile) : null;
   const components = walk(root).map(({ full, rel }) => ({
     id: `repo:${rel}`,
     path: rel,
@@ -113,6 +164,7 @@ export function computeCoursewerkIndex(root) {
   const failures = [
     ...validateGovernanceRegistries({ claimsRegistry, relationsRegistry, findingsRegistry, componentPolicy, qualityProfiles }),
     ...validateRegistryPaths(root, claims, relationships),
+    ...validateRequirements(root, requirementsRegistry),
   ];
   for (const edge of relationships) {
     if (!paths.has(edge.from)) failures.push(`relationship source is excluded from index: ${edge.from}`);
@@ -124,6 +176,9 @@ export function computeCoursewerkIndex(root) {
     relationships: relationships.slice().sort((a, b) => `${a.from}\0${a.to}`.localeCompare(`${b.from}\0${b.to}`)),
     claims: claims.slice().sort((a, b) => a.id.localeCompare(b.id)),
     knownFindings: findings.slice().sort((a, b) => a.id.localeCompare(b.id)),
+    requirements: requirementsRegistry
+      ? { completedPhases: [...(requirementsRegistry.completedPhases || [])].sort(), requirements: (requirementsRegistry.requirements || []).map((r) => ({ id: r.id, phase: r.phase, tiers: r.tiers, status: r.status })).sort((a, b) => String(a.id).localeCompare(String(b.id))) }
+      : null,
     componentPolicy,
     qualityProfiles,
     validationFailures: [...new Set(failures)].sort(),

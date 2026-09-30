@@ -416,6 +416,48 @@
       "hash": "8de57be36c8b0eb48deb0793c6d909f0736e7808b17587cc89f55f1df77ae8b7"
     },
     {
+      "id": "repo:scripts/lib/records/canonical.mjs",
+      "path": "scripts/lib/records/canonical.mjs",
+      "type": "kernel",
+      "hash": "79855978910f7e4963c27ddada6e6e51c5abc8f3244e7c36eeb1b76b7f85761a"
+    },
+    {
+      "id": "repo:scripts/lib/records/findings.mjs",
+      "path": "scripts/lib/records/findings.mjs",
+      "type": "kernel",
+      "hash": "924e83c5186488f83f5fe1c8e8ed6911be1ddecdcdf4abf65aa32d93eb75a42d"
+    },
+    {
+      "id": "repo:scripts/lib/records/log.mjs",
+      "path": "scripts/lib/records/log.mjs",
+      "type": "kernel",
+      "hash": "2f3b4c66f63c00877005eb5e460caad94f0c5ff22fceaaf74cfa7a7ba962d6fe"
+    },
+    {
+      "id": "repo:scripts/lib/records/paths.mjs",
+      "path": "scripts/lib/records/paths.mjs",
+      "type": "kernel",
+      "hash": "0ed270b995bb0e514803609605df14c12f0bb5b21874270f848bbda3b4890384"
+    },
+    {
+      "id": "repo:scripts/lib/records/registry.mjs",
+      "path": "scripts/lib/records/registry.mjs",
+      "type": "kernel",
+      "hash": "71709abc901f154b41f1d43a29ff67f08de8b9bcaae223a3ae0f478549d757de"
+    },
+    {
+      "id": "repo:scripts/lib/records/steering.mjs",
+      "path": "scripts/lib/records/steering.mjs",
+      "type": "kernel",
+      "hash": "83b3ed21a54aa8c0da16fa4120d577f16e91eb95439a7cb85b7a9be38b5abe16"
+    },
+    {
+      "id": "repo:scripts/lib/records/units.mjs",
+      "path": "scripts/lib/records/units.mjs",
+      "type": "kernel",
+      "hash": "1b522a53989210dc9dbbd540f07fa81a5ea902e51e8f0c85e91fb91737628b95"
+    },
+    {
       "id": "repo:scripts/lib/rights_preflight.mjs",
       "path": "scripts/lib/rights_preflight.mjs",
       "type": "kernel",
@@ -449,7 +491,7 @@
       "id": "repo:scripts/lib/system_index.mjs",
       "path": "scripts/lib/system_index.mjs",
       "type": "kernel",
-      "hash": "5241698bafbbde43fbacb6abe70c1669ebc0d36d5e2f2920ad40208ff74d1aa3"
+      "hash": "731abb9bdc839e7a3606a87fab9ed7528825a04e4450bb0463bd5ae0ed163de8"
     },
     {
       "id": "repo:scripts/lib/terms.mjs",
@@ -527,7 +569,7 @@
       "id": "repo:scripts/verify_coursewerk.mjs",
       "path": "scripts/verify_coursewerk.mjs",
       "type": "executable",
-      "hash": "941ecccdec953e7992400a22cfd255cb2e6a35029d40022ceee039465d1c9797"
+      "hash": "a15df921a0eee702f6ebdd9b92ae832c2af6f9559399cd321ed2b647840e87bc"
     },
     {
       "id": "repo:site/assets/coursewerk-favicon.svg",
@@ -684,6 +726,18 @@
       "path": "system/RELATIONSHIPS.json",
       "type": "system-governance",
       "hash": "d8acf15f3af2f48886023356c2cfab4cc2e20c4e578424fb9db28962ced7d643"
+    },
+    {
+      "id": "repo:system/REQUIREMENTS.json",
+      "path": "system/REQUIREMENTS.json",
+      "type": "system-governance",
+      "hash": "58a58f84de041700471420f91069b073674bf80767ec4feddf9dc98cc1994601"
+    },
+    {
+      "id": "repo:system/rounds/P1-records.md",
+      "path": "system/rounds/P1-records.md",
+      "type": "system-governance",
+      "hash": "5a4cf8f911ac262cbd6f575bda1032e94807b102067cb566955e8e61fd93d1a1"
     },
     {
       "id": "repo:system/schemas/claim.schema.json",
@@ -1116,6 +1170,18 @@
       "path": "tests/range.test.mjs",
       "type": "test",
       "hash": "a80f70832a5f2c8a75c90c550b95e39313c39d355289d2290d69ef8c47390bc0"
+    },
+    {
+      "id": "repo:tests/records.test.mjs",
+      "path": "tests/records.test.mjs",
+      "type": "test",
+      "hash": "41c72cf53425fd105dca9fd9e038bc09eb9c8000adaff339d0bb7c292245cbe0"
+    },
+    {
+      "id": "repo:tests/requirements.test.mjs",
+      "path": "tests/requirements.test.mjs",
+      "type": "test",
+      "hash": "85446b8ecba97735412dd1abc0ea907c57d3c42aa0401a6e9704cf3af5f741d4"
     },
     {
       "id": "repo:tests/reviews.test.mjs",
@@ -2439,6 +2505,700 @@
       "resolution": "scripts/propagate.mjs (npm run revision:propagate): dry-run plan, --apply with receipt, refuses a dirty tree, commits only planned files; usage test 11 drives it."
     }
   ],
+  "requirements": {
+    "completedPhases": [
+      "P0",
+      "P1"
+    ],
+    "requirements": [
+      {
+        "id": "req.answers.persist",
+        "phase": "P8",
+        "tiers": [
+          "T1",
+          "T3"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.approval.preview",
+        "phase": "P3",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.approval.record",
+        "phase": "P3",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.approval.scope",
+        "phase": "P3",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.approval.voiding",
+        "phase": "P3",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.approval.weights",
+        "phase": "P3",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.autocorrect.guard",
+        "phase": "P7",
+        "tiers": [
+          "T1",
+          "T4"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.autocorrect.shown",
+        "phase": "P7",
+        "tiers": [
+          "T1",
+          "T3"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.commands",
+        "phase": "P8",
+        "tiers": [
+          "T1",
+          "T3"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.confirm.single",
+        "phase": "P7",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.core.coverage-obligation",
+        "phase": "P5",
+        "tiers": [
+          "T1",
+          "T2"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.core.evidence-obligation",
+        "phase": "P5",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.core.impact",
+        "phase": "P5",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.core.null-edit",
+        "phase": "P5",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.core.reverify-obligation",
+        "phase": "P5",
+        "tiers": [
+          "T1",
+          "T2"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.digest.budget",
+        "phase": "P8",
+        "tiers": [
+          "T1",
+          "T3"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.dispatch.blind",
+        "phase": "P7",
+        "tiers": [
+          "T1",
+          "T2"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.docs.migration",
+        "phase": "P9",
+        "tiers": [
+          "T1",
+          "T3"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.docs.orientation",
+        "phase": "P9",
+        "tiers": [
+          "T3"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.dogfood.c2",
+        "phase": "P10",
+        "tiers": [
+          "T3"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.draft.private",
+        "phase": "P8",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.findings.routing",
+        "phase": "P2",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.gate.log-verified",
+        "phase": "P2",
+        "tiers": [
+          "T1",
+          "T2"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.gate.rule",
+        "phase": "P2",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.knowledge.no-autochange",
+        "phase": "P7",
+        "tiers": [
+          "T1",
+          "T3"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.loop.bounds",
+        "phase": "P8",
+        "tiers": [
+          "T1",
+          "T3"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.modules.admission",
+        "phase": "P2",
+        "tiers": [
+          "T1",
+          "T4"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.modules.manifest",
+        "phase": "P2",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.modules.maturity",
+        "phase": "P2",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.modules.no-writes",
+        "phase": "P2",
+        "tiers": [
+          "T1",
+          "T2"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.modules.profiles",
+        "phase": "P2",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.modules.promotion",
+        "phase": "P2",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.modules.snapshot",
+        "phase": "P2",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.modules.wiring-report",
+        "phase": "P2",
+        "tiers": [
+          "T2"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.moments.only",
+        "phase": "P8",
+        "tiers": [
+          "T3"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.ms1.pin-all",
+        "phase": "P6",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.ms1.profiles",
+        "phase": "P6",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.ms1.span",
+        "phase": "P6",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.ms2.public-only",
+        "phase": "P6",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.ms2.two-profiles",
+        "phase": "P6",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.ms3.contract",
+        "phase": "P6",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.ms4.links",
+        "phase": "P6",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.ms5.offline",
+        "phase": "P6",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.ms6.h5-regression",
+        "phase": "P6",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.ms6.quotations",
+        "phase": "P6",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.ms7.consistency",
+        "phase": "P6",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.ms7.no-drift",
+        "phase": "P6",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.oldgate.retired",
+        "phase": "P8",
+        "tiers": [
+          "T1",
+          "T2"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.profiles.one-gate",
+        "phase": "P8",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.publish.record",
+        "phase": "P8",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.publish.scope",
+        "phase": "P8",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.records.finding-id",
+        "phase": "P1",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.records.finding-schema",
+        "phase": "P1",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.records.in-package",
+        "phase": "P1",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.records.log-append",
+        "phase": "P1",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.records.log-chain",
+        "phase": "P1",
+        "tiers": [
+          "T1",
+          "T4"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.records.log-party",
+        "phase": "P1",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.records.log-types",
+        "phase": "P1",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.records.registry-schema",
+        "phase": "P1",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.records.steering-schema",
+        "phase": "P1",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.records.tamper",
+        "phase": "P1",
+        "tiers": [
+          "T1",
+          "T4"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.records.unit-schema",
+        "phase": "P1",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.retire.old-checks",
+        "phase": "P6",
+        "tiers": [
+          "T1",
+          "T2"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.retrieval.claim-only",
+        "phase": "P7",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.revert.double-confirm",
+        "phase": "P7",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.spine.anchors",
+        "phase": "P3",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.spine.critique",
+        "phase": "P3",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.spine.documents",
+        "phase": "P3",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.spine.guide",
+        "phase": "P3",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.spine.origin-marking",
+        "phase": "P3",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.spine.wellformed",
+        "phase": "P3",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.states.machine",
+        "phase": "P8",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.steering.intake",
+        "phase": "P3",
+        "tiers": [
+          "T1",
+          "T3"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.units.classifier",
+        "phase": "P4",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.units.external-edit",
+        "phase": "P4",
+        "tiers": [
+          "T1",
+          "T3"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.units.framing",
+        "phase": "P4",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.units.identity",
+        "phase": "P4",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.units.origin",
+        "phase": "P4",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.units.segmenter",
+        "phase": "P4",
+        "tiers": [
+          "T1",
+          "T2"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.verdict.semi-mechanical",
+        "phase": "P7",
+        "tiers": [
+          "T1",
+          "T4"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.verdict.unscorable",
+        "phase": "P7",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.versions.major",
+        "phase": "P3",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      },
+      {
+        "id": "req.versions.minor",
+        "phase": "P3",
+        "tiers": [
+          "T1"
+        ],
+        "status": "planned"
+      }
+    ]
+  },
   "componentPolicy": {
     "schemaVersion": 1,
     "identity": "one stable repo:<path> component per indexed file",

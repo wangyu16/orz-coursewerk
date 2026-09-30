@@ -1,0 +1,995 @@
+{
+  "schemaVersion": 1,
+  "description": "Requirement register for the skeleton-and-modules redesign (D22). Each requirement names the evidence tiers that close it: T1 mechanism tests, T2 wiring (a report from real runs), T3 agent-in-the-loop scenarios, T4 adversarial rounds. A closed requirement lists, per tier, repository files that exist and contain its id. Every requirement of a completed phase must be closed or deferred with a reason.",
+  "completedPhases": [
+    "P0",
+    "P1"
+  ],
+  "requirements": [
+    {
+      "id": "req.records.in-package",
+      "phase": "P1",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Every governed record (steering, units, findings, decision log, module registry, approvals) lives inside the package and is committed with it; nothing load-bearing lives outside it.",
+      "source": "skeleton §1, §5",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/records.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.steering-schema",
+      "phase": "P1",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "STEERING.json holds the seven M2 answers (level, depth, emphasis, notation, example style, exclusions, tone), when they were recorded, per-chapter overrides and a change history; malformed steering is refused.",
+      "source": "skeleton §5; D14",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/records.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.unit-schema",
+      "phase": "P1",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A unit record carries id, locator (section, ordinal, contentHash), form, role (teaching|framing), origin (one of the origin kinds or unknown), spineNodes, judgment kinds and evidence; malformed unit records are refused.",
+      "source": "F1; skeleton §5; D18, D20",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/records.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.finding-schema",
+      "phase": "P1",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A finding carries module, kind, units, typed evidence, statusClass (defect|obligation|question), route (agent|digest|interrupt), recommendation, status and basis; blocksPublish is true exactly for defect and obligation.",
+      "source": "skeleton §5; D14",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/records.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.finding-id",
+      "phase": "P1",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A finding's id is content-addressed over module, kind, units and evidence, so the same finding on unchanged content always has the same id and a changed basis yields a new one.",
+      "source": "F2; skeleton §3",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/records.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.log-append",
+      "phase": "P1",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The decision log is append-only JSONL with a gap-free sequence; a later log must extend the earlier one byte for byte.",
+      "source": "skeleton §5",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/records.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.log-chain",
+      "phase": "P1",
+      "tiers": [
+        "T1",
+        "T4"
+      ],
+      "statement": "Every log record carries the hash of its predecessor and its own hash, and the verifier reports any break in the chain (never throwing); the acceptance rule verifyAgainstCommitted checks the working log and that it extends the committed one.",
+      "source": "skeleton §5, §7",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/records.test.mjs"
+        ],
+        "T4": [
+          "system/rounds/P1-records.md"
+        ]
+      }
+    },
+    {
+      "id": "req.records.log-party",
+      "phase": "P1",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Every log record names its party: role instructor, agent or harness, with a name (and a model id for an agent).",
+      "source": "skeleton §5; charter §2 Traceable",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/records.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.log-types",
+      "phase": "P1",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Log record types are enumerated (intake, transition, version, approval, glance-confirmation, steering, answer, confirmation, authorship-confirmation, revision, divergence, dispatch, unit-retirement, publish, module-change); unknown types are refused.",
+      "source": "skeleton §5; D15, D20, D21",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/records.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.tamper",
+      "phase": "P1",
+      "tiers": [
+        "T1",
+        "T4"
+      ],
+      "statement": "Log tampering is detected: an edited record, a deleted or reordered record, a forged record inserted mid-chain, a rewritten history that no longer extends the committed log.",
+      "source": "skeleton §5; Coherence H5",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/records.test.mjs"
+        ],
+        "T4": [
+          "system/rounds/P1-records.md"
+        ]
+      }
+    },
+    {
+      "id": "req.records.registry-schema",
+      "phase": "P1",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The module registry lists each enabled module with its version and maturity (stable|trial|experimental) for this package; unknown maturity is refused.",
+      "source": "skeleton §5, §6",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/records.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.modules.manifest",
+      "phase": "P2",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Every module declares name, version, serves (Control|Confidence|Coherence), checkpoints (V0–V8), reads, emits (kind, evidence type, default route), mayBlock, method, cost, profiles and maturity; a module without a valid manifest is not run.",
+      "source": "skeleton §6",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.modules.snapshot",
+      "phase": "P2",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A module is a function from a package snapshot to findings; a deterministic module gives byte-identical findings on the same snapshot.",
+      "source": "skeleton §6",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.modules.no-writes",
+      "phase": "P2",
+      "tiers": [
+        "T1",
+        "T2"
+      ],
+      "statement": "Modules only emit findings; they never write deliverables, the spine, steering or the log.",
+      "source": "skeleton §6",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.modules.admission",
+      "phase": "P2",
+      "tiers": [
+        "T1",
+        "T4"
+      ],
+      "statement": "A defect is admitted only after the harness re-runs its evidence; evidence that is missing or fails the re-run turns it into a question (S1).",
+      "source": "F2; charter §5; D14",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.modules.maturity",
+      "phase": "P2",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Trial findings are delivered as questions and never block; experimental modules are off unless enabled; stable findings keep their declared class.",
+      "source": "skeleton §6; D13",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.modules.profiles",
+      "phase": "P2",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A module runs only in the use profiles it declares (e.g. rights checks only in public packages).",
+      "source": "skeleton §6; D1 Q2",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.modules.promotion",
+      "phase": "P2",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Promotion trial → stable is a logged module-change decision that cites the module's study bar met on development cases.",
+      "source": "skeleton §6; D19-G",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.modules.wiring-report",
+      "phase": "P2",
+      "tiers": [
+        "T2"
+      ],
+      "statement": "Each run produces a wiring report: which modules ran at which checkpoint, which finding kinds were produced and routed, which record types were written and read; a registered module, finding kind or record type with no producer or no consumer on the fixtures is flagged.",
+      "source": "D22 T2",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.gate.rule",
+      "phase": "P2",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The gate blocks publishing exactly when there is an open defect or obligation from a stable module or the skeleton core, an invalid approval, or a broken log chain; questions never block.",
+      "source": "skeleton §7; D14, D19-A",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.gate.log-verified",
+      "phase": "P2",
+      "tiers": [
+        "T1",
+        "T2"
+      ],
+      "statement": "Every gate run verifies the decision log against the committed log (verifyAgainstCommitted); any failure is a blocking skeleton finding.",
+      "source": "skeleton §5, §7; round P1-2",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.findings.routing",
+      "phase": "P2",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Every finding is routed agent, digest or interrupt; interrupt is used only for the four D14 reasons (unresolvable spine-scope conflict, missing input, rights blocker in a public package, a request that would change the spine).",
+      "source": "skeleton §3; D14",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.spine.documents",
+      "phase": "P3",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The spine is the course concept map plus, per chapter, a concept map and an assessment guide; all three are parsed.",
+      "source": "charter §3; Q1",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.spine.anchors",
+      "phase": "P3",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Every objective, concept, key term, misconception and assessment-guide entry carries a stable anchor; the harness mints one where missing; ids are never positional.",
+      "source": "D16; skeleton §2",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.spine.guide",
+      "phase": "P3",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The assessment guide is parsed into anchored entries, at least one per objective, each with question types, cognitive level and count.",
+      "source": "F3; C5",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.spine.wellformed",
+      "phase": "P3",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Spine well-formedness is checked deterministically before approval: required sections, unique anchors, objective↔guide entries, prerequisites resolve, no prerequisite cycles, chapter sequence matches the manifest; failures are defects routed to the agent.",
+      "source": "F3; skeleton §2",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.spine.origin-marking",
+      "phase": "P3",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Each spine item is marked instructor, standardized or proposed-by-agent, and the approval view shows the three differently.",
+      "source": "F3",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.spine.critique",
+      "phase": "P3",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Spine critique is raised only as questions, within the digest budget, and never blocks.",
+      "source": "F3; D3",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.approval.record",
+      "phase": "P3",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "An approval record covers named spine documents at a content hash and version, names the instructor, time and note, and quotes the instructor's words.",
+      "source": "F3; skeleton §5",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.approval.scope",
+      "phase": "P3",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "There is one approval per chapter (concept map + assessment guide) and one for the course map; a course-map change voids only the chapters whose nodes or order it touches.",
+      "source": "D14",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.approval.voiding",
+      "phase": "P3",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A covered document whose hash no longer matches voids its approval; a chapter without a valid approval cannot publish.",
+      "source": "D14; skeleton §2, §7",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.approval.weights",
+      "phase": "P3",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Re-approval has two weights: a light change (every node and anchor kept; no fact, value, name, number, negation, level, question type or count changed) needs a glance confirmation and the work loop continues; anything else is substantive (diff and impact preview; new content pauses); when unsure, substantive.",
+      "source": "D21",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.approval.preview",
+      "phase": "P3",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The approval view previews what will be built: objectives and, per objective, the number and kind of example and practice questions implied by the guide.",
+      "source": "F3",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.steering.intake",
+      "phase": "P3",
+      "tiers": [
+        "T1",
+        "T3"
+      ],
+      "statement": "Steering is asked once (M2): seven questions with defaults inferred from the inputs, accept-all in one action, per-chapter overrides.",
+      "source": "F3; D14",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.versions.major",
+      "phase": "P3",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A structural change opens a new major version with lineage — of the chapter, of both chapters when an objective moves between them, or of the course when the chapter list or order changes; carried-over units enter it as obligations.",
+      "source": "D15, D16, D19-F",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.versions.minor",
+      "phase": "P3",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A spine revision that keeps every surviving node's identity stays within the version; its impact is traced (new nodes → obligations, removed nodes → units retired, affected units re-verified).",
+      "source": "D16",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.units.segmenter",
+      "phase": "P4",
+      "tiers": [
+        "T1",
+        "T2"
+      ],
+      "statement": "The harness segments every deliverable into units (paragraph, list item, table row, equation, callout, figure, slide group, question, answer); no prose is left out.",
+      "source": "F1",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.units.identity",
+      "phase": "P4",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Unit ids survive rewording and reordering; splits and merges are recorded; an unmatched unit is new.",
+      "source": "F1; Coherence H4",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.units.origin",
+      "phase": "P4",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Every unit records its origin: source-derived, agent knowledge, computed, instructor-authored, found evidence, or unknown.",
+      "source": "F1; charter §4",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.units.external-edit",
+      "phase": "P4",
+      "tiers": [
+        "T1",
+        "T3"
+      ],
+      "statement": "A change with no recorded agent write is an edit of unknown authorship: checked like agent text and raised once in the digest (accept as mine / name the author / revert).",
+      "source": "D20",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.units.classifier",
+      "phase": "P4",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A skeleton-owned deterministic classifier assigns judgment kinds, erring toward inclusion; a unit with several kinds is checked under each; the agent may add a kind, never remove one.",
+      "source": "D18, D19-E",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.units.framing",
+      "phase": "P4",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Framing units may not carry mechanical or semi-mechanical content and are still checked for off-spine content.",
+      "source": "F1; D19-I",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.core.evidence-obligation",
+      "phase": "P5",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A semi-mechanical unit without an admitted evidence record is an open obligation (it claims nothing is wrong, and blocks publishing).",
+      "source": "D14, D19-A; Q15",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.core.coverage-obligation",
+      "phase": "P5",
+      "tiers": [
+        "T1",
+        "T2"
+      ],
+      "statement": "An objective or assessment-guide entry with no linked unit, and a unit with no spine link, are open obligations.",
+      "source": "D19-A, D19-I; Control C1, C3, C5",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.core.reverify-obligation",
+      "phase": "P5",
+      "tiers": [
+        "T1",
+        "T2"
+      ],
+      "statement": "After a change, every affected unit not yet re-verified is an open obligation; nothing reaches a published snapshot stranded.",
+      "source": "D19-A; Coherence H2",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.core.impact",
+      "phase": "P5",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The impact set of a change covers the mechanical dependency kinds (shared value, shared term, spine node, source, derivation) and declared prerequisites.",
+      "source": "Coherence H1; D19-H",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.core.null-edit",
+      "phase": "P5",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A meaning-preserving edit raises nothing beyond its own unit, but that unit's numbers, units, names, dates and negations are always re-checked.",
+      "source": "D17, D19-C; Coherence H3",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.ms1.pin-all",
+      "phase": "P6",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Every declared source is pinned (revision where one exists, retrieval time, raw and text hashes); an unpinned source is an obligation; a changed snapshot is a defect.",
+      "source": "MS1",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.ms1.span",
+      "phase": "P6",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "An evidence span cited by a unit that does not resolve in its pinned snapshot is a defect; a retrieved reference without its pin is an obligation.",
+      "source": "MS1",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.ms1.profiles",
+      "phase": "P6",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Source pinning runs in both profiles; instructor-supplied files are pinned by hash.",
+      "source": "MS1; K-a",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.ms2.public-only",
+      "phase": "P6",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Rights, licence and attribution checks run only in public packages; private packages follow the Alembic contract and may be packed but are never cleared for public release.",
+      "source": "MS2; D1",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.ms2.two-profiles",
+      "phase": "P6",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "There are exactly two use profiles, public and private.",
+      "source": "MS2; D1 Q2",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.ms3.contract",
+      "phase": "P6",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Manifest, file layout, orz syntax (with nesting), slide grammar, placeholders and the accessibility floor are checked as defects; no word-presence test stands in for coverage.",
+      "source": "MS3",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.ms4.links",
+      "phase": "P6",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Broken local links and asset paths are defects; external links are resolved, the result recorded, and replayed offline in tests.",
+      "source": "MS4",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.ms5.offline",
+      "phase": "P6",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Every carrier builds, and a carrier that needs a remote runtime to render is a defect unless vendored; the build receipt is attached to the publish record.",
+      "source": "MS5; D1 Q3",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.ms6.quotations",
+      "phase": "P6",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A quotation found in no pinned or supplied source is an obligation; a misquotation is a defect; near-verbatim copying is a defect in public packages only.",
+      "source": "MS6",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.ms6.h5-regression",
+      "phase": "P6",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The 21 v0.12.0 false positives on the C2 fixture (18 quoted spine misconceptions, 3 Mermaid labels) raise nothing.",
+      "source": "MS6; P0 baseline",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.ms7.consistency",
+      "phase": "P6",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The same term and dimension carrying different values after conversion and tolerance, an answer key disagreeing with its question, and a physically impossible quantity are defects.",
+      "source": "MS7",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.ms7.no-drift",
+      "phase": "P6",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A reworded definition raises nothing; definition-drift is retired.",
+      "source": "MS7; D17",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.retire.old-checks",
+      "phase": "P6",
+      "tiers": [
+        "T1",
+        "T2"
+      ],
+      "statement": "misconception-asserted runs only as a trial question; revision-escalate and spine-relabeled no longer exist; the whole-package key-fact review and the mandatory visual attestation are not part of the gate.",
+      "source": "modules.md §Not carried over",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.dispatch.blind",
+      "phase": "P7",
+      "tiers": [
+        "T1",
+        "T2"
+      ],
+      "statement": "Verifier tasks are dispatched per unit with a blind bundle (the unit and its evidence only); every dispatch is recorded and replays offline.",
+      "source": "skeleton §6; F4",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.retrieval.claim-only",
+      "phase": "P7",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Retrieval sends only the claim being checked, pins what it retrieves (URL, time, hash, span), and can be switched off per package.",
+      "source": "skeleton §6; D12-I",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.verdict.semi-mechanical",
+      "phase": "P7",
+      "tiers": [
+        "T1",
+        "T4"
+      ],
+      "statement": "A semi-mechanical obligation is cleared only when the verifier's quote is found in the source and carries the same value, date or name.",
+      "source": "D19-A",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.verdict.unscorable",
+      "phase": "P7",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A verifier response that cannot be parsed is recorded as unscorable, never as a pass or a miss.",
+      "source": "Confidence study principles",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.autocorrect.guard",
+      "phase": "P7",
+      "tiers": [
+        "T1",
+        "T4"
+      ],
+      "statement": "The agent corrects without asking only a defect admitted by a stable check and uncontested; instructor text additionally needs two agreeing sources; otherwise a question is raised.",
+      "source": "D17, D19-B",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.autocorrect.shown",
+      "phase": "P7",
+      "tiers": [
+        "T1",
+        "T3"
+      ],
+      "statement": "Every correction is logged as a revision and shown as a revertible diff at the next checkpoint (or at once when the instructor asked for the check).",
+      "source": "D17; skeleton §3 M4",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.revert.double-confirm",
+      "phase": "P7",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "An instructor reverting an agent's correction after seeing the diff and evidence is the double confirmation: a note is recorded and the text stands as an authorized divergence.",
+      "source": "Q10; D17",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.confirm.single",
+      "phase": "P7",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "An unevidenced fact the instructor wrote is cleared by one confirmation, which can be batched.",
+      "source": "D19-D",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.knowledge.no-autochange",
+      "phase": "P7",
+      "tiers": [
+        "T1",
+        "T3"
+      ],
+      "statement": "Knowledge-based issues are raised as questions with reasoning and a suggested revision and change nothing until the instructor confirms.",
+      "source": "D17",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.states.machine",
+      "phase": "P8",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Each chapter is in exactly one state (DRAFT, ASSEMBLING, PACKAGE; PUBLISHED as a snapshot) and moves only by the listed triggers and preconditions.",
+      "source": "skeleton §2",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.draft.private",
+      "phase": "P8",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A draft can be used as-is privately and is never published publicly.",
+      "source": "D15 Q16",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.moments.only",
+      "phase": "P8",
+      "tiers": [
+        "T3"
+      ],
+      "statement": "The agent contacts the instructor only at the six moments M1–M6 (plus instructor-initiated exchanges).",
+      "source": "skeleton §3; D8",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.digest.budget",
+      "phase": "P8",
+      "tiers": [
+        "T1",
+        "T3"
+      ],
+      "statement": "The digest clusters questions by root cause, ranks them, caps them per batch, defers overflow (never drops it) and shows deferred counts; the list of corrections sits outside the budget.",
+      "source": "skeleton §3; D19",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.answers.persist",
+      "phase": "P8",
+      "tiers": [
+        "T1",
+        "T3"
+      ],
+      "statement": "An answered question is never asked again while its basis is unchanged.",
+      "source": "skeleton §3; F2",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.loop.bounds",
+      "phase": "P8",
+      "tiers": [
+        "T1",
+        "T3"
+      ],
+      "statement": "The work loop stops at a fixed point or when the batch budget is spent, and never changes the spine, answers a question for the instructor, or reopens a recorded decision.",
+      "source": "skeleton §4",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.publish.record",
+      "phase": "P8",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A publish decision is recorded with the snapshot hash, the approvals it relied on and the open questions listed.",
+      "source": "skeleton §7",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.publish.scope",
+      "phase": "P8",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Only chapters in PACKAGE with a valid approval are published, and the course map only with its own valid approval.",
+      "source": "skeleton §7; D14",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.profiles.one-gate",
+      "phase": "P8",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Public and private packages go through one gate; the profile toggles only the rights modules.",
+      "source": "D1; fit assessment",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.commands",
+      "phase": "P8",
+      "tiers": [
+        "T1",
+        "T3"
+      ],
+      "statement": "The documented commands (assemble, approve, status, digest, publish, revert) each refuse with a plain next step when their preconditions fail.",
+      "source": "implementation plan P8",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.oldgate.retired",
+      "phase": "P8",
+      "tiers": [
+        "T1",
+        "T2"
+      ],
+      "statement": "check_oer.mjs is no longer the gate; its remaining checks run as modules.",
+      "source": "implementation plan P8",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.docs.orientation",
+      "phase": "P9",
+      "tiers": [
+        "T3"
+      ],
+      "statement": "PROCEDURE, CLAUDE/AGENTS and the format contracts describe the skeleton as lean orientation; a context-blind agent can run the workflow from them alone.",
+      "source": "implementation plan P9; I17",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.docs.migration",
+      "phase": "P9",
+      "tiers": [
+        "T1",
+        "T3"
+      ],
+      "statement": "Existing packages migrate by tool; the migrated spine is presented as a revision for approval, never converted silently.",
+      "source": "implementation plan P9",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.dogfood.c2",
+      "phase": "P10",
+      "tiers": [
+        "T3"
+      ],
+      "statement": "The C2 chemistry package is migrated and taken end to end to a publish decision, with a report against the v0.12.0 baseline in which every false positive is fixed or explained.",
+      "source": "implementation plan P10",
+      "status": "planned",
+      "evidence": {}
+    }
+  ]
+}

@@ -3,9 +3,14 @@ import path from "node:path";
 import { verifyCoursewerkRevision } from "./lib/system_index.mjs";
 
 const root = path.resolve(process.cwd());
+function requirementSummary(reg) {
+  if (!reg) return null;
+  const count = (status) => reg.requirements.filter((r) => r.status === status).length;
+  return { total: reg.requirements.length, closed: count("closed"), planned: count("planned"), deferred: count("deferred"), completedPhases: reg.completedPhases };
+}
 const args = process.argv.slice(2);
 const i = args.indexOf("--base");
 const baseRef = i >= 0 ? args[i + 1] : "main";
 const result = verifyCoursewerkRevision(root, { baseRef, requireReview: args.includes("--require-review") });
-console.log(JSON.stringify({ ready: result.failures.length === 0, failures: result.failures, components: result.index.expected.components.length, claims: result.index.expected.claims.length, planId: result.impact.planId, changed: result.impact.changed.length }, null, 2));
+console.log(JSON.stringify({ ready: result.failures.length === 0, failures: result.failures, components: result.index.expected.components.length, claims: result.index.expected.claims.length, requirements: requirementSummary(result.index.expected.requirements), planId: result.impact.planId, changed: result.impact.changed.length }, null, 2));
 process.exit(result.failures.length ? 1 : 0);

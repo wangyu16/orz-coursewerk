@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "planId": "c6c85d2ce1833447ede62921a1324f894e20055a23143151e7f890489e78408a",
+  "baseRef": "HEAD",
+  "baseTip": "63a9042202fc6b36eadfa173f2c11cfb87bd023e",
+  "baseCommit": "63a9042202fc6b36eadfa173f2c11cfb87bd023e",
+  "reviewedHead": "63a9042202fc6b36eadfa173f2c11cfb87bd023e",
+  "changed": [
+    "scripts/lib/records/canonical.mjs",
+    "scripts/lib/records/findings.mjs",
+    "scripts/lib/records/log.mjs",
+    "scripts/lib/records/paths.mjs",
+    "scripts/lib/records/registry.mjs",
+    "scripts/lib/records/steering.mjs",
+    "scripts/lib/records/units.mjs",
+    "scripts/lib/system_index.mjs",
+    "scripts/verify_coursewerk.mjs",
+    "system/REQUIREMENTS.json",
+    "system/rounds/P1-records.md",
+    "tests/records.test.mjs",
+    "tests/requirements.test.mjs"
+  ],
+  "requiredReview": [
+    ".github/workflows/system-integrity.yml",
+    "docs/coursewerk-system-index.md",
+    "scripts/lib/records/canonical.mjs",
+    "scripts/lib/records/findings.mjs",
+    "scripts/lib/records/log.mjs",
+    "scripts/lib/records/paths.mjs",
+    "scripts/lib/records/registry.mjs",
+    "scripts/lib/records/steering.mjs",
+    "scripts/lib/records/units.mjs",
+    "scripts/lib/system_index.mjs",
+    "scripts/verify_coursewerk.mjs",
+    "system/COMPONENTS.json",
+    "system/REQUIREMENTS.json",
+    "system/rounds/P1-records.md",
+    "tests/records.test.mjs",
+    "tests/requirements.test.mjs",
+    "tests/system-index.test.mjs"
+  ],
+  "reviewed": [
+    ".github/workflows/system-integrity.yml",
+    "docs/coursewerk-system-index.md",
+    "scripts/lib/records/canonical.mjs",
+    "scripts/lib/records/findings.mjs",
+    "scripts/lib/records/log.mjs",
+    "scripts/lib/records/paths.mjs",
+    "scripts/lib/records/registry.mjs",
+    "scripts/lib/records/steering.mjs",
+    "scripts/lib/records/units.mjs",
+    "scripts/lib/system_index.mjs",
+    "scripts/verify_coursewerk.mjs",
+    "system/COMPONENTS.json",
+    "system/REQUIREMENTS.json",
+    "system/rounds/P1-records.md",
+    "tests/records.test.mjs",
+    "tests/requirements.test.mjs",
+    "tests/system-index.test.mjs"
+  ],
+  "impactedClaims": [
+    "claim.system.branch-coherence"
+  ],
+  "testResults": [
+    {
+      "path": "tests/*.test.mjs (full suite 625/625)",
+      "status": "passed"
+    },
+    {
+      "path": "tests/system-index.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "Redesign P1: shared in-package records (steering, units, findings, hash-chained decision log, module registry) under scripts/lib/records, the requirement register system/REQUIREMENTS.json enforced by system:verify, and three adversarial rounds on the decision log recorded in system/rounds/P1-records.md; every P1 requirement closed at its tiers; no existing product behaviour changed.",
+  "generatedIndexHash": "0a3a90dbbf3bc65e9b5fe7b2d5327e0847275291f8e2892356f993fd271399e9",
+  "acceptedAt": "2026-09-30T21:13:31.442Z"
+}
