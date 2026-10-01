@@ -14,16 +14,20 @@ production work; you steer, approve, and hand-edit anything.
 
 ## What it produces
 
-Coursewerk first asks how the material will be used. Personal-private and genuinely restricted work stays in
-`personal/`, keeps complete provenance, and is never packaged for publication. Public OER goes into `package/`
-only after the mode-independent assurance kernel verifies source rights, license compatibility, attribution,
-privacy, accountable authorship, a focused key-fact critique, and publication clearance. Full/Light review mode
-never weakens these checks: Light uses a separate same-model pass for the high-risk facts; Full uses cross-model review.
+Coursewerk first asks how the material will be used. A **public** package passes rights, licence and attribution
+checks before it can be published; a **private** one goes through the same gate without them and is never cleared for
+public release. What Coursewerk promises is **traceability and convergent verification**, not perfection:
+- every unit of text has a recorded origin and spine link;
+- every fact is checked by a fresh, context-blind pass of your own AI engine against pinned sources, or stays
+  visibly open;
+- every decision is in a hash-chained log inside the package;
+- no issue is raised without evidence, and nothing correct is "fixed" into something wrong.
 
-Each output root is automatically its own Git repository, so direct edits have visible history and diff. Every
-output file is also indexed in a dependency graph. Git identifies what changed; the graph computes the transitive
-review/update set, identifies upstream consistency context, and blocks QA/packing until all affected components
-receive an attested coherence review.
+The instructor approves the spine (the concept maps and assessment guides) and decides when to publish. Everything
+else is the agent's work, brought back in a short digest of the questions that need a person.
+
+Each package is its own Git repository, so direct edits have visible history; an edit nobody recorded is raised to
+the instructor, never overwritten.
 
 Coursewerk itself is indexed too: claims, kernels, tests, instructions, templates, skills, contracts, and release
 metadata are connected in `system/COURSEWERK_INDEX.json`. Pull-request impact is calculated from the target
@@ -169,14 +173,14 @@ scripts/verify_coursewerk.mjs  # verify canonical self-index and accepted revisi
 system/                        # Coursewerk claims, correlations, accepted index + revision evidence
 ```
 
-## Redesign preview (not yet the release gate)
+## How it works (spine v2)
 
 The deliverable is the lean orz Markdown package; carriers (framework shells) are assembled by Alembic or by an agent —
 see `docs/assembling-carriers.md`.
 
-A skeleton-and-modules redesign is being built on this branch. Its gate can already be run on a package —
-`node scripts/gate.mjs --root package` (exit 0 = can publish, 1 = blocked, 2 = usage, 3 = the gate itself failed) —
-but it does not replace `check_oer.mjs` and `pack.mjs` until the redesign's workflow lands. Checks are modules under
+A solid skeleton (states, records, the gate) with add-on check modules. The gate:
+`node scripts/gate.mjs --root package` (exit 0 = can publish, 1 = blocked, 2 = usage, 3 = the gate itself failed).
+Packages from v0.12 keep `check_oer.mjs` until they are migrated. Checks are modules under
 `scripts/modules/` (the seven standard ones in `standard.json` run for every package), each in its own process; see `system/REQUIREMENTS.json` for what the redesign must deliver
 and the evidence that closes each requirement.
 
@@ -187,7 +191,7 @@ obligations (facts without evidence, unlinked units, uncovered objectives, short
 Verification (a fresh, context-blind verifier per unit; the harness admits a fact only when the verifier's quote is in a
 pinned text and carries the same values, years and names): `node scripts/verify.mjs destinations|search|fetch|semi|knowledge|correct|revert|corrections|links|status --root package --inputs <corpus dir>`.
 Workflow (chapter states, digest, answers, publish): `node scripts/coursewerk.mjs status|assemble|back-to-draft|approve|digest|answer|publish|revert|interrupt --root package`;
-for agents, `docs/procedure-v2.md`. A spine-v2 package is packed from its publish decision (`scripts/pack.mjs`); for it,
+for agents, `PROCEDURE.md` and `CLAUDE.md`; for v0.12 packages, `docs/migrating-from-v0.12.md`. A spine-v2 package is packed from its publish decision (`scripts/pack.mjs`); for it,
 `scripts/gate.mjs` is the gate and `check_oer.mjs` is not used.
 Write facts so they can be checked — scoped, not absolute (`docs/writing-checkable-statements.md`, D29).
 Retrieval goes only to destinations the instructor declared; the verifier command is `COURSEWERK_VERIFIER` (a JSON array;

@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Spine v2 tools (redesign P3; F3). The agent runs these; approval records are the instructor's words.
 //   node scripts/spine.mjs check    --root <pkg>                      well-formedness (exit 1 if any problem)
-//   node scripts/spine.mjs migrate  --root <pkg>                      v0.12 → v2: anchors, references, guide grammar
+//   node scripts/spine.mjs migrate  --root <pkg> --name <instructor> --words "…"   v0.12 → v2: anchors, references, guide grammar;
+//                                                                     a committed tree only; every chapter left ASSEMBLING for approval
 //   node scripts/spine.mjs anchor   --root <pkg>                      mint missing anchors in place
 //   node scripts/spine.mjs status   --root <pkg>                      approval status of every scope
 //   node scripts/spine.mjs preview  --root <pkg> --chapter <slug>     the approval view
@@ -18,7 +19,8 @@ import { approvalPreview, originsPath } from "./lib/core/preview.mjs";
 import { openMajorVersion } from "./lib/core/versions.mjs";
 import { recordSteering } from "./lib/core/steering_intake.mjs";
 import { readConfig, writeConfig } from "./lib/records/config.mjs";
-import { readLogText } from "./lib/records/log.mjs";
+import { appendLogRecord, readLogText } from "./lib/records/log.mjs";
+import { spawnSync } from "node:child_process";
 
 const [cmd, ...args] = process.argv.slice(2);
 const opt = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : undefined; };
@@ -39,6 +41,18 @@ try {
     process.exit(problems.length ? 1 : 0);
   }
   if (cmd === "migrate" || cmd === "anchor") {
+    // a migration is presented as a revision for approval, never converted silently (req.docs.migration): it is the
+    // instructor's request, runs on a committed tree (so the conversion is one reviewable diff), is logged, and
+    // leaves every chapter ASSEMBLING with no approval — nothing publishes until the instructor approves the result
+    let party = null, words = null;
+    if (cmd === "migrate") {
+      if (readConfig(root).spine === 2) fail("this package is already spine v2");
+      party = instructor(); words = opt("--words");
+      if (!String(words || "").trim()) fail('--words "<the instructor\'s own words>" is required: a migration is the instructor\'s request');
+      const st = spawnSync("git", ["-C", root, "status", "--porcelain"], { encoding: "utf8" });
+      if (st.status !== 0) fail("the package must be a git repository, so the migration is one reviewable diff");
+      if (st.stdout.trim()) fail("commit or set aside the package's changes first: the migration must be its own reviewable diff");
+    }
     const renames = {}, notes = [], docs = {};
     const course = anchorMap(reader.text(COURSE_MAP) || "", "course"); Object.assign(renames, course.renames); docs[COURSE_MAP] = course.text;
     const objectiveAnchors = {};
@@ -57,9 +71,12 @@ try {
       const mark = (doc, anchors) => write(originsPath(doc), JSON.stringify({ schemaVersion: 1, items: Object.fromEntries(anchors.map((a) => [a, "standardized"])) }, null, 2) + "\n");
       mark(COURSE_MAP, spine.course.nodes.map((n) => n.anchor).filter(Boolean));
       for (const ch of chapters) { const { map, guide } = spinePaths(ch); mark(map, spine.chapters[ch].map.nodes.map((n) => n.anchor).filter(Boolean)); mark(guide, spine.chapters[ch].guide.entries.map((e) => e.anchor).filter(Boolean)); }
+      appendLogRecord(root, { type: "intake", party, payload: { event: "migrated-from-v0.12", files: Object.keys(docs), renamed: Object.keys(renames).length, instructorWords: words } });
+      for (const ch of chapters) appendLogRecord(root, { type: "transition", party, payload: { chapter: ch, from: "DRAFT", to: "ASSEMBLING", instructorWords: words, migration: true } });
     }
     const left = checkSpine(parseSpine(liveReader(root), chapters), chapters);
-    console.log(JSON.stringify({ rewritten: Object.keys(docs), renamed: Object.keys(renames).length, notes, remainingProblems: left.length, byRule: left.reduce((a, p) => ((a[p.rule] = (a[p.rule] || 0) + 1), a), {}) }, null, 2));
+    console.log(JSON.stringify({ rewritten: Object.keys(docs), renamed: Object.keys(renames).length, notes, remainingProblems: left.length, byRule: left.reduce((a, p) => ((a[p.rule] = (a[p.rule] || 0) + 1), a), {}),
+      ...(cmd === "migrate" ? { next: "every chapter is ASSEMBLING: review `git diff` and `spine.mjs preview --chapter <slug>` with the instructor (M3), then approve each chapter and the course map" } : {}) }, null, 2));
     process.exit(0);
   }
   if (cmd === "status") {

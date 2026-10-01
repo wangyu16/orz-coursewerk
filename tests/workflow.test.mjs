@@ -242,3 +242,28 @@ test("[req.loop.bounds] re-saving a unit's spine links is not a re-verification:
   linkUnits(p.root, p.reader, { [u.id]: u.spineNodes }, AGENT);
   assert.ok(stale().includes(u.id), "the same links saved again clear nothing");
 });
+
+// ---- migration (T1) -----------------------------------------------------------------------------------------------
+test("[req.docs.migration] a v0.12 package migrates by tool, at the instructor's request, and the result waits for approval — never converted silently", (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-migrate-"));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const root = path.join(dir, "pkg");
+  fs.cpSync(path.join(HERE, "fixtures", "c2-chemistry", "package"), root, { recursive: true });
+  for (const a of [["init", "-q"], ["config", "user.name", "T"], ["config", "user.email", "t@example.invalid"], ["add", "-A"], ["commit", "-q", "-m", "v0.12"]]) git(root, ...a);
+  const spine = (...a) => spawnSync(process.execPath, [path.join(REPO, "scripts", "spine.mjs"), ...a], { encoding: "utf8" });
+  assert.match(spine("migrate", "--root", root, "--name", I.name).stderr, /the instructor's request/);
+  fs.appendFileSync(path.join(root, "concepts", "le-chatelier.md"), "\n");
+  assert.match(spine("migrate", "--root", root, "--name", I.name, "--words", "Migrate the course.").stderr, /its own reviewable diff/);
+  git(root, "checkout", "--", ".");
+  const r = spine("migrate", "--root", root, "--name", I.name, "--words", "Migrate the course to the new spine.");
+  assert.equal(r.status, 0, r.stderr); assert.match(r.stdout, /every chapter is ASSEMBLING/);
+  assert.ok(git(root, "diff", "--stat").stdout.includes("concepts/"), "the conversion is a reviewable diff");
+  const reader = liveReader(root);
+  const states = chapterStates(root, reader);
+  for (const s of Object.values(states)) { assert.equal(s.state, "ASSEMBLING"); assert.equal(s.approved, false); }
+  assert.match(readLogText(root), /"event":"migrated-from-v0\.12"[^\n]*"instructorWords":"Migrate the course to the new spine\."/);
+  assert.match(spine("migrate", "--root", root, "--name", I.name, "--words", "again").stderr, /already spine v2/);
+  const st = cli("status", "--root", root);
+  assert.equal(st.status, 0, st.stderr);
+  for (const c of Object.values(JSON.parse(st.stdout).chapters)) assert.ok(c.why.some((w) => /ASSEMBLING|approval is not valid/.test(w)), "not publishable until approved");
+});

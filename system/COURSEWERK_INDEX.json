@@ -35,7 +35,7 @@
       "id": "repo:AGENTS.md",
       "path": "AGENTS.md",
       "type": "agent-constitution",
-      "hash": "a148d4e0990a28be547273caa030c52178f5fbddb8a4e409fd582f66de4c9b16"
+      "hash": "79ddbf6e3bb3ae5a4c61f96b0f8803f0c676921c1a10576540e2536382f3968f"
     },
     {
       "id": "repo:bootstrap/init.sh",
@@ -53,7 +53,7 @@
       "id": "repo:CLAUDE.md",
       "path": "CLAUDE.md",
       "type": "agent-constitution",
-      "hash": "34c78022718ec6dc343489f0a81466cdf1bfdf021594ac6cb635ab07c9f6ca9c"
+      "hash": "783760c0430baf4bd1c410ef53560379b8a6a0b751fa849c86a4a672a61630c1"
     },
     {
       "id": "repo:COMPATIBILITY.md",
@@ -104,10 +104,16 @@
       "hash": "85c521108cef2d0fbe0cf0683e9d57f7fa91b08cc04373589801792d48e4f5b1"
     },
     {
+      "id": "repo:docs/migrating-from-v0.12.md",
+      "path": "docs/migrating-from-v0.12.md",
+      "type": "documentation",
+      "hash": "d71333eef08b4264bf93667cffd06b32af3ffe5ba4a7c131a52a1648c72f1c15"
+    },
+    {
       "id": "repo:docs/procedure-v2.md",
       "path": "docs/procedure-v2.md",
       "type": "documentation",
-      "hash": "1922aa1f71dbac23d63ba73ea36937d575f91d92612ee56dd0939ab4ad00041e"
+      "hash": "26db4e27ded7b72ef6e00b9a42a15da3074ab42fdaf9c060dddeed226c31e311"
     },
     {
       "id": "repo:docs/rules-vs-preferences.md",
@@ -155,13 +161,13 @@
       "id": "repo:format-contracts/deliverables.md",
       "path": "format-contracts/deliverables.md",
       "type": "documentation",
-      "hash": "6bf90790effe0dd7c3dcc319b2bf501eb0a881945068766fedeca3f3106cff49"
+      "hash": "1b7b37196c0e12a08598dfd5661b5544502a261df0420afe5d9e85153c517857"
     },
     {
       "id": "repo:GEMINI.md",
       "path": "GEMINI.md",
       "type": "repository-support",
-      "hash": "d3d0e8c25d87f98aa379d338dca6749e6f087659d0910dddc1a5facd7295701c"
+      "hash": "70411f2a0a67a9722841778f039349508f1dbe528c8f8a8cd7fa80de91ff3960"
     },
     {
       "id": "repo:LICENSE",
@@ -185,13 +191,13 @@
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "ff537b58b7ab5812ed08e3b57215b63bd4dc7111eddb88c45af9cd5bb6093598"
+      "hash": "25216a1796b967bea4e37cee9e82aa77f876bf5157dc2353e738b4370e515a8d"
     },
     {
       "id": "repo:README.md",
       "path": "README.md",
       "type": "product-claim",
-      "hash": "e110207fd4807ff32b5805da27e80e79d6ab58830b413af8ba94be98d441fded"
+      "hash": "6a7c1cc385c30e58ea33b90628cc398b6477586c2a523b3e92194cc7f34af041"
     },
     {
       "id": "repo:scripts/accept_coursewerk_revision.mjs",
@@ -881,7 +887,7 @@
       "id": "repo:scripts/spine.mjs",
       "path": "scripts/spine.mjs",
       "type": "executable",
-      "hash": "b6bfad9d51f3188f1f69a0a4a0cee07e3de0f0c190628ea2606311a6133a7da3"
+      "hash": "ebb79ad91cb775601923838f9860a318022ca8b6c2046b008d359fc7515fef17"
     },
     {
       "id": "repo:scripts/study_pairs.mjs",
@@ -1685,7 +1691,7 @@
       "id": "repo:tests/workflow.test.mjs",
       "path": "tests/workflow.test.mjs",
       "type": "test",
-      "hash": "027253fdc9403950f73694b9f49448fcbb87da506322822106b390566706fa41"
+      "hash": "c7ad56da8f28cee62078425b79e2a06def389f1ad6cc83daa1078655e62cc39d"
     },
     {
       "id": "repo:VERSION",
