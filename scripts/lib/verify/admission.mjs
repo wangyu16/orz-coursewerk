@@ -12,7 +12,7 @@
 // to the claim (it also carries another of the claim's required tokens), names no one the claim does not, shares
 // three content words, and the claimed value appears nowhere in the pinned texts near the claim's topic. A year or a
 // name, or anything less anchored, is DISPUTED — a question (D12-F). Anything else admits nothing.
-import { EXCLUSIVE, fold, folded, namesIn, proseOf, quantitiesIn, yearsIn, nameKey, contentWords } from "./claims.mjs";
+import { EXCLUSIVE, NEGATION, fold, folded, namesIn, proseOf, quantitiesIn, yearsIn, nameKey, contentWords } from "./claims.mjs";
 
 const MIN_QUOTE_CHARS = 12;
 
@@ -53,6 +53,43 @@ function tokenIndex(tok, P, claim) {
     for (const part of tok.parts) { const m = P.match(wordRe(part)); if (!m) return -1; at = Math.max(at, m.index); }
     return at;
   }
+  if (tok.kind === "excl-pos" || tok.kind === "excl-neg") {
+    // a quoted sentence that names the member (or alternative) as whole words, says it (or denies it), and shares
+    // another of the claim's words
+    let off = 0;
+    for (const sen of sentencesIn(P)) {
+      const f = folded(sen);
+      const g = f.replace(/\bnot\s+(?:only|just|merely|necessarily|always|simply)\b/g, " "); // these do not deny
+      const named = tok.keys.every((k) => new RegExp(`(?<![a-z])${k}(?![a-z])`).test(g));
+      const ex = claim.required.exclusive, own = new Set([...ex.positive, ...ex.alternatives.flatMap((a) => a.keys)]);
+      // the predicate comes from the clause that carries the "only" (not from a quoted misconception before it)
+      const clause = (folded(proseOf(claim.text)).split(/\s*(?:;|:|—|–|\s-\s|\bno\b\s*[—–-])\s*/).find((c) => /\bonly\b|\bsolely\b|\bexclusively\b|\bthe sole\b|\bnothing but\b/.test(c)) || folded(claim.text));
+      const predicate = claim.words.filter((w) => !own.has(w) && clause.includes(w));
+      const ws = g.split(/\s+/);
+      const keyAt = ws.findIndex((w) => w.replace(/[^a-z'-]/g, "") === tok.keys[0]); // the head of the phrase
+      const isNeg = (w) => NEGATION.test(` ${w} `);
+      const stem = (w) => w.slice(0, Math.max(4, w.length - 2));
+      const isPred = (w) => predicate.some((pw) => w.startsWith(stem(pw)));
+      const CHANGE = /^(?:affect|affects|change|changes|alter|alters|shift|shifts|influence|influences|effect|effects)$/;
+      // a negation GOVERNS when, within three words, it reaches a predicate word or a change verb ("does not affect",
+      // "without any change", "not have an effect") — "without being consumed", "no suitable catalyst" do not
+      const governing = (i) => ws.slice(i + 1, i + 4).some((x) => isPred(x) || CHANGE.test(x.replace(/[^a-z]/g, "")));
+      const governs = ws.some((w, i) => isNeg(w) && governing(i));
+      // a denial of THIS alternative: it stands before a governing negation (within twelve words), or it is the object
+      // of a negated change verb (within six words)
+      const denies = keyAt >= 0 && (
+        ws.some((w, i) => isNeg(w) && i > keyAt && i - keyAt <= 12 && governing(i)) ||
+        ws.some((w, i) => isNeg(w) && keyAt > i && keyAt - i <= 6 && ws.slice(i + 1, keyAt).some((x) => CHANGE.test(x.replace(/[^a-z]/g, "")))));
+      // the member must stand alone: not one of a co-ordinated list ("temperature, pressure, volume, or concentration")
+      const listed = keyAt >= 0 && /(?:,|\band\b|\bor\b)/.test([ws[keyAt - 1] || "", ws[keyAt] || "", ws[keyAt + 1] || ""].join(" ").replace(ws[keyAt] ? ws[keyAt].replace(/[,]$/, "") : "", ""));
+      const negated = tok.kind === "excl-neg" ? denies : governs || listed;
+      // the sentence carries a word of the claim's predicate (the governing negation ties a denial to it)
+      const about = predicate.length > 0 && ws.some(isPred);
+      if (named && about && (tok.kind === "excl-neg" ? negated : !negated)) return off;
+      off += sen.length + 1;
+    }
+    return -1;
+  }
   if (tok.kind === "superlative") {
     // inside a sentence that is about the claim: two of its content words (and its names, if any)
     let off = 0;
@@ -77,6 +114,11 @@ const tokensOf = (claim) => [
   ...claim.required.months.map((v) => ({ kind: "month", v, label: v })),
   ...claim.required.names.map((n) => ({ kind: "name", parts: nameParts(n), key: nameKey(n), label: n })).filter((t) => t.parts.length),
   ...claim.required.superlatives.map((v) => ({ kind: "superlative", v, label: v })),
+  // a scoped exclusivity is a conjunction (D29): the member does it, each named alternative does not
+  ...(claim.required.exclusive ? [
+    { kind: "excl-pos", keys: claim.required.exclusive.positive, label: `only ${claim.required.exclusive.positive.join(" ")}` },
+    ...claim.required.exclusive.alternatives.map((a) => ({ kind: "excl-neg", keys: a.keys, label: `not ${a.phrase}` })),
+  ] : []),
 ];
 
 /** The quotes, grouped into windows: one source, within 800 characters, in text order. */
@@ -165,7 +207,7 @@ export function anchored(claim, found, k) {
   if (joined == null) return false;
   const P = plainKeepCase(joined);
   const conflicted = new Set(k.map((x) => x.claimed));
-  const others = tokensOf(claim).filter((t) => t.kind !== "superlative" && !conflicted.has(t.label));
+  const others = tokensOf(claim).filter((t) => !["superlative", "excl-pos", "excl-neg"].includes(t.kind) && !conflicted.has(t.label));
   if (!others.some((t) => tokenIndex(t, P, claim) >= 0)) return false;
   const keys = tokensOf(claim).filter((t) => t.kind === "name").flatMap((t) => [t.key, ...t.parts.map(folded)]);
   if (namesIn(joined).some((n) => !keys.includes(nameKey(n)))) return false;

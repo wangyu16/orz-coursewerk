@@ -186,6 +186,7 @@ Unit index (every deliverable split into checkable units with stable ids and rec
 obligations (facts without evidence, unlinked units, uncovered objectives, short guide entries, stale dependents) block the gate.
 Verification (a fresh, context-blind verifier per unit; the harness admits a fact only when the verifier's quote is in a
 pinned text and carries the same values, years and names): `node scripts/verify.mjs destinations|search|fetch|semi|knowledge|correct|revert|corrections|links|status --root package --inputs <corpus dir>`.
+Write facts so they can be checked — scoped, not absolute (`docs/writing-checkable-statements.md`, D29).
 Retrieval goes only to destinations the instructor declared; the verifier command is `COURSEWERK_VERIFIER` (a JSON array;
 default headless `claude -p` with no tools, settings or session, in an empty directory), or a fresh subagent in courier mode.
 

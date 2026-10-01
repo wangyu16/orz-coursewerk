@@ -30,5 +30,5 @@ test("[req.modules.no-writes] [req.modules.wiring-report] [req.retire.old-checks
   assert.ok(r.wiring.kindsDeclaredNeverProduced.length >= 18, "every other declared kind is a gap on the clean package — produced only by planted faults (tests/stable-modules.test.mjs)");
   assert.ok(!r.findings.some((f) => RETIRED.some((k) => f.kind.includes(k))), "no retired check survives in the new gate");
   const kinds = r.findings.reduce((a, f) => ((a[f.kind] = (a[f.kind] || 0) + 1), a), {});
-  assert.deepEqual(kinds, { "evidence-missing": 37, "guide-entry-short": 1 });
+  assert.deepEqual(kinds, { "evidence-missing": 20, "absolute-unscoped": 15, "guide-entry-short": 1 });
 });

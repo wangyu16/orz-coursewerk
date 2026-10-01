@@ -126,7 +126,8 @@ and `skills/courseguide-standards` exactly):
    `oer-figures` (RDKit structures, matplotlib charts with real values, openly-licensed images, or the
    source textbook's own figures if its license permits) saved to `package/assets/` and recorded in structured
    `PROVENANCE.json` plus public `ATTRIBUTION.md`. Each `## H2` section may carry a stable block id
-   `{{attrs[#blk-…]}}`. Follow `courseguide-standards`.
+   `{{attrs[#blk-…]}}`. Follow `courseguide-standards`. Avoid general absolute statements; when exclusivity matters,
+   name the set ("of A, B and C, only X") — see `docs/writing-checkable-statements.md`.
    Every verified external media item marked cleared must also retain authoritative description/license-page
    evidence. Run `npm run capture:media -- --root package --item-id <id> --operator-name <name>
    --operator-type <automation|human> [--file <saved-description-page>]`; a URL and claimed license alone are

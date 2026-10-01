@@ -1310,6 +1310,27 @@
           "tests/verdict-redteam.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.absolute.scope",
+      "phase": "P7",
+      "tiers": [
+        "T1",
+        "T4"
+      ],
+      "statement": "A general absolute (\"only\" with no comparison set named in words) is never cleared by quote evidence: it is an obligation to name the set or reword (one instructor confirmation also clears it); a scoped one is admitted only when the member is affirmed and every named alternative is denied by a quote.",
+      "source": "D29 (operator)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/verdict-path.test.mjs",
+          "tests/verdict-redteam.test.mjs"
+        ],
+        "T4": [
+          "system/rounds/P7-verdicts.md",
+          "tests/verdict-redteam.test.mjs"
+        ]
+      }
     }
   ]
 }

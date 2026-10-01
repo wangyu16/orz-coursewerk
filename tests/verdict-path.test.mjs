@@ -11,7 +11,7 @@ import { beginSession, claimAuthorship } from "../scripts/lib/core/units_index.m
 import { confirmUnits, coreObligations, indexAndStamp, loadUnits } from "../scripts/lib/core/obligations.mjs";
 import { readLogText } from "../scripts/lib/records/log.mjs";
 import { runCheckpoint } from "../scripts/lib/skeleton/runner.mjs";
-import { semiClaims, namesIn } from "../scripts/lib/verify/claims.mjs";
+import { semiClaims, namesIn, checkableClaims as checkableClaimsOf } from "../scripts/lib/verify/claims.mjs";
 import { admit, locate } from "../scripts/lib/verify/admission.mjs";
 import { bundleLeaks, replayVerifier, selectPassages, semiBundle } from "../scripts/lib/verify/dispatch.mjs";
 import { fsInputReader, pinnedTexts, pinReference, readReferences, syncReferenceRecord } from "../scripts/lib/verify/references.mjs";
@@ -95,7 +95,7 @@ test("[req.verdict.unscorable] an answer that cannot be parsed, or answers anoth
 test("[req.dispatch.blind] one blind bundle per unit, recorded in the package and logged; replayed offline it admits the same evidence", async (t) => {
   const p = copy(t);
   const before = evidenceMissing(p);
-  assert.equal(before.length, 37);
+  assert.equal(before.length, 20);
   const units = loadUnits(p.root, p.reader);
   // every bundle is blind: no unit id, file, origin, model or course title
   const course = JSON.parse(p.read("alembic.json")).title;
@@ -310,14 +310,57 @@ test("[req.ms4.links] external links inside declared destinations are resolved a
   assert.ok(!kinds(run(p, "ms4-links"), "ms4-links").includes("external-link-unresolved:obligation"));
 });
 
-test("[req.verdict.semi-mechanical] D27 as amended: a claim's \"only\" needs the word or a strict synonym in a sentence about the claim; negating the alternatives is not enough", () => {
-  const src = "The use of a catalyst does not affect the position and composition of the equilibrium. A catalyst changes solely the rate at which the equilibrium position is reached.";
+test("[req.verdict.semi-mechanical] D27 → D29: negating one alternative is not exclusivity; the member and every named alternative must be quoted; a record superlative needs its own word", () => {
+  const src = "The use of a catalyst does not affect the position and composition of the equilibrium. A catalyst changes solely the time taken to reach equilibrium.";
   const texts = new Map([["s", src]]), passages = [{ n: 1, source: "s", text: src }];
   const ans = (...qs) => JSON.stringify({ nonce: "n", claims: [{ claim: 1, verdict: "supported", quotes: qs.map((text) => ({ passage: 1, text })) }] });
   const only = semiClaims("A catalyst changes neither the position nor the composition of the equilibrium, only the time taken to reach it.");
-  assert.equal(admit({ claims: only, passages, texts, raw: ans("The use of a catalyst does not affect the position and composition of the equilibrium"), nonce: "n" }).status, "not-found", "negation of the alternatives is not exclusivity (round P7-1, B9)");
-  assert.equal(admit({ claims: only, passages, texts, raw: ans("A catalyst changes solely the rate at which the equilibrium position is reached"), nonce: "n" }).status, "admitted", "a strict synonym in a sentence about the claim");
+  assert.equal(admit({ claims: only, passages, texts, raw: ans("The use of a catalyst does not affect the position and composition of the equilibrium"), nonce: "n" }).status, "not-found", "the alternatives alone are not the claim (round P7-1, B9)");
+  assert.equal(admit({ claims: only, passages, texts, raw: ans("The use of a catalyst does not affect the position and composition of the equilibrium", "A catalyst changes solely the time taken to reach equilibrium"), nonce: "n" }).status, "admitted", "member and both alternatives quoted");
   const first = semiClaims("Le Chatelier was the first to state the principle of the equilibrium for catalyst reactions.");
   assert.equal(admit({ claims: first, passages, texts, raw: ans("The use of a catalyst does not affect the position and composition of the equilibrium"), nonce: "n" }).status, "not-found", "a record superlative needs its own word");
   assert.deepEqual(semiClaims("First, the products are in the denominator; the exponent 2 was dropped from the equilibrium expression of the reaction.")[0]?.required?.superlatives ?? [], [], "an enumeration's First is not a superlative");
+});
+
+test("[req.absolute.scope] D29: \"not only\" and degree uses are not absolutes; a scoped \"only\" names its set; an open one is not dispatched", async () => {
+  const { exclusivityOf } = await import("../scripts/lib/verify/claims.mjs");
+  assert.equal(exclusivityOf("It is evaluated at any composition — not only at equilibrium."), null);
+  assert.equal(exclusivityOf("The response only *partially* offsets the disturbance."), null);
+  assert.equal(exclusivityOf("The system shifts against the alteration, though only in part."), null);
+  assert.deepEqual(exclusivityOf("Of concentration, pressure, a catalyst and temperature, only temperature changes the equilibrium constant."),
+    { open: false, positive: ["temperature"], alternatives: [{ phrase: "concentration", keys: ["concentration"] }, { phrase: "pressure", keys: ["pressure"] }, { phrase: "catalyst", keys: ["catalyst"] }] });
+  assert.equal(exclusivityOf("Only temperature changes the equilibrium constant, not concentration or pressure.").alternatives.length, 2);
+  assert.equal(exclusivityOf("A catalyst changes neither the position nor the composition, only the rate.").open, false);
+  for (const open of ["No — only temperature changes $K$.", "Temperature is the only one of these disturbances that changes $K$.", "A catalyst changes neither $K$ nor the position, only the rate."])
+    assert.equal(exclusivityOf(open).open, true, `${open}: no set named in words`);
+});
+
+test("[req.absolute.scope] [req.verdict.semi-mechanical] D29: a scoped exclusivity is admitted only when the member and every named alternative are quoted", () => {
+  const src = "A change in temperature changes the value of the equilibrium constant. Changing the concentration of a reactant does not change the equilibrium constant. A change in pressure does not change the equilibrium constant either.";
+  const texts = new Map([["s", src]]), passages = [{ n: 1, source: "s", text: src }];
+  const claims = checkableClaimsOf("Of concentration, pressure and temperature, only temperature changes the value of the equilibrium constant.");
+  const ans = (...qs) => JSON.stringify({ nonce: "n", claims: [{ claim: 1, verdict: "supported", quotes: qs.map((text) => ({ passage: 1, text })) }] });
+  const all = ["A change in temperature changes the value of the equilibrium constant", "Changing the concentration of a reactant does not change the equilibrium constant", "A change in pressure does not change the equilibrium constant either"];
+  assert.equal(admit({ claims, passages, texts, raw: ans(...all), nonce: "n" }).status, "admitted");
+  const r = admit({ claims, passages, texts, raw: ans(all[0], all[1]), nonce: "n" });
+  assert.equal(r.status, "not-found"); assert.match(r.perClaim[0].reason, /not pressure/);
+  assert.equal(admit({ claims, passages, texts, raw: ans(all[1], all[2]), nonce: "n" }).status, "not-found", "the member itself must be stated, not negated");
+});
+
+test("[req.absolute.scope] D29: an open absolute is an obligation to name the set or reword; the instructor's one confirmation clears it", async (t) => {
+  const p = copy(t);
+  const id = "u-study-guide-chemical-equilibrium-common-misconceptions-5";
+  const open = () => coreObligations(p.root, p.reader, "t").filter((f) => f.kind === "absolute-unscoped" && f.units.includes(id));
+  assert.equal(open().length, 1);
+  const prompts = [];
+  await verifySemi(p.root, p.reader, { texts: texts(p), verifier: async (pr) => { prompts.push(pr); return { mode: "replay", raw: "" }; }, only: [id] });
+  assert.ok(prompts.every((pr) => !/only temperature changes/.test(pr)), "an open absolute is never sent to a verifier");
+  confirmUnits(p.root, p.reader, [id], { what: "fact" }, I);
+  assert.equal(open().length, 0);
+  // rewording with the set named turns it into a checkable conjunction
+  const q = copy(t);
+  beginSession(q.root, q.reader, AGENT);
+  q.edit("study-guide/chemical-equilibrium.md", (x) => x.replace("No — only temperature changes $K$;", "No — of concentration, pressure and temperature, only temperature changes $K$;"));
+  indexAndStamp(q.root, q.reader, { as: "agent", party: AGENT });
+  assert.equal(coreObligations(q.root, q.reader, "t").filter((f) => f.kind === "absolute-unscoped" && f.units.includes(id)).length, 0);
 });

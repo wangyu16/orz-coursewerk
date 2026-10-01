@@ -15,7 +15,7 @@ import { randomBytes } from "node:crypto";
 import { sha256, canonicalJson } from "../records/canonical.mjs";
 import { recordFile } from "../records/paths.mjs";
 import { appendLogRecord } from "../records/log.mjs";
-import { folded, quantitiesIn, nameKey, yearsIn } from "./claims.mjs";
+import { NEGATION, folded, quantitiesIn, nameKey, yearsIn } from "./claims.mjs";
 
 export const VERIFICATION_DIR = "metadata/verification";
 const SYSTEM = "You are a context-blind fact verifier. You see only the material in the user message. Answer only from it, and reply with JSON only.";
@@ -32,7 +32,7 @@ export function verifierCommand(env = process.env) {
 /** Pick candidate passages for a unit's claims from pinned texts: deterministic, ranked by the claim's RARE words
  *  (inverse document frequency over all windows, so "catalyst" outweighs "equilibrium") and by carried facts; at most
  *  two windows per text, so one long page cannot crowd out the others. */
-export function selectPassages(claims, texts, { max = 8, window = 3, perSource = 2 } = {}) {
+export function selectPassages(claims, texts, { max = 10, window = 3, perSource = 2 } = {}) {
   const words = [...new Set(claims.flatMap((c) => c.words))];
   const facts = claims.flatMap((c) => [...c.required.names.map(nameKey), ...c.required.years, ...c.required.months.map((m) => m.toLowerCase())]);
   const qty = claims.flatMap((c) => c.required.quantities);
@@ -56,6 +56,16 @@ export function selectPassages(claims, texts, { max = 8, window = 3, perSource =
   }
   cands.sort((a, b) => b.score - a.score || a.source.localeCompare(b.source) || a.i - b.i);
   const chosen = [];
+  // coverage first: the best window for every required token (a name, a year, each member and named alternative of
+  // an exclusivity — D29), so one generic topic cannot crowd out the sentence that states a fact
+  const needles = claims.flatMap((c) => [...[...c.required.names.map(nameKey), ...c.required.years].map((k) => ({ keys: [k] })),
+    ...(c.required.exclusive ? [{ keys: c.required.exclusive.positive }, ...c.required.exclusive.alternatives.map((a) => ({ keys: a.keys, negated: true }))] : [])]);
+  for (const { keys, negated } of needles) {
+    if (chosen.length >= max) break;
+    const fits = (c) => keys.every((k) => c.f.includes(k)) && !chosen.includes(c);
+    const best = (negated && cands.find((c) => fits(c) && NEGATION.test(c.f))) || cands.find(fits);
+    if (best && !chosen.some((x) => x.source === best.source && Math.abs(x.i - best.i) < window)) chosen.push(best);
+  }
   for (const c of cands) {
     if (chosen.length >= max) break;
     if (chosen.filter((x) => x.source === c.source).length >= perSource) continue;

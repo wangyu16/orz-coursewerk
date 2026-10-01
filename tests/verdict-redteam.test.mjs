@@ -12,9 +12,10 @@ import { liveReader } from "../scripts/lib/core/package_reader.mjs";
 import { beginSession, claimAuthorship } from "../scripts/lib/core/units_index.mjs";
 import { confirmUnits, coreObligations, indexAndStamp, loadUnits } from "../scripts/lib/core/obligations.mjs";
 import { runCheckpoint } from "../scripts/lib/skeleton/runner.mjs";
-import { checkableClaims, quantitiesIn, yearsIn } from "../scripts/lib/verify/claims.mjs";
+import { checkableClaims, checkableClaims as semiClaimsOf, quantitiesIn, yearsIn } from "../scripts/lib/verify/claims.mjs";
 import { classifyUnit } from "../scripts/lib/core/segment.mjs";
 import { replayVerifier } from "../scripts/lib/verify/dispatch.mjs";
+import { admit } from "../scripts/lib/verify/admission.mjs";
 import { fsInputReader, pinnedTexts, pinReference, syncReferenceRecord } from "../scripts/lib/verify/references.mjs";
 import { applyCorrection, readmitRecorded, revertCorrection, verifySemi } from "../scripts/lib/verify/verdicts.mjs";
 
@@ -67,7 +68,7 @@ function rewriteUnattributed(p, id, fn) {
 function gate(p, id) {
   const r = runCheckpoint({ root: p.root, checkpoint: "V8", profile: "public", registry: reg("ms1-sources", "ms8-verdicts"), inputsDir: p.inputs });
   const findings = r.findings.filter((f) => ["ms1-sources", "ms8-verdicts"].includes(f.module)).map((f) => `${f.kind}:${f.statusClass}`);
-  const open = coreObligations(p.root, p.reader, "t").some((f) => f.kind === "evidence-missing" && f.units.includes(id));
+  const open = coreObligations(p.root, p.reader, "t").some((f) => ["evidence-missing", "absolute-unscoped"].includes(f.kind) && f.units.includes(id));
   return { findings, open, blocked: open || findings.some((k) => /:defect$/.test(k)) };
 }
 async function honestNaming(p) {
@@ -197,4 +198,41 @@ test("[req.ms3.invisible] round P7-1 B11: an invisible format character in a del
   p.edit("study-guide/le-chatelier.md", (x) => x.replace("in 1884", "in 18​84"));
   const r = runCheckpoint({ root: p.root, checkpoint: "V8", profile: "public", registry: reg("ms3-format"), inputsDir: p.inputs });
   assert.ok(r.findings.some((f) => f.module === "ms3-format" && f.statusClass === "defect" && f.evidence.rule === "invisible-character" && /U\+200B/.test(f.evidence.issue)));
+});
+
+// ---- round D29-1: the exclusivity rule ---------------------------------------------------------------------------
+test("[req.absolute.scope] round D29-1: hidden, doubled, misattached and synonym exclusivities are open, not scoped or absent", async () => {
+  const { exclusivityOf, openAbsolutes } = await import("../scripts/lib/verify/claims.mjs");
+  for (const t of [
+    "Of temperature and a catalyst, only temperature changes the equilibrium constant, and only a catalyst speeds up a reaction.", // two in one sentence (p02)
+    "At equilibrium, for the concentrations of products and reactants, only the partial pressure matters.", // a list that is not the set (p03)
+    "Temperature alone changes the equilibrium constant.", "A catalyst is the sole factor that speeds a reaction.", "It changes nothing but the rate of the reaction.", // synonyms (p05)
+    "The reaction happens only once at room temperature.",
+    "Temperature changes the constant on­ly when heated.", "Temperature on*ly* changes the constant.", "Temperature оnly changes the constant.", // hidden spellings (p11)
+  ]) assert.equal(exclusivityOf(t)?.open, true, t);
+  assert.equal(openAbsolutes("Some framing text. Temperature on*ly* changes the constant.").length, 1, "found whatever the classifier says");
+  const g = exclusivityOf("Only increasing the temperature shifts the equilibrium, not the total pressure.");
+  assert.deepEqual(g.positive, ["increasing", "temperature"], "a leading gerund is kept with its noun (p08)");
+  assert.deepEqual(exclusivityOf("Only temperature, not a catalyst, shifts the equilibrium of a reaction.").alternatives.map((a) => a.phrase), ["catalyst"], "the not-list stops at the clause (no predicate swallowed)");
+});
+
+test("[req.absolute.scope] [req.verdict.semi-mechanical] round D29-1: a denial must govern the predicate; the member must stand alone and be affirmed", () => {
+  const ans = (...qs) => JSON.stringify({ nonce: "n", claims: [{ claim: 1, verdict: "supported", quotes: qs.map((text) => ({ passage: 1, text })) }] });
+  const run = (claimText, src, ...qs) => admit({ claims: semiClaimsOf(claimText), passages: [{ n: 1, source: "s", text: src }], texts: new Map([["s", src]]), raw: ans(...qs), nonce: "n" }).status;
+  const claim = "Of a catalyst and temperature, only temperature increases the rate of a reaction.";
+  const T = "Raising the temperature increases the rate of a reaction because more collisions exceed the activation energy.";
+  // p07: "without being consumed" and "no suitable catalyst" negate something else
+  for (const neg of ["A catalyst increases the rate of a reaction without being consumed in the reaction.", "Reactions run at low rates of chemical reaction when no suitable catalyst is present."])
+    assert.equal(run(claim, `${T} ${neg}`, T.slice(0, -1), neg.slice(0, -1)), "not-found", neg);
+  // p13: a member sentence whose predicate is negated later in the sentence does not affirm it
+  const c13 = "Of a catalyst and the total pressure, only a catalyst changes the equilibrium constant.";
+  const s13 = "Adding a catalyst will affect both the forward and reverse rates and will not have an effect on the equilibrium constant. Changing the total pressure does not change the equilibrium constant.";
+  assert.equal(run(c13, s13, "Adding a catalyst will affect both the forward and reverse rates and will not have an effect on the equilibrium constant", "Changing the total pressure does not change the equilibrium constant"), "not-found");
+  // p06: a member sentence that lists other members does not single it out
+  const c6 = "Only temperature shifts the equilibrium of a reaction, not a catalyst.";
+  const s6 = "Changes in temperature, pressure, volume, or concentration shift the equilibrium of a reaction. A catalyst does not shift the equilibrium of a reaction.";
+  assert.equal(run(c6, s6, "Changes in temperature, pressure, volume, or concentration shift the equilibrium of a reaction", "A catalyst does not shift the equilibrium of a reaction"), "not-found");
+  // and the honest conjunction is admitted
+  const s9 = "A change in temperature shifts the equilibrium of a reaction and changes its constant. A catalyst does not shift the equilibrium of a reaction.";
+  assert.equal(run(c6, s9, "A change in temperature shifts the equilibrium of a reaction and changes its constant", "A catalyst does not shift the equilibrium of a reaction"), "admitted");
 });

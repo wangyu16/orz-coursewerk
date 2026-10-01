@@ -79,3 +79,36 @@ Gate on the live package after pass 3: no defects, 35 evidence obligations, 1 sh
 2. "only" in conceptual sentences is the largest single source of evidence burden.
 3. −92 kJ mol⁻¹, which the package says comes "from the source", is stated in no pinned source.
 4. The sources disagree on the year of the law of mass action (1864 vs 1865).
+
+## Round D29-1 — the exclusivity rule (operator decision D29), ~15 probes, offline
+
+D29 replaces D27. A scoped "only" names its comparison set in words, in the same sentence, and is checked as a
+conjunction: the member does it, each named alternative does not. An open one is a blocking `absolute-unscoped`
+obligation and is never sent to a verifier. Requirement `req.absolute.scope`; also `req.verdict.semi-mechanical`.
+
+Eight bypasses were found, all fixed, and kept as probes in `tests/verdict-redteam.test.mjs`:
+1. a second, open "only" hidden in a sentence with a scoped one — two in one sentence are now open;
+2. a list attached to another phrase ("the concentrations of A and B") taken as the set — the set must head the
+   clause or follow "only X, not";
+3. the head word taken from a gerund — the gerund is kept with its noun;
+4. a member quoted inside a list of members ("temperature, pressure, volume, or concentration") — refused;
+5. denials made of unrelated negations ("without being consumed", "no suitable catalyst") — the negation must
+   govern the predicate within three words, and the alternative must be its subject or the object of a negated
+   change verb;
+6. synonyms ("alone", "the sole", "nothing but", "solely") and degree words ("once", "about") misread — fixed;
+7. "only" hidden by a soft hyphen, a zero-width character, emphasis inside the word, or a Cyrillic letter — text is
+   normalized, and open absolutes are raised for every unit;
+8. a member sentence that negates the predicate past a fixed word window — the predicate is drawn from the clause
+   that carries the "only".
+
+Out of scope, kept as guidance (`docs/writing-checkable-statements.md`): always, never and every pass without an
+obligation.
+
+## Live run after D29 (C2)
+
+The agent rewrote 15 open absolutes (8 scoped, the rest reworded without the absolute). Three passes on the
+scoped claims (≈ $1.4) admitted none. The verifier quoted sources that state the same facts in other words
+("speed" for "rate"), or the pinned corpus does not state them at all (that pressure leaves K unchanged).
+
+Gate: no defects, 0 open absolutes, 22 evidence obligations (10 of them exercise data), and 2 `fact-disputed`
+questions (sources disagree on the year of the law of mass action).

@@ -6,7 +6,7 @@ working copy (`courses/controlled-chemistry-v2` @ `d835acc`) without its git his
 (`package/metadata/LOG.jsonl`) carries the three approval records. Demo and study material only.
 
 Since P5 it also carries its unit index (171 units, every teaching unit linked to the spine; working copy `b9c1e1a`):
-37 checkable semi-mechanical facts await evidence (D28: sentences with no value, year, name or superlative are left to the knowledge path) and `guide.chemical-equilibrium.evidence-design` owes one question.
+20 checkable semi-mechanical facts await evidence (D28: sentences with no value, year, name or superlative are left to the knowledge path), 15 general "only" statements await a named comparison set or a rewording (D29), and `guide.chemical-equilibrium.evidence-design` owes one question.
 
 Do not edit in place: tests copy it first. Any change to a spine document voids the matching approval — which is
 exactly what the tests use it to show.
