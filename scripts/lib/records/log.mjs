@@ -21,6 +21,7 @@ export const GENESIS = "0".repeat(64);
 export const LOG_TYPES = Object.freeze([
   "intake", "transition", "version", "approval", "glance-confirmation", "steering", "answer", "confirmation",
   "authorship-confirmation", "revision", "divergence", "dispatch", "unit-retirement", "publish", "module-change",
+  "checkpoint", "contact",
 ]);
 export const PARTY_ROLES = Object.freeze(["instructor", "agent", "harness"]);
 

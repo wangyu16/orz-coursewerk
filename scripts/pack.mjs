@@ -7,6 +7,7 @@
 // The alembic.json is placed at the ZIP ROOT so Alembic ingests with zero friction.
 //
 // Usage: node pack.mjs --package <dir> --out <dir> [--inputs <source-text-dir>]
+// A spine-v2 package packs exactly its latest publish decision (scripts/lib/core/pack_v2.mjs).
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
@@ -33,6 +34,19 @@ if (!path.relative(pkg, outDir).startsWith("..")) {
   process.exit(2);
 }
 
+// A spine-v2 package is packed from the instructor's publish decision on the one gate (P8); the checks below are the
+// v0.12 release path, kept for packages not yet migrated.
+{
+  let v2 = false;
+  try { v2 = JSON.parse(fs.readFileSync(path.join(pkg, "metadata", "coursewerk.json"), "utf8")).spine === 2; } catch { v2 = false; }
+  if (v2) {
+    const { packPublished } = await import("./lib/core/pack_v2.mjs");
+    const r = packPublished(pkg, outDir);
+    if (!r.ok) { console.error(`pack: ${r.error}`); process.exit(2); }
+    console.log(JSON.stringify(r, null, 2));
+    process.exit(0);
+  }
+}
 const work = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-release-"));
 const qaJson = path.join(work, "qa.json");
 const carrierReceipt = path.join(work, "carriers.json");

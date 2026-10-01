@@ -1,0 +1,210 @@
+// THE WORKFLOW (redesign P8): chapter states, the commands, the checkpoint digest and answers, the publish decision
+// and the pack it allows. Offline and deterministic, on the real C2 package.
+import test from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { liveReader } from "../scripts/lib/core/package_reader.mjs";
+import { confirmUnits, coreObligations } from "../scripts/lib/core/obligations.mjs";
+import { openMajorVersion } from "../scripts/lib/core/versions.mjs";
+import { recordSteering } from "../scripts/lib/core/steering_intake.mjs";
+import { STEERING_FIELDS } from "../scripts/lib/records/steering.mjs";
+import { recordApproval } from "../scripts/lib/core/approvals.mjs";
+import { chapterStates, eligibility, latestPublish, publishDecision, transition, transitionProblems, unitInfoOf } from "../scripts/lib/core/workflow.mjs";
+import { answerDigest, buildDigest, deliverDigest, rootCause } from "../scripts/lib/core/digest.mjs";
+import { runGate } from "../scripts/lib/skeleton/full_gate.mjs";
+import { makeFinding } from "../scripts/lib/records/findings.mjs";
+import { readLogText } from "../scripts/lib/records/log.mjs";
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const REPO = path.resolve(HERE, "..");
+const C2 = path.join(HERE, "fixtures", "c2-chemistry-v2", "package");
+const INPUTS = path.join(HERE, "fixtures", "c2-chemistry", "inputs");
+const I = { role: "instructor", name: "Yu Wang (wangyu16)" };
+const AGENT = { role: "agent", name: "executor", model: "claude-opus-5-5" };
+const git = (root, ...a) => spawnSync("git", ["-C", root, ...a], { encoding: "utf8" });
+
+function copy(t) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-workflow-"));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const root = path.join(dir, "pkg");
+  fs.cpSync(C2, root, { recursive: true }); fs.cpSync(INPUTS, path.join(dir, "inputs"), { recursive: true });
+  for (const a of [["init", "-q"], ["config", "user.name", "T"], ["config", "user.email", "t@example.invalid"], ["add", "-A"], ["commit", "-q", "-m", "c2"]]) git(root, ...a);
+  return { root, inputs: path.join(dir, "inputs"), out: path.join(dir, "out"), reader: liveReader(root), commit: () => { git(root, "add", "-A"); git(root, "commit", "-q", "-m", "step"); } };
+}
+const cli = (...a) => spawnSync(process.execPath, [path.join(REPO, "scripts", "coursewerk.mjs"), ...a], { encoding: "utf8" });
+const steer = (p) => recordSteering(p.root, { defaults: Object.fromEntries(STEERING_FIELDS.map((f) => [f, f === "exclusions" ? [] : "default"])), acceptAll: true, instructorWords: "accept all defaults" }, I);
+/** Make le-chatelier publishable the instructor's way: one batched confirmation of its open facts and absolutes. */
+function clearLeChatelier(p) {
+  const ids = [...new Set(coreObligations(p.root, p.reader, "t").filter((f) => ["evidence-missing", "absolute-unreviewed"].includes(f.kind)).flatMap((f) => f.units).filter((u) => /le-chatelier/.test(u)))];
+  confirmUnits(p.root, p.reader, ids, { what: "fact" }, I);
+  p.commit();
+}
+
+// ---- states (T1) --------------------------------------------------------------------------------------------------
+test("[req.states.machine] a chapter is in exactly one state and moves only by its triggers and preconditions", (t) => {
+  const p = copy(t);
+  const s = chapterStates(p.root, p.reader);
+  assert.deepEqual(Object.values(s).map((x) => x.state), ["PACKAGE", "PACKAGE"], "approved before states were recorded: PACKAGE");
+  assert.match(transitionProblems(p.root, p.reader, "le-chatelier", "ASSEMBLING").join(), /re-assembled only after a structural change/);
+  assert.match(transitionProblems(p.root, p.reader, "le-chatelier", "PACKAGE").join(), /by the instructor's approval/);
+  assert.throws(() => transition(p.root, p.reader, { chapter: "le-chatelier", to: "DRAFT", instructorWords: "x" }, AGENT), /instructor's word/);
+  // a structural change opens v2: the approval no longer counts, and the chapter may go back to draft
+  openMajorVersion(p.root, { scopes: ["chapter:le-chatelier"], reason: "objectives split" }, I);
+  assert.equal(chapterStates(p.root, p.reader)["le-chatelier"].approved, false, "v1's approval does not cover v2");
+  transition(p.root, p.reader, { chapter: "le-chatelier", to: "DRAFT", instructorWords: "back to draft" }, I);
+  assert.equal(chapterStates(p.root, p.reader)["le-chatelier"].state, "DRAFT");
+  assert.match(transitionProblems(p.root, p.reader, "le-chatelier", "ASSEMBLING").join(), /steering is not recorded/);
+  steer(p);
+  transition(p.root, p.reader, { chapter: "le-chatelier", to: "ASSEMBLING", instructorWords: "assemble it" }, I);
+  assert.equal(chapterStates(p.root, p.reader)["le-chatelier"].state, "ASSEMBLING");
+  recordApproval(p.root, p.reader, ["chemical-equilibrium", "le-chatelier"], { chapter: "le-chatelier", instructorWords: "Approve chapter 2, version 2." }, I);
+  const after = chapterStates(p.root, p.reader)["le-chatelier"];
+  assert.equal(after.state, "PACKAGE"); assert.equal(after.version, 2); assert.equal(after.approved, true);
+  assert.equal(chapterStates(p.root, p.reader)["chemical-equilibrium"].state, "PACKAGE", "chapters move independently");
+});
+
+// ---- commands (T1) ------------------------------------------------------------------------------------------------
+test("[req.commands] every command refuses with a plain next step when its preconditions fail", (t) => {
+  const p = copy(t);
+  const expect = (r, re) => { assert.equal(r.status, 1, r.stderr); assert.match(r.stderr, re); assert.match(r.stderr, /next:|already|not|only|which|needs|no chapter/); };
+  expect(cli("approve", "--root", p.root), /approve what\?/);
+  expect(cli("approve", "--root", p.root, "--chapter", "le-chatelier", "--name", I.name), /already approved/);
+  expect(cli("answer", "--root", p.root, "--accept-all", "--name", I.name, "--words", "ok"), /there is no digest to answer[\s\S]*next: node scripts\/coursewerk.mjs digest/);
+  expect(cli("publish", "--root", p.root, "--inputs", p.inputs, "--name", I.name), /quotes their words[\s\S]*next: --words/);
+  expect(cli("interrupt", "--root", p.root, "--reason", "i-am-unsure", "--question", "?", "--model", "m"), /allowed only for spine-scope-conflict, missing-input, rights-blocker, spine-change-request/);
+  expect(cli("assemble", "--root", p.root, "--chapter", "le-chatelier", "--name", I.name, "--words", "assemble"), /re-assembled only after a structural change/);
+  expect(cli("revert", "--root", p.root), /which correction\?/);
+  // a v0.12 package is told how to migrate
+  fs.writeFileSync(path.join(p.root, "metadata", "coursewerk.json"), JSON.stringify({ schemaVersion: 1, spine: 1 }));
+  expect(cli("status", "--root", p.root), /v0\.12 package[\s\S]*next: migrate the spine first/);
+});
+
+// ---- the digest and answers (T1) ----------------------------------------------------------------------------------
+const q = (i, extra = {}) => makeFinding({ module: "ms8-verdicts", kind: "knowledge-concern", units: [`u-study-guide-le-chatelier-x-${i}`], statusClass: "question", route: "digest", basis: "b", evidence: { type: "judgment", note: `concern number ${i} about a distinct thing ${"abcdefghijklmnop"[i]}` }, recommendation: "keep", ...extra });
+
+test("[req.digest.budget] questions are clustered by root cause, ranked, capped; overflow is deferred, never dropped, and goes first next time; corrections sit outside the budget", (t) => {
+  const p = copy(t);
+  const unitInfo = new Map(Array.from({ length: 16 }, (_, i) => [`u-study-guide-le-chatelier-x-${i}`, { deliverable: "study-guide/le-chatelier.md", contentHash: "a".repeat(64) }]));
+  const same = [0, 1, 2].map((i) => makeFinding({ module: "ms1-sources", kind: "fact-disputed", units: [`u-study-guide-le-chatelier-x-${i}`], statusClass: "question", route: "digest", basis: "b", evidence: { type: "conflict", note: `sources give 1864 and 1865 for unit u-a-${i}` } }));
+  const findings = [...Array.from({ length: 13 }, (_, i) => q(i + 3)), ...same,
+    makeFinding({ module: "skeleton", kind: "evidence-missing", units: ["u-x"], statusClass: "obligation", route: "agent", basis: "b", evidence: { type: "missing", what: "evidence" } })];
+  assert.equal(new Set(same.map(rootCause)).size, 1, "one root cause");
+  const corrections = [{ id: "c-1", diff: "- a\n+ b" }];
+  const d = buildDigest(p.root, findings, unitInfo, { cap: 10, corrections });
+  assert.equal(d.entries.length, 10); assert.equal(d.deferred.count, 4, "14 clusters, 10 shown, 4 deferred — none dropped");
+  assert.equal(d.entries[0].count, 3, "the merged cluster ranks first"); assert.equal(d.entries[0].kind, "fact-disputed");
+  assert.deepEqual(d.corrections, corrections, "corrections are outside the budget");
+  assert.deepEqual(d.progress.agentOpen, { "evidence-missing": 1 }, "agent-routed work is a progress summary, not a question");
+  deliverDigest(p.root, d, AGENT);
+  const d2 = buildDigest(p.root, findings, unitInfo, { cap: 10 });
+  assert.deepEqual(d2.entries.slice(0, 4).map((e) => e.key).sort(), [...d.deferred.keys].sort(), "the deferred clusters come first next time");
+  assert.ok(d2.entries.slice(0, 4).every((e) => e.deferredBefore));
+  assert.ok(readLogText(p.root).includes('"type":"checkpoint"'));
+});
+
+test("[req.answers.persist] an answered question is not asked again while its basis is unchanged; only the instructor answers", (t) => {
+  const p = copy(t);
+  const unitInfo = new Map([[`u-study-guide-le-chatelier-x-4`, { deliverable: "study-guide/le-chatelier.md", contentHash: "a".repeat(64) }]]);
+  const f = [q(4)];
+  const d = buildDigest(p.root, f, unitInfo);
+  assert.throws(() => answerDigest(p.root, d, { acceptAll: true, instructorWords: "accept" }, AGENT), /only the instructor answers/);
+  answerDigest(p.root, d, { acceptAll: true, instructorWords: "Accept the recommendations." }, I);
+  assert.equal(buildDigest(p.root, f, unitInfo).entries.length, 0, "answered: not asked again");
+  const changed = new Map([[`u-study-guide-le-chatelier-x-4`, { deliverable: "study-guide/le-chatelier.md", contentHash: "b".repeat(64) }]]);
+  assert.equal(buildDigest(p.root, f, changed).entries.length, 1, "the unit changed: the question returns");
+});
+
+// ---- publish and pack (T1) ----------------------------------------------------------------------------------------
+test("[req.publish.record] [req.publish.scope] [req.oldgate.retired] a publish records hash, approvals and open questions; only eligible chapters go; the pack is exactly that decision", (t) => {
+  const p = copy(t);
+  clearLeChatelier(p);
+  const g = runGate(p.root, { inputsDir: p.inputs });
+  const info = unitInfoOf(p.root, p.reader);
+  const el = eligibility(p.root, p.reader, g, new Map([...info].map(([k, v]) => [k, v.deliverable])));
+  assert.equal(el.chapters["le-chatelier"].publishable, true, JSON.stringify(el.chapters["le-chatelier"].why));
+  assert.equal(el.chapters["chemical-equilibrium"].publishable, false);
+  assert.throws(() => publishDecision(p.root, p.reader, { gateResult: g, unitInfo: info, instructorWords: "go" }, AGENT), /instructor's decision/);
+  const r = publishDecision(p.root, p.reader, { gateResult: g, unitInfo: info, instructorWords: "Publish what is ready." }, I);
+  assert.deepEqual(r.chapters.map((c) => c.chapter), ["le-chatelier"]);
+  assert.ok(r.chapters[0].approval.seq > 0 && r.chapters[0].approval.hash, "the approval it relied on");
+  assert.ok(r.course?.approval, "the course map, with its own approval");
+  assert.match(r.excluded[0].why.join(), /evidence-missing|guide-entry-short/);
+  assert.match(r.contentHash, /^[0-9a-f]{64}$/); assert.ok(Array.isArray(r.openQuestions));
+  assert.ok(fs.existsSync(path.join(p.root, "metadata", "publish", `${String(r.seq).padStart(4, "0")}.json`)));
+  // the pack: only what was published, no v0.12 release checks (no key-fact review, no visual attestation needed)
+  assert.ok(!["KEY_FACT_REVIEW.json", "VISUAL_REVIEW.json"].some((f) => fs.existsSync(path.join(p.root, "metadata", f))), "no v0.12 key-fact review or visual attestation exists");
+  fs.appendFileSync(path.join(p.root, "study-guide", "le-chatelier.md"), "\nAn edit after the decision.\n");
+  let pk = spawnSync(process.execPath, [path.join(REPO, "scripts", "pack.mjs"), "--package", p.root, "--out", p.out], { encoding: "utf8" });
+  assert.equal(pk.status, 2, "the package changed after the decision"); assert.match(pk.stderr, /publish again/);
+  git(p.root, "checkout", "--", "study-guide");
+  pk = spawnSync(process.execPath, [path.join(REPO, "scripts", "pack.mjs"), "--package", p.root, "--out", p.out], { encoding: "utf8" });
+  assert.equal(pk.status, 0, pk.stderr);
+  const receipt = JSON.parse(pk.stdout);
+  const list = spawnSync("unzip", ["-Z1", receipt.zip], { encoding: "utf8" }).stdout.split("\n");
+  assert.ok(list.includes("study-guide/le-chatelier.md") && !list.includes("study-guide/chemical-equilibrium.md"), "only the published chapter");
+  assert.ok(list.includes("concepts/course.md") && list.includes("metadata/PUBLISHED.json") && list.includes("metadata/LOG.jsonl"));
+  const manifest = JSON.parse(spawnSync("unzip", ["-p", receipt.zip, "alembic.json"], { encoding: "utf8" }).stdout);
+  assert.deepEqual(manifest.chapters.map((c) => c.slug), ["le-chatelier"]);
+  assert.equal(receipt.clearedForPublicRelease, true); assert.equal(latestPublish(p.root).current, true);
+});
+
+test("[req.draft.private] [req.ms2.public-only] [req.profiles.one-gate] one gate for both profiles (rights only in public); a draft is shared only privately, marked as a draft", (t) => {
+  const p = copy(t);
+  const pub = runGate(p.root, { profile: "public", inputsDir: p.inputs }), priv = runGate(p.root, { profile: "private", inputsDir: p.inputs });
+  assert.deepEqual(pub.wiring.modulesRan.filter((m) => !priv.wiring.modulesRan.includes(m)), ["ms2-rights"], "the profile toggles only the rights module");
+  assert.deepEqual(priv.wiring.modulesRan.filter((m) => !pub.wiring.modulesRan.includes(m)), []);
+  clearLeChatelier(p);
+  openMajorVersion(p.root, { scopes: ["chapter:chemical-equilibrium"], reason: "reorganised" }, I);
+  transition(p.root, p.reader, { chapter: "chemical-equilibrium", to: "DRAFT", instructorWords: "back to draft" }, I);
+  p.commit();
+  const info = unitInfoOf(p.root, p.reader);
+  const gPub = runGate(p.root, { profile: "public", inputsDir: p.inputs });
+  assert.throws(() => publishDecision(p.root, p.reader, { gateResult: gPub, unitInfo: info, instructorWords: "go", includeDrafts: true }, I), /only in a private package/);
+  const gPriv = runGate(p.root, { profile: "private", inputsDir: p.inputs });
+  const r = publishDecision(p.root, p.reader, { gateResult: gPriv, unitInfo: info, instructorWords: "Share it with my class, draft included.", includeDrafts: true }, I);
+  assert.deepEqual(r.drafts.map((d) => d.chapter), ["chemical-equilibrium"]); assert.equal(r.profile, "private");
+  p.commit();
+  const pk = spawnSync(process.execPath, [path.join(REPO, "scripts", "pack.mjs"), "--package", p.root, "--out", p.out], { encoding: "utf8" });
+  assert.equal(pk.status, 0, pk.stderr);
+  const receipt = JSON.parse(pk.stdout);
+  assert.match(receipt.zip, /\.private\.alembic\.zip$/); assert.equal(receipt.clearedForPublicRelease, false, "a private package is never cleared for public release");
+  const manifest = JSON.parse(spawnSync("unzip", ["-p", receipt.zip, "alembic.json"], { encoding: "utf8" }).stdout);
+  assert.deepEqual(manifest.chapters.map((c) => [c.slug, !!c.draft]), [["chemical-equilibrium", true], ["le-chatelier", false]]);
+});
+
+// ---- the work loop's bounds (T1) ----------------------------------------------------------------------------------
+test("[req.loop.bounds] the loop stops at a fixed point or when the budget is spent; every instructor act refuses the agent", async (t) => {
+  const { loopStep, INSTRUCTOR_ACTS } = await import("../scripts/lib/core/loop.mjs");
+  const f = (id, route = "agent") => ({ id, route, status: "open", kind: "k", statusClass: "obligation" });
+  assert.equal(loopStep({ previous: null, current: [f("a")] }).stop, false, "first run: work to do");
+  assert.equal(loopStep({ previous: [f("a"), f("b")], current: [f("a")] }).stop, true, "nothing new: a fixed point (a stays open for the digest)");
+  assert.match(loopStep({ previous: [f("a")], current: [f("a"), f("c")], spent: { iterations: 4, costUsd: 0 } }).why, /budget is spent/);
+  assert.match(loopStep({ previous: [f("a")], current: [f("c")], spent: { iterations: 1, costUsd: 9 } }).why, /\$5/);
+  assert.equal(loopStep({ previous: [f("a")], current: [f("a"), f("q", "digest")] }).stop, true, "digest questions are not the loop's work");
+  // the acts that would change the spine, answer for the instructor or reopen a decision all refuse the agent
+  const p = copy(t);
+  const { claimAuthorship } = await import("../scripts/lib/core/units_index.mjs");
+  const { revertCorrection } = await import("../scripts/lib/verify/verdicts.mjs");
+  const { disableModule } = await import("../scripts/lib/skeleton/promotion.mjs");
+  const refusals = [
+    () => recordApproval(p.root, p.reader, ["chemical-equilibrium", "le-chatelier"], { chapter: "le-chatelier", instructorWords: "x" }, AGENT),
+    () => openMajorVersion(p.root, { scopes: ["chapter:le-chatelier"], reason: "x" }, AGENT),
+    () => transition(p.root, p.reader, { chapter: "le-chatelier", to: "DRAFT", instructorWords: "x" }, AGENT),
+    () => recordSteering(p.root, { defaults: {}, acceptAll: true, instructorWords: "x" }, AGENT),
+    () => answerDigest(p.root, { entries: [] }, { acceptAll: true, instructorWords: "x" }, AGENT),
+    () => confirmUnits(p.root, p.reader, ["u-x"], { what: "fact" }, AGENT),
+    () => claimAuthorship(p.root, { units: ["u-x"] }, AGENT),
+    () => revertCorrection(p.root, p.reader, "c-x", { note: "x" }, AGENT),
+    () => publishDecision(p.root, p.reader, { gateResult: null, unitInfo: new Map(), instructorWords: "x" }, AGENT),
+    () => disableModule(p.root, { name: "ms6-quotations", reason: "x" }, AGENT),
+  ];
+  assert.equal(refusals.length, INSTRUCTOR_ACTS.length, "one probe per instructor act");
+  for (const [i, fn] of refusals.entries()) assert.throws(fn, /instructor/, INSTRUCTOR_ACTS[i]);
+  // a spine edit by the agent voids the approval: nothing in that chapter publishes until the instructor re-approves
+  fs.appendFileSync(path.join(p.root, "concepts", "le-chatelier.md"), "\n- An extra sub-concept the agent added.\n");
+  assert.equal(chapterStates(p.root, p.reader)["le-chatelier"].approved, false);
+});

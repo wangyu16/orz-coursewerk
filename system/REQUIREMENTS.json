@@ -829,14 +829,12 @@
       ],
       "statement": "Rights, licence and attribution checks run only in public packages; private packages follow the Alembic contract and may be packed but are never cleared for public release.",
       "source": "MS2; D1",
-      "status": "deferred",
+      "status": "closed",
       "evidence": {
         "T1": [
-          "tests/stable-modules.test.mjs"
+          "tests/workflow.test.mjs"
         ]
-      },
-      "deferredTo": "P8",
-      "reason": "Rights checks skip private packages (P6, tests/stable-modules.test.mjs); packing a private package as non-public belongs to the publish step (P8)."
+      }
     },
     {
       "id": "req.ms2.two-profiles",
@@ -1144,8 +1142,12 @@
       ],
       "statement": "Each chapter is in exactly one state (DRAFT, ASSEMBLING, PACKAGE; PUBLISHED as a snapshot) and moves only by the listed triggers and preconditions.",
       "source": "skeleton §2",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/workflow.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.draft.private",
@@ -1155,8 +1157,12 @@
       ],
       "statement": "A draft can be used as-is privately and is never published publicly.",
       "source": "D15 Q16",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/workflow.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.moments.only",
@@ -1179,7 +1185,11 @@
       "statement": "The digest clusters questions by root cause, ranks them, caps them per batch, defers overflow (never drops it) and shows deferred counts; the list of corrections sits outside the budget.",
       "source": "skeleton §3; D19",
       "status": "planned",
-      "evidence": {}
+      "evidence": {
+        "T1": [
+          "tests/workflow.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.answers.persist",
@@ -1191,7 +1201,11 @@
       "statement": "An answered question is never asked again while its basis is unchanged.",
       "source": "skeleton §3; F2",
       "status": "planned",
-      "evidence": {}
+      "evidence": {
+        "T1": [
+          "tests/workflow.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.loop.bounds",
@@ -1203,7 +1217,11 @@
       "statement": "The work loop stops at a fixed point or when the batch budget is spent, and never changes the spine, answers a question for the instructor, or reopens a recorded decision.",
       "source": "skeleton §4",
       "status": "planned",
-      "evidence": {}
+      "evidence": {
+        "T1": [
+          "tests/workflow.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.publish.record",
@@ -1213,8 +1231,12 @@
       ],
       "statement": "A publish decision is recorded with the snapshot hash, the approvals it relied on and the open questions listed.",
       "source": "skeleton §7",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/workflow.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.publish.scope",
@@ -1224,8 +1246,12 @@
       ],
       "statement": "Only chapters in PACKAGE with a valid approval are published, and the course map only with its own valid approval.",
       "source": "skeleton §7; D14",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/workflow.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.profiles.one-gate",
@@ -1235,8 +1261,12 @@
       ],
       "statement": "Public and private packages go through one gate; the profile toggles only the rights modules.",
       "source": "D1; fit assessment",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/workflow.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.commands",
@@ -1248,7 +1278,11 @@
       "statement": "The documented commands (assemble, approve, status, digest, publish, revert) each refuse with a plain next step when their preconditions fail.",
       "source": "implementation plan P8",
       "status": "planned",
-      "evidence": {}
+      "evidence": {
+        "T1": [
+          "tests/workflow.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.oldgate.retired",
@@ -1260,7 +1294,11 @@
       "statement": "check_oer.mjs is no longer the gate; its remaining checks run as modules.",
       "source": "implementation plan P8",
       "status": "planned",
-      "evidence": {}
+      "evidence": {
+        "T1": [
+          "tests/workflow.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.docs.orientation",

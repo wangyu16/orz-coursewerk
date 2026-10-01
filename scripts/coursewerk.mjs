@@ -1,0 +1,134 @@
+#!/usr/bin/env node
+// The Coursewerk commands (redesign P8; skeleton §2–§4, §7). Each refuses with a plain next step when its
+// preconditions fail (req.commands). Instructor acts quote the instructor's words; the agent never runs them on the
+// instructor's behalf without those words.
+//   node scripts/coursewerk.mjs status   --root <pkg> [--inputs <dir>]                        states, approvals, what blocks
+//   node scripts/coursewerk.mjs assemble --root <pkg> --chapter <slug> --name <instructor> --words "<their words>"
+//   node scripts/coursewerk.mjs back-to-draft --root <pkg> --chapter <slug> --name <instructor> --words "…"
+//   node scripts/coursewerk.mjs approve  --root <pkg> (--chapter <slug> | --course) [--glance] --name <instructor> --words "…"
+//   node scripts/coursewerk.mjs digest   --root <pkg> [--inputs <dir>] [--cap 10] [--deliver --model <id>]   M4
+//   node scripts/coursewerk.mjs answer   --root <pkg> (--entry <n> --choice "<choice>" | --accept-all) --name <instructor> --words "…"
+//   node scripts/coursewerk.mjs publish  --root <pkg> [--inputs <dir>] [--chapters a,b] [--include-drafts] --name <instructor> --words "…"   M6
+//   node scripts/coursewerk.mjs revert   --root <pkg> --correction <id> --name <instructor> --note "<why the text stands>"
+//   node scripts/coursewerk.mjs interrupt --root <pkg> --reason <reason> --question "…" --model <id>                M5
+// Interrupt reasons (D14): spine-scope-conflict, missing-input, rights-blocker, spine-change-request.
+import fs from "node:fs";
+import { liveReader, manifestChapters } from "./lib/core/package_reader.mjs";
+import { recordApproval, approvalStatus } from "./lib/core/approvals.mjs";
+import { chapterStates, eligibility, latestPublish, publishDecision, transition, transitionProblems, unitInfoOf } from "./lib/core/workflow.mjs";
+import { answerDigest, buildDigest, deliverDigest, DEFAULT_CAP } from "./lib/core/digest.mjs";
+import { runGate } from "./lib/skeleton/full_gate.mjs";
+import { correctionsToShow, revertCorrection } from "./lib/verify/verdicts.mjs";
+import { readConfig } from "./lib/records/config.mjs";
+import { appendLogRecord, readLogText } from "./lib/records/log.mjs";
+import { recordFile } from "./lib/records/paths.mjs";
+
+export const INTERRUPT_REASONS = Object.freeze(["spine-scope-conflict", "missing-input", "rights-blocker", "spine-change-request"]);
+const [cmd, ...args] = process.argv.slice(2);
+const opt = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : undefined; };
+const flag = (n) => args.includes(n);
+const refuse = (m, next) => { console.error(`${cmd}: ${m}${next ? `\nnext: ${next}` : ""}`); process.exit(1); };
+const out = (x) => console.log(JSON.stringify(x, null, 2));
+const root = opt("--root");
+const USAGE = "usage: coursewerk.mjs <status|assemble|back-to-draft|approve|digest|answer|publish|revert|interrupt> --root <package> … (see the header of scripts/coursewerk.mjs)";
+if (!cmd || !root || !fs.existsSync(root)) { console.error(USAGE); process.exit(2); }
+try { if (readConfig(root).spine !== 2) refuse("this is a v0.12 package (no `\"spine\": 2` in metadata/coursewerk.json)", "migrate the spine first: node scripts/spine.mjs migrate --root <pkg>"); }
+catch (e) { refuse(e.message); }
+const reader = liveReader(root);
+const instructor = () => {
+  const name = opt("--name"), words = opt("--words");
+  if (!name) refuse("this is the instructor's act and needs their name", '--name "<instructor>"');
+  if (!words || !words.trim()) refuse("this is the instructor's act and quotes their words", '--words "<what the instructor said>"');
+  return { party: { role: "instructor", name }, words };
+};
+const DIGEST_FILE = "metadata/digest/current.json";
+
+try {
+  if (cmd === "status") {
+    const states = chapterStates(root, reader);
+    const g = runGate(root, { inputsDir: opt("--inputs") || null });
+    const info = unitInfoOf(root, reader);
+    const el = eligibility(root, reader, g, new Map([...info].map(([k, v]) => [k, v.deliverable])));
+    const pub = latestPublish(root);
+    out({ chapters: Object.fromEntries(Object.entries(states).map(([c, s]) => [c, { ...s, publishable: el.chapters[c].publishable, why: el.chapters[c].why }])),
+      course: el.course, blocking: g.gate.blocking.length, questions: g.gate.questions.length, corrections: correctionsToShow(root).length,
+      lastPublish: pub ? { seq: pub.seq, chapters: pub.chapters.map((c) => c.chapter), stillCurrent: pub.current } : null });
+    process.exit(0);
+  }
+  if (cmd === "assemble" || cmd === "back-to-draft") {
+    const ch = opt("--chapter") || refuse("which chapter?", "--chapter <slug>");
+    const to = cmd === "assemble" ? "ASSEMBLING" : "DRAFT";
+    const p = transitionProblems(root, reader, ch, to);
+    if (p.length) refuse(p.join("; "));
+    const { party, words } = instructor();
+    const r = transition(root, reader, { chapter: ch, to, instructorWords: words }, party);
+    out({ chapter: ch, state: to, logged: r.seq }); process.exit(0);
+  }
+  if (cmd === "approve") {
+    const chapters = manifestChapters(reader);
+    const ch = opt("--chapter") || null;
+    if (!ch && !flag("--course")) refuse("approve what?", "--chapter <slug> for a chapter's concept map and assessment guide, or --course for the course map");
+    if (ch) {
+      const s = chapterStates(root, reader)[ch];
+      if (!s) refuse(`${ch} is not a chapter of this package`);
+      if (s.state === "DRAFT") refuse(`${ch} is a draft; a draft is approved only after it is assembled`, `node scripts/coursewerk.mjs assemble --root <pkg> --chapter ${ch} …`);
+    }
+    const st = approvalStatus(reader, chapters, readLogText(root)).scopes[ch || "course"];
+    if (st?.valid) refuse(`${ch || "the course map"} is already approved at its current content`);
+    if (flag("--glance") && st?.change?.kind !== "light") refuse(`a glance confirmation is only for a light change; this one is ${st?.change?.kind}`, "approve without --glance, after reviewing the diff: node scripts/spine.mjs preview");
+    const { party, words } = instructor();
+    const r = recordApproval(root, reader, chapters, { chapter: ch, glance: flag("--glance"), instructorWords: words }, party);
+    out({ approved: ch || "course", logged: r.seq, state: ch ? chapterStates(root, reader)[ch].state : undefined }); process.exit(0);
+  }
+  if (cmd === "digest") {
+    const g = runGate(root, { inputsDir: opt("--inputs") || null });
+    const info = unitInfoOf(root, reader);
+    const d = buildDigest(root, g.findings, info, { cap: Number(opt("--cap") || DEFAULT_CAP), corrections: correctionsToShow(root) });
+    fs.mkdirSync(recordFile(root, "metadata/digest"), { recursive: true });
+    fs.writeFileSync(recordFile(root, DIGEST_FILE), JSON.stringify({ at: new Date().toISOString(), ...d }, null, 2) + "\n");
+    if (flag("--deliver")) {
+      const model = opt("--model") || refuse("a delivered digest names the agent that brings it", "--model <model id>");
+      deliverDigest(root, d, { role: "agent", name: "executor", model });
+      correctionsToShow(root, { mark: true });
+    }
+    out({ entries: d.entries.map((e, i) => ({ n: i + 1, kind: e.kind, count: e.count, chapters: e.chapters, question: e.question, recommendation: e.recommendation, deferredBefore: e.deferredBefore })),
+      deferred: d.deferred.count, interrupts: d.interrupts.length, corrections: d.corrections.map((c) => ({ id: c.id, diff: c.diff })), progress: d.progress, delivered: flag("--deliver") });
+    process.exit(0);
+  }
+  if (cmd === "answer") {
+    let d; try { d = JSON.parse(fs.readFileSync(recordFile(root, DIGEST_FILE), "utf8")); } catch { refuse("there is no digest to answer", "node scripts/coursewerk.mjs digest --root <pkg> --deliver --model <id>"); }
+    const answers = {};
+    if (!flag("--accept-all")) {
+      const n = Number(opt("--entry")), choice = opt("--choice");
+      if (!Number.isInteger(n) || !d.entries[n - 1] || !choice) refuse("which entry, and which choice?", `--entry <1…${d.entries.length}> --choice "<choice>", or --accept-all`);
+      answers[d.entries[n - 1].key] = choice;
+    }
+    const { party, words } = instructor();
+    const r = answerDigest(root, d, { answers, acceptAll: flag("--accept-all"), instructorWords: words }, party);
+    out({ recorded: r.length }); process.exit(0);
+  }
+  if (cmd === "publish") {
+    const g = runGate(root, { inputsDir: opt("--inputs") || null });
+    const info = unitInfoOf(root, reader);
+    const { party, words } = instructor();
+    const r = publishDecision(root, reader, { gateResult: g, unitInfo: info, instructorWords: words, chapters: opt("--chapters")?.split(",").filter(Boolean) || null, includeDrafts: flag("--include-drafts") }, party);
+    out({ published: r.chapters.map((c) => c.chapter), course: !!r.course, excluded: r.excluded, drafts: r.drafts, openQuestions: r.openQuestions.length, contentHash: r.contentHash, logged: r.seq,
+      next: "to hand the package to Alembic: node scripts/pack.mjs --package <pkg> --out <dir> (it packs exactly this decision)" });
+    process.exit(0);
+  }
+  if (cmd === "revert") {
+    const id = opt("--correction") || refuse("which correction?", "node scripts/coursewerk.mjs digest --root <pkg> lists them with their ids");
+    const name = opt("--name") || refuse("a revert is the instructor's decision", '--name "<instructor>"');
+    const r = revertCorrection(root, reader, id, { note: opt("--note") }, { role: "instructor", name });
+    out(r); process.exit(0);
+  }
+  if (cmd === "interrupt") {
+    const reason = opt("--reason");
+    if (!INTERRUPT_REASONS.includes(reason)) refuse(`an interrupt is allowed only for ${INTERRUPT_REASONS.join(", ")}; anything else waits for the next digest (M4)`);
+    const question = opt("--question") || refuse("say what only the instructor can decide", '--question "…"');
+    const model = opt("--model") || refuse("an interrupt names the agent", "--model <model id>");
+    const r = appendLogRecord(root, { type: "contact", party: { role: "agent", name: "executor", model }, payload: { moment: "M5", reason, question } });
+    out({ interrupt: reason, logged: r.seq }); process.exit(0);
+  }
+  console.error(USAGE); process.exit(2);
+} catch (e) { refuse(e.message); }

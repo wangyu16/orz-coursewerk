@@ -34,16 +34,18 @@ export function approvalStatus(reader, chapters, logText) {
   const course = courseCoverage(reader);
   {
     const { last, lastFull } = latest(records, "course");
-    out.course = { scope: "course", ...course, record: last, valid: !!last && last.payload.contentHash === course.contentHash };
+    out.course = { scope: "course", ...course, record: last, valid: !!last && last.payload.contentHash === course.contentHash && (last.payload.version ?? 1) === currentVersion(logText, "course") };
     if (!out.course.valid) out.course.change = last && lastFull ? classifyCourseChange(lastFull.payload.parsed || { chapterSequence: [], nodes: [] }, { chapterSequence: spine.course.chapterSequence, nodes: spine.course.nodes }, { beforeText: lastFull.payload.text, afterText: reader.text(COURSE_MAP) }) : { kind: "unapproved", reasons: [] };
   }
   for (const ch of chapters) {
     const cov = chapterCoverage(reader, spine, ch);
     const { last, lastFull } = latest(records, scopeOf(ch));
-    const valid = !!last && last.payload.contentHash === cov.contentHash && last.payload.courseSliceHash === cov.courseSliceHash;
+    // an approval is for one major version: a structural change opens v n+1, which needs its own approval (D15)
+    const valid = !!last && last.payload.contentHash === cov.contentHash && last.payload.courseSliceHash === cov.courseSliceHash && (last.payload.version ?? 1) === currentVersion(logText, scopeOf(ch));
     const s = { scope: scopeOf(ch), ...cov, record: last, valid };
     if (!valid) {
       if (!last || !lastFull) s.change = { kind: "unapproved", reasons: [] };
+      else if ((last.payload.version ?? 1) !== currentVersion(logText, scopeOf(ch))) s.change = { kind: "new-version", reasons: [{ kind: "structural", why: `version ${currentVersion(logText, scopeOf(ch))} was opened after the last approval` }] };
       else {
         const { map, guide } = spinePaths(ch);
         const before = lastFull.payload.parsed, after = { nodes: spine.chapters[ch].map.nodes, entries: spine.chapters[ch].guide.entries };
