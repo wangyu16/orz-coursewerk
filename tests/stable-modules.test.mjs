@@ -102,11 +102,14 @@ test("[req.ms7.consistency] [req.ms7.no-drift] MS7: a value disagreement and an 
   assert.ok(!run(q, "ms7-consistency").findings.some((f) => /definition/.test(f.kind)));
 });
 
-test("[req.ms5.offline] MS5: every carrier builds; the framework's network runtime is one question, not a defect (D24 pending)", (t) => {
+test("[req.ms5.offline] carriers are not a deliverable: MS5 is an optional preview that can only ask, and assembly is documented", (t) => {
   const p = copy(t);
-  const r = run(p, "ms5-carriers");
-  assert.deepEqual(found(r, "ms5-carriers"), ["carrier-network-runtime:question"]);
-  assert.match(r.findings[0].evidence.note, /cdn\.jsdelivr\.net/);
+  const r = runCheckpoint({ root: p.root, checkpoint: "V8", profile: "public", registry: { schemaVersion: 1, __noStandard: true, modules: [{ name: "ms5-carriers", version: "1.0.0", maturity: "experimental", enabled: true }] }, inputsDir: p.inputs });
+  assert.deepEqual(found(r, "ms5-carriers"), [], "the C2 carriers build");
+  const std = JSON.parse(fs.readFileSync(path.join(HERE, "..", "scripts", "modules", "standard.json"), "utf8"));
+  assert.ok(!std.modules.some((m) => m.name === "ms5-carriers"), "not in the standard registry");
+  const doc = fs.readFileSync(path.join(HERE, "..", "docs", "assembling-carriers.md"), "utf8");
+  for (const needle of ["orz-mdhtml", "orz-slides", "orz-paged", "Alembic", "build_carriers.mjs", "not** a Coursewerk"]) assert.ok(doc.includes(needle), needle);
 });
 
 test("[req.modules.manifest] the standard registry: a package without one runs every stable module; dropping one needs the instructor's logged decision", async (t) => {
@@ -115,7 +118,7 @@ test("[req.modules.manifest] the standard registry: a package without one runs e
   const p = copy(t);
   fs.rmSync(path.join(p.root, "metadata", "modules.json"), { force: true });
   const std = readRegistry(p.root);
-  assert.equal(std.standard, true); assert.equal(std.modules.length, 7);
+  assert.equal(std.standard, true); assert.equal(std.modules.length, 6);
   fs.writeFileSync(path.join(p.root, "metadata", "modules.json"), JSON.stringify({ schemaVersion: 1, __noStandard: true, standard: true, modules: std.modules.filter((m) => m.name !== "ms6-quotations") }));
   const fromFile = readRegistry(p.root);
   assert.equal(fromFile.__noStandard, undefined); assert.equal(fromFile.standard, undefined);

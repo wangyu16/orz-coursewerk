@@ -171,10 +171,13 @@ system/                        # Coursewerk claims, correlations, accepted index
 
 ## Redesign preview (not yet the release gate)
 
+The deliverable is the lean orz Markdown package; carriers (framework shells) are assembled by Alembic or by an agent —
+see `docs/assembling-carriers.md`.
+
 A skeleton-and-modules redesign is being built on this branch. Its gate can already be run on a package —
 `node scripts/gate.mjs --root package` (exit 0 = can publish, 1 = blocked, 2 = usage, 3 = the gate itself failed) —
 but it does not replace `check_oer.mjs` and `pack.mjs` until the redesign's workflow lands. Checks are modules under
-`scripts/modules/` (the seven stable ones in `standard.json` run for every package), each in its own process; see `system/REQUIREMENTS.json` for what the redesign must deliver
+`scripts/modules/` (the six standard ones in `standard.json` run for every package), each in its own process; see `system/REQUIREMENTS.json` for what the redesign must deliver
 and the evidence that closes each requirement.
 
 Spine v2 tools (anchors, parsed assessment guides, approvals): `node scripts/spine.mjs check|migrate|anchor|status|preview|approve|version|steering --root package`.

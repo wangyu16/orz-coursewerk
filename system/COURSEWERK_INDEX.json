@@ -62,6 +62,12 @@
       "hash": "8cad17fa1a4eb49ed9fb3ecc56bc217fdcadf818eecb96fec0f1ff41e345f98f"
     },
     {
+      "id": "repo:docs/assembling-carriers.md",
+      "path": "docs/assembling-carriers.md",
+      "type": "documentation",
+      "hash": "3435a909a5440baaa283c700c106189f88251586513907e53f45314d970d8403"
+    },
+    {
       "id": "repo:docs/assurance-kernel.md",
       "path": "docs/assurance-kernel.md",
       "type": "documentation",
@@ -173,7 +179,7 @@
       "id": "repo:README.md",
       "path": "README.md",
       "type": "product-claim",
-      "hash": "88c7d47f2d7901ee0a64aee56afd5ec9727619951e77c0f639e3c2fe31af2b7c"
+      "hash": "a47783d1f03dec5d7059354c38852948fd818df4abf07d8fc0084e18c6013a05"
     },
     {
       "id": "repo:scripts/accept_coursewerk_revision.mjs",
@@ -701,7 +707,7 @@
       "id": "repo:scripts/modules/ms5-carriers.mjs",
       "path": "scripts/modules/ms5-carriers.mjs",
       "type": "executable",
-      "hash": "7e673f7aa2a7b666fb60cb5c2615e0f18e87e959d4e6a618639049e6c7408e1b"
+      "hash": "259133c38782c8519ba77a93b346976a99a5ae296e2d2d75713a90b73cb0bec7"
     },
     {
       "id": "repo:scripts/modules/ms6-quotations.mjs",
@@ -725,7 +731,7 @@
       "id": "repo:scripts/modules/standard.json",
       "path": "scripts/modules/standard.json",
       "type": "executable",
-      "hash": "4504ae3cbf50427e017cae0d39d4589a8a49887845d6f251bbc6d0469d60ef29"
+      "hash": "f0754b6806869a43ac59efb11f488ebc1dabdd2d02acb72dc408f08d7f1fca7e"
     },
     {
       "id": "repo:scripts/pack.mjs",
@@ -953,7 +959,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "7634b37134ab95b750e660cc014bd1deb251f31eca9150e6252cd580f9f21835"
+      "hash": "9bdcf74171221d6e0335931259873fb740eac5e66dc773c374624ebdc3d75940"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1367,7 +1373,7 @@
       "id": "repo:tests/gate-cli.test.mjs",
       "path": "tests/gate-cli.test.mjs",
       "type": "test",
-      "hash": "0c94f70edc233f6d926dfb0dc886196dd5ba4bad588a6123615069ad0672b6d2"
+      "hash": "f04019b047b7e889a244e08009e0b565aaa8bbcda301dbe12388486c26f2c05a"
     },
     {
       "id": "repo:tests/helpers/baseline.mjs",
@@ -1487,7 +1493,7 @@
       "id": "repo:tests/stable-modules.test.mjs",
       "path": "tests/stable-modules.test.mjs",
       "type": "test",
-      "hash": "7ae164f84ba334cd0b4e642c7dbc366edb26dfacd1ed296c37d31f05a1cfcc41"
+      "hash": "70d16f1a37e742fb19577a9dd27ff3e75bd545ae9a3d50bfbcdb85427e0a5b06"
     },
     {
       "id": "repo:tests/system-index.test.mjs",
@@ -1535,7 +1541,7 @@
       "id": "repo:tests/wiring-modules.test.mjs",
       "path": "tests/wiring-modules.test.mjs",
       "type": "test",
-      "hash": "36629ec1fb8ef4b7e8831fce2d7128c57d67d73107829b0db8faf5fc7c99b753"
+      "hash": "91414bb944b7d98e8cda96fcde9c3a4d74153ae32ce9ecaa19110a1b96af702a"
     },
     {
       "id": "repo:tests/wiring.test.mjs",
@@ -3166,7 +3172,7 @@
         "tiers": [
           "T1"
         ],
-        "status": "deferred"
+        "status": "closed"
       },
       {
         "id": "req.ms6.h5-regression",

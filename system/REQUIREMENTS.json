@@ -893,16 +893,14 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Every carrier builds, and a carrier that needs a remote runtime to render is a defect unless vendored; the build receipt is attached to the publish record.",
-      "source": "MS5; D1 Q3",
-      "status": "deferred",
+      "statement": "Carriers are not a Coursewerk deliverable (D24): the package is lean orz Markdown; the harness documents how Alembic or an agent assembles carriers (docs/assembling-carriers.md), and the optional carrier preview can only raise questions.",
+      "source": "MS5; D24 (operator, 2026-10-01)",
+      "status": "closed",
       "evidence": {
         "T1": [
           "tests/stable-modules.test.mjs"
         ]
-      },
-      "deferredTo": "P10",
-      "reason": "Carriers build (P6, tests/stable-modules.test.mjs); the orz framework loads its runtime from CDNs, so offline rendering awaits the operator's decision D24."
+      }
     },
     {
       "id": "req.ms6.quotations",
