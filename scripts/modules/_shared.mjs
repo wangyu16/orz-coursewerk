@@ -2,8 +2,8 @@
 import { canonicalJson } from "../lib/records/canonical.mjs";
 
 /** Deterministic modules re-run their evidence by re-running the check: the draft must be produced again, identically. */
-export const recheckByRerun = (run) => (draft, snapshot) =>
-  run(snapshot).some((d) => d.kind === draft.kind && canonicalJson(d.evidence) === canonicalJson(draft.evidence));
+export const recheckByRerun = (run) => async (draft, snapshot) =>
+  (await run(snapshot)).some((d) => d.kind === draft.kind && canonicalJson(d.evidence) === canonicalJson(draft.evidence));
 
 export const base = (over) => ({ version: "1.0.0", maturity: "stable", mayBlock: true, method: "deterministic", ...over });
 

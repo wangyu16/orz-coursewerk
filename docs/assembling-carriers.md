@@ -1,8 +1,12 @@
 # Assembling carriers — for agents working with a Coursewerk package
 
-**What Coursewerk delivers is the lean package:** Markdown in the orz-family syntax (orz-markdown for study guides and
-practice, the orz-slides deck grammar for slides, orz-paged for print documents), plus its metadata. That is the
-deliverable, and the only thing the gate checks. A *carrier* — the same document wrapped in its framework shell
+**What Coursewerk delivers is the lean package:** plain-text Markdown in orz-markdown, carrying the notations of the
+framework that will assemble each file — the orz-slides deck grammar for slides (deck config, slide markers, layouts,
+regions, templates, themes), orz-paged's `{{nyml kind: document}}` settings for print documents, and core orz-markdown
+(with an optional theme) for study guides and practice, which orz-mdhtml assembles. So every file is complete as plain
+text *and* ready to be assembled, as is, into its dual-extension form (`.md.html`, `.slides.html`, `.paged.html`) with
+the framework's editor embedded. The gate checks the lean files, including their framework notations (MS3,
+`scripts/lib/core/notations.mjs`). A *carrier* — the same document wrapped in its framework shell
 (`.md.html`, `.slides.html`, `.paged.html`) so it opens, presents or prints in a browser — is **not** a Coursewerk
 deliverable (decision D24). Carriers are assembled from the lean sources whenever someone needs them:
 

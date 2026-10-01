@@ -861,8 +861,8 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Manifest, file layout, orz syntax (with nesting), slide grammar, placeholders and the accessibility floor are checked as defects; no word-presence test stands in for coverage.",
-      "source": "MS3",
+      "statement": "Manifest, file layout, orz syntax (with nesting), each deliverable's framework notation (orz-slides deck grammar for slides, orz-paged settings for print documents — checked against the frameworks' own theme and template ids), placeholders and the accessibility floor are checked as defects; no word-presence test stands in for coverage.",
+      "source": "MS3; D25",
       "status": "closed",
       "evidence": {
         "T1": [

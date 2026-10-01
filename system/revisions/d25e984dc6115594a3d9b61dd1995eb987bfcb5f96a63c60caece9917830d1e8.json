@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "planId": "d25e984dc6115594a3d9b61dd1995eb987bfcb5f96a63c60caece9917830d1e8",
+  "baseRef": "HEAD",
+  "baseTip": "d7b9c0571ae38a039bf395771f16ebce2e7afecb",
+  "baseCommit": "d7b9c0571ae38a039bf395771f16ebce2e7afecb",
+  "reviewedHead": "d7b9c0571ae38a039bf395771f16ebce2e7afecb",
+  "changed": [
+    "docs/assembling-carriers.md",
+    "scripts/lib/core/notations.mjs",
+    "scripts/modules/_shared.mjs",
+    "scripts/modules/ms3-format.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/stable-modules.test.mjs"
+  ],
+  "requiredReview": [
+    "docs/assembling-carriers.md",
+    "scripts/lib/core/notations.mjs",
+    "scripts/modules/_shared.mjs",
+    "scripts/modules/ms3-format.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/stable-modules.test.mjs"
+  ],
+  "reviewed": [
+    "docs/assembling-carriers.md",
+    "scripts/lib/core/notations.mjs",
+    "scripts/modules/_shared.mjs",
+    "scripts/modules/ms3-format.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/stable-modules.test.mjs"
+  ],
+  "impactedClaims": [],
+  "testResults": [
+    {
+      "path": "tests/*.test.mjs (full suite 684/684)",
+      "status": "passed"
+    }
+  ],
+  "attestation": "D25: the lean files carry each framework notation; scripts/lib/core/notations.mjs validates orz-slides deck grammar and orz-paged settings against the installed frameworks own theme/template ids; MS3 raises breaches as framework-notation defects; recheck helper handles async module runs; assembling doc and requirement updated.",
+  "generatedIndexHash": "946d850d50b5f3c8b35a1a308965a97dedd8b6ff91e17fc6f5c22c2b8ebf76b0",
+  "acceptedAt": "2026-10-01T15:54:52.028Z"
+}

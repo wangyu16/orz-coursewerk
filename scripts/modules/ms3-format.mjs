@@ -2,14 +2,17 @@
 // private copy. Retired here, by design: the word-presence tests standing in for coverage (the core owns coverage),
 // the concept-map and assessment-guide section rules (the spine core check owns the spine), W17 objective-tag
 // containment (replaced by unit links), and the photograph rule's mandatory human review (now a question, D1).
+// Added (D25): every deliverable must carry valid notation for the framework that will assemble it — orz-slides for
+// slides, orz-paged for declared print documents — checked against each framework's own theme and template ids.
 import { createQaAudits } from "../lib/legacy/qa_audits.mjs";
+import { checkPagedNotation, checkSlidesNotation, frameworkDefinitions } from "../lib/core/notations.mjs";
 import { base, recheckByRerun } from "./_shared.mjs";
 
 const RETIRED = [/practice sheet does not tag objective coverage/, /slides source is missing objective coverage/, /^assessment support is missing/,
   /concept map is missing its/, /concept map heading is a NEAR-MISS/, /concept map has a `## Keywords` section/, /deliverable tags undeclared objective/,
   /course concept map is missing its/];
 const PHOTO = /has no real photograph/;
-function run(s) {
+async function run(s) {
   const pkg = s.materialize().package;
   const q = createQaAudits(pkg, { forDiscovery: s.profile === "public" });
   const out = [];
@@ -25,6 +28,15 @@ function run(s) {
     if (RETIRED.some((r) => r.test(f.issue))) continue;
     if (PHOTO.test(f.issue)) { out.push({ kind: "no-photograph", units: [], evidence: { type: "judgment", note: f.issue } }); continue; }
     defect("format-contract", f.file, f.issue);
+  }
+  const defs = await frameworkDefinitions();
+  for (const file of s.paths.filter((p) => /^slides\/[^/]+\.md$/.test(p)).sort())
+    for (const pr of checkSlidesNotation(s.text(file) || "", defs)) defect("framework-notation", file, `line ${pr.line}: ${pr.issue} (orz-slides)`);
+  const docs = s.json("metadata/DOCUMENTS.json");
+  for (const d of Array.isArray(docs?.documents) ? docs.documents : []) {
+    if (!/paged/i.test(String(d.carrier || d.type || d.framework || ""))) continue;
+    const file = d.source || d.path; if (!file || s.text(file) == null) continue;
+    for (const pr of checkPagedNotation(s.text(file), defs)) defect("framework-notation", file, `${pr.issue} (orz-paged)`);
   }
   return out;
 }

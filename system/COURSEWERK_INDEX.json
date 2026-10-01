@@ -65,7 +65,7 @@
       "id": "repo:docs/assembling-carriers.md",
       "path": "docs/assembling-carriers.md",
       "type": "documentation",
-      "hash": "3435a909a5440baaa283c700c106189f88251586513907e53f45314d970d8403"
+      "hash": "a809af724196713340cb0cd121a8fd50b954a423df06e87c78d1c3c80430e088"
     },
     {
       "id": "repo:docs/assurance-kernel.md",
@@ -404,6 +404,12 @@
       "hash": "08c6b5674028a38de5b446aa08045f43649f1e53d4978f7e20f1a1ab381c2cb0"
     },
     {
+      "id": "repo:scripts/lib/core/notations.mjs",
+      "path": "scripts/lib/core/notations.mjs",
+      "type": "kernel",
+      "hash": "01ea776892a39d16ccbc6f9a3fcee29aa01f87ac6ced68f3531222e322bcf4e3"
+    },
+    {
       "id": "repo:scripts/lib/core/obligations.mjs",
       "path": "scripts/lib/core/obligations.mjs",
       "type": "kernel",
@@ -677,7 +683,7 @@
       "id": "repo:scripts/modules/_shared.mjs",
       "path": "scripts/modules/_shared.mjs",
       "type": "executable",
-      "hash": "821760be61311397e04f75ff265b2e093492a421eba4374f89f3788d8ad83f91"
+      "hash": "9ae008dcb59dc97a401b2f1fcd21aec50f757371347e182ce502d0ecb59a17dc"
     },
     {
       "id": "repo:scripts/modules/ms1-sources.mjs",
@@ -695,7 +701,7 @@
       "id": "repo:scripts/modules/ms3-format.mjs",
       "path": "scripts/modules/ms3-format.mjs",
       "type": "executable",
-      "hash": "6212f42766a75cd930ce060c27f0219cc0284041be7e426df861362da3bf7851"
+      "hash": "52a5fe1c42ec3f80ad528d80028436c0e87f652bfb95ddfe6242681e542f8793"
     },
     {
       "id": "repo:scripts/modules/ms4-links.mjs",
@@ -959,7 +965,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "9bdcf74171221d6e0335931259873fb740eac5e66dc773c374624ebdc3d75940"
+      "hash": "3a2233b076f52950cb735dc0654f0bb05a35387a29207e09f3cd4c0504aa261b"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1493,7 +1499,7 @@
       "id": "repo:tests/stable-modules.test.mjs",
       "path": "tests/stable-modules.test.mjs",
       "type": "test",
-      "hash": "70d16f1a37e742fb19577a9dd27ff3e75bd545ae9a3d50bfbcdb85427e0a5b06"
+      "hash": "14d29b37c0bbc5c4d4921a93f19291e4267126b7c01a054c843b1df463f72c40"
     },
     {
       "id": "repo:tests/system-index.test.mjs",
