@@ -68,3 +68,13 @@ test("round P2-3: the gate CLI never crashes into a false verdict; its own failu
   assert.equal(r.status, 1, "an invalid registry is a blocking obligation, not a crash");
   assert.ok(r.report.findings.some((f) => f.kind === "registry-invalid"));
 });
+
+test("[req.modules.profiles] the gate takes the use profile from FOUNDATION.json's usageProfile", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-gate-profile-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  fs.mkdirSync(path.join(root, "metadata"));
+  for (const [usage, expected] of [["public-oer", "public"], ["personal-private", "private"], ["restricted-teaching", "private"]]) {
+    fs.writeFileSync(path.join(root, "metadata", "FOUNDATION.json"), JSON.stringify({ usageProfile: usage }));
+    assert.equal(gate(root).report.profile, expected, usage);
+  }
+});

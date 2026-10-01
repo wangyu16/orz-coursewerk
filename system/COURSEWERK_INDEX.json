@@ -173,7 +173,7 @@
       "id": "repo:README.md",
       "path": "README.md",
       "type": "product-claim",
-      "hash": "b09113ab1af56d2d0bcc4b329839e8f607f961f65158c67a8c738469f004b7d5"
+      "hash": "32cd5b355d9c2d55991045150ad70a222561a2d088f787be911c757ee7939f4e"
     },
     {
       "id": "repo:scripts/accept_coursewerk_revision.mjs",
@@ -281,7 +281,7 @@
       "id": "repo:scripts/gate.mjs",
       "path": "scripts/gate.mjs",
       "type": "executable",
-      "hash": "274cba2af628427d726f1d5f95c2d57804d1945c80ec84a138afad9aaa07c64c"
+      "hash": "416878db0a34a4a81a5e83e8b2614f8b2e0db31bc0ffbc6cbe0ce9fe15d07da7"
     },
     {
       "id": "repo:scripts/generate_attribution.mjs",
@@ -404,6 +404,12 @@
       "hash": "80582aa147b7e1eeae2dc6b22e1c0918adef1d91c225db8f2048ff5d4e4f208e"
     },
     {
+      "id": "repo:scripts/lib/core/segment.mjs",
+      "path": "scripts/lib/core/segment.mjs",
+      "type": "kernel",
+      "hash": "3a6da7228d23220156676e31973f8e34920770e9dcea34791869f812d8087c51"
+    },
+    {
       "id": "repo:scripts/lib/core/spine.mjs",
       "path": "scripts/lib/core/spine.mjs",
       "type": "kernel",
@@ -414,6 +420,12 @@
       "path": "scripts/lib/core/steering_intake.mjs",
       "type": "kernel",
       "hash": "e0678610c0eb680807253222170f73950afeee8038dd76006efb1e5e9c9acc1a"
+    },
+    {
+      "id": "repo:scripts/lib/core/units_index.mjs",
+      "path": "scripts/lib/core/units_index.mjs",
+      "type": "kernel",
+      "hash": "b10f25135291fe0857e0d2edb223dd5318770510417d0a4e1ec33e68feda7ee0"
     },
     {
       "id": "repo:scripts/lib/core/versions.mjs",
@@ -692,6 +704,12 @@
       "hash": "5c4e17255b78d026eead4878185bf3385a2f5c3deb6987db397b84495fb3963f"
     },
     {
+      "id": "repo:scripts/units.mjs",
+      "path": "scripts/units.mjs",
+      "type": "executable",
+      "hash": "dfaafccd056bfa415d7379368e65ba47848559a9cb1e818084aacadf0faa86a3"
+    },
+    {
       "id": "repo:scripts/verify_coursewerk.mjs",
       "path": "scripts/verify_coursewerk.mjs",
       "type": "executable",
@@ -857,7 +875,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "62cff74ba7df08994538de3229aff9a0b40a4ea4b2ba8dc832acd203f03abd1c"
+      "hash": "22d18212dbc793d0aef6ab4962fae23f07191d0e7be12b97bb25f7c91b14bbf1"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1259,7 +1277,7 @@
       "id": "repo:tests/gate-cli.test.mjs",
       "path": "tests/gate-cli.test.mjs",
       "type": "test",
-      "hash": "b6d4f306c10a87e24241e2a9dece4d5ddc0aea52a5efba32502e7b7c10540f0f"
+      "hash": "ed7f8c337009a56abcc26dbe26508168542116d7fdbfc3c5fe689213951d8b60"
     },
     {
       "id": "repo:tests/helpers/baseline.mjs",
@@ -1386,6 +1404,18 @@
       "path": "tests/terms.test.mjs",
       "type": "test",
       "hash": "5181437c7b2c5de2ac0efb054c23d61ff3e1b8c8ce6714670b5f2e66fdd2615e"
+    },
+    {
+      "id": "repo:tests/unit-model.test.mjs",
+      "path": "tests/unit-model.test.mjs",
+      "type": "test",
+      "hash": "ca835b050cc6ad5bd8b1e8435712c7f06fee23ece4aafc304f27194b2e4769d3"
+    },
+    {
+      "id": "repo:tests/units-cli.test.mjs",
+      "path": "tests/units-cli.test.mjs",
+      "type": "test",
+      "hash": "e8c365bb1456839851f83bdcd2c7a1a3f5461602016a77a785350410c9e5d158"
     },
     {
       "id": "repo:tests/units.test.mjs",
@@ -2672,7 +2702,8 @@
       "P0",
       "P1",
       "P2",
-      "P3"
+      "P3",
+      "P4"
     ],
     "requirements": [
       {
@@ -3284,7 +3315,7 @@
         "tiers": [
           "T1"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.units.external-edit",
@@ -3293,7 +3324,7 @@
           "T1",
           "T3"
         ],
-        "status": "planned"
+        "status": "deferred"
       },
       {
         "id": "req.units.framing",
@@ -3301,7 +3332,7 @@
         "tiers": [
           "T1"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.units.identity",
@@ -3309,7 +3340,7 @@
         "tiers": [
           "T1"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.units.origin",
@@ -3317,7 +3348,7 @@
         "tiers": [
           "T1"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.units.segmenter",
@@ -3326,7 +3357,7 @@
           "T1",
           "T2"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.verdict.semi-mechanical",

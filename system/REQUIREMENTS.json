@@ -5,7 +5,8 @@
     "P0",
     "P1",
     "P2",
-    "P3"
+    "P3",
+    "P4"
   ],
   "requirements": [
     {
@@ -274,7 +275,8 @@
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/runner.test.mjs"
+          "tests/runner.test.mjs",
+          "tests/gate-cli.test.mjs"
         ]
       }
     },
@@ -585,8 +587,15 @@
       ],
       "statement": "The harness segments every deliverable into units (paragraph, list item, table row, equation, callout, figure, slide group, question, answer); no prose is left out.",
       "source": "F1",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/unit-model.test.mjs"
+        ],
+        "T2": [
+          "tests/units-cli.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.units.identity",
@@ -596,8 +605,12 @@
       ],
       "statement": "Unit ids survive rewording and reordering; splits and merges are recorded; an unmatched unit is new.",
       "source": "F1; Coherence H4",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/unit-model.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.units.origin",
@@ -607,8 +620,12 @@
       ],
       "statement": "Every unit records its origin: source-derived, agent knowledge, computed, instructor-authored, found evidence, or unknown.",
       "source": "F1; charter §4",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/unit-model.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.units.external-edit",
@@ -619,8 +636,15 @@
       ],
       "statement": "A change with no recorded agent write is an edit of unknown authorship: checked like agent text and raised once in the digest (accept as mine / name the author / revert).",
       "source": "D20",
-      "status": "planned",
-      "evidence": {}
+      "status": "deferred",
+      "evidence": {
+        "T1": [
+          "tests/unit-model.test.mjs",
+          "tests/units-cli.test.mjs"
+        ]
+      },
+      "deferredTo": "P8",
+      "reason": "T1 closed in P4 (tests/unit-model.test.mjs, tests/units-cli.test.mjs); T3 needs the agent-in-the-loop workflow (P8)."
     },
     {
       "id": "req.units.classifier",
@@ -630,8 +654,12 @@
       ],
       "statement": "A skeleton-owned deterministic classifier assigns judgment kinds, erring toward inclusion; a unit with several kinds is checked under each; the agent may add a kind, never remove one.",
       "source": "D18, D19-E",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/unit-model.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.units.framing",
@@ -641,8 +669,12 @@
       ],
       "statement": "Framing units may not carry mechanical or semi-mechanical content and are still checked for off-spine content.",
       "source": "F1; D19-I",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/unit-model.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.core.evidence-obligation",

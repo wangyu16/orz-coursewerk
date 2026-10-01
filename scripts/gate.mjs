@@ -13,6 +13,7 @@ import { CHECKPOINTS } from "./lib/skeleton/manifest.mjs";
 import { readConfig } from "./lib/records/config.mjs";
 import { liveReader } from "./lib/core/package_reader.mjs";
 import { spineCoreFindings, approvalCoreProblems } from "./lib/core/core_checks.mjs";
+import { unindexedFindings } from "./lib/core/units_index.mjs";
 
 const args = process.argv.slice(2);
 const opt = (name, fallback) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -24,7 +25,7 @@ if (!CHECKPOINTS.includes(checkpoint)) { console.error(`unknown checkpoint ${che
 function profileOf(pkg) {
   const given = opt("--profile");
   if (given) return given;
-  try { return JSON.parse(fs.readFileSync(path.join(pkg, "metadata", "FOUNDATION.json"), "utf8")).intendedUse === "public-oer" ? "public" : "private"; }
+  try { return JSON.parse(fs.readFileSync(path.join(pkg, "metadata", "FOUNDATION.json"), "utf8")).usageProfile === "public-oer" ? "public" : "private"; }
   catch { return "public"; }
 }
 const profile = profileOf(root);
@@ -44,6 +45,7 @@ try {
     const reader = liveReader(root);
     if (["V1", "V8"].includes(checkpoint)) core.push(...spineCoreFindings(reader, run.snapshot.id));
     if (checkpoint === "V8") approvalProblems.push(...approvalCoreProblems(root, reader));
+    if (["V2", "V8"].includes(checkpoint)) core.push(...unindexedFindings(root, reader, run.snapshot.id)); // edits not yet indexed (P4)
   }
   const findings = [...run.findings, ...core, ...logFindings(root, run.snapshot.id)];
   const maturityOf = (name) => run.wiring.ran.find((r) => r.name === name)?.maturity || "stable"; // effective maturity, as the runner applied it
