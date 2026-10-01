@@ -1,0 +1,1755 @@
+{
+  "schemaVersion": 1,
+  "deliverable": "practice/chemical-equilibrium.md",
+  "units": [
+    {
+      "id": "u-practice-chemical-equilibrium-practice-chemical-equilibrium-1",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "practice-chemical-equilibrium",
+        "ordinal": 0,
+        "contentHash": "ef55fec4afd70b066ff3ccc890a678345206c590acd588ed59cb6b84968ec9b5",
+        "lines": [
+          3,
+          4
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.define-equilibrium",
+        "objective.chemical-equilibrium.write-k-expression",
+        "objective.chemical-equilibrium.compare-q-and-k",
+        "objective.chemical-equilibrium.omit-pure-phases",
+        "objective.chemical-equilibrium.relate-k-to-gibbs",
+        "objective.chemical-equilibrium.predict-k-with-temperature"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "all",
+        "answer",
+        "assessment",
+        "chemical",
+        "concepts",
+        "covering",
+        "each",
+        "equilibrium",
+        "fifteen",
+        "followed",
+        "from",
+        "instantiated",
+        "objectives",
+        "question",
+        "questions",
+        "six",
+        "support",
+        "worked"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
+        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
+        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
+        "spine:objective.chemical-equilibrium.omit-pure-phases": "26f069ce2bba4c71ac7d536d53ae77f3979043b94b233dc42f0edaf4b2c75e2f",
+        "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
+        "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-practice-chemical-equilibrium-2",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "practice-chemical-equilibrium",
+        "ordinal": 1,
+        "contentHash": "cadffbe95509b0b5753e9ea3b302706532c901eb4d61b295c2d711d66cd51fbb",
+        "lines": [
+          7,
+          7
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.define-equilibrium",
+        "objective.chemical-equilibrium.write-k-expression",
+        "objective.chemical-equilibrium.compare-q-and-k",
+        "objective.chemical-equilibrium.omit-pure-phases",
+        "objective.chemical-equilibrium.relate-k-to-gibbs",
+        "objective.chemical-equilibrium.predict-k-with-temperature"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "coverage",
+        "objective",
+        "q10",
+        "q11",
+        "q12",
+        "q13",
+        "q15"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
+        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
+        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
+        "spine:objective.chemical-equilibrium.omit-pure-phases": "26f069ce2bba4c71ac7d536d53ae77f3979043b94b233dc42f0edaf4b2c75e2f",
+        "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
+        "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-1",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 2,
+        "contentHash": "deed037e226603a4865aeba205230f18d22ede3bab04140dd28247268ff23f5d",
+        "lines": [
+          13,
+          15
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.define-equilibrium",
+        "guide.chemical-equilibrium.stopped-reaction-probe"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "both",
+        "brown",
+        "changing",
+        "colour",
+        "concludes",
+        "contains",
+        "explain",
+        "flask",
+        "happening",
+        "have",
+        "level",
+        "mixture",
+        "molecular",
+        "n2o4",
+        "no2",
+        "objective",
+        "reactions",
+        "right",
+        "sealed",
+        "stopped",
+        "stops",
+        "student",
+        "that",
+        "the",
+        "what"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
+        "spine:guide.chemical-equilibrium.stopped-reaction-probe": "f03f9685d12b6d0dc02c1ea66cb260382ff84bb79432e2d739c877b15dd591af"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-2",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 3,
+        "contentHash": "15035938fc3f15007d80273d34b5c7710f35851724bb7a7a64e9b1adbb66564d",
+        "lines": [
+          18,
+          21
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.define-equilibrium",
+        "guide.chemical-equilibrium.stopped-reaction-probe"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "because",
+        "change",
+        "changing",
+        "colour",
+        "concentrations",
+        "continue",
+        "dissociate",
+        "dynamic",
+        "equal",
+        "equilibrium",
+        "forward",
+        "have",
+        "longer",
+        "matching",
+        "molecules",
+        "n2o4",
+        "no2",
+        "nonzero",
+        "not",
+        "rates",
+        "reached",
+        "reactions",
+        "recombine",
+        "reverse",
+        "static",
+        "stops",
+        "student",
+        "the",
+        "wrong"
+      ],
+      "stamp": {
+        "unit:u-practice-chemical-equilibrium-questions-1": "354215ddd6843038a1e16e1a5c86a7cc09bf42e38dd6da40cc71de3304cfd1c8",
+        "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
+        "spine:guide.chemical-equilibrium.stopped-reaction-probe": "f03f9685d12b6d0dc02c1ea66cb260382ff84bb79432e2d739c877b15dd591af"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-3",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 4,
+        "contentHash": "94d82bf16ff6a699e157182e3d15b278f594f333e93dd503aff6aaa9a5454697",
+        "lines": [
+          27,
+          29
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.define-equilibrium",
+        "guide.chemical-equilibrium.equal-concentrations-probe"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "are",
+        "concentrations",
+        "constant",
+        "contains",
+        "equal",
+        "equilibrium",
+        "for",
+        "given",
+        "hour",
+        "mixture",
+        "not",
+        "objective",
+        "product",
+        "reactant",
+        "reaction",
+        "stay",
+        "system",
+        "that",
+        "the",
+        "these",
+        "this",
+        "values"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
+        "spine:guide.chemical-equilibrium.equal-concentrations-probe": "fb79ad11d6b23f700ea3ac6368fa45a06d151872b4f489433aa4fcbef2220845"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-4",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 5,
+        "contentHash": "bffe68849d663c5eda234414d1f785105c62be20315d8b2dcab81090875e8ff7",
+        "lines": [
+          32,
+          34
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.define-equilibrium",
+        "guide.chemical-equilibrium.equal-concentrations-probe"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "common",
+        "concentrations",
+        "constant",
+        "equal",
+        "equilibrium",
+        "error",
+        "expecting",
+        "fixed",
+        "not",
+        "ratio",
+        "requires",
+        "the",
+        "their",
+        "unequal",
+        "value",
+        "yes"
+      ],
+      "stamp": {
+        "unit:u-practice-chemical-equilibrium-questions-3": "0eb422d8e8944fc6ccf5a9a46de7f99e3b35d9e22414ce7c4330869f315d77dc",
+        "term:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
+        "spine:guide.chemical-equilibrium.equal-concentrations-probe": "fb79ad11d6b23f700ea3ac6368fa45a06d151872b4f489433aa4fcbef2220845"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-5",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 6,
+        "contentHash": "fcdd971375c664cec496c09728d9b0a9548e33c0cd4c5fa71b49395cc11e2701",
+        "lines": [
+          40,
+          41
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.write-k-expression",
+        "guide.chemical-equilibrium.direct-construction"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "ammonia",
+        "constant",
+        "equilibrium",
+        "expression",
+        "for",
+        "nh3",
+        "objective",
+        "synthesis",
+        "the",
+        "write"
+      ],
+      "stamp": {
+        "term:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
+        "spine:guide.chemical-equilibrium.direct-construction": "5a4a2e967b604930f577a07e7dfff607207178c2affc63826f4a1ebd9f13bac3"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-6",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 7,
+        "contentHash": "dec3f40a0e7e3938900a2d05f88fd551817d8eadd7f19a513b1430370ddc0172",
+        "lines": [
+          44,
+          45
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.write-k-expression",
+        "guide.chemical-equilibrium.direct-construction"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "coefficient",
+        "concentration",
+        "each",
+        "frac",
+        "its",
+        "nh3",
+        "numerator",
+        "products",
+        "raised",
+        "stoichiometric",
+        "the"
+      ],
+      "stamp": {
+        "unit:u-practice-chemical-equilibrium-questions-5": "dbd99711a004479bac42eeb6ca365bee662a893e2223bf1e743fb4b0a0d3d690",
+        "term:stoichiometric coefficient": "ceb28b3bd97ae3f16ba5825c706b367f558525ac2254ee1d080774a061a35222",
+        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
+        "spine:guide.chemical-equilibrium.direct-construction": "5a4a2e967b604930f577a07e7dfff607207178c2affc63826f4a1ebd9f13bac3"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-7",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 8,
+        "contentHash": "5e1f62ce14a8ecd6134db8ea0878ab67b43b2e6e7aab73861ade1aeb873ad10a",
+        "lines": [
+          51,
+          52
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.write-k-expression",
+        "guide.chemical-equilibrium.reversed-equation-variant"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "are",
+        "constant",
+        "equilibrium",
+        "expression",
+        "for",
+        "how",
+        "objective",
+        "reaction",
+        "related",
+        "reverse",
+        "same",
+        "so2",
+        "so3",
+        "the",
+        "then",
+        "two",
+        "write",
+        "written"
+      ],
+      "stamp": {
+        "term:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
+        "spine:guide.chemical-equilibrium.reversed-equation-variant": "a333c0bb754e4bcbf52c042cc61f52ca88f9f01b6222d33038154234dde53f7c"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-8",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 9,
+        "contentHash": "7139e1f40954a47e9c811f3d73c3bc73328214104b1e2d3d3e263c977eb95bba",
+        "lines": [
+          55,
+          59
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.write-k-expression",
+        "guide.chemical-equilibrium.reversed-equation-variant"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "are",
+        "denominator",
+        "dfrac",
+        "equation",
+        "forward",
+        "numerator",
+        "reciprocals",
+        "reverse",
+        "reversing",
+        "so2",
+        "so3",
+        "swaps",
+        "the",
+        "two"
+      ],
+      "stamp": {
+        "unit:u-practice-chemical-equilibrium-questions-7": "37ff1172404adb4f5846dbc68237a54d41625e3ed6e9f6f75e9bdb034e2d6f60",
+        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
+        "spine:guide.chemical-equilibrium.reversed-equation-variant": "a333c0bb754e4bcbf52c042cc61f52ca88f9f01b6222d33038154234dde53f7c"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-9",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 10,
+        "contentHash": "0d69b37eb4e3e5af0df99f5f105858aae63add170d5a9bf8b1399ebaefa8fbcf",
+        "lines": [
+          65,
+          67
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.write-k-expression",
+        "guide.chemical-equilibrium.error-finding"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "both",
+        "correct",
+        "dfrac",
+        "errors",
+        "expression",
+        "for",
+        "give",
+        "identify",
+        "objective",
+        "student",
+        "the",
+        "writes"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
+        "spine:guide.chemical-equilibrium.error-finding": "3e9a9d54fe06a8810f2f324afbe73716e664c748dab4d648185857e0f0cc33a0"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-10",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 11,
+        "contentHash": "8bc4081342d60b3c7c7144ff9b2373c37b05c7335c49e6eba00dad7eb9cd018f",
+        "lines": [
+          70,
+          72
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.write-k-expression",
+        "guide.chemical-equilibrium.error-finding"
+      ],
+      "judgment": [
+        "mechanical",
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "are",
+        "been",
+        "belong",
+        "coefficient",
+        "correct",
+        "dropped",
+        "errors",
+        "exponent",
+        "first",
+        "frac",
+        "has",
+        "numerator",
+        "products",
+        "reactants",
+        "round",
+        "second",
+        "the",
+        "two",
+        "way",
+        "wrong"
+      ],
+      "stamp": {
+        "unit:u-practice-chemical-equilibrium-questions-9": "db5eb785a657061f2909f8a35de08fe7008d07df103302dbcfadb062755e0333",
+        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
+        "spine:guide.chemical-equilibrium.error-finding": "3e9a9d54fe06a8810f2f324afbe73716e664c748dab4d648185857e0f0cc33a0"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-11",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 12,
+        "contentHash": "b907e9b2f2e3592ca23852e69b9b94e39f238fd460c461b45302b20818a07fe9",
+        "lines": [
+          78,
+          79
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.compare-q-and-k",
+        "guide.chemical-equilibrium.three-case-sweep"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "direction",
+        "for",
+        "found",
+        "have",
+        "mixture",
+        "objective",
+        "reaction",
+        "shift",
+        "the",
+        "which",
+        "why",
+        "will",
+        "with"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
+        "spine:guide.chemical-equilibrium.three-case-sweep": "06739bf86a59143d99b39e4d317b5d0b451f870e78d748f7ebf297d30c3218ce"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-12",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 13,
+        "contentHash": "b9cfe537a0ed2f4c80013026efd49d8e91b4faf3212292d7bf0711ccdb52553e",
+        "lines": [
+          82,
+          83
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.compare-q-and-k",
+        "guide.chemical-equilibrium.three-case-sweep"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "are",
+        "equal",
+        "equilibrium",
+        "few",
+        "forward",
+        "products",
+        "reaction",
+        "relative",
+        "rises",
+        "shifts",
+        "the",
+        "there",
+        "too",
+        "toward",
+        "until"
+      ],
+      "stamp": {
+        "unit:u-practice-chemical-equilibrium-questions-11": "517982b0b6766c4248620910c78532605c8f6b0c694768294c0cadbab600c0f9",
+        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
+        "spine:guide.chemical-equilibrium.three-case-sweep": "06739bf86a59143d99b39e4d317b5d0b451f870e78d748f7ebf297d30c3218ce"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-13",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 14,
+        "contentHash": "26919f5bedcaa57bdbc58b47c83ce4af205e4a961854e95219e458643932bc53",
+        "lines": [
+          89,
+          90
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.compare-q-and-k",
+        "guide.chemical-equilibrium.three-case-sweep"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "140",
+        "direction",
+        "for",
+        "has",
+        "mean",
+        "mixture",
+        "objective",
+        "reaction",
+        "same",
+        "second",
+        "shift",
+        "the",
+        "what",
+        "which",
+        "will",
+        "would"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
+        "spine:guide.chemical-equilibrium.three-case-sweep": "06739bf86a59143d99b39e4d317b5d0b451f870e78d748f7ebf297d30c3218ce"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-14",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 15,
+        "contentHash": "7ba62e6c664684b21178260e42ba754e14795198be7913a87d921f900f04bc88",
+        "lines": [
+          93,
+          95
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.compare-q-and-k",
+        "guide.chemical-equilibrium.three-case-sweep"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "already",
+        "and",
+        "are",
+        "direction",
+        "either",
+        "equilibrium",
+        "falls",
+        "many",
+        "net",
+        "products",
+        "reactants",
+        "reaction",
+        "reverse",
+        "shift",
+        "shifts",
+        "system",
+        "the",
+        "there",
+        "too",
+        "toward",
+        "until"
+      ],
+      "stamp": {
+        "unit:u-practice-chemical-equilibrium-questions-13": "7cc2900afc3fef2777ea682635e69eac2072b2ab89d03ddf969c44957c16b9df",
+        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
+        "spine:guide.chemical-equilibrium.three-case-sweep": "06739bf86a59143d99b39e4d317b5d0b451f870e78d748f7ebf297d30c3218ce"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-15",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 16,
+        "contentHash": "e40fa9b6755e63f7d1cac4c696914a9a2a4465e2af26e64a445c2c0afb58847e",
+        "lines": [
+          101,
+          102
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.compare-q-and-k",
+        "guide.chemical-equilibrium.reasoning-without-arithmetic"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "adding",
+        "and",
+        "any",
+        "drives",
+        "equilibrium",
+        "explain",
+        "more",
+        "numbers",
+        "objective",
+        "product",
+        "reaction",
+        "reverse",
+        "system",
+        "the",
+        "through",
+        "using",
+        "why",
+        "without"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
+        "spine:guide.chemical-equilibrium.reasoning-without-arithmetic": "c2896c5dd7ff019fee9d02265b3443e707203eb5677ebef1ff479d72140b79d1"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-16",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 17,
+        "contentHash": "07905f415e414caec8287f131b2331692f19ad35d9526c61c0cc657560a94916",
+        "lines": [
+          105,
+          107
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.compare-q-and-k",
+        "guide.chemical-equilibrium.reasoning-without-arithmetic"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "above",
+        "adding",
+        "back",
+        "changed",
+        "consuming",
+        "denominator",
+        "falls",
+        "itself",
+        "never",
+        "numerator",
+        "product",
+        "quotient",
+        "raises",
+        "reverse",
+        "rises",
+        "shifts",
+        "since",
+        "system",
+        "the",
+        "unchanged",
+        "until",
+        "value",
+        "while"
+      ],
+      "stamp": {
+        "unit:u-practice-chemical-equilibrium-questions-15": "a0157900b78c4f7c4c411f907d88115bf167bfa33b7ca2f80742a2ea28d5ef21",
+        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
+        "spine:guide.chemical-equilibrium.reasoning-without-arithmetic": "c2896c5dd7ff019fee9d02265b3443e707203eb5677ebef1ff479d72140b79d1"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-17",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 18,
+        "contentHash": "dc9ce0cf7f89b926b160efe37942aa2b8808b311cfe8afe6847cd193e73b3f5c",
+        "lines": [
+          113,
+          114
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.omit-pure-phases",
+        "guide.chemical-equilibrium.heterogeneous-construction"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "caco3",
+        "calcium",
+        "cao",
+        "carbonate",
+        "co2",
+        "constant",
+        "decomposition",
+        "equilibrium",
+        "expression",
+        "for",
+        "objective",
+        "solid",
+        "the",
+        "write"
+      ],
+      "stamp": {
+        "term:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "spine:objective.chemical-equilibrium.omit-pure-phases": "26f069ce2bba4c71ac7d536d53ae77f3979043b94b233dc42f0edaf4b2c75e2f",
+        "spine:guide.chemical-equilibrium.heterogeneous-construction": "06f136ade2c2f0976c15de6f7ad211ebed35cba21238c98d26042a7512284462"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-18",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 19,
+        "contentHash": "d792d80515287ec56c5dda347c200607c573ce654172b5e3cab8bfdda439b0d6",
+        "lines": [
+          117,
+          118
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.omit-pure-phases",
+        "guide.chemical-equilibrium.heterogeneous-construction"
+      ],
+      "judgment": [
+        "mechanical",
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "activity",
+        "and",
+        "are",
+        "both",
+        "co2",
+        "gas",
+        "have",
+        "leaving",
+        "omitted",
+        "one",
+        "only",
+        "solids",
+        "the"
+      ],
+      "stamp": {
+        "unit:u-practice-chemical-equilibrium-questions-17": "419c3d2636af4e3af20041de973f8f5fc2da26e71be935a6ae6327cd034da2b8",
+        "term:activity": "e44ef5ba96fa9bd4dd745d5abd13bb67b55934a4863d74d6bc02c108c1e73601",
+        "spine:objective.chemical-equilibrium.omit-pure-phases": "26f069ce2bba4c71ac7d536d53ae77f3979043b94b233dc42f0edaf4b2c75e2f",
+        "spine:guide.chemical-equilibrium.heterogeneous-construction": "06f136ade2c2f0976c15de6f7ad211ebed35cba21238c98d26042a7512284462"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-19",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 20,
+        "contentHash": "1bd8b64cba43362908ff3152578489e38f3eaa952ccbad257509ed84a1b09be5",
+        "lines": [
+          124,
+          125
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.omit-pure-phases",
+        "guide.chemical-equilibrium.added-solid-probe"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "adds",
+        "and",
+        "caco3",
+        "co2",
+        "evaluate",
+        "for",
+        "form",
+        "more",
+        "objective",
+        "prediction",
+        "predicts",
+        "reaction",
+        "sealed",
+        "solid",
+        "student",
+        "that",
+        "the",
+        "vessel",
+        "will"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.omit-pure-phases": "26f069ce2bba4c71ac7d536d53ae77f3979043b94b233dc42f0edaf4b2c75e2f",
+        "spine:guide.chemical-equilibrium.added-solid-probe": "11b5359fc706b16cecaa259d9e2c2dcd7171dcdd3cabf73d945072b3ed8487e7"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-20",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 21,
+        "contentHash": "648e928979df52a3502ed869e0160164c536ce6f590e00f81d8ee64fb6ce3a72",
+        "lines": [
+          128,
+          130
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.omit-pure-phases",
+        "guide.chemical-equilibrium.added-solid-probe"
+      ],
+      "judgment": [
+        "mechanical",
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "activity",
+        "adding",
+        "amount",
+        "appear",
+        "changes",
+        "co2",
+        "does",
+        "equilibrium",
+        "expression",
+        "has",
+        "how",
+        "more",
+        "much",
+        "neither",
+        "nor",
+        "not",
+        "one",
+        "only",
+        "partial",
+        "prediction",
+        "present",
+        "pressure",
+        "pure",
+        "regardless",
+        "solid",
+        "the",
+        "wrong"
+      ],
+      "stamp": {
+        "unit:u-practice-chemical-equilibrium-questions-19": "c425f5ebe4fa5d6592f3c3901abeb34a8c04199271bba5e48f6f40ed9c2ce478",
+        "term:activity": "e44ef5ba96fa9bd4dd745d5abd13bb67b55934a4863d74d6bc02c108c1e73601",
+        "term:partial pressure": "1911d9c4cb6332589c0c654fabfa7dd7bfd78d9bfceb7146973dee1784dcec0d",
+        "spine:objective.chemical-equilibrium.omit-pure-phases": "26f069ce2bba4c71ac7d536d53ae77f3979043b94b233dc42f0edaf4b2c75e2f",
+        "spine:guide.chemical-equilibrium.added-solid-probe": "11b5359fc706b16cecaa259d9e2c2dcd7171dcdd3cabf73d945072b3ed8487e7"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-21",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 22,
+        "contentHash": "b374d42ebe40cf58812af3c485d5ed8b3c1438f48b58825729c6e534f6b10550",
+        "lines": [
+          136,
+          137
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.relate-k-to-gibbs",
+        "guide.chemical-equilibrium.numerical-substitution"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "298",
+        "314",
+        "calculate",
+        "change",
+        "energy",
+        "gibbs",
+        "has",
+        "mol",
+        "objective",
+        "reaction",
+        "standard",
+        "text",
+        "the",
+        "using"
+      ],
+      "stamp": {
+        "unit:u-study-guide-chemical-equilibrium-worked-examples-3": "a112c43329ba04c5821de7f9c6ec41e9af81a50e0dcd02596094e7b4e3f70772",
+        "term:standard gibbs energy change": "d552936944bea24ed9c4e3352ddbde4042404a1cee16a2a630952f89afbf1fdc",
+        "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
+        "spine:guide.chemical-equilibrium.numerical-substitution": "9e4464b9fe17997f7dbbdb0acc949c6170f2d10c2f15f1d323140011ad66e495"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-22",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 23,
+        "contentHash": "c3e5c52c528217f7c6256917add6f2f576d12e6b71adb5d9b8b76efa91a2d062",
+        "lines": [
+          140,
+          144
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.relate-k-to-gibbs",
+        "guide.chemical-equilibrium.numerical-substitution"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "298",
+        "314",
+        "3435",
+        "approx",
+        "are",
+        "consistent",
+        "datum",
+        "delta",
+        "favoured",
+        "hypothetical",
+        "meaning",
+        "mol",
+        "negative",
+        "not",
+        "ominus",
+        "products",
+        "sign",
+        "source",
+        "teaching",
+        "text",
+        "the",
+        "value",
+        "with"
+      ],
+      "stamp": {
+        "unit:u-study-guide-chemical-equilibrium-worked-examples-4": "35bb57f1a45c8711dea0b86f6d0d68029f4c829834a82b37114830009f98e47f",
+        "unit:u-practice-chemical-equilibrium-questions-21": "035de8f2db3e2d39d24a207e1f0153d94f8671a224e0afd4d958551d1ff51990",
+        "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
+        "spine:guide.chemical-equilibrium.numerical-substitution": "9e4464b9fe17997f7dbbdb0acc949c6170f2d10c2f15f1d323140011ad66e495"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-23",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 24,
+        "contentHash": "eb71e1eb5e6ccc1327b384e149b33acf8b535d326d5065680a87fc823515d0ff",
+        "lines": [
+          150,
+          151
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.relate-k-to-gibbs",
+        "guide.chemical-equilibrium.sign-reasoning"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "answer",
+        "calculating",
+        "change",
+        "energy",
+        "for",
+        "gibbs",
+        "greater",
+        "justify",
+        "less",
+        "objective",
+        "one",
+        "positive",
+        "reaction",
+        "standard",
+        "state",
+        "than",
+        "whether",
+        "whose",
+        "without",
+        "your"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
+        "spine:guide.chemical-equilibrium.sign-reasoning": "024e318d6c29476842f8262152581b1f82b69122e4efa452822cd97218f36657"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-24",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 25,
+        "contentHash": "e661a4a58c2f534d2167723639d112e48d305930e182bfce290adeda9409be9d",
+        "lines": [
+          154,
+          155
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.relate-k-to-gibbs",
+        "guide.chemical-equilibrium.sign-reasoning"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "are",
+        "delta",
+        "equilibrium",
+        "favoured",
+        "from",
+        "means",
+        "negative",
+        "ominus",
+        "positive",
+        "reactants",
+        "requires",
+        "which"
+      ],
+      "stamp": {
+        "unit:u-practice-chemical-equilibrium-questions-23": "a19cecca4a1fe478104e1532f4686f5d76e1fa2ea5b0aa6243477b52d966d7c2",
+        "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
+        "spine:guide.chemical-equilibrium.sign-reasoning": "024e318d6c29476842f8262152581b1f82b69122e4efa452822cd97218f36657"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-25",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 26,
+        "contentHash": "a5c4c2a0251d21616949e7271210bb1cd34fda517989fef08c9a5fb067f20b4a",
+        "lines": [
+          161,
+          162
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.predict-k-with-temperature",
+        "guide.chemical-equilibrium.enthalpy-sign-sweep"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "endothermic",
+        "equilibrium",
+        "happens",
+        "objective",
+        "raised",
+        "reaction",
+        "temperature",
+        "the",
+        "value",
+        "what"
+      ],
+      "stamp": {
+        "term:endothermic reaction": "a6d35ce30483c0b5e231f8425ca24666d601ef261ec571088ad8d072e5be84ad",
+        "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
+        "spine:guide.chemical-equilibrium.enthalpy-sign-sweep": "6ebc2a593781685d94635177eca564dc520712ed95558c31b293aa5ebeb686a9"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-26",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 27,
+        "contentHash": "0e57541eb5f35d3fa294c3097b87796fa80f8b5d77cd34f4ad14233300061d30",
+        "lines": [
+          165,
+          167
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.predict-k-with-temperature",
+        "guide.chemical-equilibrium.enthalpy-sign-sweep"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "dependence",
+        "direction",
+        "endothermic",
+        "enthalpy",
+        "fixes",
+        "follows",
+        "for",
+        "from",
+        "hoff",
+        "increases",
+        "raising",
+        "reaction",
+        "relation",
+        "sign",
+        "temperature",
+        "the",
+        "this",
+        "van",
+        "which"
+      ],
+      "stamp": {
+        "unit:u-practice-chemical-equilibrium-questions-25": "81ef8203dbc2f408ae4e57fa936bd0d8d104d3ebce0949e72234517b3d6d7287",
+        "term:endothermic reaction": "a6d35ce30483c0b5e231f8425ca24666d601ef261ec571088ad8d072e5be84ad",
+        "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
+        "spine:guide.chemical-equilibrium.enthalpy-sign-sweep": "6ebc2a593781685d94635177eca564dc520712ed95558c31b293aa5ebeb686a9"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-27",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 28,
+        "contentHash": "966b3474516a41950b4de334a5caad5d0e2a3ceb131595e743938c864e28627c",
+        "lines": [
+          173,
+          174
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.predict-k-with-temperature",
+        "guide.chemical-equilibrium.enthalpy-sign-sweep"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "equilibrium",
+        "exothermic",
+        "happens",
+        "lowered",
+        "objective",
+        "reaction",
+        "temperature",
+        "the",
+        "value",
+        "what"
+      ],
+      "stamp": {
+        "term:exothermic reaction": "c20452115a1d09ee264abeb11c57548d06c6d732dbb57bd21fcd6673c570eb27",
+        "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
+        "spine:guide.chemical-equilibrium.enthalpy-sign-sweep": "6ebc2a593781685d94635177eca564dc520712ed95558c31b293aa5ebeb686a9"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-28",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 29,
+        "contentHash": "a86c348c6859cf10f175f95f064d2a9f247c3f36f8aea51d0006671a2c78a4d1",
+        "lines": [
+          177,
+          178
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.predict-k-with-temperature",
+        "guide.chemical-equilibrium.enthalpy-sign-sweep"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "are",
+        "decreases",
+        "exothermic",
+        "favoured",
+        "for",
+        "increases",
+        "lower",
+        "lowering",
+        "more",
+        "products",
+        "raising",
+        "reaction",
+        "strongly",
+        "temperature",
+        "the",
+        "therefore"
+      ],
+      "stamp": {
+        "unit:u-practice-chemical-equilibrium-questions-27": "81ef8203dbc2f408ae4e57fa936bd0d8d104d3ebce0949e72234517b3d6d7287",
+        "term:exothermic reaction": "c20452115a1d09ee264abeb11c57548d06c6d732dbb57bd21fcd6673c570eb27",
+        "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
+        "spine:guide.chemical-equilibrium.enthalpy-sign-sweep": "6ebc2a593781685d94635177eca564dc520712ed95558c31b293aa5ebeb686a9"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-29",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 30,
+        "contentHash": "35af3693be88ff3666886a0d14fe931d180480fe109d90ec56cd736a2d2c9c90",
+        "lines": [
+          184,
+          186
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.predict-k-with-temperature",
+        "guide.chemical-equilibrium.separating-position-constant"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "change",
+        "concentration",
+        "does",
+        "doubled",
+        "equilibrium",
+        "experiment",
+        "experiments",
+        "first",
+        "objective",
+        "raised",
+        "reactant",
+        "second",
+        "separate",
+        "system",
+        "temperature",
+        "the",
+        "two",
+        "undergoes",
+        "value",
+        "which"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
+        "spine:guide.chemical-equilibrium.separating-position-constant": "60408c787b6527a01d73c7bb546a2fdeccdb9087507f1dd07aff2f3797a867ed"
+      }
+    },
+    {
+      "id": "u-practice-chemical-equilibrium-questions-30",
+      "locator": {
+        "deliverable": "practice/chemical-equilibrium.md",
+        "section": "questions",
+        "ordinal": 31,
+        "contentHash": "87ee6c3c89aaf70b5f0deedcc7406de8adf4522663aab0b101abae7e6bb2d2fa",
+        "lines": [
+          189,
+          191
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.predict-k-with-temperature",
+        "guide.chemical-equilibrium.separating-position-constant"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "again",
+        "alters",
+        "and",
+        "away",
+        "change",
+        "chapter",
+        "common",
+        "concentration",
+        "confusing",
+        "disturbance",
+        "equals",
+        "error",
+        "from",
+        "itself",
+        "most",
+        "moves",
+        "one",
+        "only",
+        "same",
+        "second",
+        "shifts",
+        "system",
+        "temperature",
+        "that",
+        "the",
+        "these",
+        "two",
+        "until",
+        "value"
+      ],
+      "stamp": {
+        "unit:u-practice-chemical-equilibrium-questions-29": "2a7df7840b11131e62b81378e531105f25c44663e06ddf46078676fd7b5ed5b3",
+        "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
+        "spine:guide.chemical-equilibrium.separating-position-constant": "60408c787b6527a01d73c7bb546a2fdeccdb9087507f1dd07aff2f3797a867ed"
+      }
+    }
+  ]
+}

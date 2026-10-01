@@ -5,5 +5,8 @@ The C2 fixture (`../c2-chemistry`) migrated to spine v2 in redesign phase P3 and
 working copy (`courses/controlled-chemistry-v2` @ `d835acc`) without its git history; the decision log
 (`package/metadata/LOG.jsonl`) carries the three approval records. Demo and study material only.
 
+Since P5 it also carries its unit index (171 units, every teaching unit linked to the spine; working copy `b9c1e1a`):
+42 semi-mechanical facts await evidence and `guide.chemical-equilibrium.evidence-design` owes one question.
+
 Do not edit in place: tests copy it first. Any change to a spine document voids the matching approval — which is
 exactly what the tests use it to show.

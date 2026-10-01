@@ -108,7 +108,7 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
     appendLogRecord(root, { type: "authorship-confirmation", party, payload: { initial: true, origin: initialOrigin } });
   }
   const findings = [], summary = { deliverables: 0, units: 0, kept: 0, reworded: 0, new: 0, retired: 0, splits: 0, merges: 0, agent: 0, unknown: 0 };
-  const retiredAll = [];
+  const retiredAll = [], changedIds = [];
   for (const rel of deliverablesOf(reader)) {
     const text = reader.text(rel);
     const seg = segmentDeliverable(text, rel).units;
@@ -130,6 +130,7 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
       const split = m.splits.find((x) => x.into.includes(i)), merge = m.merges.find((x) => x.into === i);
       const id = prev?.id || mintId(rel, s.section, taken);
       if (prev && prev.locator.contentHash === hash) summary.kept++; else if (prev) summary.reworded++; else summary.new++;
+      if (changed) changedIds.push(id);
       const classified = classifyUnit(s);
       const added = (prev?.judgmentAdded || []).filter((k) => !classified.includes(k));
       let role = s.role;
@@ -138,7 +139,8 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
       return {
         id, locator: { deliverable: rel, section: s.section, ordinal: i, contentHash: hash, lines: [s.startLine, s.endLine] },
         form: s.form, role, origin, spineNodes: prev?.spineNodes || [], judgment, ...(added.length ? { judgmentAdded: added } : {}),
-        evidence: changed ? [] : prev?.evidence || [], tokens: tokensOf(s.text),
+        // evidence is bound to fact tokens (P5), so it survives a rephrase; obligations.mjs decides what still counts
+        evidence: prev?.evidence || [], ...(prev?.stamp ? { stamp: prev.stamp } : {}), ...(prev?.carried ? { carried: prev.carried } : {}), tokens: tokensOf(s.text),
         ...(split ? { splitFrom: split.from } : {}), ...(merge ? { mergedFrom: merge.from } : {}),
       };
     });
@@ -155,7 +157,7 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
   }
   if (as === "agent") appendLogRecord(root, { type: "revision", party, payload: { event: "agent-session-end", summary } });
   if (retiredAll.length) appendLogRecord(root, { type: "unit-retirement", party: party || { role: "harness", name: "units index" }, payload: { units: retiredAll } });
-  return { findings, summary };
+  return { findings, summary, changedIds };
 }
 
 /** The instructor claims authorship of units of unknown authorship (accept as mine) — D20. */

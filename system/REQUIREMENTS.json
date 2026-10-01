@@ -6,7 +6,8 @@
     "P1",
     "P2",
     "P3",
-    "P4"
+    "P4",
+    "P5"
   ],
   "requirements": [
     {
@@ -684,8 +685,12 @@
       ],
       "statement": "A semi-mechanical unit without an admitted evidence record is an open obligation (it claims nothing is wrong, and blocks publishing).",
       "source": "D14, D19-A; Q15",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/core-obligations.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.core.coverage-obligation",
@@ -696,8 +701,15 @@
       ],
       "statement": "An objective or assessment-guide entry with no linked unit, and a unit with no spine link, are open obligations.",
       "source": "D19-A, D19-I; Control C1, C3, C5",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/core-obligations.test.mjs"
+        ],
+        "T2": [
+          "tests/core-cli.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.core.reverify-obligation",
@@ -708,8 +720,15 @@
       ],
       "statement": "After a change, every affected unit not yet re-verified is an open obligation; nothing reaches a published snapshot stranded.",
       "source": "D19-A; Coherence H2",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/core-obligations.test.mjs"
+        ],
+        "T2": [
+          "tests/core-cli.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.versions.carry",
@@ -719,8 +738,12 @@
       ],
       "statement": "Units carried into a new major version enter it as open obligations (re-verify), never as verified.",
       "source": "D15; split from req.versions.major (P3)",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/core-obligations.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.core.impact",
@@ -730,8 +753,12 @@
       ],
       "statement": "The impact set of a change covers the mechanical dependency kinds (shared value, shared term, spine node, source, derivation) and declared prerequisites.",
       "source": "Coherence H1; D19-H",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/core-obligations.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.core.null-edit",
@@ -741,8 +768,12 @@
       ],
       "statement": "A meaning-preserving edit raises nothing beyond its own unit, but that unit's numbers, units, names, dates and negations are always re-checked.",
       "source": "D17, D19-C; Coherence H3",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/core-obligations.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.ms1.pin-all",

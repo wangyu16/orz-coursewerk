@@ -1,0 +1,1807 @@
+{
+  "schemaVersion": 1,
+  "deliverable": "practice/le-chatelier.md",
+  "units": [
+    {
+      "id": "u-practice-le-chatelier-practice-le-chatelier-s-principle-1",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "practice-le-chatelier-s-principle",
+        "ordinal": 0,
+        "contentHash": "93fe0750e77597a29ea0dfa04d73612d09c81e9fef2fe3ae7caa8149b3b73041",
+        "lines": [
+          3,
+          6
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.state-principle",
+        "objective.le-chatelier.predict-concentration-shift",
+        "objective.le-chatelier.predict-temperature-shift",
+        "objective.le-chatelier.predict-pressure-shift",
+        "objective.le-chatelier.explain-inert-and-catalyst"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "all",
+        "answer",
+        "assessment",
+        "because",
+        "chatelier",
+        "concepts",
+        "covering",
+        "direction",
+        "directions",
+        "each",
+        "every",
+        "fifteen",
+        "five",
+        "followed",
+        "from",
+        "gives",
+        "here",
+        "instantiated",
+        "just",
+        "not",
+        "objectives",
+        "one",
+        "prediction",
+        "question",
+        "questions",
+        "reasoning",
+        "support",
+        "the",
+        "two",
+        "worked"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.state-principle": "5324ba0a821c95fd2cbc3ddb3ac4b939890d620dbf4818316c0c016e52c9c95d",
+        "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-practice-le-chatelier-s-principle-2",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "practice-le-chatelier-s-principle",
+        "ordinal": 1,
+        "contentHash": "3111c28b8ce6a09d409b0fec2ec207947563d720f59f5fe3cb84b757f5b60286",
+        "lines": [
+          9,
+          9
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.state-principle",
+        "objective.le-chatelier.predict-concentration-shift",
+        "objective.le-chatelier.predict-temperature-shift",
+        "objective.le-chatelier.predict-pressure-shift",
+        "objective.le-chatelier.explain-inert-and-catalyst"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "coverage",
+        "objective",
+        "q11",
+        "q12",
+        "q15"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.state-principle": "5324ba0a821c95fd2cbc3ddb3ac4b939890d620dbf4818316c0c016e52c9c95d",
+        "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-1",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 2,
+        "contentHash": "c922cdc0848c55791a9f56e8b09195f316686ef4765f3600771da38792208c10",
+        "lines": [
+          15,
+          16
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.state-principle",
+        "guide.le-chatelier.word-partially"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "change",
+        "chatelier",
+        "made",
+        "means",
+        "objective",
+        "phrasing",
+        "principle",
+        "says",
+        "state",
+        "student",
+        "system",
+        "that",
+        "the",
+        "undoes",
+        "what",
+        "with",
+        "wrong",
+        "you"
+      ],
+      "stamp": {
+        "term:le chatelier's principle": "243f9e0ccefd378d28ed3a489ae880d11e4da7a29c9da1b210d11457757eec7b",
+        "spine:objective.le-chatelier.state-principle": "5324ba0a821c95fd2cbc3ddb3ac4b939890d620dbf4818316c0c016e52c9c95d",
+        "spine:guide.le-chatelier.word-partially": "4e87c6f3a49185bafbde5b65e6a076f122d444181e585b2448322c5e6e09e0f6"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-2",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 3,
+        "contentHash": "17b1386988a0c9db2b58055c55a06352c47e6d5d0137dfd64ca9b1eafdaca06a",
+        "lines": [
+          19,
+          22
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.state-principle",
+        "guide.le-chatelier.word-partially"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "adjusts",
+        "and",
+        "change",
+        "counteraction",
+        "counteracts",
+        "determining",
+        "disturbed",
+        "equilibrium",
+        "factor",
+        "new",
+        "one",
+        "only",
+        "original",
+        "partial",
+        "partially",
+        "phrasing",
+        "principle",
+        "rather",
+        "returning",
+        "settles",
+        "states",
+        "student",
+        "system",
+        "than",
+        "that",
+        "the",
+        "two",
+        "ways",
+        "wrong"
+      ],
+      "stamp": {
+        "unit:u-practice-le-chatelier-questions-1": "cb4a57f8db0fd311e1179ffced45859406e5991eb23c8ab50039b4ad460bf22a",
+        "spine:objective.le-chatelier.state-principle": "5324ba0a821c95fd2cbc3ddb3ac4b939890d620dbf4818316c0c016e52c9c95d",
+        "spine:guide.le-chatelier.word-partially": "4e87c6f3a49185bafbde5b65e6a076f122d444181e585b2448322c5e6e09e0f6"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-3",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 4,
+        "contentHash": "be57c9755981e3c3ca0de889a8cac6d99d7936a228ff1287c09670ad665f1450",
+        "lines": [
+          28,
+          29
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.state-principle",
+        "guide.le-chatelier.statement-critique"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "after",
+        "are",
+        "before",
+        "concentrations",
+        "disturbance",
+        "equilibrium",
+        "new",
+        "objective",
+        "reaches",
+        "same",
+        "system",
+        "the"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.state-principle": "5324ba0a821c95fd2cbc3ddb3ac4b939890d620dbf4818316c0c016e52c9c95d",
+        "spine:guide.le-chatelier.statement-critique": "db3cc502d5681b12fa15cb966098f88b5c5a46be0c8fb5134b2c2994d0e783ad"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-4",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 5,
+        "contentHash": "5c4fe6fd32aae0de8e2cc9d19afa88dd8314038fea612c8b7792390d1d9c4cd4",
+        "lines": [
+          32,
+          34
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.state-principle",
+        "guide.le-chatelier.statement-critique"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "after",
+        "all",
+        "and",
+        "between",
+        "change",
+        "complete",
+        "concentrations",
+        "disturbance",
+        "effect",
+        "had",
+        "immediately",
+        "lie",
+        "mean",
+        "moves",
+        "new",
+        "oppose",
+        "original",
+        "out",
+        "partially",
+        "restoration",
+        "rules",
+        "system",
+        "the",
+        "values",
+        "which",
+        "word",
+        "would"
+      ],
+      "stamp": {
+        "unit:u-practice-le-chatelier-questions-3": "9c572b56b8760fb5ddbe0a225a6ed83615bdb3489891eea3b8a3b55b7d691f73",
+        "spine:objective.le-chatelier.state-principle": "5324ba0a821c95fd2cbc3ddb3ac4b939890d620dbf4818316c0c016e52c9c95d",
+        "spine:guide.le-chatelier.statement-critique": "db3cc502d5681b12fa15cb966098f88b5c5a46be0c8fb5134b2c2994d0e783ad"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-5",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 6,
+        "contentHash": "40fea0839ef1587372a9c7b06e3e5ee35b2610fee70242aa52c5672fcb2c92e5",
+        "lines": [
+          40,
+          41
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-concentration-shift",
+        "guide.le-chatelier.add-remove"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "does",
+        "equilibrium",
+        "extra",
+        "for",
+        "injected",
+        "nh3",
+        "objective",
+        "shift",
+        "the",
+        "way",
+        "which"
+      ],
+      "stamp": {
+        "term:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
+        "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
+        "spine:guide.le-chatelier.add-remove": "d4c7c4ea3012c8968555e0cd5f7bc02362af99fa929c9f186579a65c155bff78"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-6",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 7,
+        "contentHash": "7ceabb1a0296643cf7d45391898903b4985466235697e6537bb3308f61143115",
+        "lines": [
+          44,
+          46
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-concentration-shift",
+        "guide.le-chatelier.add-remove"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "added",
+        "and",
+        "concentration",
+        "consuming",
+        "equilibrium",
+        "forming",
+        "increasing",
+        "more",
+        "nh3",
+        "opposite",
+        "products",
+        "reactant",
+        "right",
+        "shifts",
+        "side",
+        "some",
+        "the",
+        "toward"
+      ],
+      "stamp": {
+        "unit:u-practice-le-chatelier-questions-5": "de267694afcd730952dc75b0fa0d035ed8d8ddbb5e7f2370ae692fac7bc0595f",
+        "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
+        "spine:guide.le-chatelier.add-remove": "d4c7c4ea3012c8968555e0cd5f7bc02362af99fa929c9f186579a65c155bff78"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-7",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 8,
+        "contentHash": "5aab44b77aa5736f8da4d039a8abaaaa4864f1f1fe810142188601e3165e6cdd",
+        "lines": [
+          52,
+          53
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-concentration-shift",
+        "guide.le-chatelier.add-remove"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "ammonia",
+        "and",
+        "continuously",
+        "does",
+        "equilibrium",
+        "for",
+        "from",
+        "industrially",
+        "objective",
+        "reaction",
+        "removed",
+        "same",
+        "shift",
+        "the",
+        "this",
+        "useful",
+        "vessel",
+        "way",
+        "which",
+        "why"
+      ],
+      "stamp": {
+        "term:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
+        "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
+        "spine:guide.le-chatelier.add-remove": "d4c7c4ea3012c8968555e0cd5f7bc02362af99fa929c9f186579a65c155bff78"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-8",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 9,
+        "contentHash": "2fffa34dafab1a883829fa9c821df10090ee0abcc3e9e28d9e27e1f92af0c440",
+        "lines": [
+          56,
+          58
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-concentration-shift",
+        "guide.le-chatelier.add-remove"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "ammonia",
+        "concentration",
+        "continuously",
+        "decreasing",
+        "driving",
+        "equilibrium",
+        "forms",
+        "forward",
+        "industrial",
+        "keeps",
+        "processes",
+        "product",
+        "products",
+        "reaction",
+        "remove",
+        "removed",
+        "removing",
+        "replace",
+        "shifts",
+        "side",
+        "that",
+        "the",
+        "therefore",
+        "toward",
+        "was",
+        "what",
+        "which",
+        "why"
+      ],
+      "stamp": {
+        "unit:u-practice-le-chatelier-questions-7": "14ff2ae3f34370f4783b2843c73904db70a9d30e284efbab94afd08baec1b34f",
+        "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
+        "spine:guide.le-chatelier.add-remove": "d4c7c4ea3012c8968555e0cd5f7bc02362af99fa929c9f186579a65c155bff78"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-9",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 10,
+        "contentHash": "bafb536ac939237d7bab482c0e8f251b8cf6a05117dcdd6a865990fd0e2a3118",
+        "lines": [
+          64,
+          64
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-concentration-shift",
+        "guide.le-chatelier.connect-chapter"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "answer",
+        "chatelier",
+        "instead",
+        "justify",
+        "objective",
+        "principle",
+        "the",
+        "using"
+      ],
+      "stamp": {
+        "term:le chatelier's principle": "243f9e0ccefd378d28ed3a489ae880d11e4da7a29c9da1b210d11457757eec7b",
+        "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
+        "spine:guide.le-chatelier.connect-chapter": "c9d409fa8fe5dd771051fb612e213cd87675aff9be4b60c26a303eb18326b7fb"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-10",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 11,
+        "contentHash": "d966508c125efada325d7b0b0c905e50d02b78dc6bb2cd89c942eb1845817ce3",
+        "lines": [
+          67,
+          69
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-concentration-shift",
+        "guide.le-chatelier.connect-chapter"
+      ],
+      "judgment": [
+        "mechanical",
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "adding",
+        "back",
+        "below",
+        "composition",
+        "denominator",
+        "falls",
+        "forward",
+        "increases",
+        "itself",
+        "moved",
+        "note",
+        "only",
+        "quotient",
+        "reaction",
+        "rises",
+        "shifts",
+        "since",
+        "that",
+        "the",
+        "unchanged",
+        "until"
+      ],
+      "stamp": {
+        "unit:u-practice-le-chatelier-questions-9": "7d495c5582a221d1b285dcac48236e466c9642f779a3676bd8220dfb38edfdd3",
+        "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
+        "spine:guide.le-chatelier.connect-chapter": "c9d409fa8fe5dd771051fb612e213cd87675aff9be4b60c26a303eb18326b7fb"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-11",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 12,
+        "contentHash": "042c97bf87d3bdf4295abff59b52a5cc0370b1a394cf10477f479dda805cb4e2",
+        "lines": [
+          75,
+          76
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-temperature-shift",
+        "guide.le-chatelier.heat-species"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "does",
+        "equilibrium",
+        "exothermic",
+        "nh3",
+        "objective",
+        "raised",
+        "reaction",
+        "shift",
+        "temperature",
+        "the",
+        "way",
+        "which"
+      ],
+      "stamp": {
+        "term:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:guide.le-chatelier.heat-species": "f26d6c825060fa7e83a4614b997271eed5e2389afd8a326359ef69b4ae2b3a36"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-12",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 13,
+        "contentHash": "ddeebf59be11f6c05f2609efb06b1ea56affcc74c943766b08bdd96debf6c9e7",
+        "lines": [
+          79,
+          81
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-temperature-shift",
+        "guide.le-chatelier.heat-species"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "adding",
+        "ammonia",
+        "and",
+        "away",
+        "behaves",
+        "equilibrium",
+        "exothermic",
+        "falls",
+        "for",
+        "from",
+        "heat",
+        "higher",
+        "left",
+        "like",
+        "product",
+        "reactants",
+        "reaction",
+        "shifts",
+        "temperature",
+        "the",
+        "toward",
+        "yield"
+      ],
+      "stamp": {
+        "unit:u-practice-le-chatelier-questions-11": "57db15f8bd97db2b2a2b9411b8212c741bd2f1237ba8e11e504242c87c5af910",
+        "term:exothermic reaction": "c20452115a1d09ee264abeb11c57548d06c6d732dbb57bd21fcd6673c570eb27",
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:guide.le-chatelier.heat-species": "f26d6c825060fa7e83a4614b997271eed5e2389afd8a326359ef69b4ae2b3a36"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-13",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 14,
+        "contentHash": "c822e84a5d481b5ce71b04ca00101da020fdee83ad50bc9e5d5d985083528fd9",
+        "lines": [
+          87,
+          88
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-temperature-shift",
+        "guide.le-chatelier.heat-species"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "cooled",
+        "does",
+        "endothermic",
+        "equilibrium",
+        "mixture",
+        "objective",
+        "reaction",
+        "shift",
+        "the",
+        "way",
+        "which"
+      ],
+      "stamp": {
+        "term:endothermic reaction": "a6d35ce30483c0b5e231f8425ca24666d601ef261ec571088ad8d072e5be84ad",
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:guide.le-chatelier.heat-species": "f26d6c825060fa7e83a4614b997271eed5e2389afd8a326359ef69b4ae2b3a36"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-14",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 15,
+        "contentHash": "547cfe3be5eec49469171002a8420b9ea6d508dc3c4d5777eb880d7229c4f439",
+        "lines": [
+          91,
+          92
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-temperature-shift",
+        "guide.le-chatelier.heat-species"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "behaves",
+        "endothermic",
+        "equilibrium",
+        "for",
+        "heat",
+        "like",
+        "reactant",
+        "reactants",
+        "reaction",
+        "removing",
+        "replace",
+        "shifts",
+        "side",
+        "the",
+        "toward"
+      ],
+      "stamp": {
+        "unit:u-practice-le-chatelier-questions-13": "fcf757e326dc23adc9de13c00bcec64686623f99af9ee10621ebdbb38ebba937",
+        "term:endothermic reaction": "a6d35ce30483c0b5e231f8425ca24666d601ef261ec571088ad8d072e5be84ad",
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:guide.le-chatelier.heat-species": "f26d6c825060fa7e83a4614b997271eed5e2389afd8a326359ef69b4ae2b3a36"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-15",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 16,
+        "contentHash": "fbddfa979eceb1844b54585f7447ca9cec474c2730e27d3b37f140551923e35a",
+        "lines": [
+          98,
+          99
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-temperature-shift",
+        "guide.le-chatelier.yield-probe"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "always",
+        "claim",
+        "evaluate",
+        "increases",
+        "objective",
+        "product",
+        "raising",
+        "temperature",
+        "the",
+        "this",
+        "yield"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:guide.le-chatelier.yield-probe": "a76c6adb4782a6d3dda62d70a32dc0c371dc4c3e484a028bbb58a095a63b4dd6"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-16",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 17,
+        "contentHash": "0729caf1aff1651dd0238d1053ffa73414f4c075e8bb90c81c3b1cb93504e310",
+        "lines": [
+          102,
+          105
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-temperature-shift",
+        "guide.le-chatelier.yield-probe"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "acts",
+        "also",
+        "because",
+        "but",
+        "changes",
+        "decreases",
+        "depends",
+        "disturbances",
+        "effect",
+        "endothermic",
+        "enthalpy",
+        "exothermic",
+        "false",
+        "for",
+        "heat",
+        "increases",
+        "one",
+        "only",
+        "product",
+        "raising",
+        "reactant",
+        "reaction",
+        "sign",
+        "temperature",
+        "that",
+        "the",
+        "these",
+        "value",
+        "yield"
+      ],
+      "stamp": {
+        "unit:u-practice-le-chatelier-questions-15": "76f86106fc022f3374d56916731d1ef21746a1dbaec50b26ebd4eb955bf60f26",
+        "term:exothermic reaction": "c20452115a1d09ee264abeb11c57548d06c6d732dbb57bd21fcd6673c570eb27",
+        "term:endothermic reaction": "a6d35ce30483c0b5e231f8425ca24666d601ef261ec571088ad8d072e5be84ad",
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:guide.le-chatelier.yield-probe": "a76c6adb4782a6d3dda62d70a32dc0c371dc4c3e484a028bbb58a095a63b4dd6"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-17",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 18,
+        "contentHash": "afbb668b3d280349c9824d3e16a9d71d1fc1d1151cb3089ce7ef48f6c11e4ff9",
+        "lines": [
+          111,
+          112
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-pressure-shift",
+        "guide.le-chatelier.count-moles"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "does",
+        "equilibrium",
+        "for",
+        "halved",
+        "nh3",
+        "objective",
+        "shift",
+        "the",
+        "vessel",
+        "volume",
+        "way",
+        "which"
+      ],
+      "stamp": {
+        "term:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:guide.le-chatelier.count-moles": "f10d7a0235af9a7dfddf00b760bb6bacd9ab7f98e3dd87281667306aa1e2441c"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-18",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 19,
+        "contentHash": "4bff27b84ee51b75041e22880148ce391072ab52533343643dafd503452367d0",
+        "lines": [
+          115,
+          117
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-pressure-shift",
+        "guide.le-chatelier.count-moles"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "are",
+        "decreasing",
+        "equilibrium",
+        "fewer",
+        "four",
+        "gas",
+        "left",
+        "moles",
+        "pressure",
+        "product",
+        "products",
+        "raises",
+        "right",
+        "shifts",
+        "side",
+        "the",
+        "there",
+        "toward",
+        "two",
+        "volume",
+        "which",
+        "with"
+      ],
+      "stamp": {
+        "unit:u-practice-le-chatelier-questions-17": "09dd92bdf381dc2194220b0e87f2cfa92cf53ee600f7268caa53c42da0fe9bfc",
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:guide.le-chatelier.count-moles": "f10d7a0235af9a7dfddf00b760bb6bacd9ab7f98e3dd87281667306aa1e2441c"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-19",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 20,
+        "contentHash": "388f873a5fbc41c016cf2b252300ca089edccdbde8af2ac386ebcfb1468adb40",
+        "lines": [
+          123,
+          124
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-pressure-shift",
+        "guide.le-chatelier.count-moles"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "does",
+        "equilibrium",
+        "for",
+        "halved",
+        "objective",
+        "shift",
+        "the",
+        "volume",
+        "way",
+        "which"
+      ],
+      "stamp": {
+        "term:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:guide.le-chatelier.count-moles": "f10d7a0235af9a7dfddf00b760bb6bacd9ab7f98e3dd87281667306aa1e2441c"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-20",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 21,
+        "contentHash": "24c36fdb416166cd1c12dde3b8e4d5b7214ac5da2aeaf8d0e84eb5f60bd4384f",
+        "lines": [
+          127,
+          129
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-pressure-shift",
+        "guide.le-chatelier.count-moles"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "are",
+        "case",
+        "change",
+        "does",
+        "each",
+        "equilibrium",
+        "every",
+        "favoured",
+        "gas",
+        "moles",
+        "move",
+        "neither",
+        "not",
+        "phase",
+        "pressure",
+        "shift",
+        "shows",
+        "side",
+        "that",
+        "the",
+        "there",
+        "this",
+        "two",
+        "volume"
+      ],
+      "stamp": {
+        "unit:u-practice-le-chatelier-questions-19": "c09ec4d2bcacff3af1f0e66ee0b1cd9437db912681042e89421541661a2cdccd",
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:guide.le-chatelier.count-moles": "f10d7a0235af9a7dfddf00b760bb6bacd9ab7f98e3dd87281667306aa1e2441c"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-21",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 22,
+        "contentHash": "9afa3ec9896f2b6967715f901d2164c1e47bfb1fbe3a643cdbb3c3a7c2d5c281",
+        "lines": [
+          135,
+          136
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-pressure-shift",
+        "guide.le-chatelier.equal-moles-case"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "does",
+        "doubled",
+        "equilibrium",
+        "for",
+        "objective",
+        "shift",
+        "so2",
+        "so3",
+        "the",
+        "vessel",
+        "volume",
+        "way",
+        "which"
+      ],
+      "stamp": {
+        "term:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:guide.le-chatelier.equal-moles-case": "021d3171b51210c48efa95d120eab4582b432db473e545f4c42d88d765ac3b44"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-22",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 23,
+        "contentHash": "ca752ff8224880a3867051eae55eefa3c529d33e48a950d6eb53f69af159606e",
+        "lines": [
+          139,
+          140
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-pressure-shift",
+        "guide.le-chatelier.equal-moles-case"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "are",
+        "equilibrium",
+        "gas",
+        "increasing",
+        "left",
+        "lowers",
+        "moles",
+        "more",
+        "pressure",
+        "products",
+        "right",
+        "shifts",
+        "side",
+        "the",
+        "there",
+        "three",
+        "toward",
+        "two",
+        "volume",
+        "with"
+      ],
+      "stamp": {
+        "unit:u-practice-le-chatelier-questions-21": "dd30b64aeecd3768faf5fc2282e7a002cc39ffda6b89cea2aa25732ef1ac804f",
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:guide.le-chatelier.equal-moles-case": "021d3171b51210c48efa95d120eab4582b432db473e545f4c42d88d765ac3b44"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-23",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 24,
+        "contentHash": "d07c812d936365c7c6b81cce04d53f54c9c43017519b0df4b0a4b03e3cbd0e22",
+        "lines": [
+          146,
+          147
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.explain-inert-and-catalyst",
+        "guide.le-chatelier.inert-gas-probe"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "added",
+        "argon",
+        "constant",
+        "does",
+        "equilibrium",
+        "gas",
+        "held",
+        "mixture",
+        "objective",
+        "phase",
+        "shift",
+        "the",
+        "volume",
+        "way",
+        "which"
+      ],
+      "stamp": {
+        "term:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
+        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
+        "spine:guide.le-chatelier.inert-gas-probe": "af8095ab96dbad02f8bd975703431cc73ec5afaa15571a042565f43b044b8043"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-24",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 25,
+        "contentHash": "469e2a1b8048fb62828903b4f30d3a22d4ede70266de9904d31c9569caf8454f",
+        "lines": [
+          150,
+          152
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.explain-inert-and-catalyst",
+        "guide.le-chatelier.inert-gas-probe"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "addition",
+        "and",
+        "are",
+        "argon",
+        "but",
+        "changes",
+        "constant",
+        "depends",
+        "does",
+        "equals",
+        "inert",
+        "its",
+        "not",
+        "partial",
+        "pressure",
+        "pressures",
+        "quotient",
+        "reacting",
+        "rises",
+        "shift",
+        "species",
+        "still",
+        "the",
+        "total",
+        "unchanged",
+        "volume",
+        "which"
+      ],
+      "stamp": {
+        "unit:u-practice-le-chatelier-questions-23": "7ccfaf3a132df67ce8b8a4fec3cbc570364c90c0bb5e84831af251af1d12320b",
+        "term:partial pressure": "1911d9c4cb6332589c0c654fabfa7dd7bfd78d9bfceb7146973dee1784dcec0d",
+        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
+        "spine:guide.le-chatelier.inert-gas-probe": "af8095ab96dbad02f8bd975703431cc73ec5afaa15571a042565f43b044b8043"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-25",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 26,
+        "contentHash": "4a365427cadfaf3821d23c1392dfc8685d912238c3688a1e23ef4234720ea51a",
+        "lines": [
+          158,
+          159
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.explain-inert-and-catalyst",
+        "guide.le-chatelier.inert-gas-probe"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "adding",
+        "and",
+        "argon",
+        "argues",
+        "argument",
+        "because",
+        "changes",
+        "does",
+        "equilibria",
+        "equilibrium",
+        "fail",
+        "must",
+        "objective",
+        "pressure",
+        "shift",
+        "student",
+        "that",
+        "the",
+        "total",
+        "went",
+        "where"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
+        "spine:guide.le-chatelier.inert-gas-probe": "af8095ab96dbad02f8bd975703431cc73ec5afaa15571a042565f43b044b8043"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-26",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 27,
+        "contentHash": "001e58f6114352ddfae7384cf2c4fd91f34c060c03220d79dd5f263654a67ef6",
+        "lines": [
+          162,
+          165
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.explain-inert-and-catalyst",
+        "guide.le-chatelier.inert-gas-probe"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "added",
+        "change",
+        "constant",
+        "driver",
+        "equilibrium",
+        "every",
+        "fails",
+        "gas",
+        "inert",
+        "leaving",
+        "moves",
+        "partial",
+        "phase",
+        "pressure",
+        "pressures",
+        "produces",
+        "raises",
+        "reacting",
+        "species",
+        "the",
+        "total",
+        "treating",
+        "untouched",
+        "volume",
+        "what",
+        "which",
+        "while"
+      ],
+      "stamp": {
+        "unit:u-practice-le-chatelier-questions-25": "9708137cc5a033d798cb13ca3fb0b9392754505f4744820d995204a4d83cc41f",
+        "term:partial pressure": "1911d9c4cb6332589c0c654fabfa7dd7bfd78d9bfceb7146973dee1784dcec0d",
+        "term:inert gas": "91b328404fe9488574e97dda03a06991fc165308d1553889049deb255cba0d1a",
+        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
+        "spine:guide.le-chatelier.inert-gas-probe": "af8095ab96dbad02f8bd975703431cc73ec5afaa15571a042565f43b044b8043"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-27",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 28,
+        "contentHash": "14165341a8b05252cfd6b6339b1fdc0e99496000132f43b0bafde034a9cde4e8",
+        "lines": [
+          171,
+          172
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.explain-inert-and-catalyst",
+        "guide.le-chatelier.catalyst-probe"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "added",
+        "amount",
+        "catalyst",
+        "equilibrium",
+        "happens",
+        "objective",
+        "present",
+        "product",
+        "reaction",
+        "the",
+        "what"
+      ],
+      "stamp": {
+        "term:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
+        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
+        "spine:guide.le-chatelier.catalyst-probe": "45de34efefa01dea2ff69e11aa0530f6b8d7d968608951f31344c470b040665e"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-28",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 29,
+        "contentHash": "81051f1cd6e3de3db92b86263f893c7b50559cd70ef8cfe943415acaf25b8af7",
+        "lines": [
+          175,
+          177
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.explain-inert-and-catalyst",
+        "guide.le-chatelier.catalyst-probe"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "but",
+        "catalyst",
+        "changes",
+        "composition",
+        "does",
+        "equilibrium",
+        "factor",
+        "forward",
+        "industrially",
+        "needed",
+        "neither",
+        "nor",
+        "not",
+        "nothing",
+        "position",
+        "raise",
+        "reach",
+        "reactions",
+        "reverse",
+        "same",
+        "shortens",
+        "speeds",
+        "the",
+        "time",
+        "valuable",
+        "which",
+        "yield"
+      ],
+      "stamp": {
+        "unit:u-practice-le-chatelier-questions-27": "1d8bfe69b5e6c554327cd9fc3245001a0c6cdc6c54ecb7622b496696550b3ff1",
+        "term:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
+        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
+        "spine:guide.le-chatelier.catalyst-probe": "45de34efefa01dea2ff69e11aa0530f6b8d7d968608951f31344c470b040665e"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-29",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 30,
+        "contentHash": "7c2a6ade846aaab5540ee55bce4c1040b16c35c7e11634bbd7ee8fee0cd40f22",
+        "lines": [
+          183,
+          185
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.explain-inert-and-catalyst",
+        "guide.le-chatelier.contrast-item"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "adding",
+        "and",
+        "applied",
+        "are",
+        "catalyst",
+        "change",
+        "changes",
+        "constant",
+        "equilibrium",
+        "four",
+        "gas",
+        "inert",
+        "objective",
+        "phase",
+        "position",
+        "raising",
+        "reactant",
+        "separately",
+        "shift",
+        "temperature",
+        "the",
+        "value",
+        "volume",
+        "which"
+      ],
+      "stamp": {
+        "term:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
+        "term:inert gas": "91b328404fe9488574e97dda03a06991fc165308d1553889049deb255cba0d1a",
+        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
+        "spine:guide.le-chatelier.contrast-item": "b8a0215812206b95ef16309bf568441e53049171c8ac02affbcc2a484c6e15e8"
+      }
+    },
+    {
+      "id": "u-practice-le-chatelier-questions-30",
+      "locator": {
+        "deliverable": "practice/le-chatelier.md",
+        "section": "questions",
+        "ordinal": 31,
+        "contentHash": "0728382c9e91ff8396c869a109e1c7247a85b2a812b5d1d62e9a8047b3bf6920",
+        "lines": [
+          188,
+          191
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.explain-inert-and-catalyst",
+        "guide.le-chatelier.contrast-item"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "accelerates",
+        "adding",
+        "and",
+        "because",
+        "both",
+        "but",
+        "catalyst",
+        "change",
+        "changes",
+        "constant",
+        "directions",
+        "does",
+        "equally",
+        "four",
+        "gas",
+        "inert",
+        "neither",
+        "not",
+        "one",
+        "only",
+        "partial",
+        "position",
+        "pressure",
+        "raising",
+        "reactant",
+        "shifts",
+        "temperature",
+        "that",
+        "the",
+        "volume"
+      ],
+      "stamp": {
+        "unit:u-practice-le-chatelier-questions-29": "db9df4f07c775a9ceb320df28e8aa3f7fb7f05ce0cd46cf4a3c61a4975f6c219",
+        "term:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
+        "term:partial pressure": "1911d9c4cb6332589c0c654fabfa7dd7bfd78d9bfceb7146973dee1784dcec0d",
+        "term:inert gas": "91b328404fe9488574e97dda03a06991fc165308d1553889049deb255cba0d1a",
+        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
+        "spine:guide.le-chatelier.contrast-item": "b8a0215812206b95ef16309bf568441e53049171c8ac02affbcc2a484c6e15e8"
+      }
+    }
+  ]
+}

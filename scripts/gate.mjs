@@ -14,6 +14,7 @@ import { readConfig } from "./lib/records/config.mjs";
 import { liveReader } from "./lib/core/package_reader.mjs";
 import { spineCoreFindings, approvalCoreProblems } from "./lib/core/core_checks.mjs";
 import { unindexedFindings } from "./lib/core/units_index.mjs";
+import { coreObligations } from "./lib/core/obligations.mjs";
 
 const args = process.argv.slice(2);
 const opt = (name, fallback) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -46,6 +47,7 @@ try {
     if (["V1", "V8"].includes(checkpoint)) core.push(...spineCoreFindings(reader, run.snapshot.id));
     if (checkpoint === "V8") approvalProblems.push(...approvalCoreProblems(root, reader));
     if (["V2", "V8"].includes(checkpoint)) core.push(...unindexedFindings(root, reader, run.snapshot.id)); // edits not yet indexed (P4)
+    if (["V4", "V6", "V8"].includes(checkpoint)) core.push(...coreObligations(root, reader, run.snapshot.id)); // the deterministic core (P5)
   }
   const findings = [...run.findings, ...core, ...logFindings(root, run.snapshot.id)];
   const maturityOf = (name) => run.wiring.ran.find((r) => r.name === name)?.maturity || "stable"; // effective maturity, as the runner applied it

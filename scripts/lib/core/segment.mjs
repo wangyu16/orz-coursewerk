@@ -46,6 +46,13 @@ export function segmentDeliverable(text, deliverable) {
       for (let k = i; k <= j; k++) struct(k);
       i = j + 1; continue;
     }
+    // horizontal rules and the credit line are structure: attribution is the rights module's, not a teaching unit
+    if (/^(?:-{3,}|\*{3,}|_{3,})$/.test(t)) { struct(i); i++; continue; }
+    if (/^\*?(?:Adapted from|Source:|Attribution:|Licensed under)\b/i.test(t)) {
+      let j = i; while (j + 1 < lines.length && lines[j + 1].trim()) j++;
+      for (let k = i; k <= j; k++) struct(k);
+      i = j + 1; continue;
+    }
     const h = /^(#{1,6})\s+(.*)$/.exec(t);
     if (h) {
       struct(i);

@@ -173,7 +173,7 @@
       "id": "repo:README.md",
       "path": "README.md",
       "type": "product-claim",
-      "hash": "32cd5b355d9c2d55991045150ad70a222561a2d088f787be911c757ee7939f4e"
+      "hash": "4db9bb6b81fc65d08feea24d1573446992fc5e2175d392b34d1b9d239fe6fcd4"
     },
     {
       "id": "repo:scripts/accept_coursewerk_revision.mjs",
@@ -281,7 +281,7 @@
       "id": "repo:scripts/gate.mjs",
       "path": "scripts/gate.mjs",
       "type": "executable",
-      "hash": "416878db0a34a4a81a5e83e8b2614f8b2e0db31bc0ffbc6cbe0ce9fe15d07da7"
+      "hash": "4fd5ff203d2291835cba4c36693134497d31c499bc581021251ccbc9921eb0bc"
     },
     {
       "id": "repo:scripts/generate_attribution.mjs",
@@ -386,10 +386,22 @@
       "hash": "a6b121f544ee8c1da02d857df2948728c7be31484da43bec294318637d5b1395"
     },
     {
+      "id": "repo:scripts/lib/core/dependencies.mjs",
+      "path": "scripts/lib/core/dependencies.mjs",
+      "type": "kernel",
+      "hash": "f1364cbe5d2085a7517b87a0ba9b47281226a6d9ffbf49431e6a0bb5a1694066"
+    },
+    {
       "id": "repo:scripts/lib/core/migrate.mjs",
       "path": "scripts/lib/core/migrate.mjs",
       "type": "kernel",
       "hash": "08c6b5674028a38de5b446aa08045f43649f1e53d4978f7e20f1a1ab381c2cb0"
+    },
+    {
+      "id": "repo:scripts/lib/core/obligations.mjs",
+      "path": "scripts/lib/core/obligations.mjs",
+      "type": "kernel",
+      "hash": "4cab44ab1399d151ee19df052db410056b1f5f3a01da649945724ab076279e78"
     },
     {
       "id": "repo:scripts/lib/core/package_reader.mjs",
@@ -407,7 +419,7 @@
       "id": "repo:scripts/lib/core/segment.mjs",
       "path": "scripts/lib/core/segment.mjs",
       "type": "kernel",
-      "hash": "3a6da7228d23220156676e31973f8e34920770e9dcea34791869f812d8087c51"
+      "hash": "c534c0a6e1588f501c2f102b85de2e1ae396ef287add84be3958be26c4b64342"
     },
     {
       "id": "repo:scripts/lib/core/spine.mjs",
@@ -425,7 +437,7 @@
       "id": "repo:scripts/lib/core/units_index.mjs",
       "path": "scripts/lib/core/units_index.mjs",
       "type": "kernel",
-      "hash": "b10f25135291fe0857e0d2edb223dd5318770510417d0a4e1ec33e68feda7ee0"
+      "hash": "88216730474ce2b551f079411c43f3d50f9532ef5f6c8008195c6142ebc02130"
     },
     {
       "id": "repo:scripts/lib/core/versions.mjs",
@@ -707,7 +719,7 @@
       "id": "repo:scripts/units.mjs",
       "path": "scripts/units.mjs",
       "type": "executable",
-      "hash": "dfaafccd056bfa415d7379368e65ba47848559a9cb1e818084aacadf0faa86a3"
+      "hash": "333ba6934aeda243ea2f3f60fcec71c5e9cd4f5dfb5596ca0ed5793f4a97ab41"
     },
     {
       "id": "repo:scripts/verify_coursewerk.mjs",
@@ -875,7 +887,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "22d18212dbc793d0aef6ab4962fae23f07191d0e7be12b97bb25f7c91b14bbf1"
+      "hash": "0587d0c481dbc96a3c2d11e13210699cca36b8e44c37cb59298cbeac3e2c86ff"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1094,6 +1106,18 @@
       "hash": "4b0bd12d91496334aeb0da77c4649b006fe870095f557658e0687867639d1f06"
     },
     {
+      "id": "repo:tests/core-cli.test.mjs",
+      "path": "tests/core-cli.test.mjs",
+      "type": "test",
+      "hash": "98ea0c24b67e559b52a73b0388d9078aab27e6b1e35f2fe95630d851adccdde9"
+    },
+    {
+      "id": "repo:tests/core-obligations.test.mjs",
+      "path": "tests/core-obligations.test.mjs",
+      "type": "test",
+      "hash": "2a863483f7220ca443307fa9bb026234bfe8c23d29ad6ad36aa69438d4a84b83"
+    },
+    {
       "id": "repo:tests/escalation.test.mjs",
       "path": "tests/escalation.test.mjs",
       "type": "test",
@@ -1115,7 +1139,7 @@
       "id": "repo:tests/fixtures/c2-chemistry-v2/README.md",
       "path": "tests/fixtures/c2-chemistry-v2/README.md",
       "type": "test",
-      "hash": "1baf67a854b0c1d1b98344b6562718b7abd99a4612a8012b3b06e3c411e652f5"
+      "hash": "8f6bcfc3ff9603af70f8180025528e444b886103da9524e0a33aa7e833988e50"
     },
     {
       "id": "repo:tests/fixtures/c2-chemistry/BASELINE-v0.12.0.json",
@@ -1415,7 +1439,7 @@
       "id": "repo:tests/units-cli.test.mjs",
       "path": "tests/units-cli.test.mjs",
       "type": "test",
-      "hash": "e8c365bb1456839851f83bdcd2c7a1a3f5461602016a77a785350410c9e5d158"
+      "hash": "b11c2b4318b3920ac701f76686ea85f4599b3f6bb30dd4f36f88d8f231174008"
     },
     {
       "id": "repo:tests/units.test.mjs",
@@ -2703,7 +2727,8 @@
       "P1",
       "P2",
       "P3",
-      "P4"
+      "P4",
+      "P5"
     ],
     "requirements": [
       {
@@ -2797,7 +2822,7 @@
           "T1",
           "T2"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.core.evidence-obligation",
@@ -2805,7 +2830,7 @@
         "tiers": [
           "T1"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.core.impact",
@@ -2813,7 +2838,7 @@
         "tiers": [
           "T1"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.core.null-edit",
@@ -2821,7 +2846,7 @@
         "tiers": [
           "T1"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.core.reverify-obligation",
@@ -2830,7 +2855,7 @@
           "T1",
           "T2"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.digest.budget",
@@ -3382,7 +3407,7 @@
         "tiers": [
           "T1"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.versions.major",

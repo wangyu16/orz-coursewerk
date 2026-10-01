@@ -1,0 +1,1673 @@
+{
+  "schemaVersion": 1,
+  "deliverable": "study-guide/chemical-equilibrium.md",
+  "units": [
+    {
+      "id": "u-study-guide-chemical-equilibrium-dynamic-equilibrium-1",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "dynamic-equilibrium",
+        "ordinal": 0,
+        "contentHash": "4c9e7a97378b8127e23380596b0e857a721dc1f0ae36d9a4ab01e0b1704d9a72",
+        "lines": [
+          15,
+          15
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.define-equilibrium",
+        "concept.chemical-equilibrium.equal-rates",
+        "concept.chemical-equilibrium.dynamic-exchange"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "are",
+        "both",
+        "called",
+        "change",
+        "chemical",
+        "concentrations",
+        "constant",
+        "directions",
+        "dynamic",
+        "equal",
+        "equilibrium",
+        "even",
+        "forward",
+        "generally",
+        "individual",
+        "keep",
+        "longer",
+        "macroscopic",
+        "molecules",
+        "not",
+        "proceeds",
+        "product",
+        "rate",
+        "rates",
+        "reactant",
+        "reacting",
+        "reaction",
+        "reverse",
+        "reversible",
+        "same",
+        "simply",
+        "state",
+        "stay",
+        "the",
+        "they",
+        "this",
+        "though",
+        "time",
+        "which",
+        "why",
+        "with",
+        "zero"
+      ],
+      "stamp": {
+        "term:chemical equilibrium": "a26e86a7360c03ec8fe04897e6fec2e0af396e866f38de8515fd15770f9dd962",
+        "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
+        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3",
+        "spine:concept.chemical-equilibrium.dynamic-exchange": "b40a06a2346be0ae9525175a0671e9fa3ae9a27cca51cdd804ef115cb4477aea"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-dynamic-equilibrium-2",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "dynamic-equilibrium",
+        "ordinal": 1,
+        "contentHash": "0887baadb069d24f713405725b87ea975d4861c235a21fded6e8b32ee9b818a1",
+        "lines": [
+          18,
+          18
+        ]
+      },
+      "form": "callout",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.define-equilibrium",
+        "concept.chemical-equilibrium.equal-rates",
+        "concept.chemical-equilibrium.dynamic-exchange"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "acetate",
+        "acetic",
+        "acid",
+        "and",
+        "anion",
+        "another",
+        "average",
+        "ceaseless",
+        "dissolved",
+        "equilibrium",
+        "events",
+        "forming",
+        "from",
+        "hop",
+        "illustration",
+        "may",
+        "microscopic",
+        "molecule",
+        "molecules",
+        "never",
+        "number",
+        "one",
+        "onto",
+        "proton",
+        "reaction",
+        "source",
+        "statistical",
+        "stops",
+        "the",
+        "then",
+        "unchanged",
+        "water",
+        "worked",
+        "yet"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
+        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3",
+        "spine:concept.chemical-equilibrium.dynamic-exchange": "b40a06a2346be0ae9525175a0671e9fa3ae9a27cca51cdd804ef115cb4477aea"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-the-equilibrium-constant-1",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "the-equilibrium-constant",
+        "ordinal": 2,
+        "contentHash": "d01156fed85a48accd9a908f5c875619cb917714310e80960428766b7d94e456",
+        "lines": [
+          23,
+          23
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.write-k-expression",
+        "concept.chemical-equilibrium.k-expression"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "balanced",
+        "for",
+        "reaction",
+        "reversible"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-the-equilibrium-constant-2",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "the-equilibrium-constant",
+        "ordinal": 3,
+        "contentHash": "ee7f14e8598babfb80dc3bcaaf953889b18d5ecaf224834b60e9de024536842b",
+        "lines": [
+          25,
+          25
+        ]
+      },
+      "form": "equation",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.write-k-expression",
+        "concept.chemical-equilibrium.k-expression"
+      ],
+      "judgment": [
+        "mechanical"
+      ],
+      "evidence": [],
+      "tokens": [
+        "alpha",
+        "beta",
+        "sigma",
+        "tau"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-the-equilibrium-constant-3",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "the-equilibrium-constant",
+        "ordinal": 4,
+        "contentHash": "286e6b6b7d8ba74f66765c441c26104cdd6514734b6af26260f828795438c46c",
+        "lines": [
+          27,
+          27
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.write-k-expression",
+        "concept.chemical-equilibrium.k-expression"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "coefficient",
+        "collects",
+        "concentrations",
+        "constant",
+        "denominator",
+        "each",
+        "equilibrium",
+        "its",
+        "numerator",
+        "product",
+        "raised",
+        "reactant",
+        "stoichiometric",
+        "the"
+      ],
+      "stamp": {
+        "term:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "term:stoichiometric coefficient": "ceb28b3bd97ae3f16ba5825c706b367f558525ac2254ee1d080774a061a35222",
+        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-the-equilibrium-constant-4",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "the-equilibrium-constant",
+        "ordinal": 5,
+        "contentHash": "7462ab7013ddcd51b90be7a28195bbcb7f242ac4128f371c70b1a5919cd92aa2",
+        "lines": [
+          29,
+          29
+        ]
+      },
+      "form": "equation",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.write-k-expression",
+        "concept.chemical-equilibrium.k-expression"
+      ],
+      "judgment": [
+        "mechanical"
+      ],
+      "evidence": [],
+      "tokens": [
+        "alpha",
+        "beta",
+        "frac",
+        "sigma",
+        "tau"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-the-equilibrium-constant-5",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "the-equilibrium-constant",
+        "ordinal": 6,
+        "contentHash": "7c6c33ea238cc9df52e07098ef1b460eb15be63ad8fa2e9da872210d99d15f12",
+        "lines": [
+          31,
+          31
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.write-k-expression",
+        "concept.chemical-equilibrium.k-expression"
+      ],
+      "judgment": [
+        "mechanical",
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "1865",
+        "action",
+        "all",
+        "alpha",
+        "and",
+        "any",
+        "are",
+        "beta",
+        "consumed",
+        "equal",
+        "equilibrium",
+        "far",
+        "follows",
+        "form",
+        "forms",
+        "forward",
+        "from",
+        "gives",
+        "guldberg",
+        "hardly",
+        "law",
+        "left",
+        "lies",
+        "mass",
+        "nearly",
+        "position",
+        "product",
+        "rate",
+        "reactants",
+        "reverse",
+        "right",
+        "setting",
+        "sigma",
+        "tau",
+        "the",
+        "them",
+        "this",
+        "waage",
+        "when"
+      ],
+      "stamp": {
+        "term:law of mass action": "3ae149d019c752d2dfefc4e9da9604e19fb7ddde3ce33116f07c0e3d2e6f7d61",
+        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-the-reaction-quotient-1",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "the-reaction-quotient",
+        "ordinal": 7,
+        "contentHash": "b4d67385eb9d50c8475e1e4cc68151cded28ab7e9ff5b8ec8b7d1fac33a78ff9",
+        "lines": [
+          35,
+          35
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.compare-q-and-k",
+        "concept.chemical-equilibrium.reaction-quotient"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "algebraic",
+        "any",
+        "but",
+        "change",
+        "comparing",
+        "composition",
+        "direction",
+        "equilibrium",
+        "evaluated",
+        "exactly",
+        "form",
+        "has",
+        "not",
+        "only",
+        "predicts",
+        "quotient",
+        "reaction",
+        "same",
+        "the"
+      ],
+      "stamp": {
+        "term:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f",
+        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
+        "spine:concept.chemical-equilibrium.reaction-quotient": "03bd300dd7d3fb6b8434463a782faa7ddd54acfe00643bf73e39f0757dee1fc9",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-the-reaction-quotient-2",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "the-reaction-quotient",
+        "ordinal": 8,
+        "contentHash": "89b50d6afae6ec7f5f821a91be0a4eb735248e5b66440795fb9a3f569c7072b6",
+        "lines": [
+          37,
+          37
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.compare-q-and-k",
+        "concept.chemical-equilibrium.reaction-quotient"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "few",
+        "forward",
+        "products",
+        "reaction",
+        "shifts",
+        "the",
+        "too",
+        "toward"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
+        "spine:concept.chemical-equilibrium.reaction-quotient": "03bd300dd7d3fb6b8434463a782faa7ddd54acfe00643bf73e39f0757dee1fc9",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-the-reaction-quotient-3",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "the-reaction-quotient",
+        "ordinal": 9,
+        "contentHash": "493857df4aff8932af00aa4196791f34ea7dbecc78322676323c432122360366",
+        "lines": [
+          38,
+          38
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.compare-q-and-k",
+        "concept.chemical-equilibrium.reaction-quotient"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "many",
+        "products",
+        "reactants",
+        "reaction",
+        "reverse",
+        "shifts",
+        "the",
+        "too",
+        "toward"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
+        "spine:concept.chemical-equilibrium.reaction-quotient": "03bd300dd7d3fb6b8434463a782faa7ddd54acfe00643bf73e39f0757dee1fc9",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-the-reaction-quotient-4",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "the-reaction-quotient",
+        "ordinal": 10,
+        "contentHash": "bba5c0f30fec4f94acbbce41fc44eb8fc0f2947e02dffdad6b47e5752f5276e2",
+        "lines": [
+          39,
+          39
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.compare-q-and-k",
+        "concept.chemical-equilibrium.reaction-quotient"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "already",
+        "equilibrium",
+        "net",
+        "shift",
+        "system",
+        "the"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
+        "spine:concept.chemical-equilibrium.reaction-quotient": "03bd300dd7d3fb6b8434463a782faa7ddd54acfe00643bf73e39f0757dee1fc9",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-pure-solids-and-liquids-1",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "pure-solids-and-liquids",
+        "ordinal": 11,
+        "contentHash": "4efcff6fc78c635fb62ba8c3cf91fdcaba6d635e9cce84f1578af9cc7f372ac1",
+        "lines": [
+          43,
+          43
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.omit-pure-phases",
+        "concept.chemical-equilibrium.pure-phases-omitted"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "acetic",
+        "acid",
+        "activities",
+        "activity",
+        "alone",
+        "and",
+        "appear",
+        "aqueous",
+        "are",
+        "concentration",
+        "constant",
+        "dilute",
+        "dissociation",
+        "dissolved",
+        "does",
+        "each",
+        "effective",
+        "equilibrium",
+        "expression",
+        "for",
+        "has",
+        "likewise",
+        "liquid",
+        "not",
+        "omitted",
+        "one",
+        "over",
+        "pure",
+        "reaction",
+        "solid",
+        "solution",
+        "solvent",
+        "species",
+        "strictly",
+        "terms",
+        "the",
+        "treated",
+        "water",
+        "which",
+        "why",
+        "written"
+      ],
+      "stamp": {
+        "term:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "term:activity": "e44ef5ba96fa9bd4dd745d5abd13bb67b55934a4863d74d6bc02c108c1e73601",
+        "spine:objective.chemical-equilibrium.omit-pure-phases": "26f069ce2bba4c71ac7d536d53ae77f3979043b94b233dc42f0edaf4b2c75e2f",
+        "spine:concept.chemical-equilibrium.pure-phases-omitted": "f2297b60e50389978bf170a2d93841546bb1c33d4f4cc5bf3d04463e3aef0dc8",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-pure-solids-and-liquids-2",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "pure-solids-and-liquids",
+        "ordinal": 12,
+        "contentHash": "5e722170697e39bf75b83033e11d6414b934d776cd318f897b01bd73170054ee",
+        "lines": [
+          45,
+          45
+        ]
+      },
+      "form": "equation",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.omit-pure-phases",
+        "concept.chemical-equilibrium.pure-phases-omitted"
+      ],
+      "judgment": [
+        "mechanical"
+      ],
+      "evidence": [],
+      "tokens": [
+        "ch3co2",
+        "ch3co2h",
+        "frac",
+        "h3o"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.omit-pure-phases": "26f069ce2bba4c71ac7d536d53ae77f3979043b94b233dc42f0edaf4b2c75e2f",
+        "spine:concept.chemical-equilibrium.pure-phases-omitted": "f2297b60e50389978bf170a2d93841546bb1c33d4f4cc5bf3d04463e3aef0dc8",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-equilibrium-and-gibbs-energy-1",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "equilibrium-and-gibbs-energy",
+        "ordinal": 13,
+        "contentHash": "313a331258bd20c6c99338a8e4b49a5bf2a0fb8265426a94da2d3655e45ca0c1",
+        "lines": [
+          49,
+          49
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.relate-k-to-gibbs",
+        "concept.chemical-equilibrium.k-and-gibbs"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "change",
+        "constant",
+        "energy",
+        "equilibrium",
+        "gibbs",
+        "its",
+        "minimum",
+        "reached",
+        "reaction",
+        "related",
+        "standard",
+        "system",
+        "the",
+        "vanishes",
+        "when"
+      ],
+      "stamp": {
+        "term:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "term:standard gibbs energy change": "d552936944bea24ed9c4e3352ddbde4042404a1cee16a2a630952f89afbf1fdc",
+        "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
+        "spine:concept.chemical-equilibrium.k-and-gibbs": "24dfcac69f2f8de451de8830acb5e912c5046d5295e8174c701cbc8df655b5ff",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-equilibrium-and-gibbs-energy-2",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "equilibrium-and-gibbs-energy",
+        "ordinal": 14,
+        "contentHash": "93769f2a4bbed0d58d80474a4c0674fb5d24a85b1c327faf7009bb6b1500c471",
+        "lines": [
+          51,
+          51
+        ]
+      },
+      "form": "equation",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.relate-k-to-gibbs",
+        "concept.chemical-equilibrium.k-and-gibbs"
+      ],
+      "judgment": [
+        "mechanical"
+      ],
+      "evidence": [],
+      "tokens": [
+        "delta",
+        "ominus"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
+        "spine:concept.chemical-equilibrium.k-and-gibbs": "24dfcac69f2f8de451de8830acb5e912c5046d5295e8174c701cbc8df655b5ff",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-equilibrium-and-gibbs-energy-3",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "equilibrium-and-gibbs-energy",
+        "ordinal": 15,
+        "contentHash": "9ac2e0cbf490b1e31dce2d9d6e9d662650eba0c4a6b70be83c180b0386e628e0",
+        "lines": [
+          53,
+          53
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.relate-k-to-gibbs",
+        "concept.chemical-equilibrium.k-and-gibbs"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "absolute",
+        "and",
+        "constant",
+        "corresponds",
+        "delta",
+        "favoured",
+        "gas",
+        "negative",
+        "ominus",
+        "positive",
+        "products",
+        "reactants",
+        "temperature",
+        "the",
+        "therefore",
+        "where"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
+        "spine:concept.chemical-equilibrium.k-and-gibbs": "24dfcac69f2f8de451de8830acb5e912c5046d5295e8174c701cbc8df655b5ff",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-temperature-dependence-1",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "temperature-dependence",
+        "ordinal": 16,
+        "contentHash": "3f6db1315e02555a84ce0fc3b03a0183674c32c01e43a25ba5852ab8dde7c3c8",
+        "lines": [
+          57,
+          57
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.predict-k-with-temperature",
+        "concept.chemical-equilibrium.k-depends-on-temperature"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "but",
+        "composition",
+        "constant",
+        "depend",
+        "dependence",
+        "described",
+        "direction",
+        "does",
+        "enthalpy",
+        "equation",
+        "equilibrium",
+        "fixed",
+        "genuinely",
+        "hoff",
+        "reaction",
+        "respect",
+        "sign",
+        "temperature",
+        "the",
+        "van",
+        "with"
+      ],
+      "stamp": {
+        "term:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "term:van 't hoff equation": "c8f1a9ece0b32d45f0c15d92498889176d99734414f44c824283705a4f3266bd",
+        "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
+        "spine:concept.chemical-equilibrium.k-depends-on-temperature": "4afac3949c64c3423c7ab120ec93402d9709c49f47abf70a2313623f8f766d26",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "spine:concept.chemical-equilibrium.k-and-gibbs": "24dfcac69f2f8de451de8830acb5e912c5046d5295e8174c701cbc8df655b5ff"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-temperature-dependence-2",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "temperature-dependence",
+        "ordinal": 17,
+        "contentHash": "3d6ebc1d26d3ec2cc940a6088b55490ccc37f421250bb15045990a9d99190e22",
+        "lines": [
+          59,
+          59
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.predict-k-with-temperature",
+        "concept.chemical-equilibrium.k-depends-on-temperature"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "endothermic",
+        "increases",
+        "raising",
+        "reaction",
+        "temperature",
+        "the"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
+        "spine:concept.chemical-equilibrium.k-depends-on-temperature": "4afac3949c64c3423c7ab120ec93402d9709c49f47abf70a2313623f8f766d26",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "spine:concept.chemical-equilibrium.k-and-gibbs": "24dfcac69f2f8de451de8830acb5e912c5046d5295e8174c701cbc8df655b5ff"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-temperature-dependence-3",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "temperature-dependence",
+        "ordinal": 18,
+        "contentHash": "65059f243fc3cad25ea35cac4c3f26cc1c7dd6ce8db226dbe231656b1a5b279b",
+        "lines": [
+          60,
+          60
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.predict-k-with-temperature",
+        "concept.chemical-equilibrium.k-depends-on-temperature"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "decreases",
+        "exothermic",
+        "raising",
+        "reaction",
+        "temperature",
+        "the"
+      ],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
+        "spine:concept.chemical-equilibrium.k-depends-on-temperature": "4afac3949c64c3423c7ab120ec93402d9709c49f47abf70a2313623f8f766d26",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "spine:concept.chemical-equilibrium.k-and-gibbs": "24dfcac69f2f8de451de8830acb5e912c5046d5295e8174c701cbc8df655b5ff"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-catalysts-and-equilibrium-1",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "catalysts-and-equilibrium",
+        "ordinal": 19,
+        "contentHash": "2beed05480f9a50f6a7dc2eb5bbe479b7fc17a0f271def90b5687cf8b7662331",
+        "lines": [
+          64,
+          64
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "concept.chemical-equilibrium.catalyst-no-shift"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "below",
+        "but",
+        "catalyst",
+        "changes",
+        "constant",
+        "equilibrium",
+        "error",
+        "factor",
+        "forward",
+        "frequent",
+        "lowers",
+        "misconceptions",
+        "needed",
+        "neither",
+        "nor",
+        "position",
+        "reach",
+        "reactions",
+        "reverse",
+        "revisited",
+        "same",
+        "source",
+        "speeds",
+        "the",
+        "this",
+        "time"
+      ],
+      "stamp": {
+        "term:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "term:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
+        "spine:concept.chemical-equilibrium.catalyst-no-shift": "28d4d3946ce37b9f191fa337a0b9e71facabdb56302c8840aeac2d47411490c3",
+        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-deciding-the-direction-of-change-1",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "deciding-the-direction-of-change",
+        "ordinal": 20,
+        "contentHash": "59eb574f964f6a313d8fc9da0ccf6bdbb404904422a1de58efb62b4555e51383",
+        "lines": [
+          68,
+          77
+        ]
+      },
+      "form": "figure",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.compare-q-and-k",
+        "concept.chemical-equilibrium.reaction-quotient"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "already",
+        "compare",
+        "composition",
+        "current",
+        "equilibrium",
+        "evaluate",
+        "few",
+        "flowchart",
+        "forward",
+        "many",
+        "measure",
+        "mermaid",
+        "net",
+        "products",
+        "quotient",
+        "reaction",
+        "reverse",
+        "rises",
+        "shift",
+        "the",
+        "too",
+        "until",
+        "with"
+      ],
+      "stamp": {
+        "term:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f",
+        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
+        "spine:concept.chemical-equilibrium.reaction-quotient": "03bd300dd7d3fb6b8434463a782faa7ddd54acfe00643bf73e39f0757dee1fc9",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-deciding-the-direction-of-change-2",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "deciding-the-direction-of-change",
+        "ordinal": 21,
+        "contentHash": "5d48ae7c2711496ea1f0fc828404b95cc0dc45397dacf5e7f3ea895eb4901338",
+        "lines": [
+          79,
+          86
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.compare-q-and-k",
+        "concept.chemical-equilibrium.reaction-quotient"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "already",
+        "and",
+        "are",
+        "both",
+        "branch",
+        "branches",
+        "compare",
+        "comparison",
+        "composition",
+        "constant",
+        "converge",
+        "decision",
+        "description",
+        "diagram",
+        "direction",
+        "does",
+        "end",
+        "equal",
+        "equals",
+        "equilibrium",
+        "evaluate",
+        "few",
+        "forward",
+        "from",
+        "has",
+        "itself",
+        "larger",
+        "many",
+        "measured",
+        "moved",
+        "moves",
+        "never",
+        "not",
+        "note",
+        "only",
+        "outcomes",
+        "predicts",
+        "products",
+        "quotient",
+        "reaction",
+        "reverse",
+        "same",
+        "shift",
+        "shifting",
+        "shifts",
+        "shows",
+        "smaller",
+        "state",
+        "system",
+        "than",
+        "that",
+        "the",
+        "there",
+        "this",
+        "three",
+        "too",
+        "two",
+        "until",
+        "visual",
+        "way",
+        "when",
+        "which",
+        "with",
+        "you"
+      ],
+      "stamp": {
+        "term:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "term:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f",
+        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
+        "spine:concept.chemical-equilibrium.reaction-quotient": "03bd300dd7d3fb6b8434463a782faa7ddd54acfe00643bf73e39f0757dee1fc9",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-worked-examples-1",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "worked-examples",
+        "ordinal": 22,
+        "contentHash": "746548e5ecb5e3c80f45ff16b3c96f505372a9e5e29b9d926d1f1df10b004039",
+        "lines": [
+          92,
+          92
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.write-k-expression"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "ammonia",
+        "constant",
+        "equilibrium",
+        "expression",
+        "for",
+        "nh3",
+        "synthesis",
+        "the",
+        "write"
+      ],
+      "stamp": {
+        "term:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-worked-examples-2",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "worked-examples",
+        "ordinal": 23,
+        "contentHash": "d5d7e3a8ca68e500df67b395fbfb05bd4203a617abcfde2b3837e530944214b6",
+        "lines": [
+          95,
+          96
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.write-k-expression"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "coefficient",
+        "each",
+        "frac",
+        "its",
+        "nh3",
+        "over",
+        "products",
+        "raised",
+        "reactants"
+      ],
+      "stamp": {
+        "unit:u-study-guide-chemical-equilibrium-worked-examples-1": "1d17850dcef728ce29128d53aee81fe14fd1d51ff1e2c37b4bba450d1895d2c9",
+        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-worked-examples-3",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "worked-examples",
+        "ordinal": 24,
+        "contentHash": "035abeffe7b44f6ce3fd1791c898aae3b4622e996cc01390529d7cb0993ce1f6",
+        "lines": [
+          102,
+          102
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.relate-k-to-gibbs"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "298",
+        "314",
+        "change",
+        "energy",
+        "estimate",
+        "gibbs",
+        "has",
+        "mol",
+        "reaction",
+        "standard",
+        "suppose",
+        "text",
+        "the",
+        "using"
+      ],
+      "stamp": {
+        "unit:u-practice-chemical-equilibrium-questions-21": "035de8f2db3e2d39d24a207e1f0153d94f8671a224e0afd4d958551d1ff51990",
+        "term:standard gibbs energy change": "d552936944bea24ed9c4e3352ddbde4042404a1cee16a2a630952f89afbf1fdc",
+        "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-worked-examples-4",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "worked-examples",
+        "ordinal": 25,
+        "contentHash": "e98dbdf32f37c1dda5b253224e374dcd85b0bb4e76e8b643136d1bc69c8c08b0",
+        "lines": [
+          105,
+          105
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.chemical-equilibrium.relate-k-to-gibbs"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "298",
+        "314",
+        "3435",
+        "approx",
+        "consistent",
+        "datum",
+        "delta",
+        "favoured",
+        "hypothetical",
+        "mol",
+        "negative",
+        "not",
+        "ominus",
+        "products",
+        "sign",
+        "source",
+        "teaching",
+        "text",
+        "the",
+        "value",
+        "with"
+      ],
+      "stamp": {
+        "unit:u-practice-chemical-equilibrium-questions-22": "35bb57f1a45c8711dea0b86f6d0d68029f4c829834a82b37114830009f98e47f",
+        "unit:u-study-guide-chemical-equilibrium-worked-examples-3": "a112c43329ba04c5821de7f9c6ec41e9af81a50e0dcd02596094e7b4e3f70772",
+        "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-common-misconceptions-1",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "common-misconceptions",
+        "ordinal": 26,
+        "contentHash": "1970c19fe1f426b23dc8dee9e7e2249c15e64ff8cad6ab22b1dcf3355b6fd981",
+        "lines": [
+          111,
+          111
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "misconception.chemical-equilibrium.reactions-stopped"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "are",
+        "but",
+        "continues",
+        "equal",
+        "equilibrium",
+        "have",
+        "level",
+        "molecular",
+        "nonzero",
+        "rates",
+        "reaction",
+        "reactions",
+        "stopped",
+        "the"
+      ],
+      "stamp": {
+        "spine:misconception.chemical-equilibrium.reactions-stopped": "77198c547db80c67a820b2cb117ff69188c0ebdc4baf45263c174984e1a5441d"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-common-misconceptions-2",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "common-misconceptions",
+        "ordinal": 27,
+        "contentHash": "68018ddc72c7442e4404f4fb64588fe82b2378d8a2e415b80a2f1314cc2c3962",
+        "lines": [
+          112,
+          112
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "misconception.chemical-equilibrium.concentrations-equal"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "are",
+        "but",
+        "concentrations",
+        "constant",
+        "equal",
+        "equilibrium",
+        "fixed",
+        "generally",
+        "product",
+        "ratio",
+        "reactant",
+        "their",
+        "they",
+        "unequal"
+      ],
+      "stamp": {
+        "spine:misconception.chemical-equilibrium.concentrations-equal": "dbf247cd5de1c98c369998e8602808fdbdb07d376e434c3d8a34534a7c77e588"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-common-misconceptions-3",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "common-misconceptions",
+        "ordinal": 28,
+        "contentHash": "369f16da82e0d2097d1476cf46a11bd536c18ace3ce0d55e35ddf603e7813de5",
+        "lines": [
+          113,
+          113
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "misconception.chemical-equilibrium.catalyst-shifts-yield"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "catalyst",
+        "changes",
+        "equilibrium",
+        "neither",
+        "nor",
+        "only",
+        "position",
+        "products",
+        "raises",
+        "rate",
+        "reached",
+        "shifts",
+        "the",
+        "toward",
+        "which",
+        "yield"
+      ],
+      "stamp": {
+        "term:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
+        "spine:misconception.chemical-equilibrium.catalyst-shifts-yield": "261be4ca58b6728b43c8aed788a131f33f30f525e9e61d946eca69611d3783a6"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-common-misconceptions-4",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "common-misconceptions",
+        "ordinal": 29,
+        "contentHash": "86117cb685976ff4e0b19b3450d9e156c347b028ce70adcbf5b09c52364c5948",
+        "lines": [
+          114,
+          114
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "misconception.chemical-equilibrium.solid-changes-k"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "absent",
+        "activity",
+        "adding",
+        "changes",
+        "expression",
+        "from",
+        "its",
+        "liquid",
+        "more",
+        "one",
+        "pure",
+        "solid",
+        "the"
+      ],
+      "stamp": {
+        "term:activity": "e44ef5ba96fa9bd4dd745d5abd13bb67b55934a4863d74d6bc02c108c1e73601",
+        "spine:misconception.chemical-equilibrium.solid-changes-k": "9992cff8ffae8cf7e05b3d997a42a655bf553f703d86d1ffa591e63d22aeb828"
+      }
+    },
+    {
+      "id": "u-study-guide-chemical-equilibrium-common-misconceptions-5",
+      "locator": {
+        "deliverable": "study-guide/chemical-equilibrium.md",
+        "section": "common-misconceptions",
+        "ordinal": 30,
+        "contentHash": "4a4d671842ac97621df9a56487ef12c29b87f33b3ad455c042206ba78980effe",
+        "lines": [
+          115,
+          115
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "misconception.chemical-equilibrium.concentration-changes-k"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "back",
+        "change",
+        "changes",
+        "changing",
+        "concentration",
+        "moves",
+        "only",
+        "same",
+        "shifts",
+        "system",
+        "temperature",
+        "the"
+      ],
+      "stamp": {
+        "spine:misconception.chemical-equilibrium.concentration-changes-k": "789c5b5a1518d8f58b137e40dbd793dcce2dac27b389f496f79706b32d61974e"
+      }
+    }
+  ]
+}

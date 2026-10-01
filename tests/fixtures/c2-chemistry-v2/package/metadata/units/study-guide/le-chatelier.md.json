@@ -1,0 +1,1943 @@
+{
+  "schemaVersion": 1,
+  "deliverable": "study-guide/le-chatelier.md",
+  "units": [
+    {
+      "id": "u-study-guide-le-chatelier-the-principle-1",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "the-principle",
+        "ordinal": 0,
+        "contentHash": "1745406ff24d6cae5eb4a9cf88231a78729ac44137b36d027d1cb30021691b89",
+        "lines": [
+          14,
+          14
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.state-principle",
+        "concept.le-chatelier.principle-statement"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "against",
+        "alteration",
+        "altered",
+        "because",
+        "change",
+        "chatelier",
+        "chemical",
+        "concentration",
+        "conditions",
+        "determines",
+        "direction",
+        "disturbance",
+        "disturbed",
+        "effect",
+        "equilibrium",
+        "full",
+        "fully",
+        "its",
+        "moves",
+        "never",
+        "new",
+        "offsets",
+        "only",
+        "original",
+        "part",
+        "partially",
+        "predicts",
+        "pressure",
+        "principle",
+        "qualitative",
+        "recalculation",
+        "response",
+        "returns",
+        "settles",
+        "shift",
+        "shortcut",
+        "something",
+        "state",
+        "system",
+        "tells",
+        "temperature",
+        "that",
+        "the",
+        "though",
+        "when",
+        "whose",
+        "without",
+        "works",
+        "you"
+      ],
+      "stamp": {
+        "term:chemical equilibrium": "a26e86a7360c03ec8fe04897e6fec2e0af396e866f38de8515fd15770f9dd962",
+        "term:le chatelier's principle": "243f9e0ccefd378d28ed3a489ae880d11e4da7a29c9da1b210d11457757eec7b",
+        "spine:objective.le-chatelier.state-principle": "5324ba0a821c95fd2cbc3ddb3ac4b939890d620dbf4818316c0c016e52c9c95d",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-the-principle-2",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "the-principle",
+        "ordinal": 1,
+        "contentHash": "253eb4e52557e96a619367aca2289fdcd84319f0660981670dc41e9fb4e6ef5c",
+        "lines": [
+          17,
+          17
+        ]
+      },
+      "form": "callout",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.state-principle",
+        "concept.le-chatelier.principle-statement"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "1884",
+        "1887",
+        "about",
+        "also",
+        "and",
+        "back",
+        "behaviour",
+        "braun",
+        "called",
+        "changes",
+        "chapter",
+        "chatelier",
+        "chemical",
+        "describes",
+        "discovered",
+        "disturb",
+        "equilibrium",
+        "extending",
+        "ferdinand",
+        "for",
+        "henry",
+        "hoff",
+        "independently",
+        "introduced",
+        "karl",
+        "louis",
+        "named",
+        "passive",
+        "potential",
+        "pressure",
+        "principle",
+        "pushes",
+        "quotient",
+        "reaction",
+        "reasoning",
+        "response",
+        "restoring",
+        "same",
+        "stated",
+        "system",
+        "temperature",
+        "the",
+        "through",
+        "van",
+        "who"
+      ],
+      "stamp": {
+        "term:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f",
+        "spine:objective.le-chatelier.state-principle": "5324ba0a821c95fd2cbc3ddb3ac4b939890d620dbf4818316c0c016e52c9c95d",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-changing-a-concentration-1",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "changing-a-concentration",
+        "ordinal": 2,
+        "contentHash": "acf6f99e160994d24d363cff7f05b7f54b0bd8c10eaa67b41c6cbd4ad6e10a9d",
+        "lines": [
+          22,
+          22
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-concentration-shift",
+        "concept.le-chatelier.concentration-shift"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "add",
+        "and",
+        "change",
+        "changing",
+        "concentration",
+        "consumes",
+        "equilibrium",
+        "favours",
+        "fill",
+        "gap",
+        "more",
+        "opposes",
+        "reaction",
+        "remove",
+        "replace",
+        "shifts",
+        "side",
+        "species",
+        "that",
+        "the",
+        "toward"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
+        "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-changing-a-concentration-2",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "changing-a-concentration",
+        "ordinal": 3,
+        "contentHash": "0708de01ec16e62bf533c6a95cd7143d7354504bac24d9cda0d57685779bf41b",
+        "lines": [
+          24,
+          24
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-concentration-shift",
+        "concept.le-chatelier.concentration-shift"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "carbon",
+        "from",
+        "hydrogen",
+        "illustrates",
+        "methanol",
+        "monoxide",
+        "source",
+        "synthesis",
+        "the",
+        "this",
+        "with"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
+        "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-changing-a-concentration-3",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "changing-a-concentration",
+        "ordinal": 4,
+        "contentHash": "511f4926311984e2def6bebaedc319498954b90607e9255b50a47ecf3daace2e",
+        "lines": [
+          26,
+          26
+        ]
+      },
+      "form": "equation",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-concentration-shift",
+        "concept.le-chatelier.concentration-shift"
+      ],
+      "judgment": [
+        "mechanical"
+      ],
+      "evidence": [],
+      "tokens": [
+        "ch3oh"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
+        "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-changing-a-concentration-4",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "changing-a-concentration",
+        "ordinal": 5,
+        "contentHash": "6a3eff7040c32158fbb8572d9071c51c18933e70b3be3687f7c90e8eb5a4f71e",
+        "lines": [
+          28,
+          28
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-concentration-shift",
+        "concept.le-chatelier.concentration-shift"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "added",
+        "amount",
+        "and",
+        "can",
+        "concentration",
+        "condensation",
+        "continuously",
+        "equilibrium",
+        "example",
+        "exploited",
+        "for",
+        "increasing",
+        "keeps",
+        "made",
+        "methanol",
+        "obtained",
+        "offsetting",
+        "partly",
+        "product",
+        "products",
+        "pulling",
+        "quantity",
+        "raising",
+        "reaction",
+        "removing",
+        "right",
+        "sequestering",
+        "shifts",
+        "still",
+        "synthetically",
+        "the",
+        "thereby",
+        "thermodynamically",
+        "this",
+        "toward",
+        "unfavoured",
+        "water"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
+        "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-changing-the-temperature-1",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "changing-the-temperature",
+        "ordinal": 6,
+        "contentHash": "37bf1c94e74c85b4e21a75cccc81b8c0b2b0acf2c11578247fc5bb04e5fa1e2d",
+        "lines": [
+          32,
+          32
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-temperature-shift",
+        "concept.le-chatelier.heat-as-species",
+        "concept.le-chatelier.temperature-changes-k"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "change",
+        "concentration",
+        "exactly",
+        "for",
+        "handled",
+        "heat",
+        "participant",
+        "reaction",
+        "reasoning",
+        "temperature",
+        "the",
+        "then",
+        "writing"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:concept.le-chatelier.heat-as-species": "82e353cb2aacc9ac04cd1b28cd8b5e30d54efdf71750e082d6250554988f936b",
+        "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8",
+        "spine:concept.le-chatelier.temperature-changes-k": "f8d1d7dd60d00d977f210b6c1db25a63f5b77e7349a45294f0af5821bf62d85a"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-changing-the-temperature-2",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "changing-the-temperature",
+        "ordinal": 7,
+        "contentHash": "00f56e446ea9702be89198618f9b9dd66aebca6e7ecb343b6a59ac628fc7acf2",
+        "lines": [
+          34,
+          34
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-temperature-shift",
+        "concept.le-chatelier.heat-as-species",
+        "concept.le-chatelier.temperature-changes-k"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "delta",
+        "exothermic",
+        "heat",
+        "product",
+        "reaction"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:concept.le-chatelier.heat-as-species": "82e353cb2aacc9ac04cd1b28cd8b5e30d54efdf71750e082d6250554988f936b",
+        "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8",
+        "spine:concept.le-chatelier.temperature-changes-k": "f8d1d7dd60d00d977f210b6c1db25a63f5b77e7349a45294f0af5821bf62d85a"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-changing-the-temperature-3",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "changing-the-temperature",
+        "ordinal": 8,
+        "contentHash": "0c2c2f32b504672e8bdf8d33cd07796ddabe077bc6e678b1647fd21937161ca1",
+        "lines": [
+          35,
+          35
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-temperature-shift",
+        "concept.le-chatelier.heat-as-species",
+        "concept.le-chatelier.temperature-changes-k"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "delta",
+        "endothermic",
+        "heat",
+        "reactant",
+        "reaction"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:concept.le-chatelier.heat-as-species": "82e353cb2aacc9ac04cd1b28cd8b5e30d54efdf71750e082d6250554988f936b",
+        "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8",
+        "spine:concept.le-chatelier.temperature-changes-k": "f8d1d7dd60d00d977f210b6c1db25a63f5b77e7349a45294f0af5821bf62d85a"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-changing-the-temperature-4",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "changing-the-temperature",
+        "ordinal": 9,
+        "contentHash": "d71da7166788736dffd1ffec0ee70eaeb7ffc25f06d364ec019dd27e62985ff9",
+        "lines": [
+          37,
+          37
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-temperature-shift",
+        "concept.le-chatelier.heat-as-species",
+        "concept.le-chatelier.temperature-changes-k"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "ammonia",
+        "exothermic",
+        "haber",
+        "synthesis",
+        "take",
+        "the",
+        "which"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:concept.le-chatelier.heat-as-species": "82e353cb2aacc9ac04cd1b28cd8b5e30d54efdf71750e082d6250554988f936b",
+        "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8",
+        "spine:concept.le-chatelier.temperature-changes-k": "f8d1d7dd60d00d977f210b6c1db25a63f5b77e7349a45294f0af5821bf62d85a"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-changing-the-temperature-5",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "changing-the-temperature",
+        "ordinal": 10,
+        "contentHash": "cde99701085344813aae260eaa5ce1d056fe4f772e322386ad6059a25c468bbc",
+        "lines": [
+          39,
+          39
+        ]
+      },
+      "form": "equation",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-temperature-shift",
+        "concept.le-chatelier.heat-as-species",
+        "concept.le-chatelier.temperature-changes-k"
+      ],
+      "judgment": [
+        "mechanical"
+      ],
+      "evidence": [],
+      "tokens": [
+        "delta",
+        "mol",
+        "nh3",
+        "qquad",
+        "text"
+      ],
+      "stamp": {
+        "unit:u-study-guide-le-chatelier-worked-examples-1": "0c3c87d1cd6c497a1e327c4e2c8e5ba458ef1c0c7db8a2e3364cd48e07e7aa9d",
+        "unit:u-study-guide-le-chatelier-worked-examples-2": "57a90eb75ff1a6d775b01faeaf672cea56553393f43cadb0c16ae3dcaef7f7b9",
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:concept.le-chatelier.heat-as-species": "82e353cb2aacc9ac04cd1b28cd8b5e30d54efdf71750e082d6250554988f936b",
+        "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8",
+        "spine:concept.le-chatelier.temperature-changes-k": "f8d1d7dd60d00d977f210b6c1db25a63f5b77e7349a45294f0af5821bf62d85a"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-changing-the-temperature-6",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "changing-the-temperature",
+        "ordinal": 11,
+        "contentHash": "ddd24e5f920172e1ac8eb3331a77341cb5d463dcbcb00be4a306f5119d5c5651",
+        "lines": [
+          41,
+          41
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-temperature-shift",
+        "concept.le-chatelier.heat-as-species",
+        "concept.le-chatelier.temperature-changes-k"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "adds",
+        "also",
+        "ammonia",
+        "and",
+        "because",
+        "but",
+        "compromise",
+        "effectively",
+        "equilibrium",
+        "favour",
+        "forms",
+        "haber",
+        "heat",
+        "left",
+        "less",
+        "lower",
+        "more",
+        "practice",
+        "process",
+        "product",
+        "raising",
+        "rate",
+        "runs",
+        "shifts",
+        "slows",
+        "temperature",
+        "the",
+        "would"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:concept.le-chatelier.heat-as-species": "82e353cb2aacc9ac04cd1b28cd8b5e30d54efdf71750e082d6250554988f936b",
+        "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8",
+        "spine:concept.le-chatelier.temperature-changes-k": "f8d1d7dd60d00d977f210b6c1db25a63f5b77e7349a45294f0af5821bf62d85a"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-changing-the-temperature-7",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "changing-the-temperature",
+        "ordinal": 12,
+        "contentHash": "88deba723fdbaaac3954e9e689e590240c16c03c06c732438ce5c69bcd86e64b",
+        "lines": [
+          43,
+          43
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-temperature-shift",
+        "concept.le-chatelier.heat-as-species",
+        "concept.le-chatelier.temperature-changes-k"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "actually",
+        "and",
+        "back",
+        "behind",
+        "change",
+        "changes",
+        "chapter",
+        "concentration",
+        "constant",
+        "decreases",
+        "delta",
+        "different",
+        "direction",
+        "disturbance",
+        "endothermic",
+        "equation",
+        "equilibrium",
+        "exothermic",
+        "fixed",
+        "for",
+        "from",
+        "hoff",
+        "increase",
+        "increases",
+        "kind",
+        "law",
+        "leave",
+        "one",
+        "pressure",
+        "quantitative",
+        "reaction",
+        "same",
+        "shifts",
+        "sign",
+        "system",
+        "temperature",
+        "that",
+        "the",
+        "untouched",
+        "value",
+        "van"
+      ],
+      "stamp": {
+        "term:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "term:van 't hoff equation": "c8f1a9ece0b32d45f0c15d92498889176d99734414f44c824283705a4f3266bd",
+        "term:exothermic reaction": "c20452115a1d09ee264abeb11c57548d06c6d732dbb57bd21fcd6673c570eb27",
+        "term:endothermic reaction": "a6d35ce30483c0b5e231f8425ca24666d601ef261ec571088ad8d072e5be84ad",
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:concept.le-chatelier.heat-as-species": "82e353cb2aacc9ac04cd1b28cd8b5e30d54efdf71750e082d6250554988f936b",
+        "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8",
+        "spine:concept.le-chatelier.temperature-changes-k": "f8d1d7dd60d00d977f210b6c1db25a63f5b77e7349a45294f0af5821bf62d85a"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-changing-the-volume-or-pressure-1",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "changing-the-volume-or-pressure",
+        "ordinal": 13,
+        "contentHash": "34946c7ff7d8da8a51e5dd344ef5db8622a1b6a11e831690e195519c7b36690d",
+        "lines": [
+          47,
+          47
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-pressure-shift",
+        "concept.le-chatelier.volume-pressure-shift"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "balanced",
+        "change",
+        "changes",
+        "compare",
+        "each",
+        "equation",
+        "equilibrium",
+        "for",
+        "gas",
+        "matters",
+        "moles",
+        "partial",
+        "phase",
+        "pressures",
+        "side",
+        "the",
+        "those",
+        "volume",
+        "what",
+        "when"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-changing-the-volume-or-pressure-2",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "changing-the-volume-or-pressure",
+        "ordinal": 14,
+        "contentHash": "5c525ccddc1daa7802415c15120884a52db25822e16c7fe2c6fefaa98fe01460",
+        "lines": [
+          49,
+          49
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-pressure-shift",
+        "concept.le-chatelier.volume-pressure-shift"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "decrease",
+        "equilibrium",
+        "exerts",
+        "fewer",
+        "gas",
+        "less",
+        "moles",
+        "pressure",
+        "raise",
+        "shifts",
+        "side",
+        "the",
+        "toward",
+        "volume",
+        "which",
+        "with"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-changing-the-volume-or-pressure-3",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "changing-the-volume-or-pressure",
+        "ordinal": 15,
+        "contentHash": "c283268212885dec464bd786f8b70c445c5e119768b26622e35f9c51a66e64d2",
+        "lines": [
+          50,
+          50
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-pressure-shift",
+        "concept.le-chatelier.volume-pressure-shift"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "equilibrium",
+        "gas",
+        "increase",
+        "lower",
+        "moles",
+        "more",
+        "pressure",
+        "shifts",
+        "side",
+        "the",
+        "toward",
+        "volume",
+        "with"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-changing-the-volume-or-pressure-4",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "changing-the-volume-or-pressure",
+        "ordinal": 16,
+        "contentHash": "15dfd205f65e42ddd87d7b2a0cc236dfc710044422c6c01faf7b751e0833a7ef",
+        "lines": [
+          51,
+          51
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-pressure-shift",
+        "concept.le-chatelier.volume-pressure-shift"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "both",
+        "change",
+        "effect",
+        "equal",
+        "gas",
+        "has",
+        "moles",
+        "pressure",
+        "sides",
+        "volume"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-changing-the-volume-or-pressure-5",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "changing-the-volume-or-pressure",
+        "ordinal": 17,
+        "contentHash": "addd691422732fa258d99a642eb02339f19ba775596316e31ca3a375f0aed153",
+        "lines": [
+          53,
+          53
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-pressure-shift",
+        "concept.le-chatelier.volume-pressure-shift"
+      ],
+      "judgment": [
+        "mechanical",
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "ammonia",
+        "and",
+        "equilibrium",
+        "gas",
+        "has",
+        "moles",
+        "nh3",
+        "product",
+        "reactant",
+        "side",
+        "the"
+      ],
+      "stamp": {
+        "unit:u-study-guide-le-chatelier-changing-the-volume-or-pressure-6": "601428520dee8715c1475139837f9ab74dfc90bd57f3105fe076a1c5fc2e95e0",
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-changing-the-volume-or-pressure-6",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "changing-the-volume-or-pressure",
+        "ordinal": 18,
+        "contentHash": "5d26f2af507e4ffeb56c1de3d3bf3cf6e194dadae4c93e842acbc297ecd4b878",
+        "lines": [
+          55,
+          55
+        ]
+      },
+      "form": "equation",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-pressure-shift",
+        "concept.le-chatelier.volume-pressure-shift"
+      ],
+      "judgment": [
+        "mechanical",
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "gas",
+        "mol",
+        "nh3",
+        "text",
+        "underset"
+      ],
+      "stamp": {
+        "unit:u-study-guide-le-chatelier-changing-the-volume-or-pressure-5": "601428520dee8715c1475139837f9ab74dfc90bd57f3105fe076a1c5fc2e95e0",
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-changing-the-volume-or-pressure-7",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "changing-the-volume-or-pressure",
+        "ordinal": 19,
+        "contentHash": "b8e34e3cbf116b7765c3f11ccecf5589d03d4e1df5f4661740a54e953b284da8",
+        "lines": [
+          57,
+          57
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-pressure-shift",
+        "concept.le-chatelier.volume-pressure-shift"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "decreasing",
+        "equilibrium",
+        "increasing",
+        "left",
+        "mole",
+        "right",
+        "shifts",
+        "side",
+        "the",
+        "this",
+        "toward",
+        "volume"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-adding-an-inert-gas-1",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "adding-an-inert-gas",
+        "ordinal": 20,
+        "contentHash": "a16102952b2eb8f8484d2676ff048ec5d496b0cd897425de78f76290ed3e051c",
+        "lines": [
+          61,
+          61
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.explain-inert-and-catalyst",
+        "concept.le-chatelier.inert-gas-no-shift"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "adding",
+        "allowed",
+        "and",
+        "any",
+        "but",
+        "change",
+        "constant",
+        "depends",
+        "does",
+        "drive",
+        "equilibrium",
+        "expand",
+        "fall",
+        "follow",
+        "gas",
+        "inert",
+        "moles",
+        "more",
+        "noble",
+        "not",
+        "only",
+        "part",
+        "partial",
+        "phase",
+        "position",
+        "pressure",
+        "pressures",
+        "reacting",
+        "reaction",
+        "rises",
+        "shift",
+        "side",
+        "species",
+        "takes",
+        "that",
+        "the",
+        "total",
+        "toward",
+        "unchanged",
+        "vessel",
+        "volume",
+        "were",
+        "with",
+        "would"
+      ],
+      "stamp": {
+        "term:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "term:inert gas": "91b328404fe9488574e97dda03a06991fc165308d1553889049deb255cba0d1a",
+        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
+        "spine:concept.le-chatelier.inert-gas-no-shift": "ebfca1d007354f867e6b52509b1fa1a94ee59f0063314813649910520ad720e6",
+        "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-adding-a-catalyst-1",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "adding-a-catalyst",
+        "ordinal": 21,
+        "contentHash": "6cfe04b5f4bf14dbd4c03617489f0874d2dc77e222405733fda879aa8454ade8",
+        "lines": [
+          65,
+          65
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.explain-inert-and-catalyst",
+        "concept.le-chatelier.catalyst-no-shift"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "accelerates",
+        "aluminium",
+        "amounts",
+        "and",
+        "approach",
+        "based",
+        "being",
+        "but",
+        "catalyst",
+        "changes",
+        "chapter",
+        "chatelier",
+        "composition",
+        "consumed",
+        "equilibrium",
+        "exactly",
+        "factor",
+        "forward",
+        "from",
+        "haber",
+        "iron",
+        "leaves",
+        "magnetite",
+        "met",
+        "metallic",
+        "neither",
+        "nh3",
+        "nor",
+        "now",
+        "only",
+        "oxides",
+        "position",
+        "potassium",
+        "process",
+        "promoters",
+        "reach",
+        "reaction",
+        "reactions",
+        "reduced",
+        "result",
+        "reverse",
+        "same",
+        "seen",
+        "side",
+        "speeds",
+        "such",
+        "taken",
+        "the",
+        "therefore",
+        "they",
+        "this",
+        "time",
+        "were",
+        "with",
+        "without"
+      ],
+      "stamp": {
+        "term:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
+        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
+        "spine:concept.le-chatelier.catalyst-no-shift": "a33f01841a8f10946c063b98a941a57c8eec6c0180f63ee168c4afcc82427a76",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-which-disturbances-move-what-1",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "which-disturbances-move-what",
+        "ordinal": 22,
+        "contentHash": "66d7f22f54933dde1066071cd7b428860693d91a9439bd5c2a07896ce04b483a",
+        "lines": [
+          69,
+          79
+        ]
+      },
+      "form": "figure",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-concentration-shift",
+        "objective.le-chatelier.predict-temperature-shift",
+        "objective.le-chatelier.predict-pressure-shift",
+        "objective.le-chatelier.explain-inert-and-catalyst"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "catalyst",
+        "changes",
+        "concentration",
+        "const",
+        "disturbance",
+        "equal",
+        "fewer",
+        "flowchart",
+        "gas",
+        "inert",
+        "kind",
+        "mermaid",
+        "moles",
+        "position",
+        "pressure",
+        "same",
+        "shift",
+        "shifts",
+        "side",
+        "temperature",
+        "volume",
+        "which",
+        "yes"
+      ],
+      "stamp": {
+        "term:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
+        "term:inert gas": "91b328404fe9488574e97dda03a06991fc165308d1553889049deb255cba0d1a",
+        "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-which-disturbances-move-what-2",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "which-disturbances-move-what",
+        "ordinal": 23,
+        "contentHash": "0b54fcffe9ada9f9e06b0eaae531c919668f2c886ed79d2a40e1bfd6a01782d4",
+        "lines": [
+          81,
+          88
+        ]
+      },
+      "form": "paragraph",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-concentration-shift",
+        "objective.le-chatelier.predict-temperature-shift",
+        "objective.le-chatelier.predict-pressure-shift",
+        "objective.le-chatelier.explain-inert-and-catalyst"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "accelerates",
+        "actually",
+        "added",
+        "all",
+        "and",
+        "both",
+        "branch",
+        "branches",
+        "but",
+        "carry",
+        "catalyst",
+        "change",
+        "changes",
+        "concentration",
+        "constant",
+        "decreases",
+        "description",
+        "diagram",
+        "directions",
+        "disturbances",
+        "equal",
+        "equilibrium",
+        "factor",
+        "fewer",
+        "five",
+        "further",
+        "gas",
+        "inert",
+        "last",
+        "leaves",
+        "moles",
+        "move",
+        "moves",
+        "nothing",
+        "only",
+        "otherwise",
+        "partial",
+        "position",
+        "pressure",
+        "question",
+        "same",
+        "shifts",
+        "side",
+        "sides",
+        "sorts",
+        "splits",
+        "temperature",
+        "that",
+        "the",
+        "they",
+        "toward",
+        "two",
+        "unchanged",
+        "value",
+        "visual",
+        "volume",
+        "well",
+        "what",
+        "when",
+        "with"
+      ],
+      "stamp": {
+        "term:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "term:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
+        "term:partial pressure": "1911d9c4cb6332589c0c654fabfa7dd7bfd78d9bfceb7146973dee1784dcec0d",
+        "term:inert gas": "91b328404fe9488574e97dda03a06991fc165308d1553889049deb255cba0d1a",
+        "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-worked-examples-1",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "worked-examples",
+        "ordinal": 24,
+        "contentHash": "10c90db65c068f1dcff611e041311ffb45ff09e0a9d529f5a5ebd7eb08bb82da",
+        "lines": [
+          94,
+          94
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-temperature-shift"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "ammonia",
+        "amount",
+        "delta",
+        "equilibrium",
+        "exothermic",
+        "for",
+        "happens",
+        "mol",
+        "nh3",
+        "predict",
+        "raised",
+        "synthesis",
+        "temperature",
+        "text",
+        "the",
+        "what"
+      ],
+      "stamp": {
+        "unit:u-study-guide-le-chatelier-changing-the-temperature-5": "0c3c87d1cd6c497a1e327c4e2c8e5ba458ef1c0c7db8a2e3364cd48e07e7aa9d",
+        "unit:u-study-guide-le-chatelier-worked-examples-2": "57a90eb75ff1a6d775b01faeaf672cea56553393f43cadb0c16ae3dcaef7f7b9",
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-worked-examples-2",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "worked-examples",
+        "ordinal": 25,
+        "contentHash": "f50f262d0e3a373b7527ef25bc3d070ffa009c2aeca6a4b4b45f12c2b2360e8f",
+        "lines": [
+          97,
+          97
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-temperature-shift"
+      ],
+      "judgment": [
+        "mechanical",
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "adding",
+        "ammonia",
+        "amount",
+        "and",
+        "applying",
+        "are",
+        "chatelier",
+        "decreases",
+        "delta",
+        "derivation",
+        "equilibrium",
+        "equivalently",
+        "exothermic",
+        "from",
+        "heat",
+        "left",
+        "like",
+        "mol",
+        "nh3",
+        "principle",
+        "product",
+        "raising",
+        "reaction",
+        "reasoning",
+        "shifts",
+        "source",
+        "teaching",
+        "temperature",
+        "text",
+        "the",
+        "write"
+      ],
+      "stamp": {
+        "unit:u-study-guide-le-chatelier-changing-the-temperature-5": "0c3c87d1cd6c497a1e327c4e2c8e5ba458ef1c0c7db8a2e3364cd48e07e7aa9d",
+        "unit:u-study-guide-le-chatelier-worked-examples-1": "0c3c87d1cd6c497a1e327c4e2c8e5ba458ef1c0c7db8a2e3364cd48e07e7aa9d",
+        "term:le chatelier's principle": "243f9e0ccefd378d28ed3a489ae880d11e4da7a29c9da1b210d11457757eec7b",
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-worked-examples-3",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "worked-examples",
+        "ordinal": 26,
+        "contentHash": "c7418f499aa0156ff358c12fc3ef5517c9d8cda8bc0acca76eb8e2e4d9f55b70",
+        "lines": [
+          103,
+          103
+        ]
+      },
+      "form": "question",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-pressure-shift"
+      ],
+      "judgment": [
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "ammonia",
+        "decreasing",
+        "effect",
+        "for",
+        "increasing",
+        "predict",
+        "pressure",
+        "reaction",
+        "same",
+        "the",
+        "volume",
+        "yield"
+      ],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-worked-examples-4",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "worked-examples",
+        "ordinal": 27,
+        "contentHash": "e57369bc1127fcd9383c423d7c0034cc32e15c907a8de6d8638d3bdaf75f0fcd",
+        "lines": [
+          106,
+          106
+        ]
+      },
+      "form": "answer",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "objective.le-chatelier.predict-pressure-shift"
+      ],
+      "judgment": [
+        "mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "ammonia",
+        "and",
+        "are",
+        "count",
+        "counts",
+        "decreasing",
+        "derivation",
+        "equilibrium",
+        "favours",
+        "fewer",
+        "from",
+        "gas",
+        "increases",
+        "its",
+        "mole",
+        "moles",
+        "product",
+        "reactant",
+        "reaction",
+        "right",
+        "shifts",
+        "side",
+        "source",
+        "teaching",
+        "the",
+        "volume",
+        "with",
+        "yield"
+      ],
+      "stamp": {
+        "unit:u-study-guide-le-chatelier-worked-examples-3": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-common-misconceptions-1",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "common-misconceptions",
+        "ordinal": 28,
+        "contentHash": "b8c0909ac7f1084a4f68bf2868cc123440d70bb4f65fd3f7167681444ab6de5b",
+        "lines": [
+          112,
+          112
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "misconception.le-chatelier.cancels-disturbance"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "and",
+        "cancels",
+        "change",
+        "completely",
+        "counteracts",
+        "disturbance",
+        "equilibrium",
+        "its",
+        "new",
+        "only",
+        "original",
+        "partially",
+        "response",
+        "returns",
+        "settles",
+        "system",
+        "the"
+      ],
+      "stamp": {
+        "spine:misconception.le-chatelier.cancels-disturbance": "9355c81a7546167e3e5eb4781be62a7b2f3f136fdd73559d17bdb988e9ff2447"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-common-misconceptions-2",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "common-misconceptions",
+        "ordinal": 29,
+        "contentHash": "fa6f677ad9effd7fbcf9f4da18771efad406961bb9be67c831668ce6fc787624",
+        "lines": [
+          113,
+          113
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "misconception.le-chatelier.catalyst-increases-product"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "amount",
+        "and",
+        "both",
+        "catalyst",
+        "changes",
+        "composition",
+        "directions",
+        "equally",
+        "equilibrium",
+        "increases",
+        "neither",
+        "nor",
+        "only",
+        "position",
+        "product",
+        "reach",
+        "speeds",
+        "the",
+        "time"
+      ],
+      "stamp": {
+        "term:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
+        "spine:misconception.le-chatelier.catalyst-increases-product": "1619ffd563d9eec0015828b95afe9851810d317dff14fe233d22b2e4976d2331"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-common-misconceptions-3",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "common-misconceptions",
+        "ordinal": 30,
+        "contentHash": "e3fc8ffd09cd828c9fa8cd05d5ca8f7f21ee2d6bd7d89a6795e608ed75f87897",
+        "lines": [
+          114,
+          114
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "misconception.le-chatelier.inert-gas-shifts"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "adding",
+        "and",
+        "because",
+        "change",
+        "changes",
+        "constant",
+        "equilibrium",
+        "gas",
+        "inert",
+        "none",
+        "only",
+        "partial",
+        "phase",
+        "pressure",
+        "pressures",
+        "rises",
+        "shifts",
+        "the",
+        "total",
+        "volume"
+      ],
+      "stamp": {
+        "term:inert gas": "91b328404fe9488574e97dda03a06991fc165308d1553889049deb255cba0d1a",
+        "spine:misconception.le-chatelier.inert-gas-shifts": "76fc47d822faefc0623fd61b24fface39df83afc1debcb31a2f2f0cbca2bf616"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-common-misconceptions-4",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "common-misconceptions",
+        "ordinal": 31,
+        "contentHash": "092f586e6d5345edad62f33df0a94c2eb41cce99b807179fade70a4400c882b3",
+        "lines": [
+          115,
+          115
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "misconception.le-chatelier.heat-raises-yield"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "always",
+        "and",
+        "decreases",
+        "exothermic",
+        "for",
+        "increases",
+        "product",
+        "raising",
+        "reaction",
+        "temperature",
+        "the",
+        "yield"
+      ],
+      "stamp": {
+        "term:exothermic reaction": "c20452115a1d09ee264abeb11c57548d06c6d732dbb57bd21fcd6673c570eb27",
+        "spine:misconception.le-chatelier.heat-raises-yield": "de3be7752698491e87bbdc5b48484459214bd28e20d142871cc46ca0bea63d55"
+      }
+    },
+    {
+      "id": "u-study-guide-le-chatelier-common-misconceptions-5",
+      "locator": {
+        "deliverable": "study-guide/le-chatelier.md",
+        "section": "common-misconceptions",
+        "ordinal": 32,
+        "contentHash": "3d7439664c1f332a94f83724f74d9232f7860667d03f5792ebe1ed4b14237603",
+        "lines": [
+          116,
+          116
+        ]
+      },
+      "form": "list-item",
+      "role": "teaching",
+      "origin": {
+        "kind": "agent-knowledge",
+        "model": "unrecorded (v0.12 authoring)",
+        "step": "pre-existing",
+        "date": "2026-10-01"
+      },
+      "spineNodes": [
+        "misconception.le-chatelier.pressure-shifts-every"
+      ],
+      "judgment": [
+        "semi-mechanical",
+        "knowledge-based"
+      ],
+      "evidence": [],
+      "tokens": [
+        "are",
+        "both",
+        "change",
+        "effect",
+        "equal",
+        "equilibrium",
+        "every",
+        "gas",
+        "has",
+        "moles",
+        "phase",
+        "pressure",
+        "shifts",
+        "sides",
+        "the",
+        "volume"
+      ],
+      "stamp": {
+        "spine:misconception.le-chatelier.pressure-shifts-every": "158e81d88e7ef78247247a4d4bac2b5f7b81f59ef16e0a2a3dabddf8565c6361"
+      }
+    }
+  ]
+}

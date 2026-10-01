@@ -15,13 +15,14 @@ test("[req.units.segmenter] [req.units.external-edit] the real C2 package: every
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-units-c2-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   fs.cpSync(path.join(HERE, "fixtures", "c2-chemistry-v2", "package"), root, { recursive: true });
+  fs.rmSync(path.join(root, "metadata", "units"), { recursive: true, force: true }); // start from a package never indexed
   git(root, "init", "-q"); git(root, "config", "user.name", "T"); git(root, "config", "user.email", "t@example.invalid");
   git(root, "add", "-A"); git(root, "commit", "-q", "-m", "approved spine");
 
   // first index: the pre-existing text is stated to be agent-written (v0.12)
   let r = run("units.mjs", "index", "--root", root, "--initial-origin", "agent-knowledge", "--model", "unrecorded (v0.12 authoring)");
   assert.equal(r.status, 0, r.err);
-  assert.equal(r.out.units, 183); assert.deepEqual(r.out.questions, []);
+  assert.equal(r.out.units, 171, "rules and credit lines are structure"); assert.deepEqual(r.out.questions, []);
   const st = run("units.mjs", "status", "--root", root).out;
   assert.equal(Object.keys(st.deliverables).length, 6);
   for (const [rel, d] of Object.entries(st.deliverables)) { assert.equal(d.gaps, 0, `${rel}: no prose left out`); assert.deepEqual(Object.keys(d.origins), ["agent-knowledge"]); }
@@ -45,6 +46,6 @@ test("[req.units.segmenter] [req.units.external-edit] the real C2 package: every
   assert.equal(r.out.questions.length, 1); assert.match(r.out.questions[0], /study-guide\/chemical-equilibrium\.md: 1 passage/);
   const origins = run("units.mjs", "status", "--root", root).out.deliverables;
   assert.equal(origins["study-guide/chemical-equilibrium.md"].origins.unknown, 1);
-  assert.equal(origins["practice/le-chatelier.md"].origins["agent-knowledge"], 34);
+  assert.deepEqual(Object.keys(origins["practice/le-chatelier.md"].origins), ["agent-knowledge"], "the agent's own edit is agent knowledge");
   assert.equal(run("gate.mjs", "--root", root, "--checkpoint", "V2").status, 0, "indexed again; the authorship question never blocks");
 });
