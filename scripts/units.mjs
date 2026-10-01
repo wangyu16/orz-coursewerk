@@ -6,7 +6,7 @@
 //   node scripts/units.mjs claim  --root <pkg> --units <id,…> --name <instructor> --words "<their words>" [--author "<someone else>"]
 //   node scripts/units.mjs status --root <pkg>                                             counts, origins, gaps, unindexed edits
 //   node scripts/units.mjs link   --root <pkg> --links <file.json> --model <model id>      { "<unit id>": ["<spine node id>", …] }
-//   node scripts/units.mjs confirm --root <pkg> --units <id,…> --what fact|still-correct --name <instructor>
+//   node scripts/units.mjs confirm --root <pkg> --units <id,…> --what fact|still-correct --name <instructor> --words "<their words>"
 //   node scripts/units.mjs obligations --root <pkg>                                        the core obligations, grouped
 //   node scripts/units.mjs restamp --root <pkg> --reason "<harness change>"                re-baseline every stamp after the
 //        harness's dependency rules changed (logged as a harness action; never a substitute for re-verification)
@@ -61,7 +61,8 @@ try {
   if (cmd === "confirm") {
     const name = opt("--name") || fail("--name <instructor> is required");
     const ids = String(opt("--units") || "").split(",").filter(Boolean);
-    confirmUnits(root, reader, ids, { what: opt("--what") }, { role: "instructor", name });
+    const words = opt("--words") || fail('--words "<the instructor\'s own words>" is required: a confirmation quotes them');
+    confirmUnits(root, reader, ids, { what: opt("--what"), instructorWords: words }, { role: "instructor", name });
     console.log(JSON.stringify({ confirmed: ids.length, what: opt("--what") }, null, 2)); process.exit(0);
   }
   if (cmd === "restamp") {

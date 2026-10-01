@@ -22,6 +22,10 @@ A scoped "only" is checked as a conjunction: a source must state that the member
 alternative does not. A set named elsewhere ("of these four") or containing a bare symbol ($K$) counts as open. Use
 one "only" per sentence. "not only" and degree uses ("only partially") are not absolutes.
 
+**Record words in ordinary prose are facts too.** "First proposed by", "the most common", "the highest" are checked
+against sources like any value. Keep them only when a source states them; otherwise say what you know ("was proposed
+by", "a common").
+
 **Otherwise, say what is true without the absolute:** "the quotient moves while the constant stays fixed", not "only
 the quotient moves".
 

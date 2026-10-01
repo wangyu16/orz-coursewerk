@@ -82,7 +82,8 @@ materials:
 Every node carries a stable anchor (`spine.mjs anchor`). The grammar is in `format-contracts/deliverables.md`
 §Concept maps; `spine.mjs check` must pass.
 
-Bring it at M3 with `spine.mjs preview` and the diff. The instructor approves with `coursewerk.mjs approve --chapter
+Mark every item you added as your proposal (`spine.mjs propose`), and record your critique as questions
+(`spine.mjs critique`). Both appear in the approval view. Bring it at M3 with `spine.mjs preview` and the diff. The instructor approves with `coursewerk.mjs approve --chapter
 <slug>` (and `--course` for the course map).
 
 **Re-approval** after a spine revision:
@@ -107,6 +108,18 @@ Work in batches (one to three chapters, or a session's budget). In each batch:
      your own draft you may revise);
    - `correct` (auto-correction of an admitted, uncontested contradiction, shown as a diff).
 4. **Re-run the gate.** Stop when a run raises nothing new for you, or the budget is spent. Then bring M4.
+
+A substantial rewrite of a unit makes it a new unit: link it again after you rewrite it.
+
+**Before you deliver the digest,** attach your recommendation to any entry that has none (`coursewerk.mjs recommend`).
+"Accept all" then covers it, and the instructor sees it marked as yours.
+
+**What only the instructor can settle comes to the digest as a question.** For example:
+- invented exercise data, which no source can show;
+- an answer whose question changed;
+- a source that disagrees with the blind reviewer. Show both sides and recommend one.
+
+Answering "confirm" or "still correct" records the instructor's confirmation.
 
 **Pacing.** On a single, rate-limited subscription, keep batches small. Checkpoint when the session's budget is
 spent; the records let the next session resume.
@@ -138,8 +151,8 @@ To read or present the materials locally, assemble the framework shells: `script
 
 | | |
 |---|---|
-| workflow | `scripts/coursewerk.mjs` — status, assemble, back-to-draft, approve, digest, answer, publish, revert, interrupt |
-| spine | `scripts/spine.mjs` — check, migrate, anchor, status, preview, approve, version, steering |
+| workflow | `scripts/coursewerk.mjs` — status, assemble, back-to-draft, approve, digest, recommend, answer, publish, revert, interrupt |
+| spine | `scripts/spine.mjs` — check, migrate, anchor, propose, critique, status, preview, approve, version, steering |
 | units | `scripts/units.mjs` — begin, index, claim, status, link, confirm, obligations, restamp |
 | verification | `scripts/verify.mjs` — destinations, search, fetch, semi, readmit, absolutes, knowledge, correct, revert, corrections, links, status |
 | gate | `scripts/gate.mjs` |

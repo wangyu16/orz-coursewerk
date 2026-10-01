@@ -178,7 +178,7 @@ test("[req.autocorrect.guard] round P7-1 B14 B16 p22: no correction from an unan
   assert.equal(g.applied, false); assert.match(g.question.reason, /two agreeing sources/);
   // p22: deleting the contradicting record leaves a defect, and a batched confirmation cannot launder it
   const rec = fs.readdirSync(path.join(q.root, "metadata", "verification"))[0];
-  assert.throws(() => confirmUnits(q.root, q.reader, [wid], { what: "fact" }, I), /contradicts or disputes/);
+  assert.throws(() => confirmUnits(q.root, q.reader, [wid], { what: "fact", instructorWords: "I confirm these." }, I), /contradicts or disputes/);
   fs.rmSync(path.join(q.root, "metadata", "verification", rec));
   assert.ok(gate(q, wid).findings.includes("dispatch-record-missing:defect"));
 });

@@ -107,8 +107,8 @@ test("[req.core.evidence-obligation] a semi-mechanical fact without admitted evi
   const ice = p.ids()["Ice melts at 0 °C "];
   const evid = () => p.obligations().filter((f) => f.kind === "evidence-missing").map((f) => f.units[0]);
   assert.ok(evid().includes(ice));
-  assert.throws(() => confirmUnits(p.root, p.r(), [ice], { what: "fact" }, AGENT), /instructor's/);
-  confirmUnits(p.root, p.r(), [ice], { what: "fact" }, I);
+  assert.throws(() => confirmUnits(p.root, p.r(), [ice], { what: "fact", instructorWords: "I confirm these." }, AGENT), /instructor's/);
+  confirmUnits(p.root, p.r(), [ice], { what: "fact", instructorWords: "I confirm these." }, I);
   assert.ok(!evid().includes(ice));
   // a rephrase keeps the evidence (same facts); a changed value loses it
   p.w("study-guide/melting.md", SG.replace("Ice melts at 0 °C at 1 atm.", "At 1 atm, ice melts at 0 °C."));
@@ -150,13 +150,13 @@ test("[req.core.reverify-obligation] a change makes exactly its dependents stale
   p.w("concepts/melting.md", MAP.replace("A pure solid melts at one temperature.", "A pure solid melts at exactly one temperature, 0 K wide."));
   const s2 = stale();
   assert.ok(s2.includes(id["The melting point "]) && s2.includes(id["Impurities broaden"]), "linked units and units whose prerequisite moved");
-  confirmUnits(p.root, p.r(), s2, { what: "still-correct" }, I);
+  confirmUnits(p.root, p.r(), s2, { what: "still-correct", instructorWords: "I confirm these." }, I);
   assert.deepEqual(stale(), []);
 });
 
 test("[req.core.null-edit] a meaning-preserving edit raises nothing beyond its own unit; its facts are still re-checked", (t) => {
   const p = pkg(t); linkAll(p);
-  confirmUnits(p.root, p.r(), [p.ids()["Ice melts at 0 °C "], p.ids()["At 0 °C."]], { what: "fact" }, I);
+  confirmUnits(p.root, p.r(), [p.ids()["Ice melts at 0 °C "], p.ids()["At 0 °C."]], { what: "fact", instructorWords: "I confirm these." }, I);
   const before = p.kinds();
   p.w("study-guide/melting.md", SG.replace("Ice melts at 0 °C at 1 atm.", "At 1 atm, ice melts at 0 °C.").replace("sharp and repeatable", "sharp, and repeatable"));
   beginSession(p.root, p.r(), AGENT); indexAndStamp(p.root, p.r(), { as: "agent", party: AGENT });
@@ -170,7 +170,7 @@ test("[req.core.null-edit] a meaning-preserving edit raises nothing beyond its o
 test("[req.versions.carry] units carried into a new major version start as obligations", (t) => {
   const p = pkg(t); linkAll(p);
   const ice = p.ids()["Ice melts at 0 °C "];
-  confirmUnits(p.root, p.r(), [ice], { what: "fact" }, I);
+  confirmUnits(p.root, p.r(), [ice], { what: "fact", instructorWords: "I confirm these." }, I);
   assert.throws(() => carryUnits(p.root, [ice], { version: 2, scope: "chapter:melting" }, AGENT), /instructor's version decision/);
   carryUnits(p.root, [ice], { version: 2, scope: "chapter:melting" }, I);
   const k = p.obligations().filter((f) => f.units[0] === ice).map((f) => f.kind).sort();

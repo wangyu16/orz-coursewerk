@@ -7,6 +7,7 @@
 //   node scripts/coursewerk.mjs back-to-draft --root <pkg> --chapter <slug> --name <instructor> --words "…"
 //   node scripts/coursewerk.mjs approve  --root <pkg> (--chapter <slug> | --course) [--glance] --name <instructor> --words "…"
 //   node scripts/coursewerk.mjs digest   --root <pkg> [--inputs <dir>] [--cap 10] [--deliver --model <id>]   M4
+//   node scripts/coursewerk.mjs recommend --root <pkg> --entry <n> --text "<what you recommend>" --model <id>   your recommendation, before M4
 //   node scripts/coursewerk.mjs answer   --root <pkg> (--entry <n> --choice "<choice>" | --accept-all) --name <instructor> --words "…"
 //   node scripts/coursewerk.mjs publish  --root <pkg> [--inputs <dir>] [--chapters a,b] [--include-drafts] --name <instructor> --words "…"   M6
 //   node scripts/coursewerk.mjs revert   --root <pkg> --correction <id> --name <instructor> --note "<why the text stands>"
@@ -16,7 +17,7 @@ import fs from "node:fs";
 import { liveReader, manifestChapters } from "./lib/core/package_reader.mjs";
 import { recordApproval, approvalStatus } from "./lib/core/approvals.mjs";
 import { chapterStates, eligibility, latestPublish, publishDecision, transition, transitionProblems, unitInfoOf } from "./lib/core/workflow.mjs";
-import { answerDigest, buildDigest, deliverDigest, DEFAULT_CAP } from "./lib/core/digest.mjs";
+import { answerDigest, buildDigest, deliverDigest, recommendDigest, DEFAULT_CAP } from "./lib/core/digest.mjs";
 import { runGate } from "./lib/skeleton/full_gate.mjs";
 import { correctionsToShow, revertCorrection } from "./lib/verify/verdicts.mjs";
 import { readConfig } from "./lib/records/config.mjs";
@@ -30,7 +31,7 @@ const flag = (n) => args.includes(n);
 const refuse = (m, next) => { console.error(`${cmd}: ${m}${next ? `\nnext: ${next}` : ""}`); process.exit(1); };
 const out = (x) => console.log(JSON.stringify(x, null, 2));
 const root = opt("--root");
-const USAGE = "usage: coursewerk.mjs <status|assemble|back-to-draft|approve|digest|answer|publish|revert|interrupt> --root <package> … (see the header of scripts/coursewerk.mjs)";
+const USAGE = "usage: coursewerk.mjs <status|assemble|back-to-draft|approve|digest|recommend|answer|publish|revert|interrupt> --root <package> … (see the header of scripts/coursewerk.mjs)";
 if (!cmd || !root || !fs.existsSync(root)) { console.error(USAGE); process.exit(2); }
 try { if (readConfig(root).spine !== 2) refuse("this is a v0.12 package (no `\"spine\": 2` in metadata/coursewerk.json)", "migrate the spine first: node scripts/spine.mjs migrate --root <pkg>"); }
 catch (e) { refuse(e.message); }
@@ -84,6 +85,9 @@ try {
     const g = runGate(root, { inputsDir: opt("--inputs") || null });
     const info = unitInfoOf(root, reader);
     const d = buildDigest(root, g.findings, info, { cap: Number(opt("--cap") || DEFAULT_CAP), corrections: correctionsToShow(root) });
+    // the agent's own recommendations, attached before delivery, carry over to the same entries
+    let prev = null; try { prev = JSON.parse(fs.readFileSync(recordFile(root, DIGEST_FILE), "utf8")); } catch { prev = null; }
+    for (const e of d.entries) { const p = prev?.entries?.find((x) => x.key === e.key && String(x.recommendedBy || "").startsWith("agent")); if (p) { e.recommendation = p.recommendation; e.recommendedBy = p.recommendedBy; } }
     fs.mkdirSync(recordFile(root, "metadata/digest"), { recursive: true });
     fs.writeFileSync(recordFile(root, DIGEST_FILE), JSON.stringify({ at: new Date().toISOString(), ...d }, null, 2) + "\n");
     if (flag("--deliver")) {
@@ -91,7 +95,7 @@ try {
       deliverDigest(root, d, { role: "agent", name: "executor", model });
       correctionsToShow(root, { mark: true });
     }
-    out({ entries: d.entries.map((e, i) => ({ n: i + 1, kind: e.kind, count: e.count, chapters: e.chapters, question: e.question, recommendation: e.recommendation, deferredBefore: e.deferredBefore })),
+    out({ entries: d.entries.map((e, i) => ({ n: i + 1, kind: e.kind, count: e.count, chapters: e.chapters, question: e.question, recommendation: e.recommendation, recommendedBy: e.recommendedBy, deferredBefore: e.deferredBefore })),
       deferred: d.deferred.count, interrupts: d.interrupts.length, corrections: d.corrections.map((c) => ({ id: c.id, diff: c.diff })), progress: d.progress, delivered: flag("--deliver") });
     process.exit(0);
   }
@@ -104,8 +108,15 @@ try {
       answers[d.entries[n - 1].key] = choice;
     }
     const { party, words } = instructor();
-    const r = answerDigest(root, d, { answers, acceptAll: flag("--accept-all"), instructorWords: words }, party);
+    const r = answerDigest(root, d, { answers, acceptAll: flag("--accept-all"), instructorWords: words, reader }, party);
     out({ recorded: r.length }); process.exit(0);
+  }
+  if (cmd === "recommend") {
+    let d; try { d = JSON.parse(fs.readFileSync(recordFile(root, DIGEST_FILE), "utf8")); } catch { refuse("there is no digest yet", "node scripts/coursewerk.mjs digest --root <pkg>"); }
+    const model = opt("--model") || refuse("a recommendation names the agent that makes it", "--model <model id>");
+    const e = recommendDigest(d, Number(opt("--entry")), opt("--text"), { role: "agent", name: "executor", model });
+    fs.writeFileSync(recordFile(root, DIGEST_FILE), JSON.stringify(d, null, 2) + "\n");
+    out({ entry: Number(opt("--entry")), recommendation: e.recommendation, recommendedBy: e.recommendedBy }); process.exit(0);
   }
   if (cmd === "publish") {
     const g = runGate(root, { inputsDir: opt("--inputs") || null });

@@ -11,6 +11,7 @@ import { sha256, canonicalJson } from "../records/canonical.mjs";
 import { appendLogRecord, parseLog, readLogText, verifyLog } from "../records/log.mjs";
 import { recordFile } from "../records/paths.mjs";
 import { chapterOfFinding } from "./workflow.mjs";
+import { confirmUnits } from "./obligations.mjs";
 
 export const DEFAULT_CAP = 10;
 const STATE = "metadata/digest/state.json";
@@ -61,7 +62,10 @@ export function buildDigest(root, findings, unitInfo, { cap = DEFAULT_CAP, corre
   const entry = (c) => ({
     key: c.key, module: c.module, kind: c.kind, count: c.findings.length, chapters: [...c.chapters].sort(), units: [...c.units].sort(),
     question: c.findings[0].evidence?.note || c.findings[0].evidence?.what || c.findings[0].evidence?.rule || c.kind,
-    evidence: c.findings[0].evidence, recommendation: c.findings[0].recommendation ?? null, deferredBefore: prev.has(c.key),
+    evidence: c.findings[0].evidence, deferredBefore: prev.has(c.key),
+    // a recommendation always shows where it came from: the check, or a concern's own suggested revision
+    recommendation: c.findings[0].recommendation ?? (c.findings[0].evidence?.suggestion ? `revise: ${c.findings[0].evidence.suggestion}` : null),
+    recommendedBy: c.findings[0].recommendation != null ? "check" : c.findings[0].evidence?.suggestion ? "reviewer" : null,
     findings: c.findings.map((f) => f.id), bases: c.findings.map((f) => ({ finding: f.id, basis: basisOf(f, hash) })), // answered at the basis shown
   });
   const agentOpen = findings.filter((f) => f.route === "agent" && isOpen(f));
@@ -86,7 +90,20 @@ export function deliverDigest(root, digest, party) {
  * The instructor answers digest entries (by key), or accepts every recommendation in one action.
  * Each answer binds every finding of the entry at the basis it was shown at.
  */
-export function answerDigest(root, digest, { answers = {}, acceptAll = false, instructorWords }, party) {
+/** The agent attaches its own recommendation to a digest entry, before the instructor sees it; it is shown as the agent's. */
+export function recommendDigest(digest, n, text, party) {
+  if (party?.role !== "agent") throw new Error("a recommendation is the agent's proposal");
+  const e = digest.entries[n - 1];
+  if (!e) throw new Error(`no entry ${n} in this digest`);
+  if (!String(text || "").trim()) throw new Error("say what you recommend");
+  e.recommendation = String(text).trim(); e.recommendedBy = `agent (${party.model})`;
+  return e;
+}
+
+/** Answers that settle an obligation as well as a question record the instructor's confirmation too. */
+const CONFIRMS = { "exercise-data-confirm": { re: /^\s*confirm/i, what: "fact" }, "answer-still-correct": { re: /^\s*still correct/i, what: "still-correct" } };
+
+export function answerDigest(root, digest, { answers = {}, acceptAll = false, instructorWords, reader = null }, party) {
   if (party?.role !== "instructor") throw new Error("only the instructor answers a question; the agent never answers one on the instructor's behalf");
   if (!String(instructorWords || "").trim()) throw new Error("an answer quotes the instructor's words");
   const unknown = Object.keys(answers).filter((k) => !digest.entries.some((e) => e.key === k));
@@ -98,5 +115,12 @@ export function answerDigest(root, digest, { answers = {}, acceptAll = false, in
   }
   if (!recorded.length) throw new Error("nothing to record: name an entry and a choice, or accept all recommendations");
   appendLogRecord(root, { type: "answer", party, payload: { answers: recorded, acceptAll, instructorWords } });
+  for (const [kind, rule] of Object.entries(CONFIRMS)) {
+    const ids = [...new Set(digest.entries.filter((e) => e.kind === kind && recorded.some((r) => r.entry === e.key && rule.re.test(r.choice))).flatMap((e) => e.units))];
+    if (ids.length) {
+      if (!reader) throw new Error("this answer confirms units: pass the package reader");
+      confirmUnits(root, reader, ids, { what: rule.what, instructorWords }, party);
+    }
+  }
   return recorded;
 }

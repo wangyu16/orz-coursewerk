@@ -40,7 +40,7 @@ const steer = (p) => recordSteering(p.root, { defaults: Object.fromEntries(STEER
 /** Make le-chatelier publishable the instructor's way: one batched confirmation of its open facts and absolutes. */
 function clearLeChatelier(p) {
   const ids = [...new Set(coreObligations(p.root, p.reader, "t").filter((f) => ["evidence-missing", "absolute-unreviewed"].includes(f.kind)).flatMap((f) => f.units).filter((u) => /le-chatelier/.test(u)))];
-  confirmUnits(p.root, p.reader, ids, { what: "fact" }, I);
+  confirmUnits(p.root, p.reader, ids, { what: "fact", instructorWords: "I confirm these." }, I);
   p.commit();
 }
 
@@ -196,7 +196,7 @@ test("[req.loop.bounds] the loop stops at a fixed point or when the budget is sp
     () => transition(p.root, p.reader, { chapter: "le-chatelier", to: "DRAFT", instructorWords: "x" }, AGENT),
     () => recordSteering(p.root, { defaults: {}, acceptAll: true, instructorWords: "x" }, AGENT),
     () => answerDigest(p.root, { entries: [] }, { acceptAll: true, instructorWords: "x" }, AGENT),
-    () => confirmUnits(p.root, p.reader, ["u-x"], { what: "fact" }, AGENT),
+    () => confirmUnits(p.root, p.reader, ["u-x"], { what: "fact", instructorWords: "I confirm these." }, AGENT),
     () => claimAuthorship(p.root, { units: ["u-x"], instructorWords: "x" }, AGENT),
     () => revertCorrection(p.root, p.reader, "c-x", { note: "x" }, AGENT),
     () => publishDecision(p.root, p.reader, { gateResult: null, unitInfo: new Map(), instructorWords: "x" }, AGENT),
@@ -262,8 +262,60 @@ test("[req.docs.migration] a v0.12 package migrates by tool, at the instructor's
   const states = chapterStates(root, reader);
   for (const s of Object.values(states)) { assert.equal(s.state, "ASSEMBLING"); assert.equal(s.approved, false); }
   assert.match(readLogText(root), /"event":"migrated-from-v0\.12"[^\n]*"instructorWords":"Migrate the course to the new spine\."/);
+  const mig = readLogText(root).split("\n").filter(Boolean).map((l) => JSON.parse(l)).find((x) => x.payload?.event === "migrated-from-v0.12");
+  assert.ok(mig.payload.notes.some((n) => /uncertain[\s\S]*now a firm prerequisite/.test(n)), "what the conversion could not carry is recorded, to be shown at approval");
+  assert.ok(mig.payload.notes.some((n) => /Type and Count to propose/.test(n)));
   assert.match(spine("migrate", "--root", root, "--name", I.name, "--words", "again").stderr, /already spine v2/);
   const st = cli("status", "--root", root);
   assert.equal(st.status, 0, st.stderr);
   for (const c of Object.values(JSON.parse(st.stdout).chapters)) assert.ok(c.why.some((w) => /ASSEMBLING|approval is not valid/.test(w)), "not publishable until approved");
+});
+
+// ---- found by the P9 docs-only scenario -----------------------------------------------------------------------------
+test("[req.answers.persist] [req.digest.budget] what only the instructor can settle reaches the digest, and answering it settles it; the agent's recommendation is shown as the agent's and covered by accept-all", async (t) => {
+  const p = copy(t);
+  const { verifySemi } = await import("../scripts/lib/verify/verdicts.mjs");
+  const { replayVerifier } = await import("../scripts/lib/verify/dispatch.mjs");
+  const { fsInputReader, pinnedTexts } = await import("../scripts/lib/verify/references.mjs");
+  const { recommendDigest } = await import("../scripts/lib/core/digest.mjs");
+  const { loadUnits, indexAndStamp } = await import("../scripts/lib/core/obligations.mjs");
+  const { beginSession } = await import("../scripts/lib/core/units_index.mjs");
+  // a practice question with invented values: the verifier reads it as exercise data
+  const ex = "u-practice-chemical-equilibrium-questions-3";
+  const hypothetical = replayVerifier((pr) => ({ nonce: pr.match(/"nonce": "([0-9a-f]+)"/)[1], claims: pr.split("\nCLAIMS\n")[1].split("\n\nPASSAGES")[0].split("\n").filter((l) => /^\d+\. /.test(l)).map((_, i) => ({ claim: i + 1, verdict: "hypothetical", quotes: [] })) }));
+  await verifySemi(p.root, p.reader, { texts: pinnedTexts(fsInputReader(p.inputs)), verifier: hypothetical, only: [ex] });
+  // an answer whose question changed in a fact (a rephrase would leave it alone, D19-C)
+  const q = loadUnits(p.root, p.reader).find((u) => u.id === "u-practice-le-chatelier-questions-1");
+  beginSession(p.root, p.reader, AGENT);
+  fs.writeFileSync(path.join(p.root, "practice", "le-chatelier.md"), fs.readFileSync(path.join(p.root, "practice", "le-chatelier.md"), "utf8").replace(q.text, q.text.replace("State Le Chatelier's principle.", "State the Le Chatelier–Braun principle.")));
+  indexAndStamp(p.root, p.reader, { as: "agent", party: AGENT });
+  p.commit();
+  const digestNow = () => buildDigest(p.root, runGate(p.root, { inputsDir: p.inputs }).findings, unitInfoOf(p.root, p.reader));
+  const d = digestNow();
+  const exEntry = d.entries.find((e) => e.kind === "exercise-data-confirm"), ansEntry = d.entries.find((e) => e.kind === "answer-still-correct");
+  assert.ok(exEntry && exEntry.units.includes(ex) && exEntry.recommendation === "confirm", "exercise data comes to the instructor, not left as agent work");
+  assert.ok(ansEntry && ansEntry.recommendation === "still correct");
+  const knowledge = d.entries.find((e) => !e.recommendation);
+  if (knowledge) { recommendDigest(d, d.entries.indexOf(knowledge) + 1, "keep the text", AGENT); assert.match(knowledge.recommendedBy, /^agent/); }
+  assert.throws(() => recommendDigest(d, 1, "x", I), /agent's proposal/);
+  answerDigest(p.root, d, { acceptAll: true, instructorWords: "Accept all recommendations.", reader: p.reader }, I);
+  const left = coreObligations(p.root, p.reader, "t");
+  assert.ok(!left.some((f) => f.kind === "evidence-missing" && f.units.includes(ex)), "confirming the exercise data clears its obligation");
+  const ans = ansEntry.units[0];
+  assert.ok(!left.some((f) => f.kind === "reverify" && f.units.includes(ans)), "'still correct' clears the answer's re-verification");
+  assert.match(readLogText(p.root), /"type":"confirmation"[^\n]*"instructorWords":"Accept all recommendations\."/);
+  assert.throws(() => confirmUnits(p.root, p.reader, [ex], { what: "fact" }, I), /quotes the instructor's words/);
+});
+
+test("[req.docs.migration] the agent's spine proposals and critique are recorded and shown in the approval view", (t) => {
+  const p = copy(t);
+  const spine = (...a) => spawnSync(process.execPath, [path.join(REPO, "scripts", "spine.mjs"), ...a], { encoding: "utf8" });
+  let r = spine("propose", "--root", p.root, "--doc", "assessment-support/le-chatelier.md", "--anchors", "word-partially", "--model", "m");
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(spine("propose", "--root", p.root, "--doc", "assessment-support/le-chatelier.md", "--anchors", "no-such-anchor", "--model", "m").stderr, /no spine item/);
+  r = spine("critique", "--root", p.root, "--chapter", "le-chatelier", "--note", "Should the catalyst objective move to chapter 1?", "--recommend", "keep it here", "--model", "m");
+  assert.equal(r.status, 0, r.stderr);
+  const view = spine("preview", "--root", p.root, "--chapter", "le-chatelier").stdout;
+  assert.match(view, /PROPOSED BY THE AGENT/); assert.match(view, /Questions for you[\s\S]*catalyst objective move to chapter 1/);
+  assert.match(readLogText(p.root), /"event":"spine-proposed"[\s\S]*"event":"spine-critique"/);
 });

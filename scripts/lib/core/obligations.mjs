@@ -127,8 +127,9 @@ export function linkUnits(root, reader, links, party) {
 }
 
 /** The instructor confirms units: "fact" clears an evidence obligation for the current facts; "still-correct" re-stamps. */
-export function confirmUnits(root, reader, ids, { what }, party) {
+export function confirmUnits(root, reader, ids, { what, instructorWords }, party) {
   if (party?.role !== "instructor") throw new Error("a confirmation is the instructor's");
+  if (!String(instructorWords || "").trim()) throw new Error("a confirmation quotes the instructor's words");
   if (!["fact", "still-correct"].includes(what)) throw new Error('confirm what: "fact" or "still-correct"');
   const { units, edges, hashes } = context(root, reader);
   const text = new Map(units.map((u) => [u.id, u.text]));
@@ -142,7 +143,7 @@ export function confirmUnits(root, reader, ids, { what }, party) {
     if (what === "fact") u.evidence = [...(u.evidence || []), { type: "instructor-confirmation", by: party.name, at, factHash: factHash(text.get(u.id) || "") }];
     u.stamp = stampFor(u.id, edges, hashes); delete u.carried;
   });
-  appendLogRecord(root, { type: "confirmation", party, payload: { what, units: ids, weight: "single", ...(what === "fact" ? { factHashes: Object.fromEntries(ids.map((id) => [id, factHash(text.get(id) || "")])) } : {}) } });
+  appendLogRecord(root, { type: "confirmation", party, payload: { what, units: ids, weight: "single", instructorWords, ...(what === "fact" ? { factHashes: Object.fromEntries(ids.map((id) => [id, factHash(text.get(id) || "")])) } : {}) } });
 }
 
 /** The verdict path admits evidence for a unit's CURRENT facts (only the harness writes it; admission.mjs decided it). */
@@ -215,7 +216,16 @@ export function coreObligations(root, reader, basis) {
     const dangling = (u.spineNodes || []).filter((n) => !nodes.has(n));
     if (dangling.length) F.push(makeFinding({ module: "skeleton", kind: "unit-link-dangling", units: [u.id], statusClass: "defect", route: "agent", basis, evidence: { type: "rule", rule: "a unit links only to existing spine nodes", dangling } }));
     if (u.carried) ob("carried-unverified", [u.id], `re-verification of ${u.id} in ${u.carried.scope} version ${u.carried.version}`);
-    else if (u.stamp) { const moved = staleTargets(u.stamp, hashes); if (moved.length) ob("reverify", [u.id], `re-verification of ${u.id}: ${moved.join(", ")} changed since it was written`); }
+    else if (u.stamp) {
+      const moved = staleTargets(u.stamp, hashes);
+      if (moved.length) {
+        ob("reverify", [u.id], `re-verification of ${u.id}: ${moved.join(", ")} changed since it was written`);
+        // an answer whose question changed: only the instructor (or a re-written answer) can say it still holds
+        if (u.form === "answer" && moved.some((t) => units.some((x) => `unit:${x.id}` === t && x.form === "question")))
+          F.push(makeFinding({ module: "skeleton", kind: "answer-still-correct", units: [u.id], statusClass: "question", route: "digest", basis,
+            evidence: { type: "judgment", note: `${u.id}: its question changed — is the answer still correct as written?` }, recommendation: "still correct" }));
+      }
+    }
   }
   for (const ch of chapters) {
     const s = spine.chapters[ch];

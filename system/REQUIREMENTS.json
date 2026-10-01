@@ -10,7 +10,8 @@
     "P5",
     "P6",
     "P7",
-    "P8"
+    "P8",
+    "P9"
   ],
   "requirements": [
     {
@@ -1327,8 +1328,12 @@
       ],
       "statement": "PROCEDURE, CLAUDE/AGENTS and the format contracts describe the skeleton as lean orientation; a context-blind agent can run the workflow from them alone.",
       "source": "implementation plan P9; I17",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T3": [
+          "system/rounds/P9-docs-scenario.md"
+        ]
+      }
     },
     {
       "id": "req.docs.migration",
@@ -1339,8 +1344,15 @@
       ],
       "statement": "Existing packages migrate by tool; the migrated spine is presented as a revision for approval, never converted silently.",
       "source": "implementation plan P9",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/workflow.test.mjs"
+        ],
+        "T3": [
+          "system/rounds/P9-docs-scenario.md"
+        ]
+      }
     },
     {
       "id": "req.dogfood.c2",

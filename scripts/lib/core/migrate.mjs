@@ -48,7 +48,7 @@ export function rewriteRefs(text, renames) {
   const notes = [];
   const fix = (ref) => {
     const r = ref.trim(), q = r.endsWith("?"), base = q ? r.slice(0, -1) : r;
-    if (q) notes.push(`a prerequisite was marked uncertain: ${base}`);
+    if (q) notes.push(`a prerequisite marked uncertain ("${base}?") is now a firm prerequisite: confirm or remove it with the instructor`);
     return renames[base] || base;
   };
   const out = String(text)

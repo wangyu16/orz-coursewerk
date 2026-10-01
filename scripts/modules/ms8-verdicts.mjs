@@ -70,6 +70,9 @@ function run(s) {
     if (!plain.size || !checksCurrentClaims(r, u.text)) continue; // a record of other claims is history
     const a = rederive(r, plain);
     if (!a || diverged(u)) continue;
+    // exercise data no source can show: the instructor confirms it once, so it comes to the digest (P9 scenario)
+    if (a.perClaim.length && a.perClaim.every((c) => c.status === "hypothetical") && !(u.evidence || []).some((e) => e.type === "instructor-confirmation" && e.factHash === factHash(u.text)))
+      out.push({ kind: "exercise-data-confirm", units: [u.id], evidence: { type: "judgment", note: `${u.id}: the values here read as invented exercise data, which no source can show — confirm them as teaching hypotheticals?`, quote: r.claims?.map((c) => c.text).join(" | ") || "", dispatch: r.dispatch }, recommendation: "confirm" });
     for (const c of a.perClaim) {
       if (c.status === "contradicted")
         out.push({ kind: "fact-contradicted", units: [u.id], evidence: { type: "quote", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote, span: q.span })) } });
@@ -109,6 +112,7 @@ export default {
       { kind: "fact-contradicted", statusClass: "defect", evidenceType: "quote", route: "agent" },
       { kind: "fact-disputed", statusClass: "question", evidenceType: "conflict", route: "digest" },
       { kind: "knowledge-concern", statusClass: "question", evidenceType: "judgment", route: "digest" },
+      { kind: "exercise-data-confirm", statusClass: "question", evidenceType: "judgment", route: "digest" },
       { kind: "absolute-overgeneral", statusClass: "question", evidenceType: "judgment", route: "agent" },
       { kind: "evidence-unsupported", statusClass: "defect", evidenceType: "rule", route: "agent" },
       { kind: "dispatch-unlogged", statusClass: "defect", evidenceType: "rule", route: "agent" },

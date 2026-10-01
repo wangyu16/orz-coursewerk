@@ -53,7 +53,7 @@
       "id": "repo:CLAUDE.md",
       "path": "CLAUDE.md",
       "type": "agent-constitution",
-      "hash": "783760c0430baf4bd1c410ef53560379b8a6a0b751fa849c86a4a672a61630c1"
+      "hash": "c46fd95572ac94760b510175c5c0f86f5988a080033dae8b29a09d1bf91e0cc5"
     },
     {
       "id": "repo:COMPATIBILITY.md",
@@ -107,7 +107,7 @@
       "id": "repo:docs/migrating-from-v0.12.md",
       "path": "docs/migrating-from-v0.12.md",
       "type": "documentation",
-      "hash": "d71333eef08b4264bf93667cffd06b32af3ffe5ba4a7c131a52a1648c72f1c15"
+      "hash": "f4042a0023d052259cf0d7d3ac80ecaee7c7b77b75e43b50956419641d9f8521"
     },
     {
       "id": "repo:docs/procedure-v2.md",
@@ -149,7 +149,7 @@
       "id": "repo:docs/writing-checkable-statements.md",
       "path": "docs/writing-checkable-statements.md",
       "type": "documentation",
-      "hash": "6f9281e51eaf08b63a8450bc90c6a13f7ee326b5e8ae20d3b62702333a219216"
+      "hash": "c0a6c23c1e88077f913f822b854651ad80ca805c377f22209454fe14d2846377"
     },
     {
       "id": "repo:FEATURES.md",
@@ -191,13 +191,13 @@
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "25216a1796b967bea4e37cee9e82aa77f876bf5157dc2353e738b4370e515a8d"
+      "hash": "0de8487bd1d06c55e182f813ceee53a909407e39368733296e987de15f8eda56"
     },
     {
       "id": "repo:README.md",
       "path": "README.md",
       "type": "product-claim",
-      "hash": "6a7c1cc385c30e58ea33b90628cc398b6477586c2a523b3e92194cc7f34af041"
+      "hash": "c022b995a2c40da7ae94e55c26cebf62637641265c84e20abeec5706f163e608"
     },
     {
       "id": "repo:scripts/accept_coursewerk_revision.mjs",
@@ -263,7 +263,7 @@
       "id": "repo:scripts/coursewerk.mjs",
       "path": "scripts/coursewerk.mjs",
       "type": "executable",
-      "hash": "1d07e5267ade5d36dddb5f7accbd6dc9781b1dcd27a695ea9f7ec48f8874ceab"
+      "hash": "1e7ad472b1a7091c9d3e35879d5886fb5580207d214d0afc18cf802a26c4ed8e"
     },
     {
       "id": "repo:scripts/data/license-texts.json",
@@ -425,7 +425,7 @@
       "id": "repo:scripts/lib/core/digest.mjs",
       "path": "scripts/lib/core/digest.mjs",
       "type": "kernel",
-      "hash": "aa47eea9ee6c2d9fb9b83484b7f1e50ef96290b45b5ddb21f45cd391693d7f94"
+      "hash": "fddded92e6d2d6d7fe3ff82111dd143c45734adb40b59bf2a24a21b077ecbe1b"
     },
     {
       "id": "repo:scripts/lib/core/loop.mjs",
@@ -437,7 +437,7 @@
       "id": "repo:scripts/lib/core/migrate.mjs",
       "path": "scripts/lib/core/migrate.mjs",
       "type": "kernel",
-      "hash": "08c6b5674028a38de5b446aa08045f43649f1e53d4978f7e20f1a1ab381c2cb0"
+      "hash": "33f07fbf3b496429292508c20958a64412003a4c9fb1ed7369b29939e93a56a0"
     },
     {
       "id": "repo:scripts/lib/core/notations.mjs",
@@ -449,7 +449,7 @@
       "id": "repo:scripts/lib/core/obligations.mjs",
       "path": "scripts/lib/core/obligations.mjs",
       "type": "kernel",
-      "hash": "d4074467bd2735d5213178f06be6968d519838abc9d8c6946764049eec71f72f"
+      "hash": "e4fb8ac0b49b28b6fce800138aa636d3358d7d877212540dea8486b9c8bea791"
     },
     {
       "id": "repo:scripts/lib/core/pack_v2.mjs",
@@ -827,7 +827,7 @@
       "id": "repo:scripts/modules/ms8-verdicts.mjs",
       "path": "scripts/modules/ms8-verdicts.mjs",
       "type": "executable",
-      "hash": "7549e0c40b85fc42e391c937fd40a4cb5cd390b0c008bd2dfbd3f501d3a2a5aa"
+      "hash": "31f4a1985ef0d898699500653ff7adc46a2963730955fc58ee764e232440c3a5"
     },
     {
       "id": "repo:scripts/modules/README.md",
@@ -887,7 +887,7 @@
       "id": "repo:scripts/spine.mjs",
       "path": "scripts/spine.mjs",
       "type": "executable",
-      "hash": "ebb79ad91cb775601923838f9860a318022ca8b6c2046b008d359fc7515fef17"
+      "hash": "b866c087d78eee9bf54d8a57375223c93b028d3c534a62b6942b73d037b648d9"
     },
     {
       "id": "repo:scripts/study_pairs.mjs",
@@ -899,7 +899,7 @@
       "id": "repo:scripts/units.mjs",
       "path": "scripts/units.mjs",
       "type": "executable",
-      "hash": "755449a8246be58d422d175f14197884084c7a236e149c83c6d480b4977f3eb5"
+      "hash": "1d88ee26d6ee1280385a77abc61095dcdc572b0bcdb3f5ba57be59a81d30f038"
     },
     {
       "id": "repo:scripts/verify_coursewerk.mjs",
@@ -1073,7 +1073,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "540556e68b3d4aa3a8b94d692e781cd0cd4ac9ad84254d6eaf2a55a31cf038d1"
+      "hash": "5aa56a09d773dcc34c2563d3879b4f0699f175e62087447794f18af622351529"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1098,6 +1098,12 @@
       "path": "system/rounds/P8-scenario.md",
       "type": "system-governance",
       "hash": "2f7a8480f345006dffa095b632b92788c1265b8aba995fa2b75f903e45005ba0"
+    },
+    {
+      "id": "repo:system/rounds/P9-docs-scenario.md",
+      "path": "system/rounds/P9-docs-scenario.md",
+      "type": "system-governance",
+      "hash": "93bc6a1b5b8d1fcc3e86caa72dc3ad0d3e1972cf040dbd9d4402bddbf8c40fad"
     },
     {
       "id": "repo:system/schemas/claim.schema.json",
@@ -1313,7 +1319,7 @@
       "id": "repo:tests/core-obligations.test.mjs",
       "path": "tests/core-obligations.test.mjs",
       "type": "test",
-      "hash": "a2b0eeeacf2a7b1143388c25f8e3f7693d926db9fadff672eb53488082d8aa5e"
+      "hash": "b99c9f3d4a0b2dcb4415d296c588ec5a9194c146d735bbb663cdf9c7a23dde51"
     },
     {
       "id": "repo:tests/escalation.test.mjs",
@@ -1667,13 +1673,13 @@
       "id": "repo:tests/verdict-path.test.mjs",
       "path": "tests/verdict-path.test.mjs",
       "type": "test",
-      "hash": "019f653b54c062b62239ec508bfbd15a84ea6be693f9f6787624900de7881959"
+      "hash": "973b996d4b50c5f36798aa1ce35f41b8a24e5699cfb9496c02c2255d1b0dfb15"
     },
     {
       "id": "repo:tests/verdict-redteam.test.mjs",
       "path": "tests/verdict-redteam.test.mjs",
       "type": "test",
-      "hash": "a73d69b22887d7a5619502d33de6a75dafe246ef432f18f2ee002cc099b98a67"
+      "hash": "387584a745a134ba56f19d3ec42224b704b03e52adf8b2078a32f1ff3c82de76"
     },
     {
       "id": "repo:tests/wiring-modules.test.mjs",
@@ -1691,7 +1697,7 @@
       "id": "repo:tests/workflow.test.mjs",
       "path": "tests/workflow.test.mjs",
       "type": "test",
-      "hash": "c7ad56da8f28cee62078425b79e2a06def389f1ad6cc83daa1078655e62cc39d"
+      "hash": "c0206465b9220358fd915570beef9a91535cfd1f4b36048e787434790ff45e9c"
     },
     {
       "id": "repo:VERSION",
@@ -2959,7 +2965,8 @@
       "P5",
       "P6",
       "P7",
-      "P8"
+      "P8",
+      "P9"
     ],
     "requirements": [
       {
@@ -3131,7 +3138,7 @@
           "T1",
           "T3"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.docs.orientation",
@@ -3139,7 +3146,7 @@
         "tiers": [
           "T3"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.dogfood.c2",

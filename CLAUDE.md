@@ -38,8 +38,10 @@ An **Alembic package** (https://alembic.orz.how), which also works without the p
 
 ## On every session
 
-1. If this repo is a git clone, `git pull --ff-only`. Print `VERSION` before and after.
-2. `bash bootstrap/init.sh` (idempotent). It installs the orz-family builders and creates the workspace.
+1. If this repo is your own git clone of Coursewerk, `git pull --ff-only`. Print `VERSION` before and after.
+2. `bash bootstrap/init.sh` (idempotent). It installs the orz-family builders and creates the workspace. Skip both
+   steps when the harness is not yours to change (a shared or read-only checkout): the builders must then already be
+   installed.
 3. Read the house skills before doing their kind of work: `skills/` (orz-markdown, orz-slides, orz-paged,
    oer-figures, courseguide-standards), plus `docs/authoring-guidelines.md` and
    `docs/writing-checkable-statements.md`.
@@ -59,6 +61,8 @@ has said so:
 - claiming authorship of an edit;
 - reverting a correction;
 - opening a new major version;
+- migrating a v0.12 package;
+- declaring where verification may look on the web;
 - publishing.
 
 **Yours:**

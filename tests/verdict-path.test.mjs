@@ -269,11 +269,11 @@ test("[req.revert.double-confirm] the instructor reverting a correction after se
 test("[req.confirm.single] one batched confirmation clears the evidence obligations of the instructor's facts", (t) => {
   const p = copy(t);
   const ids = evidenceMissing(p).slice(0, 5);
-  confirmUnits(p.root, p.reader, ids, { what: "fact" }, I);
+  confirmUnits(p.root, p.reader, ids, { what: "fact", instructorWords: "I confirm these." }, I);
   for (const id of ids) assert.ok(!evidenceMissing(p).includes(id));
   const recs = readLogText(p.root).trim().split("\n").map((l) => JSON.parse(l)).filter((r) => r.type === "confirmation");
   assert.equal(recs.length, 1, "one confirmation for the batch"); assert.equal(recs[0].payload.weight, "single"); assert.equal(recs[0].payload.units.length, 5);
-  assert.throws(() => confirmUnits(p.root, p.reader, ids, { what: "fact" }, AGENT), /instructor's/);
+  assert.throws(() => confirmUnits(p.root, p.reader, ids, { what: "fact", instructorWords: "I confirm these." }, AGENT), /instructor's/);
 });
 
 // ---- knowledge-based (T1) ----------------------------------------------------------------------------------------
@@ -365,7 +365,7 @@ test("[req.absolute.scope] [req.absolute.review] D29/D30: an open absolute is no
   assert.equal(q.length, 1); assert.equal(q[0].statusClass, "question"); assert.equal(q[0].route, "agent", "the agent rewords it; it reaches the instructor only if it stays open");
   // an edit to the sentence needs a new review; the instructor's one confirmation also clears it
   const p2 = copy(t);
-  confirmUnits(p2.root, p2.reader, [id], { what: "fact" }, I);
+  confirmUnits(p2.root, p2.reader, [id], { what: "fact", instructorWords: "I confirm these." }, I);
   assert.equal(coreObligations(p2.root, p2.reader, "t").filter((f) => f.kind === "absolute-unreviewed" && f.units.includes(id)).length, 0);
 });
 
