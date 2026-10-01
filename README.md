@@ -177,6 +177,9 @@ but it does not replace `check_oer.mjs` and `pack.mjs` until the redesign's work
 `scripts/modules/`, each run in its own process; see `system/REQUIREMENTS.json` for what the redesign must deliver
 and the evidence that closes each requirement.
 
+Spine v2 tools (anchors, parsed assessment guides, approvals): `node scripts/spine.mjs check|migrate|anchor|status|preview|approve|version|steering --root package`.
+A package opts in with `coursewerk.json` (`"spine": 2`); approvals are the instructor's words, recorded in the package's decision log.
+
 ## License
 
 Coursewerk (the harness) is released under the MIT License. Teaching packages use an output license compatible

@@ -366,8 +366,12 @@
       ],
       "statement": "The spine is the course concept map plus, per chapter, a concept map and an assessment guide; all three are parsed.",
       "source": "charter §3; Q1",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/spine-v2.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.spine.anchors",
@@ -377,8 +381,12 @@
       ],
       "statement": "Every objective, concept, key term, misconception and assessment-guide entry carries a stable anchor; the harness mints one where missing; ids are never positional.",
       "source": "D16; skeleton §2",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/spine-v2.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.spine.guide",
@@ -388,8 +396,12 @@
       ],
       "statement": "The assessment guide is parsed into anchored entries, at least one per objective, each with question types, cognitive level and count.",
       "source": "F3; C5",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/spine-v2.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.spine.wellformed",
@@ -399,8 +411,12 @@
       ],
       "statement": "Spine well-formedness is checked deterministically before approval: required sections, unique anchors, objective↔guide entries, prerequisites resolve, no prerequisite cycles, chapter sequence matches the manifest; failures are defects routed to the agent.",
       "source": "F3; skeleton §2",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/spine-v2.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.spine.origin-marking",
@@ -410,8 +426,12 @@
       ],
       "statement": "Each spine item is marked instructor, standardized or proposed-by-agent, and the approval view shows the three differently.",
       "source": "F3",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/spine-v2.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.spine.critique",
@@ -421,8 +441,12 @@
       ],
       "statement": "Spine critique is raised only as questions, within the digest budget, and never blocks.",
       "source": "F3; D3",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/spine-v2.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.approval.record",
@@ -432,8 +456,12 @@
       ],
       "statement": "An approval record covers named spine documents at a content hash and version, names the instructor, time and note, and quotes the instructor's words.",
       "source": "F3; skeleton §5",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/spine-v2.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.approval.scope",
@@ -443,8 +471,12 @@
       ],
       "statement": "There is one approval per chapter (concept map + assessment guide) and one for the course map; a course-map change voids only the chapters whose nodes or order it touches.",
       "source": "D14",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/spine-v2.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.approval.voiding",
@@ -454,8 +486,12 @@
       ],
       "statement": "A covered document whose hash no longer matches voids its approval; a chapter without a valid approval cannot publish.",
       "source": "D14; skeleton §2, §7",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/spine-v2.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.approval.weights",
@@ -465,8 +501,12 @@
       ],
       "statement": "Re-approval has two weights: a light change (every node and anchor kept; no fact, value, name, number, negation, level, question type or count changed) needs a glance confirmation and the work loop continues; anything else is substantive (diff and impact preview; new content pauses); when unsure, substantive.",
       "source": "D21",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/spine-v2.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.approval.preview",
@@ -476,8 +516,12 @@
       ],
       "statement": "The approval view previews what will be built: objectives and, per objective, the number and kind of example and practice questions implied by the guide.",
       "source": "F3",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/spine-v2.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.steering.intake",
@@ -488,8 +532,14 @@
       ],
       "statement": "Steering is asked once (M2): seven questions with defaults inferred from the inputs, accept-all in one action, per-chapter overrides.",
       "source": "F3; D14",
-      "status": "planned",
-      "evidence": {}
+      "status": "deferred",
+      "evidence": {
+        "T1": [
+          "tests/spine-v2.test.mjs"
+        ]
+      },
+      "deferredTo": "P8",
+      "reason": "T1 closed in P3 (tests/spine-v2.test.mjs); T3 needs the agent-in-the-loop workflow (P8)."
     },
     {
       "id": "req.versions.major",
@@ -497,10 +547,14 @@
       "tiers": [
         "T1"
       ],
-      "statement": "A structural change opens a new major version with lineage — of the chapter, of both chapters when an objective moves between them, or of the course when the chapter list or order changes; carried-over units enter it as obligations.",
+      "statement": "A structural change opens a new major version with lineage — of the chapter, of both chapters when an objective moves between them, or of the course when the chapter list or order changes — and the changed scope cannot be re-approved until it does.",
       "source": "D15, D16, D19-F",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/spine-v2.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.versions.minor",
@@ -508,10 +562,14 @@
       "tiers": [
         "T1"
       ],
-      "statement": "A spine revision that keeps every surviving node's identity stays within the version; its impact is traced (new nodes → obligations, removed nodes → units retired, affected units re-verified).",
+      "statement": "A spine revision that keeps every surviving node's identity stays within the version and is re-approved (light: a glance; otherwise full), never forced into a new version.",
       "source": "D16",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/spine-v2.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.units.segmenter",
@@ -613,6 +671,17 @@
       ],
       "statement": "After a change, every affected unit not yet re-verified is an open obligation; nothing reaches a published snapshot stranded.",
       "source": "D19-A; Coherence H2",
+      "status": "planned",
+      "evidence": {}
+    },
+    {
+      "id": "req.versions.carry",
+      "phase": "P5",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Units carried into a new major version enter it as open obligations (re-verify), never as verified.",
+      "source": "D15; split from req.versions.major (P3)",
       "status": "planned",
       "evidence": {}
     },
