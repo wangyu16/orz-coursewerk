@@ -137,7 +137,7 @@ export function confirmUnits(root, reader, ids, { what, instructorWords }, party
   if (what === "fact") {
     const live = liveContradictions(root, new Map(units.map((u) => [u.id, factHash(u.text)])));
     const blocked = ids.filter((id) => live.has(id));
-    if (blocked.length) throw new Error(`${blocked.join(", ")}: a verification contradicts or disputes the current text — answer it through the correction (or its revert), not a confirmation`);
+    if (blocked.length) throw new Error(`${blocked.join(", ")}: a verification contradicts the current text — answer it through the correction (or its revert), not a confirmation`);
   }
   rewriteUnits(root, ids, (u) => {
     if (what === "fact") u.evidence = [...(u.evidence || []), { type: "instructor-confirmation", by: party.name, at, factHash: factHash(text.get(u.id) || "") }];
@@ -177,7 +177,9 @@ function liveContradictions(root, factHashes) {
   if (!fs.existsSync(dir)) return out;
   for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json"))) {
     let r; try { r = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")); } catch { continue; }
-    if (r.kind === "semi" && factHashes.get(r.unit) === r.factHash && ["contradicted", "disputed"].includes(r.admission?.status)) out.add(r.unit);
+    // a contradiction (a defect) must go through its correction or revert; a dispute between sources is the
+    // instructor's to settle, and a confirmation is how they settle it (D12-F)
+    if (r.kind === "semi" && factHashes.get(r.unit) === r.factHash && r.admission?.status === "contradicted") out.add(r.unit);
   }
   return out;
 }

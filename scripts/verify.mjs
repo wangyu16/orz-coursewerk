@@ -45,7 +45,8 @@ const root = opt("--root");
 if (!cmd || !root || !fs.existsSync(root)) fail("usage: verify.mjs <destinations|search|fetch|semi|readmit|absolutes|knowledge|correct|revert|corrections|links|status> --root <package> … (see the header of scripts/verify.mjs)");
 const reader = liveReader(root);
 const inputs = () => { const d = opt("--inputs"); if (!d || !fs.existsSync(d)) fail("--inputs <dir> (the source corpus directory) is required"); return d; };
-const only = () => (opt("--units") ? opt("--units").split(",").filter(Boolean) : null);
+// --units narrows a command to the units named; given but empty, it is a mistake, never "every unit" (P10 dogfood)
+const only = () => { if (!args.includes("--units")) return null; const l = String(opt("--units") || "").split(",").filter(Boolean); if (!l.length) fail("--units was given but names no unit: name them, or leave --units out to cover every unit"); return l; };
 const needsEvidence = () => { const acts = loggedInstructorActs(root); return loadUnits(root, reader).filter((u) => unitNeedsEvidence(u) && !hasAdmittedEvidence(u, acts) && (!only() || only().includes(u.id))); };
 const log = (r) => process.stderr.write(JSON.stringify(r) + "\n");
 
@@ -127,7 +128,7 @@ try {
   }
   if (cmd === "knowledge") {
     const results = await verifyKnowledge(root, reader, { verifier: headlessVerifier(), only: only(), onProgress: log });
-    out({ units: results.length, withConcerns: results.filter((r) => r.concerns).length }); process.exit(0);
+    out({ units: results.length, withConcerns: results.filter((r) => r.concerns).length, costUsd: Number(results.reduce((a, r) => a + (r.costUsd || 0), 0).toFixed(4)) }); process.exit(0);
   }
   if (cmd === "correct") {
     const model = opt("--model") || fail("--model <model id> is required");

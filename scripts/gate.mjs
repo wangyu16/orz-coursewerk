@@ -8,6 +8,9 @@ import path from "node:path";
 import { CHECKPOINTS } from "./lib/skeleton/manifest.mjs";
 import { profileOf, runGate } from "./lib/skeleton/full_gate.mjs";
 import { correctionsToShow } from "./lib/verify/verdicts.mjs";
+import { answeredBases, basisOf } from "./lib/core/digest.mjs";
+import { unitInfoOf } from "./lib/core/workflow.mjs";
+import { liveReader } from "./lib/core/package_reader.mjs";
 
 const args = process.argv.slice(2);
 const opt = (name, fallback) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -25,11 +28,14 @@ try {
   const { findings, approvalProblems, gate, wiring, basis } = runGate(root, { checkpoint, profile, inputsDir: opt("--inputs") || null });
   // corrections the agent applied since they were last shown: listed with their diff at every checkpoint (D19-B)
   const corrections = correctionsToShow(root);
+  // a question the instructor answered (at its current basis) is not open, though the module still raises it
+  const answered = answeredBases(root), info = unitInfoOf(root, liveReader(root)), hashes = new Map([...info].map(([k, v]) => [k, v.contentHash]));
+  const openQuestions = gate.questions.filter((f) => !answered.has(`${f.id}|${basisOf(f, hashes)}`));
   const report = { checkpoint, profile, basis, canPublish: gate.canPublish, corrections,
-    counts: { blocking: gate.blocking.length, questions: gate.questions.length, total: findings.length }, approvalProblems, findings, wiring };
+    counts: { blocking: gate.blocking.length, questions: openQuestions.length, answered: gate.questions.length - openQuestions.length, total: findings.length }, approvalProblems, findings, wiring };
   if (opt("--json")) fs.writeFileSync(opt("--json"), JSON.stringify(report, null, 2) + "\n");
   if (opt("--wiring")) fs.writeFileSync(opt("--wiring"), JSON.stringify(wiring, null, 2) + "\n");
-  console.log(JSON.stringify({ checkpoint, profile, canPublish: gate.canPublish, blocking: gate.blocking.map((f) => `${f.module}/${f.kind}`), approvalProblems, questions: gate.questions.length, corrections: corrections.map((c) => ({ id: c.id, unit: c.unit, diff: c.diff })), modulesRan: wiring.modulesRan }, null, 2));
+  console.log(JSON.stringify({ checkpoint, profile, canPublish: gate.canPublish, blocking: gate.blocking.map((f) => `${f.module}/${f.kind}`), approvalProblems, questions: openQuestions.length, corrections: corrections.map((c) => ({ id: c.id, unit: c.unit, diff: c.diff })), modulesRan: wiring.modulesRan }, null, 2));
   process.exit(gate.canPublish ? 0 : 1);
 } catch (e) {
   const message = `the gate could not run: ${e.message}`;

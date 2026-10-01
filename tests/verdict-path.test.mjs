@@ -6,6 +6,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { spawnSync } from "node:child_process";
 import { liveReader } from "../scripts/lib/core/package_reader.mjs";
 import { beginSession, claimAuthorship } from "../scripts/lib/core/units_index.mjs";
 import { confirmUnits, coreObligations, indexAndStamp, loadUnits } from "../scripts/lib/core/obligations.mjs";
@@ -389,4 +390,22 @@ test("[req.absolute.review] D30: casual usage passes; 'accurate in context' must
   const forged = { ...recs.find((r) => r.unit === a), unit: b, dispatch: "d-forgedabsolute00" };
   fs.writeFileSync(path.join(p.root, "metadata", "verification", "d-forgedabsolute00.json"), JSON.stringify(forged));
   assert.equal(waiting(), n0 - 1);
+});
+
+// ---- found by the P10 dogfood ---------------------------------------------------------------------------------------
+test("[req.verdict.semi-mechanical] P10: a year one pinned text supports and another contradicts is a question, not admitted evidence and never a defect", () => {
+  const A = "The law of mass action was formulated by Cato Maximilian Guldberg and Peter Waage in 1864, from studies of reaction rates.";
+  const B = "Guldberg and Waage (1865), building on earlier ideas, proposed the law of mass action for reaction rates.";
+  const texts = new Map([["a", A], ["b", B]]);
+  const claims = semiClaims("Guldberg and Waage formulated the law of mass action in 1864 from studies of reaction rates.");
+  const raw = JSON.stringify({ nonce: "n", claims: [{ claim: 1, verdict: "supported", quotes: [{ passage: 1, text: "formulated by Cato Maximilian Guldberg and Peter Waage in 1864" }] }] });
+  const r = admit({ claims, passages: [{ n: 1, source: "a", text: A }], texts, raw, nonce: "n" });
+  assert.equal(r.status, "disputed"); assert.equal(r.perClaim[0].conflicts[0].sourceId, "b");
+  assert.equal(admit({ claims, passages: [{ n: 1, source: "a", text: A }], texts: new Map([["a", A]]), raw, nonce: "n" }).status, "admitted", "with no other source, admitted");
+});
+
+test("[req.verdict.semi-mechanical] P10: markup is not a name; an empty --units is refused, never 'every unit'", () => {
+  assert.deepEqual(namesIn('flowchart A["Too few products<br/>Shift FORWARD"] --> B'), []);
+  const r = spawnSync(process.execPath, [path.join(HERE, "..", "scripts", "verify.mjs"), "knowledge", "--root", C2, "--units", ""], { encoding: "utf8" });
+  assert.notEqual(r.status, 0); assert.match(r.stderr, /names no unit/);
 });

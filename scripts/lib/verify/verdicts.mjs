@@ -119,7 +119,7 @@ export async function verifyKnowledge(root, reader, { verifier, only = null, onP
     const bundle = knowledgeBundle(u.text);
     const answer = await verifier(bundle.prompt);
     const record = recordDispatch(root, { kind: "knowledge", unit: u.id, factHash: factHash(u.text), contentHash: u.locator.contentHash, bundle, answer });
-    results.push({ unit: u.id, dispatch: record.dispatch, concerns: knowledgeConcerns(record, u.text).length });
+    results.push({ unit: u.id, dispatch: record.dispatch, concerns: knowledgeConcerns(record, u.text).length, costUsd: answer.costUsd ?? null });
     onProgress(results.at(-1));
   }
   return results;

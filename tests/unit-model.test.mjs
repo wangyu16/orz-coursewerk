@@ -4,6 +4,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+const HERE = path.dirname(fileURLToPath(import.meta.url));
 import { classifyUnit, segmentDeliverable, uncoveredLines, unitHash } from "../scripts/lib/core/segment.mjs";
 import { beginSession, claimAuthorship, indexUnits, readSidecar, unindexedFindings } from "../scripts/lib/core/units_index.mjs";
 import { liveReader } from "../scripts/lib/core/package_reader.mjs";
@@ -211,4 +213,22 @@ test("[req.units.identity] the study_pairs edit classes on units: null edits kee
     else assert.equal(moved, 1, `${name}: exactly one unit's content hash moved`);
     assert.equal(r.summary.new + r.summary.retired, 0, `${name}: nothing new, nothing retired`);
   }
+});
+
+test("[req.units.identity] P10 scenario: twelve small edits to look-alike answers, then their corrections, keep every unit's id and spine links", async (t) => {
+  const { liveReader } = await import("../scripts/lib/core/package_reader.mjs");
+  const { indexUnits, readSidecar, beginSession } = await import("../scripts/lib/core/units_index.mjs");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-identity-")); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  fs.cpSync(path.join(HERE, "fixtures", "c2-chemistry-v2", "package"), dir, { recursive: true });
+  const rel = "practice/le-chatelier.md", f = path.join(dir, rel);
+  const before = readSidecar(dir, rel).units.map((u) => [u.id, u.spineNodes]);
+  const pairs = [["shifts the equilibrium toward that side", "shifts the equilibrium away from that side"], ["heat behaves as a **product**", "heat behaves as a **reactant**"],
+    ["shifts toward the reactant side", "shifts toward the product side"], ["increases the yield for an endothermic reaction", "decreases the yield for an endothermic reaction"],
+    ["with **fewer** moles of gas", "with **more** moles of gas"], ["so neither side is favoured", "so the product side is favoured"],
+    ["changes no partial pressure", "raises every partial pressure"], ["by the same factor", "by different factors"]];
+  const swap = (from, to) => { let x = fs.readFileSync(f, "utf8"); for (const pr of pairs) { const [a, b] = from === 0 ? pr : [pr[1], pr[0]]; const re = new RegExp(a.split(" ").map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("\\s+")); x = x.replace(re, b); } fs.writeFileSync(f, x); };
+  swap(0); indexUnits(dir, liveReader(dir));                                     // the instructor's edits
+  beginSession(dir, liveReader(dir), AGENT); swap(1); const r = indexUnits(dir, liveReader(dir), { as: "agent", party: AGENT }); // the corrections
+  assert.equal(r.summary.splits + r.summary.merges + r.summary.retired, 0, JSON.stringify(r.summary));
+  assert.deepEqual(readSidecar(dir, rel).units.map((u) => [u.id, u.spineNodes]), before, "same ids, same spine links");
 });

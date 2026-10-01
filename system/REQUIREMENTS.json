@@ -641,14 +641,15 @@
       ],
       "statement": "A change with no recorded agent write is an edit of unknown authorship: checked like agent text and raised once in the digest (accept as mine / name the author / revert).",
       "source": "D20",
-      "status": "deferred",
+      "status": "closed",
       "evidence": {
         "T1": [
           "tests/workflow.test.mjs"
+        ],
+        "T3": [
+          "system/rounds/P10-dogfood.md"
         ]
-      },
-      "deferredTo": "P10",
-      "reason": "T1 closed in P8 (the gate raises the question from the index at every checkpoint); T3 — the harness digest carrying it to the instructor in a live session — is re-run in the P10 dogfood after the fix the P8 scenario prompted."
+      }
     },
     {
       "id": "req.units.classifier",
@@ -1084,8 +1085,8 @@
           "tests/verdict-path.test.mjs"
         ]
       },
-      "deferredTo": "P10",
-      "reason": "T1 closed; the P8 scenario did not exercise it (system/rounds/P8-scenario.md, \"Not exercised\"): T3 in the P10 dogfood."
+      "deferredTo": "P11",
+      "reason": "T1 closed (tests/verdict-path.test.mjs). No harness auto-correction occurred in the P10 live runs: the agent fixes its own drafts first (D31), and a correction needs an anchored, uncontested contradiction (two sources for instructor text). The live case is the study planted-fault runs (P11, K4); see system/rounds/P10-dogfood.md."
     },
     {
       "id": "req.revert.double-confirm",
@@ -1191,14 +1192,15 @@
       ],
       "statement": "The digest clusters questions by root cause, ranks them, caps them per batch, defers overflow (never drops it) and shows deferred counts; the list of corrections sits outside the budget.",
       "source": "skeleton §3; D19",
-      "status": "deferred",
+      "status": "closed",
       "evidence": {
         "T1": [
           "tests/workflow.test.mjs"
+        ],
+        "T3": [
+          "system/rounds/P10-dogfood.md"
         ]
-      },
-      "deferredTo": "P10",
-      "reason": "T1 closed; the P8 scenario did not exercise it (system/rounds/P8-scenario.md, \"Not exercised\"): T3 in the P10 dogfood."
+      }
     },
     {
       "id": "req.answers.persist",
@@ -1209,14 +1211,15 @@
       ],
       "statement": "An answered question is never asked again while its basis is unchanged.",
       "source": "skeleton §3; F2",
-      "status": "deferred",
+      "status": "closed",
       "evidence": {
         "T1": [
           "tests/workflow.test.mjs"
+        ],
+        "T3": [
+          "system/rounds/P10-dogfood.md"
         ]
-      },
-      "deferredTo": "P10",
-      "reason": "T1 closed; the P8 scenario did not exercise it (system/rounds/P8-scenario.md, \"Not exercised\"): T3 in the P10 dogfood."
+      }
     },
     {
       "id": "req.loop.bounds",
@@ -1362,8 +1365,15 @@
       ],
       "statement": "The C2 chemistry package is migrated and taken end to end to a publish decision, with a report against the v0.12.0 baseline in which every false positive is fixed or explained.",
       "source": "implementation plan P10",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T2": [
+          "system/rounds/P10-dogfood.md"
+        ],
+        "T3": [
+          "system/rounds/P10-dogfood.md"
+        ]
+      }
     },
     {
       "id": "req.ms3.invisible",

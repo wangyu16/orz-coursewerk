@@ -221,7 +221,10 @@ test("[req.units.external-edit] an edit of unknown authorship stays a digest que
   assert.equal(e.length, 1, "in the digest at every checkpoint, not only at the index run that found it"); assert.equal(e[0].recommendation, "accept as mine");
   assert.equal(ask().length, 1, "and raised once");
   assert.throws(() => claimAuthorship(p.root, { units: e[0].units }, I), /quotes the instructor's words/);
-  claimAuthorship(p.root, { units: e[0].units, instructorWords: "That edit is mine." }, I);
+  // answering the digest entry "accept as mine" records the authorship itself (P10 dogfood)
+  const g = runGate(p.root, { inputsDir: p.inputs });
+  const d = buildDigest(p.root, g.findings, unitInfoOf(p.root, p.reader));
+  answerDigest(p.root, d, { answers: { [d.entries.find((x) => x.kind === "unit-unknown-authorship").key]: "accept as mine" }, instructorWords: "That edit is mine.", reader: p.reader }, I);
   assert.equal(ask().length, 0);
   assert.ok(readLogText(p.root).includes('"instructorWords":"That edit is mine."'));
 });
@@ -318,4 +321,21 @@ test("[req.docs.migration] the agent's spine proposals and critique are recorded
   const view = spine("preview", "--root", p.root, "--chapter", "le-chatelier").stdout;
   assert.match(view, /PROPOSED BY THE AGENT/); assert.match(view, /Questions for you[\s\S]*catalyst objective move to chapter 1/);
   assert.match(readLogText(p.root), /"event":"spine-proposed"[\s\S]*"event":"spine-critique"/);
+});
+
+// ---- found by the P10 digest scenario -------------------------------------------------------------------------------
+test("[req.digest.budget] the digest's size is the instructor's; 'later' defers an entry without answering it", (t) => {
+  const p = copy(t);
+  const r = cli("digest", "--root", p.root, "--cap", "50");
+  assert.equal(r.status, 1); assert.match(r.stderr, /instructor's setting/);
+  assert.match(cli("digest-cap", "--root", p.root, "--set", "3", "--name", I.name).stderr, /quotes their words/);
+  assert.equal(cli("digest-cap", "--root", p.root, "--set", "3", "--name", I.name, "--words", "Three at a time.").status, 0);
+  const unitInfo = new Map(Array.from({ length: 6 }, (_, i) => [`u-study-guide-le-chatelier-x-${i}`, { deliverable: "study-guide/le-chatelier.md", contentHash: "a".repeat(64) }]));
+  const fs6 = Array.from({ length: 6 }, (_, i) => q(i));
+  const d = buildDigest(p.root, fs6, unitInfo, { cap: 3 });
+  assert.equal(d.entries.length, 3); assert.equal(d.deferred.count, 3);
+  answerDigest(p.root, d, { answers: { [d.entries[0].key]: "later" }, instructorWords: "Later." }, I);
+  const d2 = buildDigest(p.root, fs6, unitInfo, { cap: 6 });
+  const e = d2.entries.find((x) => x.key === d.entries[0].key);
+  assert.ok(e, "a deferred entry is still asked"); assert.equal(e.deferredBefore, true, "and marked as owed");
 });

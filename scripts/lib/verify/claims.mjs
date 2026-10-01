@@ -45,7 +45,7 @@ export const folded = (t) => fold(t).s;
 const SCI = /([-−–]?\d+(?:\.\d+)?)\s*(?:\\times|×|x)\s*10\s*\^\s*\{?\s*([-−–]?\d+)\s*\}?/g;
 const sciPlain = (t) => t.replace(SCI, (_, a, b) => String(Number(a.replace(/[−–]/, "-")) * 10 ** Number(b.replace(/[−–]/, "-"))));
 export function proseOf(text) {
-  return plainForQuantities(sciPlain(clean(text).replace(/[\u2010-\u2015](?=\s*\d)/g, "-")))
+  return plainForQuantities(sciPlain(clean(text).replace(/<br\s*\/?>/gi, ". ").replace(/<\/?[a-zA-Z][^>]*>/g, " ").replace(/[\u2010-\u2015](?=\s*\d)/g, "-")))
     .replace(/\\ce\s*/g, " ").replace(/\\[a-zA-Z]+/g, " ")
     .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/[*_`#>]/g, " ")
     .replace(/\s+/g, " ").trim();

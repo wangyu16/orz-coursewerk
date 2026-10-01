@@ -119,7 +119,9 @@ A substantial rewrite of a unit makes it a new unit: link it again after you rew
 - an answer whose question changed;
 - a source that disagrees with the blind reviewer. Show both sides and recommend one.
 
-Answering "confirm" or "still correct" records the instructor's confirmation.
+Answering "confirm" or "still correct" records the instructor's confirmation. An instructor who says "later" defers
+an entry: record `--choice later`. It stays open and comes back first, marked as owed. The digest's size is the
+instructor's setting (`coursewerk.mjs digest-cap`); the overflow waits for the next digest and is never dropped.
 
 **Pacing.** On a single, rate-limited subscription, keep batches small. Checkpoint when the session's budget is
 spent; the records let the next session resume.

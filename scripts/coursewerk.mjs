@@ -6,7 +6,8 @@
 //   node scripts/coursewerk.mjs assemble --root <pkg> --chapter <slug> --name <instructor> --words "<their words>"
 //   node scripts/coursewerk.mjs back-to-draft --root <pkg> --chapter <slug> --name <instructor> --words "…"
 //   node scripts/coursewerk.mjs approve  --root <pkg> (--chapter <slug> | --course) [--glance] --name <instructor> --words "…"
-//   node scripts/coursewerk.mjs digest   --root <pkg> [--inputs <dir>] [--cap 10] [--deliver --model <id>]   M4
+//   node scripts/coursewerk.mjs digest   --root <pkg> [--inputs <dir>] [--deliver --model <id>]               M4 (size: the instructor's digest-cap, default 10)
+//   node scripts/coursewerk.mjs digest-cap --root <pkg> --set <n> --name <instructor> --words "…"
 //   node scripts/coursewerk.mjs recommend --root <pkg> --entry <n> --text "<what you recommend>" --model <id>   your recommendation, before M4
 //   node scripts/coursewerk.mjs answer   --root <pkg> (--entry <n> --choice "<choice>" | --accept-all) --name <instructor> --words "…"
 //   node scripts/coursewerk.mjs publish  --root <pkg> [--inputs <dir>] [--chapters a,b] [--include-drafts] --name <instructor> --words "…"   M6
@@ -20,7 +21,7 @@ import { chapterStates, eligibility, latestPublish, publishDecision, transition,
 import { answerDigest, buildDigest, deliverDigest, recommendDigest, DEFAULT_CAP } from "./lib/core/digest.mjs";
 import { runGate } from "./lib/skeleton/full_gate.mjs";
 import { correctionsToShow, revertCorrection } from "./lib/verify/verdicts.mjs";
-import { readConfig } from "./lib/records/config.mjs";
+import { readConfig, writeConfig } from "./lib/records/config.mjs";
 import { appendLogRecord, readLogText } from "./lib/records/log.mjs";
 import { recordFile } from "./lib/records/paths.mjs";
 
@@ -31,7 +32,7 @@ const flag = (n) => args.includes(n);
 const refuse = (m, next) => { console.error(`${cmd}: ${m}${next ? `\nnext: ${next}` : ""}`); process.exit(1); };
 const out = (x) => console.log(JSON.stringify(x, null, 2));
 const root = opt("--root");
-const USAGE = "usage: coursewerk.mjs <status|assemble|back-to-draft|approve|digest|recommend|answer|publish|revert|interrupt> --root <package> … (see the header of scripts/coursewerk.mjs)";
+const USAGE = "usage: coursewerk.mjs <status|assemble|back-to-draft|approve|digest|digest-cap|recommend|answer|publish|revert|interrupt> --root <package> … (see the header of scripts/coursewerk.mjs)";
 if (!cmd || !root || !fs.existsSync(root)) { console.error(USAGE); process.exit(2); }
 try { if (readConfig(root).spine !== 2) refuse("this is a v0.12 package (no `\"spine\": 2` in metadata/coursewerk.json)", "migrate the spine first: node scripts/spine.mjs migrate --root <pkg>"); }
 catch (e) { refuse(e.message); }
@@ -81,10 +82,20 @@ try {
     const r = recordApproval(root, reader, chapters, { chapter: ch, glance: flag("--glance"), instructorWords: words }, party);
     out({ approved: ch || "course", logged: r.seq, state: ch ? chapterStates(root, reader)[ch].state : undefined }); process.exit(0);
   }
+  if (cmd === "digest-cap") {
+    // the digest's size protects the instructor's attention: it is theirs to set, not the agent's (P10 scenario)
+    const n = Number(opt("--set"));
+    if (!Number.isInteger(n) || n < 1 || n > 50) refuse("how many questions per digest?", "--set <1–50>");
+    const { party, words } = instructor();
+    writeConfig(root, { ...readConfig(root), digestCap: n });
+    const r = appendLogRecord(root, { type: "steering", party, payload: { event: "digest-cap", cap: n, instructorWords: words } });
+    out({ digestCap: n, logged: r.seq }); process.exit(0);
+  }
   if (cmd === "digest") {
+    if (args.includes("--cap")) refuse("the digest's size is the instructor's setting, not a flag", 'the instructor sets it: node scripts/coursewerk.mjs digest-cap --set <n> --name … --words "…"');
     const g = runGate(root, { inputsDir: opt("--inputs") || null });
     const info = unitInfoOf(root, reader);
-    const d = buildDigest(root, g.findings, info, { cap: Number(opt("--cap") || DEFAULT_CAP), corrections: correctionsToShow(root) });
+    const d = buildDigest(root, g.findings, info, { cap: Number(readConfig(root).digestCap || DEFAULT_CAP), corrections: correctionsToShow(root) });
     // the agent's own recommendations, attached before delivery, carry over to the same entries
     let prev = null; try { prev = JSON.parse(fs.readFileSync(recordFile(root, DIGEST_FILE), "utf8")); } catch { prev = null; }
     for (const e of d.entries) { const p = prev?.entries?.find((x) => x.key === e.key && String(x.recommendedBy || "").startsWith("agent")); if (p) { e.recommendation = p.recommendation; e.recommendedBy = p.recommendedBy; } }

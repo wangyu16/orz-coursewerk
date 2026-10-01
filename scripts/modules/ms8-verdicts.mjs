@@ -51,7 +51,8 @@ function run(s) {
   for (const l of log.filter((x) => x.type === "dispatch" && x.payload?.dispatch)) if (!byDispatch.has(l.payload.dispatch))
     out.push({ kind: "dispatch-record-missing", units: units.has(l.payload.unit) ? [l.payload.unit] : [], evidence: { type: "rule", rule: "every logged dispatch keeps its record in metadata/verification/", dispatch: l.payload.dispatch } });
 
-  for (const r of records) {
+  const askedExercise = new Set(); // one question per unit, however many records read it as exercise data
+  for (const r of [...records].sort((x, y) => String(y.at).localeCompare(String(x.at)))) {
     const u = units.get(r.unit);
     if (!u || r.factHash !== factHash(u.text) || !dispatchLogged(r, log)) continue;
     if (r.kind === "absolute") {
@@ -71,7 +72,8 @@ function run(s) {
     const a = rederive(r, plain);
     if (!a || diverged(u)) continue;
     // exercise data no source can show: the instructor confirms it once, so it comes to the digest (P9 scenario)
-    if (a.perClaim.length && a.perClaim.every((c) => c.status === "hypothetical") && !(u.evidence || []).some((e) => e.type === "instructor-confirmation" && e.factHash === factHash(u.text)))
+    const settled = (u.evidence || []).some((e) => e.factHash === factHash(u.text) && (e.type === "instructor-confirmation" || (e.type === "quote-verified" && e.claimsHash === claimsHash(u.text))));
+    if (a.perClaim.length && a.perClaim.every((c) => c.status === "hypothetical") && !settled && !askedExercise.has(u.id) && askedExercise.add(u.id))
       out.push({ kind: "exercise-data-confirm", units: [u.id], evidence: { type: "judgment", note: `${u.id}: the values here read as invented exercise data, which no source can show — confirm them as teaching hypotheticals?`, quote: r.claims?.map((c) => c.text).join(" | ") || "", dispatch: r.dispatch }, recommendation: "confirm" });
     for (const c of a.perClaim) {
       if (c.status === "contradicted")
@@ -96,8 +98,9 @@ function run(s) {
         else if (!checksCurrentClaims(r, u.text)) problem = "its dispatch checked other claims than the unit states";
         else if (plain.size) {
           const a = rederive(r, plain);
-          if (a?.status !== "admitted") problem = "its dispatch does not admit when re-derived";
-          else if (!sameQuotes(e.quotes, a.perClaim.flatMap((c) => c.quotes || []))) problem = "its quotes are not the ones its dispatch admitted";
+          // a dispute between pinned sources is a question (fact-disputed, raised above), never a defect (D12-F)
+          if (a?.status !== "admitted" && a?.status !== "disputed") problem = "its dispatch does not admit when re-derived";
+          else if (!sameQuotes(e.quotes, a.perClaim.flatMap((c) => (c.status === "supported" || c.status === "disputed" ? c.quotes || [] : [])))) problem = "its quotes are not the ones its dispatch admitted";
         }
       }
       if (problem) out.push({ kind: "evidence-unsupported", units: [u.id], evidence: { type: "rule", rule: "quote-verified evidence re-derives from a logged dispatch (or a logged correction) of the unit's current claims", dispatch: e.dispatch ?? null, problem } });

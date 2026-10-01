@@ -1,0 +1,351 @@
+{
+  "schemaVersion": 1,
+  "planId": "13f44d18370756272076df7ae8ae9700f45ed69918a81ea10ff4e8b613006bbf",
+  "baseRef": "HEAD",
+  "baseTip": "a01c578a7bb7bf18dfddc7dce54ac6600c0ef507",
+  "baseCommit": "a01c578a7bb7bf18dfddc7dce54ac6600c0ef507",
+  "reviewedHead": "a01c578a7bb7bf18dfddc7dce54ac6600c0ef507",
+  "changed": [
+    "PROCEDURE.md",
+    "scripts/coursewerk.mjs",
+    "scripts/gate.mjs",
+    "scripts/lib/core/digest.mjs",
+    "scripts/lib/core/obligations.mjs",
+    "scripts/lib/core/units_index.mjs",
+    "scripts/lib/verify/admission.mjs",
+    "scripts/lib/verify/claims.mjs",
+    "scripts/lib/verify/verdicts.mjs",
+    "scripts/modules/ms8-verdicts.mjs",
+    "scripts/verify.mjs",
+    "system/REQUIREMENTS.json",
+    "system/rounds/P10-dogfood.md",
+    "tests/unit-model.test.mjs",
+    "tests/verdict-path.test.mjs",
+    "tests/verdict-redteam.test.mjs",
+    "tests/workflow.test.mjs"
+  ],
+  "requiredReview": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "docs/coherence-index.md",
+    "format-contracts/deliverables.md",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/coursewerk.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/gate.mjs",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/core/digest.mjs",
+    "scripts/lib/core/obligations.mjs",
+    "scripts/lib/core/units_index.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/verify/admission.mjs",
+    "scripts/lib/verify/claims.mjs",
+    "scripts/lib/verify/verdicts.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/modules/ms8-verdicts.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/revision_impact.mjs",
+    "scripts/verify.mjs",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "system/REQUIREMENTS.json",
+    "system/rounds/P10-dogfood.md",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site.test.mjs",
+    "tests/unit-model.test.mjs",
+    "tests/verdict-path.test.mjs",
+    "tests/verdict-redteam.test.mjs",
+    "tests/workflow.test.mjs"
+  ],
+  "reviewed": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "docs/coherence-index.md",
+    "format-contracts/deliverables.md",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/coursewerk.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/gate.mjs",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/core/digest.mjs",
+    "scripts/lib/core/obligations.mjs",
+    "scripts/lib/core/units_index.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/verify/admission.mjs",
+    "scripts/lib/verify/claims.mjs",
+    "scripts/lib/verify/verdicts.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/modules/ms8-verdicts.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/revision_impact.mjs",
+    "scripts/verify.mjs",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "system/REQUIREMENTS.json",
+    "system/rounds/P10-dogfood.md",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site.test.mjs",
+    "tests/unit-model.test.mjs",
+    "tests/verdict-path.test.mjs",
+    "tests/verdict-redteam.test.mjs",
+    "tests/workflow.test.mjs"
+  ],
+  "impactedClaims": [
+    "claim.accessibility.floor",
+    "claim.authorship.accountable",
+    "claim.carriers.honest-portability",
+    "claim.carriers.three-shapes",
+    "claim.coherence.anchors",
+    "claim.coherence.claims",
+    "claim.coherence.index-fresh",
+    "claim.coherence.prerequisites",
+    "claim.coherence.revisions",
+    "claim.control.coverage",
+    "claim.control.overrides",
+    "claim.format.contracts",
+    "claim.git.visible-edits",
+    "claim.language.editorial",
+    "claim.media.decision",
+    "claim.provenance.complete",
+    "claim.release.fail-closed",
+    "claim.release.measured-vs-declared",
+    "claim.review.blind-bundle",
+    "claim.review.key-facts",
+    "claim.revision.propagation",
+    "claim.rights.verified",
+    "claim.source.comparison",
+    "claim.trust.consistency",
+    "claim.trust.immutable",
+    "claim.website.published",
+    "claim.website.showcase"
+  ],
+  "testResults": [
+    {
+      "path": "tests/anchors.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/assurance.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-2.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-3.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-4.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/blind_bundle.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/carriers.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-control.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-revision.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-semantic.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/classify.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/coherence-claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/escalation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/evidence-tools.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/fingerprint.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/immutable.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/index-freshness.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/integration-study-pairs.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/key-fact-bindings.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/overrides.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate-cli.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/qa.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/range.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/reviews.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/semantic-index-artifact.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/site.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/spine.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/terms.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/units.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/unverifiable_quotation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/usage-e2e.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/wiring.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/*.test.mjs (full suite 726/726)",
+      "status": "passed"
+    }
+  ],
+  "attestation": "P10 dogfood (system/rounds/P10-dogfood.md) and its fixes: MS8 exercise-data questions once per open unit; an empty --units refused; knowledge prints cost; 'accept as mine' answers record authorship; a year contradicted by another pinned text is disputed (contestedYear; D12-F) and disputed evidence is a question, never an evidence-unsupported defect; confirmations refused only on contradictions; 'keep' answers on fact-disputed confirm; proseOf strips markup (br = boundary); the digest cap is the instructor's setting (coursewerk.mjs digest-cap; --cap refused); 'later' answers are recorded deferrals; unit matching takes in-place edits before splits/merges, constrains splits and merges to their place, inherits spine links; the gate counts only open questions. PROCEDURE documents digest-cap and 'later'. Register: external-edit, digest.budget, answers.persist and dogfood.c2 closed (T3); autocorrect.shown deferred to P11 (study). Suite 726/726.",
+  "generatedIndexHash": "a53ee612720595c561f98c25a2aeb6a330803a9b6f05c86fbf5727e32705aa39",
+  "acceptedAt": "2026-10-01T23:32:36.833Z"
+}

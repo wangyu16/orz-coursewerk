@@ -12,6 +12,7 @@ import { appendLogRecord, parseLog, readLogText, verifyLog } from "../records/lo
 import { recordFile } from "../records/paths.mjs";
 import { chapterOfFinding } from "./workflow.mjs";
 import { confirmUnits } from "./obligations.mjs";
+import { claimAuthorship } from "./units_index.mjs";
 
 export const DEFAULT_CAP = 10;
 const STATE = "metadata/digest/state.json";
@@ -32,7 +33,15 @@ export function answeredBases(root) {
   const text = readLogText(root);
   const out = new Map();
   if (verifyLog(text).length) return out;
-  for (const r of parseLog(text)) if (r.type === "answer" && r.party?.role === "instructor") for (const a of r.payload?.answers || []) out.set(`${a.finding}|${a.basis}`, { choice: a.choice, seq: r.seq });
+  for (const r of parseLog(text)) if (r.type === "answer" && r.party?.role === "instructor") for (const a of r.payload?.answers || []) if (!LATER.test(a.choice)) out.set(`${a.finding}|${a.basis}`, { choice: a.choice, seq: r.seq });
+  return out;
+}
+/** "Later" is a deferral by the instructor, not an answer: the entry stays open and comes back first, marked as owed. */
+const LATER = /^\s*later\b/i;
+function laterKeys(root) {
+  const text = readLogText(root), out = new Set();
+  if (verifyLog(text).length) return out;
+  for (const r of parseLog(text)) if (r.type === "answer" && r.party?.role === "instructor") for (const a of r.payload?.answers || []) if (LATER.test(a.choice) && a.entry) out.add(a.entry);
   return out;
 }
 
@@ -55,7 +64,7 @@ export function buildDigest(root, findings, unitInfo, { cap = DEFAULT_CAP, corre
     const ch = chapterOfFinding(f, deliverable); for (const x of [].concat(ch || "package")) c.chapters.add(x);
     clusters.set(k, c);
   }
-  const prev = new Set(readState(root).deferred || []);
+  const prev = new Set([...(readState(root).deferred || []), ...laterKeys(root)]);
   const ranked = [...clusters.values()].sort((a, b) =>
     (prev.has(b.key) - prev.has(a.key)) || (b.findings.length - a.findings.length) || (b.units.size - a.units.size) || a.key.localeCompare(b.key));
   const shown = ranked.slice(0, cap), deferred = ranked.slice(cap);
@@ -101,7 +110,9 @@ export function recommendDigest(digest, n, text, party) {
 }
 
 /** Answers that settle an obligation as well as a question record the instructor's confirmation too. */
-const CONFIRMS = { "exercise-data-confirm": { re: /^\s*confirm/i, what: "fact" }, "answer-still-correct": { re: /^\s*still correct/i, what: "still-correct" } };
+const CONFIRMS = { "exercise-data-confirm": { re: /^\s*confirm/i, what: "fact" }, "answer-still-correct": { re: /^\s*still correct/i, what: "still-correct" },
+  "fact-disputed": { re: /^\s*keep/i, what: "fact" } }; // sources disagree: "keep as written" is the instructor's confirmation
+const CLAIMS = { "unit-unknown-authorship": /^\s*accept as mine/i }; // an "accept as mine" answer records the instructor's authorship
 
 export function answerDigest(root, digest, { answers = {}, acceptAll = false, instructorWords, reader = null }, party) {
   if (party?.role !== "instructor") throw new Error("only the instructor answers a question; the agent never answers one on the instructor's behalf");
@@ -121,6 +132,10 @@ export function answerDigest(root, digest, { answers = {}, acceptAll = false, in
       if (!reader) throw new Error("this answer confirms units: pass the package reader");
       confirmUnits(root, reader, ids, { what: rule.what, instructorWords }, party);
     }
+  }
+  for (const [kind, re] of Object.entries(CLAIMS)) {
+    const ids = [...new Set(digest.entries.filter((e) => e.kind === kind && recorded.some((r) => r.entry === e.key && re.test(r.choice))).flatMap((e) => e.units))];
+    if (ids.length) claimAuthorship(root, { units: ids, instructorWords }, party);
   }
   return recorded;
 }

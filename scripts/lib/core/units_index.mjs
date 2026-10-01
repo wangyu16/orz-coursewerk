@@ -45,15 +45,29 @@ export function matchUnits(oldUnits, segs) {
   const segTokens = segs.map((s) => tokensOf(s.text)), segHash = segs.map((s) => unitHash(s.text));
   // 1. exact text, wherever it moved
   segs.forEach((s, i) => { const o = oldUnits.find((u) => !usedOld.has(u.id) && u.locator.contentHash === segHash[i]); if (o) { assigned.set(i, o); usedOld.add(o.id); usedNew.add(i); } });
+  // 1b. edits in place: same position, form and section, real overlap — the commonest edit, so it is matched before
+  // splits and merges, which otherwise pair look-alike answers across a section (P10 scenario)
+  segs.forEach((s, i) => {
+    if (usedNew.has(i)) return;
+    const o = oldUnits.find((u) => !usedOld.has(u.id) && u.form === s.form && u.locator.section === s.section && u.locator.ordinal === i && jaccard(u.tokens || [], segTokens[i]) >= 0.3);
+    // …unless the old unit lives on across this segment and the next: that is a split, left to step 2
+    const splitHere = o && segs[i + 1] && !usedNew.has(i + 1) && segs[i + 1].section === s.section && contained(segTokens[i + 1], o.tokens || []) >= 0.6 && contained(segTokens[i], o.tokens || []) >= 0.6 && contained(o.tokens || [], [...segTokens[i], ...segTokens[i + 1]]) >= 0.6;
+    if (o && !splitHere) { assigned.set(i, o); usedOld.add(o.id); usedNew.add(i); }
+  });
   // 2. splits and merges, before rewordings (a split's first half would otherwise pass as a rewording)
   const splits = [], merges = [];
   for (const u of oldUnits.filter((x) => !usedOld.has(x.id))) {
-    const parts = segs.map((_, i) => i).filter((i) => !usedNew.has(i) && segs[i].section === u.locator.section && segTokens[i].length && contained(segTokens[i], u.tokens || []) >= 0.6);
+    const cand = segs.map((_, i) => i).filter((i) => !usedNew.has(i) && segs[i].section === u.locator.section && segs[i].form === u.form && segTokens[i].length && contained(segTokens[i], u.tokens || []) >= 0.6);
+    // a split's pieces are consecutive units at the old unit's place, not look-alikes elsewhere in the section
+    // (many short answers share their words: P10 scenario)
+    const near = cand.filter((i) => Math.abs(i - u.locator.ordinal) <= cand.length + 1);
+    const parts = near.filter((i, k) => k === 0 || i === near[k - 1] + 1 || i === near[k - 1] + 2);
     if (parts.length >= 2 && contained(u.tokens || [], parts.flatMap((i) => segTokens[i])) >= 0.6) { splits.push({ from: u.id, into: parts }); usedOld.add(u.id); parts.forEach((i) => usedNew.add(i)); }
   }
   segs.forEach((s, i) => {
     if (usedNew.has(i)) return;
-    const parents = oldUnits.filter((u) => !usedOld.has(u.id) && u.locator.section === s.section && (u.tokens || []).length && contained(u.tokens || [], segTokens[i]) >= 0.6);
+    const parents = oldUnits.filter((u) => !usedOld.has(u.id) && u.locator.section === s.section && (u.tokens || []).length && contained(u.tokens || [], segTokens[i]) >= 0.6)
+      .filter((u, _, all) => all.some((v) => v !== u && Math.abs(v.locator.ordinal - u.locator.ordinal) === 1) && Math.abs(u.locator.ordinal - i) <= 2); // adjacent, at this place
     if (parents.length >= 2) { merges.push({ into: i, from: parents.map((u) => u.id) }); parents.forEach((u) => usedOld.add(u.id)); usedNew.add(i); }
   });
   // 3. rewordings: same section and form, token overlap ≥ 0.5
@@ -128,6 +142,8 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
         else { origin = origins[hash] || { kind: "unknown" }; if (origin.kind === "unknown") summary.unknown++; }
       }
       const split = m.splits.find((x) => x.into.includes(i)), merge = m.merges.find((x) => x.into === i);
+      // the pieces of a split, and a merge, keep the spine links of what they came from
+      const inherited = !prev ? [...new Set([split?.from, ...(merge?.from || [])].filter(Boolean).flatMap((id) => old.find((o) => o.id === id)?.spineNodes || []))] : null;
       const id = prev?.id || mintId(rel, s.section, taken);
       if (prev && prev.locator.contentHash === hash) summary.kept++; else if (prev) summary.reworded++; else summary.new++;
       if (changed) changedIds.push(id);
@@ -138,7 +154,7 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
       if (role === "framing" && judgment.some((k) => k !== "knowledge-based")) role = "teaching"; // framing may not carry facts (D19-I)
       return {
         id, locator: { deliverable: rel, section: s.section, ordinal: i, contentHash: hash, lines: [s.startLine, s.endLine] },
-        form: s.form, role, origin, spineNodes: prev?.spineNodes || [], judgment, ...(added.length ? { judgmentAdded: added } : {}),
+        form: s.form, role, origin, spineNodes: prev?.spineNodes || inherited || [], judgment, ...(added.length ? { judgmentAdded: added } : {}),
         // evidence is bound to fact tokens (P5), so it survives a rephrase; obligations.mjs decides what still counts
         evidence: prev?.evidence || [], ...(prev?.stamp ? { stamp: prev.stamp } : {}), ...(prev?.carried ? { carried: prev.carried } : {}), tokens: tokensOf(s.text),
         ...(split ? { splitFrom: split.from } : {}), ...(merge ? { mergedFrom: merge.from } : {}),

@@ -215,6 +215,23 @@ export function anchored(claim, found, k) {
   return claim.words.filter((w) => f.includes(w)).length >= Math.min(3, claim.words.length);
 }
 
+/** Does another pinned text state a different year for the claim's names and topic, and never the claimed one? */
+export function contestedYear(claim, texts, quotedSources) {
+  if (!claim.required.years.length || !claim.required.names.length) return null;
+  const keys = claim.required.names.map(nameKey);
+  for (const [source, text] of texts) {
+    if (quotedSources.has(source)) continue;
+    for (const sen of String(text).split(/(?<=[.!?])\s+|\n+/)) {
+      const f = folded(sen);
+      if (!keys.every((k) => f.includes(k)) || claim.words.filter((w) => f.includes(w)).length < Math.min(2, claim.words.length)) continue;
+      const ys = yearsIn(sen);
+      if (!ys.length || claim.required.years.some((y) => ys.includes(y))) continue;
+      return { dimension: "year", claimed: claim.required.years[0], source: ys[0], sourceId: source, sentence: sen.slice(0, 300) };
+    }
+  }
+  return null;
+}
+
 /** Uncontested? The claimed value (same unit, at the claim's precision) appears nowhere in the pinned texts near the claim's topic. */
 export function supportedSomewhere(claim, q, texts) {
   for (const text of texts.values()) {
@@ -275,6 +292,9 @@ export function admit({ claims, passages, texts, raw, nonce }) {
       if (!found.length) return { claim: claim.index, status: "not-found", reason: missing.length ? "no quote was found in its passage" : "supported without a quote" };
       const c = supports(claim, found);
       if (!c.ok) return { claim: claim.index, status: "not-found", reason: c.reason, quotes: found };
+      // conflicting evidence is a question (D12-F): another pinned text gives the same people another year
+      const other = contestedYear(claim, texts, new Set(found.map((f) => f.source)));
+      if (other) return { claim: claim.index, status: "disputed", quotes: found, conflicts: [other] };
       return { claim: claim.index, status: "supported", quotes: found };
     }
     if (ans.verdict === "contradicted") {
