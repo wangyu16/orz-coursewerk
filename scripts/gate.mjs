@@ -15,6 +15,7 @@ import { liveReader } from "./lib/core/package_reader.mjs";
 import { spineCoreFindings, approvalCoreProblems } from "./lib/core/core_checks.mjs";
 import { unindexedFindings } from "./lib/core/units_index.mjs";
 import { coreObligations } from "./lib/core/obligations.mjs";
+import { correctionsToShow } from "./lib/verify/verdicts.mjs";
 
 const args = process.argv.slice(2);
 const opt = (name, fallback) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -54,11 +55,13 @@ try {
   const gate = evaluateGate({ findings, maturityOf, approvalProblems });
   const wiring = buildWiringReport([{ ...run, findings }], { modules, registry });
 
-  const report = { checkpoint, profile, basis: run.snapshot.id, canPublish: gate.canPublish,
+  // corrections the agent applied since they were last shown: listed with their diff at every checkpoint (D19-B)
+  const corrections = correctionsToShow(root);
+  const report = { checkpoint, profile, basis: run.snapshot.id, canPublish: gate.canPublish, corrections,
     counts: { blocking: gate.blocking.length, questions: gate.questions.length, total: findings.length }, approvalProblems, findings, wiring };
   if (opt("--json")) fs.writeFileSync(opt("--json"), JSON.stringify(report, null, 2) + "\n");
   if (opt("--wiring")) fs.writeFileSync(opt("--wiring"), JSON.stringify(wiring, null, 2) + "\n");
-  console.log(JSON.stringify({ checkpoint, profile, canPublish: gate.canPublish, blocking: gate.blocking.map((f) => `${f.module}/${f.kind}`), approvalProblems, questions: gate.questions.length, modulesRan: wiring.modulesRan }, null, 2));
+  console.log(JSON.stringify({ checkpoint, profile, canPublish: gate.canPublish, blocking: gate.blocking.map((f) => `${f.module}/${f.kind}`), approvalProblems, questions: gate.questions.length, corrections: corrections.map((c) => ({ id: c.id, unit: c.unit, diff: c.diff })), modulesRan: wiring.modulesRan }, null, 2));
   process.exit(gate.canPublish ? 0 : 1);
 } catch (e) {
   const message = `the gate could not run: ${e.message}`;

@@ -29,6 +29,11 @@ async function run(s) {
     if (PHOTO.test(f.issue)) { out.push({ kind: "no-photograph", units: [], evidence: { type: "judgment", note: f.issue } }); continue; }
     defect("format-contract", f.file, f.issue);
   }
+  // invisible format characters hide values from every check that reads the text (round P7-1, B11)
+  for (const file of s.paths.filter((p) => /^(study-guide|slides|practice|concepts|assessment-support)\/.+\.md$/.test(p)).sort()) {
+    const lines = (s.text(file) || "").split("\n");
+    lines.forEach((l, i) => { const m = l.replace(/^\uFEFF/, "").match(/[\u00AD\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]/); if (m) defect("invisible-character", file, `line ${i + 1}: U+${m[0].codePointAt(0).toString(16).toUpperCase().padStart(4, "0")} hides text from the checks — remove it`); });
+  }
   const defs = await frameworkDefinitions();
   for (const file of s.paths.filter((p) => /^slides\/[^/]+\.md$/.test(p)).sort())
     for (const pr of checkSlidesNotation(s.text(file) || "", defs)) defect("framework-notation", file, `line ${pr.line}: ${pr.issue} (orz-slides)`);

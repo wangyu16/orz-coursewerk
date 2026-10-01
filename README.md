@@ -177,13 +177,17 @@ see `docs/assembling-carriers.md`.
 A skeleton-and-modules redesign is being built on this branch. Its gate can already be run on a package —
 `node scripts/gate.mjs --root package` (exit 0 = can publish, 1 = blocked, 2 = usage, 3 = the gate itself failed) —
 but it does not replace `check_oer.mjs` and `pack.mjs` until the redesign's workflow lands. Checks are modules under
-`scripts/modules/` (the six standard ones in `standard.json` run for every package), each in its own process; see `system/REQUIREMENTS.json` for what the redesign must deliver
+`scripts/modules/` (the seven standard ones in `standard.json` run for every package), each in its own process; see `system/REQUIREMENTS.json` for what the redesign must deliver
 and the evidence that closes each requirement.
 
 Spine v2 tools (anchors, parsed assessment guides, approvals): `node scripts/spine.mjs check|migrate|anchor|status|preview|approve|version|steering --root package`.
 A package opts in with `metadata/coursewerk.json` (`"spine": 2`); approvals are the instructor's words, recorded in the package's decision log.
 Unit index (every deliverable split into checkable units with stable ids and recorded origins): `node scripts/units.mjs begin|index|claim|status|link|confirm|obligations|restamp --root package` — the deterministic core's
 obligations (facts without evidence, unlinked units, uncovered objectives, short guide entries, stale dependents) block the gate.
+Verification (a fresh, context-blind verifier per unit; the harness admits a fact only when the verifier's quote is in a
+pinned text and carries the same values, years and names): `node scripts/verify.mjs destinations|search|fetch|semi|knowledge|correct|revert|corrections|links|status --root package --inputs <corpus dir>`.
+Retrieval goes only to destinations the instructor declared; the verifier command is `COURSEWERK_VERIFIER` (a JSON array;
+default headless `claude -p` with no tools, settings or session, in an empty directory), or a fresh subagent in courier mode.
 
 ## License
 

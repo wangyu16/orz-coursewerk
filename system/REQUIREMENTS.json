@@ -8,7 +8,8 @@
     "P3",
     "P4",
     "P5",
-    "P6"
+    "P6",
+    "P7"
   ],
   "requirements": [
     {
@@ -798,14 +799,12 @@
       ],
       "statement": "An evidence span cited by a unit that does not resolve in its pinned snapshot is a defect; a retrieved reference without its pin is an obligation.",
       "source": "MS1",
-      "status": "deferred",
+      "status": "closed",
       "evidence": {
         "T1": [
-          "tests/stable-modules.test.mjs"
+          "tests/verdict-path.test.mjs"
         ]
-      },
-      "deferredTo": "P7",
-      "reason": "T1 for undeclared sources closed in P6 (tests/stable-modules.test.mjs); resolving an evidence span in its pinned snapshot, and pinning retrieved references, come with the evidence records of the verdict path (P7)."
+      }
     },
     {
       "id": "req.ms1.profiles",
@@ -878,14 +877,12 @@
       ],
       "statement": "Broken local links and asset paths are defects; external links are resolved, the result recorded, and replayed offline in tests.",
       "source": "MS4",
-      "status": "deferred",
+      "status": "closed",
       "evidence": {
         "T1": [
-          "tests/stable-modules.test.mjs"
+          "tests/verdict-path.test.mjs"
         ]
-      },
-      "deferredTo": "P7",
-      "reason": "Local links, assets and the unresolved-external-link obligation closed in P6 (tests/stable-modules.test.mjs); resolving and recording external links needs the retrieval service (P7)."
+      }
     },
     {
       "id": "req.ms5.offline",
@@ -990,8 +987,15 @@
       ],
       "statement": "Verifier tasks are dispatched per unit with a blind bundle (the unit and its evidence only); every dispatch is recorded and replays offline.",
       "source": "skeleton §6; F4",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/verdict-path.test.mjs"
+        ],
+        "T2": [
+          "system/rounds/P7-verdicts.md"
+        ]
+      }
     },
     {
       "id": "req.retrieval.claim-only",
@@ -1001,8 +1005,12 @@
       ],
       "statement": "Retrieval sends only the claim being checked, pins what it retrieves (URL, time, hash, span), and can be switched off per package.",
       "source": "skeleton §6; D12-I",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/verdict-path.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.verdict.semi-mechanical",
@@ -1013,8 +1021,17 @@
       ],
       "statement": "A semi-mechanical obligation is cleared only when the verifier's quote is found in the source and carries the same value, date or name.",
       "source": "D19-A",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/verdict-path.test.mjs",
+          "tests/verdict-redteam.test.mjs"
+        ],
+        "T4": [
+          "system/rounds/P7-verdicts.md",
+          "tests/verdict-redteam.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.verdict.unscorable",
@@ -1024,8 +1041,12 @@
       ],
       "statement": "A verifier response that cannot be parsed is recorded as unscorable, never as a pass or a miss.",
       "source": "Confidence study principles",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/verdict-path.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.autocorrect.guard",
@@ -1036,8 +1057,17 @@
       ],
       "statement": "The agent corrects without asking only a defect admitted by a stable check and uncontested; instructor text additionally needs two agreeing sources; otherwise a question is raised.",
       "source": "D17, D19-B",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/verdict-path.test.mjs",
+          "tests/verdict-redteam.test.mjs"
+        ],
+        "T4": [
+          "system/rounds/P7-verdicts.md",
+          "tests/verdict-redteam.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.autocorrect.shown",
@@ -1048,8 +1078,14 @@
       ],
       "statement": "Every correction is logged as a revision and shown as a revertible diff at the next checkpoint (or at once when the instructor asked for the check).",
       "source": "D17; skeleton §3 M4",
-      "status": "planned",
-      "evidence": {}
+      "status": "deferred",
+      "evidence": {
+        "T1": [
+          "tests/verdict-path.test.mjs"
+        ]
+      },
+      "deferredTo": "P8",
+      "reason": "T1 closed in P7 (the gate and `verify corrections` list every applied correction with its diff, built from the record at display time); T3 — an agent session showing the diff to the instructor at the next checkpoint — needs the digest and workflow of P8."
     },
     {
       "id": "req.revert.double-confirm",
@@ -1059,8 +1095,13 @@
       ],
       "statement": "An instructor reverting an agent's correction after seeing the diff and evidence is the double confirmation: a note is recorded and the text stands as an authorized divergence.",
       "source": "Q10; D17",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/verdict-path.test.mjs",
+          "tests/verdict-redteam.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.confirm.single",
@@ -1070,8 +1111,12 @@
       ],
       "statement": "An unevidenced fact the instructor wrote is cleared by one confirmation, which can be batched.",
       "source": "D19-D",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/verdict-path.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.knowledge.no-autochange",
@@ -1082,8 +1127,14 @@
       ],
       "statement": "Knowledge-based issues are raised as questions with reasoning and a suggested revision and change nothing until the instructor confirms.",
       "source": "D17",
-      "status": "planned",
-      "evidence": {}
+      "status": "deferred",
+      "evidence": {
+        "T1": [
+          "tests/verdict-path.test.mjs"
+        ]
+      },
+      "deferredTo": "P8",
+      "reason": "T1 closed in P7 (concerns become digest questions; no deliverable changes); T3 — a live agent session that discusses a concern with the instructor before any edit — needs the P8 workflow."
     },
     {
       "id": "req.states.machine",
@@ -1244,6 +1295,21 @@
       "source": "implementation plan P10",
       "status": "planned",
       "evidence": {}
+    },
+    {
+      "id": "req.ms3.invisible",
+      "phase": "P7",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "An invisible format character (zero-width, bidi control, soft hyphen) in a deliverable is a defect: it hides values from every check that reads the text.",
+      "source": "round P7-1 (B11)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/verdict-redteam.test.mjs"
+        ]
+      }
     }
   ]
 }

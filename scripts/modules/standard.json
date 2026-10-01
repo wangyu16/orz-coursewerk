@@ -37,6 +37,12 @@
       "version": "1.0.0",
       "maturity": "stable",
       "enabled": true
+    },
+    {
+      "name": "ms8-verdicts",
+      "version": "1.0.0",
+      "maturity": "stable",
+      "enabled": true
     }
   ]
 }

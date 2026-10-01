@@ -6,6 +6,7 @@
 // worked answer. Headings, the deck header, slide markers and the deliverable's restated "Learning objectives" are
 // structure. Title, outline, section and closing slides, and summary-like sections, are framing.
 import { sha256 } from "../records/canonical.mjs";
+import { plainForQuantities } from "./dependencies.mjs";
 
 export const DELIVERABLE_DIRS = Object.freeze(["study-guide", "slides", "practice"]);
 const FRAMING_SECTION = /^(summary|overview|introduction|what we will cover|key takeaways|looking ahead|recap|outline)\b/i;
@@ -162,7 +163,8 @@ export function classifyUnit({ form, text }) {
   const kinds = new Set();
   const t = String(text || "");
   if (form === "equation" || MECH.some((r) => r.test(t)) || (form === "answer" && /\d/.test(t))) kinds.add("mechanical");
-  if (SEMI.some((r) => r.test(t))) kinds.add("semi-mechanical");
+  // values are mostly written in LaTeX: test the patterns on the folded form too (round P7-1, B19)
+  if (SEMI.some((r) => r.test(t) || r.test(plainForQuantities(t)))) kinds.add("semi-mechanical");
   const proseWords = (t.replace(/\$[^$]*\$/g, " ").match(/[A-Za-z]{3,}/g) || []).length;
   if (proseWords >= 6 || form === "question" || form === "answer" || (!kinds.size)) kinds.add("knowledge-based");
   return ["mechanical", "semi-mechanical", "knowledge-based"].filter((k) => kinds.has(k));

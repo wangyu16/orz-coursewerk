@@ -1,0 +1,106 @@
+// MS8 — Verdicts (redesign P7; D17, D19-A; modules.md "semi-mechanical verdict path"). Re-derives, deterministically,
+// what every recorded verifier dispatch establishes against the pinned texts, and checks the evidence units carry:
+//   fact-contradicted   (defect)   an uncontested contradiction of a quantity, quoted from a pinned text;
+//   fact-disputed       (question) a contradicted year or name, or a contradiction another source contests (D12-F);
+//   knowledge-concern   (question) a blind verifier's concern about a knowledge-based unit — never a defect, never
+//                                  an automatic change (req.knowledge.no-autochange);
+//   evidence-unsupported (defect)  quote-verified evidence that does not re-derive: no dispatch record, a record that
+//                                  does not admit, or quotes that do not carry the unit's current facts.
+//   dispatch-unlogged / dispatch-record-missing (defect) a verification record the log does not vouch for, or a
+//                                  logged dispatch whose record is gone (round P7-1).
+// Verdicts concern the unit's CURRENT claims only: a record of other claims is history.
+import { segmentDeliverable } from "../lib/core/segment.mjs";
+import { factHash } from "../lib/core/dependencies.mjs";
+import { checkableClaims, claimsHash } from "../lib/verify/claims.mjs";
+import { supports } from "../lib/verify/admission.mjs";
+import { readDispatches } from "../lib/verify/dispatch.mjs";
+import { pinnedTexts, snapshotInputReader } from "../lib/verify/references.mjs";
+import { checksCurrentClaims, correctionLogged, dispatchLogged, knowledgeConcerns, logRecordsOf, rederive } from "../lib/verify/verdicts.mjs";
+import { base, recheckByRerun } from "./_shared.mjs";
+
+function currentUnits(s) {
+  const out = new Map();
+  for (const p of s.paths.filter((x) => x.startsWith("metadata/units/") && x.endsWith(".json")).sort()) {
+    const side = s.json(p); if (!side?.units) continue;
+    const seg = segmentDeliverable(s.text(side.deliverable) || "", side.deliverable).units;
+    if (seg.length !== side.units.length) continue; // out of date: units-not-indexed covers it
+    side.units.forEach((u, i) => out.set(u.id, { ...u, text: seg[i].text, contentHash: u.locator?.contentHash }));
+  }
+  return out;
+}
+const sameQuotes = (a, b) => JSON.stringify((a || []).map((q) => [q.source, q.span?.[0], q.span?.[1]]).sort()) === JSON.stringify((b || []).map((q) => [q.source, q.span?.[0], q.span?.[1]]).sort());
+
+function run(s) {
+  const out = [];
+  const units = currentUnits(s);
+  const records = readDispatches((p) => s.text(p), s.paths);
+  const log = logRecordsOf(s.text("metadata/LOG.jsonl"));
+  const pinned = pinnedTexts(snapshotInputReader(s));
+  const plain = new Map([...pinned].filter(([, v]) => v.ok).map(([k, v]) => [k, v.text]));
+  const byDispatch = new Map(records.map((r) => [r.dispatch, r]));
+  const corrections = new Map(s.paths.filter((p) => p.startsWith("metadata/corrections/") && p.endsWith(".json")).map((p) => s.json(p)).filter(Boolean).map((c) => [c.id, c]));
+  const divergedLogged = (u, e) => log.some((l) => l.type === "divergence" && l.party?.role === "instructor" && l.payload?.unit === u.id && l.payload?.correction === e.correction);
+  const diverged = (u) => (u.evidence || []).some((e) => e.type === "authorized-divergence" && e.factHash === factHash(u.text) && divergedLogged(u, e));
+
+  // every record is a logged dispatch, and every logged dispatch still has its record (B12, B13, p22)
+  for (const r of records) if (!dispatchLogged(r, log))
+    out.push({ kind: "dispatch-unlogged", units: units.has(r.unit) ? [r.unit] : [], evidence: { type: "rule", rule: "a verification record matches a dispatch in the decision log (bundle and answer hashes)", dispatch: r.dispatch ?? null } });
+  for (const l of log.filter((x) => x.type === "dispatch" && x.payload?.dispatch)) if (!byDispatch.has(l.payload.dispatch))
+    out.push({ kind: "dispatch-record-missing", units: units.has(l.payload.unit) ? [l.payload.unit] : [], evidence: { type: "rule", rule: "every logged dispatch keeps its record in metadata/verification/", dispatch: l.payload.dispatch } });
+
+  for (const r of records) {
+    const u = units.get(r.unit);
+    if (!u || r.factHash !== factHash(u.text) || !dispatchLogged(r, log)) continue;
+    if (r.kind === "knowledge") {
+      for (const c of knowledgeConcerns(r, u.text))
+        out.push({ kind: "knowledge-concern", units: [u.id], evidence: { type: "judgment", note: c.problem, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch } });
+      continue;
+    }
+    if (!plain.size || !checksCurrentClaims(r, u.text)) continue; // a record of other claims is history
+    const a = rederive(r, plain);
+    if (!a || diverged(u)) continue;
+    for (const c of a.perClaim) {
+      if (c.status === "contradicted")
+        out.push({ kind: "fact-contradicted", units: [u.id], evidence: { type: "quote", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote, span: q.span })) } });
+      else if (c.status === "disputed")
+        out.push({ kind: "fact-disputed", units: [u.id], evidence: { type: "conflict", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote })) } });
+    }
+  }
+
+  for (const u of units.values()) {
+    const fh = factHash(u.text), ch = claimsHash(u.text);
+    for (const e of (u.evidence || []).filter((x) => x.type === "quote-verified" && x.factHash === fh && x.claimsHash === ch)) {
+      let problem = null;
+      if (e.correction) {
+        const c = corrections.get(e.correction);
+        if (!c || c.status !== "applied" || c.unit !== u.id || c.after?.contentHash !== u.contentHash || !correctionLogged(c, log)) problem = "its correction is not an applied, logged correction of this text";
+        else if (plain.size && !checkableClaims(u.text).every((cl) => supports(cl, e.quotes || []).ok)) problem = "its quotes do not support the corrected facts";
+      } else {
+        const r = byDispatch.get(e.dispatch);
+        if (!r || !dispatchLogged(r, log)) problem = "its dispatch is not a logged dispatch";
+        else if (r.unit !== u.id) problem = "its dispatch verified another unit";
+        else if (!checksCurrentClaims(r, u.text)) problem = "its dispatch checked other claims than the unit states";
+        else if (plain.size) {
+          const a = rederive(r, plain);
+          if (a?.status !== "admitted") problem = "its dispatch does not admit when re-derived";
+          else if (!sameQuotes(e.quotes, a.perClaim.flatMap((c) => c.quotes || []))) problem = "its quotes are not the ones its dispatch admitted";
+        }
+      }
+      if (problem) out.push({ kind: "evidence-unsupported", units: [u.id], evidence: { type: "rule", rule: "quote-verified evidence re-derives from a logged dispatch (or a logged correction) of the unit's current claims", dispatch: e.dispatch ?? null, problem } });
+    }
+  }
+  return out;
+}
+
+export default {
+  manifest: base({ name: "ms8-verdicts", serves: ["Confidence"], checkpoints: ["V3", "V8"], reads: ["units", "sources", "history", "log"], cost: "per recorded dispatch", profiles: ["public", "private"],
+    emits: [
+      { kind: "fact-contradicted", statusClass: "defect", evidenceType: "quote", route: "agent" },
+      { kind: "fact-disputed", statusClass: "question", evidenceType: "conflict", route: "digest" },
+      { kind: "knowledge-concern", statusClass: "question", evidenceType: "judgment", route: "digest" },
+      { kind: "evidence-unsupported", statusClass: "defect", evidenceType: "rule", route: "agent" },
+      { kind: "dispatch-unlogged", statusClass: "defect", evidenceType: "rule", route: "agent" },
+      { kind: "dispatch-record-missing", statusClass: "defect", evidenceType: "rule", route: "agent" },
+    ] }),
+  run, recheck: recheckByRerun(run),
+};
