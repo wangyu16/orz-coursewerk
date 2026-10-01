@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "planId": "6799b9f6fa65b8dde5847148016f3fedb88a91226cc46cce1b66deb28eefd278",
+  "baseRef": "HEAD",
+  "baseTip": "0cb80b46e64c98ca73ee13ac5de22f46e5fc5fb2",
+  "baseCommit": "0cb80b46e64c98ca73ee13ac5de22f46e5fc5fb2",
+  "reviewedHead": "0cb80b46e64c98ca73ee13ac5de22f46e5fc5fb2",
+  "changed": [
+    "system/REQUIREMENTS.json",
+    "tests/c2-v2-approved.test.mjs",
+    "tests/fixtures/c2-chemistry-v2/README.md"
+  ],
+  "requiredReview": [
+    "system/REQUIREMENTS.json",
+    "tests/c2-v2-approved.test.mjs",
+    "tests/fixtures/c2-chemistry-v2/README.md"
+  ],
+  "reviewed": [
+    "system/REQUIREMENTS.json",
+    "tests/c2-v2-approved.test.mjs",
+    "tests/fixtures/c2-chemistry-v2/README.md"
+  ],
+  "impactedClaims": [],
+  "testResults": [
+    {
+      "path": "tests/*.test.mjs (full suite)",
+      "status": "passed"
+    }
+  ],
+  "attestation": "Redesign P3 complete: the migrated C2 spine approved by the instructor (Yu Wang, wangyu16) for the course map and both chapters, frozen as tests/fixtures/c2-chemistry-v2 with a test that the approvals stay valid and that real edits void exactly what they touch; P3 marked complete in the requirement register.",
+  "generatedIndexHash": "3379862cdfc8abdf3c28ec95d4c542e8cb4536b4512dc2881417395fd38e9bdc",
+  "acceptedAt": "2026-10-01T14:11:59.805Z"
+}

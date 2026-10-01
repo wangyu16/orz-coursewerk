@@ -857,7 +857,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "11c45030936e53113a5de6525a6d46b0ceccbbee94354891e8596439f9af7677"
+      "hash": "62cff74ba7df08994538de3229aff9a0b40a4ea4b2ba8dc832acd203f03abd1c"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1004,6 +1004,12 @@
       "hash": "8aef8867256a53f086e00059d4bbf3f1a7ca55c1c5cd95e641d7ad11a6879518"
     },
     {
+      "id": "repo:tests/c2-v2-approved.test.mjs",
+      "path": "tests/c2-v2-approved.test.mjs",
+      "type": "test",
+      "hash": "e619a754e682383991a3e5b8c7a93b413e95fe2da1d96a97c37b0a8da81fa109"
+    },
+    {
       "id": "repo:tests/carriers.test.mjs",
       "path": "tests/carriers.test.mjs",
       "type": "test",
@@ -1086,6 +1092,12 @@
       "path": "tests/fingerprint.test.mjs",
       "type": "test",
       "hash": "b92d98b3b752323d1cd13383d572e43c4f00ac0ab9a730a465e4310cfb1aeeb3"
+    },
+    {
+      "id": "repo:tests/fixtures/c2-chemistry-v2/README.md",
+      "path": "tests/fixtures/c2-chemistry-v2/README.md",
+      "type": "test",
+      "hash": "1baf67a854b0c1d1b98344b6562718b7abd99a4612a8012b3b06e3c411e652f5"
     },
     {
       "id": "repo:tests/fixtures/c2-chemistry/BASELINE-v0.12.0.json",
@@ -2659,7 +2671,8 @@
     "completedPhases": [
       "P0",
       "P1",
-      "P2"
+      "P2",
+      "P3"
     ],
     "requirements": [
       {

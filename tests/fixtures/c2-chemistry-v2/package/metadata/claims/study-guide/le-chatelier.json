@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "claims": [
+    { "type": "objective", "anchor": "learning-objectives#1", "spineRefs": ["objective.le-chatelier.1"], "sourceRefs": [], "termRefs": ["term.le-chatelier-s-principle"] },
+    { "type": "objective", "anchor": "learning-objectives#2", "spineRefs": ["objective.le-chatelier.2"], "sourceRefs": [], "termRefs": ["term.equilibrium-shift"] },
+    { "type": "objective", "anchor": "learning-objectives#3", "spineRefs": ["objective.le-chatelier.3"], "sourceRefs": [], "termRefs": ["term.exothermic-reaction", "term.endothermic-reaction"] },
+    { "type": "objective", "anchor": "learning-objectives#4", "spineRefs": ["objective.le-chatelier.4"], "sourceRefs": [], "termRefs": ["term.partial-pressure"] },
+    { "type": "objective", "anchor": "learning-objectives#5", "spineRefs": ["objective.le-chatelier.5"], "sourceRefs": [], "termRefs": ["term.inert-gas", "term.catalyst"] },
+
+    { "type": "definition", "anchor": "the-principle#1", "spineRefs": ["objective.le-chatelier.1"], "sourceRefs": ["wikipedia-support-1"], "termRefs": ["term.le-chatelier-s-principle"] },
+    { "type": "fact", "anchor": "changing-a-concentration#1", "spineRefs": ["objective.le-chatelier.2"], "sourceRefs": ["wikipedia-support-1"], "termRefs": ["term.equilibrium-shift"] },
+    { "type": "fact", "anchor": "changing-the-temperature#1", "spineRefs": ["objective.le-chatelier.3"], "sourceRefs": ["wikipedia-support-1"], "termRefs": ["term.exothermic-reaction", "term.endothermic-reaction"] },
+    { "type": "fact", "anchor": "changing-the-temperature#7", "spineRefs": ["concept.le-chatelier.4"], "sourceRefs": ["wikipedia-support-1"], "termRefs": ["term.van-t-hoff-equation"] },
+    { "type": "fact", "anchor": "changing-the-volume-or-pressure#1", "spineRefs": ["objective.le-chatelier.4"], "sourceRefs": ["wikipedia-support-1"], "termRefs": ["term.partial-pressure"] },
+    { "type": "fact", "anchor": "adding-an-inert-gas#1", "spineRefs": ["objective.le-chatelier.5"], "sourceRefs": ["wikipedia-support-1"], "termRefs": ["term.inert-gas"] },
+    { "type": "fact", "anchor": "adding-a-catalyst#1", "spineRefs": ["concept.le-chatelier.7"], "sourceRefs": ["wikipedia-support-1"], "termRefs": ["term.catalyst"] },
+
+    { "type": "derived", "anchor": "worked-examples#1", "spineRefs": ["objective.le-chatelier.3"], "sourceRefs": [], "termRefs": ["term.exothermic-reaction"] },
+    { "type": "derived", "anchor": "worked-examples#2", "spineRefs": ["objective.le-chatelier.4"], "sourceRefs": [], "termRefs": ["term.partial-pressure"] }
+  ]
+}

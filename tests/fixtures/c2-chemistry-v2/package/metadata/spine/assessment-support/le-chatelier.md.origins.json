@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "items": {
+    "word-partially": "standardized",
+    "statement-critique": "standardized",
+    "add-remove": "standardized",
+    "connect-chapter": "standardized",
+    "heat-species": "standardized",
+    "yield-probe": "standardized",
+    "count-moles": "standardized",
+    "equal-moles-case": "standardized",
+    "inert-gas-probe": "standardized",
+    "catalyst-probe": "standardized",
+    "contrast-item": "standardized"
+  }
+}

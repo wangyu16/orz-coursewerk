@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "items": {
+    "state-principle": "standardized",
+    "predict-concentration-shift": "standardized",
+    "predict-temperature-shift": "standardized",
+    "predict-pressure-shift": "standardized",
+    "explain-inert-and-catalyst": "standardized",
+    "principle-statement": "standardized",
+    "concentration-shift": "standardized",
+    "heat-as-species": "standardized",
+    "temperature-changes-k": "standardized",
+    "volume-pressure-shift": "standardized",
+    "inert-gas-no-shift": "standardized",
+    "catalyst-no-shift": "standardized",
+    "cancels-disturbance": "standardized",
+    "catalyst-increases-product": "standardized",
+    "inert-gas-shifts": "standardized",
+    "heat-raises-yield": "standardized",
+    "pressure-shifts-every": "standardized"
+  }
+}

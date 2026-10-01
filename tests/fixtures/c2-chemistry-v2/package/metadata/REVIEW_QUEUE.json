@@ -1,0 +1,263 @@
+{
+  "schemaVersion": 1,
+  "items": [
+    {
+      "kind": "source-conflict",
+      "id": "5d51b146a0c4",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "practice/le-chatelier.md presents a 11-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"because the total pressure went up, and pressure changes shift equilibria.\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "983086d8205c",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "practice/le-chatelier.md presents a 7-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"the system undoes the change you made.\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "9afe47c0d3aa",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "practice/le-chatelier.md presents a 9-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"Raising the temperature always increases the yield of product.\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "8b69eba865c6",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "slides/chemical-equilibrium.md presents a 6-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"Adding a pure solid changes $K$\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "9bbcde5d5dc2",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "slides/chemical-equilibrium.md presents a 6-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"At equilibrium the reactions have stopped\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "3ded713a2a72",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "slides/le-chatelier.md presents a 10-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"An inert gas shifts the equilibrium because total pressure rises\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "c4414f508c1d",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "slides/le-chatelier.md presents a 6-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"The system cancels the disturbance completely\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "9b01513ffe6b",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "slides/le-chatelier.md presents a 7-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"Raising the temperature always increases the yield\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "ebe40e5432a7",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "slides/le-chatelier.md presents a 9-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"A catalyst increases the amount of product at equilibrium\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "e6e6b250d77f",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "study-guide/chemical-equilibrium.md presents a 10-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"A catalyst shifts equilibrium toward products and raises the yield.\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "9b16fbf59e80",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "study-guide/chemical-equilibrium.md presents a 10-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"Adding more of a pure solid or liquid changes $K$.\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "bef3e0995ebb",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "study-guide/chemical-equilibrium.md presents a 6-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"At equilibrium the reactions have stopped.\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "5d6ac823f910",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "study-guide/chemical-equilibrium.md presents a 6-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"Too few products<br/>shift FORWARD\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "9be2cf619a84",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "study-guide/chemical-equilibrium.md presents a 6-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"Too many products<br/>shift REVERSE\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "ac783391ebb4",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "study-guide/chemical-equilibrium.md presents a 7-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"Already at equilibrium<br/>no net shift\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "46d690d24176",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "study-guide/chemical-equilibrium.md presents a 8-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"At equilibrium reactant and product concentrations are equal.\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "6982ef5ad1fe",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "study-guide/le-chatelier.md presents a 12-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"The system completely cancels the disturbance and returns to its original equilibrium.\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "48523242ac86",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "study-guide/le-chatelier.md presents a 15-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"Adding an inert gas at constant volume shifts the equilibrium because the total pressure rises.\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "24056f93b46b",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "study-guide/le-chatelier.md presents a 7-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"A pressure change shifts every gas-phase equilibrium.\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "d489dd419899",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "study-guide/le-chatelier.md presents a 9-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"A catalyst increases the amount of product at equilibrium.\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    },
+    {
+      "kind": "source-conflict",
+      "id": "c4c46a45b7f6",
+      "detectorKinds": [
+        "unverifiable-quotation"
+      ],
+      "severity": "review",
+      "evidence": [
+        "study-guide/le-chatelier.md presents a 9-word passage as a reproduced quotation, but it appears in no pinned automatic source: \"Raising the temperature always increases the yield of product.\"",
+        "Verify the quotation against the pinned source and correct it, or record its true source. A quote no source contains is an unverifiable claim about the author's words."
+      ]
+    }
+  ],
+  "burden": {
+    "flagCount": 21,
+    "artifactCount": 8,
+    "flagsPerArtifact": 2.625
+  },
+  "basisSha256": "26159c4ca1b4bd41a4304d15d8278330b96f77982f1e0d474783a357e2f933ff"
+}

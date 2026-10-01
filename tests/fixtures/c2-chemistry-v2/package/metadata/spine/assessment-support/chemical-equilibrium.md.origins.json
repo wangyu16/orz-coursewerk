@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "items": {
+    "stopped-reaction-probe": "standardized",
+    "equal-concentrations-probe": "standardized",
+    "evidence-design": "standardized",
+    "direct-construction": "standardized",
+    "reversed-equation-variant": "standardized",
+    "error-finding": "standardized",
+    "three-case-sweep": "standardized",
+    "reasoning-without-arithmetic": "standardized",
+    "heterogeneous-construction": "standardized",
+    "added-solid-probe": "standardized",
+    "numerical-substitution": "standardized",
+    "sign-reasoning": "standardized",
+    "enthalpy-sign-sweep": "standardized",
+    "separating-position-constant": "standardized"
+  }
+}

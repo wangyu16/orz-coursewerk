@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "usageProfile": "public-oer",
+  "audience": "introductory chemistry learners",
+  "access": "public-web",
+  "redistribution": "open-license",
+  "jurisdiction": "international",
+  "outputLicense": "CC-BY-SA-4.0",
+  "courseTitle": "Chemical Equilibrium and Le Chatelier's Principle (controlled study course)",
+  "outputAuthors": [
+    {
+      "name": "Yu Wang",
+      "role": "author and adapter",
+      "rightsHolder": true,
+      "accountabilityConfirmedByUser": true,
+      "aiAssistanceDisclosure": "Drafting and production assistance provided by an AI agent using Coursewerk (Claude, via Claude Code). The named author set the scope and the concept-map spine, and is accountable for the released content."
+    }
+  ],
+  "privacy": {
+    "containsPersonalData": false,
+    "containsRestrictedContent": false
+  },
+  "sourcePrecedence": [
+    "wikipedia-anchor",
+    "wikipedia-support-1"
+  ],
+  "sources": [
+    {
+      "id": "wikipedia-anchor",
+      "title": "Chemical equilibrium",
+      "version": "live page; revision captured in SOURCE_CORPUS.json (pinned target revid 1366799300, 2026-07-30T08:42:11Z)",
+      "publisher": "Wikipedia contributors",
+      "canonicalUrl": "https://en.wikipedia.org/wiki/Chemical_equilibrium",
+      "role": "primary",
+      "use": "adaptation",
+      "scope": [
+        "whole article, excluding separately licensed media"
+      ],
+      "rightsBasis": {
+        "type": "open-license",
+        "license": "CC-BY-SA-4.0",
+        "evidenceType": "official-publisher-page",
+        "evidenceUrl": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use",
+        "verifiedAt": "2026-08-11",
+        "evidenceSnapshot": "metadata/evidence/wikipedia-anchor.html",
+        "evidenceSha256": "d884eb303cb5724dbbeef8741cad789aff100e27e9dabc3f1bfecaf70dd81a1f",
+        "evidenceRetrieval": {
+          "captureMode": "network",
+          "requestedUrl": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use",
+          "finalUrl": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use",
+          "redirectChain": [],
+          "retrievedAt": "2026-08-11T09:00:43.958Z",
+          "httpStatus": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "byteLength": 152877,
+          "tool": {
+            "name": "coursewerk",
+            "version": "v0.11.0"
+          }
+        },
+        "evidenceCapture": {
+          "operator": {
+            "type": "automation",
+            "name": "coursewerk-caeai-agent"
+          },
+          "capturedAt": "2026-08-11T09:00:43.958Z",
+          "tool": {
+            "name": "coursewerk",
+            "version": "v0.11.0"
+          }
+        },
+        "processUseReview": {
+          "schemaVersion": 1,
+          "scannedAt": "2026-08-11T09:00:43.958Z",
+          "status": "no-notice-detected",
+          "legalEffectDetermined": false,
+          "notices": []
+        },
+        "preflightReceipt": "metadata/preflight/wikipedia-anchor.json",
+        "preflightReceiptSha256": "f3d692b131492e158c8cdfa9da495fa8b06743d7ca2008f728ae4425cb456120"
+      },
+      "requiredAttribution": {
+        "textIncludes": "Wikipedia contributors",
+        "url": "https://en.wikipedia.org/wiki/Chemical_equilibrium",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "modificationNotice": "Adapted and reorganized for this teaching resource.",
+        "placement": "every-public-deliverable"
+      }
+    },
+    {
+      "id": "wikipedia-support-1",
+      "title": "Le Chatelier's principle",
+      "version": "live page; revision captured in SOURCE_CORPUS.json (pinned target revid 1366339970, 2026-07-27T13:07:07Z)",
+      "publisher": "Wikipedia contributors",
+      "canonicalUrl": "https://en.wikipedia.org/wiki/Le_Chatelier%27s_principle",
+      "role": "primary",
+      "use": "adaptation",
+      "scope": [
+        "sections relevant to equilibrium response to stress, excluding separately licensed media"
+      ],
+      "rightsBasis": {
+        "type": "open-license",
+        "license": "CC-BY-SA-4.0",
+        "evidenceType": "official-publisher-page",
+        "evidenceUrl": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use",
+        "verifiedAt": "2026-08-11",
+        "evidenceSnapshot": "metadata/evidence/wikipedia-anchor.html",
+        "evidenceSha256": "d884eb303cb5724dbbeef8741cad789aff100e27e9dabc3f1bfecaf70dd81a1f",
+        "evidenceRetrieval": {
+          "captureMode": "network",
+          "requestedUrl": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use",
+          "finalUrl": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use",
+          "redirectChain": [],
+          "retrievedAt": "2026-08-11T09:00:45.358Z",
+          "httpStatus": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "byteLength": 152877,
+          "tool": {
+            "name": "coursewerk",
+            "version": "v0.11.0"
+          }
+        },
+        "evidenceCapture": {
+          "operator": {
+            "type": "automation",
+            "name": "coursewerk-caeai-agent"
+          },
+          "capturedAt": "2026-08-11T09:00:45.358Z",
+          "tool": {
+            "name": "coursewerk",
+            "version": "v0.11.0"
+          }
+        },
+        "processUseReview": {
+          "schemaVersion": 1,
+          "scannedAt": "2026-08-11T09:00:45.358Z",
+          "status": "no-notice-detected",
+          "legalEffectDetermined": false,
+          "notices": []
+        },
+        "preflightReceipt": "metadata/preflight/wikipedia-support-1.json",
+        "preflightReceiptSha256": "bc10c3bc743595d53489a645e8ad9f4aac50f657fbf3a9ffa6cb767df0285e0f"
+      },
+      "requiredAttribution": {
+        "textIncludes": "Wikipedia contributors",
+        "url": "https://en.wikipedia.org/wiki/Le_Chatelier%27s_principle",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "modificationNotice": "Adapted and reorganized for this teaching resource.",
+        "placement": "every-public-deliverable"
+      }
+    }
+  ]
+}

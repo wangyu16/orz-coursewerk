@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "sourceId": "wikipedia-anchor",
+      "comparisonMode": "automatic",
+      "canonicalUrl": "https://en.wikipedia.org/wiki/Chemical_equilibrium",
+      "retrievedAt": "2026-08-11T09:01:00.000Z",
+      "extractor": {
+        "tool": "wikipedia-action-api",
+        "version": "v0.11.0",
+        "schemaVersion": 1,
+        "sourceFormat": "mediawiki-json-extract"
+      },
+      "originalSha256": "1fcb58e626a36d58c3fdba54fa11608bb5d618606b6c73c64b94e6a8c676bb3d",
+      "textSha256": "291f0b55978a9f626c70f06ca494813a723b428fc57f0230d1d008037a3885d5",
+      "wordCount": 5904,
+      "retrieval": {
+        "captureMode": "network",
+        "apiEndpoint": "https://en.wikipedia.org/w/api.php",
+        "requestedUrl": "https://en.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&prop=extracts%7Crevisions&explaintext=1&rvprop=ids%7Ctimestamp&redirects=1&titles=Chemical+equilibrium&maxlag=5",
+        "finalUrl": "https://en.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&prop=extracts%7Crevisions&explaintext=1&rvprop=ids%7Ctimestamp&redirects=1&titles=Chemical+equilibrium&maxlag=5",
+        "httpStatus": 200,
+        "contentType": "application/json; charset=utf-8",
+        "retrievedAt": "2026-08-11T09:01:00.000Z",
+        "byteLength": 88750,
+        "tool": {
+          "name": "coursewerk",
+          "version": "v0.11.0"
+        },
+        "pageId": 5306,
+        "revisionId": 1366799300,
+        "revisionTimestamp": "2026-07-30T08:42:11Z",
+        "title": "Chemical equilibrium",
+        "resolvedUrl": "https://en.wikipedia.org/wiki/Chemical_equilibrium",
+        "permanentUrl": "https://en.wikipedia.org/w/index.php?title=Chemical_equilibrium&oldid=1366799300"
+      }
+    },
+    {
+      "sourceId": "wikipedia-support-1",
+      "comparisonMode": "automatic",
+      "canonicalUrl": "https://en.wikipedia.org/wiki/Le_Chatelier%27s_principle",
+      "retrievedAt": "2026-08-11T09:01:00.504Z",
+      "extractor": {
+        "tool": "wikipedia-action-api",
+        "version": "v0.11.0",
+        "schemaVersion": 1,
+        "sourceFormat": "mediawiki-json-extract"
+      },
+      "originalSha256": "27ebf50c9207eed2c8a029849e96da330825505018606b9509349be2608b687c",
+      "textSha256": "a59c219b900aeea718963b72e80a1e31e16c5d6c74ded34c1b6decd3cf4e81d7",
+      "wordCount": 3393,
+      "retrieval": {
+        "captureMode": "network",
+        "apiEndpoint": "https://en.wikipedia.org/w/api.php",
+        "requestedUrl": "https://en.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&prop=extracts%7Crevisions&explaintext=1&rvprop=ids%7Ctimestamp&redirects=1&titles=Le+Chatelier%27s+principle&maxlag=5",
+        "finalUrl": "https://en.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&prop=extracts%7Crevisions&explaintext=1&rvprop=ids%7Ctimestamp&redirects=1&titles=Le+Chatelier%27s+principle&maxlag=5",
+        "httpStatus": 200,
+        "contentType": "application/json; charset=utf-8",
+        "retrievedAt": "2026-08-11T09:01:00.504Z",
+        "byteLength": 29827,
+        "tool": {
+          "name": "coursewerk",
+          "version": "v0.11.0"
+        },
+        "pageId": 37427,
+        "revisionId": 1366339970,
+        "revisionTimestamp": "2026-07-27T13:07:07Z",
+        "title": "Le Chatelier's principle",
+        "resolvedUrl": "https://en.wikipedia.org/wiki/Le_Chatelier's_principle",
+        "permanentUrl": "https://en.wikipedia.org/w/index.php?title=Le_Chatelier's_principle&oldid=1366339970"
+      }
+    }
+  ]
+}

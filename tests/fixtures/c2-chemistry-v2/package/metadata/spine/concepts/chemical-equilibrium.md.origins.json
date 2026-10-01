@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "items": {
+    "define-equilibrium": "standardized",
+    "write-k-expression": "standardized",
+    "compare-q-and-k": "standardized",
+    "omit-pure-phases": "standardized",
+    "relate-k-to-gibbs": "standardized",
+    "predict-k-with-temperature": "standardized",
+    "equal-rates": "standardized",
+    "dynamic-exchange": "standardized",
+    "k-expression": "standardized",
+    "pure-phases-omitted": "standardized",
+    "reaction-quotient": "standardized",
+    "k-and-gibbs": "standardized",
+    "k-depends-on-temperature": "standardized",
+    "catalyst-no-shift": "standardized",
+    "reactions-stopped": "standardized",
+    "concentrations-equal": "standardized",
+    "catalyst-shifts-yield": "standardized",
+    "solid-changes-k": "standardized",
+    "concentration-changes-k": "standardized"
+  }
+}

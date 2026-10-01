@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "claims": [
+    { "type": "objective", "anchor": "learning-objectives#1", "spineRefs": ["objective.chemical-equilibrium.1"], "sourceRefs": [], "termRefs": ["term.chemical-equilibrium"] },
+    { "type": "objective", "anchor": "learning-objectives#2", "spineRefs": ["objective.chemical-equilibrium.2"], "sourceRefs": [], "termRefs": ["term.equilibrium-constant", "term.stoichiometric-coefficient"] },
+    { "type": "objective", "anchor": "learning-objectives#3", "spineRefs": ["objective.chemical-equilibrium.3"], "sourceRefs": [], "termRefs": ["term.reaction-quotient"] },
+    { "type": "objective", "anchor": "learning-objectives#4", "spineRefs": ["objective.chemical-equilibrium.4"], "sourceRefs": [], "termRefs": ["term.activity"] },
+    { "type": "objective", "anchor": "learning-objectives#5", "spineRefs": ["objective.chemical-equilibrium.5"], "sourceRefs": [], "termRefs": ["term.standard-gibbs-energy-change"] },
+    { "type": "objective", "anchor": "learning-objectives#6", "spineRefs": ["objective.chemical-equilibrium.6"], "sourceRefs": [], "termRefs": ["term.van-t-hoff-equation"] },
+
+    { "type": "definition", "anchor": "dynamic-equilibrium#1", "spineRefs": ["objective.chemical-equilibrium.1"], "sourceRefs": ["wikipedia-anchor"], "termRefs": ["term.chemical-equilibrium"] },
+    { "type": "fact", "anchor": "the-equilibrium-constant#3", "spineRefs": ["objective.chemical-equilibrium.2"], "sourceRefs": ["wikipedia-anchor"], "termRefs": ["term.equilibrium-constant", "term.stoichiometric-coefficient"] },
+    { "type": "fact", "anchor": "the-equilibrium-constant#5", "spineRefs": ["concept.chemical-equilibrium.3"], "sourceRefs": ["wikipedia-anchor"], "termRefs": ["term.law-of-mass-action"] },
+    { "type": "definition", "anchor": "the-reaction-quotient#1", "spineRefs": ["objective.chemical-equilibrium.3"], "sourceRefs": ["wikipedia-anchor"], "termRefs": ["term.reaction-quotient"] },
+    { "type": "fact", "anchor": "pure-solids-and-liquids#1", "spineRefs": ["objective.chemical-equilibrium.4"], "sourceRefs": ["wikipedia-anchor"], "termRefs": ["term.activity"] },
+    { "type": "fact", "anchor": "equilibrium-and-gibbs-energy#1", "spineRefs": ["objective.chemical-equilibrium.5"], "sourceRefs": ["wikipedia-anchor"], "termRefs": ["term.standard-gibbs-energy-change"] },
+    { "type": "fact", "anchor": "temperature-dependence#1", "spineRefs": ["objective.chemical-equilibrium.6"], "sourceRefs": ["wikipedia-anchor"], "termRefs": ["term.van-t-hoff-equation"] },
+    { "type": "fact", "anchor": "catalysts-and-equilibrium#1", "spineRefs": ["concept.chemical-equilibrium.8"], "sourceRefs": ["wikipedia-anchor"], "termRefs": ["term.catalyst"] },
+
+    { "type": "derived", "anchor": "worked-examples#1", "spineRefs": ["objective.chemical-equilibrium.2"], "sourceRefs": [], "termRefs": ["term.equilibrium-constant"] },
+    { "type": "derived", "anchor": "worked-examples#2", "spineRefs": ["objective.chemical-equilibrium.5"], "sourceRefs": [], "termRefs": ["term.standard-gibbs-energy-change"] }
+  ]
+}

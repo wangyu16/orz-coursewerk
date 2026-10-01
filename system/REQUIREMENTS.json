@@ -4,7 +4,8 @@
   "completedPhases": [
     "P0",
     "P1",
-    "P2"
+    "P2",
+    "P3"
   ],
   "requirements": [
     {
@@ -459,7 +460,8 @@
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/spine-v2.test.mjs"
+          "tests/spine-v2.test.mjs",
+          "tests/c2-v2-approved.test.mjs"
         ]
       }
     },
@@ -474,7 +476,8 @@
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/spine-v2.test.mjs"
+          "tests/spine-v2.test.mjs",
+          "tests/c2-v2-approved.test.mjs"
         ]
       }
     },
@@ -489,7 +492,8 @@
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/spine-v2.test.mjs"
+          "tests/spine-v2.test.mjs",
+          "tests/c2-v2-approved.test.mjs"
         ]
       }
     },
@@ -504,7 +508,8 @@
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/spine-v2.test.mjs"
+          "tests/spine-v2.test.mjs",
+          "tests/c2-v2-approved.test.mjs"
         ]
       }
     },
