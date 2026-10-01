@@ -1,7 +1,7 @@
 // The deterministic core (redesign P5; D19-A). Obligations that block publishing from the first release — each says
 // what is missing, never that something is wrong:
 //   evidence-missing     a semi-mechanical unit has no admitted evidence for its current facts (Q15, D19-D);
-//   absolute-unscoped    a general "only" with no comparison set named — no source can prove it (D29);
+//   absolute-unreviewed  an absolute statement no logged context review has read yet (D30);
 //   unit-unlinked        a teaching unit serves no spine node (D19-I);
 //   objective-uncovered  an objective no teaching unit serves (Control C1);
 //   guide-entry-short    a guide entry has fewer linked questions than its Count (Control C5);
@@ -19,7 +19,8 @@ import { unitsPathFor, recordFile } from "../records/paths.mjs";
 import { validateUnitSidecar } from "../records/units.mjs";
 import { classifyUnit, segmentDeliverable } from "./segment.mjs";
 import { readLogText } from "../records/log.mjs";
-import { checkableClaims, claimsHash, openAbsolutes } from "../verify/claims.mjs";
+import { checkableClaims, claimsHash } from "../verify/claims.mjs";
+import { absoluteSentences, absolutesHash, readAbsoluteReview } from "../verify/absolutes.mjs";
 import { deliverablesOf, indexUnits, readSidecar } from "./units_index.mjs";
 import { parseSpine, nodeIndex } from "./spine.mjs";
 import { manifestChapters } from "./package_reader.mjs";
@@ -152,6 +153,21 @@ export function admitEvidence(root, reader, unitId, evidence) {
   rewriteUnits(root, [unitId], (x) => { x.evidence = [...(x.evidence || []).filter((e) => !(e.type === evidence.type && e.factHash === evidence.factHash && e.dispatch === evidence.dispatch)), evidence]; });
 }
 
+/** Absolute reviews that count: a logged dispatch whose record parses and covers the unit's sentences → "unit|hash". */
+export function reviewedAbsolutes(root) {
+  const out = new Set();
+  const dir = recordFile(root, "metadata/verification");
+  if (!fs.existsSync(dir)) return out;
+  const logged = new Set();
+  for (const line of readLogText(root).split("\n").filter(Boolean)) { try { const r = JSON.parse(line); if (r.type === "dispatch" && r.party?.role === "harness") logged.add(`${r.payload?.dispatch}|${r.payload?.unit}|${r.payload?.responseHash}`); } catch { /* the log module reports it */ } }
+  for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json"))) {
+    let r; try { r = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")); } catch { continue; }
+    if (r.kind !== "absolute" || !logged.has(`${r.dispatch}|${r.unit}|${r.answer?.responseHash}`)) continue;
+    if (readAbsoluteReview(r.answer?.raw, r.bundle?.nonce, r.sentences || [], r.context || "").ok) out.add(`${r.unit}|${r.absolutesHash}`);
+  }
+  return out;
+}
+
 /** Units whose current facts a recorded verification contradicts or disputes. */
 function liveContradictions(root, factHashes) {
   const dir = recordFile(root, "metadata/verification"), out = new Set();
@@ -183,13 +199,14 @@ export function coreObligations(root, reader, basis) {
   const { chapters, spine, units, hashes } = context(root, reader);
   const nodes = nodeIndex(spine);
   const acts = loggedInstructorActs(root);
+  const reviewed = reviewedAbsolutes(root);
   const F = [];
   const ob = (kind, ids, what) => F.push(makeFinding({ module: "skeleton", kind, units: ids, statusClass: "obligation", route: "agent", basis, evidence: { type: "missing", what } }));
   for (const u of units) {
     const fh = factHash(u.text);
-    // a general absolute ("only X does Y", no set named) cannot be proven from a source: name the set or reword (D29)
-    if (!acts.confirmed.has(`${u.id}|${fh}`)) // any unit: a hidden "only" must not escape by escaping the classifier
-      for (const c of openAbsolutes(u.text)) ob("absolute-unscoped", [u.id], `a named comparison set for "only ${c.openPhrase}" in ${u.id} (${u.locator.deliverable}) — "of A, B and C, only X" or "only X, not A or B" — or a rewording without the absolute`);
+    // an absolute statement is reviewed by an agent that reads its context (D30; any unit, whatever its judgment kind)
+    if (!acts.confirmed.has(`${u.id}|${fh}`) && absoluteSentences(u.text).length && !reviewed.has(`${u.id}|${absolutesHash(u.text)}`))
+      ob("absolute-unreviewed", [u.id], `a context review of the absolute statement(s) in ${u.id} (${u.locator.deliverable}): node scripts/verify.mjs absolutes`);
     if (needsEvidence(u) && !hasAdmittedEvidence(u, acts))
       ob("evidence-missing", [u.id], `admitted evidence for the facts stated in ${u.id} (${u.locator.deliverable})`);
     if (u.role === "teaching" && !(u.spineNodes || []).length) ob("unit-unlinked", [u.id], `a spine link for ${u.id} (${u.locator.deliverable}, ${u.locator.section})`);

@@ -141,7 +141,7 @@ export function replayVerifier(answers) {
 
 // ---- records -----------------------------------------------------------------------------------------------------
 /** Write a dispatch record into the package and log it. Returns the record. */
-export function recordDispatch(root, { kind, unit, factHash, contentHash, bundle, passages = [], texts, answer, admission = null, claims = null }) {
+export function recordDispatch(root, { kind, unit, factHash, contentHash, bundle, passages = [], texts, answer, admission = null, claims = null, extra = {} }) {
   const dispatch = `d-${bundle.bundleHash.slice(0, 16)}`;
   const record = {
     schemaVersion: 1, dispatch, kind, unit, factHash, contentHash, at: new Date().toISOString(),
@@ -150,6 +150,7 @@ export function recordDispatch(root, { kind, unit, factHash, contentHash, bundle
     passages: passages.map((p) => ({ n: p.n, source: p.source, text: p.text, textSha256: texts?.get(p.source)?.sha256 ?? null })),
     answer: { mode: answer.mode, raw: answer.raw, model: answer.model ?? null, costUsd: answer.costUsd ?? null, responseHash: sha256(answer.raw ?? "") },
     ...(admission ? { admission } : {}),
+    ...extra,
   };
   const dir = recordFile(root, VERIFICATION_DIR);
   fs.mkdirSync(dir, { recursive: true });

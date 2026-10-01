@@ -68,7 +68,7 @@ function rewriteUnattributed(p, id, fn) {
 function gate(p, id) {
   const r = runCheckpoint({ root: p.root, checkpoint: "V8", profile: "public", registry: reg("ms1-sources", "ms8-verdicts"), inputsDir: p.inputs });
   const findings = r.findings.filter((f) => ["ms1-sources", "ms8-verdicts"].includes(f.module)).map((f) => `${f.kind}:${f.statusClass}`);
-  const open = coreObligations(p.root, p.reader, "t").some((f) => ["evidence-missing", "absolute-unscoped"].includes(f.kind) && f.units.includes(id));
+  const open = coreObligations(p.root, p.reader, "t").some((f) => ["evidence-missing", "absolute-unreviewed"].includes(f.kind) && f.units.includes(id));
   return { findings, open, blocked: open || findings.some((k) => /:defect$/.test(k)) };
 }
 async function honestNaming(p) {
@@ -201,7 +201,7 @@ test("[req.ms3.invisible] round P7-1 B11: an invisible format character in a del
 });
 
 // ---- round D29-1: the exclusivity rule ---------------------------------------------------------------------------
-test("[req.absolute.scope] round D29-1: hidden, doubled, misattached and synonym exclusivities are open, not scoped or absent", async () => {
+test("[req.absolute.scope] [req.absolute.review] round D29-1: hidden, doubled, misattached and synonym exclusivities are open, not scoped or absent", async () => {
   const { exclusivityOf, openAbsolutes } = await import("../scripts/lib/verify/claims.mjs");
   for (const t of [
     "Of temperature and a catalyst, only temperature changes the equilibrium constant, and only a catalyst speeds up a reaction.", // two in one sentence (p02)
@@ -211,6 +211,9 @@ test("[req.absolute.scope] round D29-1: hidden, doubled, misattached and synonym
     "Temperature changes the constant on­ly when heated.", "Temperature on*ly* changes the constant.", "Temperature оnly changes the constant.", // hidden spellings (p11)
   ]) assert.equal(exclusivityOf(t)?.open, true, t);
   assert.equal(openAbsolutes("Some framing text. Temperature on*ly* changes the constant.").length, 1, "found whatever the classifier says");
+  const { absoluteSentences } = await import("../scripts/lib/verify/absolutes.mjs");
+  for (const hidden of ["Temperature on*ly* changes the constant.", "Temperature \u043Enly changes the constant.", "It al\u00ADways shifts.", "It nev\u200Ber shifts."])
+    assert.equal(absoluteSentences(hidden).length, 1, `a hidden absolute still goes to review: ${hidden}`);
   const g = exclusivityOf("Only increasing the temperature shifts the equilibrium, not the total pressure.");
   assert.deepEqual(g.positive, ["increasing", "temperature"], "a leading gerund is kept with its noun (p08)");
   assert.deepEqual(exclusivityOf("Only temperature, not a catalyst, shifts the equilibrium of a reaction.").alternatives.map((a) => a.phrase), ["catalyst"], "the not-list stops at the clause (no predicate swallowed)");

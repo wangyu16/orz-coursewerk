@@ -14,7 +14,9 @@ import { recordFile } from "../records/paths.mjs";
 import { appendLogRecord } from "../records/log.mjs";
 import { factHash } from "../core/dependencies.mjs";
 import { unitHash } from "../core/segment.mjs";
-import { admitEvidence, hasAdmittedEvidence, indexAndStamp, loadUnits, loggedInstructorActs, needsEvidence } from "../core/obligations.mjs";
+import { admitEvidence, hasAdmittedEvidence, indexAndStamp, loadUnits, loggedInstructorActs, needsEvidence, reviewedAbsolutes } from "../core/obligations.mjs";
+import { absoluteBundle, absoluteSentences, absolutesHash, readAbsoluteReview } from "./absolutes.mjs";
+import { randomBytes } from "node:crypto";
 import { readLogText } from "../records/log.mjs";
 import { checkableClaims, claimsHash, claimOf, quantitiesIn } from "./claims.mjs";
 import { admit, supports } from "./admission.mjs";
@@ -85,6 +87,29 @@ export function readmitRecorded(root, reader, { texts }) {
   }
   if (out.length) appendLogRecord(root, { type: "revision", party: { role: "harness", name: "verify" }, payload: { event: "evidence-readmitted", units: out.map((x) => x.unit), rule: "recorded answers re-derived under the current admission rules" } });
   return out;
+}
+
+/** The section a unit belongs to: the text of every unit in the same deliverable section, in order. */
+export function sectionContext(units, unit) {
+  return units.filter((u) => u.locator.deliverable === unit.locator.deliverable && u.locator.section === unit.locator.section)
+    .sort((a, b) => a.locator.ordinal - b.locator.ordinal).map((u) => u.text).join("\n\n");
+}
+
+/** Context review of absolute statements (D30): one dispatch per unit, recorded and logged; nothing is edited. */
+export async function reviewAbsolutes(root, reader, { verifier, only = null, onProgress = () => {} }) {
+  const all = loadUnits(root, reader);
+  const done = reviewedAbsolutes(root);
+  const results = [];
+  for (const u of all.filter((x) => absoluteSentences(x.text).length && !done.has(`${x.id}|${absolutesHash(x.text)}`) && (!only || only.includes(x.id)))) {
+    const sentences = absoluteSentences(u.text), context = sectionContext(all, u);
+    const bundle = absoluteBundle(sentences, context, randomBytes(8).toString("hex"));
+    const answer = await verifier(bundle.prompt);
+    const review = readAbsoluteReview(answer.raw, bundle.nonce, sentences, context);
+    const record = recordDispatch(root, { kind: "absolute", unit: u.id, factHash: factHash(u.text), contentHash: u.locator.contentHash, bundle, answer, admission: { status: review.ok ? "reviewed" : "unscorable", ...(review.ok ? {} : { reason: review.reason }) }, extra: { sentences, context, absolutesHash: absolutesHash(u.text) } });
+    results.push({ unit: u.id, dispatch: record.dispatch, status: review.ok ? "reviewed" : "unscorable", classes: review.ok ? review.results.map((r) => r.class) : [], costUsd: answer.costUsd ?? null });
+    onProgress(results.at(-1));
+  }
+  return results;
 }
 
 export async function verifyKnowledge(root, reader, { verifier, only = null, onProgress = () => {} }) {

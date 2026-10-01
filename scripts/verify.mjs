@@ -9,6 +9,7 @@
 //        [--courier-out <dir>]   write the bundles for a fresh subagent instead of running the verifier command
 //        [--courier-in <dir>]    admit the answers the subagent wrote (<n>.answer.txt beside <n>.bundle.json)
 //   node scripts/verify.mjs readmit --root <pkg> --inputs <dir>                    re-admit recorded answers under the current rules
+//   node scripts/verify.mjs absolutes --root <pkg> [--units id,…]                  context review of absolute statements (D30)
 //   node scripts/verify.mjs knowledge --root <pkg> [--units id,…]                  blind concerns → questions (no edits)
 //   node scripts/verify.mjs correct --root <pkg> --inputs <dir> --unit <id> --model <model id>
 //        apply an admitted, uncontested correction — or report the question it must be instead
@@ -31,7 +32,7 @@ import { admit } from "./lib/verify/admission.mjs";
 import { headlessVerifier, recordDispatch, selectPassages, semiBundle, readDispatches } from "./lib/verify/dispatch.mjs";
 import { fsInputReader, pinnedTexts, syncReferenceRecord } from "./lib/verify/references.mjs";
 import { fetchAndPin, onTopic, resolveLinks, searchWikipedia } from "./lib/verify/retrieval.mjs";
-import { applyCorrection, correctionsToShow, readmitRecorded, revertCorrection, verifyKnowledge, verifySemi } from "./lib/verify/verdicts.mjs";
+import { applyCorrection, correctionsToShow, readmitRecorded, reviewAbsolutes, revertCorrection, verifyKnowledge, verifySemi } from "./lib/verify/verdicts.mjs";
 import { admitEvidence } from "./lib/core/obligations.mjs";
 import { createQaAudits } from "./lib/legacy/qa_audits.mjs";
 
@@ -41,7 +42,7 @@ const flag = (n) => args.includes(n);
 const fail = (m, c = 2) => { console.error(m); process.exit(c); };
 const out = (x) => console.log(JSON.stringify(x, null, 2));
 const root = opt("--root");
-if (!cmd || !root || !fs.existsSync(root)) fail("usage: verify.mjs <destinations|search|fetch|semi|readmit|knowledge|correct|revert|corrections|links|status> --root <package> … (see the header of scripts/verify.mjs)");
+if (!cmd || !root || !fs.existsSync(root)) fail("usage: verify.mjs <destinations|search|fetch|semi|readmit|absolutes|knowledge|correct|revert|corrections|links|status> --root <package> … (see the header of scripts/verify.mjs)");
 const reader = liveReader(root);
 const inputs = () => { const d = opt("--inputs"); if (!d || !fs.existsSync(d)) fail("--inputs <dir> (the source corpus directory) is required"); return d; };
 const only = () => (opt("--units") ? opt("--units").split(",").filter(Boolean) : null);
@@ -118,6 +119,11 @@ try {
   if (cmd === "readmit") {
     const dir = inputs(), r = readmitRecorded(root, reader, { texts: pinnedTexts(fsInputReader(dir)) });
     syncReferenceRecord(root, dir); out({ readmitted: r }); process.exit(0);
+  }
+  if (cmd === "absolutes") {
+    const results = await reviewAbsolutes(root, reader, { verifier: headlessVerifier(), only: only(), onProgress: log });
+    const by = {}; for (const r of results) for (const c of r.classes.length ? r.classes : [r.status]) by[c] = (by[c] || 0) + 1;
+    out({ units: results.length, bySentence: by, costUsd: Number(results.reduce((a, r) => a + (r.costUsd || 0), 0).toFixed(4)) }); process.exit(0);
   }
   if (cmd === "knowledge") {
     const results = await verifyKnowledge(root, reader, { verifier: headlessVerifier(), only: only(), onProgress: log });

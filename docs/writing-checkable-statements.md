@@ -4,9 +4,11 @@ Every specific fact in a teaching unit (a value, a date, a name, a superlative, 
 a pinned source by a context-blind verifier. The harness admits the fact only when a verbatim quote carries it.
 Write so that a true statement *can* be shown true.
 
-**Avoid general absolute statements** (operator, decision D29). "Only temperature changes K", "always", "never" and
-"every" claim more than any source can show. A correct sentence of that kind still stays an open obligation, and it
-is often imprecise as well: "K depends only on the reacting species" leaves out temperature.
+**Avoid general absolute statements** (operator, decisions D29 and D30). "Only temperature changes K", "always",
+"never" and "every" claim more than any source can show, and they are often imprecise as well: "K depends only on the
+reacting species" leaves out temperature. Every absolute is read by a context reviewer, an agent and not the
+instructor. Casual usage passes. A scientific absolute passes when its section scopes it. An over-general one comes
+back to you, the agent, with a suggested rewording.
 
 **When exclusivity is the point, name the set in the same sentence, in words:**
 
@@ -26,5 +28,8 @@ the quotient moves".
 **Name quantities and constants in words where the claim depends on them.** "the equilibrium constant" can be matched
 in a source; "$K$" cannot.
 
-Gate findings: an open absolute is an `absolute-unscoped` obligation (name the set, reword, or the instructor
-confirms it once); a scoped one is checked like any other semi-mechanical fact (`evidence-missing` until admitted).
+Gate findings:
+- An absolute not yet reviewed is `absolute-unreviewed`. Run `node scripts/verify.mjs absolutes`.
+- An over-general one is `absolute-overgeneral`: a question routed to you, the agent. Reword it; it reaches the
+  instructor only if you cannot.
+- A scoped "only" is checked like any other semi-mechanical fact (`evidence-missing` until admitted).

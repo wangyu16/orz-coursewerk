@@ -16,7 +16,7 @@ import { admit, locate } from "../scripts/lib/verify/admission.mjs";
 import { bundleLeaks, replayVerifier, selectPassages, semiBundle } from "../scripts/lib/verify/dispatch.mjs";
 import { fsInputReader, pinnedTexts, pinReference, readReferences, syncReferenceRecord } from "../scripts/lib/verify/references.mjs";
 import { allowed, fetchAndPin, queryFor, resolveLinks, searchWikipedia } from "../scripts/lib/verify/retrieval.mjs";
-import { applyCorrection, correctionsToShow, revertCorrection, verifyKnowledge, verifySemi } from "../scripts/lib/verify/verdicts.mjs";
+import { applyCorrection, correctionsToShow, reviewAbsolutes, revertCorrection, verifyKnowledge, verifySemi } from "../scripts/lib/verify/verdicts.mjs";
 import { readConfig, writeConfig } from "../scripts/lib/records/config.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -347,20 +347,46 @@ test("[req.absolute.scope] [req.verdict.semi-mechanical] D29: a scoped exclusivi
   assert.equal(admit({ claims, passages, texts, raw: ans(all[1], all[2]), nonce: "n" }).status, "not-found", "the member itself must be stated, not negated");
 });
 
-test("[req.absolute.scope] D29: an open absolute is an obligation to name the set or reword; the instructor's one confirmation clears it", async (t) => {
+test("[req.absolute.scope] [req.absolute.review] D29/D30: an open absolute is not sent to the source verifier; it waits for a context review, which the agent runs — not the instructor", async (t) => {
   const p = copy(t);
   const id = "u-study-guide-chemical-equilibrium-common-misconceptions-5";
-  const open = () => coreObligations(p.root, p.reader, "t").filter((f) => f.kind === "absolute-unscoped" && f.units.includes(id));
-  assert.equal(open().length, 1);
+  const waiting = () => coreObligations(p.root, p.reader, "t").filter((f) => f.kind === "absolute-unreviewed" && f.units.includes(id));
+  assert.equal(waiting().length, 1);
   const prompts = [];
   await verifySemi(p.root, p.reader, { texts: texts(p), verifier: async (pr) => { prompts.push(pr); return { mode: "replay", raw: "" }; }, only: [id] });
-  assert.ok(prompts.every((pr) => !/only temperature changes/.test(pr)), "an open absolute is never sent to a verifier");
-  confirmUnits(p.root, p.reader, [id], { what: "fact" }, I);
-  assert.equal(open().length, 0);
-  // rewording with the set named turns it into a checkable conjunction
-  const q = copy(t);
-  beginSession(q.root, q.reader, AGENT);
-  q.edit("study-guide/chemical-equilibrium.md", (x) => x.replace("No — only temperature changes $K$;", "No — of concentration, pressure and temperature, only temperature changes $K$;"));
-  indexAndStamp(q.root, q.reader, { as: "agent", party: AGENT });
-  assert.equal(coreObligations(q.root, q.reader, "t").filter((f) => f.kind === "absolute-unscoped" && f.units.includes(id)).length, 0);
+  assert.ok(prompts.every((pr) => !/only temperature changes/.test(pr)), "an open absolute is never sent to the source verifier");
+  // the context review: the reviewer reads the section and classifies the sentence
+  const review = (cls, extra = {}) => replayVerifier((prompt) => ({ nonce: nonceOf(prompt), sentences: prompt.split("\nSENTENCES\n")[1].split("\n\nCONTEXT")[0].split("\n").filter((l) => /^\d+\. /.test(l)).map((_, i) => ({ n: i + 1, class: cls, ...extra })) }));
+  const res = await reviewAbsolutes(p.root, p.reader, { verifier: review("over-general", { why: "pressure changes of a gas-phase equilibrium can change K for a non-ideal mixture", suggestion: "Of concentration, a catalyst and temperature, only temperature changes K." }), only: [id] });
+  assert.equal(res[0].status, "reviewed");
+  assert.equal(waiting().length, 0, "reviewed: nothing waits for the instructor");
+  const r = runCheckpoint({ root: p.root, checkpoint: "V8", profile: "public", registry: reg("ms8-verdicts"), inputsDir: p.inputs });
+  const q = r.findings.filter((f) => f.kind === "absolute-overgeneral");
+  assert.equal(q.length, 1); assert.equal(q[0].statusClass, "question"); assert.equal(q[0].route, "agent", "the agent rewords it; it reaches the instructor only if it stays open");
+  // an edit to the sentence needs a new review; the instructor's one confirmation also clears it
+  const p2 = copy(t);
+  confirmUnits(p2.root, p2.reader, [id], { what: "fact" }, I);
+  assert.equal(coreObligations(p2.root, p2.reader, "t").filter((f) => f.kind === "absolute-unreviewed" && f.units.includes(id)).length, 0);
+});
+
+test("[req.absolute.review] D30: casual usage passes; 'accurate in context' must quote the context; an unparseable or unlogged review counts for nothing", async (t) => {
+  const { absoluteSentences } = await import("../scripts/lib/verify/absolutes.mjs");
+  assert.deepEqual(absoluteSentences("- **\"Raising the temperature always increases the yield.\"** No — for an exothermic reaction it decreases."), [], "a quoted misconception is not the unit's own absolute");
+  assert.deepEqual(absoluteSentences("The response only *partially* offsets it. It is evaluated not only at equilibrium."), []);
+  assert.deepEqual(absoluteSentences("Of concentration, pressure and temperature, only temperature changes the equilibrium constant."), [], "a scoped only is checked against sources (D29)");
+  const p = copy(t);
+  const all = loadUnits(p.root, p.reader).filter((u) => absoluteSentences(u.text).length);
+  const waiting = () => coreObligations(p.root, p.reader, "t").filter((f) => f.kind === "absolute-unreviewed").length;
+  const n0 = waiting();
+  const sentencesOfPrompt = (prompt) => prompt.split("\nSENTENCES\n")[1].split("\n\nCONTEXT")[0].split("\n").filter((l) => /^\d+\. /.test(l));
+  const [a, b, c] = all.slice(0, 3).map((u) => u.id);
+  await reviewAbsolutes(p.root, p.reader, { verifier: replayVerifier((pr) => ({ nonce: nonceOf(pr), sentences: sentencesOfPrompt(pr).map((_, i) => ({ n: i + 1, class: "casual" })) })), only: [a] });
+  await reviewAbsolutes(p.root, p.reader, { verifier: replayVerifier((pr) => ({ nonce: nonceOf(pr), sentences: sentencesOfPrompt(pr).map((_, i) => ({ n: i + 1, class: "accurate-in-context", context: "words that are nowhere in the section" })) })), only: [b] });
+  await reviewAbsolutes(p.root, p.reader, { verifier: replayVerifier(() => "I think these are fine."), only: [c] });
+  assert.equal(waiting(), n0 - 1, "only the well-formed casual review counts");
+  // a hand-written review record (not in the log) does not count either
+  const recs = fs.readdirSync(path.join(p.root, "metadata", "verification")).map((f) => JSON.parse(fs.readFileSync(path.join(p.root, "metadata", "verification", f), "utf8")));
+  const forged = { ...recs.find((r) => r.unit === a), unit: b, dispatch: "d-forgedabsolute00" };
+  fs.writeFileSync(path.join(p.root, "metadata", "verification", "d-forgedabsolute00.json"), JSON.stringify(forged));
+  assert.equal(waiting(), n0 - 1);
 });

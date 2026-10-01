@@ -2,6 +2,8 @@
 // what every recorded verifier dispatch establishes against the pinned texts, and checks the evidence units carry:
 //   fact-contradicted   (defect)   an uncontested contradiction of a quantity, quoted from a pinned text;
 //   fact-disputed       (question) a contradicted year or name, or a contradiction another source contests (D12-F);
+//   absolute-overgeneral (question, routed to the agent) a context review found a scientific absolute broader than the
+//                                  truth; the agent rewords it (D30) — the instructor sees it only if it stays open;
 //   knowledge-concern   (question) a blind verifier's concern about a knowledge-based unit — never a defect, never
 //                                  an automatic change (req.knowledge.no-autochange);
 //   evidence-unsupported (defect)  quote-verified evidence that does not re-derive: no dispatch record, a record that
@@ -15,6 +17,7 @@ import { checkableClaims, claimsHash } from "../lib/verify/claims.mjs";
 import { supports } from "../lib/verify/admission.mjs";
 import { readDispatches } from "../lib/verify/dispatch.mjs";
 import { pinnedTexts, snapshotInputReader } from "../lib/verify/references.mjs";
+import { absolutesHash, readAbsoluteReview } from "../lib/verify/absolutes.mjs";
 import { checksCurrentClaims, correctionLogged, dispatchLogged, knowledgeConcerns, logRecordsOf, rederive } from "../lib/verify/verdicts.mjs";
 import { base, recheckByRerun } from "./_shared.mjs";
 
@@ -51,6 +54,14 @@ function run(s) {
   for (const r of records) {
     const u = units.get(r.unit);
     if (!u || r.factHash !== factHash(u.text) || !dispatchLogged(r, log)) continue;
+    if (r.kind === "absolute") {
+      // a context review (D30): an over-general scientific absolute is a question for the agent, with a rewording
+      if (r.absolutesHash !== absolutesHash(u.text)) continue;
+      const v = readAbsoluteReview(r.answer?.raw, r.bundle?.nonce, r.sentences || [], r.context || "");
+      if (v.ok) for (const x of v.results.filter((y) => y.class === "over-general"))
+        out.push({ kind: "absolute-overgeneral", units: [u.id], evidence: { type: "judgment", note: x.why, quote: x.sentence, suggestion: x.suggestion, dispatch: r.dispatch } });
+      continue;
+    }
     if (r.kind === "knowledge") {
       for (const c of knowledgeConcerns(r, u.text))
         out.push({ kind: "knowledge-concern", units: [u.id], evidence: { type: "judgment", note: c.problem, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch } });
@@ -98,6 +109,7 @@ export default {
       { kind: "fact-contradicted", statusClass: "defect", evidenceType: "quote", route: "agent" },
       { kind: "fact-disputed", statusClass: "question", evidenceType: "conflict", route: "digest" },
       { kind: "knowledge-concern", statusClass: "question", evidenceType: "judgment", route: "digest" },
+      { kind: "absolute-overgeneral", statusClass: "question", evidenceType: "judgment", route: "agent" },
       { kind: "evidence-unsupported", statusClass: "defect", evidenceType: "rule", route: "agent" },
       { kind: "dispatch-unlogged", statusClass: "defect", evidenceType: "rule", route: "agent" },
       { kind: "dispatch-record-missing", statusClass: "defect", evidenceType: "rule", route: "agent" },

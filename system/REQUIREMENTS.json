@@ -1318,8 +1318,8 @@
         "T1",
         "T4"
       ],
-      "statement": "A general absolute (\"only\" with no comparison set named in words) is never cleared by quote evidence: it is an obligation to name the set or reword (one instructor confirmation also clears it); a scoped one is admitted only when the member is affirmed and every named alternative is denied by a quote.",
-      "source": "D29 (operator)",
+      "statement": "A general absolute (\"only\" with no comparison set named in words) is never cleared by quote evidence; a scoped one is admitted only when the member is affirmed and every named alternative is denied by a quote.",
+      "source": "D29, D30 (operator)",
       "status": "closed",
       "evidence": {
         "T1": [
@@ -1329,6 +1329,26 @@
         "T4": [
           "system/rounds/P7-verdicts.md",
           "tests/verdict-redteam.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.absolute.review",
+      "phase": "P7",
+      "tiers": [
+        "T1",
+        "T2"
+      ],
+      "statement": "Every absolute statement (only, always, never, every, all, none) outside quoted misconceptions and scoped exclusivities is read by a logged context review before the gate passes; casual usage and context-scoped claims pass, an over-general scientific absolute is a question routed to the agent with a rewording — the instructor is not asked unless the agent cannot resolve it.",
+      "source": "D30 (operator)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/verdict-path.test.mjs",
+          "tests/verdict-redteam.test.mjs"
+        ],
+        "T2": [
+          "system/rounds/P7-verdicts.md"
         ]
       }
     }

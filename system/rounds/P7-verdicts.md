@@ -112,3 +112,21 @@ scoped claims (≈ $1.4) admitted none. The verifier quoted sources that state t
 
 Gate: no defects, 0 open absolutes, 22 evidence obligations (10 of them exercise data), and 2 `fact-disputed`
 questions (sources disagree on the year of the law of mass action).
+
+## Live run after D30 — context review of absolutes (C2), `req.absolute.review` T2
+
+D30 replaces D29's `absolute-unscoped` obligation. Every absolute (outside quoted misconceptions and scoped "only"s)
+is read by a context-blind reviewer that sees its section. Casual usage passes, and a claim scoped by its context
+passes. An over-general scientific absolute is a question routed to the agent, not to the instructor.
+
+**Run.** 18 units, about $0.39. Results by sentence: 11 accurate in context, 5 casual, 1 over-general, and 2 reviews
+first unscorable.
+- **Unscorable.** The harness refused scoping words taken from the sentence itself ("at constant volume"). That rule
+  was wrong, because a self-scoped absolute is legitimate, so it was dropped. The recorded reviews then counted with
+  no new dispatch.
+- **Over-general.** The slide heading "The two changes that do nothing" (a catalyst does change how fast equilibrium
+  is reached). The agent reworded it to "The two changes that leave the equilibrium unchanged". No instructor act
+  was needed.
+
+**Gate.** No defects, no unreviewed absolutes, 22 evidence obligations (10 of them exercise data), 2 disputed-fact
+questions, 1 short guide entry.

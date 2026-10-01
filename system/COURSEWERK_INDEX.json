@@ -137,7 +137,7 @@
       "id": "repo:docs/writing-checkable-statements.md",
       "path": "docs/writing-checkable-statements.md",
       "type": "documentation",
-      "hash": "9b0616aea9eea19a441f6ac36a04c96d629d8ce09acb1936f868e0c3d1ca4f2f"
+      "hash": "6f9281e51eaf08b63a8450bc90c6a13f7ee326b5e8ae20d3b62702333a219216"
     },
     {
       "id": "repo:FEATURES.md",
@@ -419,7 +419,7 @@
       "id": "repo:scripts/lib/core/obligations.mjs",
       "path": "scripts/lib/core/obligations.mjs",
       "type": "kernel",
-      "hash": "f7c7ec03ed1459ccc9f1435834441bdb4ef870a179faac8e24d3d14cea48a49c"
+      "hash": "dfc2d21df0ef709e39bd8320d8a5d46041dd018b7090797df96c6a5154023fe8"
     },
     {
       "id": "repo:scripts/lib/core/package_reader.mjs",
@@ -680,6 +680,12 @@
       "hash": "6a9600d7b5ea8bc92c88b4f43b15404679797291eb7cc01fc8820773602f3aec"
     },
     {
+      "id": "repo:scripts/lib/verify/absolutes.mjs",
+      "path": "scripts/lib/verify/absolutes.mjs",
+      "type": "kernel",
+      "hash": "2057648e9686921b6d1f9d32472f39d53be1a321d1d9669c2d80f6389ac1afee"
+    },
+    {
       "id": "repo:scripts/lib/verify/admission.mjs",
       "path": "scripts/lib/verify/admission.mjs",
       "type": "kernel",
@@ -695,7 +701,7 @@
       "id": "repo:scripts/lib/verify/dispatch.mjs",
       "path": "scripts/lib/verify/dispatch.mjs",
       "type": "kernel",
-      "hash": "fcc4734653a148bf8d0c95cf96f33f1c527f80c96826a17523bedb0fd453d289"
+      "hash": "5f8e77de3d4f8f62490c1f31aaa94d164423741b3b4a5ffa09ee97d9288a3e4f"
     },
     {
       "id": "repo:scripts/lib/verify/references.mjs",
@@ -713,7 +719,7 @@
       "id": "repo:scripts/lib/verify/verdicts.mjs",
       "path": "scripts/lib/verify/verdicts.mjs",
       "type": "kernel",
-      "hash": "4d86f5a4a23d9dbe817cf095e25fd74a347052f0f52b61d319e4d8b5d5045a64"
+      "hash": "046c28de88820480c1a8ae02f1aa7071b51757af7d177821316b6cc609adb730"
     },
     {
       "id": "repo:scripts/lib/visual_review.mjs",
@@ -773,7 +779,7 @@
       "id": "repo:scripts/modules/ms8-verdicts.mjs",
       "path": "scripts/modules/ms8-verdicts.mjs",
       "type": "executable",
-      "hash": "a4fde6b4c28bbf03bcc32727ad4cf045b6d29010f310c70bc2c578c666a7dd38"
+      "hash": "7549e0c40b85fc42e391c937fd40a4cb5cd390b0c008bd2dfbd3f501d3a2a5aa"
     },
     {
       "id": "repo:scripts/modules/README.md",
@@ -857,7 +863,7 @@
       "id": "repo:scripts/verify.mjs",
       "path": "scripts/verify.mjs",
       "type": "executable",
-      "hash": "f37ce7ddd311174f8669cf2502104afed057f0ab7a51e2435e088840f4fd138e"
+      "hash": "f77edb2e6bc11779738e31ec939632d009417d54bf295e2402c88f76ff6cb315"
     },
     {
       "id": "repo:site/assets/coursewerk-favicon.svg",
@@ -1019,7 +1025,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "3a742f061f2d660dcc7954f8d0344109ae4759de8c382d2ba0a46fcf6d901818"
+      "hash": "ad1287c838313d5b286d70f619ed40cbcdd0caaa4e88b4400272dc6b5e52085b"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1037,7 +1043,7 @@
       "id": "repo:system/rounds/P7-verdicts.md",
       "path": "system/rounds/P7-verdicts.md",
       "type": "system-governance",
-      "hash": "3cfa45a1f781d8eef49de5121596868edc2d1c9d6b6249e245db3565b83733a2"
+      "hash": "cfbad35e964fa797b9cf8989169ee3da2b6294d7518651babe671f84196f789b"
     },
     {
       "id": "repo:system/schemas/claim.schema.json",
@@ -1247,7 +1253,7 @@
       "id": "repo:tests/core-cli.test.mjs",
       "path": "tests/core-cli.test.mjs",
       "type": "test",
-      "hash": "fca446dc76a4402a2178e180697a3ad84d6d8a0217754e3dd5efe8bc75a3c2bf"
+      "hash": "a35996321aaaf4ba30ca3ed6018dc6cd90d132eedc91f876b015f405f1b1b739"
     },
     {
       "id": "repo:tests/core-obligations.test.mjs",
@@ -1607,19 +1613,19 @@
       "id": "repo:tests/verdict-path.test.mjs",
       "path": "tests/verdict-path.test.mjs",
       "type": "test",
-      "hash": "6de2302c4ec5ae994938359ee6e1cbeaf59c04cf2b0025d9daf87c4f63b44224"
+      "hash": "39af6a077484c137f4906a4d3019186fb72d9072f62161e6f6f8bee4860469d1"
     },
     {
       "id": "repo:tests/verdict-redteam.test.mjs",
       "path": "tests/verdict-redteam.test.mjs",
       "type": "test",
-      "hash": "70d9e44c2d9c838ade450cc518bd06974f5c75219ef7d22a4cf8e8a3a2b406cf"
+      "hash": "e566844878f727cf4b625ef6da6e9469e655e834ca86148a6cb0c50adf49ed79"
     },
     {
       "id": "repo:tests/wiring-modules.test.mjs",
       "path": "tests/wiring-modules.test.mjs",
       "type": "test",
-      "hash": "841bf8ce0243c4c1141f78cb39b65a3f7cb5aa4dc21f1e7fd07a0fbf9348b5c3"
+      "hash": "58088ee79d23522c76fe42ac25121750673a8cead06b71dd2661f04bcdae7c86"
     },
     {
       "id": "repo:tests/wiring.test.mjs",
@@ -2895,6 +2901,15 @@
       "P7"
     ],
     "requirements": [
+      {
+        "id": "req.absolute.review",
+        "phase": "P7",
+        "tiers": [
+          "T1",
+          "T2"
+        ],
+        "status": "closed"
+      },
       {
         "id": "req.absolute.scope",
         "phase": "P7",

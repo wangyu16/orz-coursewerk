@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "planId": "8e6f9c9a3179817e4da005e72bb4c412529268d30d2c2b85ccfc1ac7d323fb15",
+  "baseRef": "HEAD",
+  "baseTip": "79cda53371768528f6cbecf24536ac2d44d76a3c",
+  "baseCommit": "79cda53371768528f6cbecf24536ac2d44d76a3c",
+  "reviewedHead": "79cda53371768528f6cbecf24536ac2d44d76a3c",
+  "changed": [
+    "docs/writing-checkable-statements.md",
+    "scripts/lib/core/obligations.mjs",
+    "scripts/lib/verify/absolutes.mjs",
+    "scripts/lib/verify/dispatch.mjs",
+    "scripts/lib/verify/verdicts.mjs",
+    "scripts/modules/ms8-verdicts.mjs",
+    "scripts/verify.mjs",
+    "system/REQUIREMENTS.json",
+    "system/rounds/P7-verdicts.md",
+    "tests/core-cli.test.mjs",
+    "tests/verdict-path.test.mjs",
+    "tests/verdict-redteam.test.mjs",
+    "tests/wiring-modules.test.mjs"
+  ],
+  "requiredReview": [
+    "docs/writing-checkable-statements.md",
+    "scripts/lib/core/obligations.mjs",
+    "scripts/lib/verify/absolutes.mjs",
+    "scripts/lib/verify/dispatch.mjs",
+    "scripts/lib/verify/verdicts.mjs",
+    "scripts/modules/ms8-verdicts.mjs",
+    "scripts/verify.mjs",
+    "system/REQUIREMENTS.json",
+    "system/rounds/P7-verdicts.md",
+    "tests/core-cli.test.mjs",
+    "tests/verdict-path.test.mjs",
+    "tests/verdict-redteam.test.mjs",
+    "tests/wiring-modules.test.mjs"
+  ],
+  "reviewed": [
+    "docs/writing-checkable-statements.md",
+    "scripts/lib/core/obligations.mjs",
+    "scripts/lib/verify/absolutes.mjs",
+    "scripts/lib/verify/dispatch.mjs",
+    "scripts/lib/verify/verdicts.mjs",
+    "scripts/modules/ms8-verdicts.mjs",
+    "scripts/verify.mjs",
+    "system/REQUIREMENTS.json",
+    "system/rounds/P7-verdicts.md",
+    "tests/core-cli.test.mjs",
+    "tests/verdict-path.test.mjs",
+    "tests/verdict-redteam.test.mjs",
+    "tests/wiring-modules.test.mjs"
+  ],
+  "impactedClaims": [],
+  "testResults": [
+    {
+      "path": "tests/*.test.mjs (full suite 710/710)",
+      "status": "passed"
+    }
+  ],
+  "attestation": "D30 (operator): absolute statements are reviewed by an agent reading the context, not by the instructor. New scripts/lib/verify/absolutes.mjs (detection outside quoted misconceptions, hedges, 'not only' and scoped 'only'; context bundle; deterministic reading of the review: casual, accurate-in-context with scoping words checked against the section, over-general with reason); verdicts.mjs reviewAbsolutes (one logged dispatch per unit, section context); core: absolute-unreviewed replaces D29's absolute-unscoped, cleared by a logged well-formed review of the current sentences or one instructor confirmation; MS8 absolute-overgeneral question routed to the agent; verify CLI 'absolutes'. Docs updated (writing-checkable-statements). Impacted files grepped for the retired kind 'absolute-unscoped': only the round record (history) and decision log mention it. Count tests updated (31 absolute-unreviewed on the fixture). Suite 710/710; register ready.",
+  "generatedIndexHash": "fea7a47487c4fdcb6b84a59a2799bdb01cc2bf34fe23b6ff9a762ebba441d0d1",
+  "acceptedAt": "2026-10-01T19:04:38.842Z"
+}
