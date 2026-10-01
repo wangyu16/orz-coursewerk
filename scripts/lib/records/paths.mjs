@@ -7,7 +7,7 @@ export const RECORD_PATHS = Object.freeze({
   findings: "metadata/FINDINGS.json",
   log: "metadata/LOG.jsonl",
   unitsDir: "metadata/units",
-  registry: "coursewerk.modules.json",
+  registry: "metadata/modules.json", // inside metadata/: the Alembic contract allows no extra root files
 });
 
 /** The sidecar path for a deliverable's units, e.g. `study-guide/ch1.md` → `metadata/units/study-guide/ch1.md.json`. */

@@ -31,7 +31,8 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { makeFinding } from "../records/findings.mjs";
 import { validateRegistry } from "../records/registry.mjs";
-import { honouredPromotions } from "./promotion.mjs";
+import { honouredDisables, honouredPromotions } from "./promotion.mjs";
+import { standardRegistry } from "../records/registry.mjs";
 import { validateManifest } from "./manifest.mjs";
 import { createSnapshot, treeId } from "./snapshot.mjs";
 
@@ -102,8 +103,8 @@ function hostRun(file, snapshotText, timeoutMs) {
  * @param {object} o.registry    the package's module registry
  * @param {string} [o.moduleDir] where module files live (the harness's scripts/modules by default)
  */
-export function runCheckpoint({ root, checkpoint, profile, registry = { schemaVersion: 1, modules: [] }, moduleDir = DEFAULT_MODULE_DIR, timeoutMs = MODULE_TIMEOUT_MS }) {
-  const snapshot = createSnapshot(root, { profile, checkpoint });
+export function runCheckpoint({ root, checkpoint, profile, registry = { schemaVersion: 1, modules: [], __noStandard: true }, moduleDir = DEFAULT_MODULE_DIR, timeoutMs = MODULE_TIMEOUT_MS, inputsDir = null }) {
+  const snapshot = createSnapshot(root, { profile, checkpoint, inputsDir });
   const findings = [];
   const wiring = { checkpoint, profile, basis: snapshot.id, ran: [], skipped: [], produced: {}, discarded: [], manifests: {} };
   const registryProblems = registry?.__readError ? [registry.__readError] : validateRegistry(registry);
@@ -112,6 +113,19 @@ export function runCheckpoint({ root, checkpoint, profile, registry = { schemaVe
     return { snapshot, findings, wiring };
   }
   const promoted = honouredPromotions(root);
+  // A package may not quietly drop a standard module: a standard module missing from the registry, or disabled, needs the
+  // instructor's logged module-change "disable" decision; otherwise it is a skeleton defect and the module runs anyway.
+  if (moduleDir === DEFAULT_MODULE_DIR && !registry.standard && !registry.__noStandard) {
+    const disabled = honouredDisables(root);
+    const entries = new Map((registry.modules || []).map((m) => [m.name, m]));
+    for (const std of standardRegistry().modules) {
+      const e = entries.get(std.name);
+      if (e && e.enabled) continue;
+      if (disabled.has(std.name)) continue;
+      findings.push(skeletonFinding(snapshot.id, "standard-module-dropped", "defect", { type: "rule", rule: "a standard module is disabled only by the instructor's logged decision", module: std.name }));
+      registry = { ...registry, modules: [...(registry.modules || []).filter((m) => m.name !== std.name), std] };
+    }
+  }
   const snapshotText = JSON.stringify({ id: snapshot.id, profile, checkpoint, paths: snapshot.paths, files: snapshot.files });
   // lastTree = the tree as the previous module left it; a change between modules is unattributed, never blamed on
   // the next module.

@@ -174,11 +174,11 @@ system/                        # Coursewerk claims, correlations, accepted index
 A skeleton-and-modules redesign is being built on this branch. Its gate can already be run on a package —
 `node scripts/gate.mjs --root package` (exit 0 = can publish, 1 = blocked, 2 = usage, 3 = the gate itself failed) —
 but it does not replace `check_oer.mjs` and `pack.mjs` until the redesign's workflow lands. Checks are modules under
-`scripts/modules/`, each run in its own process; see `system/REQUIREMENTS.json` for what the redesign must deliver
+`scripts/modules/` (the seven stable ones in `standard.json` run for every package), each in its own process; see `system/REQUIREMENTS.json` for what the redesign must deliver
 and the evidence that closes each requirement.
 
 Spine v2 tools (anchors, parsed assessment guides, approvals): `node scripts/spine.mjs check|migrate|anchor|status|preview|approve|version|steering --root package`.
-A package opts in with `coursewerk.json` (`"spine": 2`); approvals are the instructor's words, recorded in the package's decision log.
+A package opts in with `metadata/coursewerk.json` (`"spine": 2`); approvals are the instructor's words, recorded in the package's decision log.
 Unit index (every deliverable split into checkable units with stable ids and recorded origins): `node scripts/units.mjs begin|index|claim|status|link|confirm|obligations|restamp --root package` — the deterministic core's
 obligations (facts without evidence, unlinked units, uncovered objectives, short guide entries, stale dependents) block the gate.
 

@@ -28,7 +28,7 @@ test("[req.core.coverage-obligation] [req.core.reverify-obligation] the real C2 
   // at publish: every objective covered; what is still owed is named — facts awaiting evidence, and the one guide entry short of a question
   let g = gateJson(root, "V8");
   assert.equal(g.status, 1);
-  const kinds = g.findings.reduce((a, f) => ((a[f.kind] = (a[f.kind] || 0) + 1), a), {});
+  const kinds = g.findings.filter((f) => f.module === "skeleton").reduce((a, f) => ((a[f.kind] = (a[f.kind] || 0) + 1), a), {}); // the core's own findings
   assert.deepEqual(kinds, { "evidence-missing": 42, "guide-entry-short": 1 });
   assert.match(g.findings.find((f) => f.kind === "guide-entry-short").evidence.what, /guide\.chemical-equilibrium\.evidence-design \(has 0 of 1\)/);
   assert.deepEqual(g.approvalProblems, []);

@@ -17,7 +17,15 @@ function fileMark(full) {
   } catch (e) { return `unreadable:${e.code || e.message}`; }
 }
 const SKIP_FILES = new Set(["metadata/LOG.jsonl.lock"]);
-const TEXT_EXT = /\.(md|json|jsonl|txt|csv|yml|yaml|svg|html|mjs|js|css|bib)$/i;
+const TEXT_EXT = /\.(md|json|jsonl|txt|csv|yml|yaml|svg|html|mjs|js|css|bib|cff)$/i;
+const MAX_CONTENT = 8 * 1024 * 1024;
+/** Text for anything that is UTF-8 without NUL bytes (LICENSE, CITATION…); base64 bytes for the rest, so a module's
+ * materialized copy is faithful (round P6: an extensionless LICENSE arrived empty and failed its canonical-text check). */
+function contentOf(rel, buf) {
+  if (buf.length > MAX_CONTENT) return { text: null };
+  if (TEXT_EXT.test(rel) || (!buf.includes(0) && Buffer.from(buf.toString("utf8"), "utf8").equals(buf))) return { text: buf.toString("utf8") };
+  return { text: null, b64: buf.toString("base64") };
+}
 
 function walk(root, dir = root, out = [], skip = SKIP_DIRS) {
   let entries;
@@ -57,14 +65,25 @@ export function treeId(root) {
   return sha256(canonicalJson(entries.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))));
 }
 
-export function createSnapshot(root, { profile, checkpoint } = {}) {
+/** The source corpus (inputs/) joins the snapshot under this prefix; modules read it, never write it. */
+export const INPUTS_PREFIX = "@inputs/";
+
+export function createSnapshot(root, { profile, checkpoint, inputsDir = null } = {}) {
   root = path.resolve(root);
   const files = Object.create(null);
+  if (inputsDir && fs.existsSync(inputsDir)) {
+    const base = path.resolve(inputsDir);
+    for (const rel of walk(base).filter((e) => typeof e === "string").sort()) {
+      const full = path.join(base, rel);
+      let buf = null; try { if (fs.statSync(full).size <= LARGE) buf = fs.readFileSync(full); } catch { buf = null; }
+      files[INPUTS_PREFIX + rel] = buf ? { hash: sha256(buf), text: buf.length < 32 * 1024 * 1024 ? buf.toString("utf8") : null } : { hash: fileMark(full), text: null };
+    }
+  }
   for (const rel of walk(root).filter((e) => typeof e === "string").sort()) {
     const full = path.join(root, rel);
     let buf = null;
     try { if (fs.statSync(full).size <= LARGE) buf = fs.readFileSync(full); } catch { buf = null; }
-    files[rel] = buf ? { hash: sha256(buf), text: TEXT_EXT.test(rel) && buf.length < 8 * 1024 * 1024 ? buf.toString("utf8") : null } : { hash: fileMark(full), text: null };
+    files[rel] = buf ? { hash: sha256(buf), ...contentOf(rel, buf) } : { hash: fileMark(full), text: null };
   }
   const id = sha256(canonicalJson(Object.entries(files).map(([rel, f]) => [rel, f.hash])));
   const snap = { id, profile, checkpoint, files, paths: Object.keys(files) };

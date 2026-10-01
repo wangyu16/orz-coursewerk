@@ -24,10 +24,21 @@ export function validateRegistry(registry) {
 
 
 /** The package's registry; an absent file is the empty registry. Throws on a non-regular, oversized or non-JSON file. */
+import { fileURLToPath } from "node:url";
+export const STANDARD_REGISTRY_FILE = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "modules", "standard.json");
+/** The harness's standard registry (every stable module); a package without its own registry runs these (P6). */
+export function standardRegistry() {
+  const r = JSON.parse(fs.readFileSync(STANDARD_REGISTRY_FILE, "utf8"));
+  return { schemaVersion: 1, modules: r.modules };
+}
+
 export function readRegistry(root) {
   const text = readRegularFile(recordFile(root, RECORD_PATHS.registry), 1024 * 1024);
-  if (text === null) return { schemaVersion: 1, modules: [] };
-  try { return JSON.parse(text); } catch (e) { throw new Error(`coursewerk.modules.json is not valid JSON (${e.message})`); }
+  if (text === null) return { ...standardRegistry(), standard: true };
+  let r;
+  try { r = JSON.parse(text); } catch (e) { throw new Error(`metadata/modules.json is not valid JSON (${e.message})`); }
+  if (r && typeof r === "object") { delete r.standard; delete r.__noStandard; } // runner-internal flags never come from a package
+  return r;
 }
 
 export function writeRegistry(root, registry) {

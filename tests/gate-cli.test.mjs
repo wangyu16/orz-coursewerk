@@ -25,9 +25,11 @@ test("[req.gate.log-verified] the gate checks the decision log on every run of t
   fs.cpSync(path.join(HERE, "fixtures", "c2-chemistry", "package"), root, { recursive: true });
 
   // no git history: the log cannot be checked → an obligation blocks
+  const logKinds = (rep) => rep.findings.filter((f) => f.kind.startsWith("log-")).map((f) => `${f.module}/${f.kind}`);
   let r = gate(root);
   assert.equal(r.status, 1);
-  assert.deepEqual(r.report.findings.map((f) => `${f.module}/${f.kind}`), ["skeleton/log-unverifiable"]);
+  assert.deepEqual(logKinds(r.report), ["skeleton/log-unverifiable"]);
+  assert.equal(r.report.wiring.modulesRan.length, 7, "a package without a registry runs the standard modules");
 
   // a committed log, then an append through the documented record writer: the package can publish
   git(root, "init", "-q"); git(root, "config", "user.name", "T"); git(root, "config", "user.email", "t@example.invalid");
@@ -38,8 +40,7 @@ test("[req.gate.log-verified] the gate checks the decision log on every run of t
   git(root, "add", "-A"); git(root, "commit", "-q", "-m", "baseline");
   append("steering");
   r = gate(root);
-  assert.equal(r.status, 0, JSON.stringify(r.report?.findings));
-  assert.equal(r.report.canPublish, true);
+  assert.deepEqual(logKinds(r.report), [], "a committed log, extended by the record writer, verifies");
   assert.equal(r.report.basis.length, 64);
 
   // the committed record is rewritten in the working tree: blocked by a skeleton defect
@@ -63,13 +64,13 @@ test("the gate refuses bad usage with a plain message", () => {
 test("round P2-3: the gate CLI never crashes into a false verdict; its own failure has its own exit code", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-gate-err-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  fs.mkdirSync(path.join(root, "coursewerk.modules.json")); // a directory where the registry should be
+  fs.mkdirSync(path.join(root, "metadata", "modules.json"), { recursive: true }); // a directory where the registry should be
   const r = gate(root);
   assert.equal(r.status, 1, "an invalid registry is a blocking obligation, not a crash");
   assert.ok(r.report.findings.some((f) => f.kind === "registry-invalid"));
 });
 
-test("[req.modules.profiles] the gate takes the use profile from FOUNDATION.json's usageProfile", (t) => {
+test("[req.modules.profiles] [req.ms2.two-profiles] the gate takes the use profile from FOUNDATION.json's usageProfile", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-gate-profile-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   fs.mkdirSync(path.join(root, "metadata"));

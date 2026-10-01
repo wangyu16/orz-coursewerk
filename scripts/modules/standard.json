@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "description": "The harness's standard registry: every package runs these unless the instructor has logged a decision to disable one.",
+  "modules": [
+    { "name": "ms1-sources", "version": "1.0.0", "maturity": "stable", "enabled": true },
+    { "name": "ms2-rights", "version": "1.0.0", "maturity": "stable", "enabled": true },
+    { "name": "ms3-format", "version": "1.0.0", "maturity": "stable", "enabled": true },
+    { "name": "ms4-links", "version": "1.0.0", "maturity": "stable", "enabled": true },
+    { "name": "ms5-carriers", "version": "1.0.0", "maturity": "stable", "enabled": true },
+    { "name": "ms6-quotations", "version": "1.0.0", "maturity": "stable", "enabled": true },
+    { "name": "ms7-consistency", "version": "1.0.0", "maturity": "stable", "enabled": true }
+  ]
+}

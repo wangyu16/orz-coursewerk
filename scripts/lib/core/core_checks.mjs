@@ -1,5 +1,5 @@
 // The skeleton's deterministic core checks that concern the spine (D19-A): well-formedness at V1 (and again at V8),
-// and approval problems at V8. Spine v2 packages only (coursewerk.json spine: 2).
+// and approval problems at V8. Spine v2 packages only (metadata/coursewerk.json spine: 2).
 import { makeFinding } from "../records/findings.mjs";
 import { readLogText } from "../records/log.mjs";
 import { checkSpine, parseSpine } from "./spine.mjs";

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // The skeleton gate (redesign P2): run one checkpoint's modules on a package, add the skeleton's own checks, and
 // say whether the package can publish.
-//   node scripts/gate.mjs --root <package> [--checkpoint V8] [--profile public|private] [--json out.json] [--wiring out.json]
+//   node scripts/gate.mjs --root <package> [--checkpoint V8] [--profile public|private] [--inputs <source corpus>] [--json out.json] [--wiring out.json]
 // Exit 0 = can publish; 1 = blocked; 2 = usage error; 3 = the gate itself failed (no verdict — never read as "blocked").
 import fs from "node:fs";
 import path from "node:path";
@@ -37,7 +37,7 @@ if (!["public", "private"].includes(profile)) { console.error("profile must be p
 try {
   let registry;
   try { registry = readRegistry(root); } catch (e) { registry = { schemaVersion: 1, modules: [], __readError: e.message }; }
-  const run = runCheckpoint({ root, checkpoint, profile, registry });
+  const run = runCheckpoint({ root, checkpoint, profile, registry, inputsDir: opt("--inputs") || null });
   const modules = Object.values(run.wiring.manifests).map((manifest) => ({ manifest }));
   // Skeleton core checks for spine v2 packages: well-formedness at V1 and V8; approvals at V8 (D14, D19-A).
   const config = readConfig(root);

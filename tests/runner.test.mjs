@@ -260,12 +260,13 @@ test("[req.modules.no-writes] [req.modules.admission] round P2-2 probes: git his
   assert.notDeepEqual(kinds(run(s, reg(["demo"]))), ["demo/wrong-value:defect"]);
   // 6. the registry must be a regular, valid JSON file
   fs.writeFileSync(path.join(path.dirname(s.root), "outside.json"), JSON.stringify(reg(["demo"])));
-  fs.symlinkSync(path.join(path.dirname(s.root), "outside.json"), path.join(s.root, "coursewerk.modules.json"));
+  fs.mkdirSync(path.join(s.root, "metadata"), { recursive: true });
+  fs.symlinkSync(path.join(path.dirname(s.root), "outside.json"), path.join(s.root, "metadata", "modules.json"));
   assert.throws(() => readRegistry(s.root), /must be a regular file/);
-  fs.rmSync(path.join(s.root, "coursewerk.modules.json"));
-  fs.writeFileSync(path.join(s.root, "coursewerk.modules.json"), "{ not json");
+  fs.rmSync(path.join(s.root, "metadata", "modules.json"));
+  fs.writeFileSync(path.join(s.root, "metadata", "modules.json"), "{ not json");
   assert.throws(() => readRegistry(s.root), /not valid JSON/);
-  assert.deepEqual(kinds(run(s, { schemaVersion: 1, modules: [], __readError: "coursewerk.modules.json is not valid JSON" })), ["skeleton/registry-invalid:obligation"]);
+  assert.deepEqual(kinds(run(s, { schemaVersion: 1, modules: [], __readError: "metadata/modules.json is not valid JSON" })), ["skeleton/registry-invalid:obligation"]);
 });
 
 test("[req.modules.no-writes] [req.modules.manifest] round P2-3 probes: unreadable, huge and vanishing files; open handles; error text; more write targets", (t) => {

@@ -7,7 +7,8 @@
     "P2",
     "P3",
     "P4",
-    "P5"
+    "P5",
+    "P6"
   ],
   "requirements": [
     {
@@ -222,14 +223,15 @@
       ],
       "statement": "Modules only emit findings; they never write deliverables, the spine, steering or the log.",
       "source": "skeleton §6",
-      "status": "deferred",
+      "status": "closed",
       "evidence": {
         "T1": [
           "tests/runner.test.mjs"
+        ],
+        "T2": [
+          "tests/wiring-modules.test.mjs"
         ]
-      },
-      "deferredTo": "P6",
-      "reason": "Mechanism closed at T1 in P2 (tests/runner.test.mjs); T2 needs a wiring report from real runs of real modules, which first exist in P6."
+      }
     },
     {
       "id": "req.modules.admission",
@@ -304,14 +306,12 @@
       ],
       "statement": "Each run produces a wiring report: which modules ran at which checkpoint, which finding kinds were produced and routed, which record types were written and read; a registered module, finding kind or record type with no producer or no consumer on the fixtures is flagged.",
       "source": "D22 T2",
-      "status": "deferred",
+      "status": "closed",
       "evidence": {
-        "T1": [
-          "tests/runner.test.mjs"
+        "T2": [
+          "tests/wiring-modules.test.mjs"
         ]
-      },
-      "deferredTo": "P6",
-      "reason": "Mechanism closed at T1 in P2 (tests/runner.test.mjs); T2 needs a wiring report from real runs of real modules, which first exist in P6."
+      }
     },
     {
       "id": "req.gate.rule",
@@ -783,8 +783,12 @@
       ],
       "statement": "Every declared source is pinned (revision where one exists, retrieval time, raw and text hashes); an unpinned source is an obligation; a changed snapshot is a defect.",
       "source": "MS1",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/stable-modules.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.ms1.span",
@@ -794,8 +798,14 @@
       ],
       "statement": "An evidence span cited by a unit that does not resolve in its pinned snapshot is a defect; a retrieved reference without its pin is an obligation.",
       "source": "MS1",
-      "status": "planned",
-      "evidence": {}
+      "status": "deferred",
+      "evidence": {
+        "T1": [
+          "tests/stable-modules.test.mjs"
+        ]
+      },
+      "deferredTo": "P7",
+      "reason": "T1 for undeclared sources closed in P6 (tests/stable-modules.test.mjs); resolving an evidence span in its pinned snapshot, and pinning retrieved references, come with the evidence records of the verdict path (P7)."
     },
     {
       "id": "req.ms1.profiles",
@@ -805,8 +815,12 @@
       ],
       "statement": "Source pinning runs in both profiles; instructor-supplied files are pinned by hash.",
       "source": "MS1; K-a",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/stable-modules.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.ms2.public-only",
@@ -816,8 +830,14 @@
       ],
       "statement": "Rights, licence and attribution checks run only in public packages; private packages follow the Alembic contract and may be packed but are never cleared for public release.",
       "source": "MS2; D1",
-      "status": "planned",
-      "evidence": {}
+      "status": "deferred",
+      "evidence": {
+        "T1": [
+          "tests/stable-modules.test.mjs"
+        ]
+      },
+      "deferredTo": "P8",
+      "reason": "Rights checks skip private packages (P6, tests/stable-modules.test.mjs); packing a private package as non-public belongs to the publish step (P8)."
     },
     {
       "id": "req.ms2.two-profiles",
@@ -827,8 +847,13 @@
       ],
       "statement": "There are exactly two use profiles, public and private.",
       "source": "MS2; D1 Q2",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/stable-modules.test.mjs",
+          "tests/gate-cli.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.ms3.contract",
@@ -838,8 +863,12 @@
       ],
       "statement": "Manifest, file layout, orz syntax (with nesting), slide grammar, placeholders and the accessibility floor are checked as defects; no word-presence test stands in for coverage.",
       "source": "MS3",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/stable-modules.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.ms4.links",
@@ -849,8 +878,14 @@
       ],
       "statement": "Broken local links and asset paths are defects; external links are resolved, the result recorded, and replayed offline in tests.",
       "source": "MS4",
-      "status": "planned",
-      "evidence": {}
+      "status": "deferred",
+      "evidence": {
+        "T1": [
+          "tests/stable-modules.test.mjs"
+        ]
+      },
+      "deferredTo": "P7",
+      "reason": "Local links, assets and the unresolved-external-link obligation closed in P6 (tests/stable-modules.test.mjs); resolving and recording external links needs the retrieval service (P7)."
     },
     {
       "id": "req.ms5.offline",
@@ -860,8 +895,14 @@
       ],
       "statement": "Every carrier builds, and a carrier that needs a remote runtime to render is a defect unless vendored; the build receipt is attached to the publish record.",
       "source": "MS5; D1 Q3",
-      "status": "planned",
-      "evidence": {}
+      "status": "deferred",
+      "evidence": {
+        "T1": [
+          "tests/stable-modules.test.mjs"
+        ]
+      },
+      "deferredTo": "P10",
+      "reason": "Carriers build (P6, tests/stable-modules.test.mjs); the orz framework loads its runtime from CDNs, so offline rendering awaits the operator's decision D24."
     },
     {
       "id": "req.ms6.quotations",
@@ -871,8 +912,12 @@
       ],
       "statement": "A quotation found in no pinned or supplied source is an obligation; a misquotation is a defect; near-verbatim copying is a defect in public packages only.",
       "source": "MS6",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/stable-modules.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.ms6.h5-regression",
@@ -882,8 +927,12 @@
       ],
       "statement": "The 21 v0.12.0 false positives on the C2 fixture (18 quoted spine misconceptions, 3 Mermaid labels) raise nothing.",
       "source": "MS6; P0 baseline",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/stable-modules.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.ms7.consistency",
@@ -893,8 +942,12 @@
       ],
       "statement": "The same term and dimension carrying different values after conversion and tolerance, an answer key disagreeing with its question, and a physically impossible quantity are defects.",
       "source": "MS7",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/stable-modules.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.ms7.no-drift",
@@ -904,8 +957,12 @@
       ],
       "statement": "A reworded definition raises nothing; definition-drift is retired.",
       "source": "MS7; D17",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/stable-modules.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.retire.old-checks",
@@ -914,10 +971,17 @@
         "T1",
         "T2"
       ],
-      "statement": "misconception-asserted runs only as a trial question; revision-escalate and spine-relabeled no longer exist; the whole-package key-fact review and the mandatory visual attestation are not part of the gate.",
+      "statement": "The new gate has no misconception-asserted, revision-escalate or spine-relabeled check and does not require the whole-package key-fact review or the mandatory visual attestation; misconception detection, if it returns, returns only as a trial module.",
       "source": "modules.md §Not carried over",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/stable-modules.test.mjs"
+        ],
+        "T2": [
+          "tests/wiring-modules.test.mjs"
+        ]
+      }
     },
     {
       "id": "req.dispatch.blind",

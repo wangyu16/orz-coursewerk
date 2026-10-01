@@ -14,8 +14,29 @@ const stringify = JSON.stringify.bind(JSON), parse = JSON.parse.bind(JSON), isAr
 const [mode, moduleFile, snapshotFile, outFile, draftsFile] = process.argv.slice(2);
 const raw = JSON.parse(fs.readFileSync(snapshotFile, "utf8"));
 const files = Object.create(null);
-for (const [rel, f] of Object.entries(raw.files)) files[rel] = Object.freeze({ hash: f.hash, text: f.text });
+const bytes = Object.create(null);
+for (const [rel, f] of Object.entries(raw.files)) { files[rel] = Object.freeze({ hash: f.hash, text: f.text }); if (f.b64) bytes[rel] = f.b64; }
+import os from "node:os";
+import path from "node:path";
+let materialized = null;
+/** A private, read-only-in-spirit copy of the snapshot on disk (package at <dir>/package, inputs at <dir>/inputs), for
+ * modules that run proven file-based library code. Text and binary files are reproduced byte for byte (files over
+ * 8 MB appear as empty placeholders). The copy lives in this host's own temp dir and is never the package. */
+function materialize() {
+  if (materialized) return materialized;
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-materialized-"));
+  for (const [rel, f] of Object.entries(files)) {
+    const target = rel.startsWith("@inputs/") ? path.join(dir, "inputs", rel.slice(8)) : path.join(dir, "package", rel);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(target, f.text != null ? f.text : bytes[rel] ? Buffer.from(bytes[rel], "base64") : "");
+  }
+  fs.mkdirSync(path.join(dir, "package"), { recursive: true });
+  materialized = { dir, package: path.join(dir, "package"), inputs: fs.existsSync(path.join(dir, "inputs")) ? path.join(dir, "inputs") : null };
+  process.on("exit", () => { try { fs.rmSync(dir, { recursive: true, force: true }); } catch {} });
+  return materialized;
+}
 const snapshot = Object.freeze({
+  materialize,
   id: raw.id, profile: raw.profile, checkpoint: raw.checkpoint, files: Object.freeze(files), paths: Object.freeze([...raw.paths]),
   text: (rel) => (hasOwn(files, rel) ? files[rel].text : null),
   json: (rel) => { const t = hasOwn(files, rel) ? files[rel].text : null; try { return t == null ? null : JSON.parse(t); } catch { return undefined; } },

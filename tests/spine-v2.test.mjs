@@ -74,7 +74,7 @@ function pkg(t, { map = MAP(), guide = GUIDE(), course = COURSE(), chapters = ["
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const w = (rel, text) => { fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true }); fs.writeFileSync(path.join(root, rel), text); };
   w("alembic.json", JSON.stringify({ chapters: chapters.map((slug) => ({ slug, title: slug })) }));
-  w("coursewerk.json", JSON.stringify({ schemaVersion: 1, spine: 2 }));
+  w("metadata/coursewerk.json", JSON.stringify({ schemaVersion: 1, spine: 2 }));
   w("concepts/course.md", course); w("concepts/melting.md", map); w("assessment-support/melting.md", guide);
   return { root, w, reader: liveReader(root) };
 }
