@@ -9,7 +9,8 @@
     "P4",
     "P5",
     "P6",
-    "P7"
+    "P7",
+    "P8"
   ],
   "requirements": [
     {
@@ -541,14 +542,15 @@
       ],
       "statement": "Steering is asked once (M2): seven questions with defaults inferred from the inputs, accept-all in one action, per-chapter overrides.",
       "source": "F3; D14",
-      "status": "deferred",
+      "status": "closed",
       "evidence": {
         "T1": [
           "tests/spine-v2.test.mjs"
+        ],
+        "T3": [
+          "system/rounds/P8-scenario.md"
         ]
-      },
-      "deferredTo": "P8",
-      "reason": "T1 closed in P3 (tests/spine-v2.test.mjs); T3 needs the agent-in-the-loop workflow (P8)."
+      }
     },
     {
       "id": "req.versions.major",
@@ -641,12 +643,11 @@
       "status": "deferred",
       "evidence": {
         "T1": [
-          "tests/unit-model.test.mjs",
-          "tests/units-cli.test.mjs"
+          "tests/workflow.test.mjs"
         ]
       },
-      "deferredTo": "P8",
-      "reason": "T1 closed in P4 (tests/unit-model.test.mjs, tests/units-cli.test.mjs); T3 needs the agent-in-the-loop workflow (P8)."
+      "deferredTo": "P10",
+      "reason": "T1 closed in P8 (the gate raises the question from the index at every checkpoint); T3 — the harness digest carrying it to the instructor in a live session — is re-run in the P10 dogfood after the fix the P8 scenario prompted."
     },
     {
       "id": "req.units.classifier",
@@ -1082,8 +1083,8 @@
           "tests/verdict-path.test.mjs"
         ]
       },
-      "deferredTo": "P8",
-      "reason": "T1 closed in P7 (the gate and `verify corrections` list every applied correction with its diff, built from the record at display time); T3 — an agent session showing the diff to the instructor at the next checkpoint — needs the digest and workflow of P8."
+      "deferredTo": "P10",
+      "reason": "T1 closed; the P8 scenario did not exercise it (system/rounds/P8-scenario.md, \"Not exercised\"): T3 in the P10 dogfood."
     },
     {
       "id": "req.revert.double-confirm",
@@ -1123,16 +1124,17 @@
         "T1",
         "T3"
       ],
-      "statement": "Knowledge-based issues are raised as questions with reasoning and a suggested revision and change nothing until the instructor confirms.",
-      "source": "D17",
-      "status": "deferred",
+      "statement": "Knowledge-based issues in the instructor's text or the approved spine are raised as questions with reasoning and a suggested revision, and change nothing until the instructor confirms; the agent may revise its own draft text in the work loop (D17, D31).",
+      "source": "D17, D31",
+      "status": "closed",
       "evidence": {
         "T1": [
           "tests/verdict-path.test.mjs"
+        ],
+        "T3": [
+          "system/rounds/P8-scenario.md"
         ]
-      },
-      "deferredTo": "P8",
-      "reason": "T1 closed in P7 (concerns become digest questions; no deliverable changes); T3 — a live agent session that discusses a concern with the instructor before any edit — needs the P8 workflow."
+      }
     },
     {
       "id": "req.states.machine",
@@ -1172,8 +1174,12 @@
       ],
       "statement": "The agent contacts the instructor only at the six moments M1–M6 (plus instructor-initiated exchanges).",
       "source": "skeleton §3; D8",
-      "status": "planned",
-      "evidence": {}
+      "status": "closed",
+      "evidence": {
+        "T3": [
+          "system/rounds/P8-scenario.md"
+        ]
+      }
     },
     {
       "id": "req.digest.budget",
@@ -1184,12 +1190,14 @@
       ],
       "statement": "The digest clusters questions by root cause, ranks them, caps them per batch, defers overflow (never drops it) and shows deferred counts; the list of corrections sits outside the budget.",
       "source": "skeleton §3; D19",
-      "status": "planned",
+      "status": "deferred",
       "evidence": {
         "T1": [
           "tests/workflow.test.mjs"
         ]
-      }
+      },
+      "deferredTo": "P10",
+      "reason": "T1 closed; the P8 scenario did not exercise it (system/rounds/P8-scenario.md, \"Not exercised\"): T3 in the P10 dogfood."
     },
     {
       "id": "req.answers.persist",
@@ -1200,12 +1208,14 @@
       ],
       "statement": "An answered question is never asked again while its basis is unchanged.",
       "source": "skeleton §3; F2",
-      "status": "planned",
+      "status": "deferred",
       "evidence": {
         "T1": [
           "tests/workflow.test.mjs"
         ]
-      }
+      },
+      "deferredTo": "P10",
+      "reason": "T1 closed; the P8 scenario did not exercise it (system/rounds/P8-scenario.md, \"Not exercised\"): T3 in the P10 dogfood."
     },
     {
       "id": "req.loop.bounds",
@@ -1216,10 +1226,13 @@
       ],
       "statement": "The work loop stops at a fixed point or when the batch budget is spent, and never changes the spine, answers a question for the instructor, or reopens a recorded decision.",
       "source": "skeleton §4",
-      "status": "planned",
+      "status": "closed",
       "evidence": {
         "T1": [
           "tests/workflow.test.mjs"
+        ],
+        "T3": [
+          "system/rounds/P8-scenario.md"
         ]
       }
     },
@@ -1277,10 +1290,13 @@
       ],
       "statement": "The documented commands (assemble, approve, status, digest, publish, revert) each refuse with a plain next step when their preconditions fail.",
       "source": "implementation plan P8",
-      "status": "planned",
+      "status": "closed",
       "evidence": {
         "T1": [
           "tests/workflow.test.mjs"
+        ],
+        "T3": [
+          "system/rounds/P8-scenario.md"
         ]
       }
     },
@@ -1293,10 +1309,13 @@
       ],
       "statement": "check_oer.mjs is no longer the gate; its remaining checks run as modules.",
       "source": "implementation plan P8",
-      "status": "planned",
+      "status": "closed",
       "evidence": {
         "T1": [
           "tests/workflow.test.mjs"
+        ],
+        "T2": [
+          "system/rounds/P8-scenario.md"
         ]
       }
     },

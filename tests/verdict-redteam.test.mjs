@@ -169,7 +169,7 @@ test("[req.autocorrect.guard] round P7-1 B14 B16 p22: no correction from an unan
   // B16: instructor text stays instructor text when the sidecar origin is flipped; the same page twice is one source
   const q = copy(t);
   const wid = rewriteUnattributed(q, W, (x) => x.replace("-92\\ \\text{kJ mol}^{-1}$ are from", "-75\\ \\text{kJ mol}^{-1}$ are from"));
-  claimAuthorship(q.root, { units: [wid] }, I);
+  claimAuthorship(q.root, { units: [wid], instructorWords: "That passage is mine." }, I);
   q.json("metadata/units/study-guide/le-chatelier.md.json", (s) => { s.units.find((x) => x.id === wid).origin = { kind: "agent-knowledge", model: "m", step: "s", date: "2026-10-01" }; return s; });
   for (const url of ["https://openstax.org/books/chemistry-2e/pages/13-3-x", "https://openstax.org/books/chemistry-2e/pages/13-3-x?print=1"])
     pinReference(q.root, q.inputs, { url, title: "pin", destination: "openstax.org/books/chemistry-2e", text: HABER });

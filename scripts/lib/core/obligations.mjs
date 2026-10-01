@@ -119,8 +119,10 @@ export function linkUnits(root, reader, links, party) {
   const { spine } = context(root, reader);
   const nodes = nodeIndex(spine);
   for (const [id, list] of Object.entries(links)) for (const n of list) if (!nodes.has(n)) throw new Error(`${id}: ${n} is not a spine node`);
-  rewriteUnits(root, Object.keys(links), (u) => { u.spineNodes = [...new Set(links[u.id])]; });
-  restamp(root, reader, Object.keys(links));
+  // only a link that changes re-stamps its unit: re-saving the same links is not a re-verification (T3 scenario, P8)
+  const changed = [];
+  rewriteUnits(root, Object.keys(links), (u) => { const next = [...new Set(links[u.id])]; if (JSON.stringify([...(u.spineNodes || [])].sort()) !== JSON.stringify([...next].sort())) changed.push(u.id); u.spineNodes = next; });
+  restamp(root, reader, changed);
   appendLogRecord(root, { type: "revision", party, payload: { event: "units-linked", count: Object.keys(links).length } });
 }
 

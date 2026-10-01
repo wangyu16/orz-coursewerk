@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "planId": "02925a0fdb354c0792164858cce579bfcb496ffac852ead9365b84007ccd6683",
+  "baseRef": "HEAD",
+  "baseTip": "a692e55097ad898d7db7f3710d1a5b5ddd68279d",
+  "baseCommit": "a692e55097ad898d7db7f3710d1a5b5ddd68279d",
+  "reviewedHead": "a692e55097ad898d7db7f3710d1a5b5ddd68279d",
+  "changed": [
+    "scripts/lib/core/obligations.mjs",
+    "scripts/lib/core/units_index.mjs",
+    "scripts/units.mjs",
+    "system/REQUIREMENTS.json",
+    "system/rounds/P8-scenario.md",
+    "tests/unit-model.test.mjs",
+    "tests/verdict-path.test.mjs",
+    "tests/verdict-redteam.test.mjs",
+    "tests/workflow.test.mjs"
+  ],
+  "requiredReview": [
+    "scripts/lib/core/obligations.mjs",
+    "scripts/lib/core/units_index.mjs",
+    "scripts/units.mjs",
+    "system/REQUIREMENTS.json",
+    "system/rounds/P8-scenario.md",
+    "tests/unit-model.test.mjs",
+    "tests/verdict-path.test.mjs",
+    "tests/verdict-redteam.test.mjs",
+    "tests/workflow.test.mjs"
+  ],
+  "reviewed": [
+    "scripts/lib/core/obligations.mjs",
+    "scripts/lib/core/units_index.mjs",
+    "scripts/units.mjs",
+    "system/REQUIREMENTS.json",
+    "system/rounds/P8-scenario.md",
+    "tests/unit-model.test.mjs",
+    "tests/verdict-path.test.mjs",
+    "tests/verdict-redteam.test.mjs",
+    "tests/workflow.test.mjs"
+  ],
+  "impactedClaims": [],
+  "testResults": [
+    {
+      "path": "tests/*.test.mjs (full suite 719/719)",
+      "status": "passed"
+    }
+  ],
+  "attestation": "P8 (2/2): the T3 agent-in-the-loop scenario (system/rounds/P8-scenario.md) and the three harness gaps it found, fixed with T1 tests: the gate raises unit-unknown-authorship from the unit index at every checkpoint (units_index.unindexedFindings); claimAuthorship and units claim require the instructor's words; linkUnits re-stamps only units whose links changed. Register: T3 evidence for moments.only, steering.intake, commands, loop.bounds, knowledge.no-autochange (statement scoped per D31 to the instructor's text and the approved spine); T2 for oldgate.retired; four T3s deferred to P10 with reasons; P8 complete. Impacted docs grepped for units claim / unknown authorship: units.mjs header updated. Suite 719/719; register ready.",
+  "generatedIndexHash": "f162797f8e7fb8a9dd95dd0f478552ebb7998e906e4eba79090be3f01fa9d8e4",
+  "acceptedAt": "2026-10-01T19:53:11.596Z"
+}

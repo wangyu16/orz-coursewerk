@@ -202,7 +202,7 @@ async function plantWrongConstant(p, { asInstructor = false } = {}) {
   if (!asInstructor) beginSession(p.root, p.reader, AGENT);
   p.edit("study-guide/le-chatelier.md", (x) => x.replace("the reaction and $\\Delta H = -92\\ \\text{kJ mol}^{-1}$ are from the source", "the reaction and $\\Delta H = -75\\ \\text{kJ mol}^{-1}$ are from the source"));
   indexAndStamp(p.root, p.reader, asInstructor ? {} : { as: "agent", party: AGENT });
-  if (asInstructor) claimAuthorship(p.root, { units: [PLANTED] }, I);
+  if (asInstructor) claimAuthorship(p.root, { units: [PLANTED], instructorWords: "That passage is mine." }, I);
   pinReference(p.root, p.inputs, { url: "https://openstax.org/books/chemistry-2e/pages/13-3-shifting-equilibria-le-chateliers-principle", title: "Shifting equilibria (test pin)", destination: "openstax.org/books/chemistry-2e", text: HABER });
   const verifier = answering((i, ps) => { const x = ps.find((q) => q.text.includes("−92.4 kJ")); return x && { claim: i, verdict: "contradicted", quotes: [{ passage: x.n, text: "the standard reaction enthalpy is −92.4 kJ per mole of reaction, so by Le Chatelier's principle raising the temperature shifts the reaction toward the reactants" }] }; });
   return verifySemi(p.root, p.reader, { texts: texts(p), verifier, only: [PLANTED] });

@@ -161,8 +161,9 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
 }
 
 /** The instructor claims authorship of units of unknown authorship (accept as mine) — D20. */
-export function claimAuthorship(root, { units, as = "instructor" }, party) {
+export function claimAuthorship(root, { units, as = "instructor", instructorWords }, party) {
   if (party?.role !== "instructor") throw new Error("authorship is confirmed by the instructor");
+  if (!String(instructorWords || "").trim()) throw new Error("an authorship confirmation quotes the instructor's words");
   const ids = new Set(units), date = new Date().toISOString().slice(0, 10), done = [];
   for (const rel of fs.existsSync(recordFile(root, "metadata/units")) ? walkSidecars(recordFile(root, "metadata/units")) : []) {
     const side = JSON.parse(fs.readFileSync(rel, "utf8"));
@@ -176,7 +177,7 @@ export function claimAuthorship(root, { units, as = "instructor" }, party) {
   }
   const missing = units.filter((u) => !done.includes(u));
   if (missing.length) throw new Error(`no such unit: ${missing.join(", ")}`);
-  appendLogRecord(root, { type: "authorship-confirmation", party, payload: { units: done, as } });
+  appendLogRecord(root, { type: "authorship-confirmation", party, payload: { units: done, as, instructorWords } });
   return done;
 }
 function walkSidecars(dir, out = []) {
@@ -197,6 +198,13 @@ export function unindexedFindings(root, reader, basis) {
     if (!side || JSON.stringify(now) !== JSON.stringify(then))
       out.push(makeFinding({ module: "skeleton", kind: "units-not-indexed", units: [], statusClass: "obligation", route: "agent", basis,
         evidence: { type: "missing", what: `an up-to-date unit index for ${rel} (run units index)` } }));
+    // an edit of unknown authorship stays a digest question until the instructor answers it (D20) — raised from the
+    // index itself, so it reaches every digest, not only the index run that found it (T3 scenario, P8)
+    const unknown = (side?.units || []).filter((x) => x.origin?.kind === "unknown" && !x.origin.namedAuthor);
+    if (unknown.length)
+      out.push(makeFinding({ module: "skeleton", kind: "unit-unknown-authorship", units: unknown.map((u) => u.id), statusClass: "question", route: "digest",
+        evidence: { type: "judgment", note: `${rel}: ${unknown.length} passage(s) changed outside an agent session — yours (accept as mine), someone else's (name them), or revert?`, hashes: unknown.map((u) => u.locator.contentHash) },
+        recommendation: "accept as mine", basis }));
   }
   return out;
 }

@@ -443,7 +443,7 @@
       "id": "repo:scripts/lib/core/obligations.mjs",
       "path": "scripts/lib/core/obligations.mjs",
       "type": "kernel",
-      "hash": "dfc2d21df0ef709e39bd8320d8a5d46041dd018b7090797df96c6a5154023fe8"
+      "hash": "d4074467bd2735d5213178f06be6968d519838abc9d8c6946764049eec71f72f"
     },
     {
       "id": "repo:scripts/lib/core/pack_v2.mjs",
@@ -485,7 +485,7 @@
       "id": "repo:scripts/lib/core/units_index.mjs",
       "path": "scripts/lib/core/units_index.mjs",
       "type": "kernel",
-      "hash": "88216730474ce2b551f079411c43f3d50f9532ef5f6c8008195c6142ebc02130"
+      "hash": "528c227385429ee2c989073310241f876f6965f8f261501006f0a7c9bb4cf8aa"
     },
     {
       "id": "repo:scripts/lib/core/versions.mjs",
@@ -893,7 +893,7 @@
       "id": "repo:scripts/units.mjs",
       "path": "scripts/units.mjs",
       "type": "executable",
-      "hash": "333ba6934aeda243ea2f3f60fcec71c5e9cd4f5dfb5596ca0ed5793f4a97ab41"
+      "hash": "755449a8246be58d422d175f14197884084c7a236e149c83c6d480b4977f3eb5"
     },
     {
       "id": "repo:scripts/verify_coursewerk.mjs",
@@ -1067,7 +1067,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "8f4934d24f50ca8f31e4e594d1dd76ad3000cf9fb4040bfe90349605f65f4086"
+      "hash": "540556e68b3d4aa3a8b94d692e781cd0cd4ac9ad84254d6eaf2a55a31cf038d1"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1086,6 +1086,12 @@
       "path": "system/rounds/P7-verdicts.md",
       "type": "system-governance",
       "hash": "cfbad35e964fa797b9cf8989169ee3da2b6294d7518651babe671f84196f789b"
+    },
+    {
+      "id": "repo:system/rounds/P8-scenario.md",
+      "path": "system/rounds/P8-scenario.md",
+      "type": "system-governance",
+      "hash": "2f7a8480f345006dffa095b632b92788c1265b8aba995fa2b75f903e45005ba0"
     },
     {
       "id": "repo:system/schemas/claim.schema.json",
@@ -1625,7 +1631,7 @@
       "id": "repo:tests/unit-model.test.mjs",
       "path": "tests/unit-model.test.mjs",
       "type": "test",
-      "hash": "ca835b050cc6ad5bd8b1e8435712c7f06fee23ece4aafc304f27194b2e4769d3"
+      "hash": "5e5202e719585f55f1279db33e185efd482adbed114d31bf7d70f009f75e6855"
     },
     {
       "id": "repo:tests/units-cli.test.mjs",
@@ -1655,13 +1661,13 @@
       "id": "repo:tests/verdict-path.test.mjs",
       "path": "tests/verdict-path.test.mjs",
       "type": "test",
-      "hash": "39af6a077484c137f4906a4d3019186fb72d9072f62161e6f6f8bee4860469d1"
+      "hash": "019f653b54c062b62239ec508bfbd15a84ea6be693f9f6787624900de7881959"
     },
     {
       "id": "repo:tests/verdict-redteam.test.mjs",
       "path": "tests/verdict-redteam.test.mjs",
       "type": "test",
-      "hash": "e566844878f727cf4b625ef6da6e9469e655e834ca86148a6cb0c50adf49ed79"
+      "hash": "a73d69b22887d7a5619502d33de6a75dafe246ef432f18f2ee002cc099b98a67"
     },
     {
       "id": "repo:tests/wiring-modules.test.mjs",
@@ -1679,7 +1685,7 @@
       "id": "repo:tests/workflow.test.mjs",
       "path": "tests/workflow.test.mjs",
       "type": "test",
-      "hash": "06280b2b536683e45d2a2a3d8d81dc835fa9049170c6409056149dd305aadd45"
+      "hash": "027253fdc9403950f73694b9f49448fcbb87da506322822106b390566706fa41"
     },
     {
       "id": "repo:VERSION",
@@ -2946,7 +2952,8 @@
       "P4",
       "P5",
       "P6",
-      "P7"
+      "P7",
+      "P8"
     ],
     "requirements": [
       {
@@ -2974,7 +2981,7 @@
           "T1",
           "T3"
         ],
-        "status": "planned"
+        "status": "deferred"
       },
       {
         "id": "req.approval.preview",
@@ -3041,7 +3048,7 @@
           "T1",
           "T3"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.confirm.single",
@@ -3100,7 +3107,7 @@
           "T1",
           "T3"
         ],
-        "status": "planned"
+        "status": "deferred"
       },
       {
         "id": "req.dispatch.blind",
@@ -3176,7 +3183,7 @@
           "T1",
           "T3"
         ],
-        "status": "deferred"
+        "status": "closed"
       },
       {
         "id": "req.loop.bounds",
@@ -3185,7 +3192,7 @@
           "T1",
           "T3"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.modules.admission",
@@ -3259,7 +3266,7 @@
         "tiers": [
           "T3"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.ms1.pin-all",
@@ -3372,7 +3379,7 @@
           "T1",
           "T2"
         ],
-        "status": "planned"
+        "status": "closed"
       },
       {
         "id": "req.profiles.one-gate",
@@ -3576,7 +3583,7 @@
           "T1",
           "T3"
         ],
-        "status": "deferred"
+        "status": "closed"
       },
       {
         "id": "req.units.classifier",

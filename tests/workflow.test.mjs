@@ -197,7 +197,7 @@ test("[req.loop.bounds] the loop stops at a fixed point or when the budget is sp
     () => recordSteering(p.root, { defaults: {}, acceptAll: true, instructorWords: "x" }, AGENT),
     () => answerDigest(p.root, { entries: [] }, { acceptAll: true, instructorWords: "x" }, AGENT),
     () => confirmUnits(p.root, p.reader, ["u-x"], { what: "fact" }, AGENT),
-    () => claimAuthorship(p.root, { units: ["u-x"] }, AGENT),
+    () => claimAuthorship(p.root, { units: ["u-x"], instructorWords: "x" }, AGENT),
     () => revertCorrection(p.root, p.reader, "c-x", { note: "x" }, AGENT),
     () => publishDecision(p.root, p.reader, { gateResult: null, unitInfo: new Map(), instructorWords: "x" }, AGENT),
     () => disableModule(p.root, { name: "ms6-quotations", reason: "x" }, AGENT),
@@ -207,4 +207,38 @@ test("[req.loop.bounds] the loop stops at a fixed point or when the budget is sp
   // a spine edit by the agent voids the approval: nothing in that chapter publishes until the instructor re-approves
   fs.appendFileSync(path.join(p.root, "concepts", "le-chatelier.md"), "\n- An extra sub-concept the agent added.\n");
   assert.equal(chapterStates(p.root, p.reader)["le-chatelier"].approved, false);
+});
+
+// ---- found by the T3 scenario (P8) ----------------------------------------------------------------------------------
+test("[req.units.external-edit] an edit of unknown authorship stays a digest question until the instructor answers it in their words", async (t) => {
+  const p = copy(t);
+  const { indexAndStamp } = await import("../scripts/lib/core/obligations.mjs");
+  const { claimAuthorship } = await import("../scripts/lib/core/units_index.mjs");
+  fs.writeFileSync(path.join(p.root, "study-guide", "le-chatelier.md"), fs.readFileSync(path.join(p.root, "study-guide", "le-chatelier.md"), "utf8").replace("without being consumed", "without itself being used up"));
+  indexAndStamp(p.root, p.reader, {});
+  const ask = () => { const g = runGate(p.root, { inputsDir: p.inputs }); return buildDigest(p.root, g.findings, unitInfoOf(p.root, p.reader)).entries.filter((e) => e.kind === "unit-unknown-authorship"); };
+  const e = ask();
+  assert.equal(e.length, 1, "in the digest at every checkpoint, not only at the index run that found it"); assert.equal(e[0].recommendation, "accept as mine");
+  assert.equal(ask().length, 1, "and raised once");
+  assert.throws(() => claimAuthorship(p.root, { units: e[0].units }, I), /quotes the instructor's words/);
+  claimAuthorship(p.root, { units: e[0].units, instructorWords: "That edit is mine." }, I);
+  assert.equal(ask().length, 0);
+  assert.ok(readLogText(p.root).includes('"instructorWords":"That edit is mine."'));
+});
+
+test("[req.loop.bounds] re-saving a unit's spine links is not a re-verification: only a changed link re-stamps", async (t) => {
+  const p = copy(t);
+  const { linkUnits, loadUnits } = await import("../scripts/lib/core/obligations.mjs");
+  // a concept the units depend on changes: its dependents are stale
+  const f = path.join(p.root, "concepts", "le-chatelier.md");
+  const before = fs.readFileSync(f, "utf8");
+  const stale = () => coreObligations(p.root, p.reader, "t").filter((x) => x.kind === "reverify").flatMap((x) => x.units);
+  const n0 = stale().length;
+  const line = before.split("\n").find((l) => /^\s*[-*]\s+.*\{#?concept|\[anchor:|\]\s*$/.test(l) && /partially/i.test(l)) || before.split("\n").find((l) => /partially/i.test(l));
+  fs.writeFileSync(f, before.replace(line, line.replace(/partially/i, "only in part")));
+  const now = stale();
+  assert.ok(now.length > n0, "dependents of the changed concept must be re-verified");
+  const u = loadUnits(p.root, p.reader).find((x) => x.id === now[0]);
+  linkUnits(p.root, p.reader, { [u.id]: u.spineNodes }, AGENT);
+  assert.ok(stale().includes(u.id), "the same links saved again clear nothing");
 });

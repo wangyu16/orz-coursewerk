@@ -152,7 +152,8 @@ test("[req.units.external-edit] an edit made outside an agent session is of unkn
   assert.equal(again.findings[0].id, r.findings[0].id);
   // accept as mine
   assert.throws(() => claimAuthorship(p.root, { units: [hand.id] }, AGENT), /confirmed by the instructor/);
-  claimAuthorship(p.root, { units: [hand.id] }, I);
+  assert.throws(() => claimAuthorship(p.root, { units: [hand.id] }, I), /quotes the instructor.s words/);
+  claimAuthorship(p.root, { units: [hand.id], instructorWords: "That edit is mine." }, I);
   assert.equal(p.side().units.find((u) => u.id === hand.id).origin.kind, "instructor-authored");
   assert.deepEqual(indexUnits(p.root, p.reader()).findings, []);
   assert.throws(() => indexUnits(p.root, p.reader(), { as: "agent", party: AGENT }), /needs an open agent session/);
