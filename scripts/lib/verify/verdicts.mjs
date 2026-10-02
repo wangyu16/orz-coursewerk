@@ -123,7 +123,14 @@ export async function verifyKnowledge(root, reader, { verifier, only = null, onP
   const results = [];
   for (const u of units) {
     const list = sections.get(place(u)), i = list.indexOf(u);
-    const bundle = knowledgeBundle(u.text, undefined, { before: list.slice(Math.max(0, i - 2), i).map((x) => x.text).join("\n\n"), after: list[i + 1]?.text || "" });
+    const shown = (x) => (x.label ? `${x.label}: ${x.text}` : x.text);
+    const near = [...list.slice(Math.max(0, i - 2), i), list[i + 1]].filter(Boolean);
+    // questions referred to by number ("Justify the answer to Q3"), in the passage or the units just before it
+    const nums = new Set([u, ...list.slice(Math.max(0, i - 2), i)].flatMap((x) => [...x.text.matchAll(/\b(?:Q|Question)\s*(\d+)\b/gi)].map((m) => m[1])));
+    const own = /(\d+)\s*$/.exec(u.label || "")?.[1];
+    const referenced = all.filter((x) => x.locator.deliverable === u.locator.deliverable && x !== u && !near.includes(x) && x.label &&
+      [...nums].some((n) => n !== own && new RegExp(`^(?:q|question|answer|solution)\\s*${n}$`, "i").test(x.label.trim())));
+    const bundle = knowledgeBundle(u.text, undefined, { before: list.slice(Math.max(0, i - 2), i).map(shown).join("\n\n"), after: list[i + 1] ? shown(list[i + 1]) : "", referenced: referenced.map(shown).join("\n\n"), label: u.label || null });
     const answer = await verifier(bundle.prompt);
     const record = recordDispatch(root, { kind: "knowledge", unit: u.id, factHash: factHash(u.text), contentHash: u.locator.contentHash, bundle, answer });
     results.push({ unit: u.id, dispatch: record.dispatch, concerns: knowledgeConcerns(record, u.text).length, costUsd: answer.costUsd ?? null });

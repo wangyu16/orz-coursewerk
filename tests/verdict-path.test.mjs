@@ -440,7 +440,7 @@ test("[req.knowledge.review] the blind reviewer reads a unit in place: the units
   const question = list[list.indexOf(answer) - 1];
   let seen = "";
   await verifyKnowledge(p.root, p.reader, { verifier: replayVerifier((pr) => ((seen = pr), { nonce: nonceOf(pr), concerns: [] })), only: [answer.id] });
-  const [ctx, passage] = seen.split("\nPASSAGE\n");
+  const [ctx, passage] = seen.split(/\nPASSAGE(?: \([^)]*\))?\n/);
   assert.ok(ctx.includes("TEXT BEFORE THE PASSAGE") && ctx.includes(question.text.trim().slice(0, 60)), "the question is given as context");
   assert.ok(passage.includes(answer.text.trim().slice(0, 60)) && !passage.includes(question.text.trim().slice(0, 60)), "the passage is the unit alone");
   assert.match(seen, /raise concerns only about words in the PASSAGE/);
@@ -514,4 +514,21 @@ test("[req.knowledge.clarify] the reviewer sorts concerns into wrong and clarify
   // a concern without a kind (a record before D35) keeps the old path
   await verifyKnowledge(p.root, liveReader(p.root), { verifier: replayVerifier((pr) => ({ nonce: nonceOf(pr), concerns: [{ text: "rate constants by the same factor", problem: "x", suggestion: "y" }] })), only: [unit.id] });
   assert.ok(ms8().includes("knowledge-concern:question:digest"));
+});
+
+test("[req.knowledge.review] the reviewer sees labels, and the question a passage refers to by number is shown, not guessed (P11 pass 4)", async (t) => {
+  const p = copy(t);
+  const units = loadUnits(p.root, p.reader);
+  const answer5 = units.find((u) => u.form === "answer" && /Adding \$\\ce\{H2\}\$ increases the denominator/.test(u.text));
+  assert.equal(answer5.label, "Answer 5", "the tab label is kept on the loaded unit");
+  let seen = "";
+  await verifyKnowledge(p.root, p.reader, { verifier: replayVerifier((pr) => ((seen = pr), { nonce: nonceOf(pr), concerns: [] })), only: [answer5.id] });
+  const refs = seen.split("TEXT THE PASSAGE REFERS TO (context only)\n")[1]?.split("\n\nTEXT BEFORE")[0] || "";
+  assert.match(refs, /^Q 3: /m, "Q3, which its question names, is shown"); assert.match(refs, /^Answer 3: /m);
+  assert.ok(!/^Q 4: /m.test(refs), "only what is referred to");
+  assert.match(seen, /^Q 5: Justify the answer to Q3/m, "the units before carry their labels");
+  assert.match(seen, /\nPASSAGE \(Answer 5\)\n/);
+  assert.match(seen, /do not guess what it says/);
+  const sidecar = fs.readFileSync(path.join(p.root, "metadata", "units", "practice", "le-chatelier.md.json"), "utf8");
+  assert.ok(!sidecar.includes('"label"'), "the label is read from the text, never stored in the index");
 });

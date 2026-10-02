@@ -64,7 +64,7 @@ export function loadUnits(root, reader) {
     side.units.forEach((u, i) => {
       const text = seg[i]?.text ?? "";
       const judgment = [...new Set([...classifyUnit({ form: seg[i].form, text }), ...(u.judgmentAdded || [])])];
-      out.push({ ...u, form: seg[i].form, judgment, role: u.role === "framing" && judgment.some((k) => k !== "knowledge-based") ? "teaching" : u.role, text });
+      out.push({ ...u, form: seg[i].form, ...(seg[i].label ? { label: seg[i].label } : {}), judgment, role: u.role === "framing" && judgment.some((k) => k !== "knowledge-based") ? "teaching" : u.role, text });
     });
   }
   return out;

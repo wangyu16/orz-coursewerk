@@ -95,10 +95,11 @@ export function semiBundle(claims, passages, nonce = randomBytes(8).toString("he
   return { kind: "semi", nonce, prompt, bundleHash: sha256(prompt) };
 }
 
-export function knowledgeBundle(text, nonce = randomBytes(8).toString("hex"), { before = "", after = "" } = {}) {
+export function knowledgeBundle(text, nonce = randomBytes(8).toString("hex"), { before = "", after = "", referenced = "", label = null } = {}) {
   // the text around the passage, so a unit is read as a student reads it (an answer with its question, a sentence
-  // with the equation that follows) — P11 dev. Concerns are still only about the passage's own words.
-  const around = [before && ["TEXT BEFORE THE PASSAGE (context only)", String(before).trim(), ""], after && ["TEXT AFTER THE PASSAGE (context only)", String(after).trim(), ""]].filter(Boolean).flat();
+  // with the equation that follows) — P11 dev. Concerns are still only about the passage's own words. What the
+  // passage refers to by number ("the answer to Q3") is shown too, labelled, so a reference is never guessed (P11 pass 4).
+  const around = [referenced && ["TEXT THE PASSAGE REFERS TO (context only)", String(referenced).trim(), ""], before && ["TEXT BEFORE THE PASSAGE (context only)", String(before).trim(), ""], after && ["TEXT AFTER THE PASSAGE (context only)", String(after).trim(), ""]].filter(Boolean).flat();
   // two kinds of concern (D35, operator 2026-10-02): most remarks on correct text need no discussion — a few words
   // make the statement precise, and the agents settle it. Judged at the course's level, within the passage's scope.
   const prompt = [
@@ -106,10 +107,11 @@ export function knowledgeBundle(text, nonce = randomBytes(8).toString("hex"), { 
     'Raise a concern of one of two kinds. "wrong": the passage states or teaches something false at this level. "clarify": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).',
     "Do not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.",
     ...(around.length ? ["The text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself."] : []),
+    "If the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.",
     `Reply with JSON only, exactly this shape: {"nonce": "${nonce}", "concerns": [{"kind": "wrong" | "clarify", "text": "exact words", "problem": "...", "suggestion": "the words to put in their place"}]} — an empty list if there is nothing to raise.`,
     "",
     ...around,
-    "PASSAGE",
+    label ? `PASSAGE (${label})` : "PASSAGE",
     String(text).trim(),
   ].join("\n");
   return { kind: "knowledge", nonce, prompt, bundleHash: sha256(prompt) };

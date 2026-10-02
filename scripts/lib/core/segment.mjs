@@ -29,11 +29,11 @@ export function segmentDeliverable(text, deliverable) {
   let section = "top", sectionTitle = "", slideNo = 0, slideTemplate = null, skipSection = false;
   const struct = (i) => covered.add(i);
   const roleFor = () => (isSlides && FRAMING_TEMPLATES.has(slideTemplate)) || FRAMING_SECTION.test(sectionTitle) ? "framing" : "teaching";
-  const push = (form, a, b, role = roleFor()) => {
+  const push = (form, a, b, role = roleFor(), label = null) => {
     const body = lines.slice(a, b + 1).join("\n").trim();
     for (let k = a; k <= b; k++) covered.add(k);
     if (!body || skipSection) return;
-    units.push({ form, role, section, text: body, startLine: a + 1, endLine: b + 1 });
+    units.push({ form, role, section, text: body, startLine: a + 1, endLine: b + 1, ...(label ? { label } : {}) });
   };
   let i = 0;
   while (i < lines.length) {
@@ -89,7 +89,7 @@ export function segmentDeliverable(text, deliverable) {
           let k = j + 1; while (k < lines.length && !/^:::\s*$/.test(lines[k].trim())) k++;
           const label = tab[1].trim();
           const form = /^(answer|solution|worked answer)\b/i.test(label) ? "answer" : /^(q\b|q\s*\d|question|worked example|example|exercise|problem)/i.test(label) ? "question" : "callout";
-          if (k > j + 1) push(form, j + 1, k - 1); else struct(j + 1);
+          if (k > j + 1) push(form, j + 1, k - 1, roleFor(), label); else struct(j + 1); // the tab's label ("Q 5", "Answer 5") is how the material refers to it
           if (k < lines.length) struct(k);
           j = k + 1; continue;
         }
