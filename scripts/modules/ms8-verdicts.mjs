@@ -79,7 +79,9 @@ function run(s) {
       if (c.status === "contradicted")
         out.push({ kind: "fact-contradicted", units: [u.id], evidence: { type: "quote", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote, span: q.span })) } });
       else if (c.status === "disputed")
-        out.push({ kind: "fact-disputed", units: [u.id], evidence: { type: "conflict", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote })) } });
+        out.push({ kind: "fact-disputed", units: [u.id], evidence: { type: "conflict", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote })),
+          // the question the instructor reads (P11: the digest showed the bare kind)
+          note: `The pinned sources disagree: the text says ${(c.conflicts || []).map((k) => `${k.claimed}, a source says ${k.source}${k.sentence ? ` ("${String(k.sentence).slice(0, 160)}")` : ""}`).join("; ")} — keep as written, or change it?` } });
     }
   }
 

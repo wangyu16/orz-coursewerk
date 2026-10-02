@@ -297,7 +297,9 @@ test("[req.answers.persist] [req.digest.budget] what only the instructor can set
   const d = digestNow();
   const exEntry = d.entries.find((e) => e.kind === "exercise-data-confirm"), ansEntry = d.entries.find((e) => e.kind === "answer-still-correct");
   assert.ok(exEntry && exEntry.units.includes(ex) && exEntry.recommendation === "confirm", "exercise data comes to the instructor, not left as agent work");
-  assert.ok(ansEntry && ansEntry.recommendation === "still correct");
+  assert.ok(ansEntry && ansEntry.recommendation == null, "the check does not recommend keeping an answer nobody re-read");
+  recommendDigest(d, d.entries.indexOf(ansEntry) + 1, "still correct", AGENT); // the agent re-read it with its question
+  assert.match(ansEntry.recommendedBy, /^agent/);
   const knowledge = d.entries.find((e) => !e.recommendation);
   if (knowledge) { recommendDigest(d, d.entries.indexOf(knowledge) + 1, "keep the text", AGENT); assert.match(knowledge.recommendedBy, /^agent/); }
   assert.throws(() => recommendDigest(d, 1, "x", I), /agent's proposal/);

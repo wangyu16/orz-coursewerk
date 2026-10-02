@@ -171,6 +171,20 @@ export function reviewedAbsolutes(root) {
   return out;
 }
 
+/**
+ * Knowledge-based teaching units that no logged blind review has read at their current text. Reported, not
+ * blocking: Level 2 is best effort (P11 K4 scenario: an agent that never ran the review saw nothing to tell it so).
+ */
+export function unreviewedKnowledge(root, reader) {
+  const dir = recordFile(root, "metadata/verification"), seen = new Set(), logged = new Set();
+  for (const line of readLogText(root).split("\n").filter(Boolean)) { try { const r = JSON.parse(line); if (r.type === "dispatch" && r.party?.role === "harness") logged.add(`${r.payload?.dispatch}|${r.payload?.unit}`); } catch { /* the log module reports it */ } }
+  if (fs.existsSync(dir)) for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json"))) {
+    let r; try { r = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")); } catch { continue; }
+    if (r.kind === "knowledge" && logged.has(`${r.dispatch}|${r.unit}`)) seen.add(`${r.unit}|${r.contentHash}`);
+  }
+  return loadUnits(root, reader).filter((u) => u.judgment.includes("knowledge-based") && u.role === "teaching" && !seen.has(`${u.id}|${u.locator.contentHash}`)).map((u) => u.id);
+}
+
 /** Units whose current facts a recorded verification contradicts or disputes. */
 function liveContradictions(root, factHashes) {
   const dir = recordFile(root, "metadata/verification"), out = new Set();
@@ -222,10 +236,12 @@ export function coreObligations(root, reader, basis) {
       const moved = staleTargets(u.stamp, hashes);
       if (moved.length) {
         ob("reverify", [u.id], `re-verification of ${u.id}: ${moved.join(", ")} changed since it was written`);
-        // an answer whose question changed: only the instructor (or a re-written answer) can say it still holds
+        // an answer whose question changed: only the instructor (or a re-written answer) can say it still holds. The
+        // check recommends nothing: "accept all" must not confirm an answer nobody re-read (P11 K4 scenario). The agent
+        // re-reads the answer with its question (verify knowledge) and recommends.
         if (u.form === "answer" && moved.some((t) => units.some((x) => `unit:${x.id}` === t && x.form === "question")))
           F.push(makeFinding({ module: "skeleton", kind: "answer-still-correct", units: [u.id], statusClass: "question", route: "digest", basis,
-            evidence: { type: "judgment", note: `${u.id}: its question changed — is the answer still correct as written?` }, recommendation: "still correct" }));
+            evidence: { type: "judgment", note: `${u.id}: its question changed — is the answer still correct as written? (the agent re-reads it with its question and recommends)` } }));
       }
     }
   }

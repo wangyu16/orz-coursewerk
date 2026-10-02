@@ -191,7 +191,7 @@
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "ca6bb17d774cddfa418534484155f2510f239dca7d56116765788b1a21ba59bf"
+      "hash": "4a5a475701aae3f613065cb11d1985a216866185144c2d8bb9bbde154187f57e"
     },
     {
       "id": "repo:README.md",
@@ -311,7 +311,7 @@
       "id": "repo:scripts/gate.mjs",
       "path": "scripts/gate.mjs",
       "type": "executable",
-      "hash": "7f6e24e97e300bd480bd7ab13cc8cb40465f37b024c626f1a8380beb7d62a9ff"
+      "hash": "3f750b6241e41e8b680e0d9e28438b148dd6635a1aad98fa5ee7e306208c68a1"
     },
     {
       "id": "repo:scripts/generate_attribution.mjs",
@@ -455,7 +455,7 @@
       "id": "repo:scripts/lib/core/obligations.mjs",
       "path": "scripts/lib/core/obligations.mjs",
       "type": "kernel",
-      "hash": "73e6679181d3bbe5d62ea028dac5921488f0fe4be57cb709955992201e104eb5"
+      "hash": "3bd72a23204d2a457e836a7e3a57dfadc20b86facf737324c05675e13de338f8"
     },
     {
       "id": "repo:scripts/lib/core/pack_v2.mjs",
@@ -833,7 +833,7 @@
       "id": "repo:scripts/modules/ms8-verdicts.mjs",
       "path": "scripts/modules/ms8-verdicts.mjs",
       "type": "executable",
-      "hash": "adace6c168228c1f447850d5938ada13f552fc46cf86d6a726a472ff46281522"
+      "hash": "e0545c2646d8315da483873173b21f15a56c9a22d440b5a238b2c737ec90f64d"
     },
     {
       "id": "repo:scripts/modules/README.md",
@@ -1685,7 +1685,7 @@
       "id": "repo:tests/verdict-path.test.mjs",
       "path": "tests/verdict-path.test.mjs",
       "type": "test",
-      "hash": "fccfd5418988b5ebc17ed58bf7db8d863f36203ea2c414b1ea281d99637f253c"
+      "hash": "cf23b5035221e7f3a8a4f8f4b599b4423cb5178eb0d5e4e9c75e58e199fd5403"
     },
     {
       "id": "repo:tests/verdict-redteam.test.mjs",
@@ -1709,7 +1709,7 @@
       "id": "repo:tests/workflow.test.mjs",
       "path": "tests/workflow.test.mjs",
       "type": "test",
-      "hash": "2a9d1ae71c05eae79f6bd6a1edd068a32d6fd23475eebe856a3d8129b997d952"
+      "hash": "430e761bcb2675a448bd99a5dbd8838c41c143313b143b07360093b177a9a3f4"
     },
     {
       "id": "repo:VERSION",

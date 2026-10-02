@@ -107,12 +107,16 @@ Work in batches (one to three chapters, or a session's budget). In each batch:
    - `knowledge` (a blind conceptual review: concerns about the instructor's text or the spine become questions;
      your own draft you may revise);
    - `correct` (auto-correction of an admitted, uncontested contradiction, shown as a diff).
+   The gate's `knowledgeUnreviewed` lists the units no blind review has read at their current text. It does not
+   block, but a unit that changed since its last review is the first place to look.
 4. **Re-run the gate.** Stop when a run raises nothing new for you, or the budget is spent. Then bring M4.
 
 A substantial rewrite of a unit makes it a new unit: link it again after you rewrite it.
 
 **Before you deliver the digest,** attach your recommendation to any entry that has none (`coursewerk.mjs recommend`).
-"Accept all" then covers it, and the instructor sees it marked as yours.
+"Accept all" then covers it, and the instructor sees it marked as yours. For an answer whose question changed,
+re-read the answer with its question first (`verify.mjs knowledge --units <answer>`), and recommend "still correct"
+only if it is.
 
 **What only the instructor can settle comes to the digest as a question.** For example:
 - invented exercise data, which no source can show;

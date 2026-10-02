@@ -247,6 +247,7 @@ test("[req.autocorrect.guard] instructor text needs two agreeing sources; a cont
   const r = await plantWrongConstant(q);
   assert.equal(r[0].status, "disputed", "the value is contested by another pinned source");
   assert.deepEqual(kinds(run(q, "ms8-verdicts"), "ms8-verdicts"), ["fact-disputed:question"]);
+  assert.match(run(q, "ms8-verdicts").findings.find((f) => f.kind === "fact-disputed").evidence.note, /^The pinned sources disagree: the text says .+, a source says .+ — keep as written, or change it\?$/, "the instructor reads a question, not a kind");
   assert.equal(applyCorrection(q.root, q.reader, { unitId: PLANTED, plainTexts: plain(q) }, AGENT).applied, false);
 });
 
@@ -456,4 +457,20 @@ test("[req.spine.restated] a restated learning objective must say what the appro
   fs.writeFileSync(f, s.replace("partially counteracts the disturbance.", "completely cancels the disturbance."));
   const r = restatedObjectiveFindings(liveReader(p.root), "b");
   assert.equal(r.length, 1); assert.equal(r[0].kind, "objective-restated-differently"); assert.equal(r[0].statusClass, "defect"); assert.equal(r[0].route, "agent");
+});
+
+test("[req.knowledge.review] the gate reports knowledge units no blind review has read at their current text (best effort, not blocking)", async (t) => {
+  const { unreviewedKnowledge } = await import("../scripts/lib/core/obligations.mjs");
+  const p = copy(t);
+  const u = loadUnits(p.root, p.reader).find((x) => x.judgment.includes("knowledge-based") && x.role === "teaching" && x.form !== "answer");
+  const before = unreviewedKnowledge(p.root, p.reader);
+  assert.ok(before.includes(u.id), "never reviewed");
+  await verifyKnowledge(p.root, p.reader, { verifier: replayVerifier((pr) => ({ nonce: nonceOf(pr), concerns: [] })), only: [u.id] });
+  assert.ok(!unreviewedKnowledge(p.root, p.reader).includes(u.id), "a logged review at the current text counts");
+  beginSession(p.root, p.reader, AGENT);
+  fs.writeFileSync(path.join(p.root, u.locator.deliverable), fs.readFileSync(path.join(p.root, u.locator.deliverable), "utf8").replace(u.text, `${u.text} This is now stated differently.`));
+  indexAndStamp(p.root, p.reader, { as: "agent", party: AGENT });
+  assert.ok(unreviewedKnowledge(p.root, liveReader(p.root)).includes(u.id), "a changed text is unreviewed again");
+  const g = spawnSync(process.execPath, [path.join(HERE, "..", "scripts", "gate.mjs"), "--root", p.root, "--inputs", p.inputs], { encoding: "utf8" });
+  assert.ok(JSON.parse(g.stdout).knowledgeUnreviewed.units.includes(u.id) || JSON.parse(g.stdout).knowledgeUnreviewed.count > 10, "the gate says so");
 });
