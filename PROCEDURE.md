@@ -104,8 +104,12 @@ Work in batches (one to three chapters, or a session's budget). In each batch:
 3. **Run the gate** (`gate.mjs --inputs <corpus>`) and fix what is routed to you. Facts:
    - `verify.mjs search` (claim-only retrieval and pinning), then `semi` (the blind verifier);
    - `absolutes` (a context review of absolute statements);
-   - `knowledge` (a blind conceptual review: concerns about the instructor's text or the spine become questions;
-     your own draft you may revise);
+   - `knowledge` (a blind conceptual review). The reviewer sorts each concern:
+     - **wrong**: about your own draft, revise it; about the instructor's text, it is a question;
+     - **clarify**: correct as meant, and a few words make it precise. In your own text, apply the edit if it
+       keeps the meaning (`clarification-owed`). In the instructor's text it comes to the digest as a one-line
+       diff (`clarification-proposed`). Once they accept it, applying it is yours (`clarification-accepted`), and
+       their credit stays.
    - `correct` (auto-correction of an admitted, uncontested contradiction, shown as a diff).
    The gate's `knowledgeUnreviewed` lists the units no blind review has read at their current text. It does not
    block, but a unit that changed since its last review is the first place to look.

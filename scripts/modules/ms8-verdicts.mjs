@@ -4,8 +4,12 @@
 //   fact-disputed       (question) a contradicted year or name, or a contradiction another source contests (D12-F);
 //   absolute-overgeneral (question, routed to the agent) a context review found a scientific absolute broader than the
 //                                  truth; the agent rewords it (D30) — the instructor sees it only if it stays open;
-//   knowledge-concern   (question) a blind verifier's concern about a knowledge-based unit — never a defect, never
-//                                  an automatic change (req.knowledge.no-autochange);
+//   knowledge-concern   (question) a blind verifier's concern that a knowledge-based unit is wrong — never a defect,
+//                                  never an automatic change (req.knowledge.no-autochange);
+//   clarification-owed  (question, routed to the agent) the reviewer finds the agent's own text correct as meant and
+//                                  gives a few words that make it precise; the agent applies them (D35)
+//   clarification-proposed (question) the same for the instructor's text: a one-line diff to accept or not (D35 (a));
+//   clarification-accepted (obligation, agent) the instructor accepted it; the agent applies it, keeping their credit
 //   evidence-unsupported (defect)  quote-verified evidence that does not re-derive: no dispatch record, a record that
 //                                  does not admit, or quotes that do not carry the unit's current facts.
 //   dispatch-unlogged / dispatch-record-missing (defect) a verification record the log does not vouch for, or a
@@ -18,7 +22,8 @@ import { supports } from "../lib/verify/admission.mjs";
 import { readDispatches } from "../lib/verify/dispatch.mjs";
 import { pinnedTexts, snapshotInputReader } from "../lib/verify/references.mjs";
 import { absolutesHash, readAbsoluteReview } from "../lib/verify/absolutes.mjs";
-import { checksCurrentClaims, correctionLogged, dispatchLogged, knowledgeConcerns, logRecordsOf, rederive } from "../lib/verify/verdicts.mjs";
+import { checksCurrentClaims, correctionLogged, dispatchLogged, instructorAuthored, knowledgeConcerns, logRecordsOf, rederive } from "../lib/verify/verdicts.mjs";
+import { findingId } from "../lib/records/findings.mjs";
 import { base, recheckByRerun } from "./_shared.mjs";
 
 function currentUnits(s) {
@@ -64,8 +69,17 @@ function run(s) {
       continue;
     }
     if (r.kind === "knowledge") {
-      for (const c of knowledgeConcerns(r, u.text))
-        out.push({ kind: "knowledge-concern", units: [u.id], evidence: { type: "judgment", note: c.problem, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch } });
+      for (const c of knowledgeConcerns(r, u.text)) {
+        const evidence = { type: "judgment", note: c.problem, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch };
+        if (c.kind !== "clarify" || !c.suggestion.trim()) { out.push({ kind: "knowledge-concern", units: [u.id], evidence }); continue; }
+        if (!instructorAuthored(u, log)) { out.push({ kind: "clarification-owed", units: [u.id], evidence }); continue; }
+        // the instructor's text (D31 stands): proposed as a one-line diff; once accepted, applying it is the agent's job
+        const proposed = { ...evidence, note: `Clarify: "${c.text}" → "${c.suggestion}". ${c.problem}` };
+        const id = findingId({ module: "ms8-verdicts", kind: "clarification-proposed", units: [u.id], evidence: proposed });
+        const accepted = log.some((l) => l.type === "answer" && l.party?.role === "instructor" && (l.payload?.answers || []).some((a) => a.finding === id && /^\s*apply/i.test(a.choice)));
+        if (accepted) out.push({ kind: "clarification-accepted", units: [u.id], evidence: { type: "missing", what: `the clarification the instructor accepted, applied to ${u.id}: "${c.text}" → "${c.suggestion}" (their credit stays, D33)`, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch } });
+        else out.push({ kind: "clarification-proposed", units: [u.id], evidence: proposed, recommendation: "apply" });
+      }
       continue;
     }
     if (!plain.size || !checksCurrentClaims(r, u.text)) continue; // a record of other claims is history
@@ -117,6 +131,9 @@ export default {
       { kind: "fact-contradicted", statusClass: "defect", evidenceType: "quote", route: "agent" },
       { kind: "fact-disputed", statusClass: "question", evidenceType: "conflict", route: "digest" },
       { kind: "knowledge-concern", statusClass: "question", evidenceType: "judgment", route: "digest" },
+      { kind: "clarification-owed", statusClass: "question", evidenceType: "judgment", route: "agent" },
+      { kind: "clarification-proposed", statusClass: "question", evidenceType: "judgment", route: "digest" },
+      { kind: "clarification-accepted", statusClass: "obligation", evidenceType: "missing", route: "agent" },
       { kind: "exercise-data-confirm", statusClass: "question", evidenceType: "judgment", route: "digest" },
       { kind: "absolute-overgeneral", statusClass: "question", evidenceType: "judgment", route: "agent" },
       { kind: "evidence-unsupported", statusClass: "defect", evidenceType: "rule", route: "agent" },

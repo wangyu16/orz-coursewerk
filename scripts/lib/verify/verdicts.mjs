@@ -141,7 +141,8 @@ export function knowledgeConcerns(record, unitText) {
   // the quote is matched with math and emphasis markup set aside: "T the temperature" quotes "$T$ the temperature" (P11 dev)
   const bare = (t) => norm(String(t).replace(/[$*_`]/g, ""));
   return v.concerns.filter((c) => typeof c?.text === "string" && bare(c.text).length >= 8 && bare(unitText).includes(bare(c.text)) && typeof c.problem === "string")
-    .map((c) => ({ text: norm(c.text), problem: String(c.problem).slice(0, 600), suggestion: String(c.suggestion || "").slice(0, 600) }));
+    // a concern without a kind (records before D35) is read as "wrong": it keeps the path it had
+    .map((c) => ({ kind: c.kind === "clarify" ? "clarify" : "wrong", text: norm(c.text), problem: String(c.problem).slice(0, 600), suggestion: String(c.suggestion || "").slice(0, 600) }));
 }
 
 // ---- contradictions and corrections ------------------------------------------------------------------------------

@@ -95,7 +95,9 @@ Bring few, critical questions, then do large chunks of work on your own.
   texts (`scripts/verify.mjs`). The harness, not the verifier, decides what is admitted.
 - **Corrections are guarded.** Auto-correct only what a stable check admitted and nothing contests. Instructor text
   needs two agreeing sources. Show every correction as a revertible diff. Knowledge-level concerns about the
-  instructor's text or the approved spine are questions, never edits. Your own draft is yours to revise. Stay silent
+  instructor's text or the approved spine are questions, never edits. Your own draft is yours to revise. A
+  *clarification* (correct as meant, a few words make it precise) of your own text you simply apply; of the
+  instructor's text it is a one-line diff they accept or not. Stay silent
   on rephrasing that keeps the meaning.
 - **Copyright-clean, by positive provenance.**
   - Figures are self-generated or openly licensed, and recorded.

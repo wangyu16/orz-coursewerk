@@ -99,11 +99,14 @@ export function knowledgeBundle(text, nonce = randomBytes(8).toString("hex"), { 
   // the text around the passage, so a unit is read as a student reads it (an answer with its question, a sentence
   // with the equation that follows) — P11 dev. Concerns are still only about the passage's own words.
   const around = [before && ["TEXT BEFORE THE PASSAGE (context only)", String(before).trim(), ""], after && ["TEXT AFTER THE PASSAGE (context only)", String(after).trim(), ""]].filter(Boolean).flat();
+  // two kinds of concern (D35, operator 2026-10-02): most remarks on correct text need no discussion — a few words
+  // make the statement precise, and the agents settle it. Judged at the course's level, within the passage's scope.
   const prompt = [
-    "Below is a passage from teaching material for a college course. Check it for errors of fact or concept and for statements that would mislead a student.",
-    "Raise a concern only for something that is wrong or misleading, not for style. For each concern copy the exact words at issue, say what is wrong, and suggest a corrected wording.",
+    "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.",
+    'Raise a concern of one of two kinds. "wrong": the passage states or teaches something false at this level. "clarify": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).',
+    "Do not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.",
     ...(around.length ? ["The text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself."] : []),
-    `Reply with JSON only, exactly this shape: {"nonce": "${nonce}", "concerns": [{"text": "exact words", "problem": "...", "suggestion": "..."}]} — an empty list if there is nothing wrong.`,
+    `Reply with JSON only, exactly this shape: {"nonce": "${nonce}", "concerns": [{"kind": "wrong" | "clarify", "text": "exact words", "problem": "...", "suggestion": "the words to put in their place"}]} — an empty list if there is nothing to raise.`,
     "",
     ...around,
     "PASSAGE",

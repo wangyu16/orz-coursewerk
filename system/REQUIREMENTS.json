@@ -1495,6 +1495,21 @@
           "tests/verdict-path.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.knowledge.clarify",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The blind reviewer sorts concerns into 'wrong' and 'clarify' (correct as meant; a few words remove a likely misreading), judged at the course's level and within the passage's scope. A clarification of the agent's own text is the agent's to apply, with no question; of the instructor's text, a one-line diff the instructor accepts or not, after which applying it is owed by the agent and the instructor keeps the credit.",
+      "source": "D35 (operator, 2026-10-02)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/verdict-path.test.mjs"
+        ]
+      }
     }
   ]
 }

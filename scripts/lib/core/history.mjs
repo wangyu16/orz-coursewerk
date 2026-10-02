@@ -15,7 +15,7 @@ function concernsOf(r) {
   const m = String(r.answer?.raw || "").match(/\{[\s\S]*\}/);
   let v; try { v = JSON.parse(m?.[0] || ""); } catch { return []; }
   if (v?.nonce !== r.bundle?.nonce || !Array.isArray(v.concerns)) return [];
-  return v.concerns.filter((c) => typeof c?.problem === "string" && c.problem.trim()).map((c) => ({ text: String(c.text || ""), problem: c.problem, suggestion: c.suggestion || "" }));
+  return v.concerns.filter((c) => typeof c?.problem === "string" && c.problem.trim()).map((c) => ({ kind: c.kind === "clarify" ? "clarify" : "wrong", text: String(c.text || ""), problem: c.problem, suggestion: c.suggestion || "" }));
 }
 
 /**
@@ -39,7 +39,7 @@ export function issueHistory(root, units) {
   };
   const issues = [];
   for (const r of readDir(root, "metadata/verification")) {
-    if (r.kind === "knowledge") for (const c of concernsOf(r)) issues.push({ at: r.at, foundBy: "blind conceptual review", unit: r.unit, issue: c.problem, suggestion: c.suggestion, settled: settle(r.unit, r.contentHash) });
+    if (r.kind === "knowledge") for (const c of concernsOf(r)) issues.push({ at: r.at, foundBy: c.kind === "clarify" ? "blind conceptual review (a clarification)" : "blind conceptual review", unit: r.unit, issue: c.kind === "clarify" ? `"${c.text}" → "${c.suggestion}": ${c.problem}` : c.problem, suggestion: c.suggestion, settled: settle(r.unit, r.contentHash) });
     if (r.kind === "semi") for (const c of r.admission?.perClaim || []) {
       if (["contradicted", "disputed"].includes(c.status)) issues.push({ at: r.at, foundBy: "blind fact check against pinned sources", unit: r.unit, issue: `${c.status}: ${(c.conflicts || []).map((k) => `${k.claimed} vs ${k.source}`).join("; ")}`, settled: settle(r.unit, r.contentHash) });
       if (c.status === "hypothetical") issues.push({ at: r.at, foundBy: "blind fact check against pinned sources", unit: r.unit, issue: "invented exercise data: no source can show it", settled: settle(r.unit, r.contentHash) });

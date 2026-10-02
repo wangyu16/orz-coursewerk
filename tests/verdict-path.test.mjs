@@ -474,3 +474,44 @@ test("[req.knowledge.review] the gate reports knowledge units no blind review ha
   const g = spawnSync(process.execPath, [path.join(HERE, "..", "scripts", "gate.mjs"), "--root", p.root, "--inputs", p.inputs], { encoding: "utf8" });
   assert.ok(JSON.parse(g.stdout).knowledgeUnreviewed.units.includes(u.id) || JSON.parse(g.stdout).knowledgeUnreviewed.count > 10, "the gate says so");
 });
+
+// ---- D35 (operator, 2026-10-02): a clarification is settled between the agents, or is a one-line diff for the instructor
+test("[req.knowledge.clarify] the reviewer sorts concerns into wrong and clarify; a clarification of the agent's text is the agent's to apply, of the instructor's a diff to accept", async (t) => {
+  const { knowledgeBundle } = await import("../scripts/lib/verify/dispatch.mjs");
+  const { buildDigest, answerDigest } = await import("../scripts/lib/core/digest.mjs");
+  const { unitInfoOf } = await import("../scripts/lib/core/workflow.mjs");
+  const { runGate } = await import("../scripts/lib/skeleton/full_gate.mjs");
+  const prompt = knowledgeBundle("A passage.").prompt;
+  assert.match(prompt, /"wrong"/); assert.match(prompt, /"clarify"/); assert.match(prompt, /beyond what the passage is about/);
+  const p = copy(t);
+  const unit = loadUnits(p.root, p.reader).find((u) => u.id === "u-study-guide-le-chatelier-adding-a-catalyst-1");
+  const words = unit.text.match(/forward and reverse reactions by the same factor/)[0];
+  const clarify = replayVerifier((pr) => ({ nonce: nonceOf(pr), concerns: [{ kind: "clarify", text: words, problem: "Correct as meant; naming the rate constants removes a misreading.", suggestion: "forward and reverse rate constants by the same factor" }] }));
+  await verifyKnowledge(p.root, p.reader, { verifier: clarify, only: [unit.id] });
+  const ms8 = () => run(p, "ms8-verdicts").findings.filter((f) => f.module === "ms8-verdicts" && f.units.includes(unit.id)).map((f) => `${f.kind}:${f.statusClass}:${f.route}`);
+  assert.deepEqual(ms8(), ["clarification-owed:question:agent"], "the agent's own text: no question for the instructor");
+  // the same clarification on the instructor's text: a one-line diff in the digest, recommended "apply"
+  const sg = path.join(p.root, "study-guide", "le-chatelier.md");
+  fs.writeFileSync(sg, fs.readFileSync(sg, "utf8").replace(unit.text, `${unit.text} (My wording.)`)); // the instructor's own edit
+  indexAndStamp(p.root, liveReader(p.root), {});
+  claimAuthorship(p.root, { units: [unit.id], instructorWords: "That passage is mine." }, I);
+  await verifyKnowledge(p.root, liveReader(p.root), { verifier: clarify, only: [unit.id] });
+  assert.deepEqual(ms8(), ["clarification-proposed:question:digest"]);
+  const info = () => unitInfoOf(p.root, liveReader(p.root));
+  const d = buildDigest(p.root, runGate(p.root, { inputsDir: p.inputs }).findings, info());
+  const e = d.entries.find((x) => x.kind === "clarification-proposed");
+  assert.ok(e && e.recommendation === "apply"); assert.match(e.question, /^Clarify: ".+" → ".+"/);
+  answerDigest(p.root, d, { acceptAll: true, instructorWords: "Fine, apply it.", reader: liveReader(p.root) }, I);
+  assert.deepEqual(ms8(), ["clarification-accepted:obligation:agent"], "accepted: applying it is now owed by the agent");
+  assert.ok(runGate(p.root, { inputsDir: p.inputs }).gate.blocking.some((f) => f.kind === "clarification-accepted"));
+  beginSession(p.root, liveReader(p.root), AGENT);
+  const f = path.join(p.root, "study-guide", "le-chatelier.md");
+  fs.writeFileSync(f, fs.readFileSync(f, "utf8").replace(words, "forward and reverse rate constants by the same factor"));
+  indexAndStamp(p.root, liveReader(p.root), { as: "agent", party: AGENT });
+  assert.deepEqual(ms8(), [], "applied: the concern is history");
+  const u2 = loadUnits(p.root, liveReader(p.root)).find((u) => u.id === unit.id);
+  assert.equal(u2.origin.kind, "instructor-authored", "the instructor keeps the credit (D33)"); assert.ok(u2.origin.revisedBy?.length);
+  // a concern without a kind (a record before D35) keeps the old path
+  await verifyKnowledge(p.root, liveReader(p.root), { verifier: replayVerifier((pr) => ({ nonce: nonceOf(pr), concerns: [{ text: "rate constants by the same factor", problem: "x", suggestion: "y" }] })), only: [unit.id] });
+  assert.ok(ms8().includes("knowledge-concern:question:digest"));
+});
