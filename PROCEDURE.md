@@ -153,7 +153,7 @@ To read or present the materials locally, assemble the framework shells: `script
 
 | | |
 |---|---|
-| workflow | `scripts/coursewerk.mjs` — status, assemble, back-to-draft, approve, digest, recommend, answer, publish, revert, interrupt |
+| workflow | `scripts/coursewerk.mjs` — status, assemble, back-to-draft, approve, digest, recommend, answer, publish, revert, interrupt, digest-cap, history (how each issue was found and settled, rebuilt from the records) |
 | spine | `scripts/spine.mjs` — check, migrate, anchor, propose, critique, status, preview, approve, version, steering |
 | units | `scripts/units.mjs` — begin, index, claim, status, link, confirm, obligations, restamp |
 | verification | `scripts/verify.mjs` — destinations, search, fetch, semi, readmit, absolutes, knowledge, correct, revert, corrections, links, status |

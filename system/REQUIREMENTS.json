@@ -11,7 +11,8 @@
     "P6",
     "P7",
     "P8",
-    "P9"
+    "P9",
+    "P10"
   ],
   "requirements": [
     {
@@ -1428,6 +1429,25 @@
         ],
         "T2": [
           "system/rounds/P7-verdicts.md"
+        ]
+      }
+    },
+    {
+      "id": "req.history.record",
+      "phase": "P10",
+      "tiers": [
+        "T1",
+        "T2"
+      ],
+      "statement": "How every issue was found and how it was settled is rebuilt from the package's own records (verification records, corrections, unit index, decision log), with repeats folded and counted.",
+      "source": "operator, 2026-10-02",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/workflow.test.mjs"
+        ],
+        "T2": [
+          "system/rounds/P10-dogfood.md"
         ]
       }
     }

@@ -232,3 +232,21 @@ test("[req.units.identity] P10 scenario: twelve small edits to look-alike answer
   assert.equal(r.summary.splits + r.summary.merges + r.summary.retired, 0, JSON.stringify(r.summary));
   assert.deepEqual(readSidecar(dir, rel).units.map((u) => [u.id, u.spineNodes]), before, "same ids, same spine links");
 });
+
+test("[req.units.origin] the agent revising the instructor's text keeps the instructor's credit, with the revision recorded", async (t) => {
+  const { liveReader } = await import("../scripts/lib/core/package_reader.mjs");
+  const { indexUnits, readSidecar, beginSession, claimAuthorship } = await import("../scripts/lib/core/units_index.mjs");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-credit-")); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  fs.cpSync(path.join(HERE, "fixtures", "c2-chemistry-v2", "package"), dir, { recursive: true });
+  const rel = "practice/le-chatelier.md", f = path.join(dir, rel);
+  fs.writeFileSync(f, fs.readFileSync(f, "utf8").replace("by the same factor", "by an equal factor"));
+  indexUnits(dir, liveReader(dir));
+  const mine = readSidecar(dir, rel).units.find((u) => u.origin.kind === "unknown");
+  claimAuthorship(dir, { units: [mine.id], instructorWords: "That is mine." }, { role: "instructor", name: "Yu Wang (wangyu16)" });
+  beginSession(dir, liveReader(dir), AGENT, { step: "M4 answer applied" });
+  fs.writeFileSync(f, fs.readFileSync(f, "utf8").replace("by an equal factor", "by the same factor"));
+  indexUnits(dir, liveReader(dir), { as: "agent", party: AGENT });
+  const u = readSidecar(dir, rel).units.find((x) => x.id === mine.id);
+  assert.equal(u.origin.kind, "instructor-authored"); assert.equal(u.origin.instructor, "Yu Wang (wangyu16)");
+  assert.deepEqual(u.origin.revisedBy.map((r) => r.step), ["M4 answer applied"]);
+});

@@ -62,7 +62,7 @@ flowchart labels, all wrong, all blocking. In v2:
 | the agent ended with DONE instead of bringing M6 | protocol slip, noted; the procedure already says M6 is a moment |
 
 **Observed, for the study (K5).** The blind conceptual review is not repeatable: the second pass raised concerns
-on text the first pass had cleared. Convergence has to be measured over repeated passes, as D26 plans.
+on text the first pass had cleared. Convergence has to be measured over repeated passes, as D26 plans. *(The operator: this is expected; see D32.)*
 
 ## The targeted digest scenario (T3 for the digest budget and answer persistence)
 
@@ -100,7 +100,7 @@ size of the digest protects the instructor's attention, so it is now the instruc
   published if the instructor had not answered. That follows from Level 2 being best effort and the instructor
   being the authority on their text; it is still worth a look.
 - **Applying an accepted correction re-credits the whole answer to the agent.** The record keeps the instructor's
-  claim and their accepting answer, but the unit's origin becomes agent-knowledge.
+  claim and their accepting answer, but the unit's origin becomes agent-knowledge. *(Resolved by the operator: D33.)*
 
 ## What is left for the study (P11)
 
@@ -115,7 +115,27 @@ The mechanism is covered at T1 (`tests/verdict-path.test.mjs`). The live case is
 ## Evidence for
 
 - T3 `req.dogfood.c2`: this report. The course was taken end to end to a publish decision; every v0.12 false
-  positive is explained above; the operator's review is pending.
+  positive is explained above; reviewed by the operator on 2026-10-02 (below).
 - T3 `req.units.external-edit`: the dogfood. The harness's own digest raised the instructor's edit, once.
 - T3 `req.digest.budget` and `req.answers.persist`: the targeted digest scenario (cap 10, one held over and brought
   first; answered entries never re-asked).
+
+## Operator review (2026-10-02)
+
+- **The course's purpose.** The C2 course is an example and study object, not teaching material. The record of how
+  issues were found and fixed matters more than a perfect package. `coursewerk.mjs history` now rebuilds that record
+  from the package (`req.history.record`). The C2 history: 45 distinct issues, by finder:
+
+  | finder | issues |
+  |---|---|
+  | blind conceptual review | 28 |
+  | fact check | 14 |
+  | absolute review | 1 |
+  | unit index (the instructor's edit) | 1 |
+  | the instructor's answers | 1 |
+
+- **Credit stays with the instructor** (D33). An agent revision of instructor text keeps `instructor-authored`, with
+  a `revisedBy` entry.
+- **Convergence is improvement under repeated blind critique without false alerts** (D32), not agreement between
+  passes. Study K5 is restated.
+- **Questions never block** (D14) stands; it was not taken up.

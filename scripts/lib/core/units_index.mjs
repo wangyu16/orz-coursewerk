@@ -137,7 +137,14 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
       let origin = prev?.origin;
       if (changed) {
         const beforeSession = session && baseline.has(hash) && !old.some((u) => u.locator.contentHash === hash);
-        if (as === "agent" && !beforeSession) { origin = origins[hash] || { kind: "agent-knowledge", model: party.model, step: session.payload.step, date }; summary.agent++; }
+        if (as === "agent" && !beforeSession) {
+          // the agent revising the instructor's text keeps the instructor's credit, with the revision on record
+          // (operator, 2026-10-02: "keep crediting me is fine")
+          if (!origins[hash] && prev?.origin?.kind === "instructor-authored")
+            origin = { ...prev.origin, revisedBy: [...(prev.origin.revisedBy || []), { model: party.model, step: session.payload.step, date }] };
+          else origin = origins[hash] || { kind: "agent-knowledge", model: party.model, step: session.payload.step, date };
+          summary.agent++;
+        }
         else if (!old.length && initialOrigin) origin = initialOrigin;
         else { origin = origins[hash] || { kind: "unknown" }; if (origin.kind === "unknown") summary.unknown++; }
       }

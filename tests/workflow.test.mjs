@@ -339,3 +339,24 @@ test("[req.digest.budget] the digest's size is the instructor's; 'later' defers 
   const e = d2.entries.find((x) => x.key === d.entries[0].key);
   assert.ok(e, "a deferred entry is still asked"); assert.equal(e.deferredBefore, true, "and marked as owed");
 });
+
+// ---- the issue history (operator, 2026-10-02) -----------------------------------------------------------------------
+test("[req.history.record] the history rebuilds, from the package's records, how each issue was found and how it was settled", async (t) => {
+  const p = copy(t);
+  const { verifyKnowledge } = await import("../scripts/lib/verify/verdicts.mjs");
+  const { replayVerifier } = await import("../scripts/lib/verify/dispatch.mjs");
+  const { loadUnits, indexAndStamp } = await import("../scripts/lib/core/obligations.mjs");
+  const { beginSession } = await import("../scripts/lib/core/units_index.mjs");
+  const u = loadUnits(p.root, p.reader).find((x) => x.id === "u-study-guide-le-chatelier-adding-a-catalyst-1");
+  const words = u.text.match(/accelerates the \*\*forward and reverse reactions by the same factor\.\*\*/)[0];
+  const concern = replayVerifier((pr) => ({ nonce: pr.match(/"nonce": "([0-9a-f]+)"/)[1], concerns: [{ text: words, problem: "Say that the rate constants are multiplied by the same factor.", suggestion: "…" }] }));
+  for (let k = 0; k < 2; k++) await verifyKnowledge(p.root, p.reader, { verifier: concern, only: [u.id] }); // found twice
+  beginSession(p.root, p.reader, AGENT);
+  fs.writeFileSync(path.join(p.root, "study-guide", "le-chatelier.md"), fs.readFileSync(path.join(p.root, "study-guide", "le-chatelier.md"), "utf8").replace("by the same factor.**", "by the same factor** (their rate constants are multiplied equally)."));
+  indexAndStamp(p.root, p.reader, { as: "agent", party: AGENT });
+  const r = cli("history", "--root", p.root);
+  assert.equal(r.status, 0, r.stderr);
+  const row = r.stdout.split("\n").find((l) => l.includes("rate constants are multiplied"));
+  assert.ok(row, "the concern is in the history");
+  assert.match(row, /blind conceptual review/); assert.match(row, /the text was revised since/); assert.match(row, /\| 2 \|$/, "found twice, one row");
+});
