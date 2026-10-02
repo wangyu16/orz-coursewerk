@@ -53,7 +53,7 @@ try {
       if (readConfig(root).spine === 2) fail("this package is already spine v2");
       party = instructor(); words = opt("--words");
       if (!String(words || "").trim()) fail('--words "<the instructor\'s own words>" is required: a migration is the instructor\'s request');
-      const st = spawnSync("git", ["-C", root, "status", "--porcelain"], { encoding: "utf8" });
+      const st = spawnSync("git", ["-C", root, "status", "--porcelain"], { encoding: "utf8", maxBuffer: 1 << 30 });
       if (st.status !== 0) fail("the package must be a git repository, so the migration is one reviewable diff");
       if (st.stdout.trim()) fail("commit or set aside the package's changes first: the migration must be its own reviewable diff");
     }

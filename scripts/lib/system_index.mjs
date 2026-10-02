@@ -195,7 +195,7 @@ export function writeCoursewerkIndex(root, index = computeCoursewerkIndex(root))
 }
 
 function git(root, args) {
-  const result = spawnSync("git", ["-C", root, ...args], { encoding: "utf8" });
+  const result = spawnSync("git", ["-C", root, ...args], { encoding: "utf8", maxBuffer: 1 << 30 });
   return result.status === 0 ? result.stdout.trim() : null;
 }
 

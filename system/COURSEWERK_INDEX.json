@@ -581,7 +581,7 @@
       "id": "repo:scripts/lib/output_git.mjs",
       "path": "scripts/lib/output_git.mjs",
       "type": "kernel",
-      "hash": "ad69d82e735d07db7d294b88eb84e53e6f1cc3eef6fefa53158cba28765c589e"
+      "hash": "d70c83d7af69115f00b82b0a064c453cffa9bfcd4687652bbe382c43555f69d5"
     },
     {
       "id": "repo:scripts/lib/overrides.mjs",
@@ -671,7 +671,7 @@
       "id": "repo:scripts/lib/skeleton/gate.mjs",
       "path": "scripts/lib/skeleton/gate.mjs",
       "type": "kernel",
-      "hash": "b30b6e8392011c5162636cee8afa53bab15b77df92f10cd71c44d6134032d577"
+      "hash": "e4ce2dbb7c14d58a082f30e41cb41841d8cf81e1c017f4c583011cbef05f3650"
     },
     {
       "id": "repo:scripts/lib/skeleton/manifest.mjs",
@@ -731,7 +731,7 @@
       "id": "repo:scripts/lib/system_index.mjs",
       "path": "scripts/lib/system_index.mjs",
       "type": "kernel",
-      "hash": "e3af251a00f6eb8a1c6764aad568a333392bcd4915ea25a09af1fd4c4f21ef90"
+      "hash": "d835475975f16842022547b83a6febbc8481391c681a671df6026623c3ada7b7"
     },
     {
       "id": "repo:scripts/lib/terms.mjs",
@@ -911,7 +911,7 @@
       "id": "repo:scripts/spine.mjs",
       "path": "scripts/spine.mjs",
       "type": "executable",
-      "hash": "b866c087d78eee9bf54d8a57375223c93b028d3c534a62b6942b73d037b648d9"
+      "hash": "9551325aa9026c58627ad6824ae47dfdfa8cd0dc2fbc641deb951bbef2e5c5c1"
     },
     {
       "id": "repo:scripts/study_pairs.mjs",
@@ -1631,7 +1631,7 @@
       "id": "repo:tests/runner.test.mjs",
       "path": "tests/runner.test.mjs",
       "type": "test",
-      "hash": "2d0a26f57c735dabea5ac4cd3f68f5354dd2ce6350e983c01196ac13ee3b88a9"
+      "hash": "1d5fb7837ad9968c08be2727b972efb4a27fb6cbc35ff1ec76fb5d405b374a23"
     },
     {
       "id": "repo:tests/semantic-index-artifact.test.mjs",

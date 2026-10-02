@@ -6,7 +6,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 
 function git(root, args, { allowFailure = false } = {}) {
-  const result = spawnSync("git", ["-C", root, ...args], { encoding: "utf8" });
+  const result = spawnSync("git", ["-C", root, ...args], { encoding: "utf8", maxBuffer: 1 << 30 });
   if (!allowFailure && result.status !== 0) {
     throw new Error(`git ${args.join(" ")} failed: ${(result.stderr || result.stdout || "unknown error").trim()}`);
   }

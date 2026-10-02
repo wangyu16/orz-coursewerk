@@ -302,3 +302,13 @@ test("[req.modules.no-writes] [req.modules.manifest] round P2-3 probes: unreadab
   try { assert.doesNotThrow(() => { r = run(s, reg(["first"], ["second"])); }); } finally { clearInterval(churn); }
   assert.ok(r.findings.every((f) => f.module === "skeleton"));
 });
+
+test("[req.gate.log-verified] a log past 1 MB is read whole: a long history never makes a package unpublishable (P11 wiring check)", (t) => {
+  const { root } = scratch(t);
+  const party = { role: "harness", name: "gate" };
+  for (let i = 0; i < 2200; i++) appendLogRecord(root, { type: "intake", party, payload: { note: "x".repeat(400), i } });
+  assert.ok(fs.statSync(path.join(root, "metadata", "LOG.jsonl")).size > 1 << 20, "over Node's default 1 MB buffer");
+  gitInit(root);
+  appendLogRecord(root, { type: "steering", party });
+  assert.deepEqual(logFindings(root, "b"), [], "read and verified, not 'unreadable'");
+});

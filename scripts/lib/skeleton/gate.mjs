@@ -12,16 +12,19 @@ import { readLogText, verifyAgainstCommitted } from "../records/log.mjs";
 import { SKELETON } from "./runner.mjs";
 
 /** The committed log text, from the package's own git. A package without git history cannot be checked. */
+// a package's log grows with its history: read it whole (Node's default 1 MB buffer made a 1.2 MB log "unreadable"
+// and the package unpublishable — found by the P11 wiring check)
+const GIT = { encoding: "utf8", maxBuffer: 1 << 30 };
 export function committedLog(root) {
   root = path.resolve(root);
   if (!fs.existsSync(path.join(root, ".git"))) return { ok: false, reason: "the package has no git history" };
-  const head = spawnSync("git", ["-C", root, "rev-parse", "--verify", "HEAD"], { encoding: "utf8" });
+  const head = spawnSync("git", ["-C", root, "rev-parse", "--verify", "HEAD"], GIT);
   if (head.status !== 0) return { ok: true, text: "" }; // no commit yet: nothing committed to extend
-  const show = spawnSync("git", ["-C", root, "show", `HEAD:${RECORD_PATHS.log}`], { encoding: "utf8" });
+  const show = spawnSync("git", ["-C", root, "show", `HEAD:${RECORD_PATHS.log}`], GIT);
   if (show.status === 0) return { ok: true, text: show.stdout };
-  const tracked = spawnSync("git", ["-C", root, "ls-tree", "--name-only", "HEAD", RECORD_PATHS.log], { encoding: "utf8" });
+  const tracked = spawnSync("git", ["-C", root, "ls-tree", "--name-only", "HEAD", RECORD_PATHS.log], GIT);
   if (tracked.status === 0 && !tracked.stdout.trim()) return { ok: true, text: "" }; // log not yet committed
-  return { ok: false, reason: `the committed log could not be read: ${(show.stderr || "").trim()}` };
+  return { ok: false, reason: `the committed log could not be read: ${(show.stderr || "").trim() || show.error?.message || `git exited ${show.status}`}` };
 }
 
 /** The skeleton's own log check, run on every gate evaluation (req.gate.log-verified). */
