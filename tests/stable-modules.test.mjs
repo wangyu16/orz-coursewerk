@@ -143,3 +143,26 @@ test("[req.modules.manifest] the standard registry: a package without one runs e
   const r2 = runCheckpoint({ root: p.root, checkpoint: "V3", profile: "public", registry: readRegistry(p.root), inputsDir: p.inputs });
   assert.ok(!r2.findings.some((f) => f.kind === "standard-module-dropped"));
 });
+
+// ---- found by the P11 wiring sweep ----------------------------------------------------------------------------------
+test("[req.ms7.consistency] MS7 reads the package's LaTeX quantities: a disagreement written as $\\Delta H = …\\ \\text{kJ}$ is caught", (t) => {
+  const p = copy(t);
+  assert.deepEqual(found(run(p, "ms7-consistency"), "ms7-consistency"), [], "clean");
+  p.edit("slides/le-chatelier.md", (x) => x.replace("pushes the equilibrium away from the side where heat sits.", "pushes the equilibrium away from the side where heat sits. The ammonia synthesis is an exothermic reaction, with $\\Delta H = -92.2\\ \\text{kJ}$."));
+  p.edit("practice/le-chatelier.md", (x) => x.replace("falls at higher temperature.", "falls at higher temperature. The ammonia synthesis is an exothermic reaction ($\\Delta H = -46.1\\ \\text{kJ}$)."));
+  assert.ok(found(run(p, "ms7-consistency"), "ms7-consistency").includes("value-disagreement:defect"));
+});
+
+test("[req.ms3.contract] MS3: a $$ display equation that is never closed is a defect (it would swallow the units after it)", (t) => {
+  const p = copy(t);
+  assert.ok(!run(p, "ms3-format").findings.some((f) => f.evidence.rule === "math-delimiters"), "clean");
+  p.edit("study-guide/le-chatelier.md", (x) => x.replace(/\$\$\n/, "\n"));
+  const f = run(p, "ms3-format").findings.find((x) => x.evidence.rule === "math-delimiters");
+  assert.ok(f && f.statusClass === "defect"); assert.match(f.evidence.issue, /opens here and is never closed/);
+});
+
+test("[req.modules.wiring-report] a malformed unit sidecar does not crash MS7 or MS8", (t) => {
+  const p = copy(t);
+  fs.writeFileSync(path.join(p.root, "metadata", "units", "stub.json"), JSON.stringify({ schemaVersion: 1, units: [] }));
+  for (const m of ["ms7-consistency", "ms8-verdicts"]) assert.ok(!run(p, m).findings.some((f) => f.kind === "module-failed"), `${m} survives`);
+});

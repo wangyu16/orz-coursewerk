@@ -10,7 +10,7 @@
 //   node scripts/spine.mjs status   --root <pkg>                      approval status of every scope
 //   node scripts/spine.mjs preview  --root <pkg> --chapter <slug>     the approval view
 //   node scripts/spine.mjs approve  --root <pkg> (--chapter <slug> | --course) --name <instructor> --words "<what they said>" [--glance]
-//   node scripts/spine.mjs version  --root <pkg> --scopes chapter:<slug>[,…] --reason "<why>" --name <instructor>
+//   node scripts/spine.mjs version  --root <pkg> --scopes chapter:<slug>[,…] --reason "<why>" --name <instructor> --words "<their words>"   (carries the chapter's units: each owes re-verification)
 //   node scripts/spine.mjs steering --root <pkg> --defaults <file.json> [--answers <file.json>] [--accept-all] --name <instructor> --words "…"
 import fs from "node:fs";
 import path from "node:path";
@@ -19,7 +19,7 @@ import { checkSpine, parseSpine, spinePaths, COURSE_MAP } from "./lib/core/spine
 import { anchorMap, rewriteRefs, migrateGuide } from "./lib/core/migrate.mjs";
 import { approvalStatus, recordApproval } from "./lib/core/approvals.mjs";
 import { approvalPreview, originsPath } from "./lib/core/preview.mjs";
-import { openMajorVersion } from "./lib/core/versions.mjs";
+import { openVersionCarrying } from "./lib/core/obligations.mjs";
 import { spineCritique } from "./lib/core/critique.mjs";
 import { recordSteering } from "./lib/core/steering_intake.mjs";
 import { readConfig, writeConfig } from "./lib/records/config.mjs";
@@ -134,8 +134,8 @@ try {
   }
   if (cmd === "version") {
     const scopes = String(opt("--scopes") || "").split(",").filter(Boolean);
-    const r = openMajorVersion(root, { scopes, reason: opt("--reason") }, instructor());
-    console.log(JSON.stringify({ recorded: r.type, seq: r.seq, from: r.payload.from, to: r.payload.to }, null, 2));
+    const r = openVersionCarrying(root, liveReader(root), { scopes, reason: opt("--reason"), instructorWords: opt("--words") }, instructor());
+    console.log(JSON.stringify({ recorded: r.type, seq: r.seq, from: r.payload.from, to: r.payload.to, carried: r.payload.carried.length }, null, 2));
     process.exit(0);
   }
   if (cmd === "steering") {

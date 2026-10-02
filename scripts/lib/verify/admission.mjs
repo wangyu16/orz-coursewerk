@@ -31,7 +31,7 @@ const sameAtPrecision = (claim, src) => claim.unit === src.unit && Math.abs(Numb
 const WINDOW = 800;
 const plainKeepCase = (t) => proseOf(t).normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
 const wordRe = (w, flags = "iu") => new RegExp(`(?<![\\p{L}\\p{N}])${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\p{L}\\p{N}])`, flags);
-const nameParts = (name) => plainKeepCase(name).split(/\s+/).filter((w) => /^\p{Lu}/u.test(w)).map((w) => w.replace(/['’]s$/, ""));
+const nameParts = (name) => plainKeepCase(name).split(/[\s\u2010-\u2015-]+/).filter((w) => /^\p{Lu}/u.test(w)).map((w) => w.replace(/['’]s$/, ""));
 const sentencesIn = (t) => String(t).split(/(?<=[.!?;])\s+|\s*¶\s*/);
 
 /** The claim's content words nearest the superlative: two before it, two after. */

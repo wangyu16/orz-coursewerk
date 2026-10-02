@@ -20,12 +20,12 @@ export function versionOpenedAt(logText, scope) {
 /**
  * @param {string[]} scopes  e.g. ["chapter:ch1"], ["chapter:ch1", "chapter:ch2"] (an objective moved), or ["course"]
  */
-export function openMajorVersion(root, { scopes, reason, carried = [] }, party) {
+export function openMajorVersion(root, { scopes, reason, carried = [], instructorWords = null }, party) {
   if (!Array.isArray(scopes) || !scopes.length) throw new Error("a new version names the scopes it covers");
   if (!String(reason || "").trim()) throw new Error("a new version states why (the structural change)");
   if (party?.role !== "instructor") throw new Error("opening a new major version is the instructor's decision");
   const text = readLogText(root);
   const from = Object.fromEntries(scopes.map((s) => [s, currentVersion(text, s)]));
   const to = Object.fromEntries(scopes.map((s) => [s, from[s] + 1]));
-  return appendLogRecord(root, { type: "version", party, payload: { scopes, from, to, reason, carried } });
+  return appendLogRecord(root, { type: "version", party, payload: { scopes, from, to, reason, carried, ...(instructorWords ? { instructorWords } : {}) } });
 }

@@ -24,6 +24,7 @@ import { absoluteSentences, absolutesHash, readAbsoluteReview } from "../verify/
 import { deliverablesOf, indexUnits, readSidecar } from "./units_index.mjs";
 import { parseSpine, nodeIndex } from "./spine.mjs";
 import { manifestChapters } from "./package_reader.mjs";
+import { openMajorVersion } from "./versions.mjs";
 import { dependencyEdges, factHash, sourceHashes, stampFor, staleTargets, targetHashes } from "./dependencies.mjs";
 
 // quote-verified: admitted by the verdict path (P7); instructor-confirmation: one confirmation (D19-D);
@@ -106,10 +107,27 @@ export function restamp(root, reader, ids) {
   rewriteUnits(root, ids, (u) => { u.stamp = stampFor(u.id, edges, hashes); delete u.carried; });
 }
 
+/**
+ * A dependency target the harness added after a unit was stamped (the direction-sensitive `question:` target, P11):
+ * when the unit's stamp is otherwise current, the new target is baselined at its current hash — the state a restamp
+ * would record. Targets that just changed are never baselined (`except`), so an edit is not silently absorbed.
+ */
+export function upgradeStamps(root, reader, { except = [] } = {}) {
+  const { units, edges, hashes } = context(root, reader), skip = new Set(except), add = new Map();
+  for (const u of units) {
+    if (!u.stamp || u.carried || staleTargets(u.stamp, hashes).length) continue;
+    const full = stampFor(u.id, edges, hashes), missing = Object.keys(full).filter((t) => !(t in u.stamp) && !skip.has(t));
+    if (missing.length) add.set(u.id, Object.fromEntries(missing.map((t) => [t, full[t]])));
+  }
+  if (add.size) rewriteUnits(root, [...add.keys()], (u) => { u.stamp = { ...u.stamp, ...add.get(u.id) }; });
+  return add.size;
+}
+
 /** Index, then stamp every unit that changed (its author wrote it against the package as it is now). */
 export function indexAndStamp(root, reader, opts) {
   const r = indexUnits(root, reader, opts);
   restamp(root, reader, r.changedIds);
+  upgradeStamps(root, reader, { except: r.changedIds.flatMap((id) => [`unit:${id}`, `question:${id}`]) });
   return r;
 }
 
@@ -213,6 +231,20 @@ export function carryUnits(root, ids, { version, scope }, party) {
   appendLogRecord(root, { type: "revision", party, payload: { event: "units-carried", scope, version, units: ids } });
 }
 
+/**
+ * The instructor opens a new major version (D15): the units of its scopes are carried into it, each an open
+ * re-verification until checked again. A chapter scope carries that chapter's deliverables; the course scope, all.
+ * (P11 wiring sweep: the version was logged with carried: [] and nothing was ever carried.)
+ */
+export function openVersionCarrying(root, reader, { scopes, reason, instructorWords }, party) {
+  if (!String(instructorWords || "").trim()) throw new Error("opening a new major version quotes the instructor's words");
+  const units = loadUnits(root, reader);
+  const inScope = (sc) => sc === "course" ? units : units.filter((u) => sc.startsWith("chapter:") && u.locator.deliverable.endsWith(`/${sc.slice("chapter:".length)}.md`));
+  const r = openMajorVersion(root, { scopes, reason, instructorWords, carried: [...new Set(scopes.flatMap((sc) => inScope(sc).map((u) => u.id)))] }, party);
+  for (const sc of scopes) { const ids = inScope(sc).map((u) => u.id); if (ids.length) carryUnits(root, ids, { version: r.payload.to[sc], scope: sc }, party); }
+  return r;
+}
+
 /** All core obligations (and dangling-link defects) of a package. */
 export function coreObligations(root, reader, basis) {
   const { chapters, spine, units, hashes } = context(root, reader);
@@ -239,7 +271,7 @@ export function coreObligations(root, reader, basis) {
         // an answer whose question changed: only the instructor (or a re-written answer) can say it still holds. The
         // check recommends nothing: "accept all" must not confirm an answer nobody re-read (P11 K4 scenario). The agent
         // re-reads the answer with its question (verify knowledge) and recommends.
-        if (u.form === "answer" && moved.some((t) => units.some((x) => `unit:${x.id}` === t && x.form === "question")))
+        if (u.form === "answer" && moved.some((t) => units.some((x) => (`unit:${x.id}` === t || `question:${x.id}` === t) && x.form === "question")))
           F.push(makeFinding({ module: "skeleton", kind: "answer-still-correct", units: [u.id], statusClass: "question", route: "digest", basis,
             evidence: { type: "judgment", note: `${u.id}: its question changed — is the answer still correct as written? (the agent re-reads it with its question and recommends)` } }));
       }

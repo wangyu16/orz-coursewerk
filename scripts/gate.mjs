@@ -38,6 +38,9 @@ try {
   if (opt("--json")) fs.writeFileSync(opt("--json"), JSON.stringify(report, null, 2) + "\n");
   if (opt("--wiring")) fs.writeFileSync(opt("--wiring"), JSON.stringify(wiring, null, 2) + "\n");
   console.log(JSON.stringify({ checkpoint, profile, canPublish: gate.canPublish, blocking: gate.blocking.map((f) => `${f.module}/${f.kind}`), approvalProblems, questions: openQuestions.length, corrections: corrections.map((c) => ({ id: c.id, unit: c.unit, diff: c.diff })),
+    // questions routed to the agent (clarifications owed, over-general absolutes, frame-name notes…): the agent's own
+    // work, so they are listed, not just counted (P11 wiring sweep)
+    forYou: openQuestions.filter((f) => f.route === "agent").map((f) => ({ module: f.module, kind: f.kind, units: f.units, note: String(f.evidence?.note || f.evidence?.what || f.evidence?.rule || "").slice(0, 240) })),
     knowledgeUnreviewed: unreviewed.length ? { count: unreviewed.length, units: unreviewed.slice(0, 10), next: "best effort, not blocking: node scripts/verify.mjs knowledge --root <pkg> --units <ids>" } : 0, modulesRan: wiring.modulesRan }, null, 2));
   process.exit(gate.canPublish ? 0 : 1);
 } catch (e) {

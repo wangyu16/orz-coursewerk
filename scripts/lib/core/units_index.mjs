@@ -19,6 +19,7 @@ import { validateUnitSidecar } from "../records/units.mjs";
 import { makeFinding } from "../records/findings.mjs";
 import { DELIVERABLE_DIRS, classifyUnit, segmentDeliverable, slugify, tokensOf, unitHash } from "./segment.mjs";
 import { manifestChapters } from "./package_reader.mjs";
+import { upgradeStamps } from "./obligations.mjs";
 
 export function deliverablesOf(reader) {
   return manifestChapters(reader).flatMap((ch) => DELIVERABLE_DIRS.map((d) => `${d}/${ch}.md`)).filter((rel) => reader.text(rel) != null);
@@ -102,6 +103,7 @@ export function openSession(logText) {
 
 export function beginSession(root, reader, party, { step = "authoring" } = {}) {
   if (party?.role !== "agent") throw new Error("a session belongs to the agent that will write");
+  try { upgradeStamps(root, reader); } catch { /* an unindexed or partial package: indexing reports it */ }
   const baseline = {};
   for (const rel of deliverablesOf(reader)) baseline[rel] = segmentDeliverable(reader.text(rel), rel).units.map((s) => unitHash(s.text));
   return appendLogRecord(root, { type: "revision", party, payload: { event: "agent-session-begin", step, baseline } });

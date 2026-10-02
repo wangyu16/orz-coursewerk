@@ -29,7 +29,7 @@ import { base, recheckByRerun } from "./_shared.mjs";
 function currentUnits(s) {
   const out = new Map();
   for (const p of s.paths.filter((x) => x.startsWith("metadata/units/") && x.endsWith(".json")).sort()) {
-    const side = s.json(p); if (!side?.units) continue;
+    const side = s.json(p); if (!Array.isArray(side?.units) || typeof side.deliverable !== "string") continue; // malformed: the index reports it
     const seg = segmentDeliverable(s.text(side.deliverable) || "", side.deliverable).units;
     if (seg.length !== side.units.length) continue; // out of date: units-not-indexed covers it
     side.units.forEach((u, i) => out.set(u.id, { ...u, text: seg[i].text, contentHash: u.locator?.contentHash }));
@@ -72,6 +72,10 @@ function run(s) {
       for (const c of knowledgeConcerns(r, u.text)) {
         const evidence = { type: "judgment", note: c.problem, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch };
         if (c.kind !== "clarify" || !c.suggestion.trim()) { out.push({ kind: "knowledge-concern", units: [u.id], evidence }); continue; }
+        // applied: the unit now says what the clarification proposed. Its added words often touch no fact token, so the
+        // record is still "current" — settledness is read from the text itself (P11: an applied clarification stayed owed)
+        const bare = (t) => String(t).replace(/[$*_`]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
+        if (bare(u.text).includes(bare(c.suggestion))) continue;
         if (!instructorAuthored(u, log)) { out.push({ kind: "clarification-owed", units: [u.id], evidence }); continue; }
         // the instructor's text (D31 stands): proposed as a one-line diff; once accepted, applying it is the agent's job
         const proposed = { ...evidence, note: `Clarify: "${c.text}" → "${c.suggestion}". ${c.problem}` };

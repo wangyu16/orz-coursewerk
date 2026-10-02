@@ -6,7 +6,7 @@
 // Unit-to-unit dependencies hash the target's FACT TOKENS, not its wording (D17, D19-C): a rephrase of a neighbour
 // leaves dependents alone; a changed value, name, number or negation makes them stale.
 import { canonicalJson, sha256 } from "../records/canonical.mjs";
-import { factTokens } from "./change.mjs";
+import { factTokens, meaningTokens } from "./change.mjs";
 import { nodeIndex } from "./spine.mjs";
 
 export const factHash = (text) => sha256(canonicalJson(factTokens(text)));
@@ -35,7 +35,7 @@ export function dependencyEdges(units, spine, sources = {}) {
   // an answer depends on the question it answers (the nearest question before it in the same deliverable and section)
   units.forEach((u, i) => {
     if (u.form !== "answer") return;
-    for (let j = i - 1; j >= 0; j--) { const v = units[j]; if (v.locator.deliverable !== u.locator.deliverable) break; if (v.form === "question") { add(u, `unit:${v.id}`, "derivation"); break; } }
+    for (let j = i - 1; j >= 0; j--) { const v = units[j]; if (v.locator.deliverable !== u.locator.deliverable) break; if (v.form === "question") { add(u, `unit:${v.id}`, "derivation"); add(u, `question:${v.id}`, "derivation"); break; } }
   });
   // key terms used in the unit
   const terms = [...spine.course.terms || [], ...Object.values(spine.chapters).flatMap((c) => c.map.terms)];
@@ -58,7 +58,7 @@ export function dependencyEdges(units, spine, sources = {}) {
 /** The current hash of every dependency target. */
 export function targetHashes(units, spine, sources = {}) {
   const h = {};
-  for (const u of units) h[`unit:${u.id}`] = factHash(u.text);
+  for (const u of units) { h[`unit:${u.id}`] = factHash(u.text); if (u.form === "question") h[`question:${u.id}`] = sha256(canonicalJson(meaningTokens(u.text))); }
   for (const t of [...(spine.course.terms || []), ...Object.values(spine.chapters).flatMap((c) => c.map.terms)]) if (t.label) h[`term:${t.label.toLowerCase()}`] = sha256(t.text);
   for (const [id, n] of nodeIndex(spine)) h[`spine:${id}`] = sha256(canonicalJson({ text: n.text ?? n.title, prereqs: n.prereqs ?? [], type: n.type ?? null, count: n.count ?? null, levels: n.levels ?? null }));
   for (const [id, hash] of Object.entries(sources)) h[`source:${id}`] = hash;

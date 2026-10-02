@@ -532,3 +532,18 @@ test("[req.knowledge.review] the reviewer sees labels, and the question a passag
   const sidecar = fs.readFileSync(path.join(p.root, "metadata", "units", "practice", "le-chatelier.md.json"), "utf8");
   assert.ok(!sidecar.includes('"label"'), "the label is read from the text, never stored in the index");
 });
+
+test("[req.knowledge.clarify] an applied clarification is settled even when its words touch no fact; names keep one identity across dash typography", async (t) => {
+  assert.deepEqual([...namesIn("The Haber–Bosch process.")], [...namesIn("The Haber-Bosch process.")]);
+  const p = copy(t);
+  const unit = loadUnits(p.root, p.reader).find((u) => u.id === "u-study-guide-le-chatelier-adding-a-catalyst-1");
+  const words = unit.text.match(/forward and reverse reactions by the same factor/)[0];
+  await verifyKnowledge(p.root, p.reader, { verifier: replayVerifier((pr) => ({ nonce: nonceOf(pr), concerns: [{ kind: "clarify", text: words, problem: "say how", suggestion: `${words} at any temperature` }] })), only: [unit.id] });
+  const owed = () => run(p, "ms8-verdicts").findings.some((f) => f.kind === "clarification-owed" && f.units.includes(unit.id));
+  assert.equal(owed(), true);
+  beginSession(p.root, p.reader, AGENT);
+  const f = path.join(p.root, "study-guide", "le-chatelier.md");
+  fs.writeFileSync(f, fs.readFileSync(f, "utf8").replace(words, `${words} at any temperature`));
+  indexAndStamp(p.root, liveReader(p.root), { as: "agent", party: AGENT });
+  assert.equal(owed(), false, "the unit says what was proposed");
+});

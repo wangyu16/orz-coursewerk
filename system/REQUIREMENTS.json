@@ -313,7 +313,8 @@
       "status": "closed",
       "evidence": {
         "T2": [
-          "tests/wiring-modules.test.mjs"
+          "tests/wiring-modules.test.mjs",
+          "system/rounds/P11-wiring-sweep.md"
         ]
       }
     },
@@ -728,10 +729,12 @@
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/core-obligations.test.mjs"
+          "tests/core-obligations.test.mjs",
+          "tests/workflow.test.mjs"
         ],
         "T2": [
-          "tests/core-cli.test.mjs"
+          "tests/core-cli.test.mjs",
+          "system/rounds/P11-wiring-sweep.md"
         ]
       }
     },
@@ -739,14 +742,19 @@
       "id": "req.versions.carry",
       "phase": "P5",
       "tiers": [
-        "T1"
+        "T1",
+        "T2"
       ],
       "statement": "Units carried into a new major version enter it as open obligations (re-verify), never as verified.",
       "source": "D15; split from req.versions.major (P3)",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/core-obligations.test.mjs"
+          "tests/core-obligations.test.mjs",
+          "tests/workflow.test.mjs"
+        ],
+        "T2": [
+          "system/rounds/P11-wiring-sweep.md"
         ]
       }
     },

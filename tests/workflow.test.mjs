@@ -379,3 +379,30 @@ test("[req.publish.questions-raised] open questions never block, but are raised 
   assert.deepEqual(r.chapters.map((c) => c.chapter), ["le-chatelier"], "the instructor's order is followed");
   assert.equal(r.overQuestions, true); assert.equal(r.openQuestions[0].id, "q-open-1");
 });
+
+test("[req.core.reverify-obligation] an answer whose question reverses direction is stale; a rephrase that keeps the direction is not (P11 wiring sweep)", async (t) => {
+  const { loadUnits, indexAndStamp } = await import("../scripts/lib/core/obligations.mjs");
+  const { beginSession } = await import("../scripts/lib/core/units_index.mjs");
+  const p = copy(t);
+  const f = path.join(p.root, "practice", "le-chatelier.md"), src = fs.readFileSync(f, "utf8");
+  const answerOf = () => loadUnits(p.root, liveReader(p.root)).find((u) => u.form === "answer" && /^Toward the reactants, to the left\. For an exothermic reaction heat behaves as a \*\*product\*\*/.test(u.text));
+  const stale = () => coreObligations(p.root, liveReader(p.root), "t").some((x) => x.kind === "answer-still-correct" && x.units.includes(answerOf().id));
+  beginSession(p.root, p.reader, AGENT);
+  fs.writeFileSync(f, src.replace("The temperature is raised. Which way", "The temperature is raised. In which direction"));
+  indexAndStamp(p.root, liveReader(p.root), { as: "agent", party: AGENT });
+  assert.equal(stale(), false, "a rephrase that keeps the direction raises nothing");
+  beginSession(p.root, liveReader(p.root), AGENT);
+  fs.writeFileSync(f, fs.readFileSync(f, "utf8").replace("The temperature is raised. In which direction", "The temperature is lowered. In which direction"));
+  indexAndStamp(p.root, liveReader(p.root), { as: "agent", party: AGENT });
+  assert.equal(stale(), true, "raised → lowered: the answer must be re-read");
+});
+
+test("[req.versions.carry] opening a major version carries its chapter's units: each owes re-verification; other chapters are untouched (D15, P11 wiring sweep)", (t) => {
+  const p = copy(t);
+  const r = spawnSync(process.execPath, [path.join(REPO, "scripts", "spine.mjs"), "version", "--root", p.root, "--scopes", "chapter:le-chatelier", "--reason", "an objective split in two", "--name", "Yu Wang (wangyu16)", "--words", "Open version 2 of chapter 2."], { encoding: "utf8" });
+  assert.equal(r.status, 0, r.stderr);
+  assert.ok(JSON.parse(r.stdout).carried > 0, "units were carried");
+  const ob = coreObligations(p.root, liveReader(p.root), "t").filter((f) => f.kind === "carried-unverified");
+  assert.ok(ob.length > 0 && ob.every((f) => f.units.every((u) => /-le-chatelier-/.test(u))), "only chapter 2's units owe re-verification");
+  assert.match(readLogText(p.root), /"event":"units-carried"/);
+});

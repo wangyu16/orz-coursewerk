@@ -5,16 +5,21 @@
 import { computeSemanticIndex } from "../lib/semantic_index.mjs";
 import { scanConsistency, rangeAudit } from "../lib/consistency.mjs";
 import { base, recheckByRerun } from "./_shared.mjs";
+import { plainForQuantities } from "../lib/core/dependencies.mjs";
+
+// the package writes its quantities in LaTeX ($\Delta H = -92.2\ \text{kJ}$); the scanners read plain text, so the
+// notation is folded first (P11 wiring sweep: a disagreement in LaTeX went unseen; in Unicode it was caught)
+const plain = (t) => plainForQuantities(String(t).replace(/\\Delta\s*/g, "Δ").replace(/\\ce\{([^}]*)\}/g, " $1 ").replace(/\$\$/g, " ")).replace(/[ \t]+/g, " ");
 
 function unitClaims(s) {
   const claims = [];
   for (const p of s.paths.filter((x) => x.startsWith("metadata/units/") && x.endsWith(".json")).sort()) {
-    const side = s.json(p); if (!side) continue;
+    const side = s.json(p); if (!side || typeof side.deliverable !== "string" || !Array.isArray(side.units)) continue; // a malformed sidecar is the index's to report
     const lines = (s.text(side.deliverable) || "").split("\n");
     const scope = side.deliverable.split("/")[1]?.replace(/\.md$/, "") ?? null;
     for (const u of side.units || []) {
       const [a, b] = u.locator.lines || [0, 0];
-      const text = lines.slice(a - 1, b).join("\n");
+      const text = plain(lines.slice(a - 1, b).join("\n"));
       const workedSolution = u.form === "answer" && !side.deliverable.startsWith("practice/");
       const type = u.form === "answer" && !workedSolution ? "answer-key" : u.form === "question" || workedSolution ? "derived" : "fact";
       claims.push({ id: u.id, text, type, scope, status: "active", termRefs: [], spineRefs: u.spineNodes || [], locations: [{ file: side.deliverable, anchor: u.locator.section }] });

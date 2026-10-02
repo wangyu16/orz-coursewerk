@@ -36,6 +36,11 @@ async function run(s) {
   for (const file of s.paths.filter((p) => /^(study-guide|slides|practice|concepts|assessment-support)\/.+\.md$/.test(p)).sort()) {
     const lines = (s.text(file) || "").split("\n");
     lines.forEach((l, i) => { const m = l.replace(/^\uFEFF/, "").match(/[\u00AD\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]/); if (m) defect("invisible-character", file, `line ${i + 1}: U+${m[0].codePointAt(0).toString(16).toUpperCase().padStart(4, "0")} hides text from the checks — remove it`); });
+    // an unclosed $$ swallows everything after it into one equation, and the units there lose their evidence (P11
+    // wiring sweep); fenced code is not math
+    let open = 0, fence = false;
+    lines.forEach((l, i) => { if (/^\s*(```|~~~)/.test(l)) fence = !fence; if (fence) return; for (const _ of l.matchAll(/\$\$/g)) open = open ? 0 : i + 1; });
+    if (open) defect("math-delimiters", file, `line ${open}: a $$ display equation opens here and is never closed`);
   }
   const defs = await frameworkDefinitions();
   for (const file of s.paths.filter((p) => /^slides\/[^/]+\.md$/.test(p)).sort())

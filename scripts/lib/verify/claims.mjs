@@ -70,7 +70,8 @@ export const EXCLUSIVE = /\b(only|solely|alone|exclusively|sole)\b/;
 
 /** Proper names: runs of capitalized words (with particles) that do not start a sentence, item, label or quote. */
 export function namesIn(text) {
-  const prose = proseOf(text).replace(/\$[^$]*\$/g, " ");
+  // a dash inside a name is one name in any typography: "Haber–Bosch" is "Haber-Bosch" (P11 wiring sweep)
+  const prose = proseOf(text).replace(/\$[^$]*\$/g, " ").replace(/(?<=\p{L})[\u2010-\u2015](?=\p{L})/gu, "-");
   const out = new Set();
   // every boundary after which a capital is grammatical, not a name
   const segments = prose.split(/(?:[.!?:;]\s+|\s[—–-]\s|["“”‘’()\[\]{}|<>]|\s-\s|\n|^)/);

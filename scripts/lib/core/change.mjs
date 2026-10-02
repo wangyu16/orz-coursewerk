@@ -21,6 +21,14 @@ export function factTokens(text) {
   return [...nums.map((x) => x.replace(/\s+/g, "")), ...names.filter(keep), ...symbols, ...neg].sort();
 }
 
+// the words that say which way something goes: a rephrase keeps them, a reversal does not (P11 wiring sweep: a question
+// changed from "raised" to "lowered" left its answer looking current). Used for what depends on a question, never for
+// evidence, whose binding stays factHash.
+const DIRECTION = /\b(?:rais(?:e|es|ed|ing)|lower(?:s|ed|ing)?|increas(?:e|es|ed|ing)|decreas(?:e|es|ed|ing)|add(?:s|ed|ing)?|remov(?:e|es|ed|ing)|higher|more|less|fewer|forward|reverse|backward|left|right|endothermic|exothermic|absorb(?:s|ed)?|releas(?:e|es|ed)|heat(?:ed|ing)|cool(?:s|ed|ing)?|compress(?:es|ed|ing)?|expand(?:s|ed|ing)?|products?|reactants?)\b/gi;
+export function meaningTokens(text) {
+  return [...factTokens(text), ...(String(text || "").match(DIRECTION) || []).map((x) => x.toLowerCase())].sort();
+}
+
 const sameTokens = (a, b) => JSON.stringify(factTokens(a)) === JSON.stringify(factTokens(b));
 const words = (t) => new Set(String(t || "").toLowerCase().match(/[a-z]{4,}/g) || []);
 const overlap = (a, b) => { const A = words(a), B = words(b); let n = 0; for (const w of A) if (B.has(w)) n++; return n / Math.max(1, Math.min(A.size, B.size)); };

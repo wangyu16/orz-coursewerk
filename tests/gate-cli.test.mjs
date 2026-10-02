@@ -79,3 +79,8 @@ test("[req.modules.profiles] [req.ms2.two-profiles] the gate takes the use profi
     assert.equal(gate(root).report.profile, expected, usage);
   }
 });
+
+test("[req.findings.routing] the gate lists the questions routed to the agent, not only their count (P11 wiring sweep)", () => {
+  const src = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "scripts", "gate.mjs"), "utf8");
+  assert.match(src, /forYou: openQuestions\.filter\(\(f\) => f\.route === "agent"\)/);
+});
