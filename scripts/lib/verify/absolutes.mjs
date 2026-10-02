@@ -58,9 +58,13 @@ export function readAbsoluteReview(raw, nonce, sentences, context) {
     const r = v.sentences.find((x) => x?.n === i);
     if (!r || !["casual", "accurate-in-context", "over-general"].includes(r.class)) return { ok: false, reason: `sentence ${i} has no class` };
     if (r.class === "accurate-in-context") {
-      const c = folded(String(r.context || ""));
-      // the scope must be words of the section the reviewer saw (the sentence's own words count: "at constant volume")
-      if (c.length < 8 || !folded(context).includes(c)) return { ok: false, reason: `sentence ${i}: the scoping words are not in the context` };
+      // the scope must be words of the section the reviewer saw (the sentence's own words count: "at constant volume").
+      // A quote elided with "..." counts when every piece is in the section, in order (P11 dev: an elided quote of
+      // correct text was unscorable and left the absolute blocking).
+      const parts = String(r.context || "").split(/\s*(?:\.{3}|…)\s*/).map(folded).filter(Boolean), sec = folded(context);
+      let at = 0;
+      const inOrder = parts.every((x) => { const k = x.length >= 4 ? sec.indexOf(x, at) : -1; if (k < 0) return false; at = k + x.length; return true; });
+      if (parts.join("").length < 8 || !inOrder) return { ok: false, reason: `sentence ${i}: the scoping words are not in the context` };
     }
     if (r.class === "over-general" && !String(r.why || "").trim()) return { ok: false, reason: `sentence ${i}: over-general without a reason` };
     results.push({ n: i, sentence: sentences[i - 1], class: r.class, context: r.context || null, why: String(r.why || "").slice(0, 500), suggestion: String(r.suggestion || "").slice(0, 500) });

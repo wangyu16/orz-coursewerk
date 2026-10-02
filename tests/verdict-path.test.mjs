@@ -409,3 +409,16 @@ test("[req.verdict.semi-mechanical] P10: markup is not a name; an empty --units 
   const r = spawnSync(process.execPath, [path.join(HERE, "..", "scripts", "verify.mjs"), "knowledge", "--root", C2, "--units", ""], { encoding: "utf8" });
   assert.notEqual(r.status, 0); assert.match(r.stderr, /names no unit/);
 });
+
+// ---- found by the P11 dev cases -------------------------------------------------------------------------------------
+test("[req.absolute.review] an elided scope quote counts only when every piece is in the section, in order", async () => {
+  const { readAbsoluteReview } = await import("../scripts/lib/verify/absolutes.mjs");
+  const ctx = "For a gas-phase equilibrium: count the moles of gas on each side. If both sides have equal moles of gas, a pressure change made by changing the volume shifts nothing.";
+  const s = ["If both sides have equal moles of gas, a pressure change made by changing the volume shifts nothing."];
+  const rv = (context) => readAbsoluteReview(JSON.stringify({ nonce: "n1", sentences: [{ n: 1, class: "accurate-in-context", context }] }), "n1", s, ctx);
+  assert.equal(rv("For a gas-phase equilibrium: ... If both sides have equal moles of gas").ok, true, "elided, in order");
+  assert.equal(rv("For a gas-phase equilibrium: … made by changing the volume").ok, true, "the single-character ellipsis too");
+  assert.equal(rv("made by changing the volume ... For a gas-phase equilibrium").ok, false, "out of order");
+  assert.equal(rv("For a gas-phase equilibrium ... at constant temperature").ok, false, "a piece that is not in the section");
+  assert.equal(rv("For ... a").ok, false, "pieces too short to be a quote");
+});

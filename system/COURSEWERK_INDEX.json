@@ -737,7 +737,7 @@
       "id": "repo:scripts/lib/verify/absolutes.mjs",
       "path": "scripts/lib/verify/absolutes.mjs",
       "type": "kernel",
-      "hash": "2057648e9686921b6d1f9d32472f39d53be1a321d1d9669c2d80f6389ac1afee"
+      "hash": "ef59841f74840b4444bee2b4b7709ff0687ad6f78590b081847135330c676dfa"
     },
     {
       "id": "repo:scripts/lib/verify/admission.mjs",
@@ -1685,7 +1685,7 @@
       "id": "repo:tests/verdict-path.test.mjs",
       "path": "tests/verdict-path.test.mjs",
       "type": "test",
-      "hash": "54455874561e7c08b1e0313315ffa0f2fd2dc95d136e6846cb6215065836adac"
+      "hash": "305f595ffda98c41dd09857124eea11830de32b101e9651a1c8a61102b094679"
     },
     {
       "id": "repo:tests/verdict-redteam.test.mjs",
