@@ -181,6 +181,14 @@ export function claimOf(text, index) {
   return { index, text, required: { quantities: quantitiesIn(text), years: yearsIn(text), months: monthsIn(text), names: namesIn(text), superlatives, exclusive: ex && !ex.open ? ex : null }, ...(ex?.open ? { open: true, openPhrase: ex.positive } : {}), words: contentWords(text) };
 }
 
+/** An equation's lead-in: the sentence that introduces it carries what the equation is about ("the Haber synthesis of
+ *  ammonia … ΔH = −92.2 kJ"). It may anchor a quote to the claim; it is never a required token (P11, operator). */
+export function withLead(claim, lead) {
+  if (!lead) return claim;
+  const l = claimOf(lead, 0);
+  return { ...claim, lead, leadNames: l.required.names, leadWords: l.words };
+}
+
 /** The claims a source can check: those with at least one required token. A sentence that trips the classifier but
  *  carries no value, year, month, name or superlative is not a semi-mechanical fact; the knowledge path covers it (D28). */
 export const checkableClaims = (text) => semiClaims(text).filter((c) => !c.open && requiredCount(c.required) > 0).map((c, i) => ({ ...c, index: i + 1 }));

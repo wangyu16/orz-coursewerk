@@ -18,7 +18,7 @@ import { admitEvidence, hasAdmittedEvidence, indexAndStamp, loadUnits, loggedIns
 import { absoluteBundle, absoluteSentences, absolutesHash, readAbsoluteReview } from "./absolutes.mjs";
 import { randomBytes } from "node:crypto";
 import { readLogText } from "../records/log.mjs";
-import { checkableClaims, claimsHash, claimOf, quantitiesIn } from "./claims.mjs";
+import { checkableClaims, claimsHash, claimOf, quantitiesIn, withLead } from "./claims.mjs";
 import { admit, supports } from "./admission.mjs";
 import { knowledgeBundle, readDispatches, recordDispatch, selectPassages, semiBundle } from "./dispatch.mjs";
 
@@ -34,9 +34,20 @@ export function dispatchLogged(record, logRecords) {
     logRecords.some((l) => l.type === "dispatch" && l.party?.role === "harness" && l.payload?.dispatch === record.dispatch && l.payload?.unit === record.unit && l.payload?.bundleHash === record.bundle.bundleHash && l.payload?.responseHash === record.answer.responseHash);
 }
 /** The claims a semi record checked, as printed in its prompt. */
+/** The lead-ins a record's bundle carried (claim index → sentence); none for records before P11. */
+export const recordLeads = (record) => { const lines = String(record.bundle?.prompt || "").split("\n"), i = lines.findIndex((l) => l.startsWith("CLAIM CONTEXT")); return i < 0 ? {} : Object.fromEntries(lines.slice(i + 1).map((l) => l.match(/^(\d+)\. (.*)$/)).filter(Boolean).map((m) => [Number(m[1]), m[2]])); };
+/** An equation unit's lead-in: the last sentence of the unit before it in the same section. */
+export function leadOf(u, all) {
+  if (u.form !== "equation") return null;
+  const prev = all.filter((x) => x.locator.deliverable === u.locator.deliverable && x.locator.section === u.locator.section && x.locator.ordinal < u.locator.ordinal).sort((a, b) => b.locator.ordinal - a.locator.ordinal)[0];
+  const t = String(prev?.text || "").replace(/\s+/g, " ").trim();
+  return t ? t.split(/(?<=[.!?])\s+/).pop() : null;
+}
 export const recordClaimTexts = (record) => { const lines = String(record.bundle?.prompt || "").split("\n"); return lines.slice(lines.indexOf("CLAIMS") + 1, lines.indexOf("PASSAGES")).map((l) => l.match(/^\d+\. (.*)$/)?.[1]).filter(Boolean); };
 /** Did this record check exactly the unit's current checkable claims? */
-export const checksCurrentClaims = (record, unitText) => JSON.stringify(recordClaimTexts(record)) === JSON.stringify(checkableClaims(unitText).map((c) => c.text.replace(/\s+/g, " ")));
+export const checksCurrentClaims = (record, unitText, lead = null) => JSON.stringify(recordClaimTexts(record)) === JSON.stringify(checkableClaims(unitText).map((c) => c.text.replace(/\s+/g, " ")))
+  // a record whose lead-in no longer introduces the equation is history; a record without leads (before P11) is not judged on them
+  && (!Object.keys(recordLeads(record)).length || Object.values(recordLeads(record)).every((l) => l === String(lead || "").replace(/\s+/g, " ")));
 const packageDispatches = (root) => {
   const dir = recordFile(root, "metadata/verification");
   if (!fs.existsSync(dir)) return [];
@@ -55,11 +66,13 @@ function evidenceFrom(record, admission, texts, unitText) {
  * @param only      optional list of unit ids
  */
 export async function verifySemi(root, reader, { texts, verifier, only = null, onProgress = () => {} }) {
-  const units = loadUnits(root, reader).filter((u) => needsEvidence(u) && !hasAdmitted(root, u) && (!only || only.includes(u.id)));
+  const all = loadUnits(root, reader);
+  const units = all.filter((u) => needsEvidence(u) && !hasAdmitted(root, u) && (!only || only.includes(u.id)));
   const plain = new Map([...texts].map(([k, v]) => [k, v.text]));
   const results = [];
   for (const u of units) {
-    const claims = checkableClaims(u.text);
+    const lead = leadOf(u, all);
+    const claims = checkableClaims(u.text).map((c) => withLead(c, lead));
     const passages = selectPassages(claims, texts);
     if (!passages.length) { results.push({ unit: u.id, status: "no-candidates" }); onProgress(results.at(-1)); continue; }
     const bundle = semiBundle(claims, passages);
@@ -81,7 +94,7 @@ export function readmitRecorded(root, reader, { texts }) {
   for (const r of packageDispatches(root).sort((a, b) => a.at.localeCompare(b.at))) {
     const u = loadUnits(root, reader).find((x) => x.id === r.unit);
     if (!u || r.kind !== "semi" || !needsEvidence(u) || hasAdmitted(root, u)) continue;
-    if (!dispatchLogged(r, log) || !checksCurrentClaims(r, u.text)) continue; // only genuine dispatches of the unit's current claims
+    if (!dispatchLogged(r, log) || !checksCurrentClaims(r, u.text, leadOf(u, loadUnits(root, reader)))) continue; // only genuine dispatches of the unit's current claims
     const a = rederive(r, plainT);
     if (a?.status === "admitted") { admitEvidence(root, reader, u.id, { ...evidenceFrom(r, a, texts, u.text), readmitted: new Date().toISOString() }); out.push({ unit: u.id, dispatch: r.dispatch }); }
   }
@@ -161,7 +174,8 @@ export function rederive(record, plainTexts) {
 }
 // the claims are re-derived from the unit text the prompt carried, so a record cannot smuggle in easier claims
 function semiClaimsOf(record) {
-  return recordClaimTexts(record).map((t, i) => claimOf(t, i + 1));
+  const leads = recordLeads(record);
+  return recordClaimTexts(record).map((t, i) => withLead(claimOf(t, i + 1), leads[i + 1]));
 }
 
 /** Was this unit written by the instructor? The sidecar OR the log says so — a sidecar edit cannot remove it (B16). */
@@ -173,11 +187,11 @@ export function instructorAuthored(unit, logRecords) {
 const canonicalUrl = (u) => { try { const x = new URL(u); return `${x.hostname}${x.pathname}`.toLowerCase(); } catch { return String(u); } };
 
 /** Can the agent correct this unit without asking? Returns { ok, reason, plan }. */
-export function correctionGuard({ unit, records, plainTexts, meta = new Map(), logRecords = [] }) {
+export function correctionGuard({ unit, lead = null, records, plainTexts, meta = new Map(), logRecords = [] }) {
   const fh = factHash(unit.text);
   if ((unit.evidence || []).some((e) => e.type === "authorized-divergence" && e.factHash === fh)) return { ok: false, reason: "the instructor kept this text as an authorized divergence" };
   if (hasAdmittedEvidence(unit, { confirmed: new Map(), diverged: new Map() }) || (unit.evidence || []).some((e) => e.type === "instructor-confirmation" && e.factHash === fh)) return { ok: false, reason: "contested: evidence or a confirmation stands for the unit as it is" };
-  const mine = records.filter((r) => r.kind === "semi" && r.unit === unit.id && r.factHash === fh && dispatchLogged(r, logRecords) && checksCurrentClaims(r, unit.text)).map((r) => ({ r, a: rederive(r, plainTexts) }));
+  const mine = records.filter((r) => r.kind === "semi" && r.unit === unit.id && r.factHash === fh && dispatchLogged(r, logRecords) && checksCurrentClaims(r, unit.text, lead)).map((r) => ({ r, a: rederive(r, plainTexts) }));
   if (mine.some(({ a }) => a?.status === "disputed")) return { ok: false, reason: "contested: a verification disputes the unit's value" };
   const supportedQuotes = mine.flatMap(({ a }) => (a?.perClaim || []).filter((c) => c.status === "supported").flatMap((c) => c.quotes.map((q) => q.quote)));
   const hits = mine.flatMap(({ r, a }) => (a?.perClaim || []).filter((c) => c.status === "contradicted").map((c) => ({ r, c })));
@@ -237,9 +251,9 @@ function supportingGroup(text, quotes) {
 /** Apply an auto-correction (agent party) — or say why it must be a question. */
 export function applyCorrection(root, reader, { unitId, plainTexts, meta = new Map() }, party) {
   if (party?.role !== "agent") throw new Error("an auto-correction is the agent's, through the harness");
-  const unit = loadUnits(root, reader).find((u) => u.id === unitId);
+  const all = loadUnits(root, reader), unit = all.find((u) => u.id === unitId);
   if (!unit) throw new Error(`no such unit: ${unitId}`);
-  const g = correctionGuard({ unit, records: packageDispatches(root), plainTexts, meta, logRecords: logRecordsOf(readLogText(root)) });
+  const g = correctionGuard({ unit, lead: leadOf(unit, all), records: packageDispatches(root), plainTexts, meta, logRecords: logRecordsOf(readLogText(root)) });
   if (!g.ok) return { applied: false, question: { unit: unitId, reason: g.reason } };
   let after = unit.text;
   for (const e of [...g.plan.edits].sort((a, b) => b.index - a.index)) after = after.slice(0, e.index) + e.replacement + after.slice(e.index + e.length);

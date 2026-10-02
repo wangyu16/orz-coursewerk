@@ -91,6 +91,8 @@ export function semiBundle(claims, passages, nonce = randomBytes(8).toString("he
     "",
     "PASSAGES",
     ...passages.map((p) => `[${p.n}] ${p.text.replace(/\s+/g, " ")}`),
+    // an equation claim is read with the sentence that introduces it, so the verifier knows what it is about
+    ...(claims.some((c) => c.lead) ? ["", "CLAIM CONTEXT (the sentence that introduces an equation claim; not itself a claim)", ...claims.filter((c) => c.lead).map((c) => `${c.index}. ${c.lead.replace(/\s+/g, " ")}`)] : []),
   ].join("\n");
   return { kind: "semi", nonce, prompt, bundleHash: sha256(prompt) };
 }

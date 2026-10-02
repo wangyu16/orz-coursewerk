@@ -761,19 +761,19 @@
       "id": "repo:scripts/lib/verify/admission.mjs",
       "path": "scripts/lib/verify/admission.mjs",
       "type": "kernel",
-      "hash": "2e1aaf3b709ffcac3827f4e04120be71bb5ddb4e9ac2711056bea810586a6bfa"
+      "hash": "7e5073ddb3e81309bc75dd8ac4a95ca7a6fb07af8db81f9435b600659ff92fc0"
     },
     {
       "id": "repo:scripts/lib/verify/claims.mjs",
       "path": "scripts/lib/verify/claims.mjs",
       "type": "kernel",
-      "hash": "21a2110366f126882645d248f1b99b822eda76ecabd43ef1e2877e38edf40495"
+      "hash": "33f2be1691173d29834c72ccb0ef121214f6f9d1bc41ab58a97951efe37f7e63"
     },
     {
       "id": "repo:scripts/lib/verify/dispatch.mjs",
       "path": "scripts/lib/verify/dispatch.mjs",
       "type": "kernel",
-      "hash": "67cf12d4a5eea269057f4bcc15e4f537cdf50e80860c1e00617eb604aa39e529"
+      "hash": "cf260b51415c6e7fd54fcd1ea9ef14379fd9f0297c84f43525e73c1d2edc41c5"
     },
     {
       "id": "repo:scripts/lib/verify/references.mjs",
@@ -791,7 +791,7 @@
       "id": "repo:scripts/lib/verify/verdicts.mjs",
       "path": "scripts/lib/verify/verdicts.mjs",
       "type": "kernel",
-      "hash": "3ec864a74956df602690718ee685666db91d1dadfbe3a12d5ad92c859340a7f6"
+      "hash": "ae71321373f610cb6e83cdac69cba3db614ef51f1f590c8f78c5d2f48bcbe76e"
     },
     {
       "id": "repo:scripts/lib/visual_review.mjs",
@@ -851,7 +851,7 @@
       "id": "repo:scripts/modules/ms8-verdicts.mjs",
       "path": "scripts/modules/ms8-verdicts.mjs",
       "type": "executable",
-      "hash": "ca03bf9bd21374faae7e9fd52057226fa99949bec90b95f3b236cf6259b74fe0"
+      "hash": "bcd0a9d863dd1407dfd22125243516fbfbd3b84facf7707aa2d5e653feae5e24"
     },
     {
       "id": "repo:scripts/modules/README.md",
@@ -1721,7 +1721,7 @@
       "id": "repo:tests/verdict-path.test.mjs",
       "path": "tests/verdict-path.test.mjs",
       "type": "test",
-      "hash": "86df00efc05e905b6e88a3c01934a523dbc771fed6cb0297c91f92a890f86b92"
+      "hash": "724ffcc4fe2628c37ef0fd4265c93c50ae1177d080d2cdbcb1fcf751d7cf2321"
     },
     {
       "id": "repo:tests/verdict-redteam.test.mjs",

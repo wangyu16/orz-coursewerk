@@ -208,11 +208,17 @@ export function anchored(claim, found, k) {
   const P = plainKeepCase(joined);
   const conflicted = new Set(k.map((x) => x.claimed));
   const others = tokensOf(claim).filter((t) => !["superlative", "excl-pos", "excl-neg"].includes(t.kind) && !conflicted.has(t.label));
-  if (!others.some((t) => tokenIndex(t, P, claim) >= 0)) return false;
-  const keys = tokensOf(claim).filter((t) => t.kind === "name").flatMap((t) => [t.key, ...t.parts.map(folded)]);
-  if (namesIn(joined).some((n) => !keys.includes(nameKey(n)))) return false;
-  const f = folded(joined);
-  return claim.words.filter((w) => f.includes(w)).length >= Math.min(3, claim.words.length);
+  // an equation claim may be anchored by its lead-in's names (P11): "Haber … ΔH = −57.2 kJ" vs a quote about the Haber
+  // synthesis. The lead never adds a required token; it only lets the quote show it is about the same thing.
+  const leadNames = (claim.leadNames || []).map((n) => ({ kind: "name", parts: nameParts(n), key: nameKey(n), label: n })).filter((t) => t.parts.length);
+  const byClaim = others.some((t) => tokenIndex(t, P, claim) >= 0), byLead = leadNames.some((t) => tokenIndex(t, P, claim) >= 0);
+  if (!byClaim && !byLead) return false;
+  const keys = [...tokensOf(claim).filter((t) => t.kind === "name"), ...leadNames].flatMap((t) => [t.key, ...t.parts.map(folded)]);
+  // a quote's name is the claim's when it is, or shares a part with, one of the claim's names ("Haber-Bosch" / "Haber")
+  if (namesIn(joined).some((n) => !keys.includes(nameKey(n)) && !nameParts(n).some((p) => keys.includes(folded(p))))) return false;
+  const f = folded(joined), words = [...new Set([...claim.words, ...(claim.leadWords || [])])];
+  // anchored by the lead-in's name: the named thing and one more shared content word (an equation has no words of its own)
+  return words.filter((w) => f.includes(w)).length >= Math.min(byClaim ? 3 : 2, words.length);
 }
 
 /** Does another pinned text state a different year for the claim's names and topic, and never the claimed one? */

@@ -1,7 +1,8 @@
 // MS8 — Verdicts (redesign P7; D17, D19-A; modules.md "semi-mechanical verdict path"). Re-derives, deterministically,
 // what every recorded verifier dispatch establishes against the pinned texts, and checks the evidence units carry:
 //   fact-contradicted   (defect)   an uncontested contradiction of a quantity, quoted from a pinned text;
-//   fact-disputed       (question) a contradicted year or name, or a contradiction another source contests (D12-F);
+//   fact-disputed       (question) a contradicted year or name, or a contradiction another source contests (D12-F) —
+//                                  in the instructor's text; in the agent's own text it is fact-check-own, the agent's;
 //   absolute-overgeneral (question, routed to the agent) a context review found a scientific absolute broader than the
 //                                  truth; the agent rewords it (D30) — the instructor sees it only if it stays open;
 //   knowledge-concern   (question) a blind verifier's concern that a knowledge-based unit is wrong — never a defect,
@@ -22,7 +23,7 @@ import { supports } from "../lib/verify/admission.mjs";
 import { readDispatches } from "../lib/verify/dispatch.mjs";
 import { pinnedTexts, snapshotInputReader } from "../lib/verify/references.mjs";
 import { absolutesHash, readAbsoluteReview } from "../lib/verify/absolutes.mjs";
-import { checksCurrentClaims, correctionLogged, dispatchLogged, instructorAuthored, knowledgeConcerns, logRecordsOf, rederive } from "../lib/verify/verdicts.mjs";
+import { checksCurrentClaims, correctionLogged, dispatchLogged, instructorAuthored, knowledgeConcerns, leadOf, logRecordsOf, rederive } from "../lib/verify/verdicts.mjs";
 import { findingId } from "../lib/records/findings.mjs";
 import { base, recheckByRerun } from "./_shared.mjs";
 
@@ -86,7 +87,7 @@ function run(s) {
       }
       continue;
     }
-    if (!plain.size || !checksCurrentClaims(r, u.text)) continue; // a record of other claims is history
+    if (!plain.size || !checksCurrentClaims(r, u.text, leadOf(u, [...units.values()]))) continue; // a record of other claims is history
     const a = rederive(r, plain);
     if (!a || diverged(u)) continue;
     // exercise data no source can show: the instructor confirms it once, so it comes to the digest (P9 scenario)
@@ -97,7 +98,9 @@ function run(s) {
       if (c.status === "contradicted")
         out.push({ kind: "fact-contradicted", units: [u.id], evidence: { type: "quote", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote, span: q.span })) } });
       else if (c.status === "disputed")
-        out.push({ kind: "fact-disputed", units: [u.id], evidence: { type: "conflict", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote })),
+        // in the agent's own text a dispute is the agent's to settle: it re-checks the value against the quote and
+        // fixes or keeps its draft — the instructor is not asked (P11, operator: catch much, annoy little)
+        out.push({ kind: instructorAuthored(u, log) ? "fact-disputed" : "fact-check-own", units: [u.id], evidence: { type: "conflict", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote })),
           // the question the instructor reads (P11: the digest showed the bare kind)
           note: `The pinned sources disagree: the text says ${(c.conflicts || []).map((k) => `${k.claimed}, a source says ${k.source}${k.sentence ? ` ("${String(k.sentence).slice(0, 160)}")` : ""}`).join("; ")} — keep as written, or change it?` } });
     }
@@ -115,7 +118,7 @@ function run(s) {
         const r = byDispatch.get(e.dispatch);
         if (!r || !dispatchLogged(r, log)) problem = "its dispatch is not a logged dispatch";
         else if (r.unit !== u.id) problem = "its dispatch verified another unit";
-        else if (!checksCurrentClaims(r, u.text)) problem = "its dispatch checked other claims than the unit states";
+        else if (!checksCurrentClaims(r, u.text, leadOf(u, [...units.values()]))) problem = "its dispatch checked other claims than the unit states";
         else if (plain.size) {
           const a = rederive(r, plain);
           // a dispute between pinned sources is a question (fact-disputed, raised above), never a defect (D12-F)
@@ -134,6 +137,7 @@ export default {
     emits: [
       { kind: "fact-contradicted", statusClass: "defect", evidenceType: "quote", route: "agent" },
       { kind: "fact-disputed", statusClass: "question", evidenceType: "conflict", route: "digest" },
+      { kind: "fact-check-own", statusClass: "question", evidenceType: "conflict", route: "agent" },
       { kind: "knowledge-concern", statusClass: "question", evidenceType: "judgment", route: "digest" },
       { kind: "clarification-owed", statusClass: "question", evidenceType: "judgment", route: "agent" },
       { kind: "clarification-proposed", statusClass: "question", evidenceType: "judgment", route: "digest" },

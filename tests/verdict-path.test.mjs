@@ -246,8 +246,13 @@ test("[req.autocorrect.guard] instructor text needs two agreeing sources; a cont
   pinReference(q.root, q.inputs, { url: "https://en.wikipedia.org/wiki/Ammonia", title: "Ammonia (test pin)", destination: "en.wikipedia.org", text: "One older table gives the ammonia synthesis reaction enthalpy as −75 kJ per mole of reaction under Le Chatelier's principle conditions." });
   const r = await plantWrongConstant(q);
   assert.equal(r[0].status, "disputed", "the value is contested by another pinned source");
-  assert.deepEqual(kinds(run(q, "ms8-verdicts"), "ms8-verdicts"), ["fact-disputed:question"]);
-  assert.match(run(q, "ms8-verdicts").findings.find((f) => f.kind === "fact-disputed").evidence.note, /^The pinned sources disagree: the text says .+, a source says .+ — keep as written, or change it\?$/, "the instructor reads a question, not a kind");
+  assert.deepEqual(kinds(run(q, "ms8-verdicts"), "ms8-verdicts"), ["fact-check-own:question"], "in the agent's own text the dispute is the agent's");
+  assert.equal(run(q, "ms8-verdicts").findings.find((f) => f.kind === "fact-check-own").route, "agent");
+  const qi = copy(t);
+  pinReference(qi.root, qi.inputs, { url: "https://en.wikipedia.org/wiki/Ammonia", title: "Ammonia (test pin)", destination: "en.wikipedia.org", text: "One older table gives the ammonia synthesis reaction enthalpy as −75 kJ per mole of reaction under Le Chatelier's principle conditions." });
+  await plantWrongConstant(qi, { asInstructor: true });
+  assert.deepEqual(kinds(run(qi, "ms8-verdicts"), "ms8-verdicts"), ["fact-disputed:question"], "in the instructor's text it is the instructor's question");
+  assert.match(run(qi, "ms8-verdicts").findings.find((f) => f.kind === "fact-disputed").evidence.note, /^The pinned sources disagree: the text says .+, a source says .+ — keep as written, or change it\?$/, "the instructor reads a question, not a kind");
   assert.equal(applyCorrection(q.root, q.reader, { unitId: PLANTED, plainTexts: plain(q) }, AGENT).applied, false);
 });
 
@@ -546,4 +551,29 @@ test("[req.knowledge.clarify] an applied clarification is settled even when its 
   fs.writeFileSync(f, fs.readFileSync(f, "utf8").replace(words, `${words} at any temperature`));
   indexAndStamp(p.root, liveReader(p.root), { as: "agent", party: AGENT });
   assert.equal(owed(), false, "the unit says what was proposed");
+});
+
+test("[req.autocorrect.guard] a wrong constant in a display equation is anchored by its lead-in and corrected; without the lead it is not (P11)", async (t) => {
+  const p = copy(t);
+  const eq = loadUnits(p.root, p.reader).find((u) => u.form === "equation" && /3 H2\(g\) <=> 2 NH3\(g\)\} \\qquad \\Delta H/.test(u.text));
+  beginSession(p.root, p.reader, AGENT);
+  p.edit("study-guide/le-chatelier.md", (x) => x.replace("\\qquad \\Delta H = -92\\ \\text{kJ mol}^{-1}$$", () => "\\qquad \\Delta H = -57\\ \\text{kJ}$$")); // a function: "$$" in a replacement string is one "$"
+  indexAndStamp(p.root, p.reader, { as: "agent", party: AGENT });
+  const eqNow = loadUnits(p.root, liveReader(p.root)).find((u) => u.form === "equation" && /Delta H = -57/.test(u.text));
+  const SENT = "Most industrial production of ammonia uses the Haber-Bosch process based on the following equilibrium reaction: N2(g) + 3H2(g) ⇌ 2NH3(g) ΔH = −92 kJ";
+  pinReference(p.root, p.inputs, { url: "https://openstax.org/books/chemistry-2e/pages/13-3-shifting-equilibria-le-chateliers-principle", title: "Shifting equilibria (test pin)", destination: "openstax.org/books/chemistry-2e", text: `${SENT}. Other text follows here about pressure.` });
+  let prompt = "";
+  const verifier = answering((i, ps, pr) => { prompt = pr; const x = ps.find((q) => q.text.includes("Haber-Bosch")); return x && { claim: i, verdict: "contradicted", quotes: [{ passage: x.n, text: SENT }] }; });
+  const r = await verifySemi(p.root, p.reader, { texts: texts(p), verifier, only: [eqNow.id] });
+  assert.match(prompt, /CLAIM CONTEXT[^\n]*\n1\. Take the Haber synthesis of ammonia, which is exothermic:/, "the verifier reads the equation with its lead-in");
+  assert.equal(r[0].status, "contradicted", JSON.stringify(r[0]));
+  assert.deepEqual(kinds(run(p, "ms8-verdicts"), "ms8-verdicts"), ["fact-contradicted:defect"]);
+  const c = applyCorrection(p.root, p.reader, { unitId: eqNow.id, plainTexts: plain(p) }, AGENT);
+  assert.equal(c.applied, true, JSON.stringify(c.question)); assert.match(c.correction.diff, /-57.*\n\+ .*-92/s);
+  // the same quote with no word of the lead-in does not anchor: no correction
+  const { anchored } = await import("../scripts/lib/verify/admission.mjs");
+  const { checkableClaims, withLead } = await import("../scripts/lib/verify/claims.mjs");
+  const claim = withLead(checkableClaims("$$\\ce{A <=> B} \\qquad \\Delta H = -57\\ \\text{kJ}$$")[0], "Take the Haber synthesis of ammonia, which is exothermic:");
+  const Q = "The reaction of iodine with hydrogen has ΔH = −92 kJ";
+  assert.equal(anchored(claim, [{ source: "s", quote: Q, text: Q, span: [0, Q.length] }], [{ claimed: claim.required.quantities[0].raw }]), false, "a quote about another reaction does not anchor");
 });
