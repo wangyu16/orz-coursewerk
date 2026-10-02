@@ -95,12 +95,17 @@ export function semiBundle(claims, passages, nonce = randomBytes(8).toString("he
   return { kind: "semi", nonce, prompt, bundleHash: sha256(prompt) };
 }
 
-export function knowledgeBundle(text, nonce = randomBytes(8).toString("hex")) {
+export function knowledgeBundle(text, nonce = randomBytes(8).toString("hex"), { before = "", after = "" } = {}) {
+  // the text around the passage, so a unit is read as a student reads it (an answer with its question, a sentence
+  // with the equation that follows) — P11 dev. Concerns are still only about the passage's own words.
+  const around = [before && ["TEXT BEFORE THE PASSAGE (context only)", String(before).trim(), ""], after && ["TEXT AFTER THE PASSAGE (context only)", String(after).trim(), ""]].filter(Boolean).flat();
   const prompt = [
     "Below is a passage from teaching material for a college course. Check it for errors of fact or concept and for statements that would mislead a student.",
     "Raise a concern only for something that is wrong or misleading, not for style. For each concern copy the exact words at issue, say what is wrong, and suggest a corrected wording.",
+    ...(around.length ? ["The text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself."] : []),
     `Reply with JSON only, exactly this shape: {"nonce": "${nonce}", "concerns": [{"text": "exact words", "problem": "...", "suggestion": "..."}]} — an empty list if there is nothing wrong.`,
     "",
+    ...around,
     "PASSAGE",
     String(text).trim(),
   ].join("\n");

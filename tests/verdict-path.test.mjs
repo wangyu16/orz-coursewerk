@@ -422,3 +422,38 @@ test("[req.absolute.review] an elided scope quote counts only when every piece i
   assert.equal(rv("For a gas-phase equilibrium ... at constant temperature").ok, false, "a piece that is not in the section");
   assert.equal(rv("For ... a").ok, false, "pieces too short to be a quote");
 });
+
+test("[req.knowledge.review] a concern's quote is matched with math and emphasis markup set aside", async () => {
+  const { knowledgeConcerns } = await import("../scripts/lib/verify/verdicts.mjs");
+  const unit = "where $R$ is the molar gas constant and $T$ the temperature in degrees Celsius.";
+  const rec = (text) => ({ bundle: { nonce: "n1" }, answer: { raw: JSON.stringify({ nonce: "n1", concerns: [{ text, problem: "T must be in kelvin." }] }) } });
+  assert.equal(knowledgeConcerns(rec("T the temperature in degrees Celsius"), unit).length, 1, "the reviewer dropped the $ signs");
+  assert.equal(knowledgeConcerns(rec("the temperature in degrees Fahrenheit"), unit).length, 0, "words the unit does not contain are still refused");
+});
+
+test("[req.knowledge.review] the blind reviewer reads a unit in place: the units before it (an answer's question) and the one after", async (t) => {
+  const p = copy(t);
+  const units = loadUnits(p.root, p.reader);
+  const answer = units.find((u) => u.form === "answer" && u.judgment.includes("knowledge-based") && u.role === "teaching");
+  const list = units.filter((u) => u.locator.deliverable === answer.locator.deliverable && u.locator.section === answer.locator.section).sort((a, b) => a.locator.ordinal - b.locator.ordinal);
+  const question = list[list.indexOf(answer) - 1];
+  let seen = "";
+  await verifyKnowledge(p.root, p.reader, { verifier: replayVerifier((pr) => ((seen = pr), { nonce: nonceOf(pr), concerns: [] })), only: [answer.id] });
+  const [ctx, passage] = seen.split("\nPASSAGE\n");
+  assert.ok(ctx.includes("TEXT BEFORE THE PASSAGE") && ctx.includes(question.text.trim().slice(0, 60)), "the question is given as context");
+  assert.ok(passage.includes(answer.text.trim().slice(0, 60)) && !passage.includes(question.text.trim().slice(0, 60)), "the passage is the unit alone");
+  assert.match(seen, /raise concerns only about words in the PASSAGE/);
+});
+
+test("[req.spine.restated] a restated learning objective must say what the approved objective says; notation is not a difference", async (t) => {
+  const { restatedObjectiveFindings } = await import("../scripts/lib/core/core_checks.mjs");
+  const p = copy(t);
+  assert.equal(restatedObjectiveFindings(p.reader, "b").length, 0, "the fixture restates its objectives faithfully");
+  const f = path.join(p.root, "study-guide", "le-chatelier.md");
+  const s = fs.readFileSync(f, "utf8");
+  fs.writeFileSync(f, s.replace("partially counteracts the disturbance.", "partially counteracts the *disturbance*."));
+  assert.equal(restatedObjectiveFindings(liveReader(p.root), "b").length, 0, "emphasis is notation");
+  fs.writeFileSync(f, s.replace("partially counteracts the disturbance.", "completely cancels the disturbance."));
+  const r = restatedObjectiveFindings(liveReader(p.root), "b");
+  assert.equal(r.length, 1); assert.equal(r[0].kind, "objective-restated-differently"); assert.equal(r[0].statusClass, "defect"); assert.equal(r[0].route, "agent");
+});

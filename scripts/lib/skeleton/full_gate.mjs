@@ -10,7 +10,7 @@ import { runCheckpoint } from "./runner.mjs";
 import { evaluateGate, logFindings } from "./gate.mjs";
 import { buildWiringReport } from "./wiring.mjs";
 import { liveReader } from "../core/package_reader.mjs";
-import { spineCoreFindings, approvalCoreProblems } from "../core/core_checks.mjs";
+import { spineCoreFindings, restatedObjectiveFindings, approvalCoreProblems } from "../core/core_checks.mjs";
 import { unindexedFindings } from "../core/units_index.mjs";
 import { coreObligations } from "../core/obligations.mjs";
 
@@ -32,6 +32,7 @@ export function runGate(root, { checkpoint = "V8", profile = null, inputsDir = n
   if (config.spine === 2) {
     const reader = liveReader(root);
     if (["V1", "V8"].includes(checkpoint)) core.push(...spineCoreFindings(reader, run.snapshot.id));
+    if (["V2", "V8"].includes(checkpoint)) core.push(...restatedObjectiveFindings(reader, run.snapshot.id));
     if (checkpoint === "V8") approvalProblems.push(...approvalCoreProblems(root, reader));
     if (["V2", "V8"].includes(checkpoint)) core.push(...unindexedFindings(root, reader, run.snapshot.id));
     if (["V4", "V6", "V8"].includes(checkpoint)) core.push(...coreObligations(root, reader, run.snapshot.id));

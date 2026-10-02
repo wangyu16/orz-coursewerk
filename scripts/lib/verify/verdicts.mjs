@@ -113,10 +113,17 @@ export async function reviewAbsolutes(root, reader, { verifier, only = null, onP
 }
 
 export async function verifyKnowledge(root, reader, { verifier, only = null, onProgress = () => {} }) {
-  const units = loadUnits(root, reader).filter((u) => u.judgment.includes("knowledge-based") && u.role === "teaching" && (!only || only.includes(u.id)));
+  const all = loadUnits(root, reader);
+  const units = all.filter((u) => u.judgment.includes("knowledge-based") && u.role === "teaching" && (!only || only.includes(u.id)));
+  // neighbours in the same section, in order: up to two units before (an answer's question) and one after
+  const place = (u) => `${u.locator.deliverable}|${u.locator.section}`;
+  const sections = new Map();
+  for (const u of all) { if (!sections.has(place(u))) sections.set(place(u), []); sections.get(place(u)).push(u); }
+  for (const list of sections.values()) list.sort((a, b) => a.locator.ordinal - b.locator.ordinal);
   const results = [];
   for (const u of units) {
-    const bundle = knowledgeBundle(u.text);
+    const list = sections.get(place(u)), i = list.indexOf(u);
+    const bundle = knowledgeBundle(u.text, undefined, { before: list.slice(Math.max(0, i - 2), i).map((x) => x.text).join("\n\n"), after: list[i + 1]?.text || "" });
     const answer = await verifier(bundle.prompt);
     const record = recordDispatch(root, { kind: "knowledge", unit: u.id, factHash: factHash(u.text), contentHash: u.locator.contentHash, bundle, answer });
     results.push({ unit: u.id, dispatch: record.dispatch, concerns: knowledgeConcerns(record, u.text).length, costUsd: answer.costUsd ?? null });
@@ -131,7 +138,9 @@ export function knowledgeConcerns(record, unitText) {
   let v; try { v = JSON.parse(m?.[0] || ""); } catch { return []; }
   if (v?.nonce !== record.bundle.nonce || !Array.isArray(v.concerns)) return [];
   const norm = (t) => String(t).replace(/\s+/g, " ").trim();
-  return v.concerns.filter((c) => typeof c?.text === "string" && c.text.trim().length >= 8 && norm(unitText).includes(norm(c.text)) && typeof c.problem === "string")
+  // the quote is matched with math and emphasis markup set aside: "T the temperature" quotes "$T$ the temperature" (P11 dev)
+  const bare = (t) => norm(String(t).replace(/[$*_`]/g, ""));
+  return v.concerns.filter((c) => typeof c?.text === "string" && bare(c.text).length >= 8 && bare(unitText).includes(bare(c.text)) && typeof c.problem === "string")
     .map((c) => ({ text: norm(c.text), problem: String(c.problem).slice(0, 600), suggestion: String(c.suggestion || "").slice(0, 600) }));
 }
 

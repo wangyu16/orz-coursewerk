@@ -1465,6 +1465,36 @@
           "tests/workflow.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.knowledge.review",
+      "phase": "P7",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The blind conceptual review reads each knowledge-based unit in place (up to two units before it and one after, as context only) and raises concerns only about the unit's own words; a concern's quote is matched with math and emphasis markup set aside.",
+      "source": "D26; P11 dev cases (V10, NM04, DIR07)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/verdict-path.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.spine.restated",
+      "phase": "P5",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A deliverable's restated learning objectives must say what an approved objective of its chapter says (compared on prose words, so notation is not a difference); a difference is a defect routed to the agent.",
+      "source": "P11 dev case NM12",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/verdict-path.test.mjs"
+        ]
+      }
     }
   ]
 }
