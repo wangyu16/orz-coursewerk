@@ -191,7 +191,7 @@
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "e44ee07301207a2306c71050bcc905fc96cf64654c69f52fc7cd67ac45594dc1"
+      "hash": "ca6bb17d774cddfa418534484155f2510f239dca7d56116765788b1a21ba59bf"
     },
     {
       "id": "repo:README.md",
@@ -263,7 +263,7 @@
       "id": "repo:scripts/coursewerk.mjs",
       "path": "scripts/coursewerk.mjs",
       "type": "executable",
-      "hash": "b94214db924dde9cd6e1b26c1d9ff0f8cd4423f0d1e354096ea8a8a1202a28be"
+      "hash": "98d3efb4c02fd36cbb8f542dbba5ccf2f814bdb6a2faf4c0146718bfd1312923"
     },
     {
       "id": "repo:scripts/data/license-texts.json",
@@ -509,7 +509,7 @@
       "id": "repo:scripts/lib/core/workflow.mjs",
       "path": "scripts/lib/core/workflow.mjs",
       "type": "kernel",
-      "hash": "1df993d237b2b6860d6760f1b50448a920e5e685da6810eb7464254ae9382113"
+      "hash": "ca3cbe916f567017a3fcc6659ff9a969c78c7ad019a4bc08bf3117fcd956a3b2"
     },
     {
       "id": "repo:scripts/lib/escalation.mjs",
@@ -1079,7 +1079,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "c0c525b497896d392fdb19b4cc6c2d47ca05f3025ca25d48d2390ccd9e302452"
+      "hash": "1c93ce61f8246af64192de21d38e88871184416505a8c646e1f2d3be3e5627f6"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1709,7 +1709,7 @@
       "id": "repo:tests/workflow.test.mjs",
       "path": "tests/workflow.test.mjs",
       "type": "test",
-      "hash": "8903b282efd55616273105f7506c1bdd56a72122126f0190b12090691309d116"
+      "hash": "2a9d1ae71c05eae79f6bd6a1edd068a32d6fd23475eebe856a3d8129b997d952"
     },
     {
       "id": "repo:VERSION",
@@ -3419,6 +3419,14 @@
       {
         "id": "req.profiles.one-gate",
         "phase": "P8",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.publish.questions-raised",
+        "phase": "P10",
         "tiers": [
           "T1"
         ],

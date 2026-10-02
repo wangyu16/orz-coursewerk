@@ -360,3 +360,20 @@ test("[req.history.record] the history rebuilds, from the package's records, how
   assert.ok(row, "the concern is in the history");
   assert.match(row, /blind conceptual review/); assert.match(row, /the text was revised since/); assert.match(row, /\| 2 \|$/, "found twice, one row");
 });
+
+// ---- open questions at publish (operator, 2026-10-02) ---------------------------------------------------------------
+test("[req.publish.questions-raised] open questions never block, but are raised first; the instructor may publish over them, and the decision says so", (t) => {
+  const p = copy(t);
+  clearLeChatelier(p);
+  const g = runGate(p.root, { inputsDir: p.inputs });
+  const info = unitInfoOf(p.root, p.reader);
+  const u = [...info.keys()].find((k) => k.startsWith("u-study-guide-le-chatelier"));
+  g.gate.questions.push({ id: "q-open-1", module: "ms8-verdicts", kind: "knowledge-concern", statusClass: "question", units: [u], evidence: { note: "Is the catalyst sentence too strong?" } });
+  let raised;
+  assert.throws(() => publishDecision(p.root, p.reader, { gateResult: g, unitInfo: info, instructorWords: "Publish what is ready." }, I), (e) => ((raised = e.openQuestions), /open question/.test(e.message)));
+  assert.equal(raised.length, 1); assert.equal(raised[0].question, "Is the catalyst sentence too strong?");
+  assert.ok(!fs.existsSync(path.join(p.root, "metadata", "publish")), "nothing was published before the question was raised");
+  const r = publishDecision(p.root, p.reader, { gateResult: g, unitInfo: info, instructorWords: "I have seen the question. Publish anyway.", overQuestions: true }, I);
+  assert.deepEqual(r.chapters.map((c) => c.chapter), ["le-chatelier"], "the instructor's order is followed");
+  assert.equal(r.overQuestions, true); assert.equal(r.openQuestions[0].id, "q-open-1");
+});

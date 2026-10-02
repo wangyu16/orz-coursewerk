@@ -132,7 +132,9 @@ spent; the records let the next session resume.
   an objective nobody teaches, a guide entry short of its count, a unit to re-verify after a change, an absolute not
   yet reviewed, an edit not yet indexed.
 
-**Questions never block.** They go to the digest.
+**Questions never block.** They go to the digest. At publish they are raised once more: with any still open,
+`publish` lists them and stops. If the instructor still wants to publish, follow their word
+(`--over-open-questions`); the decision records that it was made over those questions.
 
 ### M6 — publish, then pack
 

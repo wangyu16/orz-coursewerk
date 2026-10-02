@@ -1450,6 +1450,21 @@
           "system/rounds/P10-dogfood.md"
         ]
       }
+    },
+    {
+      "id": "req.publish.questions-raised",
+      "phase": "P10",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Open questions never block publishing (D14), but they are raised before it: with any open, publish lists them and stops; the instructor may publish over them in their own words, and the decision records that it was made over them.",
+      "source": "operator, 2026-10-02",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/workflow.test.mjs"
+        ]
+      }
     }
   ]
 }

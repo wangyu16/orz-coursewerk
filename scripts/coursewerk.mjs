@@ -145,7 +145,14 @@ try {
     const g = runGate(root, { inputsDir: opt("--inputs") || null });
     const info = unitInfoOf(root, reader);
     const { party, words } = instructor();
-    const r = publishDecision(root, reader, { gateResult: g, unitInfo: info, instructorWords: words, chapters: opt("--chapters")?.split(",").filter(Boolean) || null, includeDrafts: flag("--include-drafts") }, party);
+    let r;
+    try { r = publishDecision(root, reader, { gateResult: g, unitInfo: info, instructorWords: words, chapters: opt("--chapters")?.split(",").filter(Boolean) || null, includeDrafts: flag("--include-drafts"), overQuestions: flag("--over-open-questions") }, party); }
+    catch (e) {
+      if (!e.openQuestions) throw e;
+      // questions never block (D14), but they are raised before publishing; the instructor may still insist
+      console.error(JSON.stringify({ openQuestions: e.openQuestions.map((q) => ({ kind: q.kind, units: q.units, question: q.question })) }, null, 2));
+      refuse(e.message, "raise these with the instructor (or bring a digest). If they still want to publish, re-run with --over-open-questions and their words");
+    }
     out({ published: r.chapters.map((c) => c.chapter), course: !!r.course, excluded: r.excluded, drafts: r.drafts, openQuestions: r.openQuestions.length, contentHash: r.contentHash, logged: r.seq,
       next: "to hand the package to Alembic: node scripts/pack.mjs --package <pkg> --out <dir> (it packs exactly this decision)" });
     process.exit(0);
