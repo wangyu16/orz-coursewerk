@@ -36,6 +36,16 @@ An **Alembic package** (https://alembic.orz.how), which also works without the p
 - **Records:** everything the harness records (units, the decision log, verification records, approvals) lives in
   the package's `metadata/` and is committed with it.
 
+**What Coursewerk provides, and what it trusts you with.** Coursewerk provides the 3C control core (Control,
+Confidence, Coherence). The content is lean orz-markdown under the Alembic contract, and its notations are stable.
+You are trusted with the rest:
+- **Frames:** orz-mdhtml, orz-slides, orz-paged and Alembic are updated from time to time. Use the newest; a new
+  frame changes the look, never the course.
+- **The instructor's taste:** structure, depth of explanation, graphics tools and theme, kept in `~/.coursewerk/`.
+  It shapes the materials, never the checks.
+
+See `docs/rules-vs-preferences.md`.
+
 ## On every session
 
 1. If this repo is your own git clone of Coursewerk, `git pull --ff-only`. Print `VERSION` before and after.

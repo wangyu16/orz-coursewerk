@@ -53,7 +53,7 @@
       "id": "repo:CLAUDE.md",
       "path": "CLAUDE.md",
       "type": "agent-constitution",
-      "hash": "2de6bdd7d535dbb4a058c3ca04dc6add05419dc51fd99611933aa235dea0a14a"
+      "hash": "fd0bc229c9d71e6a930b71dfb1d754c60eefba9ef18f3d341119913644a5116b"
     },
     {
       "id": "repo:COMPATIBILITY.md",
@@ -65,7 +65,7 @@
       "id": "repo:docs/assembling-carriers.md",
       "path": "docs/assembling-carriers.md",
       "type": "documentation",
-      "hash": "a809af724196713340cb0cd121a8fd50b954a423df06e87c78d1c3c80430e088"
+      "hash": "04e68676e1f77dfcd3a998ddbaf88d721828c7bce4748565bd7dd091f1f2755c"
     },
     {
       "id": "repo:docs/assurance-kernel.md",
@@ -119,7 +119,7 @@
       "id": "repo:docs/rules-vs-preferences.md",
       "path": "docs/rules-vs-preferences.md",
       "type": "documentation",
-      "hash": "c4288e3b72e054195cf0e9be280f4f59110b61661e7216a1c9e4633e7ac03146"
+      "hash": "4aad0bc0ca23cd26f7fcda898d94e000bb91b304a00a06de3301baf6edfe496c"
     },
     {
       "id": "repo:docs/semantic-index-interfaces.md",
@@ -191,7 +191,7 @@
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "29b1c5948c17c876c5b20df243d7a2b30e394e87582cd9811ead82ee65acbed8"
+      "hash": "02f30837b2dbc1cd19c66565a40df5ab4ae3a4f42ba46c458d13f7dd501f9a5f"
     },
     {
       "id": "repo:README.md",
@@ -204,6 +204,12 @@
       "path": "scripts/accept_coursewerk_revision.mjs",
       "type": "executable",
       "hash": "5b6f259b38b8f382948ca0278fcf434ff069dfd48f4e0698c451619c8846a6ae"
+    },
+    {
+      "id": "repo:scripts/alembic_check.mjs",
+      "path": "scripts/alembic_check.mjs",
+      "type": "executable",
+      "hash": "bd2d3f6bdb93dcb728e264699c790a8bbb351e48bcafc73b73baa54f9a8685f4"
     },
     {
       "id": "repo:scripts/assemble_blind_bundle.mjs",
@@ -227,7 +233,7 @@
       "id": "repo:scripts/build_carriers.mjs",
       "path": "scripts/build_carriers.mjs",
       "type": "executable",
-      "hash": "1a582d32487bcaa18507cf979801ef44d06f0748ea2c999952fdab96b67a85fb"
+      "hash": "0281422340284b7117983139314bac1f80a568c83f66c53bf775d6267edede15"
     },
     {
       "id": "repo:scripts/capture_media_evidence.mjs",
@@ -350,6 +356,12 @@
       "hash": "8d84ab66127d7236f5f48b0452a1b70530c5bc228b2ac9e37e8fdd9b4279f173"
     },
     {
+      "id": "repo:scripts/lib/alembic_contract.mjs",
+      "path": "scripts/lib/alembic_contract.mjs",
+      "type": "kernel",
+      "hash": "1375cfb38cce60c243babd378d4a6c52b8402d0f52f58f0856b6bc4af93a8142"
+    },
+    {
       "id": "repo:scripts/lib/assurance.mjs",
       "path": "scripts/lib/assurance.mjs",
       "type": "kernel",
@@ -449,7 +461,7 @@
       "id": "repo:scripts/lib/core/notations.mjs",
       "path": "scripts/lib/core/notations.mjs",
       "type": "kernel",
-      "hash": "01ea776892a39d16ccbc6f9a3fcee29aa01f87ac6ced68f3531222e322bcf4e3"
+      "hash": "6421a5270e47e9763a214390ec4c1f6bca90ed4853d3aed7fcc46ea417fb0e3b"
     },
     {
       "id": "repo:scripts/lib/core/obligations.mjs",
@@ -522,6 +534,12 @@
       "path": "scripts/lib/fingerprint.mjs",
       "type": "kernel",
       "hash": "900637ab1c0b7bfc2d54374e62104f01a04a37a73313e59f34c3feb7c8e2df52"
+    },
+    {
+      "id": "repo:scripts/lib/frames.mjs",
+      "path": "scripts/lib/frames.mjs",
+      "type": "kernel",
+      "hash": "30a84ec5ca6d50da50f38073ff406a499cb6b62f96aca1e94126dba180fca2ae"
     },
     {
       "id": "repo:scripts/lib/identity.mjs",
@@ -803,7 +821,7 @@
       "id": "repo:scripts/modules/ms3-format.mjs",
       "path": "scripts/modules/ms3-format.mjs",
       "type": "executable",
-      "hash": "399584efc881a060416653c5cc66b35b6aba1989c0a16b3d5f78375a22f78e72"
+      "hash": "701014b1c2ef8b70a00b8a2115870fd752db280137177c90c30a6be5af5cbddc"
     },
     {
       "id": "repo:scripts/modules/ms4-links.mjs",
@@ -851,7 +869,7 @@
       "id": "repo:scripts/pack.mjs",
       "path": "scripts/pack.mjs",
       "type": "executable",
-      "hash": "00c5fb252449d73592d9dcf24d3a224785363d76d4ab59e90e94a4573f36922a"
+      "hash": "db2ab087b3bdd3e51a287361d041a682b65c09eabae1b90ecba47b1c1f8070d1"
     },
     {
       "id": "repo:scripts/prepare_source_corpus.mjs",
@@ -1079,7 +1097,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "2ccbcee37f5972ab7a577240c6a6a6d5f701274be95ce5122b8fadde6f52f495"
+      "hash": "e4091d21df20e6e55d07af49e8c9825e237aa24778131a1aef1f3df750308953"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1097,7 +1115,7 @@
       "id": "repo:system/rounds/P11-tranche1.md",
       "path": "system/rounds/P11-tranche1.md",
       "type": "system-governance",
-      "hash": "a95f976b0ebcfd789de56b4f362adbcd908c63f01d3d2e9014c9470f215ba7d6"
+      "hash": "b9c85434a0e722a20c73a8c730d40f09c09cbf02ad21c78f6e09d9d3d7c32d9a"
     },
     {
       "id": "repo:system/rounds/P2-runner.md",
@@ -1223,7 +1241,7 @@
       "id": "repo:tests/assurance.test.mjs",
       "path": "tests/assurance.test.mjs",
       "type": "test",
-      "hash": "ee30c08de66f5cf9738bd8a2b8c7a6103b12c4fb84c334c907c0300e0241772a"
+      "hash": "1d3165a46412035a30d902e076dbe7ffa9ee75548845e116bd81df76594072ef"
     },
     {
       "id": "repo:tests/audit-round-2.test.mjs",
@@ -1265,7 +1283,7 @@
       "id": "repo:tests/carriers.test.mjs",
       "path": "tests/carriers.test.mjs",
       "type": "test",
-      "hash": "1afeb2968b64ef48ec436982ea5c70cfb5cccd6dff72bad8833441a8d89d2f1b"
+      "hash": "8d7f9528e9d5ad62394075e1a00f4aacb6288f6bbf919d5c97a078c28481a1a9"
     },
     {
       "id": "repo:tests/check-oer-consistency.test.mjs",
@@ -1520,6 +1538,12 @@
       "hash": "09dee7d859b12f23c400e7391c41bb9f20a7663eee6e793bf54c992684086987"
     },
     {
+      "id": "repo:tests/frames.test.mjs",
+      "path": "tests/frames.test.mjs",
+      "type": "test",
+      "hash": "6aabb3b6c86e1db7e0f0b03d47abdf23a5613da5b74dfdc6716ac0fea8445709"
+    },
+    {
       "id": "repo:tests/gate-cli.test.mjs",
       "path": "tests/gate-cli.test.mjs",
       "type": "test",
@@ -1643,7 +1667,7 @@
       "id": "repo:tests/stable-modules.test.mjs",
       "path": "tests/stable-modules.test.mjs",
       "type": "test",
-      "hash": "c3dbfac78740694198689e1a39461dd8ca48425fe6f91800a5b33959d4b48519"
+      "hash": "f65ea79b82d4a7238ea57fb25c89302cfae0536bd444f89e1cc8c42c4ca994f4"
     },
     {
       "id": "repo:tests/system-index.test.mjs",
@@ -1715,7 +1739,7 @@
       "id": "repo:tests/workflow.test.mjs",
       "path": "tests/workflow.test.mjs",
       "type": "test",
-      "hash": "430e761bcb2675a448bd99a5dbd8838c41c143313b143b07360093b177a9a3f4"
+      "hash": "4a2193ba912b1c62af7e2290362aa291a434b41ebcb6050d9cc9bd60d649665e"
     },
     {
       "id": "repo:VERSION",
@@ -3007,6 +3031,15 @@
         "status": "closed"
       },
       {
+        "id": "req.alembic.newest",
+        "phase": "P11",
+        "tiers": [
+          "T1",
+          "T2"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.answers.persist",
         "phase": "P8",
         "tiers": [
@@ -3186,6 +3219,14 @@
       {
         "id": "req.findings.routing",
         "phase": "P2",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.frames.newest",
+        "phase": "P11",
         "tiers": [
           "T1"
         ],
@@ -3435,6 +3476,14 @@
         "tiers": [
           "T1",
           "T2"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.preferences.taste-only",
+        "phase": "P11",
+        "tiers": [
+          "T1"
         ],
         "status": "closed"
       },

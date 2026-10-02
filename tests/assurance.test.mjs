@@ -567,7 +567,7 @@ test("pack succeeds only after a valid public assurance pass", () => {
   });
   const preview = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-pack-preview-"));
   const carrierReceipt = path.join(preview, "carriers.json");
-  const carriers = spawnSync(process.execPath, [path.join(repo, "scripts", "build_carriers.mjs"), "--root", f.root, "--out", path.join(preview, "rendered"), "--receipt", carrierReceipt], { encoding: "utf8" });
+  const carriers = spawnSync(process.execPath, [path.join(repo, "scripts", "build_carriers.mjs"), "--frames", "installed", "--root", f.root, "--out", path.join(preview, "rendered"), "--receipt", carrierReceipt], { encoding: "utf8" });
   assert.equal(carriers.status, 0, `${carriers.stdout}\n${carriers.stderr}`);
   const visual = spawnSync(process.execPath, [path.join(repo, "scripts", "attest_visual_review.mjs"), "--root", f.root, "--receipt", carrierReceipt, "--reviewer", "Test Human Reviewer", "--reviewed-at", "2026-07-13", "--attestation", "I inspected every generated carrier in a browser for layout, readable content, interaction behavior, and visible overflow."], { encoding: "utf8" });
   assert.equal(visual.status, 0, `${visual.stdout}\n${visual.stderr}`);

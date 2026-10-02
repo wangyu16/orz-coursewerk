@@ -25,7 +25,7 @@ function fixture() {
 
 test("carrier builder produces mdhtml, slides, and declared paged documents", () => {
   const f = fixture();
-  const run = spawnSync(process.execPath, [path.join(repo, "scripts", "build_carriers.mjs"), "--root", f.root, "--out", f.out, "--receipt", f.receipt], { encoding: "utf8" });
+  const run = spawnSync(process.execPath, [path.join(repo, "scripts", "build_carriers.mjs"), "--frames", "installed", "--root", f.root, "--out", f.out, "--receipt", f.receipt], { encoding: "utf8" });
   assert.equal(run.status, 0, `${run.stdout}\n${run.stderr}`);
   const receipt = JSON.parse(fs.readFileSync(f.receipt, "utf8"));
   assert.equal(receipt.failed, 0);
@@ -48,7 +48,7 @@ test("single-file enforcement refuses carriers with portability dependencies", (
   fs.writeFileSync(path.join(f.root, "study-guide", "ch.md"), "# Study\n\n![Figure](../assets/figure.svg)\n");
   fs.mkdirSync(path.join(f.root, "assets"), { recursive: true });
   fs.writeFileSync(path.join(f.root, "assets", "figure.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>");
-  const run = spawnSync(process.execPath, [path.join(repo, "scripts", "build_carriers.mjs"), "--root", f.root, "--out", f.out, "--receipt", f.receipt, "--require-single-file"], { encoding: "utf8" });
+  const run = spawnSync(process.execPath, [path.join(repo, "scripts", "build_carriers.mjs"), "--frames", "installed", "--root", f.root, "--out", f.out, "--receipt", f.receipt, "--require-single-file"], { encoding: "utf8" });
   assert.notEqual(run.status, 0);
   const receipt = JSON.parse(fs.readFileSync(f.receipt, "utf8"));
   const study = receipt.results.find((result) => result.source === "study-guide/ch.md");
@@ -59,7 +59,7 @@ test("single-file enforcement refuses carriers with portability dependencies", (
 test("carrier builder refuses to use the source root as output", () => {
   const f = fixture();
   const before = fs.readFileSync(path.join(f.root, "study-guide", "ch.md"), "utf8");
-  const run = spawnSync(process.execPath, [path.join(repo, "scripts", "build_carriers.mjs"), "--root", f.root, "--out", f.root], { encoding: "utf8" });
+  const run = spawnSync(process.execPath, [path.join(repo, "scripts", "build_carriers.mjs"), "--frames", "installed", "--root", f.root, "--out", f.root], { encoding: "utf8" });
   assert.notEqual(run.status, 0);
   assert.match(`${run.stdout}\n${run.stderr}`, /unsafe output path/);
   assert.equal(fs.readFileSync(path.join(f.root, "study-guide", "ch.md"), "utf8"), before);

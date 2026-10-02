@@ -17,6 +17,9 @@ async function run(s) {
   const q = createQaAudits(pkg, { forDiscovery: s.profile === "public" });
   const out = [];
   const defect = (audit, file, issue) => out.push({ kind: "format-contract", units: [], evidence: { type: "rule", rule: audit, file, issue } });
+  // a theme or a name the installed frame does not know: a newer frame may (D36), so it is a note to the agent,
+  // never a defect — the gate does not limit what an agent may use (D38). Grammar errors stay defects.
+  const theme = (file, issue) => out.push({ kind: "frame-name-unknown", units: [], evidence: { type: "judgment", note: `${file}: ${issue} — fine if the frame in use has it; otherwise check for a typo` } });
   const man = q.manifestAudit();
   for (const e of man.errors) defect("alembic-manifest", "alembic.json", e);
   for (const e of q.layoutAudit(man.chapters).errors) defect("package-layout", null, e);
@@ -36,12 +39,12 @@ async function run(s) {
   }
   const defs = await frameworkDefinitions();
   for (const file of s.paths.filter((p) => /^slides\/[^/]+\.md$/.test(p)).sort())
-    for (const pr of checkSlidesNotation(s.text(file) || "", defs)) defect("framework-notation", file, `line ${pr.line}: ${pr.issue} (orz-slides)`);
+    for (const pr of checkSlidesNotation(s.text(file) || "", defs)) pr.aspect ? theme(file, `line ${pr.line}: ${pr.issue}`) : defect("framework-notation", file, `line ${pr.line}: ${pr.issue} (orz-slides)`);
   const docs = s.json("metadata/DOCUMENTS.json");
   for (const d of Array.isArray(docs?.documents) ? docs.documents : []) {
     if (!/paged/i.test(String(d.carrier || d.type || d.framework || ""))) continue;
     const file = d.source || d.path; if (!file || s.text(file) == null) continue;
-    for (const pr of checkPagedNotation(s.text(file), defs)) defect("framework-notation", file, `${pr.issue} (orz-paged)`);
+    for (const pr of checkPagedNotation(s.text(file), defs)) pr.aspect ? theme(file, pr.issue) : defect("framework-notation", file, `${pr.issue} (orz-paged)`);
   }
   return out;
 }
@@ -51,6 +54,7 @@ export default {
     emits: [
       { kind: "format-contract", statusClass: "defect", evidenceType: "rule", route: "agent" },
       { kind: "no-photograph", statusClass: "question", evidenceType: "judgment", route: "digest" },
+      { kind: "frame-name-unknown", statusClass: "question", evidenceType: "judgment", route: "agent" },
     ] }),
   run, recheck: recheckByRerun(run),
 };

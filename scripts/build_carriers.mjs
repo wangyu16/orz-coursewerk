@@ -11,12 +11,14 @@
 //   paged/*.md                         → *.paged.html   (orz-paged)
 //
 // Usage: node build_carriers.mjs --root <dir> --out <dir> [--theme <name>] [--receipt <json>] [--require-single-file]
+//        [--frames latest|installed]   latest (default): the newest orz frames, from the frame cache (D36)
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import crypto from "node:crypto";
 import { LEAN_SOURCE } from "./lib/contract.mjs";
+import { resolveFrames } from "./lib/frames.mjs";
 
 const args = process.argv.slice(2);
 const opt = (n, d = null) => {
@@ -35,7 +37,10 @@ if (!fs.existsSync(pkg)) {
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, "..");
-const binDir = path.join(repoRoot, "node_modules", ".bin");
+// the frames dress the lean files; the newest are used, and recorded in the receipt, never in the package (D36)
+const framesUsed = resolveFrames(repoRoot, { mode: opt("--frames") || "latest" });
+const binDir = framesUsed.binDir;
+if (framesUsed.note) console.error(`build_carriers: ${framesUsed.note}`);
 
 // which builder handles which top-level folder
 const BUILDER_FOR = {
@@ -186,7 +191,7 @@ if (fs.existsSync(assetsSrc)) {
   fs.cpSync(assetsSrc, path.join(outRoot, "assets"), { recursive: true });
 }
 
-const receipt = { schemaVersion: 2, root: pkg, preview: outRoot, theme: theme || null, requireSingleFile, carriersBuilt: built, failed, runtimeVisualReviewRequired: results.length > 0, results };
+const receipt = { schemaVersion: 2, root: pkg, preview: outRoot, theme: theme || null, frames: { source: framesUsed.source, versions: Object.fromEntries(Object.entries(framesUsed.frames).map(([k, v]) => [k, v.version])), note: framesUsed.note }, requireSingleFile, carriersBuilt: built, failed, runtimeVisualReviewRequired: results.length > 0, results };
 if (receiptPath) {
   const file = path.resolve(receiptPath);
   fs.mkdirSync(path.dirname(file), { recursive: true });

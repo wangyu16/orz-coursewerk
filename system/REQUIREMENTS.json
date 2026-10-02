@@ -1510,6 +1510,55 @@
           "tests/verdict-path.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.frames.newest",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Carriers are assembled with the newest orz frames (orz-mdhtml, orz-slides, orz-paged, orz-markdown), installed into a frame cache outside the package and the harness; the versions used are recorded in the build receipt, never in the course. Unreachable registry: the installed frames, said so.",
+      "source": "D36 (operator, 2026-10-02)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/frames.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.preferences.taste-only",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The user's preferences (~/.coursewerk) shape the materials (structure, depth, graphics tools, themes) and never the 3C checks: no check reads them, and the gate's findings are identical with any preferences.",
+      "source": "D36 (operator, 2026-10-02)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/frames.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.alembic.newest",
+      "phase": "P11",
+      "tiers": [
+        "T1",
+        "T2"
+      ],
+      "statement": "Before a v2 package is packed, Alembic's own validator, fetched at the package contract's newest commit from the Alembic repository, must accept it; the commit is reported with the pack. Offline, the pack says it was checked only against the local mirror.",
+      "source": "D37 (operator, 2026-10-02)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/frames.test.mjs"
+        ],
+        "T2": [
+          "system/rounds/P11-tranche1.md"
+        ]
+      }
     }
   ]
 }

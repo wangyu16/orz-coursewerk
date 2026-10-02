@@ -62,14 +62,17 @@ test("[req.ms3.contract] [req.retire.old-checks] MS3: syntax, placeholders and l
   assert.deepEqual(found(run(q, "ms3-format"), "ms3-format"), [], "the objective-word test no longer exists: coverage is the core's");
 });
 
-test("[req.ms3.contract] MS3: slide decks must carry valid orz-slides notation — themes, templates, variants, layouts, regions", (t) => {
+test("[req.ms3.contract] MS3: slide decks must carry valid orz-slides notation — templates, variants, layouts, regions; a theme the frame lacks is a note, never a defect (D36)", (t) => {
   const p = copy(t);
   p.edit("slides/le-chatelier.md", (x) => x.replace("<!-- deck\n", "<!-- deck\ntheme: midnight\n").replace("<!-- slide template=outline -->", "<!-- slide template=outline v=9 -->")
     .replace(/<!-- slide -->\n## Partially counteract/, "<!-- slide col 2/1 { main; side; extra } -->\n<!-- @aside -->\n## Partially counteract"));
   const issues = run(p, "ms3-format").findings.filter((f) => f.evidence.rule === "framework-notation").map((f) => f.evidence.issue).join("\n");
-  assert.match(issues, /unknown slide theme "midnight"/);
-  assert.match(issues, /template=outline has variants v=1…3 \(got v=9\)/);
-  assert.match(issues, /col 2\/1 has 2 track\(s\) but 3 item\(s\)/);
+  assert.doesNotMatch(issues, /midnight|v=9/, "a theme, or a name a newer frame may know, never blocks (D36, D38)");
+  const notes = run(p, "ms3-format").findings.filter((f) => f.kind === "frame-name-unknown");
+  assert.ok(notes.length >= 2 && notes.every((f) => f.statusClass === "question" && f.route === "agent"));
+  assert.match(notes.map((f) => f.evidence.note).join("\n"), /slide theme "midnight" is not in the current orz-slides/);
+  assert.match(notes.map((f) => f.evidence.note).join("\n"), /template=outline has variants v=1…3 \(got v=9\)/);
+  assert.match(issues, /col 2\/1 has 2 track\(s\) but 3 item\(s\)/, "grammar that cannot render stays a defect");
 });
 
 test("[req.ms4.links] MS4: broken links and missing assets are defects; unresolved external links and unrecorded assets are obligations", (t) => {

@@ -153,7 +153,8 @@ At the instructor's word, `coursewerk.mjs publish` records the decision:
 - the open questions.
 
 Then `scripts/pack.mjs --package <pkg> --out <dir>` produces the Alembic zip of exactly that decision, and refuses
-if the package changed since. A private package is packed with its profile recorded and is never cleared for public
+if the package changed since. It first fetches the newest Alembic package contract and runs Alembic's own
+validator on the package; a refusal names what to fix. Offline, it says it checked only against the local mirror. A private package is packed with its profile recorded and is never cleared for public
 release. Hand the zip to the instructor; uploading it is theirs.
 
 To read or present the materials locally, assemble the framework shells: `scripts/build_carriers.mjs --root <pkg>
@@ -168,7 +169,7 @@ To read or present the materials locally, assemble the framework shells: `script
 | units | `scripts/units.mjs` — begin, index, claim, status, link, confirm, obligations, restamp |
 | verification | `scripts/verify.mjs` — destinations, search, fetch, semi, readmit, absolutes, knowledge, correct, revert, corrections, links, status |
 | gate | `scripts/gate.mjs` |
-| pack | `scripts/pack.mjs` |
+| pack | `scripts/pack.mjs` (checks the newest Alembic contract first); `scripts/alembic_check.mjs` checks it on its own |
 
 ## Packages from v0.12
 

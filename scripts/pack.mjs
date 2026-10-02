@@ -6,7 +6,8 @@
 // (.md.html / .slides.html / .paged.html) — Alembic reassembles those on its side.
 // The alembic.json is placed at the ZIP ROOT so Alembic ingests with zero friction.
 //
-// Usage: node pack.mjs --package <dir> --out <dir> [--inputs <source-text-dir>]
+// Usage: node pack.mjs --package <dir> --out <dir> [--inputs <source-text-dir>] [--contract newest|mirror]
+//        v2: the newest Alembic contract (fetched from the Alembic repository) must accept the package (D37)
 // A spine-v2 package packs exactly its latest publish decision (scripts/lib/core/pack_v2.mjs).
 import fs from "node:fs";
 import path from "node:path";
@@ -40,10 +41,24 @@ if (!path.relative(pkg, outDir).startsWith("..")) {
   let v2 = false;
   try { v2 = JSON.parse(fs.readFileSync(path.join(pkg, "metadata", "coursewerk.json"), "utf8")).spine === 2; } catch { v2 = false; }
   if (v2) {
+    // the newest Alembic contract, run by Alembic's own validator (D37); "--contract mirror" checks only the local
+    // mirror the gate already applies (offline use, and the tests)
+    const ci = process.argv.indexOf("--contract"), mode = ci > 0 ? process.argv[ci + 1] : "newest";
+    let contract = { checked: "mirror", commit: null, note: "checked only against the harness's local mirror of the contract, as asked" };
+    if (mode !== "mirror") {
+      const { checkNewestContract } = await import("./lib/alembic_contract.mjs");
+      contract = checkNewestContract(pkg);
+      if (contract.checked === "newest" && !contract.ok) {
+        console.error(`pack: the newest Alembic contract (${contract.commit.slice(0, 7)}) refuses this package; no archive was created:`);
+        for (const e of contract.errors) console.error(`  - ${e.path ? `${e.path}: ` : ""}${e.message}`);
+        process.exit(2);
+      }
+      if (contract.note) console.error(`pack: ${contract.note}`);
+    }
     const { packPublished } = await import("./lib/core/pack_v2.mjs");
     const r = packPublished(pkg, outDir);
     if (!r.ok) { console.error(`pack: ${r.error}`); process.exit(2); }
-    console.log(JSON.stringify(r, null, 2));
+    console.log(JSON.stringify({ ...r, alembicContract: { checked: contract.checked, commit: contract.commit, warnings: (contract.warnings || []).map((w) => w.message), note: contract.note } }, null, 2));
     process.exit(0);
   }
 }
@@ -72,7 +87,9 @@ const buildScript = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 // pack-side rebuild refuses a right package. The attestation carries the receipt's theme.
 let attestedTheme = null;
 try { attestedTheme = JSON.parse(fs.readFileSync(path.join(pkg, "metadata", "VISUAL_REVIEW.json"), "utf8")).theme || null; } catch { /* no attestation yet: the gate reports it */ }
-const build = spawnSync(process.execPath, [buildScript, "--package", pkg, "--out", carrierPreview, "--receipt", carrierReceipt, ...(attestedTheme ? ["--theme", attestedTheme] : [])], { encoding: "utf8" });
+// v0.12 only: the attestation is bound to carrier bytes, so the rebuild uses the frames it was made with (the
+// harness's installed ones), not the newest (D36 applies to v2, which has no carrier attestation, D24).
+const build = spawnSync(process.execPath, [buildScript, "--frames", "installed", "--package", pkg, "--out", carrierPreview, "--receipt", carrierReceipt, ...(attestedTheme ? ["--theme", attestedTheme] : [])], { encoding: "utf8" });
 if (build.status !== 0) {
   console.error("pack: carrier build verification failed; no archive was created.");
   console.error(build.stdout || build.stderr);

@@ -138,10 +138,10 @@ test("[req.publish.record] [req.publish.scope] [req.oldgate.retired] a publish r
   // the pack: only what was published, no v0.12 release checks (no key-fact review, no visual attestation needed)
   assert.ok(!["KEY_FACT_REVIEW.json", "VISUAL_REVIEW.json"].some((f) => fs.existsSync(path.join(p.root, "metadata", f))), "no v0.12 key-fact review or visual attestation exists");
   fs.appendFileSync(path.join(p.root, "study-guide", "le-chatelier.md"), "\nAn edit after the decision.\n");
-  let pk = spawnSync(process.execPath, [path.join(REPO, "scripts", "pack.mjs"), "--package", p.root, "--out", p.out], { encoding: "utf8" });
+  let pk = spawnSync(process.execPath, [path.join(REPO, "scripts", "pack.mjs"), "--contract", "mirror", "--package", p.root, "--out", p.out], { encoding: "utf8" });
   assert.equal(pk.status, 2, "the package changed after the decision"); assert.match(pk.stderr, /publish again/);
   git(p.root, "checkout", "--", "study-guide");
-  pk = spawnSync(process.execPath, [path.join(REPO, "scripts", "pack.mjs"), "--package", p.root, "--out", p.out], { encoding: "utf8" });
+  pk = spawnSync(process.execPath, [path.join(REPO, "scripts", "pack.mjs"), "--contract", "mirror", "--package", p.root, "--out", p.out], { encoding: "utf8" });
   assert.equal(pk.status, 0, pk.stderr);
   const receipt = JSON.parse(pk.stdout);
   const list = spawnSync("unzip", ["-Z1", receipt.zip], { encoding: "utf8" }).stdout.split("\n");
@@ -168,7 +168,7 @@ test("[req.draft.private] [req.ms2.public-only] [req.profiles.one-gate] one gate
   const r = publishDecision(p.root, p.reader, { gateResult: gPriv, unitInfo: info, instructorWords: "Share it with my class, draft included.", includeDrafts: true }, I);
   assert.deepEqual(r.drafts.map((d) => d.chapter), ["chemical-equilibrium"]); assert.equal(r.profile, "private");
   p.commit();
-  const pk = spawnSync(process.execPath, [path.join(REPO, "scripts", "pack.mjs"), "--package", p.root, "--out", p.out], { encoding: "utf8" });
+  const pk = spawnSync(process.execPath, [path.join(REPO, "scripts", "pack.mjs"), "--contract", "mirror", "--package", p.root, "--out", p.out], { encoding: "utf8" });
   assert.equal(pk.status, 0, pk.stderr);
   const receipt = JSON.parse(pk.stdout);
   assert.match(receipt.zip, /\.private\.alembic\.zip$/); assert.equal(receipt.clearedForPublicRelease, false, "a private package is never cleared for public release");

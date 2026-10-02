@@ -59,6 +59,9 @@ export function splitLeaves(src) {
 export function checkSlidesNotation(text, d) {
   const P = [], lines = String(text).split("\n");
   const add = (line, issue) => P.push({ line, issue });
+  // a name looked up in the installed frame's vocabulary: a newer frame may know it (the notations only grow, D36),
+  // so it is reported apart and never blocks an agent from using what the frame offers (D38)
+  const vocab = (line, issue) => P.push({ line, aspect: "vocabulary", issue });
   let decks = 0, slide = null;
   const closeSlide = () => {
     if (!slide) return;
@@ -75,9 +78,10 @@ export function checkSlidesNotation(text, d) {
         if (!l.trim()) continue;
         const m = /^\s*([a-z]+)\s*:\s*(.*)$/.exec(l);
         if (!m) { add(n + 1, `deck config line is not "key: value": ${l.trim()}`); continue; }
-        if (!DECK_KEYS.has(m[1])) add(n + 1, `unknown deck config key "${m[1]}" (known: ${[...DECK_KEYS].join(", ")})`);
-        if (m[1] === "theme" && !d.slideThemes.includes(m[2].trim())) add(n + 1, `unknown slide theme "${m[2].trim()}" (orz-slides has: ${d.slideThemes.join(", ")})`);
-        if (m[1] === "ratio" && !["16:9", "4:3"].includes(m[2].trim())) add(n + 1, `ratio must be 16:9 or 4:3 (got ${m[2].trim()})`);
+        if (!DECK_KEYS.has(m[1])) vocab(n + 1, `deck config key "${m[1]}" is not known to the installed orz-slides (known: ${[...DECK_KEYS].join(", ")})`);
+        // a theme is the frame's clothing, not the course's notation (D36): reported apart, never a defect
+        if (m[1] === "theme" && !d.slideThemes.includes(m[2].trim())) P.push({ line: n + 1, aspect: "theme", issue: `slide theme "${m[2].trim()}" is not in the current orz-slides (has: ${d.slideThemes.join(", ")})` });
+        if (m[1] === "ratio" && !["16:9", "4:3"].includes(m[2].trim())) vocab(n + 1, `ratio ${m[2].trim()} is not one the installed orz-slides knows (16:9, 4:3)`);
       }
       n = j; continue;
     }
@@ -87,12 +91,12 @@ export function checkSlidesNotation(text, d) {
       const tokens = sm[1].trim(); let rest = tokens;
       const opts = {};
       rest = rest.replace(/\b(template|v|bg|t|fit|class|id)=(\S+)/g, (_, k, v) => { opts[k] = v; return " "; }).replace(/\bstep\b/g, " ").trim();
-      if (opts.template && !(opts.template in TEMPLATES)) add(n + 1, `unknown slide template "${opts.template}" (orz-slides has: ${Object.keys(TEMPLATES).join(", ")})`);
+      if (opts.template && !(opts.template in TEMPLATES)) vocab(n + 1, `slide template "${opts.template}" is not known to the installed orz-slides (it has: ${Object.keys(TEMPLATES).join(", ")})`);
       if (opts.v !== undefined) {
         if (!opts.template) add(n + 1, "v= selects a template variant and needs template=");
-        else if (opts.template in TEMPLATES && !(Number.isInteger(Number(opts.v)) && Number(opts.v) >= 1 && Number(opts.v) <= TEMPLATES[opts.template])) add(n + 1, `template=${opts.template} has variants v=1…${TEMPLATES[opts.template]} (got v=${opts.v})`);
+        else if (opts.template in TEMPLATES && !(Number.isInteger(Number(opts.v)) && Number(opts.v) >= 1 && Number(opts.v) <= TEMPLATES[opts.template])) vocab(n + 1, `template=${opts.template} has variants v=1…${TEMPLATES[opts.template]} (got v=${opts.v})`);
       }
-      if (opts.fit && !["fit", "scroll", "off"].includes(opts.fit)) add(n + 1, `fit= must be fit, scroll or off (got ${opts.fit})`);
+      if (opts.fit && !["fit", "scroll", "off"].includes(opts.fit)) vocab(n + 1, `fit=${opts.fit} is not one the installed orz-slides knows (fit, scroll, off)`);
       let leaves = ["body"];
       if (rest) {
         const [first, ...more] = rest.split(/\s+/);
@@ -102,7 +106,7 @@ export function checkSlidesNotation(text, d) {
           if (ratio && !TRACK.test(ratio)) add(n + 1, `unexpected "${more.join(" ")}" after the ${first} preset (a track ratio like 3/2 is allowed)`);
         } else if (first === "row" || first === "col") {
           try { leaves = splitLeaves(rest); } catch (e) { add(n + 1, `layout: ${e.message}`); }
-        } else add(n + 1, `unknown layout or option "${first}" in the slide marker`);
+        } else vocab(n + 1, `layout or option "${first}" is not known to the installed orz-slides`);
       }
       slide = { line: n + 1, leaves, regions: [] };
       continue;
@@ -122,7 +126,7 @@ export function checkPagedNotation(text, d) {
   if (!m || !/^\s*kind:\s*document\s*$/m.test(m[1])) { P.push({ line: 1, issue: "an orz-paged document opens with a {{nyml kind: document}} settings block" }); return P; }
   const get = (k) => new RegExp(`^\\s*${k}:\\s*(\\S+)\\s*$`, "m").exec(m[1])?.[1];
   const tpl = get("template"), th = get("theme");
-  if (tpl && !d.pagedTemplates.includes(tpl) && !d.pagedTemplates.includes(`${tpl}-section`)) P.push({ line: 1, issue: `unknown orz-paged template "${tpl}" (has: ${d.pagedTemplates.join(", ")})` });
-  if (th && !d.pagedThemes.includes(th)) P.push({ line: 1, issue: `unknown orz-paged theme "${th}" (has: ${d.pagedThemes.join(", ")})` });
+  if (tpl && !d.pagedTemplates.includes(tpl) && !d.pagedTemplates.includes(`${tpl}-section`)) P.push({ line: 1, aspect: "vocabulary", issue: `orz-paged template "${tpl}" is not known to the installed orz-paged (it has: ${d.pagedTemplates.join(", ")})` });
+  if (th && !d.pagedThemes.includes(th)) P.push({ line: 1, aspect: "theme", issue: `orz-paged theme "${th}" is not in the current orz-paged (has: ${d.pagedThemes.join(", ")})` });
   return P;
 }
