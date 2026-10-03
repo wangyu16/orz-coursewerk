@@ -23,7 +23,7 @@ import { supports } from "../lib/verify/admission.mjs";
 import { readDispatches } from "../lib/verify/dispatch.mjs";
 import { pinnedTexts, snapshotInputReader } from "../lib/verify/references.mjs";
 import { absolutesHash, readAbsoluteReview } from "../lib/verify/absolutes.mjs";
-import { checksCurrentClaims, correctionLogged, dispatchLogged, instructorAuthored, knowledgeConcerns, leadOf, logRecordsOf, rederive } from "../lib/verify/verdicts.mjs";
+import { checksCurrentClaims, claimKey, correctionLogged, dispatchLogged, instructorAuthored, keptClaims, knowledgeConcerns, leadOf, logRecordsOf, recordClaimTexts, rederive } from "../lib/verify/verdicts.mjs";
 import { findingId } from "../lib/records/findings.mjs";
 import { base, recheckByRerun } from "./_shared.mjs";
 
@@ -57,6 +57,7 @@ function run(s) {
   for (const l of log.filter((x) => x.type === "dispatch" && x.payload?.dispatch)) if (!byDispatch.has(l.payload.dispatch))
     out.push({ kind: "dispatch-record-missing", units: units.has(l.payload.unit) ? [l.payload.unit] : [], evidence: { type: "rule", rule: "every logged dispatch keeps its record in metadata/verification/", dispatch: l.payload.dispatch } });
 
+  const kept = keptClaims(log);
   const askedExercise = new Set(); // one question per unit, however many records read it as exercise data
   for (const r of [...records].sort((x, y) => String(y.at).localeCompare(String(x.at)))) {
     const u = units.get(r.unit);
@@ -97,12 +98,16 @@ function run(s) {
     for (const c of a.perClaim) {
       if (c.status === "contradicted")
         out.push({ kind: "fact-contradicted", units: [u.id], evidence: { type: "quote", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote, span: q.span })) } });
-      else if (c.status === "disputed")
+      else if (c.status === "disputed") {
         // in the agent's own text a dispute is the agent's to settle: it re-checks the value against the quote and
         // fixes or keeps its draft — the instructor is not asked (P11, operator: catch much, annoy little)
-        out.push({ kind: instructorAuthored(u, log) ? "fact-disputed" : "fact-check-own", units: [u.id], evidence: { type: "conflict", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote })),
+        // the dispute as one claim (D40): keyed by its sentence and values, so an edit elsewhere in the unit keeps the answer
+        const key = claimKey(u.id, recordClaimTexts(r)[c.claim - 1], c.conflicts || []);
+        if (kept.has(key)) continue; // the instructor kept this claim as written: settled
+        out.push({ kind: instructorAuthored(u, log) ? "fact-disputed" : "fact-check-own", units: [u.id], evidence: { claimKey: key, type: "conflict", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote })),
           // the question the instructor reads (P11: the digest showed the bare kind)
           note: `The pinned sources disagree: the text says ${(c.conflicts || []).map((k) => `${k.claimed}, a source says ${k.source}${k.sentence ? ` ("${String(k.sentence).slice(0, 160)}")` : ""}`).join("; ")} — keep as written, or change it?` } });
+      }
     }
   }
 

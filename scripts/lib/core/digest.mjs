@@ -18,7 +18,11 @@ export const DEFAULT_CAP = 10;
 const STATE = "metadata/digest/state.json";
 
 /** The basis a question is answered against: the finding, and the current content of the units it names. */
-export const basisOf = (f, unitHash) => sha256(canonicalJson([f.id, (f.units || []).map((u) => unitHash.get(u) || null)]));
+export const basisOf = (f, unitHash) => f.evidence?.claimKey ? sha256(canonicalJson(["claim", f.evidence.claimKey])) : sha256(canonicalJson([f.id, (f.units || []).map((u) => unitHash.get(u) || null)]));
+/** What an answer binds to: a disputed claim by its claim key (D40), anything else by the finding. */
+export const answerKeyOf = (f) => (f.evidence?.claimKey ? `claim:${f.evidence.claimKey}` : f.id);
+/** Is this finding answered? By its key and basis; answers recorded before D40 still count by finding id and unit basis. */
+export const isAnswered = (answered, f, unitHash) => answered.has(`${answerKeyOf(f)}|${basisOf(f, unitHash)}`) || answered.has(`${f.id}|${sha256(canonicalJson([f.id, (f.units || []).map((u) => unitHash.get(u) || null)]))}`);
 
 /** Root cause: the same check, raising the same thing (unit ids, numbers and quotes folded away). */
 export function rootCause(f) {
@@ -53,7 +57,7 @@ function laterKeys(root) {
 export function buildDigest(root, findings, unitInfo, { cap = DEFAULT_CAP, corrections = [] } = {}) {
   const deliverable = new Map([...unitInfo].map(([k, v]) => [k, v.deliverable])), hash = new Map([...unitInfo].map(([k, v]) => [k, v.contentHash]));
   const answered = answeredBases(root);
-  const isOpen = (f) => !["resolved", "answered"].includes(f.status) && !answered.has(`${f.id}|${basisOf(f, hash)}`);
+  const isOpen = (f) => !["resolved", "answered"].includes(f.status) && !isAnswered(answered, f, hash);
   const asked = findings.filter((f) => f.statusClass === "question" && f.route === "digest" && isOpen(f));
   const interrupts = findings.filter((f) => f.route === "interrupt" && isOpen(f));
   const clusters = new Map();
@@ -75,7 +79,7 @@ export function buildDigest(root, findings, unitInfo, { cap = DEFAULT_CAP, corre
     // a recommendation always shows where it came from: the check, or a concern's own suggested revision
     recommendation: c.findings[0].recommendation ?? (c.findings[0].evidence?.suggestion ? `revise: ${c.findings[0].evidence.suggestion}` : null),
     recommendedBy: c.findings[0].recommendation != null ? "check" : c.findings[0].evidence?.suggestion ? "reviewer" : null,
-    findings: c.findings.map((f) => f.id), bases: c.findings.map((f) => ({ finding: f.id, basis: basisOf(f, hash) })), // answered at the basis shown
+    findings: c.findings.map((f) => f.id), bases: c.findings.map((f) => ({ finding: answerKeyOf(f), basis: basisOf(f, hash), ...(f.evidence?.claimKey ? { claimKey: f.evidence.claimKey } : {}) })), // answered at the basis shown
   });
   const agentOpen = findings.filter((f) => f.route === "agent" && isOpen(f));
   const by = (list) => list.reduce((a, f) => ((a[f.kind] = (a[f.kind] || 0) + 1), a), {});

@@ -577,3 +577,40 @@ test("[req.autocorrect.guard] a wrong constant in a display equation is anchored
   const Q = "The reaction of iodine with hydrogen has ΔH = −92 kJ";
   assert.equal(anchored(claim, [{ source: "s", quote: Q, text: Q, span: [0, Q.length] }], [{ claimed: claim.required.quantities[0].raw }]), false, "a quote about another reaction does not anchor");
 });
+
+test("[req.autocorrect.guard] an equation claim is anchored by a quote of the same balanced reaction — not another reaction, not the reverse (P11 live probe)", async () => {
+  const { anchored, reactionOf } = await import("../scripts/lib/verify/admission.mjs");
+  const { checkableClaims } = await import("../scripts/lib/verify/claims.mjs");
+  assert.deepEqual(reactionOf("$$\\ce{N2(g) + 3 H2(g) <=> 2 NH3(g)}$$"), { left: ["H2", "N2"], right: ["NH3"] });
+  const c = checkableClaims("$$\\ce{N2(g) + 3 H2(g) <=> 2 NH3(g)} \\qquad \\Delta H = -63.7\\ \\text{kJ}$$")[0];
+  const at = (Q) => anchored(c, [{ source: "s", quote: Q, text: Q, span: [0, Q.length] }], [{ claimed: c.required.quantities[0].raw }]);
+  assert.equal(at("N 2 ( g ) + 3 H 2 ( g ) ⇌ 2 NH 3 ( g ) Δ H = −92.2 kJ"), true, "the same reaction, as the source typesets it");
+  assert.equal(at("2 NO 2 ( g ) ⇌ N 2 O 4 ( g ) Δ H = −57.20 kJ"), false, "another reaction");
+  assert.equal(at("2 NH 3 ( g ) ⇌ N 2 ( g ) + 3 H 2 ( g ) Δ H = +92.2 kJ"), false, "the reverse reaction carries the opposite sign");
+});
+
+// ---- D40 (operator, 2026-10-03): an answered dispute stays answered when other sentences of the unit change ---------
+test("[req.answers.claim-bound] a kept claim settles its dispute by its own sentence and values; a changed claim is a new one", async () => {
+  const { claimKey, settleKept } = await import("../scripts/lib/verify/verdicts.mjs");
+  const claims = [{ index: 1, text: "The law of mass action dates from 1864." }, { index: 2, text: "Le Chatelier stated it in 1884." }];
+  const conflicts = [{ claimed: "1864", source: "1865" }];
+  const admission = { status: "disputed", perClaim: [{ claim: 1, status: "disputed", conflicts }, { claim: 2, status: "supported" }] };
+  const kept = new Set([claimKey("u-x", claims[0].text, conflicts)]);
+  assert.equal(settleKept(admission, "u-x", claims, kept).status, "admitted", "the kept claim, and the rest supported");
+  assert.equal(settleKept(admission, "u-x", [{ index: 1, text: "The law of mass action dates from 1864 exactly." }, claims[1]], kept).status, "disputed", "an edited claim sentence is a new claim");
+  assert.equal(settleKept({ ...admission, perClaim: [admission.perClaim[0], { claim: 2, status: "not-found" }] }, "u-x", claims, kept).status, "disputed", "the other claims still need their own evidence");
+  assert.notEqual(claimKey("u-x", claims[0].text, conflicts), claimKey("u-y", claims[0].text, conflicts), "per unit");
+});
+
+test("[req.answers.claim-bound] the digest does not re-ask a kept dispute after another sentence of its unit changes", async (t) => {
+  const { buildDigest, answerDigest, basisOf } = await import("../scripts/lib/core/digest.mjs");
+  const p = copy(t);
+  const unitHash = (h) => new Map([["u-study-guide-le-chatelier-x-1", { deliverable: "study-guide/le-chatelier.md", contentHash: h }]]);
+  const dispute = (h) => [{ id: `f-${h}`, module: "ms8-verdicts", kind: "fact-disputed", statusClass: "question", route: "digest", units: ["u-study-guide-le-chatelier-x-1"], evidence: { type: "conflict", claimKey: "k-1864", note: "The pinned sources disagree: the text says 1864, a source says 1865 — keep as written, or change it?" } }];
+  const d = buildDigest(p.root, dispute("a"), unitHash("a".repeat(64)));
+  assert.equal(d.entries.length, 1);
+  answerDigest(p.root, d, { answers: { [d.entries[0].key]: "change it to 1865" }, instructorWords: "Use 1865.", reader: null }, I);
+  // another sentence changed: a new dispatch (new finding id), a new unit hash — the same claim
+  assert.equal(buildDigest(p.root, dispute("b"), unitHash("b".repeat(64))).entries.length, 0, "not asked again");
+  assert.match(readLogText(p.root), /"claimKey":"k-1864"/, "the answer records the claim it settles");
+});

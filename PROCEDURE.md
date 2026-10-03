@@ -75,7 +75,13 @@ change, recorded the same way.
 On "assemble" (`coursewerk.mjs assemble --chapter <slug>`), standardize the chapter's spine from the draft or the raw
 materials:
 - the concept map (`concepts/<slug>.md`): objectives, concept sequence, key terms, misconceptions, prerequisites;
-- the assessment guide (`assessment-support/<slug>.md`): per objective, `### … [anchor: …]` entries with Type,
+- the assessment guide (`assessment-support/<slug>.md`): per objective, `
+**Re-approval after a spine change:** run `spine.mjs review --chapter <slug>` (or `--course`) first. A blind verifier
+reads only the lines changed since the last approval. Its concerns appear in `spine.mjs preview` as questions for the
+instructor, and the spine is never edited. Approval waits for the review. Offline, approve with `--without-review`,
+which is recorded.
+
+### … [anchor: …]` entries with Type,
   Count, Level and Targets;
 - the course map (`concepts/course.md`) for the chapter list and order.
 
@@ -165,7 +171,7 @@ To read or present the materials locally, assemble the framework shells: `script
 | | |
 |---|---|
 | workflow | `scripts/coursewerk.mjs` — status, assemble, back-to-draft, approve, digest, recommend, answer, publish, revert, interrupt, digest-cap, history (how each issue was found and settled, rebuilt from the records) |
-| spine | `scripts/spine.mjs` — check, migrate, anchor, propose, critique, status, preview, approve, version, steering |
+| spine | `scripts/spine.mjs` — check, migrate, anchor, propose, critique, review, status, preview, approve, version, steering |
 | units | `scripts/units.mjs` — begin, index, claim, status, link, confirm, obligations, restamp |
 | verification | `scripts/verify.mjs` — destinations, search, fetch, semi, readmit, absolutes, knowledge, correct, revert, corrections, links, status |
 | gate | `scripts/gate.mjs` |

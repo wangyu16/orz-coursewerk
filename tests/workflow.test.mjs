@@ -406,3 +406,33 @@ test("[req.versions.carry] opening a major version carries its chapter's units: 
   assert.ok(ob.length > 0 && ob.every((f) => f.units.every((u) => /-le-chatelier-/.test(u))), "only chapter 2's units owe re-verification");
   assert.match(readLogText(p.root), /"event":"units-carried"/);
 });
+
+// ---- D39 (operator, 2026-10-03): a changed concept-map line gets a blind review at re-approval -----------------------
+test("[req.spine.blind-review] at re-approval the lines changed since the last approval are reviewed blind; the concerns are questions in the preview, and re-approval waits for the review", async (t) => {
+  const { changedSpineLines, reviewSpineChanges, currentSpineReview } = await import("../scripts/lib/core/spine_review.mjs");
+  const { replayVerifier } = await import("../scripts/lib/verify/dispatch.mjs");
+  const p = copy(t);
+  assert.equal(changedSpineLines(p.root, p.reader, "chapter:le-chatelier").lines.length, 0, "nothing changed since the approval");
+  const f = path.join(p.root, "concepts", "le-chatelier.md");
+  fs.writeFileSync(f, fs.readFileSync(f, "utf8").replace("(Le Chatelier–Braun principle, aliases", "(Le Chatelier–Bunsen principle, aliases"));
+  const ch = changedSpineLines(p.root, liveReader(p.root), "chapter:le-chatelier");
+  assert.equal(ch.lines.length, 1); assert.match(ch.lines[0].text, /Bunsen/);
+  // re-approval refuses until the changed lines had their review
+  const approve = (...extra) => spawnSync(process.execPath, [path.join(REPO, "scripts", "spine.mjs"), "approve", "--root", p.root, "--chapter", "le-chatelier", "--name", "Yu Wang (wangyu16)", "--words", "Approve chapter 2 again.", ...extra], { encoding: "utf8" });
+  const refused = approve();
+  assert.notEqual(refused.status, 0); assert.match(refused.stderr, /blind review: node scripts\/spine\.mjs review/);
+  let seen = "";
+  const verifier = replayVerifier((pr) => ((seen = pr), { nonce: pr.match(/"nonce": "([0-9a-f]+)"/)[1], concerns: [{ line: 1, kind: "wrong", text: "Le Chatelier–Bunsen principle", problem: "The principle is co-named for Karl Ferdinand Braun, not Robert Bunsen.", suggestion: "Le Chatelier–Braun principle" }] }));
+  const r = await reviewSpineChanges(p.root, liveReader(p.root), "chapter:le-chatelier", { verifier });
+  assert.match(seen, /CHANGED LINES\n1\. .*Bunsen/); assert.ok(!/CHANGED LINES[\s\S]*\n2\. /.test(seen.split("THE WHOLE MAP")[0]), "only the changed line is reviewed");
+  assert.equal(r.concerns.length, 1); assert.ok(currentSpineReview(p.root, liveReader(p.root), "chapter:le-chatelier"));
+  assert.match(readLogText(p.root), /"type":"dispatch"/, "the review is a logged dispatch");
+  const preview = spawnSync(process.execPath, [path.join(REPO, "scripts", "spine.mjs"), "preview", "--root", p.root, "--chapter", "le-chatelier"], { encoding: "utf8" });
+  assert.match(preview.stdout, /Possibly wrong \(line \d+\): "Le Chatelier–Bunsen principle"\. The principle is co-named for Karl Ferdinand Braun/);
+  assert.equal(fs.readFileSync(f, "utf8").includes("Bunsen"), true, "the spine is the instructor's: nothing was edited");
+  assert.equal(approve().status, 0, "with the review run, the instructor can approve");
+  // offline: re-approval without the review is the agent's explicit choice, recorded
+  fs.writeFileSync(f, fs.readFileSync(f, "utf8").replace("Bunsen", "Braun"));
+  assert.equal(approve("--without-review").status, 0);
+  assert.match(readLogText(p.root), /approved without the blind review of the changed lines/);
+});

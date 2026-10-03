@@ -202,6 +202,29 @@ export function conflicts(claim, quotes) {
 }
 
 /** Is a contradiction about the same thing? Anchored by another required token, no foreign name, three shared words. */
+/** The reaction a claim writes in \ce{…}: its species on each side of the arrow (coefficients and states set aside). */
+export function reactionOf(text) {
+  const m = String(text || "").match(/\\ce\{([^}]*(?:<=>|->|<->|⇌|→)[^}]*)\}/);
+  return m ? sidesOf(m[1]) : null;
+}
+function sidesOf(eq) {
+  const parts = String(eq).split(/<=>|<->|->|⇌|→|⟶|↔/);
+  if (parts.length !== 2) return null;
+  const species = (side) => side.split(/\s\+\s|\s*\+\s+/).map((x) => x.replace(/\((?:g|l|s|aq)\)/g, "").replace(/\s+/g, "").replace(/^\d+(?:\/\d+)?/, "")).filter((x) => /^[A-Z]/.test(x)).sort();
+  const [l, r] = parts.map(species);
+  return l.length && r.length ? { left: l, right: r } : null;
+}
+/** Does a quote state the same reaction (same species, same sides)? The strongest anchor a chemical equation has (P11). */
+function sameReaction(claim, quoteText) {
+  const want = reactionOf(claim.text);
+  if (!want) return false;
+  // sources write "N 2 ( g ) + 3 H 2 ( g ) ⇌ 2 NH 3 ( g )": rejoin the formula pieces before reading the sides
+  const q = String(quoteText).replace(/\s*\(\s*(g|l|s|aq)\s*\)/g, "($1)").replace(/([A-Z][a-z]?)\s+(\d)/g, "$1$2").replace(/(\d)\s+([A-Z])/g, "$1 $2");
+  const m = q.match(/((?:\d*\s*[A-Z][A-Za-z0-9()]*\s*\+\s*)*\d*\s*[A-Z][A-Za-z0-9()]*)\s*(⇌|<=>|→|->|⟶|↔)\s*((?:\d*\s*[A-Z][A-Za-z0-9()]*\s*\+\s*)*\d*\s*[A-Z][A-Za-z0-9()]*)/);
+  const got = m && sidesOf(`${m[1]} ${m[2]} ${m[3]}`);
+  return !!got && JSON.stringify(got) === JSON.stringify(want);
+}
+
 export function anchored(claim, found, k) {
   const joined = windowOf(found);
   if (joined == null) return false;
@@ -212,12 +235,14 @@ export function anchored(claim, found, k) {
   // synthesis. The lead never adds a required token; it only lets the quote show it is about the same thing.
   const leadNames = (claim.leadNames || []).map((n) => ({ kind: "name", parts: nameParts(n), key: nameKey(n), label: n })).filter((t) => t.parts.length);
   const byClaim = others.some((t) => tokenIndex(t, P, claim) >= 0), byLead = leadNames.some((t) => tokenIndex(t, P, claim) >= 0);
-  if (!byClaim && !byLead) return false;
+  const byReaction = sameReaction(claim, joined);
+  if (!byClaim && !byLead && !byReaction) return false;
   const keys = [...tokensOf(claim).filter((t) => t.kind === "name"), ...leadNames].flatMap((t) => [t.key, ...t.parts.map(folded)]);
   // a quote's name is the claim's when it is, or shares a part with, one of the claim's names ("Haber-Bosch" / "Haber")
   if (namesIn(joined).some((n) => !keys.includes(nameKey(n)) && !nameParts(n).some((p) => keys.includes(folded(p))))) return false;
   const f = folded(joined), words = [...new Set([...claim.words, ...(claim.leadWords || [])])];
   // anchored by the lead-in's name: the named thing and one more shared content word (an equation has no words of its own)
+  if (byReaction) return true; // the same balanced reaction beside the value: no further words needed
   return words.filter((w) => f.includes(w)).length >= Math.min(byClaim ? 3 : 2, words.length);
 }
 

@@ -8,8 +8,9 @@
 //   node scripts/spine.mjs critique --root <pkg> --chapter <slug> --note "…" [--kind …] [--ids …] [--recommend "…"] --model <id>
 //                                                                     a question for the approval view (never blocking)
 //   node scripts/spine.mjs status   --root <pkg>                      approval status of every scope
+//   node scripts/spine.mjs review   --root <pkg> (--chapter <slug> | --course)   blind review of the lines changed since the last approval (D39)
 //   node scripts/spine.mjs preview  --root <pkg> --chapter <slug>     the approval view
-//   node scripts/spine.mjs approve  --root <pkg> (--chapter <slug> | --course) --name <instructor> --words "<what they said>" [--glance]
+//   node scripts/spine.mjs approve  --root <pkg> (--chapter <slug> | --course) --name <instructor> --words "<what they said>" [--glance] [--without-review]
 //   node scripts/spine.mjs version  --root <pkg> --scopes chapter:<slug>[,…] --reason "<why>" --name <instructor> --words "<their words>"   (carries the chapter's units: each owes re-verification)
 //   node scripts/spine.mjs steering --root <pkg> --defaults <file.json> [--answers <file.json>] [--accept-all] --name <instructor> --words "…"
 import fs from "node:fs";
@@ -21,6 +22,8 @@ import { approvalStatus, recordApproval } from "./lib/core/approvals.mjs";
 import { approvalPreview, originsPath } from "./lib/core/preview.mjs";
 import { openVersionCarrying } from "./lib/core/obligations.mjs";
 import { spineCritique } from "./lib/core/critique.mjs";
+import { changedSpineLines, currentSpineReview, reviewSpineChanges } from "./lib/core/spine_review.mjs";
+import { headlessVerifier } from "./lib/verify/dispatch.mjs";
 import { recordSteering } from "./lib/core/steering_intake.mjs";
 import { readConfig, writeConfig } from "./lib/records/config.mjs";
 import { appendLogRecord, readLogText } from "./lib/records/log.mjs";
@@ -117,9 +120,20 @@ try {
     console.log(JSON.stringify(Object.fromEntries(Object.entries(st.scopes).map(([k, s]) => [k, { valid: s.valid, change: s.change?.kind || null, reasons: (s.change?.reasons || []).map((r) => r.why) }])), null, 2));
     process.exit(0);
   }
+  if (cmd === "review") {
+    // D39: a blind review of the lines changed since the last approval; its concerns are questions shown at re-approval
+    const scope = flag("--course") ? "course" : `chapter:${opt("--chapter")}`;
+    if (scope !== "course" && !chapters.includes(opt("--chapter"))) fail(`--chapter must be one of ${chapters.join(", ")} (or --course)`);
+    const r = await reviewSpineChanges(root, reader, scope, { verifier: headlessVerifier() });
+    console.log(JSON.stringify(r, null, 2));
+    process.exit(0);
+  }
   if (cmd === "preview") {
     const chapter = opt("--chapter"); if (!chapters.includes(chapter)) fail(`--chapter must be one of ${chapters.join(", ")}`);
     let critique = []; try { critique = JSON.parse(fs.readFileSync(path.join(root, `metadata/spine/critique/${chapter}.json`), "utf8")); } catch { critique = []; }
+    // the blind review of the changed lines (D39): its concerns join the questions, a clarification as a one-line diff
+    for (const c of currentSpineReview(root, reader, `chapter:${chapter}`)?.concerns || [])
+      critique.push({ kind: "blind-review", evidence: { note: c.kind === "clarify" ? `Clarify (line ${c.lineNo}): "${c.text}" → "${c.suggestion}". ${c.problem}` : `Possibly wrong (line ${c.lineNo}): "${c.text}". ${c.problem}${c.suggestion ? ` Suggested: "${c.suggestion}".` : ""}` } });
     console.log(approvalPreview(reader, parseSpine(reader, chapters), chapter, { critique }).text);
     process.exit(0);
   }
@@ -128,7 +142,12 @@ try {
     if (!flag("--course") && !chapters.includes(chapter)) fail(`--chapter must be one of ${chapters.join(", ")} (or --course)`);
     const problems = checkSpine(parseSpine(reader, chapters), chapters).filter((p) => chapter ? p.file.endsWith(`/${chapter}.md`) : p.file === COURSE_MAP);
     if (problems.length) fail(`the spine is not well-formed yet (${problems.length} problem(s), e.g. ${problems[0].detail}); fix them before approval`, 1);
-    const r = recordApproval(root, reader, chapters, { chapter, glance: flag("--glance"), instructorWords: opt("--words"), note: opt("--note") || "" }, instructor());
+    // re-approval follows a blind review of the changed lines (D39); offline, the agent says so (--without-review)
+    const scope = chapter ? `chapter:${chapter}` : "course", changed = changedSpineLines(root, reader, scope);
+    if (changed.reapproval && changed.lines.length && !currentSpineReview(root, reader, scope) && !flag("--without-review"))
+      fail(`${changed.lines.length} line(s) changed since the last approval and have not had their blind review: node scripts/spine.mjs review --root <pkg> ${chapter ? `--chapter ${chapter}` : "--course"} (offline: --without-review, which is recorded)`, 1);
+    const note = [opt("--note") || "", flag("--without-review") && changed.lines.length && !currentSpineReview(root, reader, scope) ? "approved without the blind review of the changed lines" : ""].filter(Boolean).join("; ");
+    const r = recordApproval(root, reader, chapters, { chapter, glance: flag("--glance"), instructorWords: opt("--words"), note }, instructor());
     console.log(JSON.stringify({ recorded: r.type, seq: r.seq, scope: r.payload.scope, version: r.payload.version }, null, 2));
     process.exit(0);
   }

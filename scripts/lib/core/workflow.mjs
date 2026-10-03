@@ -15,7 +15,7 @@ import { approvalStatus } from "./approvals.mjs";
 import { manifestChapters } from "./package_reader.mjs";
 import { checkSpine, parseSpine, spinePaths } from "./spine.mjs";
 import { currentVersion, versionOpenedAt } from "./versions.mjs";
-import { answeredBases, basisOf } from "./digest.mjs";
+import { answeredBases, basisOf, isAnswered } from "./digest.mjs";
 import { deliverablesOf, readSidecar } from "./units_index.mjs";
 
 /** Unit id → { deliverable, contentHash }, from the unit sidecars. */
@@ -164,7 +164,7 @@ export function publishDecision(root, reader, { gateResult, unitInfo, instructor
   const recs = records(logText);
   const approvalOf = (sc) => { const r = recs.filter((x) => (x.type === "approval" || x.type === "glance-confirmation") && x.payload?.scope === sc).at(-1); return r ? { seq: r.seq, hash: r.hash, type: r.type } : null; };
   const answered = answeredBases(root);
-  const openQuestions = gateResult.gate.questions.filter((f) => !answered.has(`${f.id}|${basisOf(f, unitHash)}`)).map((f) => ({ id: f.id, module: f.module, kind: f.kind, units: f.units, question: f.evidence?.note || f.evidence?.what || f.evidence?.rule || f.kind }));
+  const openQuestions = gateResult.gate.questions.filter((f) => !isAnswered(answered, f, unitHash)).map((f) => ({ id: f.id, module: f.module, kind: f.kind, units: f.units, question: f.evidence?.note || f.evidence?.what || f.evidence?.rule || f.kind }));
   if (openQuestions.length && !overQuestions) {
     const e = new Error(`${openQuestions.length} open question(s) to raise with the instructor before publishing; they do not block — if the instructor still wants to publish, publish over them in their words`);
     e.openQuestions = openQuestions; throw e;

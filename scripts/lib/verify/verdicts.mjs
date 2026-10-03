@@ -8,8 +8,8 @@
 //   revertCorrection the instructor reverting a correction after seeing diff and evidence = the double confirmation
 //                    (req.revert.double-confirm): the text stands as an authorized divergence, with the note.
 import fs from "node:fs";
+import { canonicalJson, sha256 } from "../records/canonical.mjs";
 import path from "node:path";
-import { sha256 } from "../records/canonical.mjs";
 import { recordFile } from "../records/paths.mjs";
 import { appendLogRecord } from "../records/log.mjs";
 import { factHash } from "../core/dependencies.mjs";
@@ -55,6 +55,27 @@ const packageDispatches = (root) => {
 };
 
 /** Evidence the harness writes when a dispatch is admitted. */
+/**
+ * A disputed claim, as one thing the instructor can answer once (D40, operator 2026-10-03): the unit, the claim's own
+ * sentence, and the values in dispute. An edit elsewhere in the unit leaves it — and the instructor's answer — intact.
+ */
+export const claimKey = (unitId, claimText, conflicts = []) => sha256(canonicalJson([unitId, String(claimText || "").replace(/\s+/g, " ").trim(), conflicts.map((k) => [k.claimed, k.source])]));
+/** The claims the instructor kept as written, by claim key (answers "keep …" to a fact-disputed entry). */
+export function keptClaims(logRecords) {
+  const out = new Set();
+  for (const l of logRecords) if (l.type === "answer" && l.party?.role === "instructor") for (const a of l.payload?.answers || []) if (a.claimKey && /^\s*keep/i.test(a.choice)) out.add(a.claimKey);
+  return out;
+}
+/** A dispute the instructor already settled by keeping the claim is not open; if every other claim is supported, the
+ *  unit is evidenced — the kept claim by the instructor's answer, the rest by their quotes. A changed sentence is a new
+ *  claim and needs its own evidence. */
+export function settleKept(admission, unitId, claims, kept) {
+  if (!admission || admission.status !== "disputed" || !kept.size) return admission;
+  const keyOf = (c) => claimKey(unitId, claims.find((x) => x.index === c.claim)?.text, c.conflicts || []);
+  const ok = admission.perClaim.every((c) => c.status === "supported" || (c.status === "disputed" && kept.has(keyOf(c))));
+  return ok ? { ...admission, status: "admitted", kept: admission.perClaim.filter((c) => c.status === "disputed").map((c) => ({ claim: c.claim, claimKey: keyOf(c) })) } : admission;
+}
+
 function evidenceFrom(record, admission, texts, unitText) {
   const quotes = admission.perClaim.flatMap((c) => (c.quotes || []).map((q) => ({ ...q, claim: c.claim, textSha256: texts.get(q.source)?.sha256 })));
   return { type: "quote-verified", source: quotes[0]?.source, quotes, factHash: factHash(unitText), claimsHash: claimsHash(unitText), dispatch: record.dispatch, at: record.at };
@@ -77,7 +98,7 @@ export async function verifySemi(root, reader, { texts, verifier, only = null, o
     if (!passages.length) { results.push({ unit: u.id, status: "no-candidates" }); onProgress(results.at(-1)); continue; }
     const bundle = semiBundle(claims, passages);
     const answer = await verifier(bundle.prompt);
-    const admission = admit({ claims, passages, texts: plain, raw: answer.raw, nonce: bundle.nonce });
+    const admission = settleKept(admit({ claims, passages, texts: plain, raw: answer.raw, nonce: bundle.nonce }), u.id, claims, keptClaims(logRecordsOf(readLogText(root))));
     const record = recordDispatch(root, { kind: "semi", unit: u.id, factHash: factHash(u.text), contentHash: u.locator.contentHash, bundle, passages, texts, answer, admission, claims });
     if (admission.status === "admitted") admitEvidence(root, reader, u.id, evidenceFrom(record, admission, texts, u.text));
     results.push({ unit: u.id, dispatch: record.dispatch, status: admission.status, costUsd: answer.costUsd ?? null, perClaim: admission.perClaim.map((c) => ({ claim: c.claim, status: c.status, reason: c.reason })) });
@@ -95,7 +116,7 @@ export function readmitRecorded(root, reader, { texts }) {
     const u = loadUnits(root, reader).find((x) => x.id === r.unit);
     if (!u || r.kind !== "semi" || !needsEvidence(u) || hasAdmitted(root, u)) continue;
     if (!dispatchLogged(r, log) || !checksCurrentClaims(r, u.text, leadOf(u, loadUnits(root, reader)))) continue; // only genuine dispatches of the unit's current claims
-    const a = rederive(r, plainT);
+    const a = settleKept(rederive(r, plainT), u.id, semiClaimsOf(r), keptClaims(log));
     if (a?.status === "admitted") { admitEvidence(root, reader, u.id, { ...evidenceFrom(r, a, texts, u.text), readmitted: new Date().toISOString() }); out.push({ unit: u.id, dispatch: r.dispatch }); }
   }
   if (out.length) appendLogRecord(root, { type: "revision", party: { role: "harness", name: "verify" }, payload: { event: "evidence-readmitted", units: out.map((x) => x.unit), rule: "recorded answers re-derived under the current admission rules" } });

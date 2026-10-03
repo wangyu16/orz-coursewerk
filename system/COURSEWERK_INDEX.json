@@ -191,7 +191,7 @@
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "02f30837b2dbc1cd19c66565a40df5ab4ae3a4f42ba46c458d13f7dd501f9a5f"
+      "hash": "7fa558ae33ef8b015a6dab7db7ae0cf5b5460c6007a86a99d0dec201a6a2901c"
     },
     {
       "id": "repo:README.md",
@@ -317,7 +317,7 @@
       "id": "repo:scripts/gate.mjs",
       "path": "scripts/gate.mjs",
       "type": "executable",
-      "hash": "0ea75bcd26c5ac8dd280c6e765a4efcb844343d13c6326860633a209cb4f5215"
+      "hash": "af67808f542005865885dd4f64567882d071d9df0142b2c8e918bb863663c8e4"
     },
     {
       "id": "repo:scripts/generate_attribution.mjs",
@@ -437,7 +437,7 @@
       "id": "repo:scripts/lib/core/digest.mjs",
       "path": "scripts/lib/core/digest.mjs",
       "type": "kernel",
-      "hash": "4ed40accf910becbf34ce5f801718f17777ebfb473328fc1451fac641e5ba93c"
+      "hash": "92e1fd8b0b07220d634eea74615e444d4ad791466c87f0e7a0a5f53e32c9811d"
     },
     {
       "id": "repo:scripts/lib/core/history.mjs",
@@ -494,6 +494,12 @@
       "hash": "c886be33155af0713bf199114a2f847ad816c72ab850119843d8e352ec58b60d"
     },
     {
+      "id": "repo:scripts/lib/core/spine_review.mjs",
+      "path": "scripts/lib/core/spine_review.mjs",
+      "type": "kernel",
+      "hash": "b011e6d3d2075b935cba838072bf1ddb3f77cf08be51eba98ed2357a9230ad0a"
+    },
+    {
       "id": "repo:scripts/lib/core/spine.mjs",
       "path": "scripts/lib/core/spine.mjs",
       "type": "kernel",
@@ -521,7 +527,7 @@
       "id": "repo:scripts/lib/core/workflow.mjs",
       "path": "scripts/lib/core/workflow.mjs",
       "type": "kernel",
-      "hash": "ca3cbe916f567017a3fcc6659ff9a969c78c7ad019a4bc08bf3117fcd956a3b2"
+      "hash": "0f8cd2bc0ec48156d7216a91128cbc2e290b9127fbc28dc015d8e28bbbc21b21"
     },
     {
       "id": "repo:scripts/lib/escalation.mjs",
@@ -761,7 +767,7 @@
       "id": "repo:scripts/lib/verify/admission.mjs",
       "path": "scripts/lib/verify/admission.mjs",
       "type": "kernel",
-      "hash": "7e5073ddb3e81309bc75dd8ac4a95ca7a6fb07af8db81f9435b600659ff92fc0"
+      "hash": "d31c0e4afa506c7e2f1ce3d7fb187289cf403b65cb7a447220b820073c3de941"
     },
     {
       "id": "repo:scripts/lib/verify/claims.mjs",
@@ -791,7 +797,7 @@
       "id": "repo:scripts/lib/verify/verdicts.mjs",
       "path": "scripts/lib/verify/verdicts.mjs",
       "type": "kernel",
-      "hash": "ae71321373f610cb6e83cdac69cba3db614ef51f1f590c8f78c5d2f48bcbe76e"
+      "hash": "476cfb22808af637fe3d8a6142ddcea4b243cce1bd4a229fc73a2e11d249fdba"
     },
     {
       "id": "repo:scripts/lib/visual_review.mjs",
@@ -851,7 +857,7 @@
       "id": "repo:scripts/modules/ms8-verdicts.mjs",
       "path": "scripts/modules/ms8-verdicts.mjs",
       "type": "executable",
-      "hash": "bcd0a9d863dd1407dfd22125243516fbfbd3b84facf7707aa2d5e653feae5e24"
+      "hash": "04045f02e99ca55039711e7d79d9bf7512295584bb9c3a85a4a12107c4c4d3f9"
     },
     {
       "id": "repo:scripts/modules/README.md",
@@ -911,7 +917,7 @@
       "id": "repo:scripts/spine.mjs",
       "path": "scripts/spine.mjs",
       "type": "executable",
-      "hash": "71c4e4682e986b8830355c3b9f9500e676f12e6f413aa16325b679dfdc85811f"
+      "hash": "2a6437985fae4d8deea89090e142b2d43d0863e33a9d637ef2df42e321e6aff2"
     },
     {
       "id": "repo:scripts/study_pairs.mjs",
@@ -1097,7 +1103,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "8d05ce7cfbdd2a3546ef17140c15fafaae6661e086069af9924edc4542205b58"
+      "hash": "dd856ca06787f160e6439620035d87924cf7b531064d38758b60f39901382db7"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1721,7 +1727,7 @@
       "id": "repo:tests/verdict-path.test.mjs",
       "path": "tests/verdict-path.test.mjs",
       "type": "test",
-      "hash": "724ffcc4fe2628c37ef0fd4265c93c50ae1177d080d2cdbcb1fcf751d7cf2321"
+      "hash": "154acce1b9103c1b133514f9f81821fbb79789fd0da9f3e401a995c559b0f285"
     },
     {
       "id": "repo:tests/verdict-redteam.test.mjs",
@@ -1745,7 +1751,7 @@
       "id": "repo:tests/workflow.test.mjs",
       "path": "tests/workflow.test.mjs",
       "type": "test",
-      "hash": "ae5dd8d765a973e3ad1e3614e8956bf1f79db225758872596557ad3f165f3c75"
+      "hash": "c5b64f1e52c5ec4443298ed32145805e5f0266aaae5040dfd5fe1faa4ee41d8c"
     },
     {
       "id": "repo:VERSION",
@@ -3046,6 +3052,14 @@
         "status": "closed"
       },
       {
+        "id": "req.answers.claim-bound",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.answers.persist",
         "phase": "P8",
         "tiers": [
@@ -3643,6 +3657,14 @@
       {
         "id": "req.spine.anchors",
         "phase": "P3",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.spine.blind-review",
+        "phase": "P11",
         "tiers": [
           "T1"
         ],

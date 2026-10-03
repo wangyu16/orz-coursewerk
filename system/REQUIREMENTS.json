@@ -1567,6 +1567,36 @@
           "system/rounds/P11-tranche1.md"
         ]
       }
+    },
+    {
+      "id": "req.answers.claim-bound",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "An instructor's answer to a disputed fact is bound to the claim itself (unit, claim sentence, disputed values), not the whole unit: an edit elsewhere in the unit never re-asks it, and a kept claim counts as settled for that claim while every other claim still needs its own evidence.",
+      "source": "D40 (operator, 2026-10-03)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/verdict-path.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.spine.blind-review",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "At re-approval, the concept-map lines changed since the last approval are reviewed by a context-blind verifier (accuracy only, wrong/clarify); its concerns are questions in the approval preview and never edit the spine; re-approval waits for the review unless the agent records that it was approved without it (offline).",
+      "source": "D39 (operator, 2026-10-03)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/workflow.test.mjs"
+        ]
+      }
     }
   ]
 }

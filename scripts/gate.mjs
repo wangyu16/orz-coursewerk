@@ -8,7 +8,7 @@ import path from "node:path";
 import { CHECKPOINTS } from "./lib/skeleton/manifest.mjs";
 import { profileOf, runGate } from "./lib/skeleton/full_gate.mjs";
 import { correctionsToShow } from "./lib/verify/verdicts.mjs";
-import { answeredBases, basisOf } from "./lib/core/digest.mjs";
+import { answeredBases, basisOf, isAnswered } from "./lib/core/digest.mjs";
 import { unitInfoOf } from "./lib/core/workflow.mjs";
 import { liveReader } from "./lib/core/package_reader.mjs";
 import { unreviewedKnowledge } from "./lib/core/obligations.mjs";
@@ -31,7 +31,7 @@ try {
   const corrections = correctionsToShow(root);
   // a question the instructor answered (at its current basis) is not open, though the module still raises it
   const answered = answeredBases(root), info = unitInfoOf(root, liveReader(root)), hashes = new Map([...info].map(([k, v]) => [k, v.contentHash]));
-  const openQuestions = gate.questions.filter((f) => !answered.has(`${f.id}|${basisOf(f, hashes)}`));
+  const openQuestions = gate.questions.filter((f) => !isAnswered(answered, f, hashes));
   const unreviewed = unreviewedKnowledge(root, liveReader(root));
   const report = { checkpoint, profile, basis, canPublish: gate.canPublish, corrections, knowledgeUnreviewed: unreviewed,
     counts: { blocking: gate.blocking.length, questions: openQuestions.length, answered: gate.questions.length - openQuestions.length, total: findings.length }, approvalProblems, findings, wiring };
