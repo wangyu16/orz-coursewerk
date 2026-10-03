@@ -29,7 +29,7 @@ test("[req.gate.log-verified] the gate checks the decision log on every run of t
   let r = gate(root);
   assert.equal(r.status, 1);
   assert.deepEqual(logKinds(r.report), ["skeleton/log-unverifiable"]);
-  assert.equal(r.report.wiring.modulesRan.length, 7, "a package without a registry runs the standard modules");
+  assert.equal(r.report.wiring.modulesRan.length, 8, "a package without a registry runs the standard modules (seven stable, one trial)");
 
   // a committed log, then an append through the documented record writer: the package can publish
   git(root, "init", "-q"); git(root, "config", "user.name", "T"); git(root, "config", "user.email", "t@example.invalid");

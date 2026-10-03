@@ -43,6 +43,12 @@
       "version": "1.0.0",
       "maturity": "stable",
       "enabled": true
+    },
+    {
+      "name": "ms9-alignment",
+      "version": "1.0.0",
+      "maturity": "trial",
+      "enabled": true
     }
   ]
 }

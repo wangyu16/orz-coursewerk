@@ -1600,6 +1600,36 @@
           "tests/workflow.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.control.link-review",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Links are verified, not trusted (C2, C3): a context-blind reviewer reads each linked teaching unit with its declared spine links and the chapter's plan; a link it does not teach is a question for the agent (link-doubtful), a unit that teaches nothing in the plan is a question for the instructor (off-spine). Trial module: questions only, never blocking. Records bind to the unit's text, its links and the linked nodes' text.",
+      "source": "operator 2026-10-03 (C2/C3 gap); study.md Control",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/alignment.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.level-review",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Assessment follows the guide in kind and level (C5 fidelity): the same review judges whether a practice question is the type and cognitive level its guide entry prescribes; a mismatch is a question (assessment-fidelity) for the agent in agent text, for the instructor in theirs. Trial, never blocking.",
+      "source": "operator 2026-10-03; study.md Control C5",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/alignment.test.mjs"
+        ]
+      }
     }
   ]
 }

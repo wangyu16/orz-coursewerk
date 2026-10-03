@@ -191,7 +191,7 @@
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "7fa558ae33ef8b015a6dab7db7ae0cf5b5460c6007a86a99d0dec201a6a2901c"
+      "hash": "c9592ea9afa7ae73fa10de1e1b806b3b24f3acf8ba5abac37a0f4d907a5de340"
     },
     {
       "id": "repo:README.md",
@@ -701,7 +701,7 @@
       "id": "repo:scripts/lib/skeleton/runner.mjs",
       "path": "scripts/lib/skeleton/runner.mjs",
       "type": "kernel",
-      "hash": "ef6f2ddc57bf91acb101f6903e07751a99da8cc44e3578a51d632d3ffe703cfb"
+      "hash": "4e9a887aa8850021595f8922646f3f7b4c836700064b9f924d87b7eb1459e3e7"
     },
     {
       "id": "repo:scripts/lib/skeleton/snapshot.mjs",
@@ -768,6 +768,12 @@
       "path": "scripts/lib/verify/admission.mjs",
       "type": "kernel",
       "hash": "d31c0e4afa506c7e2f1ce3d7fb187289cf403b65cb7a447220b820073c3de941"
+    },
+    {
+      "id": "repo:scripts/lib/verify/alignment.mjs",
+      "path": "scripts/lib/verify/alignment.mjs",
+      "type": "kernel",
+      "hash": "30dd81657bac3cf020655bf5858912583e699a83b1970431dd31ae2c380de5e6"
     },
     {
       "id": "repo:scripts/lib/verify/claims.mjs",
@@ -860,6 +866,12 @@
       "hash": "89553ec51556600a381fe1b0ca1c3408511482cccbfa5e8ec1508d5811c15844"
     },
     {
+      "id": "repo:scripts/modules/ms9-alignment.mjs",
+      "path": "scripts/modules/ms9-alignment.mjs",
+      "type": "executable",
+      "hash": "00b5331311a2d9657a089fc19edfc25266165567024a19fd096aa6cf878b3deb"
+    },
+    {
       "id": "repo:scripts/modules/README.md",
       "path": "scripts/modules/README.md",
       "type": "executable",
@@ -869,7 +881,7 @@
       "id": "repo:scripts/modules/standard.json",
       "path": "scripts/modules/standard.json",
       "type": "executable",
-      "hash": "5fb44b29e74cc29858a778ff04e44bffe0a0d49630f2fbe54a135e8b95b7d386"
+      "hash": "212e3ba4297afde8403ccbcf88659c9183888a9f53cb40bfb0c1cd37af7a6126"
     },
     {
       "id": "repo:scripts/pack.mjs",
@@ -941,7 +953,7 @@
       "id": "repo:scripts/verify.mjs",
       "path": "scripts/verify.mjs",
       "type": "executable",
-      "hash": "7cded9d9215e8f77e7649caddc20df962146b1070c84b243f68e4d98f457fbf3"
+      "hash": "c9bb72f7ff6bb57302c0d1625f4a7c3c21a9edc2eaf84bc295313a069c5d9ca4"
     },
     {
       "id": "repo:site/assets/coursewerk-favicon.svg",
@@ -1103,7 +1115,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "79709dd6667f49e7c40915dd13f505cd7cfb06f087cf7fe239ccf2512abd8a55"
+      "hash": "6c9f29737b47784e06cf9b322a979fd6ff67c93947cea7a039a408c3a9a60163"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1248,6 +1260,12 @@
       "path": "templates/visual-review.example.json",
       "type": "template",
       "hash": "2c7afd5d5423364c1a414bc0c73b1c0d905af8aa851f257c4a2a6436bac43552"
+    },
+    {
+      "id": "repo:tests/alignment.test.mjs",
+      "path": "tests/alignment.test.mjs",
+      "type": "test",
+      "hash": "ff62436b4c20079344b929f6bf8bb5658fd76904abf1c3e471c40d49a7d57f29"
     },
     {
       "id": "repo:tests/anchors.test.mjs",
@@ -1565,7 +1583,7 @@
       "id": "repo:tests/gate-cli.test.mjs",
       "path": "tests/gate-cli.test.mjs",
       "type": "test",
-      "hash": "015ca5ce3ba2ba4775753dab57a9f0d9af5735a1e09ef4089aa1eb6f042a181b"
+      "hash": "a97863e385efb72f721f4cc6d21ea3dfc86b108faec1b6186efe491859de8221"
     },
     {
       "id": "repo:tests/helpers/baseline.mjs",
@@ -1685,7 +1703,7 @@
       "id": "repo:tests/stable-modules.test.mjs",
       "path": "tests/stable-modules.test.mjs",
       "type": "test",
-      "hash": "ff40ebdda48d590cd38d659c289e71920cb74140780a2818dbe765df7270d913"
+      "hash": "5a10ad7cf1d0373f091c2a46f4a9d566b86708a7db433f96ff2e2ce4fa7afc8b"
     },
     {
       "id": "repo:tests/system-index.test.mjs",
@@ -1745,7 +1763,7 @@
       "id": "repo:tests/wiring-modules.test.mjs",
       "path": "tests/wiring-modules.test.mjs",
       "type": "test",
-      "hash": "58088ee79d23522c76fe42ac25121750673a8cead06b71dd2661f04bcdae7c86"
+      "hash": "1b5dfb389a756cfbeafdace11c94b9a2249cbbc2df84949017eb35f26aec91e6"
     },
     {
       "id": "repo:tests/wiring.test.mjs",
@@ -3144,6 +3162,22 @@
       {
         "id": "req.confirm.single",
         "phase": "P7",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.control.level-review",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.control.link-review",
+        "phase": "P11",
         "tiers": [
           "T1"
         ],

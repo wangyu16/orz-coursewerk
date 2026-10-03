@@ -116,7 +116,10 @@ Work in batches (one to three chapters, or a session's budget). In each batch:
        keeps the meaning (`clarification-owed`). In the instructor's text it comes to the digest as a one-line
        diff (`clarification-proposed`). Once they accept it, applying it is yours (`clarification-accepted`), and
        their credit stays.
-   - `correct` (auto-correction of an admitted, uncontested contradiction, shown as a diff).
+   - `correct` (auto-correction of an admitted, uncontested contradiction, shown as a diff);
+   - `alignment` (a blind link and level review, trial). It checks whether each linked unit teaches what it is
+     linked to, and whether a practice question has its guide entry's type and level. A doubtful link is yours to
+     relink. A unit off the plan, or a level slip in the instructor's text, is the instructor's question.
    The gate's `knowledgeUnreviewed` lists the units no blind review has read at their current text. It does not
    block, but a unit that changed since its last review is the first place to look.
 4. **Re-run the gate.** Stop when a run raises nothing new for you, or the budget is spent. Then bring M4.
@@ -173,7 +176,7 @@ To read or present the materials locally, assemble the framework shells: `script
 | workflow | `scripts/coursewerk.mjs` — status, assemble, back-to-draft, approve, digest, recommend, answer, publish, revert, interrupt, digest-cap, history (how each issue was found and settled, rebuilt from the records) |
 | spine | `scripts/spine.mjs` — check, migrate, anchor, propose, critique, review, status, preview, approve, version, steering |
 | units | `scripts/units.mjs` — begin, index, claim, status, link, confirm, obligations, restamp |
-| verification | `scripts/verify.mjs` — destinations, search, fetch, semi, readmit, absolutes, knowledge, correct, revert, corrections, links, status |
+| verification | `scripts/verify.mjs` — destinations, search, fetch, semi, readmit, absolutes, knowledge, alignment, correct, revert, corrections, links, status |
 | gate | `scripts/gate.mjs` |
 | pack | `scripts/pack.mjs` (checks the newest Alembic contract first); `scripts/alembic_check.mjs` checks it on its own |
 

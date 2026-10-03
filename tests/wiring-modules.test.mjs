@@ -21,7 +21,7 @@ test("[req.modules.no-writes] [req.modules.wiring-report] [req.retire.old-checks
   const before = spawnSync("git", ["-C", root, "status", "--porcelain"], { encoding: "utf8" }).stdout;
   spawnSync(process.execPath, [path.join(REPO, "scripts", "gate.mjs"), "--root", root, "--checkpoint", "V8", "--inputs", path.join(HERE, "fixtures", "c2-chemistry", "inputs"), "--json", json]);
   const r = JSON.parse(fs.readFileSync(json, "utf8"));
-  assert.deepEqual(r.wiring.modulesRan, ["ms1-sources", "ms2-rights", "ms3-format", "ms4-links", "ms6-quotations", "ms7-consistency", "ms8-verdicts"]);
+  assert.deepEqual(r.wiring.modulesRan, ["ms1-sources", "ms2-rights", "ms3-format", "ms4-links", "ms6-quotations", "ms7-consistency", "ms8-verdicts", "ms9-alignment"]);
   assert.deepEqual(r.wiring.registeredNeverRan, []);
   assert.deepEqual(r.wiring.moduleWrites, []);
   assert.equal(spawnSync("git", ["-C", root, "status", "--porcelain"], { encoding: "utf8" }).stdout, before, "the package is untouched");

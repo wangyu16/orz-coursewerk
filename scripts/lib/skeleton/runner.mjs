@@ -122,6 +122,8 @@ export function runCheckpoint({ root, checkpoint, profile, registry = { schemaVe
       const e = entries.get(std.name);
       if (e && e.enabled) continue;
       if (disabled.has(std.name)) continue;
+      // a trial standard module only raises questions: one a package's registry predates is added, not "dropped"
+      if (!e && std.maturity !== "stable") { registry = { ...registry, modules: [...(registry.modules || []), std] }; continue; }
       findings.push(skeletonFinding(snapshot.id, "standard-module-dropped", "defect", { type: "rule", rule: "a standard module is disabled only by the instructor's logged decision", module: std.name }));
       registry = { ...registry, modules: [...(registry.modules || []).filter((m) => m.name !== std.name), std] };
     }

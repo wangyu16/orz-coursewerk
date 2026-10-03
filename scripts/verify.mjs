@@ -11,6 +11,7 @@
 //   node scripts/verify.mjs readmit --root <pkg> --inputs <dir>                    re-admit recorded answers under the current rules
 //   node scripts/verify.mjs absolutes --root <pkg> [--units id,…]                  context review of absolute statements (D30)
 //   node scripts/verify.mjs knowledge --root <pkg> [--units id,…]                  blind concerns → questions (no edits)
+//   node scripts/verify.mjs alignment --root <pkg> [--units id,…]                  blind link & level review (Control; trial)
 //   node scripts/verify.mjs correct --root <pkg> --inputs <dir> --unit <id> --model <model id>
 //        apply an admitted, uncontested correction — or report the question it must be instead
 //   node scripts/verify.mjs revert  --root <pkg> --correction <id> --name <instructor> --note "<why the text stands>"
@@ -129,6 +130,14 @@ try {
   if (cmd === "knowledge") {
     const results = await verifyKnowledge(root, reader, { verifier: headlessVerifier(), only: only(), onProgress: log });
     out({ units: results.length, withConcerns: results.filter((r) => r.concerns).length, costUsd: Number(results.reduce((a, r) => a + (r.costUsd || 0), 0).toFixed(4)) }); process.exit(0);
+  }
+  if (cmd === "alignment") {
+    // the blind link and level review (Control C2, C3, C5 fidelity; trial): MS9 turns the records into questions
+    const { reviewAlignment } = await import("./lib/verify/alignment.mjs");
+    const results = await reviewAlignment(root, reader, { verifier: headlessVerifier(), only: only(), onProgress: log });
+    out({ units: results.length, doubtfulLinks: results.reduce((a, r) => a + r.doubtful.length, 0), offPlan: results.filter((r) => r.offPlan).length,
+      fidelityDiffers: results.filter((r) => r.fidelity && (r.fidelity.type === "differs" || r.fidelity.level === "differs")).length,
+      unscorable: results.filter((r) => r.status === "unscorable").length, costUsd: Number(results.reduce((a, r) => a + (r.costUsd || 0), 0).toFixed(4)) }); process.exit(0);
   }
   if (cmd === "correct") {
     const model = opt("--model") || fail("--model <model id> is required");
