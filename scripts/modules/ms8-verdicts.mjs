@@ -73,11 +73,12 @@ function run(s) {
     if (r.kind === "knowledge") {
       for (const c of knowledgeConcerns(r, u.text)) {
         const evidence = { type: "judgment", note: c.problem, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch };
-        if (c.kind !== "clarify" || !c.suggestion.trim()) { out.push({ kind: "knowledge-concern", units: [u.id], evidence }); continue; }
-        // applied: the unit now says what the clarification proposed. Its added words often touch no fact token, so the
-        // record is still "current" — settledness is read from the text itself (P11: an applied clarification stayed owed)
+        // applied: the unit now says what the concern proposed. Added words often touch no fact token, so the record is
+        // still "current" — settledness is read from the text itself, for a clarification and a "wrong" concern alike
+        // (P11: an applied clarification stayed owed; the T3 scenario brought an already-fixed concern to the instructor)
         const bare = (t) => String(t).replace(/[$*_`]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
-        if (bare(u.text).includes(bare(c.suggestion))) continue;
+        if (c.suggestion.trim().length >= 8 && bare(u.text).includes(bare(c.suggestion))) continue;
+        if (c.kind !== "clarify" || !c.suggestion.trim()) { out.push({ kind: "knowledge-concern", units: [u.id], evidence }); continue; }
         if (!instructorAuthored(u, log)) { out.push({ kind: "clarification-owed", units: [u.id], evidence }); continue; }
         // the instructor's text (D31 stands): proposed as a one-line diff; once accepted, applying it is the agent's job
         const proposed = { ...evidence, note: `Clarify: "${c.text}" → "${c.suggestion}". ${c.problem}` };

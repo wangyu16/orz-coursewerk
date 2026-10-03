@@ -614,3 +614,14 @@ test("[req.answers.claim-bound] the digest does not re-ask a kept dispute after 
   assert.equal(buildDigest(p.root, dispute("b"), unitHash("b".repeat(64))).entries.length, 0, "not asked again");
   assert.match(readLogText(p.root), /"claimKey":"k-1864"/, "the answer records the claim it settles");
 });
+
+test("[req.knowledge.no-autochange] a 'wrong' concern whose proposed wording the unit already says is settled, not brought to the instructor (P11 T3 scenario)", async (t) => {
+  const p = copy(t);
+  const unit = loadUnits(p.root, p.reader).find((u) => u.id === "u-study-guide-le-chatelier-adding-a-catalyst-1");
+  const words = unit.text.match(/forward and reverse reactions by the same factor/)[0];
+  const concern = (suggestion) => replayVerifier((pr) => ({ nonce: nonceOf(pr), concerns: [{ kind: "wrong", text: words, problem: "name the rate constants", suggestion }] }));
+  await verifyKnowledge(p.root, p.reader, { verifier: concern(words), only: [unit.id] });
+  assert.ok(!run(p, "ms8-verdicts").findings.some((f) => f.kind === "knowledge-concern" && f.units.includes(unit.id)), "the text already says it");
+  await verifyKnowledge(p.root, p.reader, { verifier: concern("forward and reverse rate constants by the same factor"), only: [unit.id] });
+  assert.ok(run(p, "ms8-verdicts").findings.some((f) => f.kind === "knowledge-concern" && f.units.includes(unit.id)), "a proposal the text does not say is still raised");
+});

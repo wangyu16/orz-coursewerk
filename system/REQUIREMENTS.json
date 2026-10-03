@@ -1088,10 +1088,13 @@
       ],
       "statement": "Every correction is logged as a revision and shown as a revertible diff at the next checkpoint (or at once when the instructor asked for the check).",
       "source": "D17; skeleton §3 M4",
-      "status": "deferred",
+      "status": "closed",
       "evidence": {
         "T1": [
           "tests/verdict-path.test.mjs"
+        ],
+        "T3": [
+          "system/rounds/P11-autocorrect-T3.md"
         ]
       },
       "deferredTo": "P11",

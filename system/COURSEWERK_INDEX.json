@@ -857,7 +857,7 @@
       "id": "repo:scripts/modules/ms8-verdicts.mjs",
       "path": "scripts/modules/ms8-verdicts.mjs",
       "type": "executable",
-      "hash": "04045f02e99ca55039711e7d79d9bf7512295584bb9c3a85a4a12107c4c4d3f9"
+      "hash": "89553ec51556600a381fe1b0ca1c3408511482cccbfa5e8ec1508d5811c15844"
     },
     {
       "id": "repo:scripts/modules/README.md",
@@ -1103,7 +1103,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "dd856ca06787f160e6439620035d87924cf7b531064d38758b60f39901382db7"
+      "hash": "79709dd6667f49e7c40915dd13f505cd7cfb06f087cf7fe239ccf2512abd8a55"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1116,6 +1116,12 @@
       "path": "system/rounds/P10-dogfood.md",
       "type": "system-governance",
       "hash": "461080edcd65897a4d9e40038d91c3d1bd9fdc2be34521dbd658cbb3d676220c"
+    },
+    {
+      "id": "repo:system/rounds/P11-autocorrect-T3.md",
+      "path": "system/rounds/P11-autocorrect-T3.md",
+      "type": "system-governance",
+      "hash": "8d8b7e5797b32503d197d92f9347d00970ca188a0c819bbf8c716fbffc298dad"
     },
     {
       "id": "repo:system/rounds/P11-tranche1.md",
@@ -1727,7 +1733,7 @@
       "id": "repo:tests/verdict-path.test.mjs",
       "path": "tests/verdict-path.test.mjs",
       "type": "test",
-      "hash": "154acce1b9103c1b133514f9f81821fbb79789fd0da9f3e401a995c559b0f285"
+      "hash": "a53eabb8cce2a570c851db4dbdfe69ac9a3e4e667012079623990e2b4e65da18"
     },
     {
       "id": "repo:tests/verdict-redteam.test.mjs",
@@ -3124,7 +3130,7 @@
           "T1",
           "T3"
         ],
-        "status": "deferred"
+        "status": "closed"
       },
       {
         "id": "req.commands",
