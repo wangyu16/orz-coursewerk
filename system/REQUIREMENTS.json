@@ -1632,7 +1632,7 @@
       }
     },
     {
-      "id": "req.3c.C1",
+      "id": "req.3c.c1",
       "phase": "P11",
       "tiers": [
         "T1"
@@ -1647,7 +1647,7 @@
       }
     },
     {
-      "id": "req.3c.C2",
+      "id": "req.3c.c2",
       "phase": "P11",
       "tiers": [
         "T1"
@@ -1662,7 +1662,7 @@
       }
     },
     {
-      "id": "req.3c.C3",
+      "id": "req.3c.c3",
       "phase": "P11",
       "tiers": [
         "T1"
@@ -1677,7 +1677,7 @@
       }
     },
     {
-      "id": "req.3c.C4",
+      "id": "req.3c.c4",
       "phase": "P11",
       "tiers": [
         "T1"
@@ -1692,7 +1692,7 @@
       }
     },
     {
-      "id": "req.3c.C5",
+      "id": "req.3c.c5",
       "phase": "P11",
       "tiers": [
         "T1"
@@ -1707,7 +1707,7 @@
       }
     },
     {
-      "id": "req.3c.K1",
+      "id": "req.3c.k1",
       "phase": "P11",
       "tiers": [
         "T1"
@@ -1722,7 +1722,7 @@
       }
     },
     {
-      "id": "req.3c.K2",
+      "id": "req.3c.k2",
       "phase": "P11",
       "tiers": [
         "T1"
@@ -1737,7 +1737,7 @@
       }
     },
     {
-      "id": "req.3c.K3",
+      "id": "req.3c.k3",
       "phase": "P11",
       "tiers": [
         "T1"
@@ -1752,7 +1752,7 @@
       }
     },
     {
-      "id": "req.3c.K4",
+      "id": "req.3c.k4",
       "phase": "P11",
       "tiers": [
         "T1"
@@ -1767,7 +1767,7 @@
       }
     },
     {
-      "id": "req.3c.K5",
+      "id": "req.3c.k5",
       "phase": "P11",
       "tiers": [
         "T1"
@@ -1782,7 +1782,7 @@
       }
     },
     {
-      "id": "req.3c.K6",
+      "id": "req.3c.k6",
       "phase": "P11",
       "tiers": [
         "T1"
@@ -1797,7 +1797,7 @@
       }
     },
     {
-      "id": "req.3c.H1",
+      "id": "req.3c.h1",
       "phase": "P11",
       "tiers": [
         "T1"
@@ -1812,7 +1812,7 @@
       }
     },
     {
-      "id": "req.3c.H2",
+      "id": "req.3c.h2",
       "phase": "P11",
       "tiers": [
         "T1"
@@ -1827,7 +1827,7 @@
       }
     },
     {
-      "id": "req.3c.H3",
+      "id": "req.3c.h3",
       "phase": "P11",
       "tiers": [
         "T1"
@@ -1842,7 +1842,7 @@
       }
     },
     {
-      "id": "req.3c.H4",
+      "id": "req.3c.h4",
       "phase": "P11",
       "tiers": [
         "T1"
@@ -1857,7 +1857,7 @@
       }
     },
     {
-      "id": "req.3c.H5",
+      "id": "req.3c.h5",
       "phase": "P11",
       "tiers": [
         "T1"

@@ -1115,7 +1115,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "6c9f29737b47784e06cf9b322a979fd6ff67c93947cea7a039a408c3a9a60163"
+      "hash": "730d7f0fb1af3e036bfc6d284e8fd85b0a7287a5bfdc85979ee2c4c6c54c2380"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1716,6 +1716,12 @@
       "path": "tests/terms.test.mjs",
       "type": "test",
       "hash": "5181437c7b2c5de2ac0efb054c23d61ff3e1b8c8ce6714670b5f2e66fdd2615e"
+    },
+    {
+      "id": "repo:tests/three-c-loop.test.mjs",
+      "path": "tests/three-c-loop.test.mjs",
+      "type": "test",
+      "hash": "69dda6dee896a0d922a83bd2e176a4eef4246fc0a0a33cd66689442a0c7aee0f"
     },
     {
       "id": "repo:tests/unit-model.test.mjs",
@@ -3048,6 +3054,134 @@
       "P9"
     ],
     "requirements": [
+      {
+        "id": "req.3c.c1",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.3c.c2",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.3c.c3",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.3c.c4",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.3c.c5",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.3c.h1",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.3c.h2",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.3c.h3",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.3c.h4",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.3c.h5",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.3c.k1",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.3c.k2",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.3c.k3",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.3c.k4",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.3c.k5",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.3c.k6",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
       {
         "id": "req.absolute.review",
         "phase": "P7",

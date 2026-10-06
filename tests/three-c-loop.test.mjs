@@ -71,7 +71,7 @@ const alignAnswer = (fn) => replayVerifier((pr) => ({ nonce: nonceOf(pr), ...fn(
 const OBJ = "objective.le-chatelier.explain-inert-and-catalyst";
 
 // ================================================= CONTROL =======================================================
-test("[req.3c.C1] every approved objective is taught: an objective nobody teaches blocks publishing until it is taught again", (t) => {
+test("[req.3c.c1] every approved objective is taught: an objective nobody teaches blocks publishing until it is taught again", (t) => {
   const c = course(t);
   const teaching = c.units().filter((u) => /^(study-guide|slides)\//.test(u.locator.deliverable) && (u.spineNodes || []).includes(OBJ));
   const was = Object.fromEntries(teaching.map((u) => [u.id, u.spineNodes]));
@@ -83,7 +83,7 @@ test("[req.3c.C1] every approved objective is taught: an objective nobody teache
   closed(c, "C1");
 });
 
-test("[req.3c.C2] links are verified, not trusted: a unit linked to what it does not teach is the agent's question until relinked", async (t) => {
+test("[req.3c.c2] links are verified, not trusted: a unit linked to what it does not teach is the agent's question until relinked", async (t) => {
   const c = course(t);
   const u = c.units().find((x) => x.id === "u-study-guide-le-chatelier-the-principle-1");
   linkUnits(c.root, c.r(), { [u.id]: [...u.spineNodes, OBJ] }, AGENT); // plant: a false link
@@ -94,7 +94,7 @@ test("[req.3c.C2] links are verified, not trusted: a unit linked to what it does
   closed(c, "C2");
 });
 
-test("[req.3c.C3] nothing off-spine goes unnoticed: an unlinked passage blocks; a linked off-plan passage is the instructor's question", async (t) => {
+test("[req.3c.c3] nothing off-spine goes unnoticed: an unlinked passage blocks; a linked off-plan passage is the instructor's question", async (t) => {
   const c = course(t);
   const at = "**Equal moles** of gas on both sides";
   const src = fs.readFileSync(c.file("study-guide/le-chatelier.md"), "utf8");
@@ -109,7 +109,7 @@ test("[req.3c.C3] nothing off-spine goes unnoticed: an unlinked passage blocks; 
   closed(c, "C3");
 });
 
-test("[req.3c.C4] the spine is a restoring force: a drifting edit is work the loop does not stop on, and the spine itself is never the agent's to change", (t) => {
+test("[req.3c.c4] the spine is a restoring force: a drifting edit is work the loop does not stop on, and the spine itself is never the agent's to change", (t) => {
   const c = course(t);
   const first = c.gate().findings;
   const teaching = c.units().filter((u) => /^(study-guide|slides)\//.test(u.locator.deliverable) && (u.spineNodes || []).includes(OBJ));
@@ -126,7 +126,7 @@ test("[req.3c.C4] the spine is a restoring force: a drifting edit is work the lo
   closed(c, "C4");
 });
 
-test("[req.3c.C5] assessment follows the guide: a guide entry left short blocks; a question below its guide level is a question", async (t) => {
+test("[req.3c.c5] assessment follows the guide: a guide entry left short blocks; a question below its guide level is a question", async (t) => {
   const c = course(t);
   const linked = c.units().filter((u) => (u.spineNodes || []).includes("guide.le-chatelier.word-partially"));
   const q = linked.find((u) => u.form === "question"), was = Object.fromEntries(linked.map((u) => [u.id, u.spineNodes]));
@@ -141,7 +141,7 @@ test("[req.3c.C5] assessment follows the guide: a guide entry left short blocks;
 });
 
 // ================================================ CONFIDENCE =====================================================
-test("[req.3c.K1] Level 1 is complete: a wrong constant is a defect with the source's quote; corrected, the unit is evidenced and nothing remains", async (t) => {
+test("[req.3c.k1] Level 1 is complete: a wrong constant is a defect with the source's quote; corrected, the unit is evidenced and nothing remains", async (t) => {
   const c = course(t);
   const unit = () => c.units().find((u) => u.text.includes("are from the source") && /Delta H = -(75|92)/.test(u.text));
   c.asAgent(() => c.edit("study-guide/le-chatelier.md", WORKED, WORKED.replace("-92", "-75")));
@@ -154,7 +154,7 @@ test("[req.3c.K1] Level 1 is complete: a wrong constant is a defect with the sou
   assert.deepEqual(now.filter((x) => ["defect", "obligation"].includes(x.statusClass)).map((x) => x.kind), [], "corrected and evidenced");
 });
 
-test("[req.3c.K2] computable content is checked: two deliverables disagreeing on a value is a defect until they agree", (t) => {
+test("[req.3c.k2] computable content is checked: two deliverables disagreeing on a value is a defect until they agree", (t) => {
   const c = course(t);
   const slide = "pushes the equilibrium away from the side where heat sits.";
   const add = " The ammonia synthesis is an exothermic reaction, with $\\Delta H = -92.2\\ \\text{kJ}$.";
@@ -165,7 +165,7 @@ test("[req.3c.K2] computable content is checked: two deliverables disagreeing on
   assert.ok(!c.gate().findings.some((x) => x.kind === "value-disagreement"), "agreeing: the defect is gone");
 });
 
-test("[req.3c.K3] every reported defect is real: a correct, source-supported value raises no defect and is evidenced", async (t) => {
+test("[req.3c.k3] every reported defect is real: a correct, source-supported value raises no defect and is evidenced", async (t) => {
   const c = course(t);
   const u = c.units().find((x) => x.text.includes(WORKED));
   c.asAgent(() => c.edit("study-guide/le-chatelier.md", WORKED, WORKED.replace("-92", "-92.4")));
@@ -178,7 +178,7 @@ test("[req.3c.K3] every reported defect is real: a correct, source-supported val
   assert.ok(u);
 });
 
-test("[req.3c.K4] no harmful revision: instructor text is never auto-corrected on one source; a correction is shown, and reverted on the instructor's word", async (t) => {
+test("[req.3c.k4] no harmful revision: instructor text is never auto-corrected on one source; a correction is shown, and reverted on the instructor's word", async (t) => {
   const c = course(t);
   const unit = () => c.units().find((u) => u.text.includes("are from the source") && /Delta H = -(75|92)/.test(u.text));
   c.edit("study-guide/le-chatelier.md", WORKED, WORKED.replace("-92", "-75")); indexAndStamp(c.root, c.r(), {});
@@ -199,7 +199,7 @@ test("[req.3c.K4] no harmful revision: instructor text is never auto-corrected o
   assert.match(fs.readFileSync(d.file("study-guide/le-chatelier.md"), "utf8"), /-75\\ \\text\{kJ mol\}/, "reverted");
 });
 
-test("[req.3c.K5] convergence: a concern is never blocking; revised, it is history; applied, a clarification is settled", async (t) => {
+test("[req.3c.k5] convergence: a concern is never blocking; revised, it is history; applied, a clarification is settled", async (t) => {
   const c = course(t);
   const u = c.units().find((x) => x.id === "u-study-guide-le-chatelier-adding-a-catalyst-1");
   const words = u.text.match(/forward and reverse reactions by the same factor/)[0];
@@ -212,7 +212,7 @@ test("[req.3c.K5] convergence: a concern is never blocking; revised, it is histo
   assert.ok(!c.gate().findings.some((x) => x.kind === "knowledge-concern" && x.units.includes(u.id)), "revised: the concern is history");
 });
 
-test("[req.3c.K6] Level 2 best effort: a concern about the instructor's text is their question, and nothing is edited", async (t) => {
+test("[req.3c.k6] Level 2 best effort: a concern about the instructor's text is their question, and nothing is edited", async (t) => {
   const c = course(t);
   const u = c.units().find((x) => x.id === "u-study-guide-le-chatelier-adding-a-catalyst-1");
   c.edit("study-guide/le-chatelier.md", u.text, `${u.text} (Mine.)`); indexAndStamp(c.root, c.r(), {});
@@ -231,7 +231,7 @@ test("[req.3c.K6] Level 2 best effort: a concern about the instructor's text is 
 });
 
 // ================================================ COHERENCE ======================================================
-test("[req.3c.H1] [req.3c.H2] the impact of a change is found and nothing is stranded: dependents of a changed question owe re-verification, which blocks until done", (t) => {
+test("[req.3c.h1] [req.3c.h2] the impact of a change is found and nothing is stranded: dependents of a changed question owe re-verification, which blocks until done", (t) => {
   const c = course(t);
   const qtext = "The temperature is raised. Which way";
   c.asAgent(() => c.edit("practice/le-chatelier.md", qtext, "The temperature is lowered. Which way"));
@@ -244,7 +244,7 @@ test("[req.3c.H1] [req.3c.H2] the impact of a change is found and nothing is str
   assert.ok(!c.gate().findings.some((x) => x.kind === "reverify"), "re-verified: nothing stranded");
 });
 
-test("[req.3c.H3] a change that changes nothing raises nothing: a reflow and a rephrase that keeps every fact and direction", (t) => {
+test("[req.3c.h3] a change that changes nothing raises nothing: a reflow and a rephrase that keeps every fact and direction", (t) => {
   const c = course(t);
   const before = sigs(c.gate().findings);
   const src = fs.readFileSync(c.file("study-guide/le-chatelier.md"), "utf8");
@@ -254,7 +254,7 @@ test("[req.3c.H3] a change that changes nothing raises nothing: a reflow and a r
   assert.deepEqual(now.map((x) => x.kind), [], "no re-verification, no question");
 });
 
-test("[req.3c.H4] identity survives revision: an edit keeps the unit; a new major version carries the chapter, each unit owing re-verification", (t) => {
+test("[req.3c.h4] identity survives revision: an edit keeps the unit; a new major version carries the chapter, each unit owing re-verification", (t) => {
   const c = course(t);
   const u = c.units().find((x) => x.id === "u-study-guide-le-chatelier-adding-a-catalyst-1");
   const w = u.text.match(/forward and reverse reactions by the same factor/)[0];
@@ -267,7 +267,7 @@ test("[req.3c.H4] identity survives revision: an edit keeps the unit; a new majo
   assert.ok(!c.gate().findings.some((x) => x.kind === "carried-unverified"), "re-verified into the new version");
 });
 
-test("[req.3c.H5] the record holds: a rewritten past log record is a defect until the log is restored", (t) => {
+test("[req.3c.h5] the record holds: a rewritten past log record is a defect until the log is restored", (t) => {
   const c = course(t);
   const f = c.file("metadata/LOG.jsonl"), orig = fs.readFileSync(f, "utf8");
   const lines = orig.trim().split("\n");
