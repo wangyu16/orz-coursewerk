@@ -1870,6 +1870,126 @@
           "tests/three-c-loop.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.values.one-parser",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "One value parser (F1–F4, F7, F10): the claim extractor and the semi-mechanical classifier read values through core/values.mjs over the harness's unit table (lib/units.mjs) — mmHg, kcal, °F, V …; thousands separators; every typeset minus; scientific notation with its mantissa, exactly; units with their denominators (kJ/mol ≠ kJ/g ≠ kJ); dimensionless values bound to a symbol (K, K_p, pH) and powers of ten are required tokens. A correction never doubles a sign.",
+      "source": "3C red team round 1, CONFIDENCE (operator design direction, 2026-10-06)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-confidence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.support.predicate",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Support checks the predicate, not only the tokens (F5, F6, F8): a quote stating the opposite direction (left/right, toward reactants/products, increase/decrease, endothermic/exothermic) never supports; a sentence-initial lone surname as the subject of an attribution is a required name; an equation claim's reaction is required — the quote must state the same reaction.",
+      "source": "3C red team round 1, CONFIDENCE (operator design direction, 2026-10-06)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-confidence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.anchor.stoichiometry",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Reaction anchoring compares stoichiometry (coefficients, fractions included; a scaled equation is another equation) and the quantity named (ΔH vs ΔG° vs K): a mismatch never anchors a contradiction, so a correct value is never a defect nor auto-corrected (F9, F10).",
+      "source": "3C red team round 1, CONFIDENCE (operator design direction, 2026-10-06)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-confidence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.consistency.governing-term",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A scanned sentence naming several key terms still compares each value under the term that governs it (the nearest mention before it in its sentence), so a second key term cannot hide a value disagreement (F11).",
+      "source": "3C red team round 1, CONFIDENCE (operator design direction, 2026-10-06)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-confidence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.knowledge.settled-by-text",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A concern is settled by the text only when the unit carries the suggestion and no longer carries the concern's quoted words, unless the suggestion extends them: a deletion-type fix is never 'already applied' while the wrong words stand (F12).",
+      "source": "3C red team round 1, CONFIDENCE (operator design direction, 2026-10-06)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-confidence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.evidence.lead-bound",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Quote evidence for an equation binds the lead-in it was verified with: a changed lead-in makes the evidence stale (evidence-missing, the agent's), never a stranded defect, and the routed fix (verify semi) re-dispatches and clears it (F13).",
+      "source": "3C red team round 1, CONFIDENCE (operator design direction, 2026-10-06)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-confidence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.verdict.hypothetical-scope",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The verifier's 'hypothetical' label is trusted only for exercise-like units (questions, answers, worked-example or practice sections, exercise cues); elsewhere it is no evidence and no question — the evidence stays missing and nothing recommends 'confirm' (F14).",
+      "source": "3C red team round 1, CONFIDENCE (operator design direction, 2026-10-06)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-confidence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.answers.change-owed",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "An instructor's digest answer asking for a change to a disputed fact (anything but keep/confirm/later) is routed to the agent as a blocking obligation (instructor-change-owed) until the claim's sentence changes; the old evidence no longer counts for that claim (F15).",
+      "source": "3C red team round 1, CONFIDENCE (operator design direction, 2026-10-06)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-confidence.test.mjs"
+        ]
+      }
     }
   ]
 }

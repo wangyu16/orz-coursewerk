@@ -6,7 +6,11 @@
 //   objective-uncovered  an objective no teaching unit serves (Control C1);
 //   guide-entry-short    a guide entry has fewer linked questions than its Count (Control C5);
 //   reverify             a unit's dependencies moved since it was written or last re-verified (Coherence H2);
-//   carried-unverified   a unit carried into a new major version has not been re-verified (D15).
+//   carried-unverified   a unit carried into a new major version has not been re-verified (D15);
+//   instructor-change-owed  the instructor answered a disputed claim with a change the unit does not yet carry
+//                        (red-team round 1, F15).
+// Quote evidence counts for the unit's current facts and claims, the lead-in an equation was verified with (F13), and
+// never for a claim the instructor asked to change (F15).
 // And one defect: a unit that links to a spine node that does not exist.
 //
 // What clears them, and nothing else: the agent revising the unit (a fresh stamp); a stable module re-checking it
@@ -33,23 +37,77 @@ export const ADMITTED_EVIDENCE = Object.freeze(["quote-verified", "instructor-co
 
 /** Instructor acts recorded in the log, by kind: confirmations (unit → fact hashes) and divergences (unit → corrections). */
 export function loggedInstructorActs(root) {
-  const acts = { confirmed: new Map(), diverged: new Map() };
-  for (const line of readLogText(root).split("\n").filter(Boolean)) {
-    let r; try { r = JSON.parse(line); } catch { continue; }
+  return instructorActsOf(readLogText(root).split("\n").filter(Boolean).map((line) => { try { return JSON.parse(line); } catch { return null; } }).filter(Boolean));
+}
+/** An answer to a disputed claim that asks for a change ("change it to 1865"): anything but keep, confirm or later. */
+export const asksChange = (choice) => !/^\s*(?:keep|confirm|later|still correct|accept)\b/i.test(String(choice || ""));
+const normClaim = (t) => String(t || "").replace(/\s+/g, " ").trim();
+/** The same, from parsed log records. `changes`: unit → Map(claim text → the instructor's answer) — the changes the
+ *  instructor asked for on disputed claims (red-team round 1, F15); a later "keep" on the same claim withdraws one. */
+export function instructorActsOf(logRecords) {
+  const acts = { confirmed: new Map(), diverged: new Map(), changes: new Map() };
+  for (const r of logRecords) {
     if (r.party?.role !== "instructor") continue;
     if (r.type === "confirmation" && r.payload?.what === "fact") for (const [id, fh] of Object.entries(r.payload.factHashes || {})) acts.confirmed.set(`${id}|${fh}`, true);
     if (r.type === "divergence" && r.payload?.unit && r.payload?.correction) acts.diverged.set(`${r.payload.unit}|${r.payload.correction}`, true);
+    if (r.type === "answer") for (const a of r.payload?.answers || []) {
+      if (!a.claimKey || !a.claimText || !Array.isArray(a.units) || /^\s*later\b/i.test(a.choice)) continue;
+      for (const id of a.units) {
+        if (!acts.changes.has(id)) acts.changes.set(id, new Map());
+        if (asksChange(a.choice)) acts.changes.get(id).set(normClaim(a.claimText), { choice: String(a.choice), claimKey: a.claimKey });
+        else acts.changes.get(id).delete(normClaim(a.claimText));
+      }
+    }
   }
   return acts;
 }
+/** The changes the instructor asked for that the unit's text does not yet carry: the claim still reads as it did. */
+export function owedChanges(u, acts) {
+  const asked = acts.changes?.get(u.id);
+  if (!asked?.size) return [];
+  const now = new Set(checkableClaims(u.text).map((c) => normClaim(c.text)));
+  return [...asked].filter(([text]) => now.has(text)).map(([claimText, a]) => ({ claimText, ...a }));
+}
 
-/** Does this unit carry evidence that counts for its current facts? Each kind is bound to what it vouches for. */
-export function hasAdmittedEvidence(u, acts) {
+/** An equation unit's lead-in: the last sentence of the unit before it in the same section (P11). */
+export function leadOf(u, all) {
+  if (u.form !== "equation") return null;
+  const prev = all.filter((x) => x.locator.deliverable === u.locator.deliverable && x.locator.section === u.locator.section && x.locator.ordinal < u.locator.ordinal).sort((a, b) => b.locator.ordinal - a.locator.ordinal)[0];
+  const t = String(prev?.text || "").replace(/\s+/g, " ").trim();
+  return t ? t.split(/(?<=[.!?])\s+/).pop() : null;
+}
+/** The lead-ins a record's bundle carried (claim index → sentence); none for records before P11. */
+export const recordLeads = (record) => { const lines = String(record.bundle?.prompt || "").split("\n"), i = lines.findIndex((l) => l.startsWith("CLAIM CONTEXT")); return i < 0 ? {} : Object.fromEntries(lines.slice(i + 1).map((l) => l.match(/^(\d+)\. (.*)$/)).filter(Boolean).map((m) => [Number(m[1]), m[2]])); };
+/** The lead-in a semi dispatch was verified with (null: none recorded), by dispatch id. */
+export function recordedLeads(root) {
+  const dir = recordFile(root, "metadata/verification"), out = new Map();
+  if (!fs.existsSync(dir)) return out;
+  for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json"))) {
+    let r; try { r = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")); } catch { continue; }
+    if (r?.kind === "semi" && r.dispatch) out.set(r.dispatch, Object.values(recordLeads(r))[0] ?? null);
+  }
+  return out;
+}
+
+/**
+ * Does this unit carry evidence that counts for its current facts? Each kind is bound to what it vouches for.
+ * `lead` (an equation's current lead-in; undefined = not judged) binds quote-verified evidence to the lead-in it was
+ * verified with (red-team round 1, F13): a changed lead-in makes the claim re-verifiable through the normal routed fix
+ * (evidence-missing → verify semi), instead of stranding it. `recordedLead(e)` gives the lead of evidence admitted before
+ * the evidence carried its own. Evidence for a claim the instructor asked to change no longer counts (F15).
+ */
+export function hasAdmittedEvidence(u, acts, { lead, recordedLead = () => null } = {}) {
   const fh = factHash(u.text);
+  const leadOk = (e) => { if (lead === undefined) return true; const was = e.lead !== undefined ? e.lead : recordedLead(e); return was == null || normClaim(was) === normClaim(lead); };
+  const changeOwed = owedChanges(u, acts).length > 0;
   return (u.evidence || []).some((e) => e.factHash === fh && (
-    (e.type === "quote-verified" && e.claimsHash === claimsHash(u.text)) ||
+    (e.type === "quote-verified" && e.claimsHash === claimsHash(u.text) && leadOk(e) && !changeOwed) ||
     (e.type === "instructor-confirmation" && acts.confirmed.has(`${u.id}|${fh}`)) ||
     (e.type === "authorized-divergence" && acts.diverged.has(`${u.id}|${e.correction}`))));
+}
+/** hasAdmittedEvidence with the unit's lead-in and the recorded leads of the package (the one rule every caller uses). */
+export function evidenceStands(root, u, all, acts = loggedInstructorActs(root), leads = recordedLeads(root)) {
+  return hasAdmittedEvidence(u, acts, { lead: leadOf(u, all), recordedLead: (e) => leads.get(e.dispatch) ?? null });
 }
 /** A semi-mechanical unit needs evidence only for the claims a source can check (D28). */
 export const needsEvidence = (u) => u.judgment.includes("semi-mechanical") && checkableClaims(u.text).length > 0;
@@ -249,7 +307,7 @@ export function openVersionCarrying(root, reader, { scopes, reason, instructorWo
 export function coreObligations(root, reader, basis) {
   const { chapters, spine, units, hashes } = context(root, reader);
   const nodes = nodeIndex(spine);
-  const acts = loggedInstructorActs(root);
+  const acts = loggedInstructorActs(root), leads = recordedLeads(root);
   const reviewed = reviewedAbsolutes(root);
   const F = [];
   const ob = (kind, ids, what) => F.push(makeFinding({ module: "skeleton", kind, units: ids, statusClass: "obligation", route: "agent", basis, evidence: { type: "missing", what } }));
@@ -258,8 +316,12 @@ export function coreObligations(root, reader, basis) {
     // an absolute statement is reviewed by an agent that reads its context (D30; any unit, whatever its judgment kind)
     if (!acts.confirmed.has(`${u.id}|${fh}`) && absoluteSentences(u.text).length && !reviewed.has(`${u.id}|${absolutesHash(u.text)}`))
       ob("absolute-unreviewed", [u.id], `a context review of the absolute statement(s) in ${u.id} (${u.locator.deliverable}): node scripts/verify.mjs absolutes`);
-    if (needsEvidence(u) && !hasAdmittedEvidence(u, acts))
+    if (needsEvidence(u) && !evidenceStands(root, u, units, acts, leads))
       ob("evidence-missing", [u.id], `admitted evidence for the facts stated in ${u.id} (${u.locator.deliverable})`);
+    // the instructor answered a disputed claim with a change: the agent applies it (red-team round 1, F15); it stays
+    // owed while the claim's sentence still reads as it did, and the old evidence no longer counts for it
+    for (const c of owedChanges(u, acts))
+      ob("instructor-change-owed", [u.id], `the change the instructor asked for in ${u.id} (${u.locator.deliverable}): "${c.choice}" — to the claim "${c.claimText.slice(0, 200)}"`);
     if (u.role === "teaching" && !(u.spineNodes || []).length) ob("unit-unlinked", [u.id], `a spine link for ${u.id} (${u.locator.deliverable}, ${u.locator.section})`);
     const dangling = (u.spineNodes || []).filter((n) => !nodes.has(n));
     if (dangling.length) F.push(makeFinding({ module: "skeleton", kind: "unit-link-dangling", units: [u.id], statusClass: "defect", route: "agent", basis, evidence: { type: "rule", rule: "a unit links only to existing spine nodes", dangling } }));

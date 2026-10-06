@@ -79,7 +79,7 @@ export function buildDigest(root, findings, unitInfo, { cap = DEFAULT_CAP, corre
     // a recommendation always shows where it came from: the check, or a concern's own suggested revision
     recommendation: c.findings[0].recommendation ?? (c.findings[0].evidence?.suggestion ? `revise: ${c.findings[0].evidence.suggestion}` : null),
     recommendedBy: c.findings[0].recommendation != null ? "check" : c.findings[0].evidence?.suggestion ? "reviewer" : null,
-    findings: c.findings.map((f) => f.id), bases: c.findings.map((f) => ({ finding: answerKeyOf(f), basis: basisOf(f, hash), ...(f.evidence?.claimKey ? { claimKey: f.evidence.claimKey } : {}) })), // answered at the basis shown
+    findings: c.findings.map((f) => f.id), bases: c.findings.map((f) => ({ finding: answerKeyOf(f), basis: basisOf(f, hash), ...(f.evidence?.claimKey ? { claimKey: f.evidence.claimKey, ...(f.evidence.claimText ? { claimText: f.evidence.claimText, units: f.units } : {}) } : {}) })), // answered at the basis shown
   });
   const agentOpen = findings.filter((f) => f.route === "agent" && isOpen(f));
   const by = (list) => list.reduce((a, f) => ((a[f.kind] = (a[f.kind] || 0) + 1), a), {});

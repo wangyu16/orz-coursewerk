@@ -26,7 +26,43 @@ export function locate(quote, text) {
   return { start: t.map[i], end: t.map[i + q.length - 1] + 1 };
 }
 
-const sameAtPrecision = (claim, src) => claim.unit === src.unit && Math.abs(Number(src.value.toFixed(claim.decimals)) - claim.value) < 1e-9;
+/** The same value at the claim's precision, in the same unit (denominators included). Scientific notation compares
+ *  mantissas at the exponent the claim wrote ("9 × 10⁻⁶" vs "5 × 10⁻⁶" differ; red-team round 1 F7). */
+export const sameAtPrecision = (claim, src) => {
+  if (claim.unit !== src.unit) return false;
+  const scale = (v) => Number(`${v}e${-(claim.exp || 0)}`);
+  return Math.abs(Number(scale(src.value).toFixed(claim.decimals)) - scale(claim.value)) < 1e-9;
+};
+
+// ---- the predicate a quote states (red-team round 1, CONFIDENCE F5, F8, F9) ---------------------------------------
+// Tokens are not the whole fact: a quote that carries every value but says the opposite direction, or states the value
+// for another reaction or another quantity, does not support the claim and never anchors a contradiction.
+const DIRECTIONS = [
+  { a: /\b(?:left|toward(?:s)?\s+(?:the\s+)?reactants?|favou?r(?:s|ing|ed)?\s+(?:the\s+)?(?:reactants?|reverse(?:\s+reaction)?))\b/, b: /\b(?:right|toward(?:s)?\s+(?:the\s+)?products?|favou?r(?:s|ing|ed)?\s+(?:the\s+)?(?:products?|product\s+formation|forward(?:\s+reaction)?))\b/, label: "left/right (reactants/products)" },
+  { a: /\bincreas(?:e|es|ed|ing)\b/, b: /\bdecreas(?:e|es|ed|ing)\b/, label: "increase/decrease" },
+  { a: /\bendothermic\b|\babsorb(?:s|ed|ing)?\s+heat\b/, b: /\bexothermic\b|\b(?:releas(?:e|es|ed|ing)|gives?\s+off|giving\s+off|evolv(?:e|es|ed|ing))\s+heat\b/, label: "endothermic/exothermic" },
+];
+/** A direction the claim states that the quote states the opposite of: its label, or null. */
+export function directionClash(claimText, quoteText) {
+  const c = folded(proseOf(claimText)), q = folded(quoteText);
+  for (const d of DIRECTIONS) {
+    const ca = d.a.test(c), cb = d.b.test(c), qa = d.a.test(q), qb = d.b.test(q);
+    if ((ca && !cb && qb && !qa) || (cb && !ca && qa && !qb)) return d.label;
+  }
+  return null;
+}
+/** The thermodynamic quantity a text names beside its value: H, G, S, U (Δ…) or K. */
+export function quantityNames(text) {
+  const t = String(text || "").normalize("NFKC");
+  const out = new Set();
+  for (const m of t.matchAll(/(?:Δ|\\Delta)\s*_?\{?\s*(?:r\s*)?\}?\s*([HGSU])(?![a-z])/g)) out.add(m[1]);
+  for (const m of t.matchAll(/(?<![\p{L}\\])K\s*_?\{?\s*(?:p|c|eq|a|b|w|sp)?\s*\}?\s*(?:=|≈|~|\\approx)/gu)) { void m; out.add("K"); }
+  return out;
+}
+const otherQuantity = (claimText, quoteText) => {
+  const c = quantityNames(claimText), q = quantityNames(quoteText);
+  return c.size > 0 && q.size > 0 && ![...c].some((x) => q.has(x));
+};
 
 const WINDOW = 800;
 const plainKeepCase = (t) => proseOf(t).normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
@@ -158,6 +194,11 @@ export function supports(claim, found) {
   for (const joined of windows) {
     const P = plainKeepCase(joined), f = folded(joined);
     if (claim.words.filter((w) => f.includes(w)).length < Math.min(2, claim.words.length)) { reason = reason || "the quotes do not share the claim's content words"; continue; }
+    // the predicate (red-team round 1): an equation's reaction is required; the opposite direction or another quantity never supports
+    if (equationIn(claim.text) && !sameReaction(claim, joined)) { reason = "the quotes do not state the claim's reaction"; continue; }
+    const clash = directionClash(claim.text, joined);
+    if (clash) { reason = `the quotes state the opposite direction (${clash})`; continue; }
+    if (otherQuantity(claim.text, joined)) { reason = "the quotes give the value for another quantity"; continue; }
     const quoteNames = namesIn(joined).map((n) => ({ key: nameKey(n), parts: nameParts(n) })).filter((n) => n.parts.length);
     const qPos = namePositions(P, quoteNames);
     const here = [];
@@ -194,36 +235,63 @@ export function conflicts(claim, quotes) {
   const joined = quotes.join(" \n "), out = [];
   const srcQ = quantitiesIn(joined), srcY = yearsIn(joined);
   for (const q of claim.required.quantities) {
-    const same = srcQ.filter((s) => s.unit === q.unit);
+    // a dimensionless value contradicts only the same symbol's value (K vs K, pH vs pH), never a bare number
+    const sym = (x) => String(x.symbol || "").toLowerCase();
+    const same = srcQ.filter((s) => s.unit === q.unit && (!/^1/.test(q.unit) || (sym(q) && sym(q) === sym(s))));
     if (same.length && !same.some((s) => sameAtPrecision(q, s))) out.push({ dimension: "quantity", claimed: q.raw, source: same[0].raw, sourceValue: same[0].value, unit: q.unit });
   }
   if (claim.required.years.length && srcY.length) for (const y of claim.required.years) if (!srcY.includes(y)) out.push({ dimension: "year", claimed: y, source: srcY[0] });
   return out;
 }
 
-/** Is a contradiction about the same thing? Anchored by another required token, no foreign name, three shared words. */
 /** The reaction a claim writes in \ce{…}: its species on each side of the arrow (coefficients and states set aside). */
 export function reactionOf(text) {
+  const e = equationIn(text);
+  return e && { left: Object.keys(e.left).sort(), right: Object.keys(e.right).sort() };
+}
+/** The balanced equation a text writes in \ce{…}: { left: { species: coefficient }, right: { … } } (fractions read). */
+export function equationIn(text) {
   const m = String(text || "").match(/\\ce\{([^}]*(?:<=>|->|<->|⇌|→)[^}]*)\}/);
-  return m ? sidesOf(m[1]) : null;
+  return m ? equationOf(m[1]) : null;
 }
-function sidesOf(eq) {
-  const parts = String(eq).split(/<=>|<->|->|⇌|→|⟶|↔/);
+const FRACTIONS = { "½": 1 / 2, "⅓": 1 / 3, "⅔": 2 / 3, "¼": 1 / 4, "¾": 3 / 4 };
+const coefficient = (c) => (!c ? 1 : FRACTIONS[c] ?? (c.includes("/") ? Number(c.split("/")[0]) / Number(c.split("/")[1]) : Number(c)));
+function equationOf(eq) {
+  const parts = String(eq).replace(/\\frac\s*\{?\s*(\d+)\s*\}?\s*\{?\s*(\d+)\s*\}?/g, "$1/$2").split(/<=>|<->|->|⇌|→|⟶|↔/);
   if (parts.length !== 2) return null;
-  const species = (side) => side.split(/\s\+\s|\s*\+\s+/).map((x) => x.replace(/\((?:g|l|s|aq)\)/g, "").replace(/\s+/g, "").replace(/^\d+(?:\/\d+)?/, "")).filter((x) => /^[A-Z]/.test(x)).sort();
-  const [l, r] = parts.map(species);
-  return l.length && r.length ? { left: l, right: r } : null;
+  const side = (s) => {
+    const out = {};
+    for (const x0 of s.split(/\s\+\s|\s*\+\s+/)) {
+      const x = x0.replace(/\((?:g|l|s|aq)\)/g, "").replace(/\s+/g, "");
+      const m = x.match(/^(\d+\/\d+|\d+(?:\.\d+)?|[½⅓⅔¼¾])?([A-Z].*)$/);
+      if (m) out[m[2]] = (out[m[2]] || 0) + coefficient(m[1]);
+    }
+    return out;
+  };
+  const [l, r] = parts.map(side);
+  return Object.keys(l).length && Object.keys(r).length ? { left: l, right: r } : null;
 }
-/** Does a quote state the same reaction (same species, same sides)? The strongest anchor a chemical equation has (P11). */
-function sameReaction(claim, quoteText) {
-  const want = reactionOf(claim.text);
-  if (!want) return false;
-  // sources write "N 2 ( g ) + 3 H 2 ( g ) ⇌ 2 NH 3 ( g )": rejoin the formula pieces before reading the sides
-  const q = String(quoteText).replace(/\s*\(\s*(g|l|s|aq)\s*\)/g, "($1)").replace(/([A-Z][a-z]?)\s+(\d)/g, "$1$2").replace(/(\d)\s+([A-Z])/g, "$1 $2");
-  const m = q.match(/((?:\d*\s*[A-Z][A-Za-z0-9()]*\s*\+\s*)*\d*\s*[A-Z][A-Za-z0-9()]*)\s*(⇌|<=>|→|->|⟶|↔)\s*((?:\d*\s*[A-Z][A-Za-z0-9()]*\s*\+\s*)*\d*\s*[A-Z][A-Za-z0-9()]*)/);
-  const got = m && sidesOf(`${m[1]} ${m[2]} ${m[3]}`);
-  return !!got && JSON.stringify(got) === JSON.stringify(want);
+/** The first balanced equation a quote states, as sources typeset it ("N 2 ( g ) + 3 H 2 ( g ) ⇌ 2 NH 3 ( g )"). */
+function quoteEquation(quoteText) {
+  const q = String(quoteText).normalize("NFC").replace(/\s*\(\s*(g|l|s|aq)\s*\)/g, "($1)").replace(/([A-Z][a-z]?)\s+(\d)/g, "$1$2").replace(/(\d)\s+([A-Z])/g, "$1 $2");
+  const SP = "(?:\\d+\\/\\d+|\\d+(?:\\.\\d+)?|[½⅓⅔¼¾])?\\s*[A-Z][A-Za-z0-9()]*";
+  const m = q.match(new RegExp(`((?:${SP}\\s*\\+\\s*)*${SP})\\s*(⇌|<=>|→|->|⟶|↔)\\s*((?:${SP}\\s*\\+\\s*)*${SP})`));
+  return m && equationOf(`${m[1]} ${m[2]} ${m[3]}`);
 }
+/** The same equation: the same species on the same sides at the same coefficients (a scaled equation is another one
+ *  for every extensive quantity and for K). */
+function sameEquation(x, y) {
+  const same = (a, b) => Object.keys(a).length === Object.keys(b).length && Object.entries(a).every(([k, v]) => k in b && Math.abs(b[k] - v) < 1e-9);
+  return same(x.left, y.left) && same(x.right, y.right);
+}
+/** Does a quote state the same reaction (same species, same sides, same coefficients)? The strongest anchor a chemical
+ *  equation has (P11), and what an equation claim's support requires (red-team round 1, F8). */
+export function sameReaction(claim, quoteText) {
+  const want = equationIn(claim.text), got = want && quoteEquation(quoteText);
+  return !!got && sameEquation(want, got);
+}
+/** The quote states a reaction, and not the claim's. */
+const statesOtherReaction = (claim, quoteText) => { const want = equationIn(claim.text), got = want && quoteEquation(quoteText); return !!got && !sameEquation(want, got); };
 
 export function anchored(claim, found, k) {
   const joined = windowOf(found);
@@ -235,6 +303,9 @@ export function anchored(claim, found, k) {
   // synthesis. The lead never adds a required token; it only lets the quote show it is about the same thing.
   const leadNames = (claim.leadNames || []).map((n) => ({ kind: "name", parts: nameParts(n), key: nameKey(n), label: n })).filter((t) => t.parts.length);
   const byClaim = others.some((t) => tokenIndex(t, P, claim) >= 0), byLead = leadNames.some((t) => tokenIndex(t, P, claim) >= 0);
+  // a quote about another reaction (or the same species at other coefficients), or about another quantity, never
+  // anchors — whatever else it shares (red-team round 1, F9: ½N2 + 3/2H2 → NH3 is not N2 + 3H2 ⇌ 2NH3 for a ΔH)
+  if (statesOtherReaction(claim, joined) || otherQuantity(claim.text, joined)) return false;
   const byReaction = sameReaction(claim, joined);
   if (!byClaim && !byLead && !byReaction) return false;
   const keys = [...tokensOf(claim).filter((t) => t.kind === "name"), ...leadNames].flatMap((t) => [t.key, ...t.parts.map(folded)]);

@@ -181,6 +181,10 @@ const TABLE = [
   { id: "bar", dim: "pressure", symbols: ["bar"], words: [], to: (v) => v * 1e5 },
   // 1 atm = 760 torr = 101325 Pa, both definitional -> 1 torr = 101325/760 Pa exactly.
   { id: "torr", dim: "pressure", symbols: ["torr"], words: [], to: (v) => (v * 101325) / 760 },
+  // The conventional millimetre of mercury is DEFINED as 13.5951 g/cm3 x 9.80665 m/s2 x 1 mm = 133.322387415 Pa
+  // exactly (it differs from the torr in the seventh digit). Added after red-team round 1 (CONFIDENCE F2): "700 mmHg"
+  // minted no claim at all.
+  { id: "millimetre-of-mercury", dim: "pressure", symbols: ["mmHg"], words: [], to: (v) => v * 133.322387415 },
   { id: "pascal", dim: "pressure", symbols: ["Pa"], words: [], to: (v) => v },
 
   // --- time -> s -----------------------------------------------------------------------------
@@ -425,6 +429,26 @@ export function scanProjection() {
     /** A fresh matcher. No flags: M2 only ever asks `.test()`. */
     quantityRe: () => new RegExp(quantityRegexSource({ capture: false, ambiguous: false })),
   };
+}
+
+/**
+ * **The value parser's projection (`lib/core/values.mjs`: the claim extractor and the semi-mechanical classifier).**
+ * Surface form -> the unit's CANONICAL SYMBOL (a string: "kJ", "°C", "mmHg"), longest form first. No dimension and
+ * no conversion: the verdict path compares a claim's value with a source's value IN THE SAME UNIT, at the claim's
+ * precision, and must never convert (a conversion is a knowledge decision). Ambiguous words and spellingOnly forms
+ * are out, as for M2. Red-team round 1 (CONFIDENCE F2): the claim extractor kept its own, narrower list, so a value
+ * in mmHg, kcal, °F or V was no fact at all.
+ * @returns {Array<{form: string, pattern: string, symbol: string}>}
+ */
+export function valueProjection() {
+  const out = [];
+  for (const u of TABLE) {
+    const symbol = u.symbols?.[0];
+    if (!symbol) continue; // spellingOnly-only units (ampere) are never a value's unit here
+    for (const s of u.symbols ?? []) out.push({ form: s, pattern: escapeRe(s), symbol });
+    for (const w of u.words ?? []) out.push({ form: w, pattern: wordPattern(w), symbol });
+  }
+  return out.sort((a, b) => b.form.length - a.form.length || (a.form < b.form ? -1 : a.form > b.form ? 1 : 0));
 }
 
 // CONTRACT NOTES (what this unification found, and what it deliberately did NOT do)

@@ -96,7 +96,7 @@ test("[req.verdict.unscorable] an answer that cannot be parsed, or answers anoth
 test("[req.dispatch.blind] one blind bundle per unit, recorded in the package and logged; replayed offline it admits the same evidence", async (t) => {
   const p = copy(t);
   const before = evidenceMissing(p);
-  assert.equal(before.length, 20);
+  assert.equal(before.length, 24); // 24 since red-team round 1 (F1, F2): K = 50 and "4 moles" are values
   const units = loadUnits(p.root, p.reader);
   // every bundle is blind: no unit id, file, origin, model or course title
   const course = JSON.parse(p.read("alembic.json")).title;

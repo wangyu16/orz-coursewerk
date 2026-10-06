@@ -90,6 +90,10 @@
 //  3. CLAIMS NAMING MORE THAN ONE TERM (undeclared ones). "The latent heat of fusion at the
 //     melting point is 334 J/g" names two terms; attributing the number to one of them would be
 //     a guess wearing a deterministic costume. The fix is a DECLARATION (M12), not a heuristic.
+//     [AMENDED, red-team round 1 (CONFIDENCE F11)] Silence here was itself the bypass: one extra key term in a
+//     sentence hid a 22 vs 11 kcal disagreement. A scanned text naming several terms now compares each value under the
+//     term that governs it in its own sentence (the nearest mention before it) — `governedQuantities`. Declared
+//     termRefs keep their rule.
 //  4. A CLAIM CARRYING SEVERAL DIFFERENT VALUES IN ONE DIMENSION. "melts between 90 °C and
 //     100 °C", or a worked example walking a value through steps. A range is not a
 //     disagreement, and we cannot tell which number is the assertion. That dimension is dropped
@@ -122,7 +126,7 @@
 // PURE and DETERMINISTIC: same input → same output. No I/O, no network, no LLM, no clock, no
 // randomness. Output is fully sorted, so a diff of two scans shows only real change.
 
-import { resolve, labelMatcher } from "./terms.mjs";
+import { resolve, labelMatcher, findLabelOccurrences } from "./terms.mjs";
 import { dimensionProjection } from "./units.mjs";
 
 /**
@@ -357,6 +361,49 @@ function quantitiesByDimension(text) {
   return byDim;
 }
 
+/**
+ * The values of a scanned text whose sentences name SEVERAL terms, each under the term that governs it: the nearest
+ * term mention before the value in its own sentence (else the nearest after it). A sentence naming no term attributes
+ * nothing. One term carrying two different values of one dimension in the text is dropped, as a range (non-flag 4).
+ * Red-team round 1 (CONFIDENCE F11): "exactly one term or nothing" let a second key term silence a disagreement.
+ * @returns {Map<string, Map<string, {key:string, raw:string}>>} termId -> dimension -> value
+ */
+function governedQuantities(text, terms, scope) {
+  const out = new Map(), dropped = new Set();
+  const t = String(text ?? "");
+  let start = 0;
+  const bounds = [...t.matchAll(/(?<=[.!?])\s+(?=[A-Z$(\\])/g)].map((m) => m.index);
+  for (const end of [...bounds, t.length]) {
+    const sentence = t.slice(start, end);
+    start = end;
+    const mentions = [];
+    for (const term of terms?.terms ?? []) {
+      for (const label of labelsOf(term)) {
+        const id = resolve(terms, label, scope);
+        if (!id) continue;
+        for (const o of findLabelOccurrences(sentence, label)) mentions.push({ id, at: o.start });
+      }
+    }
+    if (!mentions.length) continue;
+    const re = UNIT_VIEW.quantityRe();
+    let m;
+    while ((m = re.exec(sentence))) {
+      const entry = unitEntry(m[2]);
+      if (!entry) continue;
+      const before = mentions.filter((x) => x.at < m.index).sort((a, b) => b.at - a.at)[0];
+      const owner = before || mentions.filter((x) => x.at > m.index).sort((a, b) => a.at - b.at)[0];
+      if (!owner) continue;
+      const key = valueKey(entry.to(Number(m[1])));
+      if (!out.has(owner.id)) out.set(owner.id, new Map());
+      const dims = out.get(owner.id), prior = dims.get(entry.dim);
+      if (!prior) dims.set(entry.dim, { key, raw: m[0].trim() });
+      else if (prior.key !== key) dropped.add(`${owner.id}|${entry.dim}`);
+    }
+  }
+  for (const k of dropped) { const i = k.lastIndexOf("|"); out.get(k.slice(0, i))?.delete(k.slice(i + 1)); }
+  return out;
+}
+
 /** Claims worth comparing: active, assertive, readable. */
 function comparableClaims(list) {
   return list.filter(
@@ -401,7 +448,21 @@ function valueDisagreements(list, terms) {
   for (const claim of comparableClaims(list)) {
     const scope = claimScope(claim);
     const subjects = subjectTerms(claim, terms, scope);
-    if (subjects.length === 0) continue;
+    if (subjects.length === 0) {
+      // a scanned claim naming SEVERAL terms (red-team round 1, F11: adding "over an iron catalyst" to a sentence hid a
+      // 22 vs 11 kcal disagreement): each value is compared under the term that governs it in its own sentence
+      const undeclared = claim.provenanceDeclared !== true && !(claim.termRefs ?? []).some((r) => String(r).startsWith("term."));
+      if (!undeclared || answerBodies(claimText(claim)).length) continue;
+      for (const [termId, dims] of governedQuantities(claimText(claim), terms, scope)) {
+        for (const [dim, q] of dims) {
+          if (declaredDims.has(termId) && !declaredDims.get(termId).has(dim)) continue;
+          const key = `${termId}|${dim}`;
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push({ claim, ...q });
+        }
+      }
+      continue;
+    }
     const quantities = quantitiesByDimension(claimText(claim));
     if (quantities.ambiguous?.size) {
       findings.push({

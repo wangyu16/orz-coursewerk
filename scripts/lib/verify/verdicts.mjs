@@ -14,17 +14,19 @@ import { recordFile } from "../records/paths.mjs";
 import { appendLogRecord } from "../records/log.mjs";
 import { factHash } from "../core/dependencies.mjs";
 import { unitHash } from "../core/segment.mjs";
-import { admitEvidence, hasAdmittedEvidence, indexAndStamp, loadUnits, loggedInstructorActs, needsEvidence, reviewedAbsolutes } from "../core/obligations.mjs";
+import { admitEvidence, evidenceStands, hasAdmittedEvidence, indexAndStamp, leadOf, loadUnits, loggedInstructorActs, needsEvidence, recordLeads, recordedLeads, reviewedAbsolutes } from "../core/obligations.mjs";
 import { absoluteBundle, absoluteSentences, absolutesHash, readAbsoluteReview } from "./absolutes.mjs";
 import { randomBytes } from "node:crypto";
 import { readLogText } from "../records/log.mjs";
 import { checkableClaims, claimsHash, claimOf, quantitiesIn, withLead } from "./claims.mjs";
-import { admit, supports } from "./admission.mjs";
+import { admit, sameAtPrecision, supports } from "./admission.mjs";
 import { knowledgeBundle, readDispatches, recordDispatch, selectPassages, semiBundle } from "./dispatch.mjs";
 
 export const CORRECTIONS_DIR = "metadata/corrections";
 
-const hasAdmitted = (root, u) => hasAdmittedEvidence(u, loggedInstructorActs(root));
+// evidence counts for the unit's current facts, lead-in and the instructor's answers (core/obligations.mjs)
+const hasAdmitted = (root, u, all) => evidenceStands(root, u, all);
+export { leadOf, recordLeads };
 
 /** The log, parsed. */
 export function logRecordsOf(text) { return String(text || "").split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean); }
@@ -34,15 +36,6 @@ export function dispatchLogged(record, logRecords) {
     logRecords.some((l) => l.type === "dispatch" && l.party?.role === "harness" && l.payload?.dispatch === record.dispatch && l.payload?.unit === record.unit && l.payload?.bundleHash === record.bundle.bundleHash && l.payload?.responseHash === record.answer.responseHash);
 }
 /** The claims a semi record checked, as printed in its prompt. */
-/** The lead-ins a record's bundle carried (claim index → sentence); none for records before P11. */
-export const recordLeads = (record) => { const lines = String(record.bundle?.prompt || "").split("\n"), i = lines.findIndex((l) => l.startsWith("CLAIM CONTEXT")); return i < 0 ? {} : Object.fromEntries(lines.slice(i + 1).map((l) => l.match(/^(\d+)\. (.*)$/)).filter(Boolean).map((m) => [Number(m[1]), m[2]])); };
-/** An equation unit's lead-in: the last sentence of the unit before it in the same section. */
-export function leadOf(u, all) {
-  if (u.form !== "equation") return null;
-  const prev = all.filter((x) => x.locator.deliverable === u.locator.deliverable && x.locator.section === u.locator.section && x.locator.ordinal < u.locator.ordinal).sort((a, b) => b.locator.ordinal - a.locator.ordinal)[0];
-  const t = String(prev?.text || "").replace(/\s+/g, " ").trim();
-  return t ? t.split(/(?<=[.!?])\s+/).pop() : null;
-}
 export const recordClaimTexts = (record) => { const lines = String(record.bundle?.prompt || "").split("\n"); return lines.slice(lines.indexOf("CLAIMS") + 1, lines.indexOf("PASSAGES")).map((l) => l.match(/^\d+\. (.*)$/)?.[1]).filter(Boolean); };
 /** Did this record check exactly the unit's current checkable claims? */
 export const checksCurrentClaims = (record, unitText, lead = null) => JSON.stringify(recordClaimTexts(record)) === JSON.stringify(checkableClaims(unitText).map((c) => c.text.replace(/\s+/g, " ")))
@@ -78,7 +71,9 @@ export function settleKept(admission, unitId, claims, kept) {
 
 function evidenceFrom(record, admission, texts, unitText) {
   const quotes = admission.perClaim.flatMap((c) => (c.quotes || []).map((q) => ({ ...q, claim: c.claim, textSha256: texts.get(q.source)?.sha256 })));
-  return { type: "quote-verified", source: quotes[0]?.source, quotes, factHash: factHash(unitText), claimsHash: claimsHash(unitText), dispatch: record.dispatch, at: record.at };
+  // an equation's evidence binds the lead-in it was verified with (red-team round 1, F13)
+  const lead = Object.values(recordLeads(record))[0];
+  return { type: "quote-verified", source: quotes[0]?.source, quotes, factHash: factHash(unitText), claimsHash: claimsHash(unitText), ...(lead ? { lead } : {}), dispatch: record.dispatch, at: record.at };
 }
 
 /**
@@ -88,7 +83,7 @@ function evidenceFrom(record, admission, texts, unitText) {
  */
 export async function verifySemi(root, reader, { texts, verifier, only = null, onProgress = () => {} }) {
   const all = loadUnits(root, reader);
-  const units = all.filter((u) => needsEvidence(u) && !hasAdmitted(root, u) && (!only || only.includes(u.id)));
+  const units = all.filter((u) => needsEvidence(u) && !hasAdmitted(root, u, all) && (!only || only.includes(u.id)));
   const plain = new Map([...texts].map(([k, v]) => [k, v.text]));
   const results = [];
   for (const u of units) {
@@ -113,8 +108,8 @@ export function readmitRecorded(root, reader, { texts }) {
   const log = logRecordsOf(readLogText(root));
   const out = [];
   for (const r of packageDispatches(root).sort((a, b) => a.at.localeCompare(b.at))) {
-    const u = loadUnits(root, reader).find((x) => x.id === r.unit);
-    if (!u || r.kind !== "semi" || !needsEvidence(u) || hasAdmitted(root, u)) continue;
+    const all = loadUnits(root, reader), u = all.find((x) => x.id === r.unit);
+    if (!u || r.kind !== "semi" || !needsEvidence(u) || hasAdmitted(root, u, all)) continue;
     if (!dispatchLogged(r, log) || !checksCurrentClaims(r, u.text, leadOf(u, loadUnits(root, reader)))) continue; // only genuine dispatches of the unit's current claims
     const a = settleKept(rederive(r, plainT), u.id, semiClaimsOf(r), keptClaims(log));
     if (a?.status === "admitted") { admitEvidence(root, reader, u.id, { ...evidenceFrom(r, a, texts, u.text), readmitted: new Date().toISOString() }); out.push({ unit: u.id, dispatch: r.dispatch }); }
@@ -211,7 +206,7 @@ const canonicalUrl = (u) => { try { const x = new URL(u); return `${x.hostname}$
 export function correctionGuard({ unit, lead = null, records, plainTexts, meta = new Map(), logRecords = [] }) {
   const fh = factHash(unit.text);
   if ((unit.evidence || []).some((e) => e.type === "authorized-divergence" && e.factHash === fh)) return { ok: false, reason: "the instructor kept this text as an authorized divergence" };
-  if (hasAdmittedEvidence(unit, { confirmed: new Map(), diverged: new Map() }) || (unit.evidence || []).some((e) => e.type === "instructor-confirmation" && e.factHash === fh)) return { ok: false, reason: "contested: evidence or a confirmation stands for the unit as it is" };
+  if (hasAdmittedEvidence(unit, { confirmed: new Map(), diverged: new Map() }, { lead, recordedLead: (e) => Object.values(recordLeads(records.find((r) => r.dispatch === e.dispatch) || {}))[0] ?? null }) || (unit.evidence || []).some((e) => e.type === "instructor-confirmation" && e.factHash === fh)) return { ok: false, reason: "contested: evidence or a confirmation stands for the unit as it is" };
   const mine = records.filter((r) => r.kind === "semi" && r.unit === unit.id && r.factHash === fh && dispatchLogged(r, logRecords) && checksCurrentClaims(r, unit.text, lead)).map((r) => ({ r, a: rederive(r, plainTexts) }));
   if (mine.some(({ a }) => a?.status === "disputed")) return { ok: false, reason: "contested: a verification disputes the unit's value" };
   const supportedQuotes = mine.flatMap(({ a }) => (a?.perClaim || []).filter((c) => c.status === "supported").flatMap((c) => c.quotes.map((q) => q.quote)));
@@ -229,7 +224,7 @@ export function correctionGuard({ unit, lead = null, records, plainTexts, meta =
   }
   for (const [claimed] of targets) {
     const q = quantitiesIn(unit.text).find((x) => x.raw === claimed);
-    if (q && supportedQuotes.some((t) => quantitiesIn(t).some((s) => s.unit === q.unit && Number(s.value.toFixed(q.decimals)) === q.value))) return { ok: false, reason: `contested: another verification supports ${claimed}` };
+    if (q && supportedQuotes.some((t) => quantitiesIn(t).some((s) => sameAtPrecision(q, s)))) return { ok: false, reason: `contested: another verification supports ${claimed}` };
   }
   if (instructorAuthored(unit, logRecords))
     for (const [claimed, t] of targets) { const n = Math.min(t.ids.size, t.urls.size); if (n < 2) return { ok: false, reason: `instructor text: ${claimed} needs two agreeing sources (has ${n})` }; }
@@ -237,17 +232,20 @@ export function correctionGuard({ unit, lead = null, records, plainTexts, meta =
   const edits = [];
   for (const [claimed, t] of targets) {
     const q = quantitiesIn(unit.text).find((x) => x.raw === claimed);
-    const num = String(claimed).match(/^[-−]?\d+(?:[.,]\d+)?/)[0].replace(/^[-−]/, "");
-    const re = new RegExp(`(?<![\\d.,])([-−‐-―]?)${num.replace(/[.]/g, "\\.")}(?![\\d])`, "g");
+    const num = (String(claimed).match(/^-?(\d[\d,]*(?:\.\d+)?)(?![\de])/) || [])[1];
+    if (!q || !num) return { ok: false, reason: `${claimed} is not a single, unambiguous number in the unit` };
+    // the sign as typeset ("−92.2", "- 92.2", "-\,92.2", "{-}92"): replaced together with the number, never doubled
+    // (red-team round 1, F10: "= - 92.2" became "= - −92.2")
+    const re = new RegExp(`(?<![\\d.,])(${q.value < 0 ? "(?:[-−‐-―]|\\{[-−]\\})\\s*(?:\\\\[,;:! ]\\s*)*" : ""})${num.replace(/[.]/g, "\\.")}(?![\\d])`, "g");
     const at = [...unit.text.matchAll(re)];
-    if (!q || at.length !== 1) return { ok: false, reason: `${claimed} is not a single, unambiguous number in the unit` };
-    const decimals = (num.split(/[.,]/)[1] || "").length;
+    if (at.length !== 1) return { ok: false, reason: `${claimed} is not a single, unambiguous number in the unit` };
+    const decimals = (num.split(".")[1] || "").length;
     const sign = t.sourceValue < 0 ? (at[0][1] || "−") : "";
     edits.push({ index: at[0].index, length: at[0][0].length, replacement: sign + Math.abs(t.sourceValue).toFixed(Math.max(decimals, decimalsOf(t.source))), claimed, source: t.source, sources: [...t.sources] });
   }
   return { ok: true, plan: { edits, dispatches: [...new Set(hits.map(({ r }) => r.dispatch))], quotes: hits.flatMap(({ c }) => c.quotes) } };
 }
-const decimalsOf = (raw) => (String(raw).match(/[.,](\d+)/)?.[1] || "").length;
+const decimalsOf = (raw) => (String(raw).match(/\.(\d+)/)?.[1] || "").length;
 
 export const diffOf = (before, after) => `- ${before.replace(/\n/g, "\n- ")}\n+ ${after.replace(/\n/g, "\n+ ")}`;
 

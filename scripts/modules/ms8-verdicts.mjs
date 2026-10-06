@@ -23,9 +23,15 @@ import { supports } from "../lib/verify/admission.mjs";
 import { readDispatches } from "../lib/verify/dispatch.mjs";
 import { pinnedTexts, snapshotInputReader } from "../lib/verify/references.mjs";
 import { absolutesHash, readAbsoluteReview } from "../lib/verify/absolutes.mjs";
-import { checksCurrentClaims, claimKey, correctionLogged, dispatchLogged, instructorAuthored, keptClaims, knowledgeConcerns, leadOf, logRecordsOf, recordClaimTexts, rederive } from "../lib/verify/verdicts.mjs";
+import { checksCurrentClaims, claimKey, correctionLogged, dispatchLogged, instructorAuthored, keptClaims, knowledgeConcerns, leadOf, logRecordsOf, recordClaimTexts, recordLeads, rederive } from "../lib/verify/verdicts.mjs";
 import { findingId } from "../lib/records/findings.mjs";
 import { base, recheckByRerun } from "./_shared.mjs";
+
+/** A unit that can hold invented exercise data: a question or answer, a worked-example or practice section, or text
+ *  with an exercise cue ("Suppose …", "Calculate …"). */
+const EXERCISE_SECTION = /(?:^|-)(?:worked-examples?|examples?|exercises?|problems?|practice|questions?|check-your-understanding|try-it)(?:-|$)/;
+const EXERCISE_CUE = /\b(?:suppose|imagine|assume|hypothetical(?:ly)?|calculate|compute|determine the|find the|a student|consider a|in this (?:example|exercise|problem))\b/i;
+const exerciseLike = (u) => ["question", "answer"].includes(u.form) || String(u.locator?.deliverable || "").startsWith("practice/") || EXERCISE_SECTION.test(String(u.locator?.section || "")) || EXERCISE_CUE.test(u.text);
 
 function currentUnits(s) {
   const out = new Map();
@@ -33,7 +39,7 @@ function currentUnits(s) {
     const side = s.json(p); if (!Array.isArray(side?.units) || typeof side.deliverable !== "string") continue; // malformed: the index reports it
     const seg = segmentDeliverable(s.text(side.deliverable) || "", side.deliverable).units;
     if (seg.length !== side.units.length) continue; // out of date: units-not-indexed covers it
-    side.units.forEach((u, i) => out.set(u.id, { ...u, text: seg[i].text, contentHash: u.locator?.contentHash }));
+    side.units.forEach((u, i) => out.set(u.id, { ...u, form: seg[i].form, text: seg[i].text, contentHash: u.locator?.contentHash }));
   }
   return out;
 }
@@ -76,8 +82,13 @@ function run(s) {
         // applied: the unit now says what the concern proposed. Added words often touch no fact token, so the record is
         // still "current" — settledness is read from the text itself, for a clarification and a "wrong" concern alike
         // (P11: an applied clarification stayed owed; the T3 scenario brought an already-fixed concern to the instructor)
+        // Settled only when the unit carries the suggestion AND no longer carries the quoted words — unless the suggestion
+        // itself extends them (red-team round 1, F12: a deletion's suggestion is a substring of the wrong words, and a
+        // substring test settled the concern while the wrong words stood). The quoted words are in the unit whenever the
+        // concern is current, so in practice: settled when the suggestion contains them and the unit contains it.
         const bare = (t) => String(t).replace(/[$*_`]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
-        if (c.suggestion.trim().length >= 8 && bare(u.text).includes(bare(c.suggestion))) continue;
+        const applied = c.suggestion.trim().length >= 8 && bare(u.text).includes(bare(c.suggestion)) && (!bare(u.text).includes(bare(c.text)) || bare(c.suggestion).includes(bare(c.text)));
+        if (applied) continue;
         if (c.kind !== "clarify" || !c.suggestion.trim()) { out.push({ kind: "knowledge-concern", units: [u.id], evidence }); continue; }
         if (!instructorAuthored(u, log)) { out.push({ kind: "clarification-owed", units: [u.id], evidence }); continue; }
         // the instructor's text (D31 stands): proposed as a one-line diff; once accepted, applying it is the agent's job
@@ -94,7 +105,9 @@ function run(s) {
     if (!a || diverged(u)) continue;
     // exercise data no source can show: the instructor confirms it once, so it comes to the digest (P9 scenario)
     const settled = (u.evidence || []).some((e) => e.factHash === factHash(u.text) && (e.type === "instructor-confirmation" || (e.type === "quote-verified" && e.claimsHash === claimsHash(u.text))));
-    if (a.perClaim.length && a.perClaim.every((c) => c.status === "hypothetical") && !settled && !askedExercise.has(u.id) && askedExercise.add(u.id))
+    // only an exercise-like unit can be invented data (red-team round 1, F14): elsewhere a "hypothetical" label is no
+    // evidence and no question — the unit's evidence is still missing, and nothing recommends confirming it
+    if (exerciseLike(u) && a.perClaim.length && a.perClaim.every((c) => c.status === "hypothetical") && !settled && !askedExercise.has(u.id) && askedExercise.add(u.id))
       out.push({ kind: "exercise-data-confirm", units: [u.id], evidence: { type: "judgment", note: `${u.id}: the values here read as invented exercise data, which no source can show — confirm them as teaching hypotheticals?`, quote: r.claims?.map((c) => c.text).join(" | ") || "", dispatch: r.dispatch }, recommendation: "confirm" });
     for (const c of a.perClaim) {
       if (c.status === "contradicted")
@@ -105,7 +118,7 @@ function run(s) {
         // the dispute as one claim (D40): keyed by its sentence and values, so an edit elsewhere in the unit keeps the answer
         const key = claimKey(u.id, recordClaimTexts(r)[c.claim - 1], c.conflicts || []);
         if (kept.has(key)) continue; // the instructor kept this claim as written: settled
-        out.push({ kind: instructorAuthored(u, log) ? "fact-disputed" : "fact-check-own", units: [u.id], evidence: { claimKey: key, type: "conflict", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote })),
+        out.push({ kind: instructorAuthored(u, log) ? "fact-disputed" : "fact-check-own", units: [u.id], evidence: { claimKey: key, claimText: recordClaimTexts(r)[c.claim - 1], type: "conflict", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote })),
           // the question the instructor reads (P11: the digest showed the bare kind)
           note: `The pinned sources disagree: the text says ${(c.conflicts || []).map((k) => `${k.claimed}, a source says ${k.source}${k.sentence ? ` ("${String(k.sentence).slice(0, 160)}")` : ""}`).join("; ")} — keep as written, or change it?` } });
       }
@@ -114,7 +127,12 @@ function run(s) {
 
   for (const u of units.values()) {
     const fh = factHash(u.text), ch = claimsHash(u.text);
+    const lead = leadOf(u, [...units.values()]);
     for (const e of (u.evidence || []).filter((x) => x.type === "quote-verified" && x.factHash === fh && x.claimsHash === ch)) {
+      // evidence verified with another lead-in is stale, not wrong: it no longer counts, and the core obligation
+      // (evidence-missing) routes the re-verification (red-team round 1, F13)
+      const was = e.lead !== undefined ? e.lead : (byDispatch.get(e.dispatch) ? Object.values(recordLeads(byDispatch.get(e.dispatch)))[0] ?? null : null);
+      if (was != null && String(was).replace(/\s+/g, " ") !== String(lead || "").replace(/\s+/g, " ")) continue;
       let problem = null;
       if (e.correction) {
         const c = corrections.get(e.correction);

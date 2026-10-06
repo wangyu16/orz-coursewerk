@@ -3,12 +3,10 @@
 // REQUIRED tokens are the checkable facts in it — quantities with units, years, months, proper names, superlatives —
 // and nothing else: sentence-initial capitals, single letters, symbols and bare coefficients are not facts a source
 // can carry. An admitted quote must carry every required token (admission.mjs).
-import { plainForQuantities } from "../core/dependencies.mjs";
 import { classifyUnit } from "../core/segment.mjs";
+import { clean, parseNumber, valueText, valuesIn } from "../core/values.mjs";
 import { sha256, canonicalJson } from "../records/canonical.mjs";
 
-const UNIT_RE = "°C|K\\b|kJ|J\\b|mol\\b|M\\b|atm|bar\\b|kPa|Pa\\b|kg|mg|g\\b|mL|L\\b|nm|cm|m\\b|s\\b|min\\b|h\\b|%";
-const QUANTITY = new RegExp(`(?<![\\w.])([-−]?\\d+(?:[.,]\\d+)?)\\s*(${UNIT_RE})`, "g");
 const YEAR = /(?<![\w.,])(1[5-9]\d{2}|20\d{2})(?![\w.,]\d)/g;
 const MONTH = /\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/g;
 const SUPERLATIVE = /\b(most|least|highest|lowest|largest|smallest|first|fastest|strongest|only)\b/gi;
@@ -18,11 +16,8 @@ const NOT_NAMES = new Set(["The", "This", "That", "These", "Those", "A", "An", "
   "Objective", "Chapter", "Section", "Figure", "Table", "Example", "Question", "Answer", "Note", "Visual", "Reasoning", "Step", "Q", "K", "Qr"]);
 
 /** Fold a text for matching: diacritics, case, dashes, quotes, markdown emphasis, whitespace. Returns { s, map } with map[i] = original offset. */
-// Cyrillic and Greek letters that render like Latin ones (a word spelled with them must not escape the checks)
-const CONFUSABLE = { "а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "у": "y", "х": "x", "і": "i", "ј": "j", "ѕ": "s", "ο": "o", "α": "a", "ν": "v", "Ο": "O", "О": "O", "А": "A", "Е": "E", "С": "C", "Р": "P", "Т": "T", "Н": "H", "К": "K", "М": "M", "В": "B", "Х": "X" };
-export const clean = (t) => String(t || "").normalize("NFKC").replace(/[\p{Cf}\u00AD]/gu, "")
-  .replace(/[\u0400-\u04FF\u0370-\u03FF](?=[A-Za-z])|(?<=[A-Za-z])[\u0400-\u04FF\u0370-\u03FF]/g, (c) => CONFUSABLE[c] ?? c)
-  .replace(/(?<=[A-Za-z])[*_]+(?=[A-Za-z])/g, "");
+// confusable letters, NFKC and invisible characters: one cleaning, shared with the value parser (core/values.mjs)
+export { clean, parseNumber };
 export function fold(text) {
   const src = String(text || "");
   let s = "", map = [], space = false;
@@ -41,32 +36,32 @@ export function fold(text) {
 }
 export const folded = (t) => fold(t).s;
 
-/** Prose for fact extraction: LaTeX and \ce{} folded to plain, markdown links and markup removed. */
-const SCI = /([-−–]?\d+(?:\.\d+)?)\s*(?:\\times|×|x)\s*10\s*\^\s*\{?\s*([-−–]?\d+)\s*\}?/g;
-const sciPlain = (t) => t.replace(SCI, (_, a, b) => String(Number(a.replace(/[−–]/, "-")) * 10 ** Number(b.replace(/[−–]/, "-"))));
+/** Prose for fact extraction: LaTeX and \ce{} folded to plain (values through the one value parser, core/values.mjs:
+ *  scientific notation kept exact as "9e-6", unit exponents kept), markdown links and markup removed. */
 export function proseOf(text) {
-  return plainForQuantities(sciPlain(clean(text).replace(/<br\s*\/?>/gi, ". ").replace(/<\/?[a-zA-Z][^>]*>/g, " ").replace(/[\u2010-\u2015](?=\s*\d)/g, "-")))
+  return valueText(text)
     .replace(/\\ce\s*/g, " ").replace(/\\[a-zA-Z]+/g, " ")
     .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/[*_`#>]/g, " ")
     .replace(/\s+/g, " ").trim();
 }
 
-export function parseNumber(s) { return Number(String(s).replace(/[−\u2010-\u2015]/g, "-").replace(",", ".")); }
-const decimals = (s) => (String(s).split(/[.,]/)[1] || "").length;
-
-/** Quantities with units in a text: [{ value, unit, raw, decimals }]. */
-export function quantitiesIn(text) {
-  const out = [];
-  for (const m of proseOf(text).matchAll(QUANTITY)) out.push({ value: parseNumber(m[1]), unit: m[2].replace(/\\b/g, ""), raw: m[0].replace(/\s+/g, ""), decimals: decimals(m[1]), at: m.index });
-  return out;
-}
-export const yearsIn = (text) => [...new Set([...proseOf(text).replace(QUANTITY, " ").matchAll(YEAR)].map((m) => m[1]))];
+/** Values in a text — quantities with units (and their denominators), dimensionless values bound to a symbol, powers
+ *  of ten: [{ value, unit, raw, decimals, exp, at, symbol? }] (core/values.mjs; red-team round 1, CONFIDENCE F1–F4, F7). */
+export const quantitiesIn = (text) => valuesIn(proseOf(text));
+/** The prose with its values blanked (a year is never read inside a value). */
+const withoutValues = (P) => valuesIn(P).reverse().reduce((t, q) => t.slice(0, q.at) + " ".repeat(q.end - q.at) + t.slice(q.end), P);
+export const yearsIn = (text) => [...new Set([...withoutValues(proseOf(text)).matchAll(YEAR)].map((m) => m[1]))];
 export const monthsIn = (text) => [...new Set([...clean(text).matchAll(MONTH)].map((m) => m[1]))];
 // "First, …" opening an enumeration is an ordinal, not a record claim
 export const superlativesIn = (text) => [...new Set([...clean(text).replace(/(^|[.!?]\s+|\n\s*)\**First\b\**,/g, "$1").matchAll(SUPERLATIVE)].map((m) => m[1].toLowerCase()))];
 /** How a source may state the exclusivity a claim's "only" asserts: the word or a strict synonym (D27 as amended after
  *  red-team round P7-1 — negating the alternatives proved too weak). Record superlatives need their own word. */
 export const EXCLUSIVE = /\b(only|solely|alone|exclusively|sole)\b/;
+
+// a verb that attributes a deed to its subject, and the capitalized words that open sentences without naming anyone
+const ATTRIBUTION = /^(?:proposed|discovered|formulated|developed|invented|devised|derived|showed|demonstrated|stated|published|described|introduced|suggested|predicted|established|explained|coined|patented|synthesi[sz]ed|isolated|argued|wrote|reported|postulated|hypothesi[sz]ed|identified|enunciated)$/i;
+const ADVERB = /^(?:first|later|also|independently|originally|famously|then|subsequently|eventually|correctly)$/i;
+const SENTENCE_WORDS = new Set(("The This That These Those It He She They We You One Someone Nobody Everyone Each Every All Some Most Many Few Both Such Its Their His Her Our Your Who What Which Why How When Where Here There Then Now Later Earlier First Second Finally Also However Therefore Thus Hence Researchers Scientists Chemists Physicists Students Experiments Experiment Studies Study Data Results Work Research Others Early Modern Previous Further Careful Measurements Calculations Chemistry Science Nature History").split(" "));
 
 /** Proper names: runs of capitalized words (with particles) that do not start a sentence, item, label or quote. */
 export function namesIn(text) {
@@ -89,7 +84,11 @@ export function namesIn(text) {
       const isCap = /^\p{Lu}\p{Ll}{2,}/u.test(w) && !/^\p{Lu}+$/u.test(w);
       if (i === 0 && !run.length) { // sentence-initial: a name only when it reads as one ("Guldberg and Waage", "Henry Louis …", "Braun's")
         const next = (words[1] || "").replace(/[^\p{L}&]/gu, ""), after = words[2] || "";
-        const nameLike = isCap && !NOT_NAMES.has(w) && (/['’]s\b/.test(w0) || (/^(?:and|&)$/.test(next) && /^\p{Lu}\p{Ll}{2,}/u.test(after)) || /^\p{Lu}\p{Ll}{2,}/u.test(next));
+        // a lone capitalized subject of an attribution verb is a name too ("Arrhenius proposed …", red-team round 1 F6),
+        // unless it is a capitalized function word or a generic agent ("They proposed", "Chemists found")
+        const verb = (ADVERB.test(next) ? after : words[1] || "").replace(/[^\p{L}]/gu, "");
+        const nameLike = isCap && !NOT_NAMES.has(w) && (/['’]s\b/.test(w0) || (/^(?:and|&)$/.test(next) && /^\p{Lu}\p{Ll}{2,}/u.test(after)) || /^\p{Lu}\p{Ll}{2,}/u.test(next)
+          || (ATTRIBUTION.test(verb) && !SENTENCE_WORDS.has(w)));
         if (nameLike) run.push(w);
         return;
       }

@@ -7,6 +7,7 @@
 // structure. Title, outline, section and closing slides, and summary-like sections, are framing.
 import { sha256 } from "../records/canonical.mjs";
 import { plainForQuantities } from "./dependencies.mjs";
+import { statesValue } from "./values.mjs";
 
 export const DELIVERABLE_DIRS = Object.freeze(["study-guide", "slides", "practice"]);
 const FRAMING_SECTION = /^(summary|overview|introduction|what we will cover|key takeaways|looking ahead|recap|outline)\b/i;
@@ -148,14 +149,17 @@ export function uncoveredLines(text, seg) {
 
 // ---- the judgment-kind classifier -------------------------------------------------------------------------------
 const MECH = [/\$\$/, /\\ce\{[^}]*(<=>|->|=)/, /\\frac|\\sum|\\ln|\\log|\\sqrt|\^\{/, /\d\s*[×x*\/+−-]\s*\d/, /=\s*[−-]?\d/, /^\{\{(chart|smiles|structure)/m];
+// A value is whatever the ONE value parser reads as one (core/values.mjs, over the harness's unit table: mmHg, kcal,
+// °F, V …; denominators; scientific notation; K, pH and powers of ten) — red-team round 1, CONFIDENCE F2: this list
+// was narrower than lib/units.mjs, so "700 mmHg" or "52 kcal" made a sentence no fact at all.
 const SEMI = [
-  /\b\d+(?:[.,]\d+)?\s*(?:°C|K\b|kJ|J\b|mol|M\b|atm|bar|Pa|kPa|g\b|kg|mg|L\b|mL|%|nm|cm|m\b|s\b|min|h\b)/,
   /\b(1[0-9]{3}|20[0-9]{2})\b/,
   /\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/,
   /\b(most|least|highest|lowest|largest|smallest|first|fastest|strongest|only)\b/i,
-  /\b(discovered|proposed|formulated|named after|according to|introduced by|showed that|first described)\b/i,
+  // an attribution: a classifier verb, or a lone surname after "by" ("developed by Ostwald", round 1 F2)
+  /\b(discovered|proposed|formulated|named after|according to|introduced by|showed that|first described|developed|invented|devised|credited|coined|patented|synthesi[sz]ed)\b/i,
+  /\b(?:by|after)\s+[A-Z][a-z]{2,}(?![\w'’])/,
   /"[^"]{20,}"|“[^”]{20,}”/,
-  /\b\d+(?:\.\d+)?\s*(?:percent|per cent)\b/i,
   /(?:^|[^.!?]\s)[A-Z][a-z]+(?:\s+(?:and|&|van|von|de|'t)\s+[A-Z][a-z]+|\s+[A-Z][a-z]+)/,
 ];
 /** Assign judgment kinds deterministically, erring toward inclusion (D19-E). */
@@ -164,7 +168,7 @@ export function classifyUnit({ form, text }) {
   const t = String(text || "");
   if (form === "equation" || MECH.some((r) => r.test(t)) || (form === "answer" && /\d/.test(t))) kinds.add("mechanical");
   // values are mostly written in LaTeX: test the patterns on the folded form too (round P7-1, B19)
-  if (SEMI.some((r) => r.test(t) || r.test(plainForQuantities(t)))) kinds.add("semi-mechanical");
+  if (statesValue(t) || SEMI.some((r) => r.test(t) || r.test(plainForQuantities(t)))) kinds.add("semi-mechanical");
   const proseWords = (t.replace(/\$[^$]*\$/g, " ").match(/[A-Za-z]{3,}/g) || []).length;
   if (proseWords >= 6 || form === "question" || form === "answer" || (!kinds.size)) kinds.add("knowledge-based");
   return ["mechanical", "semi-mechanical", "knowledge-based"].filter((k) => kinds.has(k));
