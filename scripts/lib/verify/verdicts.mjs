@@ -20,7 +20,7 @@ import { randomBytes } from "node:crypto";
 import { readLogText } from "../records/log.mjs";
 import { checkableClaims, claimsHash, claimOf, quantitiesIn, withLead } from "./claims.mjs";
 import { admit, sameAtPrecision, supports } from "./admission.mjs";
-import { knowledgeBundle, readDispatches, recordDispatch, selectPassages, semiBundle } from "./dispatch.mjs";
+import { knowledgeBundle, readDispatches, recordDispatch, recordHashOf, selectPassages, semiBundle } from "./dispatch.mjs";
 
 export const CORRECTIONS_DIR = "metadata/corrections";
 
@@ -30,11 +30,16 @@ export { leadOf, recordLeads };
 
 /** The log, parsed. */
 export function logRecordsOf(text) { return String(text || "").split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean); }
-/** A dispatch record counts only if the log names it with the same bundle and answer (round P7-1, B12/B13). */
-export function dispatchLogged(record, logRecords) {
-  return record && sha256(record.bundle?.prompt ?? "") === record.bundle?.bundleHash && sha256(record.answer?.raw ?? "") === record.answer?.responseHash &&
-    logRecords.some((l) => l.type === "dispatch" && l.party?.role === "harness" && l.payload?.dispatch === record.dispatch && l.payload?.unit === record.unit && l.payload?.bundleHash === record.bundle.bundleHash && l.payload?.responseHash === record.answer.responseHash);
+/**
+ * A dispatch record counts only if the log names it with the same bundle and answer (round P7-1, B12/B13) and, for
+ * records logged since redteam round 1, the same whole record (recordHash: C2-03). Returns the log record, or null.
+ */
+export function dispatchLogEntry(record, logRecords) {
+  if (!record || sha256(record.bundle?.prompt ?? "") !== record.bundle?.bundleHash || sha256(record.answer?.raw ?? "") !== record.answer?.responseHash) return null;
+  return logRecords.find((l) => l.type === "dispatch" && l.party?.role === "harness" && l.payload?.dispatch === record.dispatch && l.payload?.unit === record.unit && l.payload?.bundleHash === record.bundle.bundleHash && l.payload?.responseHash === record.answer.responseHash
+    && (l.payload?.recordHash == null || l.payload.recordHash === recordHashOf(record))) || null;
 }
+export const dispatchLogged = (record, logRecords) => !!dispatchLogEntry(record, logRecords);
 /** The claims a semi record checked, as printed in its prompt. */
 export const recordClaimTexts = (record) => { const lines = String(record.bundle?.prompt || "").split("\n"); return lines.slice(lines.indexOf("CLAIMS") + 1, lines.indexOf("PASSAGES")).map((l) => l.match(/^\d+\. (.*)$/)?.[1]).filter(Boolean); };
 /** Did this record check exactly the unit's current checkable claims? */

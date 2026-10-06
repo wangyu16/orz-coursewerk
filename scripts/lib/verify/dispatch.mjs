@@ -166,10 +166,18 @@ export function recordDispatch(root, { kind, unit, factHash, contentHash, bundle
   };
   const dir = recordFile(root, VERIFICATION_DIR);
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, `${dispatch}.json`), JSON.stringify(record, null, 2) + "\n");
-  appendLogRecord(root, { type: "dispatch", party: { role: "harness", name: "verify" }, payload: { dispatch, kind, unit, bundleHash: bundle.bundleHash, responseHash: record.answer.responseHash, mode: answer.mode, status: admission?.status ?? null } });
+  const text = JSON.stringify(record, null, 2) + "\n";
+  fs.writeFileSync(path.join(dir, `${dispatch}.json`), text);
+  appendLogRecord(root, { type: "dispatch", party: { role: "harness", name: "verify" }, payload: { dispatch, kind, unit, bundleHash: bundle.bundleHash, responseHash: record.answer.responseHash, recordHash: recordHashOf(JSON.parse(text)), mode: answer.mode, status: admission?.status ?? null } });
   return record;
 }
+
+/**
+ * The hash of a whole dispatch record, logged with it (redteam r1 C2-03): every field that decides an outcome (an
+ * alignment record's `declared` and `alignmentBasis`, a status, the time) is bound, so an edit of any of them makes
+ * the record a dispatch the log does not vouch for. Records logged before round 1 carry no recordHash.
+ */
+export const recordHashOf = (record) => sha256(canonicalJson(record));
 
 export function readDispatches(readText, paths) {
   return paths.filter((p) => p.startsWith(VERIFICATION_DIR + "/") && p.endsWith(".json")).sort().map((p) => { try { return JSON.parse(readText(p)); } catch { return null; } }).filter(Boolean);

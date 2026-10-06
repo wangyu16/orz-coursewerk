@@ -22,7 +22,7 @@ import { approvalStatus, recordApproval } from "./lib/core/approvals.mjs";
 import { approvalPreview, originsPath } from "./lib/core/preview.mjs";
 import { openVersionCarrying } from "./lib/core/obligations.mjs";
 import { spineCritique } from "./lib/core/critique.mjs";
-import { changedSpineLines, currentSpineReview, reviewSpineChanges } from "./lib/core/spine_review.mjs";
+import { approvalPrecondition, changedSpineLines, currentSpineReview, reviewSpineChanges } from "./lib/core/spine_review.mjs";
 import { headlessVerifier } from "./lib/verify/dispatch.mjs";
 import { recordSteering } from "./lib/core/steering_intake.mjs";
 import { readConfig, writeConfig } from "./lib/records/config.mjs";
@@ -140,14 +140,11 @@ try {
   if (cmd === "approve") {
     const chapter = flag("--course") ? null : opt("--chapter");
     if (!flag("--course") && !chapters.includes(chapter)) fail(`--chapter must be one of ${chapters.join(", ")} (or --course)`);
-    const problems = checkSpine(parseSpine(reader, chapters), chapters).filter((p) => chapter ? p.file.endsWith(`/${chapter}.md`) : p.file === COURSE_MAP);
-    if (problems.length) fail(`the spine is not well-formed yet (${problems.length} problem(s), e.g. ${problems[0].detail}); fix them before approval`, 1);
-    // re-approval follows a blind review of the changed lines (D39); offline, the agent says so (--without-review)
-    const scope = chapter ? `chapter:${chapter}` : "course", changed = changedSpineLines(root, reader, scope);
-    if (changed.reapproval && changed.lines.length && !currentSpineReview(root, reader, scope) && !flag("--without-review"))
-      fail(`${changed.lines.length} line(s) changed since the last approval and have not had their blind review: node scripts/spine.mjs review --root <pkg> ${chapter ? `--chapter ${chapter}` : "--course"} (offline: --without-review, which is recorded)`, 1);
-    const note = [opt("--note") || "", flag("--without-review") && changed.lines.length && !currentSpineReview(root, reader, scope) ? "approved without the blind review of the changed lines" : ""].filter(Boolean).join("; ");
-    const r = recordApproval(root, reader, chapters, { chapter, glance: flag("--glance"), instructorWords: opt("--words"), note }, instructor());
+    // one precondition for every approval command (D39; redteam r1 C4-13): a well-formed spine, and the blind review
+    // of the changed lines before a re-approval (offline, the agent says so: --without-review, which is recorded)
+    const pre = approvalPrecondition(root, reader, chapters, { chapter, withoutReview: flag("--without-review"), note: opt("--note") || "" });
+    if (pre.problem) fail(`${pre.problem}: ${pre.hint}`, 1);
+    const r = recordApproval(root, reader, chapters, { chapter, glance: flag("--glance"), instructorWords: opt("--words"), note: pre.note }, instructor());
     console.log(JSON.stringify({ recorded: r.type, seq: r.seq, scope: r.payload.scope, version: r.payload.version }, null, 2));
     process.exit(0);
   }

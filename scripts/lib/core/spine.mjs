@@ -85,24 +85,34 @@ function parseMap(text, scope, kinds, file) {
 }
 
 function parseGuide(text, chapter, file) {
-  const objectives = [], entries = [];
-  let obj = null, entry = null;
+  const objectives = [], entries = [], problems = [];
+  let obj = null, entry = null, sub = null, n = 0;
   for (const line of String(text || "").split(/\r?\n/)) {
-    const h2 = /^##\s+(.*)$/.exec(line), h3 = /^###\s+(.*)$/.exec(line);
+    n++;
+    const h2 = /^##\s+(.*)$/.exec(line), h3 = /^###\s+(.*)$/.exec(line), h4 = /^#{4,6}\s+(.*)$/.exec(line);
     if (h2) {
       const m = /\[objective:\s*([^\]]+)\]\s*$/.exec(h2[1]);
       obj = m ? { anchor: m[1].trim(), title: h2[1].slice(0, m.index).trim(), level: null, file } : null;
       if (obj) objectives.push(obj);
-      entry = null; continue;
+      entry = null; sub = null; continue;
     }
     if (h3 && obj) {
       const p = itemParts(h3[1]);
       entry = { chapter, objective: obj.anchor, anchor: p.anchor, id: p.anchor ? `guide.${chapter}.${p.anchor}` : null, title: p.text, type: null, count: null, levels: null, targets: null, file };
-      entries.push(entry); continue;
+      entries.push(entry); sub = null; continue;
+    }
+    // what the grammar does not read must not look like an entry (redteam r1 C5-11): an anchored heading outside an
+    // objective section, or a field under no entry (an untagged section, a #### sub-entry) would be silently dropped
+    // or overwrite its parent's Count, so each is a problem for `spine check` (and approval waits on it)
+    if (h3 || h4) {
+      if (/\[anchor:/i.test(line)) problems.push({ line: n, detail: `"${line.trim().slice(0, 80)}" is anchored but is not an entry the guide grammar reads (an entry is a ### heading under a ## … [objective: …] section)` });
+      sub = h4 ? line.trim() : null; entry = null;
+      continue;
     }
     const lvl = /^\*\*Cognitive level:\*\*\s*(.+?)\.?\s*$/i.exec(line.trim());
-    if (lvl && obj && !entry) { obj.level = lvl[1].trim(); continue; }
+    if (lvl && obj && !entry && !sub) { obj.level = lvl[1].trim(); continue; }
     const f = /^\s*[-*]\s+\*\*(Type|Count|Level|Targets):\*\*\s*(.+?)\s*$/i.exec(line);
+    if (f && !entry) problems.push({ line: n, detail: `the field "${line.trim().slice(0, 60)}" belongs to no entry${sub ? ` (it is under the sub-heading "${sub.slice(0, 50)}": a sub-entry is not an entry; make it its own ### … [anchor: …] entry)` : obj ? "" : " (it is outside every ## … [objective: …] section)"}; the guide grammar does not read it` });
     if (f && entry) {
       const k = f[1].toLowerCase(), v = f[2].replace(/\.$/, "").trim();
       if (k === "type") entry.type = v;
@@ -112,7 +122,7 @@ function parseGuide(text, chapter, file) {
     }
   }
   for (const e of entries) if (e.levels == null) e.levels = objectives.find((o) => o.anchor === e.objective)?.level ?? null;
-  return { objectives, entries };
+  return { objectives, entries, problems };
 }
 
 const levelList = (s) => String(s || "").toLowerCase().split(/\s*(?:,|\band\b|\/)\s*/).map((x) => x.trim()).filter(Boolean);
@@ -173,6 +183,7 @@ export function checkSpine(spine, manifestChapters) {
     const guided = new Set(s.guide.entries.map((e) => e.objective));
     for (const o of objectives) if (!guided.has(o.anchor)) add(guide, "objective-unguided", `${o.id} has no question-guide entry`, [o.id]);
     for (const go of s.guide.objectives) if (!objectives.some((o) => o.anchor === go.anchor)) add(guide, "guide-objective-unknown", `a guide section names objective "${go.anchor}", which the concept map does not declare`);
+    for (const p of s.guide.problems || []) add(guide, "guide-outside-grammar", `line ${p.line}: ${p.detail}`);
     for (const e of s.guide.entries) {
       anchorCheck({ ...e, kind: "guide", text: e.title }, guide);
       if (!String(e.type || "").trim()) add(guide, "guide-entry-field", `${e.id || e.title}: **Type:** is missing`, e.id ? [e.id] : []);

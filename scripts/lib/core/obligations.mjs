@@ -21,7 +21,7 @@ import { makeFinding } from "../records/findings.mjs";
 import { appendLogRecord } from "../records/log.mjs";
 import { unitsPathFor, recordFile } from "../records/paths.mjs";
 import { validateUnitSidecar } from "../records/units.mjs";
-import { classifyUnit, segmentDeliverable } from "./segment.mjs";
+import { classifyUnit, derivedRole, segmentDeliverable } from "./segment.mjs";
 import { readLogText } from "../records/log.mjs";
 import { checkableClaims, claimsHash } from "../verify/claims.mjs";
 import { absoluteSentences, absolutesHash, readAbsoluteReview } from "../verify/absolutes.mjs";
@@ -119,11 +119,12 @@ export function loadUnits(root, reader) {
     const side = readSidecar(root, rel);
     const seg = segmentDeliverable(reader.text(rel), rel).units;
     if (!side || side.units.length !== seg.length) continue; // out of date: the units-not-indexed obligation covers it
-    // the judgment is recomputed from the text, never trusted from the sidecar (round P7-1, B17)
+    // the judgment and the role are recomputed from the text and its structure, never trusted from the sidecar
+    // (round P7-1, B17; redteam r1 C3-15: a sidecar role set to "framing" un-linked an off-spine paragraph)
     side.units.forEach((u, i) => {
       const text = seg[i]?.text ?? "";
       const judgment = [...new Set([...classifyUnit({ form: seg[i].form, text }), ...(u.judgmentAdded || [])])];
-      out.push({ ...u, form: seg[i].form, ...(seg[i].label ? { label: seg[i].label } : {}), judgment, role: u.role === "framing" && judgment.some((k) => k !== "knowledge-based") ? "teaching" : u.role, text });
+      out.push({ ...u, form: seg[i].form, ...(seg[i].label ? { label: seg[i].label } : {}), judgment, role: derivedRole(seg[i].role, judgment), text });
     });
   }
   return out;
@@ -323,6 +324,10 @@ export function coreObligations(root, reader, basis) {
     for (const c of owedChanges(u, acts))
       ob("instructor-change-owed", [u.id], `the change the instructor asked for in ${u.id} (${u.locator.deliverable}): "${c.choice}" — to the claim "${c.claimText.slice(0, 200)}"`);
     if (u.role === "teaching" && !(u.spineNodes || []).length) ob("unit-unlinked", [u.id], `a spine link for ${u.id} (${u.locator.deliverable}, ${u.locator.section})`);
+    // a guide entry prescribes questions: it is what a question (and its answer) serves, not what a passage teaches
+    // (redteam r1 C3-05: an off-spine paragraph linked only to a guide entry passed as linked)
+    else if (u.role === "teaching" && !["question", "answer"].includes(u.form) && (u.spineNodes || []).every((n) => n.startsWith("guide.")))
+      ob("unit-unlinked", [u.id], `a link to the objective or concept that ${u.id} (${u.locator.deliverable}, ${u.locator.section}) teaches: a guide entry is for questions`);
     const dangling = (u.spineNodes || []).filter((n) => !nodes.has(n));
     if (dangling.length) F.push(makeFinding({ module: "skeleton", kind: "unit-link-dangling", units: [u.id], statusClass: "defect", route: "agent", basis, evidence: { type: "rule", rule: "a unit links only to existing spine nodes", dangling } }));
     if (u.carried) ob("carried-unverified", [u.id], `re-verification of ${u.id} in ${u.carried.scope} version ${u.carried.version}`);
@@ -341,14 +346,54 @@ export function coreObligations(root, reader, basis) {
   }
   for (const ch of chapters) {
     const s = spine.chapters[ch];
-    for (const o of s.map.nodes.filter((n) => n.kind === "objective" && n.id)) {
-      const teaching = units.filter((u) => u.role === "teaching" && /^(study-guide|slides)\//.test(u.locator.deliverable) && (u.spineNodes || []).includes(o.id));
-      if (!teaching.length) ob("objective-uncovered", [], `a teaching unit (study guide or slides) that serves ${o.id}`);
-    }
+    for (const o of s.map.nodes.filter((n) => n.kind === "objective" && n.id))
+      if (!units.some((u) => teachesInDeliverable(u, o.id))) ob("objective-uncovered", [], `a teaching unit (study guide or slides) that serves ${o.id}`);
+    const assigned = guideAssignment(s.guide.entries, units);
     for (const e of s.guide.entries.filter((x) => x.id)) {
-      const qs = units.filter((u) => u.form === "question" && (u.spineNodes || []).includes(e.id));
-      if (qs.length < (Number.isInteger(e.count) ? e.count : 0)) ob("guide-entry-short", qs.map((u) => u.id), `${e.count - qs.length} more question(s) for ${e.id} (has ${qs.length} of ${e.count})`);
+      const got = assigned.get(e.id) || [], linked = units.filter((u) => u.form === "question" && (u.spineNodes || []).includes(e.id));
+      if (got.length < (Number.isInteger(e.count) ? e.count : 0))
+        ob("guide-entry-short", linked.map((u) => u.id), `${e.count - got.length} more question(s) for ${e.id} (has ${got.length} of ${e.count})`); // only practice questions count, each toward one entry
     }
   }
+  // course-map objectives (redteam r1 C1-10). The grammar links a chapter to the course map only through [prereq: …]
+  // (the slice chapterCoverage binds into the chapter's approval), so a course objective is covered when a chapter
+  // objective or concept names it as a prerequisite — that node is itself checked above — or a teaching unit links it.
+  const chapterNodes = chapters.flatMap((ch) => spine.chapters[ch].map.nodes);
+  for (const o of spine.course.nodes.filter((n) => n.kind === "objective" && n.id))
+    if (!chapterNodes.some((n) => (n.prereqs || []).includes(o.id)) && !units.some((u) => teachesInDeliverable(u, o.id)))
+      ob("course-objective-uncovered", [], `a chapter objective or concept that names ${o.id} in [prereq: …], or a teaching unit (study guide or slides) that serves it`);
   return F;
+}
+
+/**
+ * The units the blind link review reads (redteam r1 C1-04, C3-05): every linked teaching unit — answers too, read with
+ * their question, and units linked only to guide entries. Coverage (objective-uncovered) counts exactly these units of
+ * the study guides and slides, so nothing counts toward coverage that the review never reads.
+ */
+export const reviewable = (u) => u.role === "teaching" && (u.spineNodes || []).length > 0;
+export const teachesInDeliverable = (u, id) => reviewable(u) && /^(study-guide|slides)\//.test(u.locator.deliverable) && u.spineNodes.includes(id);
+
+/**
+ * Which practice question fills which guide entry's Count (redteam r1 C5-08, C5-17): only questions in practice/ count
+ * (a worked example's solution is printed beside it), and each question counts toward ONE entry — a maximum matching
+ * of questions to the entries' Count slots, so a question linked to several entries goes where it is needed.
+ * Returns Map(entry id → [question ids]).
+ */
+export function guideAssignment(entries, units) {
+  const cap = new Map(entries.filter((e) => e.id).map((e) => [e.id, Number.isInteger(e.count) && e.count > 0 ? e.count : 0]));
+  const got = new Map([...cap.keys()].map((id) => [id, []]));
+  const qs = units.filter((u) => u.form === "question" && u.locator.deliverable.startsWith("practice/"));
+  const linksOf = new Map(qs.map((q) => [q.id, (q.spineNodes || []).filter((n) => cap.get(n) > 0)]));
+  const place = (q, seen) => {
+    for (const e of linksOf.get(q)) {
+      if (seen.has(e)) continue;
+      seen.add(e);
+      const slot = got.get(e);
+      if (slot.length < cap.get(e)) { slot.push(q); return true; }
+      for (let k = 0; k < slot.length; k++) if (place(slot[k], seen)) { slot[k] = q; return true; }
+    }
+    return false;
+  };
+  for (const q of qs) place(q.id, new Set());
+  return got;
 }

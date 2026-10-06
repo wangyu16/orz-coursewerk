@@ -136,8 +136,8 @@ try {
     const { reviewAlignment } = await import("./lib/verify/alignment.mjs");
     const results = await reviewAlignment(root, reader, { verifier: headlessVerifier(), only: only(), onProgress: log });
     out({ units: results.length, doubtfulLinks: results.reduce((a, r) => a + r.doubtful.length, 0), offPlan: results.filter((r) => r.offPlan).length,
-      fidelityDiffers: results.filter((r) => r.fidelity && (r.fidelity.type === "differs" || r.fidelity.level === "differs")).length,
-      unscorable: results.filter((r) => r.status === "unscorable").length, costUsd: Number(results.reduce((a, r) => a + (r.costUsd || 0), 0).toFixed(4)) }); process.exit(0);
+      fidelityDiffers: results.filter((r) => r.fidelity.some((f) => f.type === "differs" || f.level === "differs")).length,
+      unscorable: results.filter((r) => r.status !== "reviewed").length, costUsd: Number(results.reduce((a, r) => a + (r.costUsd || 0), 0).toFixed(4)) }); process.exit(0);
   }
   if (cmd === "correct") {
     const model = opt("--model") || fail("--model <model id> is required");

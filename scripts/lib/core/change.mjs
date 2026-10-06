@@ -1,7 +1,8 @@
 // How big is a spine change? (D16, D19-F, D21.) Compares two parsed chapter spines (or two course maps):
 //   none        — identical;
-//   light       — every node and anchor kept, and no fact, value, name, number, negation, level, question type or
-//                 count changed (typo, rephrasing, local re-ordering of sentences) → a glance confirmation;
+//   light       — every node and anchor kept, and no fact, value, name, number, negation, direction word (fewer/more,
+//                 raise/lower, exothermic/endothermic, reactant/product …: meaningTokens; redteam r1 C4-13), level,
+//                 question type or count changed (typo, rephrasing, local re-ordering of sentences) → a glance confirmation;
 //   substantive — anything else within the version (sub-concept added or removed, depth, guidance, a new
 //                 objective, a reorder of items) → full re-approval with diff and impact;
 //   structural  — identity cannot be carried (an objective appears to be split or merged; objectives moved
@@ -29,7 +30,10 @@ export function meaningTokens(text) {
   return [...factTokens(text), ...(String(text || "").match(DIRECTION) || []).map((x) => x.toLowerCase())].sort();
 }
 
-const sameTokens = (a, b) => JSON.stringify(factTokens(a)) === JSON.stringify(factTokens(b));
+// a swap of direction words reverses a statement without touching a fact token (C4-13): a spine change compares the
+// meaning tokens AND the order of the direction words ("fewer … more" → "more … fewer" keeps the sorted multiset)
+const directions = (t) => (String(t || "").match(DIRECTION) || []).map((x) => x.toLowerCase());
+const sameTokens = (a, b) => JSON.stringify(meaningTokens(a)) === JSON.stringify(meaningTokens(b)) && JSON.stringify(directions(a)) === JSON.stringify(directions(b));
 const words = (t) => new Set(String(t || "").toLowerCase().match(/[a-z]{4,}/g) || []);
 const overlap = (a, b) => { const A = words(a), B = words(b); let n = 0; for (const w of A) if (B.has(w)) n++; return n / Math.max(1, Math.min(A.size, B.size)); };
 
@@ -59,7 +63,7 @@ export function classifyChapterChange(before, after, o = {}) {
   for (const [id, b] of bN) {
     const a = aN.get(id); if (!a) continue;
     if (JSON.stringify([...b.prereqs].sort()) !== JSON.stringify([...a.prereqs].sort())) reasons.push({ kind: "substantive", why: `${id}: prerequisites changed` });
-    if (!sameTokens(b.text, a.text)) reasons.push({ kind: "substantive", why: `${id}: a fact, value, name, number or negation changed` });
+    if (!sameTokens(b.text, a.text)) reasons.push({ kind: "substantive", why: `${id}: a fact, value, name, number, negation or direction changed` });
   }
   const bE = new Map(before.entries.map((e) => [e.id, e])), aE = new Map(after.entries.map((e) => [e.id, e]));
   for (const k of [...bE.keys()].filter((k) => !aE.has(k))) reasons.push({ kind: "substantive", why: `guide entry ${k} removed` });
@@ -69,7 +73,7 @@ export function classifyChapterChange(before, after, o = {}) {
     for (const f of ["objective", "type", "count", "levels", "targets"]) if (String(b[f] ?? "") !== String(a[f] ?? "")) reasons.push({ kind: "substantive", why: `${id}: ${f} changed` });
   }
   // edits outside parsed items (summary, scope, guide prose, rubrics): light only if no fact token changed
-  if (o.beforeText !== undefined && !sameTokens(o.beforeText, o.afterText)) reasons.push({ kind: "substantive", why: "a fact, value, name, number or negation changed in the document's prose" });
+  if (o.beforeText !== undefined && !sameTokens(o.beforeText, o.afterText)) reasons.push({ kind: "substantive", why: "a fact, value, name, number, negation or direction changed in the document's prose" });
   const kind = reasons.some((r) => r.kind === "structural") ? "structural" : reasons.length ? "substantive" : "light";
   return { kind, reasons };
 }
