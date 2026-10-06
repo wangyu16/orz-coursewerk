@@ -1870,6 +1870,216 @@
           "tests/three-c-loop.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.control.review-current-record",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "MS9 reads, for each unit, the latest (in log order) of its logged link reviews whose basis matches the unit as it is now; an older current review is not hidden by a newer one made stale by an edit and its revert.",
+      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C2-02",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.review-record-bound",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A dispatch's whole record is bound into its log entry (recordHash): an edit of any field — an alignment record's declared items, its alignmentBasis, its time — makes it a dispatch the log does not vouch for (dispatch-unlogged, a blocking defect). MS9 re-derives what a review declared from the unit, never from the record.",
+      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C2-03",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.review-fails-closed",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The link review fails closed: verdicts and fidelity words are read case-insensitively; a declared link the answer omits, a word that is no verdict, a fidelity the harness cannot read, or an unscorable answer is a question (alignment-unscorable, route agent); an unreadable re-run does not hide an earlier readable verdict.",
+      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C2-16",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.answers-reviewed",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Review and coverage read the same set: answers count toward objective coverage (a study guide's worked-example Solution teaches), so the link review reads every linked teaching unit, answers included, each with its question as context.",
+      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C1-04",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.course-objectives-covered",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "An approved course-map objective is covered when a chapter objective or concept names it in [prereq: …] (the grammar's link from a chapter to the course map) or a study-guide/slides teaching unit links it; otherwise it is the obligation course-objective-uncovered.",
+      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C1-10",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.guide-only-links",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A guide entry is for questions: a teaching unit that is neither a question nor an answer and links only guide entries is unit-unlinked; it is still reviewed, its declared items being the entries and the entries' objectives.",
+      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C3-05",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.objectives-section",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Only the list items of a Learning objectives section (any heading level; the section runs to the next heading of its level or higher, `#` counted as `##`, a slide marker or a rule) are structure; other prose in it is segmented into units, and every list item in it is read by the restated-objective check.",
+      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C3-06",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.role-derived",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A unit's role is re-derived from its text and structure (the segmenter; framing may not carry facts) by loadUnits and MS9; a role in the sidecar is never trusted.",
+      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C3-15",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.restated-objectives-full",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Restated objectives are compared with the approved ones on their full text, maths included, with notation normalized (LaTeX and Unicode, spacing, emphasis, punctuation); every approved objective must be restated where the section exists (objective-not-restated); a `#` Learning objectives heading is read like `##`.",
+      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C4-12",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.spine.direction-substantive",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A spine change that changes a direction word (fewer/more, raise/lower …: meaningTokens, in order) is substantive, never light; `coursewerk.mjs approve` and `spine.mjs approve` share one precondition (approvalPrecondition: a well-formed spine and the blind review of the changed lines, D39, or a recorded --without-review).",
+      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C4-13",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.guide-count-distinct",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Each practice question counts toward one guide entry's Count: guide-entry-short is computed on a maximum matching of questions to the entries' Count slots, so a question linked to several entries fills only one.",
+      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C5-08",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.guide-fidelity-every-link",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The level review checks a practice question against every guide entry it is linked to (one fidelity answer per entry, by id); an entry left unanswered is a question (alignment-unscorable).",
+      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C5-08",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.guide-count-practice-only",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Only questions in practice/ count toward a guide entry's Count; a study guide's worked example (its solution printed beside it) does not.",
+      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C5-17",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.spine.guide-grammar-strict",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "spine check (and so approval and the gate) refuses guide text the grammar does not read: an anchored heading that is not a ### entry under a ## … [objective: …] section, and entry fields under no entry (an untagged section, a #### sub-entry); a sub-entry never overwrites its parent's fields.",
+      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C5-11",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-control.test.mjs"
+        ]
+      }
     }
   ]
 }

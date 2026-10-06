@@ -13,7 +13,8 @@ function copyIndexedSource(source, target) {
   const excluded = new Set([".git", "node_modules", "package", "personal", "inputs", "preview", "reports", "dist", "examples", ".coursewerk"]);
   fs.mkdirSync(target, { recursive: true });
   for (const entry of fs.readdirSync(source, { withFileTypes: true })) {
-    if (entry.isDirectory() && excluded.has(entry.name)) continue;
+    // `.git` is a FILE in a git worktree: copied, it would point the test's `git init` at the real repository
+    if ((entry.isDirectory() || entry.name === ".git") && excluded.has(entry.name)) continue;
     if (entry.name === "COURSEWERK_INDEX.json" && path.basename(source) === "system") continue;
     const from = path.join(source, entry.name);
     const to = path.join(target, entry.name);

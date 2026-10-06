@@ -5,12 +5,18 @@
 //   off-spine             (question, digest)  the unit teaches nothing in the plan — keep or drop is the instructor's
 //   assessment-fidelity   (question, agent)   a practice question not of its guide entry's type or level (agent text)
 //   assessment-fidelity-instructor (question, digest)  the same in the instructor's text (D31: theirs to change)
-// A review is current only while the unit's text, its links and the plan it was judged against are unchanged.
+//   alignment-unscorable  (question, agent)   the current review cannot be read — not the reply shape, a declared link
+//                                             or a guide entry left unanswered, a word that is no verdict: run it
+//                                             again (redteam r1 C2-16: the review fails closed, never silent)
+// A review is current only while the unit's text, its links and the plan it was judged against are unchanged. The
+// review used is the LATEST (in log order) of the unit's logged reviews that is current, so an older review that
+// matches the unit as it is now is not hidden by a newer one made stale by an edit and its revert (C2-02). What a
+// review declared is re-derived from the unit, never read from the record; the whole record is bound in the log (C2-03).
 // Trial: questions only, never blocking, until its own study promotes it (D13).
-import { segmentDeliverable } from "../lib/core/segment.mjs";
+import { classifyUnit, derivedRole, segmentDeliverable } from "../lib/core/segment.mjs";
 import { readDispatches } from "../lib/verify/dispatch.mjs";
-import { dispatchLogged, instructorAuthored, logRecordsOf } from "../lib/verify/verdicts.mjs";
-import { alignmentBasis, planOf, readAlignment, reviewInputs, reviewable } from "../lib/verify/alignment.mjs";
+import { dispatchLogEntry, instructorAuthored, logRecordsOf } from "../lib/verify/verdicts.mjs";
+import { planOf, readAlignment, reviewBasis, reviewInputs, reviewable } from "../lib/verify/alignment.mjs";
 import { base } from "./_shared.mjs";
 
 function currentUnits(s) {
@@ -19,7 +25,8 @@ function currentUnits(s) {
     const side = s.json(p); if (!Array.isArray(side?.units) || typeof side.deliverable !== "string") continue;
     const seg = segmentDeliverable(s.text(side.deliverable) || "", side.deliverable).units;
     if (seg.length !== side.units.length) continue;
-    side.units.forEach((u, i) => out.push({ ...u, form: seg[i].form, text: seg[i].text, ...(seg[i].label ? { label: seg[i].label } : {}) }));
+    // the role is the segmenter's, never the sidecar's (C3-15)
+    side.units.forEach((u, i) => out.push({ ...u, form: seg[i].form, text: seg[i].text, role: derivedRole(seg[i].role, [...new Set([...classifyUnit(seg[i]), ...(u.judgmentAdded || [])])]), ...(seg[i].label ? { label: seg[i].label } : {}) }));
   }
   return out;
 }
@@ -29,21 +36,34 @@ function run(s) {
   const all = currentUnits(s), byId = new Map(all.map((u) => [u.id, u]));
   const log = logRecordsOf(s.text("metadata/LOG.jsonl"));
   const plan = planOf(s);
-  const latest = new Map();
-  for (const r of readDispatches((p) => s.text(p), s.paths).filter((x) => x.kind === "alignment" && dispatchLogged(x, log)))
-    if (!latest.has(r.unit) || String(r.at) > String(latest.get(r.unit).at)) latest.set(r.unit, r);
-  for (const [id, r] of latest) {
+  const byUnit = new Map();
+  for (const r of readDispatches((p) => s.text(p), s.paths).filter((x) => x.kind === "alignment")) {
+    const entry = dispatchLogEntry(r, log); if (!entry) continue; // MS8 reports a record the log does not vouch for
+    byUnit.set(r.unit, [...(byUnit.get(r.unit) || []), { r, seq: Number(entry.seq ?? 0) }]);
+  }
+  for (const [id, recs] of byUnit) {
     const u = byId.get(id);
     if (!u || !reviewable(u)) continue;
-    const inp = reviewInputs(u, all, plan);
-    if (r.alignmentBasis !== alignmentBasis(u, plan.nodes, [...inp.chapterNodes, ...inp.links])) continue; // a review of something else is history
-    const v = readAlignment(r.answer?.raw, r.bundle?.nonce, r.declared || [], new Set(inp.chapterNodes.map((n) => n.id)), !!inp.guide);
+    const inp = reviewInputs(u, all, plan), basis = reviewBasis(u, inp);
+    const declared = inp.declared.map((n) => n.id), guides = inp.guides.map((g) => g.id), known = new Set(inp.chapterNodes.map((n) => n.id));
+    // the unit's current reviews, newest first (a review of something else is history)
+    const current = recs.filter(({ r }) => r.alignmentBasis === basis).sort((a, b) => b.seq - a.seq).map(({ r }) => r);
+    if (!current.length) continue;
+    const read = (r) => readAlignment(r.answer?.raw, r.bundle?.nonce, declared, known, r.guides ? guides : guides.length ? true : []);
+    const v0 = read(current[0]);
+    if (!v0 || v0.unanswered.length)
+      out.push({ kind: "alignment-unscorable", units: [u.id], evidence: { type: "judgment", note: `the latest link review of ${u.id} cannot be read${v0 ? ` (no usable answer for ${v0.unanswered.join(", ")})` : " (not the reply the review asks for)"}: run it again (node scripts/verify.mjs alignment --units ${u.id})`, dispatch: current[0].dispatch } });
+    // what the latest READABLE current review says stands: an unreadable re-run does not hide an earlier "no"
+    const r = current.find((x) => read(x)), v = r ? read(r) : null;
     if (!v) continue;
     for (const l of v.links.filter((x) => x.verdict === "no"))
       out.push({ kind: "link-doubtful", units: [u.id], evidence: { type: "judgment", note: `${u.id} is linked to ${l.id} but does not deal with it: ${l.why}${v.also.length ? ` It teaches ${v.also.join(", ")}.` : ""}`, link: l.id, suggested: v.also, dispatch: r.dispatch } });
     if (v.offPlan) out.push({ kind: "off-spine", units: [u.id], evidence: { type: "judgment", note: `${u.id} teaches nothing in the chapter's approved plan: keep it (the spine may need it) or drop it?`, dispatch: r.dispatch } });
-    if (v.fidelity && (v.fidelity.type === "differs" || v.fidelity.level === "differs"))
-      out.push({ kind: instructorAuthored(u, log) ? "assessment-fidelity-instructor" : "assessment-fidelity", units: [u.id], evidence: { type: "judgment", note: `${u.label || u.id} is not ${[v.fidelity.type === "differs" ? "the type" : null, v.fidelity.level === "differs" ? "the level" : null].filter(Boolean).join(" or ")} its guide entry asks for (${inp.guide}): ${v.fidelity.why}`, dispatch: r.dispatch } });
+    for (const f of v.fidelity.filter((x) => x.type === "differs" || x.level === "differs")) {
+      const g = (f.id && inp.guides.find((x) => x.id === f.id)) || inp.guides[0];
+      const ask = g ? `${g.type || "any type"} at the level "${g.levels || "unspecified"}" (${g.title})` : "";
+      out.push({ kind: instructorAuthored(u, log) ? "assessment-fidelity-instructor" : "assessment-fidelity", units: [u.id], evidence: { type: "judgment", note: `${u.label || u.id} is not ${[f.type === "differs" ? "the type" : null, f.level === "differs" ? "the level" : null].filter(Boolean).join(" or ")} its guide entry asks for (${ask}): ${f.why}`, ...(g ? { guide: g.id } : {}), dispatch: r.dispatch } });
+    }
   }
   return out;
 }
@@ -55,6 +75,7 @@ export default {
       { kind: "off-spine", statusClass: "question", evidenceType: "judgment", route: "digest" },
       { kind: "assessment-fidelity", statusClass: "question", evidenceType: "judgment", route: "agent" },
       { kind: "assessment-fidelity-instructor", statusClass: "question", evidenceType: "judgment", route: "digest" },
+      { kind: "alignment-unscorable", statusClass: "question", evidenceType: "judgment", route: "agent" },
     ] }),
   run,
 };

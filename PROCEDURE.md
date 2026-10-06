@@ -106,7 +106,9 @@ Work in batches (one to three chapters, or a session's budget). In each batch:
    - Run `units.mjs begin` before writing and `units.mjs index --as agent` after: every unit gets its origin.
    - Follow the skills, `docs/authoring-guidelines.md` and `docs/writing-checkable-statements.md`.
 2. **Link** each teaching unit to the spine nodes it serves (`units.mjs link`), and each practice question to its
-   assessment-guide entry.
+   assessment-guide entry. A guide entry is for practice questions: a passage linked only to one is still unlinked,
+   a worked example in a study guide does not count toward an entry's Count, and one question counts toward one
+   entry only.
 3. **Run the gate** (`gate.mjs --inputs <corpus>`) and fix what is routed to you. Facts:
    - `verify.mjs search` (claim-only retrieval and pinning), then `semi` (the blind verifier);
    - `absolutes` (a context review of absolute statements);
@@ -118,8 +120,10 @@ Work in batches (one to three chapters, or a session's budget). In each batch:
        their credit stays.
    - `correct` (auto-correction of an admitted, uncontested contradiction, shown as a diff);
    - `alignment` (a blind link and level review, trial). It checks whether each linked unit teaches what it is
-     linked to, and whether a practice question has its guide entry's type and level. A doubtful link is yours to
-     relink. A unit off the plan, or a level slip in the instructor's text, is the instructor's question.
+     linked to (answers are read with their question), and whether a practice question has the type and level of
+     each guide entry it is linked to. A doubtful link is yours to relink, and a review the harness cannot read
+     (`alignment-unscorable`) is yours to run again. A unit off the plan, or a level slip in the instructor's text,
+     is the instructor's question.
    The gate's `knowledgeUnreviewed` lists the units no blind review has read at their current text. It does not
    block, but a unit that changed since its last review is the first place to look.
 4. **Re-run the gate.** Stop when a run raises nothing new for you, or the budget is spent. Then bring M4.
@@ -146,8 +150,9 @@ spent; the records let the next session resume.
 **What the gate blocks on:**
 - a **defect**: evidence that something is wrong;
 - an **obligation**: something required is missing — a fact without admitted evidence, a unit without a spine link,
-  an objective nobody teaches, a guide entry short of its count, a unit to re-verify after a change, an absolute not
-  yet reviewed, an edit not yet indexed.
+  an objective nobody teaches (a course-map objective too, unless a chapter objective or concept names it in
+  `[prereq: …]`), a guide entry short of its count, a unit to re-verify after a change, an absolute not yet
+  reviewed, an edit not yet indexed.
 
 **Questions never block.** They go to the digest. At publish they are raised once more: with any still open,
 `publish` lists them and stops. If the instructor still wants to publish, follow their word

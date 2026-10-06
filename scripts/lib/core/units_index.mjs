@@ -17,7 +17,7 @@ import { appendLogRecord, parseLog, readLogText, verifyLog } from "../records/lo
 import { unitsPathFor, recordFile } from "../records/paths.mjs";
 import { validateUnitSidecar } from "../records/units.mjs";
 import { makeFinding } from "../records/findings.mjs";
-import { DELIVERABLE_DIRS, classifyUnit, segmentDeliverable, slugify, tokensOf, unitHash } from "./segment.mjs";
+import { DELIVERABLE_DIRS, classifyUnit, derivedRole, segmentDeliverable, slugify, tokensOf, unitHash } from "./segment.mjs";
 import { manifestChapters } from "./package_reader.mjs";
 import { upgradeStamps } from "./obligations.mjs";
 
@@ -158,9 +158,8 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
       if (changed) changedIds.push(id);
       const classified = classifyUnit(s);
       const added = (prev?.judgmentAdded || []).filter((k) => !classified.includes(k));
-      let role = s.role;
       const judgment = [...new Set([...classified, ...added])];
-      if (role === "framing" && judgment.some((k) => k !== "knowledge-based")) role = "teaching"; // framing may not carry facts (D19-I)
+      const role = derivedRole(s.role, judgment); // framing may not carry facts (D19-I)
       return {
         id, locator: { deliverable: rel, section: s.section, ordinal: i, contentHash: hash, lines: [s.startLine, s.endLine] },
         form: s.form, role, origin, spineNodes: prev?.spineNodes || inherited || [], judgment, ...(added.length ? { judgmentAdded: added } : {}),

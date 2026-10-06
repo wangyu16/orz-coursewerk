@@ -460,8 +460,10 @@ test("[req.spine.restated] a restated learning objective must say what the appro
   fs.writeFileSync(f, s.replace("partially counteracts the disturbance.", "partially counteracts the *disturbance*."));
   assert.equal(restatedObjectiveFindings(liveReader(p.root), "b").length, 0, "emphasis is notation");
   fs.writeFileSync(f, s.replace("partially counteracts the disturbance.", "completely cancels the disturbance."));
+  // the changed item is a difference, and the approved objective it replaced is no longer restated (redteam r1 C4-12)
   const r = restatedObjectiveFindings(liveReader(p.root), "b");
-  assert.equal(r.length, 1); assert.equal(r[0].kind, "objective-restated-differently"); assert.equal(r[0].statusClass, "defect"); assert.equal(r[0].route, "agent");
+  assert.deepEqual(r.map((x) => x.kind).sort(), ["objective-not-restated", "objective-restated-differently"]);
+  assert.ok(r.every((x) => x.statusClass === "defect" && x.route === "agent"));
 });
 
 test("[req.knowledge.review] the gate reports knowledge units no blind review has read at their current text (best effort, not blocking)", async (t) => {

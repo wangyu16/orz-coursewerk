@@ -3,14 +3,50 @@
 //
 // A unit is the smallest piece that can be checked on its own: a paragraph, a list item (on slides: a whole bullet
 // group), a table row, an equation block, a callout, a figure (image, Mermaid, chart, structure), a question and each
-// worked answer. Headings, the deck header, slide markers and the deliverable's restated "Learning objectives" are
-// structure. Title, outline, section and closing slides, and summary-like sections, are framing.
+// worked answer. Headings, the deck header, slide markers and the list items of the deliverable's restated "Learning
+// objectives" are structure (any other prose in that section is content). Title, outline, section and closing slides, and summary-like sections, are framing.
 import { sha256 } from "../records/canonical.mjs";
 import { plainForQuantities } from "./dependencies.mjs";
 
 export const DELIVERABLE_DIRS = Object.freeze(["study-guide", "slides", "practice"]);
 const FRAMING_SECTION = /^(summary|overview|introduction|what we will cover|key takeaways|looking ahead|recap|outline)\b/i;
 const FRAMING_TEMPLATES = new Set(["title", "outline", "section", "closing"]);
+
+export const LIST_ITEM = /^(?:[-*+]|\d+[.)])\s+/;
+/**
+ * The restated "Learning objectives" lists of a deliverable (redteam r1 C3-06, C4-12). A "Learning objectives" heading
+ * of any level opens a section that runs to the next heading of its level or higher (a `#` heading counts as `##`), a
+ * slide marker or a rule. Only the section's LIST ITEMS are restated objectives: structure, which the restated-
+ * objective check reads in full. Any other prose in the section is content, segmented into units like any other.
+ * Returns [{ line, items: [{ line, text }], listLines: Set }] (0-based line indices).
+ */
+export function learningObjectiveSections(text) {
+  const lines = String(text || "").split("\n"), out = [];
+  for (let i = 0; i < lines.length; i++) {
+    const h = /^(#{1,6})\s+learning objectives\s*:?\s*$/i.exec(lines[i].trim());
+    if (!h) continue;
+    const level = Math.max(2, h[1].length), sec = { line: i, items: [], listLines: new Set() };
+    let k = i + 1;
+    while (k < lines.length) {
+      const t = lines[k].trim(), hh = /^(#{1,6})\s/.exec(t);
+      if ((hh && hh[1].length <= level) || /^<!--\s*slide\b/.test(t) || /^(?:-{3,}|\*{3,}|_{3,})$/.test(t)) break;
+      if (!LIST_ITEM.test(t)) { k++; continue; }
+      // a list: each item with its indented continuation lines (the segmenter's own list rule)
+      while (k < lines.length) {
+        const lt = lines[k].trim();
+        if (LIST_ITEM.test(lt)) { sec.items.push({ line: k, text: lt.replace(LIST_ITEM, "") }); sec.listLines.add(k); k++; continue; }
+        if (lt && /^\s{2,}/.test(lines[k]) && sec.items.length) { sec.items[sec.items.length - 1].text += ` ${lt}`; sec.listLines.add(k); k++; continue; }
+        break;
+      }
+    }
+    out.push(sec);
+    i = k - 1;
+  }
+  return out;
+}
+
+/** A unit's role, from its structure and its facts, never from a sidecar (redteam r1 C3-15): framing may not carry facts (D19-I). */
+export const derivedRole = (segRole, judgment) => (segRole === "framing" && !judgment.some((k) => k !== "knowledge-based") ? "framing" : "teaching");
 
 export const slugify = (s) => String(s).toLowerCase().replace(/[`*_$\\{}]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "section";
 /** The text a unit's identity is computed over: whitespace and markup emphasis folded. */
@@ -26,13 +62,14 @@ export function segmentDeliverable(text, deliverable) {
   const lines = String(text || "").split("\n");
   const units = [], covered = new Set();
   const isSlides = deliverable.startsWith("slides/");
-  let section = "top", sectionTitle = "", slideNo = 0, slideTemplate = null, skipSection = false;
+  let section = "top", sectionTitle = "", slideNo = 0, slideTemplate = null;
+  const restated = new Set(learningObjectiveSections(text).flatMap((s) => [...s.listLines])); // read by the restated-objective check
   const struct = (i) => covered.add(i);
   const roleFor = () => (isSlides && FRAMING_TEMPLATES.has(slideTemplate)) || FRAMING_SECTION.test(sectionTitle) ? "framing" : "teaching";
   const push = (form, a, b, role = roleFor(), label = null) => {
     const body = lines.slice(a, b + 1).join("\n").trim();
     for (let k = a; k <= b; k++) covered.add(k);
-    if (!body || skipSection) return;
+    if (!body) return;
     units.push({ form, role, section, text: body, startLine: a + 1, endLine: b + 1, ...(label ? { label } : {}) });
   };
   let i = 0;
@@ -42,7 +79,7 @@ export function segmentDeliverable(text, deliverable) {
     // HTML comments: deck header, slide markers, notes
     if (t.startsWith("<!--")) {
       const m = /<!--\s*slide\b([^>]*)-->/.exec(t);
-      if (m) { slideNo++; slideTemplate = /template=([a-z-]+)/.exec(m[1])?.[1] || null; section = `slide-${slideNo}`; sectionTitle = ""; skipSection = false; }
+      if (m) { slideNo++; slideTemplate = /template=([a-z-]+)/.exec(m[1])?.[1] || null; section = `slide-${slideNo}`; sectionTitle = ""; }
       let j = i; while (j < lines.length && !lines[j].includes("-->")) j++;
       for (let k = i; k <= j; k++) struct(k);
       i = j + 1; continue;
@@ -59,7 +96,6 @@ export function segmentDeliverable(text, deliverable) {
       struct(i);
       if (h[1].length <= 2) {
         sectionTitle = h[2].trim();
-        skipSection = /^learning objectives$/i.test(sectionTitle);
         section = isSlides ? `slide-${slideNo}-${slugify(sectionTitle)}` : slugify(sectionTitle);
       }
       i++; continue;
@@ -118,6 +154,7 @@ export function segmentDeliverable(text, deliverable) {
     }
     // lists: on slides a whole contiguous list is one bullet group; elsewhere each item (with continuations)
     if (/^(?:[-*+]|\d+[.)])\s+/.test(t)) {
+      if (restated.has(i)) { while (restated.has(i)) struct(i++); continue; }
       let j = i, items = [];
       while (j < lines.length) {
         const lt = lines[j].trim();

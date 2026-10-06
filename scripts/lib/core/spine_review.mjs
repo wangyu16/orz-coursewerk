@@ -8,7 +8,7 @@ import { readLogText, parseLog } from "../records/log.mjs";
 import { recordFile } from "../records/paths.mjs";
 import { canonicalJson, sha256 } from "../records/canonical.mjs";
 import { recordDispatch } from "../verify/dispatch.mjs";
-import { COURSE_MAP, spinePaths } from "./spine.mjs";
+import { COURSE_MAP, checkSpine, parseSpine, spinePaths } from "./spine.mjs";
 
 const filesOf = (scope) => (scope === "course" ? [COURSE_MAP] : [spinePaths(scope.slice("chapter:".length)).map]);
 
@@ -72,6 +72,22 @@ export async function reviewSpineChanges(root, reader, scope, { verifier }) {
   fs.mkdirSync(recordFile(root, "metadata/spine/review"), { recursive: true });
   fs.writeFileSync(recordFile(root, reviewFile(scope)), JSON.stringify(out, null, 2) + "\n");
   return { ...out, costUsd };
+}
+
+/**
+ * What every approval command checks before it records an approval (redteam r1 C4-13: `coursewerk.mjs approve` had
+ * neither check). The scope's spine must be well-formed, and a re-approval follows the blind review of the changed
+ * lines (D39) — offline, the agent says so (`withoutReview`), and the approval's note records it.
+ * Returns { problem, hint } when the approval must wait, else { note }.
+ */
+export function approvalPrecondition(root, reader, chapters, { chapter = null, withoutReview = false, note = "" } = {}) {
+  const problems = checkSpine(parseSpine(reader, chapters), chapters).filter((p) => chapter ? p.file.endsWith(`/${chapter}.md`) : p.file === COURSE_MAP);
+  if (problems.length) return { problem: `the spine is not well-formed yet (${problems.length} problem(s), e.g. ${problems[0].detail}); fix them before approval`, hint: "node scripts/spine.mjs check --root <pkg>" };
+  const scope = chapter ? `chapter:${chapter}` : "course", changed = changedSpineLines(root, reader, scope);
+  const unreviewed = changed.reapproval && changed.lines.length > 0 && !currentSpineReview(root, reader, scope);
+  if (unreviewed && !withoutReview)
+    return { problem: `${changed.lines.length} line(s) changed since the last approval and have not had their blind review`, hint: `node scripts/spine.mjs review --root <pkg> ${chapter ? `--chapter ${chapter}` : "--course"} (offline: --without-review, which is recorded)` };
+  return { note: [note || "", unreviewed ? "approved without the blind review of the changed lines" : ""].filter(Boolean).join("; ") };
 }
 
 /** The review of a scope's CURRENT text, if one was run (null: none, or the map changed since). */

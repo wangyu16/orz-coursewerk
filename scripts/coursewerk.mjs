@@ -5,7 +5,7 @@
 //   node scripts/coursewerk.mjs status   --root <pkg> [--inputs <dir>]                        states, approvals, what blocks
 //   node scripts/coursewerk.mjs assemble --root <pkg> --chapter <slug> --name <instructor> --words "<their words>"
 //   node scripts/coursewerk.mjs back-to-draft --root <pkg> --chapter <slug> --name <instructor> --words "…"
-//   node scripts/coursewerk.mjs approve  --root <pkg> (--chapter <slug> | --course) [--glance] --name <instructor> --words "…"
+//   node scripts/coursewerk.mjs approve  --root <pkg> (--chapter <slug> | --course) [--glance] [--without-review] --name <instructor> --words "…"
 //   node scripts/coursewerk.mjs digest   --root <pkg> [--inputs <dir>] [--deliver --model <id>]               M4 (size: the instructor's digest-cap, default 10)
 //   node scripts/coursewerk.mjs digest-cap --root <pkg> --set <n> --name <instructor> --words "…"
 //   node scripts/coursewerk.mjs recommend --root <pkg> --entry <n> --text "<what you recommend>" --model <id>   your recommendation, before M4
@@ -18,6 +18,7 @@
 import fs from "node:fs";
 import { liveReader, manifestChapters } from "./lib/core/package_reader.mjs";
 import { recordApproval, approvalStatus } from "./lib/core/approvals.mjs";
+import { approvalPrecondition } from "./lib/core/spine_review.mjs";
 import { chapterStates, eligibility, latestPublish, publishDecision, transition, transitionProblems, unitInfoOf } from "./lib/core/workflow.mjs";
 import { answerDigest, buildDigest, deliverDigest, recommendDigest, DEFAULT_CAP } from "./lib/core/digest.mjs";
 import { runGate } from "./lib/skeleton/full_gate.mjs";
@@ -81,8 +82,11 @@ try {
     const st = approvalStatus(reader, chapters, readLogText(root)).scopes[ch || "course"];
     if (st?.valid) refuse(`${ch || "the course map"} is already approved at its current content`);
     if (flag("--glance") && st?.change?.kind !== "light") refuse(`a glance confirmation is only for a light change; this one is ${st?.change?.kind}`, "approve without --glance, after reviewing the diff: node scripts/spine.mjs preview");
+    // the same precondition as `spine.mjs approve` (D39; redteam r1 C4-13): well-formed, and the changed lines reviewed
+    const pre = approvalPrecondition(root, reader, chapters, { chapter: ch, withoutReview: flag("--without-review"), note: opt("--note") || "" });
+    if (pre.problem) refuse(pre.problem, pre.hint);
     const { party, words } = instructor();
-    const r = recordApproval(root, reader, chapters, { chapter: ch, glance: flag("--glance"), instructorWords: words }, party);
+    const r = recordApproval(root, reader, chapters, { chapter: ch, glance: flag("--glance"), instructorWords: words, note: pre.note }, party);
     out({ approved: ch || "course", logged: r.seq, state: ch ? chapterStates(root, reader)[ch].state : undefined }); process.exit(0);
   }
   if (cmd === "history") {
