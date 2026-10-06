@@ -1630,6 +1630,246 @@
           "tests/alignment.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.3c.C1",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "C1 — Every approved objective is taught: closed loop on the real course (plant the violation → the expected finding, routed to the right party → the routed fix → the finding set returns to the baseline).",
+      "source": "operator 2026-10-06 (3C closed loop, layer 1)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/three-c-loop.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.3c.C2",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "C2 — Links are verified, not trusted: closed loop on the real course (plant the violation → the expected finding, routed to the right party → the routed fix → the finding set returns to the baseline).",
+      "source": "operator 2026-10-06 (3C closed loop, layer 1)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/three-c-loop.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.3c.C3",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "C3 — Nothing off-spine goes unnoticed: closed loop on the real course (plant the violation → the expected finding, routed to the right party → the routed fix → the finding set returns to the baseline).",
+      "source": "operator 2026-10-06 (3C closed loop, layer 1)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/three-c-loop.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.3c.C4",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "C4 — The spine is a restoring force: closed loop on the real course (plant the violation → the expected finding, routed to the right party → the routed fix → the finding set returns to the baseline).",
+      "source": "operator 2026-10-06 (3C closed loop, layer 1)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/three-c-loop.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.3c.C5",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "C5 — Assessment follows the guide: closed loop on the real course (plant the violation → the expected finding, routed to the right party → the routed fix → the finding set returns to the baseline).",
+      "source": "operator 2026-10-06 (3C closed loop, layer 1)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/three-c-loop.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.3c.K1",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "K1 — Level 1 is complete: closed loop on the real course (plant the violation → the expected finding, routed to the right party → the routed fix → the finding set returns to the baseline).",
+      "source": "operator 2026-10-06 (3C closed loop, layer 1)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/three-c-loop.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.3c.K2",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "K2 — Computable content is checked: closed loop on the real course (plant the violation → the expected finding, routed to the right party → the routed fix → the finding set returns to the baseline).",
+      "source": "operator 2026-10-06 (3C closed loop, layer 1)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/three-c-loop.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.3c.K3",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "K3 — Every reported defect is real: closed loop on the real course (plant the violation → the expected finding, routed to the right party → the routed fix → the finding set returns to the baseline).",
+      "source": "operator 2026-10-06 (3C closed loop, layer 1)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/three-c-loop.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.3c.K4",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "K4 — No harmful revision: closed loop on the real course (plant the violation → the expected finding, routed to the right party → the routed fix → the finding set returns to the baseline).",
+      "source": "operator 2026-10-06 (3C closed loop, layer 1)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/three-c-loop.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.3c.K5",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "K5 — Convergence: concerns never block; revised they are history: closed loop on the real course (plant the violation → the expected finding, routed to the right party → the routed fix → the finding set returns to the baseline).",
+      "source": "operator 2026-10-06 (3C closed loop, layer 1)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/three-c-loop.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.3c.K6",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "K6 — Level 2 best effort: concerns on the instructor's text are theirs, never edits: closed loop on the real course (plant the violation → the expected finding, routed to the right party → the routed fix → the finding set returns to the baseline).",
+      "source": "operator 2026-10-06 (3C closed loop, layer 1)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/three-c-loop.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.3c.H1",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "H1 — The impact of a change is found: closed loop on the real course (plant the violation → the expected finding, routed to the right party → the routed fix → the finding set returns to the baseline).",
+      "source": "operator 2026-10-06 (3C closed loop, layer 1)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/three-c-loop.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.3c.H2",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "H2 — Nothing is silently stranded: closed loop on the real course (plant the violation → the expected finding, routed to the right party → the routed fix → the finding set returns to the baseline).",
+      "source": "operator 2026-10-06 (3C closed loop, layer 1)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/three-c-loop.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.3c.H3",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "H3 — A change that changes nothing raises nothing: closed loop on the real course (plant the violation → the expected finding, routed to the right party → the routed fix → the finding set returns to the baseline).",
+      "source": "operator 2026-10-06 (3C closed loop, layer 1)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/three-c-loop.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.3c.H4",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "H4 — Identity survives revision: closed loop on the real course (plant the violation → the expected finding, routed to the right party → the routed fix → the finding set returns to the baseline).",
+      "source": "operator 2026-10-06 (3C closed loop, layer 1)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/three-c-loop.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.3c.H5",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "H5 — The record holds: closed loop on the real course (plant the violation → the expected finding, routed to the right party → the routed fix → the finding set returns to the baseline).",
+      "source": "operator 2026-10-06 (3C closed loop, layer 1)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/three-c-loop.test.mjs"
+        ]
+      }
     }
   ]
 }
