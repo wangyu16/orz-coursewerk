@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-7d0f3c6546761583",
+  "kind": "knowledge",
+  "unit": "u-practice-chemical-equilibrium-questions-30",
+  "factHash": "febffa1c64d174e2c4dac2d98a6c5cd4a84ad2ce5977e9c55d9e31a89d4d28ad",
+  "contentHash": "87ee6c3c89aaf70b5f0deedcc7406de8adf4522663aab0b101abae7e6bb2d2fa",
+  "at": "2026-10-06T20:19:36.503Z",
+  "bundle": {
+    "nonce": "81e55a00a98fb80e",
+    "bundleHash": "7d0f3c654676158345b3c1fdf9472f3a47baad5c33a3f37ea88c7fed89acb5fa",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"81e55a00a98fb80e\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 14: For an exothermic reaction, raising the temperature decreases $K$; therefore **lowering** the\ntemperature **increases** $K$. Products are favoured more strongly at the lower temperature.\n\nQ 15: A system at equilibrium undergoes two separate experiments: in the first the concentration of a\nreactant is doubled, in the second the temperature is raised by 20 K. In which experiment does the\nvalue of $K$ change? *(Objective 6)*\n\nPASSAGE (Answer 15)\nOnly in the second. A concentration change moves $Q_r$ away from $K$, and the system shifts until\n$Q_r$ equals the **same** $K$ again. A temperature change is the one disturbance that alters the\nvalue of $K$ itself. Confusing these two is the most common error in the chapter."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"81e55a00a98fb80e\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "fc178025a513bc148d97f8893958a8dd796337d3c30e7f72eb0b262ca9ca8a3c"
+  }
+}

@@ -12,7 +12,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { liveReader } from "../scripts/lib/core/package_reader.mjs";
-import { confirmUnits, indexAndStamp, linkUnits, loadUnits, openVersionCarrying, recordVerification } from "../scripts/lib/core/obligations.mjs";
+import { confirmUnits, indexAndStamp, linkUnits, loadUnits, openVersionCarrying, recordVerification, reverifyUnits } from "../scripts/lib/core/obligations.mjs";
 import { beginSession, claimAuthorship } from "../scripts/lib/core/units_index.mjs";
 import { runGate } from "../scripts/lib/skeleton/full_gate.mjs";
 import { loopStep } from "../scripts/lib/core/loop.mjs";
@@ -231,7 +231,7 @@ test("[req.3c.k6] Level 2 best effort: a concern about the instructor's text is 
 });
 
 // ================================================ COHERENCE ======================================================
-test("[req.3c.h1] [req.3c.h2] the impact of a change is found and nothing is stranded: dependents of a changed question owe re-verification, which blocks until done", (t) => {
+test("[req.3c.h1] [req.3c.h2] the impact of a change is found and nothing is stranded: dependents of a changed question owe re-verification, which blocks until done", async (t) => {
   const c = course(t);
   const qtext = "The temperature is raised. Which way";
   c.asAgent(() => c.edit("practice/le-chatelier.md", qtext, "The temperature is lowered. Which way"));
@@ -239,17 +239,22 @@ test("[req.3c.h1] [req.3c.h2] the impact of a change is found and nothing is str
   const re = added(c, g.findings).filter((x) => x.kind === "reverify" || x.kind === "answer-still-correct");
   assert.ok(re.some((x) => x.kind === "reverify" && x.statusClass === "obligation"), "H1: the dependent answer is found");
   assert.equal(g.gate.canPublish, false, "H2: it blocks");
+  assert.ok(re.every((x) => x.route === "agent"), "the agent's re-check, not the instructor's question (R1 coherence F7)");
   const stale = re.filter((x) => x.kind === "reverify").flatMap((x) => x.units);
-  recordVerification(c.root, c.r(), stale, { module: "ms7-consistency", basis: "b" }); // the routed fix: a re-check
+  // the routed fix (R1 coherence): a blind re-read of each answer with its question, then the recorded re-check
+  await verifyKnowledge(c.root, c.r(), { verifier: replayVerifier((pr) => ({ nonce: nonceOf(pr), concerns: [] })), only: stale });
+  reverifyUnits(c.root, c.r(), stale, AGENT);
   assert.ok(!c.gate().findings.some((x) => x.kind === "reverify"), "re-verified: nothing stranded");
 });
 
-test("[req.3c.h3] a change that changes nothing raises nothing: a reflow and a rephrase that keeps every fact and direction", (t) => {
+// R1 coherence (F2/F7): an answer is bound to its question's full wording, so a REWORDED question is a change — its
+// answer owes a cheap blind re-check (the agent's). A change that changes nothing is a reflow, markup or punctuation.
+test("[req.3c.h3] a change that changes nothing raises nothing: a reflow, and a question's markup and punctuation", (t) => {
   const c = course(t);
   const before = sigs(c.gate().findings);
   const src = fs.readFileSync(c.file("study-guide/le-chatelier.md"), "utf8");
   const line = src.split("\n").find((l) => l.includes("**Equal moles** of gas on both sides"));
-  c.asAgent(() => { c.edit("study-guide/le-chatelier.md", line, line.replace(/ /g, "  ").replace(/  /, " ")); c.edit("practice/le-chatelier.md", "The temperature is raised. Which way", "The temperature is raised. In which direction"); });
+  c.asAgent(() => { c.edit("study-guide/le-chatelier.md", line, line.replace(/ /g, "  ").replace(/  /, " ")); c.edit("practice/le-chatelier.md", "The temperature is raised. Which way", "The temperature is *raised*; which way"); });
   const now = c.gate().findings.filter((x) => !before.has(sigOf(x)) && !["absolute-unreviewed", "evidence-missing"].includes(x.kind));
   assert.deepEqual(now.map((x) => x.kind), [], "no re-verification, no question");
 });

@@ -5,7 +5,8 @@
 // Grammar (tolerant to prose; strict about what becomes a node):
 //   concepts/<slug>.md      ## Objectives / ## Concept sequence / ## Misconceptions to surface — list items ending in
 //                           [prereq: <id>, …] (concepts only, optional) and [anchor: <slug>]; ## Key terms — the
-//                           legacy term grammar, whose parent bracket names a node id; ## Prerequisites — free list.
+//                           legacy term grammar, whose parent bracket names a node id, plus an optional
+//                           [alias: <other name>, …] (a unit using an alias depends on the term); ## Prerequisites — free list.
 //   concepts/course.md      ## Concept sequence (anchored, as above), ## Chapter sequence (`1. **<slug>** — title`),
 //                           optional ## Objectives (anchored).
 //   assessment-support/<slug>.md
@@ -37,12 +38,13 @@ function sections(text) {
 
 /** Split trailing bracket groups off a list item: "text [prereq: a, b] [anchor: x]" → { text, anchor, prereqs, parent }. */
 export function itemParts(raw) {
-  let text = raw.trim(); const parts = { anchor: null, prereqs: [], parent: null };
+  let text = raw.trim(); const parts = { anchor: null, prereqs: [], parent: null, aliases: [] };
   for (;;) {
     const m = /\s*\[([^\]]+)\]\s*$/.exec(text);
     if (!m) break;
     const body = m[1].trim();
     if (/^anchor:/i.test(body)) parts.anchor = body.slice(7).trim();
+    else if (/^alias(?:es)?:/i.test(body)) parts.aliases.push(...body.replace(/^alias(?:es)?:/i, "").split(",").map((s) => s.trim()).filter(Boolean));
     else if (/^prereq:/i.test(body)) parts.prereqs.push(...body.slice(7).split(",").map((s) => s.trim()).filter(Boolean));
     else if (/^[a-z]+\.[a-z0-9-]+\.[a-z0-9-]+$/i.test(body)) parts.parent = body;
     else break;
@@ -75,7 +77,7 @@ function parseMap(text, scope, kinds, file) {
       for (const raw of listItems(sec.lines)) {
         const p = itemParts(raw);
         const label = /^\*\*(.+?)\*\*/.exec(p.text)?.[1] || p.text;
-        terms.push({ label, parent: p.parent, text: p.text, file });
+        terms.push({ label, parent: p.parent, text: p.text, ...(p.aliases.length ? { aliases: p.aliases } : {}), file });
       }
     } else if (key === "chapter sequence") {
       chapterSequence = listItems(sec.lines).map((raw) => /^\*\*([a-z0-9-]+)\*\*/.exec(raw.trim())?.[1] || null);
@@ -83,6 +85,8 @@ function parseMap(text, scope, kinds, file) {
   }
   return { nodes, terms, problems, present, chapterSequence };
 }
+/** The key terms of a concept map's text (e.g. the text an approval recorded). */
+export const termsOfMap = (text, scope, file = null) => parseMap(text, scope, CHAPTER_SECTIONS, file).terms;
 
 function parseGuide(text, chapter, file) {
   const objectives = [], entries = [], problems = [];

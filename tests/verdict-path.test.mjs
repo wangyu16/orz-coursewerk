@@ -111,9 +111,10 @@ test("[req.dispatch.blind] one blind bundle per unit, recorded in the package an
   const verifier = async (prompt) => { prompts.push(prompt); return answering((i, ps) => null)(prompt); };
   const res = await verifySemi(p.root, p.reader, { texts: texts(p), verifier, only: [target] });
   assert.equal(res.length, 1); assert.equal(prompts.length, 1, "one dispatch per unit");
-  const recs = fs.readdirSync(path.join(p.root, "metadata", "verification"));
+  // the fixture carries earlier records (its round-1 question-binding re-checks): count this unit's semi dispatches
+  const recs = fs.readdirSync(path.join(p.root, "metadata", "verification")).map((f) => JSON.parse(fs.readFileSync(path.join(p.root, "metadata", "verification", f), "utf8"))).filter((r) => r.kind === "semi" && r.unit === target);
   assert.equal(recs.length, 1);
-  const rec = JSON.parse(fs.readFileSync(path.join(p.root, "metadata", "verification", recs[0]), "utf8"));
+  const rec = recs[0];
   assert.equal(rec.bundle.prompt, prompts[0]); assert.equal(rec.unit, target); assert.ok(rec.answer.responseHash);
   assert.ok(readLogText(p.root).includes(`"dispatch":"${rec.dispatch}"`), "the dispatch is in the decision log");
   assert.equal(res[0].status, "not-found"); assert.ok(evidenceMissing(p).includes(target), "nothing admitted, the obligation stands");

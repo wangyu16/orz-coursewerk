@@ -14,7 +14,7 @@ import { recordFile } from "../records/paths.mjs";
 import { appendLogRecord } from "../records/log.mjs";
 import { factHash } from "../core/dependencies.mjs";
 import { unitHash } from "../core/segment.mjs";
-import { admitEvidence, evidenceStands, hasAdmittedEvidence, indexAndStamp, leadOf, loadUnits, loggedInstructorActs, needsEvidence, recordLeads, recordedLeads, reviewedAbsolutes } from "../core/obligations.mjs";
+import { admitEvidence, evidenceStands, hasAdmittedEvidence, indexAndStamp, leadOf, loadUnits, loggedInstructorActs, needsEvidence, recordLeads, recordedLeads, reviewedAbsolutes, unitDepsHashes } from "../core/obligations.mjs";
 import { absoluteBundle, absoluteSentences, absolutesHash, readAbsoluteReview } from "./absolutes.mjs";
 import { randomBytes } from "node:crypto";
 import { readLogText } from "../records/log.mjs";
@@ -87,7 +87,7 @@ function evidenceFrom(record, admission, texts, unitText) {
  * @param only      optional list of unit ids
  */
 export async function verifySemi(root, reader, { texts, verifier, only = null, onProgress = () => {} }) {
-  const all = loadUnits(root, reader);
+  const all = loadUnits(root, reader), deps = unitDepsHashes(root, reader);
   const units = all.filter((u) => needsEvidence(u) && !hasAdmitted(root, u, all) && (!only || only.includes(u.id)));
   const plain = new Map([...texts].map(([k, v]) => [k, v.text]));
   const results = [];
@@ -99,7 +99,7 @@ export async function verifySemi(root, reader, { texts, verifier, only = null, o
     const bundle = semiBundle(claims, passages);
     const answer = await verifier(bundle.prompt);
     const admission = settleKept(admit({ claims, passages, texts: plain, raw: answer.raw, nonce: bundle.nonce }), u.id, claims, keptClaims(logRecordsOf(readLogText(root))));
-    const record = recordDispatch(root, { kind: "semi", unit: u.id, factHash: factHash(u.text), contentHash: u.locator.contentHash, bundle, passages, texts, answer, admission, claims });
+    const record = recordDispatch(root, { kind: "semi", unit: u.id, factHash: factHash(u.text), contentHash: u.locator.contentHash, bundle, passages, texts, answer, admission, claims, deps: deps.get(u.id) });
     if (admission.status === "admitted") admitEvidence(root, reader, u.id, evidenceFrom(record, admission, texts, u.text));
     results.push({ unit: u.id, dispatch: record.dispatch, status: admission.status, costUsd: answer.costUsd ?? null, perClaim: admission.perClaim.map((c) => ({ claim: c.claim, status: c.status, reason: c.reason })) });
     onProgress(results.at(-1));
@@ -147,8 +147,10 @@ export async function reviewAbsolutes(root, reader, { verifier, only = null, onP
 }
 
 export async function verifyKnowledge(root, reader, { verifier, only = null, onProgress = () => {} }) {
-  const all = loadUnits(root, reader);
-  const units = all.filter((u) => u.judgment.includes("knowledge-based") && u.role === "teaching" && (!only || only.includes(u.id)));
+  const all = loadUnits(root, reader), deps = unitDepsHashes(root, reader);
+  // by default the knowledge-based teaching units; a unit NAMED (--units) is reviewed whatever its kind — that is how
+  // an answer that owes re-verification is re-read with its question (units.mjs reverify, R1 coherence)
+  const units = all.filter((u) => (only ? only.includes(u.id) : u.judgment.includes("knowledge-based") && u.role === "teaching"));
   // neighbours in the same section, in order: up to two units before (an answer's question) and one after
   const place = (u) => `${u.locator.deliverable}|${u.locator.section}`;
   const sections = new Map();
@@ -164,9 +166,14 @@ export async function verifyKnowledge(root, reader, { verifier, only = null, onP
     const own = /(\d+)\s*$/.exec(u.label || "")?.[1];
     const referenced = all.filter((x) => x.locator.deliverable === u.locator.deliverable && x !== u && !near.includes(x) && x.label &&
       [...nums].some((n) => n !== own && new RegExp(`^(?:q|question|answer|solution)\\s*${n}$`, "i").test(x.label.trim())));
+    // an answer is always read with the question it answers (the nearest question before it in its deliverable)
+    if (u.form === "answer") {
+      const k = all.indexOf(u);
+      for (let j = k - 1; j >= 0 && all[j].locator.deliverable === u.locator.deliverable; j--) if (all[j].form === "question") { if (!near.includes(all[j]) && !referenced.includes(all[j])) referenced.unshift(all[j]); break; }
+    }
     const bundle = knowledgeBundle(u.text, undefined, { before: list.slice(Math.max(0, i - 2), i).map(shown).join("\n\n"), after: list[i + 1] ? shown(list[i + 1]) : "", referenced: referenced.map(shown).join("\n\n"), label: u.label || null });
     const answer = await verifier(bundle.prompt);
-    const record = recordDispatch(root, { kind: "knowledge", unit: u.id, factHash: factHash(u.text), contentHash: u.locator.contentHash, bundle, answer });
+    const record = recordDispatch(root, { kind: "knowledge", unit: u.id, factHash: factHash(u.text), contentHash: u.locator.contentHash, bundle, answer, deps: deps.get(u.id) });
     results.push({ unit: u.id, dispatch: record.dispatch, concerns: knowledgeConcerns(record, u.text).length, costUsd: answer.costUsd ?? null });
     onProgress(results.at(-1));
   }

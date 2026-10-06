@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-12529cbae5511f37",
+  "kind": "knowledge",
+  "unit": "u-practice-le-chatelier-questions-30",
+  "factHash": "a473a3e3e3a58d32a4c8fa7f49bfa151d9bc4d22262a952bcf95ef10623f3e86",
+  "contentHash": "0728382c9e91ff8396c869a109e1c7247a85b2a812b5d1d62e9a8047b3bf6920",
+  "at": "2026-10-06T20:19:36.742Z",
+  "bundle": {
+    "nonce": "1b562fbd4a35bdc3",
+    "bundleHash": "12529cbae5511f371186ce7f9ce81d069083ab4fbcf15a8966f04e9abc3236b3",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"1b562fbd4a35bdc3\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 14: Nothing. A catalyst speeds up the forward and reverse reactions by the same factor, so it changes\nneither the position nor the composition of the equilibrium. It shortens the time needed to reach\nequilibrium, which is valuable industrially, but it does not raise the yield.\n\nQ 15: Four changes are applied separately to a gas-phase equilibrium: adding a reactant, raising the\ntemperature, adding an inert gas at constant volume, and adding a catalyst. Which shift the\nposition of the equilibrium, and which change the value of $K$? *(Objective 5)*\n\nPASSAGE (Answer 15)\nAdding a reactant shifts the position but does not change $K$. Raising the temperature shifts the\nposition **and** changes $K$; it is the only one of the four that does. Adding an inert gas at\nconstant volume does neither, because no partial pressure changes. Adding a catalyst does neither,\nbecause it accelerates both directions equally."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"1b562fbd4a35bdc3\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "e50b82dc8c0e93374547c4f8c823234a38f4fccead3a84b02d8ead136ba09309"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-a306e23ebfb96296",
+  "kind": "knowledge",
+  "unit": "u-study-guide-le-chatelier-worked-examples-2",
+  "factHash": "57a90eb75ff1a6d775b01faeaf672cea56553393f43cadb0c16ae3dcaef7f7b9",
+  "contentHash": "f50f262d0e3a373b7527ef25bc3d070ffa009c2aeca6a4b4b45f12c2b2360e8f",
+  "at": "2026-10-06T20:19:36.516Z",
+  "bundle": {
+    "nonce": "3dc2adad2a61b03c",
+    "bundleHash": "a306e23ebfb962965661271a6c245748b6e7c806ce5a53d2d26f869b3f9a902c",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"3dc2adad2a61b03c\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nWorked example 1: For the exothermic ammonia synthesis $\\ce{N2 + 3 H2 <=> 2 NH3}$ ($\\Delta H = -92\\ \\text{kJ mol}^{-1}$), predict what happens to the amount of ammonia at equilibrium if the temperature is **raised**.\n\nTEXT AFTER THE PASSAGE (context only)\nWorked example 2: For the same reaction, predict the effect of **decreasing the volume** (increasing the pressure) on the yield of ammonia.\n\nPASSAGE (Solution 1)\nWrite heat as a product (exothermic): $\\ce{N2 + 3 H2 <=> 2 NH3} + \\text{heat}$. Raising the temperature is like adding a product, so the equilibrium shifts **left** and the amount of ammonia **decreases**; equivalently, $K$ decreases. *(Reasoning is a teaching derivation applying Le Chatelier's principle; the reaction and $\\Delta H = -92\\ \\text{kJ mol}^{-1}$ are from the source.)*"
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"3dc2adad2a61b03c\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "42f2becf1ce683ac02642a50fecd9f5715d5cb0a5a491303113de49767ceeece"
+  }
+}

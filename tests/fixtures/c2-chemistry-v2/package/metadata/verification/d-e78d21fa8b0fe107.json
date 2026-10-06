@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-e78d21fa8b0fe107",
+  "kind": "knowledge",
+  "unit": "u-practice-chemical-equilibrium-questions-28",
+  "factHash": "b21c342945064710c4a7f3cdc36eb6044681d17032c22fd78ee6cc8e6f46a0c3",
+  "contentHash": "a86c348c6859cf10f175f95f064d2a9f247c3f36f8aea51d0006671a2c78a4d1",
+  "at": "2026-10-06T20:19:36.493Z",
+  "bundle": {
+    "nonce": "058e5fcddcf8a3e3",
+    "bundleHash": "e78d21fa8b0fe1075ce77e80cb41c6570c795f8b4192bb4dd900e5af690babce",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"058e5fcddcf8a3e3\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 13: For an endothermic reaction, raising the temperature **increases** $K$. This follows from the\nvan 't Hoff relation, in which the sign of the reaction enthalpy fixes the direction of the\ntemperature dependence.\n\nQ 14: An exothermic reaction is at equilibrium. The temperature is lowered. What happens to the value of\n$K$? *(Objective 6)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 15: A system at equilibrium undergoes two separate experiments: in the first the concentration of a\nreactant is doubled, in the second the temperature is raised by 20 K. In which experiment does the\nvalue of $K$ change? *(Objective 6)*\n\nPASSAGE (Answer 14)\nFor an exothermic reaction, raising the temperature decreases $K$; therefore **lowering** the\ntemperature **increases** $K$. Products are favoured more strongly at the lower temperature."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"058e5fcddcf8a3e3\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "f56f782dd036c154c681d192243239a4b510200e910888e795f9a1bf49ae3914"
+  }
+}

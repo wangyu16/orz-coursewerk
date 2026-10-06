@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-738da846e6134f52",
+  "kind": "knowledge",
+  "unit": "u-practice-le-chatelier-questions-24",
+  "factHash": "4428b18dc4f652874c2196f228cb6c61255a936c371d83097bab0d2d4be73bf9",
+  "contentHash": "469e2a1b8048fb62828903b4f30d3a22d4ede70266de9904d31c9569caf8454f",
+  "at": "2026-10-06T20:19:36.704Z",
+  "bundle": {
+    "nonce": "9b8de13abab62337",
+    "bundleHash": "738da846e6134f5238160055b04f4b84739433247f851dfd880cdb1956679a9d",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"9b8de13abab62337\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 11: Toward the products. There are two moles of gas on the left and three on the right. Increasing the\nvolume lowers the pressure, and the equilibrium shifts toward the side with **more** moles of gas.\n\nQ 12: Argon is added to a gas-phase equilibrium mixture held at constant volume. Which way does the\nequilibrium shift? *(Objective 5)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 13: A student argues that adding argon must shift the equilibrium \"because the total pressure went up,\nand pressure changes shift equilibria.\" Where does the argument fail? *(Objective 5)*\n\nPASSAGE (Answer 12)\nIt does not shift. Argon is inert and, at constant volume, its addition changes no partial pressure\nof the reacting species. The total pressure rises, but the quotient depends on the partial\npressures, which are unchanged, so $Q_r$ still equals $K$."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"9b8de13abab62337\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "70bff03f31ab7b8ecb82667ff681ae606e4be2b47a0a832d16ef644d36789059"
+  }
+}

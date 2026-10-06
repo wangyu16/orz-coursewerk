@@ -11,6 +11,8 @@ import crypto from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { isCarrierPath } from "../contract.mjs";
 import { latestPublish } from "./workflow.mjs";
+import { parseLog, readLogText } from "../records/log.mjs";
+import { canonicalJson } from "../records/canonical.mjs";
 import { COURSE_MAP } from "./spine.mjs";
 
 const CHAPTER_FILE = /^(?:study-guide|slides|practice|concepts|assessment-support)\/([^/]+)\.md$/;
@@ -20,6 +22,15 @@ export function packPublished(pkg, outDir) {
   const pub = latestPublish(pkg);
   if (!pub) return { ok: false, error: "there is no publish decision: the instructor publishes first (node scripts/coursewerk.mjs publish …)" };
   if (!pub.current) return { ok: false, error: `the package changed after publish decision #${pub.seq}: publish again (node scripts/coursewerk.mjs publish …) before packing` };
+  // The pack ships only what the publish content hash binds, plus the log; the decision record it ships is rebuilt from
+  // the logged decision, and an on-disk record that says otherwise is refused (red team R1 coherence, F9).
+  const logged = parseLog(readLogText(pkg)).find((r) => r.seq === pub.seq);
+  const record = { seq: logged.seq, at: logged.at, by: logged.party.name, ...logged.payload };
+  const recordRel = `metadata/publish/${String(pub.seq).padStart(4, "0")}.json`;
+  if (fs.existsSync(path.join(pkg, recordRel))) {
+    let onDisk = null; try { onDisk = JSON.parse(fs.readFileSync(path.join(pkg, recordRel), "utf8")); } catch { /* unreadable: differs */ }
+    if (canonicalJson(onDisk) !== canonicalJson(record)) return { ok: false, error: `${recordRel} differs from the logged publish decision #${pub.seq}: restore it from git (the log is the record; the file is only its copy)` };
+  }
   const published = new Set(pub.chapters.map((c) => c.chapter)), drafts = new Set((pub.drafts || []).map((d) => d.chapter));
   const keep = (slug) => published.has(slug) || drafts.has(slug);
   const work = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-pack-"));
@@ -27,7 +38,8 @@ export function packPublished(pkg, outDir) {
   let files = 0, left = 0;
   const walk = (d, rel = "") => { for (const e of fs.readdirSync(d, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
     const r = rel ? `${rel}/${e.name}` : e.name;
-    if (r === ".git" || e.name === ".DS_Store" || r.startsWith("metadata/digest")) continue;
+    // records the publish content hash does not bind are not shipped (the decision record is written from the log below)
+    if (r === ".git" || e.name === ".DS_Store" || r.startsWith("metadata/digest") || r.startsWith("metadata/publish") || r === "metadata/FINDINGS.json") continue;
     if (e.isDirectory()) { walk(path.join(d, e.name), r); continue; }
     if (!e.isFile() || isCarrierPath(r)) { left++; continue; }
     const ch = r.match(CHAPTER_FILE)?.[1] || r.match(CHAPTER_SIDECAR)?.[1];
@@ -45,7 +57,10 @@ export function packPublished(pkg, outDir) {
   walk(pkg);
   const decision = { publishSeq: pub.seq, profile: pub.profile, contentHash: pub.contentHash, chapters: [...published], drafts: [...drafts], course: !!pub.course,
     openQuestions: pub.openQuestions.length, clearedForPublicRelease: pub.profile === "public" && drafts.size === 0 };
-  fs.mkdirSync(path.join(staged, "metadata"), { recursive: true });
+  fs.mkdirSync(path.join(staged, "metadata", "publish"), { recursive: true });
+  fs.writeFileSync(path.join(staged, recordRel), JSON.stringify(record, null, 2) + "\n");
+  fs.utimesSync(path.join(staged, recordRel), new Date("2000-01-01T00:00:00Z"), new Date("2000-01-01T00:00:00Z"));
+  files++;
   fs.writeFileSync(path.join(staged, "metadata", "PUBLISHED.json"), JSON.stringify(decision, null, 2) + "\n");
   fs.utimesSync(path.join(staged, "metadata", "PUBLISHED.json"), new Date("2000-01-01T00:00:00Z"), new Date("2000-01-01T00:00:00Z"));
   fs.mkdirSync(outDir, { recursive: true });

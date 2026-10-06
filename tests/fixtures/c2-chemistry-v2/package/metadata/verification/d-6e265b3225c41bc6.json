@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-6e265b3225c41bc6",
+  "kind": "knowledge",
+  "unit": "u-practice-chemical-equilibrium-questions-26",
+  "factHash": "2605a93722e78c41995c335d34d93a4339fd41dc85422914765ca4956231cc9f",
+  "contentHash": "0e57541eb5f35d3fa294c3097b87796fa80f8b5d77cd34f4ad14233300061d30",
+  "at": "2026-10-06T20:19:36.482Z",
+  "bundle": {
+    "nonce": "8af5a1cdca145615",
+    "bundleHash": "6e265b3225c41bc61c53462b21930e8a012ae35fcf11b341fcb18c4c983b6076",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"8af5a1cdca145615\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 12: $K < 1$. From $\\Delta G^\\ominus = -RT\\ln K$, a positive $\\Delta G^\\ominus$ requires $\\ln K$ to be\nnegative, which means $K < 1$. Reactants are favoured at equilibrium.\n\nQ 13: An endothermic reaction is at equilibrium. The temperature is raised. What happens to the value of\n$K$? *(Objective 6)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 14: An exothermic reaction is at equilibrium. The temperature is lowered. What happens to the value of\n$K$? *(Objective 6)*\n\nPASSAGE (Answer 13)\nFor an endothermic reaction, raising the temperature **increases** $K$. This follows from the\nvan 't Hoff relation, in which the sign of the reaction enthalpy fixes the direction of the\ntemperature dependence."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"8af5a1cdca145615\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "23c82292a48a6b859c9e35c45e14f4328633c34eac4e5e24e19ecf3bfe9c6b1d"
+  }
+}

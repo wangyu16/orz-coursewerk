@@ -2200,6 +2200,156 @@
           "tests/redteam-r1-control.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.coherence.reverify-routed",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A stamp is not a re-verification: an owed re-verification or version carry survives edits, relinks and re-indexing (also through a split or merge), and clears only through a logged blind re-check of the unit's current text and dependencies made after it arose (units.mjs reverify, which refuses otherwise and names the review to run; a review that found the text wrong does not count), a named module's re-check, or the instructor's confirmation.",
+      "source": "red team R1 coherence (2026-10-06): F4, F5, F14",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-coherence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.coherence.question-binding",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "An answer is bound to its question by the question's id and the hash of its full normalized wording (case, whitespace, markup and punctuation folded; relation and sign symbols kept): any rewording or re-pairing makes the answer owe a re-check, routed to the agent as a cheap blind re-review, never to the instructor's digest; a legacy stamp without the binding owes it once and is never baselined by upgradeStamps; the still-correct finding is bound to the question's wording.",
+      "source": "red team R1 coherence (2026-10-06): F1, F2, F3, F7, F15",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-coherence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.coherence.edges-complete",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Key-term dependencies match the label's plural (s/es), either apostrophe and declared aliases ([alias: …]); a unitless symbol=value binding (K = 50, Q_r = 50, pH = 7) is a shared value between the units stating it.",
+      "source": "red team R1 coherence (2026-10-06): F8, F11",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-coherence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.unit-digest",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Every harness write of a unit record logs a digest of the sidecars it wrote; a sidecar that differs from its last logged digest is a blocking defect, and the harness refuses to write over it (no laundering by re-index).",
+      "source": "red team R1 coherence (2026-10-06): F6",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-coherence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.publish.pack-bound",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The pack ships only what the publish content hash binds, plus the log; the decision record it ships is rebuilt from the logged decision, and an on-disk record that differs from the log is refused.",
+      "source": "red team R1 coherence (2026-10-06): F9",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-coherence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.history-extends",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Every committed version of the decision log (first-parent history of metadata/LOG.jsonl) extends the version committed before it; a past record rewritten, re-chained and committed as a new commit is a log-broken defect.",
+      "source": "red team R1 coherence (2026-10-06): F10",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-coherence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.versions.carry-indexed",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A new major version is not opened while any deliverable in its scope has edits not yet indexed, so every unit of the scope is carried.",
+      "source": "red team R1 coherence (2026-10-06): F12",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-coherence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.coherence.light-spine",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A spine change the classifier judged light and the instructor glance-confirmed raises no re-verification: spine node, guide entry and key-term targets keep counting at their hash from the last full approval; a substantive change still makes linked units owe re-verification.",
+      "source": "red team R1 coherence (2026-10-06): F13",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-coherence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.verified-coverage",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "D41: an objective counts as taught only when a unit's current blind link review judges that it teaches it; an unreviewed covering link is the agent's review owed (link-review-owed, blocking); links only 'in passing' do not cover; offline, a publish may set the owed reviews aside and the decision records which.",
+      "source": "D41 (operator 2026-10-06)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.ship.checked",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "D42: everything that ships is checked — framing units are read for off-plan content (framing-review-owed until read; off-plan → the instructor's question); documents declared in DOCUMENTS.json are deliverables unless marked administrative; an orz-paged settings block is notation.",
+      "source": "D42 (operator 2026-10-06)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r1-control.test.mjs"
+        ]
+      }
     }
   ]
 }

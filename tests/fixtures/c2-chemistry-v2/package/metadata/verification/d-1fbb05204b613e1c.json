@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-1fbb05204b613e1c",
+  "kind": "knowledge",
+  "unit": "u-practice-le-chatelier-questions-26",
+  "factHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "contentHash": "001e58f6114352ddfae7384cf2c4fd91f34c060c03220d79dd5f263654a67ef6",
+  "at": "2026-10-06T20:19:36.716Z",
+  "bundle": {
+    "nonce": "23247f2f94228812",
+    "bundleHash": "1fbb05204b613e1cb454bf130572dd6d89480f4f39d77b8ca0feb573dd7205d7",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"23247f2f94228812\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 12: It does not shift. Argon is inert and, at constant volume, its addition changes no partial pressure\nof the reacting species. The total pressure rises, but the quotient depends on the partial\npressures, which are unchanged, so $Q_r$ still equals $K$.\n\nQ 13: A student argues that adding argon must shift the equilibrium \"because the total pressure went up,\nand pressure changes shift equilibria.\" Where does the argument fail? *(Objective 5)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 14: A catalyst is added to a reaction at equilibrium. What happens to the amount of product present?\n*(Objective 5)*\n\nPASSAGE (Answer 13)\nIt fails by treating total pressure as the driver. What moves a gas-phase equilibrium is a change\nin the **partial pressures** of the reacting species, which is what a volume change produces. An\ninert gas added at constant volume raises the total pressure while leaving every partial pressure\nuntouched."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"23247f2f94228812\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "9c23fe4c379f20adeb7a062abb5ed57c0a46166bd647337f21784b218f470029"
+  }
+}

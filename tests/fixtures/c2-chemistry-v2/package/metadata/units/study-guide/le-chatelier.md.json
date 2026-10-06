@@ -673,6 +673,7 @@
         "would"
       ],
       "stamp": {
+        "term:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
         "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
         "spine:concept.le-chatelier.heat-as-species": "82e353cb2aacc9ac04cd1b28cd8b5e30d54efdf71750e082d6250554988f936b",
         "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8",
@@ -814,6 +815,7 @@
         "when"
       ],
       "stamp": {
+        "term:partial pressure": "1911d9c4cb6332589c0c654fabfa7dd7bfd78d9bfceb7146973dee1784dcec0d",
         "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
         "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f",
         "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
@@ -866,6 +868,7 @@
         "with"
       ],
       "stamp": {
+        "term:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
         "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
         "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f",
         "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
@@ -915,6 +918,7 @@
         "with"
       ],
       "stamp": {
+        "term:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
         "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
         "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f",
         "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
@@ -1185,6 +1189,7 @@
       ],
       "stamp": {
         "term:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "term:partial pressure": "1911d9c4cb6332589c0c654fabfa7dd7bfd78d9bfceb7146973dee1784dcec0d",
         "term:inert gas": "91b328404fe9488574e97dda03a06991fc165308d1553889049deb255cba0d1a",
         "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
         "spine:concept.le-chatelier.inert-gas-no-shift": "ebfca1d007354f867e6b52509b1fa1a94ee59f0063314813649910520ad720e6",
@@ -1570,7 +1575,9 @@
       "stamp": {
         "unit:u-study-guide-le-chatelier-changing-the-temperature-5": "0c3c87d1cd6c497a1e327c4e2c8e5ba458ef1c0c7db8a2e3364cd48e07e7aa9d",
         "unit:u-study-guide-le-chatelier-worked-examples-1": "0c3c87d1cd6c497a1e327c4e2c8e5ba458ef1c0c7db8a2e3364cd48e07e7aa9d",
+        "question:u-study-guide-le-chatelier-worked-examples-1": "78406e4934db2dea01fcfab313e664282a7c85cedd9d9945617d8a26af6a110c",
         "term:le chatelier's principle": "243f9e0ccefd378d28ed3a489ae880d11e4da7a29c9da1b210d11457757eec7b",
+        "term:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
         "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0"
       }
     },
@@ -1679,6 +1686,8 @@
       ],
       "stamp": {
         "unit:u-study-guide-le-chatelier-worked-examples-3": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "question:u-study-guide-le-chatelier-worked-examples-3": "954c412da24bfc4be967b4e64d335e55b1629e7720fca9637e73327be3a6847c",
+        "term:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
         "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee"
       }
     },

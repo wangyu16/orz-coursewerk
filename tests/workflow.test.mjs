@@ -297,17 +297,21 @@ test("[req.answers.persist] [req.digest.budget] what only the instructor can set
   const d = digestNow();
   const exEntry = d.entries.find((e) => e.kind === "exercise-data-confirm"), ansEntry = d.entries.find((e) => e.kind === "answer-still-correct");
   assert.ok(exEntry && exEntry.units.includes(ex) && exEntry.recommendation === "confirm", "exercise data comes to the instructor, not left as agent work");
-  assert.ok(ansEntry && ansEntry.recommendation == null, "the check does not recommend keeping an answer nobody re-read");
-  recommendDigest(d, d.entries.indexOf(ansEntry) + 1, "still correct", AGENT); // the agent re-read it with its question
-  assert.match(ansEntry.recommendedBy, /^agent/);
+  // an answer whose question changed is the agent's cheap blind re-check, never the instructor's question (R1 coherence F7)
+  assert.equal(ansEntry, undefined, "not in the digest");
+  const ans = runGate(p.root, { inputsDir: p.inputs }).findings.find((f) => f.kind === "answer-still-correct" && f.route === "agent").units[0];
   const knowledge = d.entries.find((e) => !e.recommendation);
   if (knowledge) { recommendDigest(d, d.entries.indexOf(knowledge) + 1, "keep the text", AGENT); assert.match(knowledge.recommendedBy, /^agent/); }
   assert.throws(() => recommendDigest(d, 1, "x", I), /agent's proposal/);
   answerDigest(p.root, d, { acceptAll: true, instructorWords: "Accept all recommendations.", reader: p.reader }, I);
   const left = coreObligations(p.root, p.reader, "t");
   assert.ok(!left.some((f) => f.kind === "evidence-missing" && f.units.includes(ex)), "confirming the exercise data clears its obligation");
-  const ans = ansEntry.units[0];
-  assert.ok(!left.some((f) => f.kind === "reverify" && f.units.includes(ans)), "'still correct' clears the answer's re-verification");
+  assert.ok(left.some((f) => f.kind === "reverify" && f.units.includes(ans)), "accept-all does not re-verify an answer nobody re-read");
+  const { verifyKnowledge } = await import("../scripts/lib/verify/verdicts.mjs");
+  const { reverifyUnits } = await import("../scripts/lib/core/obligations.mjs");
+  await verifyKnowledge(p.root, p.reader, { verifier: replayVerifier((pr) => ({ nonce: pr.match(/"nonce": "([0-9a-f]+)"/)[1], concerns: [] })), only: [ans] });
+  reverifyUnits(p.root, p.reader, [ans], AGENT); // the agent re-read it with its question, blind
+  assert.ok(!coreObligations(p.root, p.reader, "t").some((f) => f.kind === "reverify" && f.units.includes(ans)), "the re-check clears the answer's re-verification");
   assert.match(readLogText(p.root), /"type":"confirmation"[^\n]*"instructorWords":"Accept all recommendations\."/);
   assert.throws(() => confirmUnits(p.root, p.reader, [ex], { what: "fact" }, I), /quotes the instructor's words/);
 });
@@ -380,19 +384,21 @@ test("[req.publish.questions-raised] open questions never block, but are raised 
   assert.equal(r.overQuestions, true); assert.equal(r.openQuestions[0].id, "q-open-1");
 });
 
-test("[req.core.reverify-obligation] an answer whose question reverses direction is stale; a rephrase that keeps the direction is not (P11 wiring sweep)", async (t) => {
+// R1 coherence (F2): an answer is bound to its question's full normalized wording, so ANY rewording makes it owe a
+// re-check — the agent's cheap blind re-read, never the instructor's question; markup and punctuation raise nothing.
+test("[req.core.reverify-obligation] an answer whose question is reworded owes the agent's re-check; a change of markup or punctuation does not (P11 wiring sweep, R1 coherence)", async (t) => {
   const { loadUnits, indexAndStamp } = await import("../scripts/lib/core/obligations.mjs");
   const { beginSession } = await import("../scripts/lib/core/units_index.mjs");
   const p = copy(t);
   const f = path.join(p.root, "practice", "le-chatelier.md"), src = fs.readFileSync(f, "utf8");
   const answerOf = () => loadUnits(p.root, liveReader(p.root)).find((u) => u.form === "answer" && /^Toward the reactants, to the left\. For an exothermic reaction heat behaves as a \*\*product\*\*/.test(u.text));
-  const stale = () => coreObligations(p.root, liveReader(p.root), "t").some((x) => x.kind === "answer-still-correct" && x.units.includes(answerOf().id));
+  const stale = () => coreObligations(p.root, liveReader(p.root), "t").some((x) => x.kind === "answer-still-correct" && x.route === "agent" && x.units.includes(answerOf().id));
   beginSession(p.root, p.reader, AGENT);
-  fs.writeFileSync(f, src.replace("The temperature is raised. Which way", "The temperature is raised. In which direction"));
+  fs.writeFileSync(f, src.replace("The temperature is raised. Which way", "The temperature is **raised**; which way"));
   indexAndStamp(p.root, liveReader(p.root), { as: "agent", party: AGENT });
-  assert.equal(stale(), false, "a rephrase that keeps the direction raises nothing");
+  assert.equal(stale(), false, "markup and punctuation raise nothing");
   beginSession(p.root, liveReader(p.root), AGENT);
-  fs.writeFileSync(f, fs.readFileSync(f, "utf8").replace("The temperature is raised. In which direction", "The temperature is lowered. In which direction"));
+  fs.writeFileSync(f, fs.readFileSync(f, "utf8").replace("The temperature is **raised**; which way", "The temperature is lowered. Which way"));
   indexAndStamp(p.root, liveReader(p.root), { as: "agent", party: AGENT });
   assert.equal(stale(), true, "raised → lowered: the answer must be re-read");
 });

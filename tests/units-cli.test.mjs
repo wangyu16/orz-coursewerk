@@ -16,6 +16,9 @@ test("[req.units.segmenter] [req.units.external-edit] the real C2 package: every
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   fs.cpSync(path.join(HERE, "fixtures", "c2-chemistry-v2", "package"), root, { recursive: true });
   fs.rmSync(path.join(root, "metadata", "units"), { recursive: true, force: true }); // start from a package never indexed
+  // … whose log has never recorded unit records either (deleting logged records is itself caught: R1 coherence F6)
+  const logFile = path.join(root, "metadata", "LOG.jsonl"), lines = fs.readFileSync(logFile, "utf8").split("\n").filter(Boolean);
+  fs.writeFileSync(logFile, lines.slice(0, lines.findIndex((l) => l.includes('"event":"unit-records"'))).join("\n") + "\n");
   git(root, "init", "-q"); git(root, "config", "user.name", "T"); git(root, "config", "user.email", "t@example.invalid");
   git(root, "add", "-A"); git(root, "commit", "-q", "-m", "approved spine");
 

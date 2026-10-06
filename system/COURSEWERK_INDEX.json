@@ -8,12 +8,6 @@
       "hash": "9e95b0d590c7db8e8c3c08b00695f8fc128b4134e2510867e896fbe5dfd5aa43"
     },
     {
-      "id": "repo:.git",
-      "path": ".git",
-      "type": "repository-support",
-      "hash": "809a5d00869596818d68b7846c5b5219f12e191a78d58122c662fa376637d1a3"
-    },
-    {
       "id": "repo:.github/copilot-instructions.md",
       "path": ".github/copilot-instructions.md",
       "type": "repository-support",
@@ -197,7 +191,7 @@
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "5e1475f68622e31b8e973b648265fe38b827350d71fb8e7a98da8cfb6ead734a"
+      "hash": "a15d29409a2f0a1d40b8037d4e1275576a88b2bf4a55830982b844eec760e3df"
     },
     {
       "id": "repo:README.md",
@@ -275,7 +269,7 @@
       "id": "repo:scripts/coursewerk.mjs",
       "path": "scripts/coursewerk.mjs",
       "type": "executable",
-      "hash": "2c4bf59655c546bffdc921b78b4fff3757242cd4cb9be69f7f432dbc68038ad6"
+      "hash": "9bf2310666a30a97593ba0fc88eaaf27de6a942d06d2d4e2a1f3782ae370ebaa"
     },
     {
       "id": "repo:scripts/data/license-texts.json",
@@ -401,7 +395,7 @@
       "id": "repo:scripts/lib/consistency.mjs",
       "path": "scripts/lib/consistency.mjs",
       "type": "kernel",
-      "hash": "d392d9a9bb77b8754606dd147d29aa80ba25f6212564ef84b088cabb92cdd859"
+      "hash": "d38d44b6855d231cb4a7279e5bd270c849e3ccf741032869cd28d2f400dfe250"
     },
     {
       "id": "repo:scripts/lib/contract.mjs",
@@ -437,13 +431,13 @@
       "id": "repo:scripts/lib/core/dependencies.mjs",
       "path": "scripts/lib/core/dependencies.mjs",
       "type": "kernel",
-      "hash": "4134c2df92abe0232f5f226869d7118f01a80bc0cb2ef02f501c1748802fb153"
+      "hash": "cceffe9da1b88b4b0072692b523cd44c6b1ad5789ed36ab99e37f843ff55479f"
     },
     {
       "id": "repo:scripts/lib/core/digest.mjs",
       "path": "scripts/lib/core/digest.mjs",
       "type": "kernel",
-      "hash": "92e1fd8b0b07220d634eea74615e444d4ad791466c87f0e7a0a5f53e32c9811d"
+      "hash": "dfc2ed323aff1f3379821bbbf2048670f40cf2153216c2ca55c2e0b30b48b158"
     },
     {
       "id": "repo:scripts/lib/core/history.mjs",
@@ -473,13 +467,13 @@
       "id": "repo:scripts/lib/core/obligations.mjs",
       "path": "scripts/lib/core/obligations.mjs",
       "type": "kernel",
-      "hash": "44aadb870987679a6437ee9c040a3e567ac2a41f24e24a7ce293630ac98fecbb"
+      "hash": "635382bb15f6000d8915eed54ec2cf630385bfafc739d1364e78ca1cd86d4acd"
     },
     {
       "id": "repo:scripts/lib/core/pack_v2.mjs",
       "path": "scripts/lib/core/pack_v2.mjs",
       "type": "kernel",
-      "hash": "a587248e30dcbcd12945b4e938a2b75edc1293b307092612014ee9d628838039"
+      "hash": "ca09e250deaa804161689a9d07b17181e68e3a870c07164bb016b14c0231d713"
     },
     {
       "id": "repo:scripts/lib/core/package_reader.mjs",
@@ -497,7 +491,7 @@
       "id": "repo:scripts/lib/core/segment.mjs",
       "path": "scripts/lib/core/segment.mjs",
       "type": "kernel",
-      "hash": "5f45442c0c5613446a8e8e295b506cbc14c903aebf5ee2b38c7b513aa813245d"
+      "hash": "c4dcefd357f23102e368e051e56eefa2fe192c806a6f46df80e21468276058e7"
     },
     {
       "id": "repo:scripts/lib/core/spine_review.mjs",
@@ -509,7 +503,7 @@
       "id": "repo:scripts/lib/core/spine.mjs",
       "path": "scripts/lib/core/spine.mjs",
       "type": "kernel",
-      "hash": "d633c2ed73857ed88f7f9904a1786f7f8882d8f80d83458df09c867a4c7b6fc9"
+      "hash": "c03a428627d3eef775bb6331d6eea981cef422cb68551ce026e6655482ad05df"
     },
     {
       "id": "repo:scripts/lib/core/steering_intake.mjs",
@@ -518,10 +512,22 @@
       "hash": "e0678610c0eb680807253222170f73950afeee8038dd76006efb1e5e9c9acc1a"
     },
     {
+      "id": "repo:scripts/lib/core/unit_records.mjs",
+      "path": "scripts/lib/core/unit_records.mjs",
+      "type": "kernel",
+      "hash": "1689900693f3c8032ea4fe0ebe3e53a1d1815f614d014139f95db47ecf5013dd"
+    },
+    {
       "id": "repo:scripts/lib/core/units_index.mjs",
       "path": "scripts/lib/core/units_index.mjs",
       "type": "kernel",
-      "hash": "b5a1345a086846a37679fac57613e59ea730d96c97d329f885090e3618c1a846"
+      "hash": "bd7f3eae3be3d1c5b0fd2f5743b60716258d27e3296abdad2052931533e9f4e3"
+    },
+    {
+      "id": "repo:scripts/lib/core/values.mjs",
+      "path": "scripts/lib/core/values.mjs",
+      "type": "kernel",
+      "hash": "de6b55950a24aadb66b824fbf5c14bf0e81938c877b73ad699c8dfb2bed33709"
     },
     {
       "id": "repo:scripts/lib/core/versions.mjs",
@@ -533,7 +539,7 @@
       "id": "repo:scripts/lib/core/workflow.mjs",
       "path": "scripts/lib/core/workflow.mjs",
       "type": "kernel",
-      "hash": "0f8cd2bc0ec48156d7216a91128cbc2e290b9127fbc28dc015d8e28bbbc21b21"
+      "hash": "ad1831fe2f9f320bb3ed049be0610abbcb5ddc2734880db854749081cfdd339e"
     },
     {
       "id": "repo:scripts/lib/escalation.mjs",
@@ -677,13 +683,13 @@
       "id": "repo:scripts/lib/skeleton/full_gate.mjs",
       "path": "scripts/lib/skeleton/full_gate.mjs",
       "type": "kernel",
-      "hash": "84a85bfbdf78b9d74f1c8ad2d3968b2a3974e12e7ccc082652066d00397fbf2d"
+      "hash": "57c650880b6ca80f876352def44f4883fcf37a37a40bba75c8d56a4df55cffb2"
     },
     {
       "id": "repo:scripts/lib/skeleton/gate.mjs",
       "path": "scripts/lib/skeleton/gate.mjs",
       "type": "kernel",
-      "hash": "e4ce2dbb7c14d58a082f30e41cb41841d8cf81e1c017f4c583011cbef05f3650"
+      "hash": "41dfeb85e7c331fcf7aa1090cee96fabacb0f73dbadda16d23c7d043167664f3"
     },
     {
       "id": "repo:scripts/lib/skeleton/manifest.mjs",
@@ -755,7 +761,7 @@
       "id": "repo:scripts/lib/units.mjs",
       "path": "scripts/lib/units.mjs",
       "type": "kernel",
-      "hash": "31b72bf993aa71372f5e4d5efe9bc863e3a7707b1bde75443f7d9759ff00ddc5"
+      "hash": "1824644003bb3d9f622214d6bcdae6db6b1a9a7a65d25ed8bc7cd58f1a61fd54"
     },
     {
       "id": "repo:scripts/lib/verbatim.mjs",
@@ -773,25 +779,25 @@
       "id": "repo:scripts/lib/verify/admission.mjs",
       "path": "scripts/lib/verify/admission.mjs",
       "type": "kernel",
-      "hash": "d31c0e4afa506c7e2f1ce3d7fb187289cf403b65cb7a447220b820073c3de941"
+      "hash": "58c95d404cbb4e38877cde990eb1fe1bf568b0906d19a1b6cff2b8c8232e9a37"
     },
     {
       "id": "repo:scripts/lib/verify/alignment.mjs",
       "path": "scripts/lib/verify/alignment.mjs",
       "type": "kernel",
-      "hash": "7f8dd41d02bbdc4484841abff304f0a0215d466081776e71dc82dd70d6abc8b3"
+      "hash": "98d35b3c00610e6780e00ed20f5b6f5a7db8c77fa5c1f2cc6afd3ecea458f424"
     },
     {
       "id": "repo:scripts/lib/verify/claims.mjs",
       "path": "scripts/lib/verify/claims.mjs",
       "type": "kernel",
-      "hash": "33f2be1691173d29834c72ccb0ef121214f6f9d1bc41ab58a97951efe37f7e63"
+      "hash": "8cac0d16e3f384373952747ee81926b3bd072c588b160919b405803743bd96a4"
     },
     {
       "id": "repo:scripts/lib/verify/dispatch.mjs",
       "path": "scripts/lib/verify/dispatch.mjs",
       "type": "kernel",
-      "hash": "701c07b2f97e9bc739f4e3d479ac83534d0819795afabe3ded8b870b223cc44f"
+      "hash": "8c17de846354472e73a81b7d392b1774e54bc300b85a13ba95555c4653963270"
     },
     {
       "id": "repo:scripts/lib/verify/references.mjs",
@@ -809,7 +815,7 @@
       "id": "repo:scripts/lib/verify/verdicts.mjs",
       "path": "scripts/lib/verify/verdicts.mjs",
       "type": "kernel",
-      "hash": "f3ac9687bf77a422c879cfbe958f71f8ce2cf53bf13ecfc3fc407ca0cb3f7d8d"
+      "hash": "b60c0606ae2adeff468ff8a21dc86d40e085d2ad58c20f1d4fa6833a02bd953e"
     },
     {
       "id": "repo:scripts/lib/visual_review.mjs",
@@ -869,13 +875,13 @@
       "id": "repo:scripts/modules/ms8-verdicts.mjs",
       "path": "scripts/modules/ms8-verdicts.mjs",
       "type": "executable",
-      "hash": "89553ec51556600a381fe1b0ca1c3408511482cccbfa5e8ec1508d5811c15844"
+      "hash": "e024121f3d2b82551aa11cfdd0dede2a361707448df533af696ab762bf7cedb1"
     },
     {
       "id": "repo:scripts/modules/ms9-alignment.mjs",
       "path": "scripts/modules/ms9-alignment.mjs",
       "type": "executable",
-      "hash": "f35c86e35cfc351ca4df131bb5c9800a652491e224da55423c3784aecdc5feb6"
+      "hash": "6cb6e301f08f6ca8a2611d4c8046858b7e1860b696343da227b284d91bbf41f2"
     },
     {
       "id": "repo:scripts/modules/README.md",
@@ -947,7 +953,7 @@
       "id": "repo:scripts/units.mjs",
       "path": "scripts/units.mjs",
       "type": "executable",
-      "hash": "1d88ee26d6ee1280385a77abc61095dcdc572b0bcdb3f5ba57be59a81d30f038"
+      "hash": "296f8098cca80a197a9a262bb503cbb4f15b52472714694e9a8eefd5ec6c0183"
     },
     {
       "id": "repo:scripts/verify_coursewerk.mjs",
@@ -1121,7 +1127,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "a2e87e89d6427987b9ecc93b91bb3365d20f257d23b619cdb547c87acdd849b9"
+      "hash": "ebd99d4f2144e44a0556e5a6d5901e865c9238ddff7ed92ef958e26f63b1b31e"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1391,13 +1397,13 @@
       "id": "repo:tests/core-cli.test.mjs",
       "path": "tests/core-cli.test.mjs",
       "type": "test",
-      "hash": "a35996321aaaf4ba30ca3ed6018dc6cd90d132eedc91f876b015f405f1b1b739"
+      "hash": "458be6fe86416d25f3f87b0efbc222d226e15b8653fb68f164d59c5aa3c751fd"
     },
     {
       "id": "repo:tests/core-obligations.test.mjs",
       "path": "tests/core-obligations.test.mjs",
       "type": "test",
-      "hash": "b99c9f3d4a0b2dcb4415d296c588ec5a9194c146d735bbb663cdf9c7a23dde51"
+      "hash": "c06de068ba21152ca27b4daa26a8fe74a54af4a38f7a46654fc53bbda5bf1753"
     },
     {
       "id": "repo:tests/escalation.test.mjs",
@@ -1434,6 +1440,18 @@
       "path": "tests/fixtures/c2-chemistry/README.md",
       "type": "test",
       "hash": "f694cbbd8abcb6a7ce5e6bac5ef34538bf496fec0831365b869bb62627a2257d"
+    },
+    {
+      "id": "repo:tests/fixtures/migrate-r1-link-reviews.mjs",
+      "path": "tests/fixtures/migrate-r1-link-reviews.mjs",
+      "type": "test",
+      "hash": "6f52d1c80ccbb628b23a663b648df3b36669d364020648164f5b7c74876a0ad0"
+    },
+    {
+      "id": "repo:tests/fixtures/migrate-r1-question-binding.mjs",
+      "path": "tests/fixtures/migrate-r1-question-binding.mjs",
+      "type": "test",
+      "hash": "9dd1e66edc4ecd575f1638739b571081291405a9168dbe62eecd90900cd61229"
     },
     {
       "id": "repo:tests/fixtures/mini-package/assessment-support/phase-change.md",
@@ -1658,10 +1676,22 @@
       "hash": "41c72cf53425fd105dca9fd9e038bc09eb9c8000adaff339d0bb7c292245cbe0"
     },
     {
+      "id": "repo:tests/redteam-r1-coherence.test.mjs",
+      "path": "tests/redteam-r1-coherence.test.mjs",
+      "type": "test",
+      "hash": "9ad5b4b90297e94f182e7432b5431ba04ae6b5ac87926881f387e5778e6e7dfa"
+    },
+    {
+      "id": "repo:tests/redteam-r1-confidence.test.mjs",
+      "path": "tests/redteam-r1-confidence.test.mjs",
+      "type": "test",
+      "hash": "6673e75aa92289ec253daa03bedc33904df65a7116bf1378a0d0c99407ba65c3"
+    },
+    {
       "id": "repo:tests/redteam-r1-control.test.mjs",
       "path": "tests/redteam-r1-control.test.mjs",
       "type": "test",
-      "hash": "d51b305b52ef0fc85904f31e9cd38fd4f3d86d097f8d262d46f08aa0daa9290c"
+      "hash": "e9216902226eb2a798a0c5f182731f4d4adda2b944ffc9966bdfa397202a9bfc"
     },
     {
       "id": "repo:tests/requirements.test.mjs",
@@ -1733,7 +1763,7 @@
       "id": "repo:tests/three-c-loop.test.mjs",
       "path": "tests/three-c-loop.test.mjs",
       "type": "test",
-      "hash": "69dda6dee896a0d922a83bd2e176a4eef4246fc0a0a33cd66689442a0c7aee0f"
+      "hash": "a706a1787357c8502d5a7b5704d96a5b7a825b08c5e06d787e6f2e05436384da"
     },
     {
       "id": "repo:tests/unit-model.test.mjs",
@@ -1745,7 +1775,7 @@
       "id": "repo:tests/units-cli.test.mjs",
       "path": "tests/units-cli.test.mjs",
       "type": "test",
-      "hash": "b11c2b4318b3920ac701f76686ea85f4599b3f6bb30dd4f36f88d8f231174008"
+      "hash": "542558503847dfae1112f94b06c58850bb1fad32c7e02b04004b721755646a5b"
     },
     {
       "id": "repo:tests/units.test.mjs",
@@ -1769,7 +1799,7 @@
       "id": "repo:tests/verdict-path.test.mjs",
       "path": "tests/verdict-path.test.mjs",
       "type": "test",
-      "hash": "7942731f81e66d446b8f4a20aa37a5f5e0acbed3884d8d02c663c239b10684fc"
+      "hash": "1ce33c1bf07226e37698ea690c678628492898e108d70fc78f8b0a32c7bfc60e"
     },
     {
       "id": "repo:tests/verdict-redteam.test.mjs",
@@ -1781,7 +1811,7 @@
       "id": "repo:tests/wiring-modules.test.mjs",
       "path": "tests/wiring-modules.test.mjs",
       "type": "test",
-      "hash": "1b5dfb389a756cfbeafdace11c94b9a2249cbbc2df84949017eb35f26aec91e6"
+      "hash": "bd84805eb1c121159fbbe81d413df28d3326707a17f15985b926aa33336b556b"
     },
     {
       "id": "repo:tests/wiring.test.mjs",
@@ -1793,7 +1823,7 @@
       "id": "repo:tests/workflow.test.mjs",
       "path": "tests/workflow.test.mjs",
       "type": "test",
-      "hash": "c5b64f1e52c5ec4443298ed32145805e5f0266aaae5040dfd5fe1faa4ee41d8c"
+      "hash": "434e66a62034d930941715a986d1ca3577fdcbed338adc892385834e1bf12bc3"
     },
     {
       "id": "repo:VERSION",
@@ -3222,6 +3252,22 @@
         "status": "closed"
       },
       {
+        "id": "req.anchor.stoichiometry",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.answers.change-owed",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.answers.claim-bound",
         "phase": "P11",
         "tiers": [
@@ -3297,6 +3343,38 @@
         "status": "closed"
       },
       {
+        "id": "req.coherence.edges-complete",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.coherence.light-spine",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.coherence.question-binding",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.coherence.reverify-routed",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.commands",
         "phase": "P8",
         "tiers": [
@@ -3308,6 +3386,14 @@
       {
         "id": "req.confirm.single",
         "phase": "P7",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.consistency.governing-term",
+        "phase": "P11",
         "tiers": [
           "T1"
         ],
@@ -3426,6 +3512,14 @@
         "status": "closed"
       },
       {
+        "id": "req.control.verified-coverage",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.core.coverage-obligation",
         "phase": "P5",
         "tiers": [
@@ -3519,6 +3613,14 @@
         "status": "closed"
       },
       {
+        "id": "req.evidence.lead-bound",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.findings.routing",
         "phase": "P2",
         "tiers": [
@@ -3580,6 +3682,14 @@
       {
         "id": "req.knowledge.review",
         "phase": "P7",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.knowledge.settled-by-text",
+        "phase": "P11",
         "tiers": [
           "T1"
         ],
@@ -3798,6 +3908,14 @@
         "status": "closed"
       },
       {
+        "id": "req.publish.pack-bound",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.publish.questions-raised",
         "phase": "P10",
         "tiers": [
@@ -3832,6 +3950,14 @@
       {
         "id": "req.records.finding-schema",
         "phase": "P1",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.records.history-extends",
+        "phase": "P11",
         "tiers": [
           "T1"
         ],
@@ -3904,6 +4030,14 @@
         "status": "closed"
       },
       {
+        "id": "req.records.unit-digest",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.records.unit-schema",
         "phase": "P1",
         "tiers": [
@@ -3931,6 +4065,14 @@
       {
         "id": "req.revert.double-confirm",
         "phase": "P7",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.ship.checked",
+        "phase": "P11",
         "tiers": [
           "T1"
         ],
@@ -4034,6 +4176,14 @@
         "status": "closed"
       },
       {
+        "id": "req.support.predicate",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.units.classifier",
         "phase": "P4",
         "tiers": [
@@ -4084,6 +4234,22 @@
         "status": "closed"
       },
       {
+        "id": "req.values.one-parser",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.verdict.hypothetical-scope",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.verdict.semi-mechanical",
         "phase": "P7",
         "tiers": [
@@ -4106,6 +4272,14 @@
         "tiers": [
           "T1",
           "T2"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.versions.carry-indexed",
+        "phase": "P11",
+        "tiers": [
+          "T1"
         ],
         "status": "closed"
       },

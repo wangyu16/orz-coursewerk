@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-b605551531d038e1",
+  "kind": "knowledge",
+  "unit": "u-practice-le-chatelier-questions-2",
+  "factHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "contentHash": "17b1386988a0c9db2b58055c55a06352c47e6d5d0137dfd64ca9b1eafdaca06a",
+  "at": "2026-10-06T20:19:36.540Z",
+  "bundle": {
+    "nonce": "4db9a8b00c50a888",
+    "bundleHash": "b605551531d038e11fb269d3b6711f00a5b3ccb5cf1e4b3222854c2a2064d9a9",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"4db9a8b00c50a888\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nQ 1: State Le Chatelier's principle. A student says it means \"the system undoes the change you made.\"\nWhat is wrong with that phrasing? *(Objective 1)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 2: After a disturbance, a system reaches a new equilibrium. Are the concentrations the same as before\nthe disturbance? *(Objective 1)*\n\nPASSAGE (Answer 1)\nThe principle states that a system at equilibrium, disturbed by a change in a determining factor,\nadjusts to a **new** equilibrium that **partially counteracts** the change. The student's phrasing\nis wrong in two ways: the counteraction is only partial, and the system settles at a new\nequilibrium rather than returning to the original one."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"4db9a8b00c50a888\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "c1e9c3455b7a6d1f0b9f3803307f9671ec8c8bb68b13c77c6e3478d8c52fa976"
+  }
+}

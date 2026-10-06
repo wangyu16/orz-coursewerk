@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-aed18710f2a511ac",
+  "kind": "knowledge",
+  "unit": "u-practice-le-chatelier-questions-12",
+  "factHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "contentHash": "ddeebf59be11f6c05f2609efb06b1ea56affcc74c943766b08bdd96debf6c9e7",
+  "at": "2026-10-06T20:19:36.602Z",
+  "bundle": {
+    "nonce": "c2bb85c6d63774ab",
+    "bundleHash": "aed18710f2a511ac4eea3ee8a19d07c8a87847aff483962ec85f84f0b7c9a218",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"c2bb85c6d63774ab\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 5: Adding $\\ce{H2}$ increases the denominator of the quotient, so $Q_r$ falls below $K$. Since\n$Q_r < K$, the reaction shifts forward until $Q_r$ rises back to $K$. Note that $K$ itself is\nunchanged: only the composition moved.\n\nQ 6: The reaction $\\ce{N2(g) + 3 H2(g) <=> 2 NH3(g)}$ is exothermic. The temperature is raised. Which way\ndoes the equilibrium shift? *(Objective 3)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 7: An endothermic reaction is at equilibrium and the mixture is cooled. Which way does the equilibrium\nshift? *(Objective 3)*\n\nPASSAGE (Answer 6)\nToward the reactants, to the left. For an exothermic reaction heat behaves as a **product**, so\nadding heat is like adding a product, and the equilibrium shifts away from it. The yield of ammonia\nfalls at higher temperature."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"c2bb85c6d63774ab\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "23a81eb3da602ebe77d2148b5211c1e688d6eed8b372793b244b31eeff23f8d0"
+  }
+}

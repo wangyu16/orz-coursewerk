@@ -8,12 +8,16 @@
 // linked only to guide entries (their declared items are the entries and the entries' objectives) — and checks a
 // question against EVERY guide entry it is linked to. An answer it cannot read is never "no problem" (C2-16): a
 // verdict is matched case-insensitively, and an omitted or unrecognized verdict leaves the review unscorable.
+import fs from "node:fs";
+import path from "node:path";
 import { randomBytes } from "node:crypto";
+import { readLogText } from "../records/log.mjs";
 import { canonicalJson, sha256 } from "../records/canonical.mjs";
-import { loadUnits, reviewable } from "../core/obligations.mjs";
+import { loadUnits, reviewable, unitDepsHashes } from "../core/obligations.mjs";
 import { manifestChapters } from "../core/package_reader.mjs";
 import { parseSpine } from "../core/spine.mjs";
-import { recordDispatch } from "./dispatch.mjs";
+import { readDispatches, recordDispatch } from "./dispatch.mjs";
+import { dispatchLogEntry } from "./verdicts.mjs";
 
 export { reviewable };
 
@@ -38,7 +42,7 @@ export const reviewBasis = (u, inp) => {
 
 const guideAsk = (g) => `${g.type || "any type"} at the level "${g.levels || "unspecified"}" (${g.title})`;
 
-export function alignmentBundle({ unit, label, before, links, plan, guide, guides = null }, nonce = randomBytes(8).toString("hex")) {
+export function alignmentBundle({ unit, label, before, links, plan, guide, guides = null, framing = false }, nonce = randomBytes(8).toString("hex")) {
   // one guide entry: the original wording and reply shape; several: one fidelity answer per entry, by id (C5-08)
   const many = Array.isArray(guides) && guides.length > 1;
   const one = many ? null : guide || (guides?.length === 1 ? guideAsk(guides[0]) : null);
@@ -46,6 +50,7 @@ export function alignmentBundle({ unit, label, before, links, plan, guide, guide
     "Below is a passage from a college course, the course plan for its chapter (objectives and concepts, by id), and the plan items the passage is declared to teach.",
     'For each declared item, say whether the passage teaches or practises it ("yes"), touches it only in passing ("passing"), or does not deal with it ("no").',
     "If the passage teaches an item of the plan it is not declared for, name its id. If it teaches nothing in the plan at all, say so.",
+    ...(framing ? ["This passage is framing (an introduction, summary or closing): it is declared for nothing and needs no plan item. Say only whether it teaches subject matter that lies outside the plan (\"offPlan\": true); a short overview or recap of the plan's own topics is not off the plan."] : []),
     ...(one ? [`The passage is a practice question; its assessment guide entry asks for: ${one}. Say whether the question is that type of question, and whether it asks for that cognitive level.`] : []),
     ...(many ? ["The passage is a practice question linked to several assessment guide entries. For EACH entry, say whether the question is that type of question, and whether it asks for that cognitive level:", ...guides.map((g) => `- ${g.id}: ${guideAsk(g)}`)] : []),
     "Judge what the passage does for a student, not its wording or quality.",
@@ -116,22 +121,56 @@ export function reviewInputs(u, all, plan) {
   const guide = guides.length === 1 ? guideAsk(guides[0]) : null;
   const prev = all.filter((x) => x.locator.deliverable === u.locator.deliverable && x.locator.section === u.locator.section && x.locator.ordinal < u.locator.ordinal).sort((a, b) => b.locator.ordinal - a.locator.ordinal)[0];
   const before = u.form === "answer" ? (prev?.form === "question" ? prev.text : "") : prev?.form === "paragraph" || prev?.form === "callout" ? prev.text : "";
+  // D42: framing is read for off-plan content only — whatever it links to, nothing is declared for it to teach
+  if (u.role === "framing") return { ch, chapterNodes, links, declared: [], guides: [], guide: null, before };
   return { ch, chapterNodes, links, declared, guides, guide, before };
 }
 
 export async function reviewAlignment(root, reader, { verifier, only = null, onProgress = () => {} }) {
-  const all = loadUnits(root, reader), plan = planOf(reader), results = [];
-  for (const u of all.filter((x) => reviewable(x) && (!only || only.includes(x.id)))) {
-    const inp = reviewInputs(u, all, plan);
-    if (!inp.declared.length && !inp.guides.length) continue; // links to nothing in the plan: unit-link-dangling says so
-    const bundle = alignmentBundle({ unit: u.text, label: u.label || null, before: inp.before, links: inp.declared, plan: inp.chapterNodes, guides: inp.guides });
+  const all = loadUnits(root, reader), plan = planOf(reader), results = [], deps = unitDepsHashes(root, reader);
+  // D42: framing (introductions, summaries, closing slides) is read too — for off-plan content only, it needs no link
+  for (const u of all.filter((x) => (reviewable(x) || x.role === "framing") && (!only || only.includes(x.id)))) {
+    const inp = reviewInputs(u, all, plan), framing = u.role === "framing";
+    if (!framing && !inp.declared.length && !inp.guides.length) continue; // links to nothing in the plan: unit-link-dangling says so
+    const bundle = alignmentBundle({ unit: u.text, label: u.label || null, before: inp.before, links: framing ? [] : inp.declared, plan: inp.chapterNodes, guides: framing ? [] : inp.guides, framing });
     const answer = await verifier(bundle.prompt);
     const read = readAlignment(answer.raw, bundle.nonce, inp.declared.map((n) => n.id), new Set(inp.chapterNodes.map((n) => n.id)), inp.guides.map((g) => g.id));
     const basis = reviewBasis(u, inp);
     const status = !read ? "unscorable" : read.unanswered.length ? "incomplete" : "reviewed";
-    const record = recordDispatch(root, { kind: "alignment", unit: u.id, factHash: basis, contentHash: u.locator.contentHash, bundle, answer, admission: { status }, extra: { alignmentBasis: basis, declared: inp.declared.map((n) => n.id), guides: inp.guides.map((g) => g.id) } });
+    const record = recordDispatch(root, { kind: "alignment", unit: u.id, factHash: basis, contentHash: u.locator.contentHash, bundle, answer, admission: { status }, deps: deps.get(u.id), extra: { alignmentBasis: basis, declared: inp.declared.map((n) => n.id), guides: inp.guides.map((g) => g.id) } });
     results.push({ unit: u.id, dispatch: record.dispatch, status, doubtful: read ? read.links.filter((l) => l.verdict === "no").map((l) => l.id) : [], unanswered: read?.unanswered || [], offPlan: !!read?.offPlan, fidelity: read?.fidelity || [], costUsd: answer.costUsd ?? null });
     onProgress(results.at(-1));
   }
   return results;
+}
+
+/**
+ * What each unit's CURRENT link review says (D41; the same rule MS9 reads): of the logged alignment records whose basis
+ * matches the unit as it is now, the newest readable one. Map(unit id → { verdicts: Map(node id → yes|passing|no),
+ * offPlan, dispatch }). A unit absent from the map has no current review.
+ */
+export function currentReviews(all, plan, records, log) {
+  const out = new Map(), byUnit = new Map();
+  for (const r of records.filter((x) => x.kind === "alignment")) {
+    const entry = dispatchLogEntry(r, log); if (!entry) continue;
+    byUnit.set(r.unit, [...(byUnit.get(r.unit) || []), { r, seq: Number(entry.seq ?? 0) }]);
+  }
+  for (const u of all) {
+    const recs = byUnit.get(u.id); if (!recs || !(reviewable(u) || u.role === "framing")) continue;
+    const inp = reviewInputs(u, all, plan), basis = reviewBasis(u, inp);
+    const declared = inp.declared.map((n) => n.id), guides = inp.guides.map((g) => g.id), known = new Set(inp.chapterNodes.map((n) => n.id));
+    for (const { r } of recs.filter(({ r }) => r.alignmentBasis === basis).sort((a, b) => b.seq - a.seq)) {
+      const v = readAlignment(r.answer?.raw, r.bundle?.nonce, declared, known, r.guides ? guides : guides.length ? true : []);
+      if (v) { out.set(u.id, { verdicts: new Map(v.links.map((l) => [l.id, l.verdict])), offPlan: v.offPlan, dispatch: r.dispatch }); break; }
+    }
+  }
+  return out;
+}
+/** The same, read from a package on disk. */
+export function currentReviewsAt(root, reader, all) {
+  const dir = path.join(root, "metadata", "verification");
+  const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.endsWith(".json")).map((f) => `metadata/verification/${f}`) : [];
+  const records = readDispatches((p) => fs.readFileSync(path.join(root, p), "utf8"), files);
+  const log = readLogText(root).split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+  return currentReviews(all, planOf(reader), records, log);
 }

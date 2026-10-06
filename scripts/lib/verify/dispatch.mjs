@@ -153,7 +153,9 @@ export function replayVerifier(answers) {
 
 // ---- records -----------------------------------------------------------------------------------------------------
 /** Write a dispatch record into the package and log it. Returns the record. */
-export function recordDispatch(root, { kind, unit, factHash, contentHash, bundle, passages = [], texts, answer, admission = null, claims = null, extra = {} }) {
+// `deps`: the hash of the unit's dependencies when it was reviewed. Logged with the unit's content hash, so a review
+// can later count as a re-verification of exactly that text against exactly those dependencies (units.mjs reverify).
+export function recordDispatch(root, { kind, unit, factHash, contentHash, bundle, passages = [], texts, answer, admission = null, claims = null, extra = {}, deps = null }) {
   const dispatch = `d-${bundle.bundleHash.slice(0, 16)}`;
   const record = {
     schemaVersion: 1, dispatch, kind, unit, factHash, contentHash, at: new Date().toISOString(),
@@ -168,7 +170,7 @@ export function recordDispatch(root, { kind, unit, factHash, contentHash, bundle
   fs.mkdirSync(dir, { recursive: true });
   const text = JSON.stringify(record, null, 2) + "\n";
   fs.writeFileSync(path.join(dir, `${dispatch}.json`), text);
-  appendLogRecord(root, { type: "dispatch", party: { role: "harness", name: "verify" }, payload: { dispatch, kind, unit, bundleHash: bundle.bundleHash, responseHash: record.answer.responseHash, recordHash: recordHashOf(JSON.parse(text)), mode: answer.mode, status: admission?.status ?? null } });
+  appendLogRecord(root, { type: "dispatch", party: { role: "harness", name: "verify" }, payload: { dispatch, kind, unit, bundleHash: bundle.bundleHash, responseHash: record.answer.responseHash, recordHash: recordHashOf(JSON.parse(text)), mode: answer.mode, status: admission?.status ?? null, ...(deps ? { contentHash, deps } : {}) } });
   return record;
 }
 

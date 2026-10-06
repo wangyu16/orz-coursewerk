@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-f3773b1871e34944",
+  "kind": "knowledge",
+  "unit": "u-practice-le-chatelier-questions-8",
+  "factHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "contentHash": "2fffa34dafab1a883829fa9c821df10090ee0abcc3e9e28d9e27e1f92af0c440",
+  "at": "2026-10-06T20:19:36.575Z",
+  "bundle": {
+    "nonce": "ef90fddea48f509a",
+    "bundleHash": "f3773b1871e34944b12e0b48444ae6b58a12d455a8b2164600f2c9bca953eab6",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"ef90fddea48f509a\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 3: Toward the products, to the right. Increasing the concentration of a reactant shifts the\nequilibrium toward the opposite side, consuming some of the added $\\ce{H2}$ and forming more\n$\\ce{NH3}$.\n\nQ 4: For the same reaction, ammonia is continuously removed from the vessel. Which way does the\nequilibrium shift, and why is this useful industrially? *(Objective 2)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 5: Justify the answer to Q3 using $Q_r$ and $K$ instead of Le Chatelier's principle. *(Objective 2)*\n\nPASSAGE (Answer 4)\nToward the products. Decreasing the concentration of a product shifts the equilibrium toward that\nside to replace what was removed. Removing ammonia as it forms therefore keeps driving the reaction\nforward, which is why industrial processes remove product continuously."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"ef90fddea48f509a\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "8bf018078edebb6feca410b820f588c7f191da6d20c8062084edd2761b27235e"
+  }
+}

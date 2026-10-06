@@ -386,13 +386,13 @@ test("[req.spine.guide-grammar-strict] C5-11: guide entries the grammar does not
 });
 
 // =================================== held for the operator's decision ============================================
-test("[req.control.link-review] C2-01: a link no review has read is reported", { todo: "operator decision: should an unreviewed link be an MS9 obligation?" }, (t) => {
+test("[req.control.link-review] C2-01: a link no review has read is reported", (t) => {
   const c = course(t);
   uncover(c); c.link({ [FALSE]: [...c.unit(FALSE).spineNodes, OBJ] });
   assert.ok(added(c).some((f) => (f.units || []).includes(FALSE)), "the never-reviewed false link is reported");
 });
 
-test("[req.control.link-review] C1-09: an objective reached only 'in passing' is not covered", { todo: "operator decision: should a 'passing' verdict count as coverage?" }, async (t) => {
+test("[req.control.link-review] C1-09: an objective reached only 'in passing' is not covered", async (t) => {
   const c = course(t);
   uncover(c);
   const PASSING = ["u-slides-le-chatelier-slide-12-count-the-moles-of-gas-3", "u-study-guide-le-chatelier-common-misconceptions-5"];
@@ -401,18 +401,50 @@ test("[req.control.link-review] C1-09: an objective reached only 'in passing' is
   assert.ok(added(c).some((f) => f.kind === "objective-uncovered" || (f.module === "ms9-alignment" && PASSING.some((id) => f.units.includes(id)))));
 });
 
-test("[req.control.link-review] C3-07: a lesson under '## Introduction to …' or on a template=closing slide is reviewed and linked", { todo: "operator decision: should framing units be reviewed/linked?" }, (t) => {
+test("[req.control.link-review] C3-07 (D42): a lesson under '## Introduction to …' needs no link, but is read for off-plan content and comes to the instructor", async (t) => {
   const c = course(t);
   c.asAgent(() => c.edit(SG, "## Common misconceptions", "## Introduction to electrochemistry\n\nA galvanic cell converts the chemical energy of a spontaneous redox reaction into electrical energy. Oxidation takes place at the anode and reduction at the cathode.\n\n## Common misconceptions"));
   const u = c.units().find((x) => /galvanic/.test(x.text));
-  assert.ok(added(c).some((f) => f.kind === "unit-unlinked" && f.units.includes(u.id)));
+  assert.equal(u.role, "framing");
+  assert.ok(added(c).some((f) => f.kind === "framing-review-owed" && f.units.includes(u.id)), "unread framing is the agent's to review");
+  await reviewAlignment(c.root, c.r(), { verifier: replayVerifier((pr) => ({ nonce: pr.match(/"nonce": "([0-9a-f]+)"/)[1], links: [], also: [], offPlan: true })), only: [u.id] });
+  const now = added(c);
+  assert.ok(!now.some((f) => f.kind === "framing-review-owed" && f.units.includes(u.id)), "read");
+  assert.ok(now.some((f) => f.kind === "off-spine" && f.route === "digest" && f.units.includes(u.id)), "off the plan: the instructor's keep-or-drop question");
 });
 
-test("[req.control.link-review] C3-14: a handout declared in DOCUMENTS.json is segmented, linked and reviewed", { todo: "operator decision: how DOCUMENTS.json handouts enter Control" }, (t) => {
+test("[req.control.link-review] C3-14: a handout declared in DOCUMENTS.json is segmented, linked and reviewed", (t) => {
   const c = course(t);
   const H = "current/fall-2026/le-chatelier-handout.md";
   fs.mkdirSync(path.dirname(c.file(H)), { recursive: true });
   c.write(H, "{{nyml\nkind: document\n}}\n\n# Handout\n\n## Electrochemistry\n\nA galvanic cell converts the chemical energy of a spontaneous redox reaction into electrical energy.\n");
   c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "le-chatelier-handout", title: "Le Chatelier handout", source: H, carrier: "paged" }] }, null, 2) + "\n");
   assert.ok(c.units().some((u) => u.locator.deliverable === H) || added(c).some((f) => JSON.stringify(f.evidence).includes(H)));
+});
+
+// ---- D41 / D42 (operator, 2026-10-06) --------------------------------------------------------------------------------
+test("[req.control.verified-coverage] D41: offline, a publish may set aside the owed link reviews — and the decision records exactly which", async (t) => {
+  const { publishDecision, unitInfoOf } = await import("../scripts/lib/core/workflow.mjs");
+  const c = course(t);
+  uncover(c); c.link({ [FALSE]: [...c.unit(FALSE).spineNodes, OBJ] }); // the objective's only cover: a new, unreviewed link
+  const g = c.gate();
+  assert.ok(g.gate.blocking.some((f) => f.kind === "link-review-owed"), "owed, blocking");
+  const I = { role: "instructor", name: "Yu Wang (wangyu16)" };
+  const info = unitInfoOf(c.root, c.r());
+  const blocked = (() => { try { publishDecision(c.root, c.r(), { gateResult: g, unitInfo: info, instructorWords: "Publish chapter 2.", chapters: ["le-chatelier"] }, I); return false; } catch (e) { return /link-review-owed|no chapter can be published/.test(e.message); } })();
+  assert.ok(blocked, "without the flag, the owed review blocks");
+  let r; try { r = publishDecision(c.root, c.r(), { gateResult: g, unitInfo: info, instructorWords: "Publish chapter 2; the reviews are offline.", chapters: ["le-chatelier"], withoutReview: true, overQuestions: true }, I); } catch (e) { r = { error: e.message }; }
+  if (r.error) assert.doesNotMatch(r.error, /link-review-owed/, "only owed reviews are set aside, nothing else");
+  else assert.ok(r.withoutReview?.some((x) => x.kind === "link-review-owed"), "the decision names what it set aside");
+});
+
+test("[req.ship.checked] D42: a declared document is a deliverable unless the instructor marks it administrative", (t) => {
+  const c = course(t);
+  const H = "current/fall-2026/schedule.md";
+  fs.mkdirSync(path.dirname(c.file(H)), { recursive: true });
+  c.write(H, "{{nyml\nkind: document\n}}\n\n# Schedule\n\nWeek 1: equilibrium. Week 2: Le Chatelier's principle.\n");
+  c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "schedule", title: "Schedule", source: H, carrier: "paged", role: "administrative" }] }, null, 2) + "\n");
+  assert.ok(!c.units().some((u) => u.locator.deliverable === H), "administrative: not segmented as teaching");
+  assert.ok(!added(c).some((f) => JSON.stringify(f).includes(H) && f.kind === "units-not-indexed"));
+  assert.deepEqual(segmentDeliverable("{{nyml\nkind: document\n}}\n\n# H\n\nText here.\n", H).units.map((u) => u.text), ["Text here."], "the settings block is notation, not content");
 });

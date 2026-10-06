@@ -20,9 +20,21 @@ import { makeFinding } from "../records/findings.mjs";
 import { DELIVERABLE_DIRS, classifyUnit, derivedRole, segmentDeliverable, slugify, tokensOf, unitHash } from "./segment.mjs";
 import { manifestChapters } from "./package_reader.mjs";
 import { upgradeStamps } from "./obligations.mjs";
+import { assertUnaltered, logUnitRecords } from "./unit_records.mjs";
 
 export function deliverablesOf(reader) {
-  return manifestChapters(reader).flatMap((ch) => DELIVERABLE_DIRS.map((d) => `${d}/${ch}.md`)).filter((rel) => reader.text(rel) != null);
+  const chapters = manifestChapters(reader).flatMap((ch) => DELIVERABLE_DIRS.map((d) => `${d}/${ch}.md`));
+  return [...chapters, ...declaredDocuments(reader)].filter((rel, i, all) => reader.text(rel) != null && all.indexOf(rel) === i);
+}
+/**
+ * D42: everything that ships is checked. A document declared in metadata/DOCUMENTS.json (a handout, a print
+ * document) is a deliverable like the study guide — segmented, linked, fact-checked and reviewed — unless the
+ * instructor marks it `role: administrative` (a schedule, a syllabus), which keeps only the format and rights checks.
+ */
+export function declaredDocuments(reader) {
+  let docs = null; try { docs = JSON.parse(reader.text("metadata/DOCUMENTS.json") || "null"); } catch { docs = null; }
+  return (Array.isArray(docs?.documents) ? docs.documents : []).filter((d) => d && d.role !== "administrative")
+    .map((d) => String(d.source || d.path || "")).filter((p) => /\.md$/.test(p) && !p.startsWith("private/") && !p.includes(".."));
 }
 
 export function readSidecar(root, deliverable) {
@@ -35,6 +47,15 @@ function writeSidecar(root, sidecar) {
   const f = recordFile(root, unitsPathFor(sidecar.deliverable));
   fs.mkdirSync(path.dirname(f), { recursive: true });
   fs.writeFileSync(f, JSON.stringify(sidecar, null, 2) + "\n");
+}
+
+// what a unit inherits: its own record's, or (a new unit from a split or a merge) its sources'
+const sourcesOf = (prev, split, merge, old) => (prev ? [prev] : [split?.from, ...(merge?.from || [])].filter(Boolean).map((id) => old.find((o) => o.id === id)).filter(Boolean));
+function carriedOf(prev, split, merge, old) { const c = sourcesOf(prev, split, merge, old).find((o) => o.carried)?.carried; return c ? { carried: c } : {}; }
+function owesOf(prev, split, merge, old) {
+  const o = sourcesOf(prev, split, merge, old).filter((x) => x.owes).map((x) => x.owes);
+  if (!o.length) return {};
+  return { owes: { since: Math.min(...o.map((x) => x.since || 0)), targets: [...new Set(o.flatMap((x) => x.targets || []))].sort() } };
 }
 
 const jaccard = (a, b) => { const A = new Set(a), B = new Set(b); let n = 0; for (const x of A) if (B.has(x)) n++; return n / Math.max(1, A.size + B.size - n); };
@@ -118,6 +139,7 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
   const session = as === "agent" ? openSession(logText) : null;
   if (as === "agent" && !session) throw new Error("index --as agent needs an open agent session: run `units begin` before writing");
   if (as === "agent" && party?.role !== "agent") throw new Error("--as agent needs the agent party (with its model)");
+  assertUnaltered(root, deliverablesOf(reader)); // a re-index must not launder a hand-edited (or deleted) unit record (F6)
   if (initialOrigin) {
     if (!party || !["instructor", "agent"].includes(party.role)) throw new Error("an initial origin is a statement by the instructor or the agent");
     if (party.role === "agent" && initialOrigin.kind !== "agent-knowledge") throw new Error("the agent can only state that pre-existing text was agent-written");
@@ -164,7 +186,9 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
         id, locator: { deliverable: rel, section: s.section, ordinal: i, contentHash: hash, lines: [s.startLine, s.endLine] },
         form: s.form, role, origin, spineNodes: prev?.spineNodes || inherited || [], judgment, ...(added.length ? { judgmentAdded: added } : {}),
         // evidence is bound to fact tokens (P5), so it survives a rephrase; obligations.mjs decides what still counts
-        evidence: prev?.evidence || [], ...(prev?.stamp ? { stamp: prev.stamp } : {}), ...(prev?.carried ? { carried: prev.carried } : {}), tokens: tokensOf(s.text),
+        // an owed re-verification and a version carry survive every re-index — and pass to the pieces of a split and to
+        // a merge (R1 coherence F4/F5: a stamp is not a re-verification)
+        evidence: prev?.evidence || [], ...(prev?.stamp ? { stamp: prev.stamp } : {}), ...carriedOf(prev, split, merge, old), ...owesOf(prev, split, merge, old), tokens: tokensOf(s.text),
         ...(split ? { splitFrom: split.from } : {}), ...(merge ? { mergedFrom: merge.from } : {}),
       };
     });
@@ -179,6 +203,7 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
         evidence: { type: "judgment", note: `${rel}: ${unknown.length} passage(s) changed outside an agent session — yours (accept as mine), someone else's (name them), or revert?`, hashes: unknown.map((u) => u.locator.contentHash) },
         recommendation: "accept as mine", basis: unknown.map((u) => u.locator.contentHash).join(",") }));
   }
+  logUnitRecords(root, deliverablesOf(reader));
   if (as === "agent") appendLogRecord(root, { type: "revision", party, payload: { event: "agent-session-end", summary } });
   if (retiredAll.length) appendLogRecord(root, { type: "unit-retirement", party: party || { role: "harness", name: "units index" }, payload: { units: retiredAll } });
   return { findings, summary, changedIds };
@@ -188,7 +213,7 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
 export function claimAuthorship(root, { units, as = "instructor", instructorWords }, party) {
   if (party?.role !== "instructor") throw new Error("authorship is confirmed by the instructor");
   if (!String(instructorWords || "").trim()) throw new Error("an authorship confirmation quotes the instructor's words");
-  const ids = new Set(units), date = new Date().toISOString().slice(0, 10), done = [];
+  const ids = new Set(units), date = new Date().toISOString().slice(0, 10), done = [], writes = [];
   for (const rel of fs.existsSync(recordFile(root, "metadata/units")) ? walkSidecars(recordFile(root, "metadata/units")) : []) {
     const side = JSON.parse(fs.readFileSync(rel, "utf8"));
     let touched = false;
@@ -197,10 +222,13 @@ export function claimAuthorship(root, { units, as = "instructor", instructorWord
       u.origin = as === "instructor" ? { kind: "instructor-authored", instructor: party.name, date } : { kind: "unknown", namedAuthor: as };
       done.push(u.id); touched = true;
     }
-    if (touched) writeSidecar(root, side);
+    if (touched) writes.push(side);
   }
   const missing = units.filter((u) => !done.includes(u));
   if (missing.length) throw new Error(`no such unit: ${missing.join(", ")}`);
+  assertUnaltered(root, writes.map((s) => s.deliverable));
+  for (const side of writes) writeSidecar(root, side);
+  logUnitRecords(root, writes.map((s) => s.deliverable));
   appendLogRecord(root, { type: "authorship-confirmation", party, payload: { units: done, as, instructorWords } });
   return done;
 }

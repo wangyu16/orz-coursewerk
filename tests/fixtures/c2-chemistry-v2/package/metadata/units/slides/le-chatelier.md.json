@@ -231,6 +231,7 @@
         "what"
       ],
       "stamp": {
+        "term:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
         "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
         "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8",
         "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
@@ -656,6 +657,7 @@
         "volume"
       ],
       "stamp": {
+        "term:partial pressure": "1911d9c4cb6332589c0c654fabfa7dd7bfd78d9bfceb7146973dee1784dcec0d",
         "term:inert gas": "91b328404fe9488574e97dda03a06991fc165308d1553889049deb255cba0d1a",
         "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
         "spine:concept.le-chatelier.inert-gas-no-shift": "ebfca1d007354f867e6b52509b1fa1a94ee59f0063314813649910520ad720e6",
@@ -878,6 +880,7 @@
       ],
       "stamp": {
         "term:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
+        "term:partial pressure": "1911d9c4cb6332589c0c654fabfa7dd7bfd78d9bfceb7146973dee1784dcec0d",
         "term:inert gas": "91b328404fe9488574e97dda03a06991fc165308d1553889049deb255cba0d1a",
         "spine:misconception.le-chatelier.cancels-disturbance": "9355c81a7546167e3e5eb4781be62a7b2f3f136fdd73559d17bdb988e9ff2447",
         "spine:misconception.le-chatelier.catalyst-increases-product": "1619ffd563d9eec0015828b95afe9851810d317dff14fe233d22b2e4976d2331",

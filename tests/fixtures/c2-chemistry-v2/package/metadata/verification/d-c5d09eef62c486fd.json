@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-c5d09eef62c486fd",
+  "kind": "knowledge",
+  "unit": "u-practice-le-chatelier-questions-20",
+  "factHash": "710c717930f9388051a31d22339950ba638ec88aca00c7005d99655ae4821497",
+  "contentHash": "24c36fdb416166cd1c12dde3b8e4d5b7214ac5da2aeaf8d0e84eb5f60bd4384f",
+  "at": "2026-10-06T20:19:36.678Z",
+  "bundle": {
+    "nonce": "b0561e46fd324711",
+    "bundleHash": "c5d09eef62c486fdfd83d3867d2a73c98ade7a9a5a24f52a299e577697b74a13",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"b0561e46fd324711\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 9: Toward the products. There are four moles of gas on the left and two on the right. Decreasing the\nvolume raises the pressure, and the equilibrium shifts toward the side with **fewer** moles of gas,\nwhich is the product side.\n\nQ 10: For $\\ce{H2(g) + I2(g) <=> 2 HI(g)}$, the volume is halved. Which way does the equilibrium shift?\n*(Objective 4)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 11: For $\\ce{2 SO3(g) <=> 2 SO2(g) + O2(g)}$, the volume of the vessel is doubled. Which way does the\nequilibrium shift? *(Objective 4)*\n\nPASSAGE (Answer 10)\nIt does not shift. There are two moles of gas on each side, so neither side is favoured by a\nvolume change. This is the case that shows a pressure change does not move every gas-phase\nequilibrium."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"b0561e46fd324711\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "a8b5639096d28c09676d3ba79dd6e10333dbd00f09505607e6e6a8d1452c59b7"
+  }
+}

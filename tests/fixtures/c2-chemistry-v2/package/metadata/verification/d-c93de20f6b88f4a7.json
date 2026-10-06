@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-c93de20f6b88f4a7",
+  "kind": "knowledge",
+  "unit": "u-practice-le-chatelier-questions-16",
+  "factHash": "f7aa55a1e56412f92f247638aaba010914b4ebbb2be1a8bee4c94bc8be2a0b01",
+  "contentHash": "0729caf1aff1651dd0238d1053ffa73414f4c075e8bb90c81c3b1cb93504e310",
+  "at": "2026-10-06T20:19:36.637Z",
+  "bundle": {
+    "nonce": "2299675516e80534",
+    "bundleHash": "c93de20f6b88f4a7f84863bd3d9356a9c4b59090de11ff0363280e98f67a5840",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"2299675516e80534\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 7: Toward the reactants. For an endothermic reaction heat behaves as a **reactant**; removing heat is\nlike removing a reactant, so the equilibrium shifts toward the reactant side to replace it.\n\nQ 8: \"Raising the temperature always increases the yield of product.\" Evaluate this claim.\n*(Objective 3)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 9: For $\\ce{N2(g) + 3 H2(g) <=> 2 NH3(g)}$, the volume of the vessel is halved. Which way does the\nequilibrium shift? *(Objective 4)*\n\nPASSAGE (Answer 8)\nFalse. The effect depends on the sign of the reaction enthalpy. Raising the temperature increases\nthe yield for an endothermic reaction, because heat acts as a reactant, but decreases it for an\nexothermic reaction, because heat acts as a product. Temperature is also the only one of these\ndisturbances that changes the value of $K$."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"2299675516e80534\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "2c90b66a10277e726079b6b4f60cefe96f66111d59812cece6fd672d9c5106a5"
+  }
+}

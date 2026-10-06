@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-7f87b42fabb86ca2",
+  "kind": "knowledge",
+  "unit": "u-practice-chemical-equilibrium-questions-10",
+  "factHash": "39626cd1f20da9fc598195d2afc12f02b8a3d949a382ecc25562e5829b0b2ac9",
+  "contentHash": "8bc4081342d60b3c7c7144ff9b2373c37b05c7335c49e6eba00dad7eb9cd018f",
+  "at": "2026-10-06T20:19:36.398Z",
+  "bundle": {
+    "nonce": "c3c73a6408c50738",
+    "bundleHash": "7f87b42fabb86ca2ca0224d0d80e2763dd22153f2ddd2d775588adb136e5b8ad",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"c3c73a6408c50738\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 4: Forward: $K = \\dfrac{[\\ce{SO3}]^{2}}{[\\ce{SO2}]^{2}[\\ce{O2}]}$.\n\nReverse: $K' = \\dfrac{[\\ce{SO2}]^{2}[\\ce{O2}]}{[\\ce{SO3}]^{2}}$.\n\nThe two are reciprocals: $K' = 1/K$. Reversing the equation swaps numerator and denominator.\n\nQ 5: A student writes, for $\\ce{H2(g) + I2(g) <=> 2 HI(g)}$, the expression\n$K = \\dfrac{[\\ce{H2}][\\ce{I2}]}{[\\ce{HI}]}$. Identify both errors and give the correct expression.\n*(Objective 2)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 6: For a reaction with $K = 50$, a mixture is found to have $Q_r = 12$. Which direction will the\nreaction shift, and why? *(Objective 3)*\n\nPASSAGE (Answer 5)\nTwo errors. First, the products and reactants are the wrong way round: products belong in the\nnumerator. Second, the coefficient 2 on $\\ce{HI}$ has been dropped as an exponent. Correct:\n$$K = \\frac{[\\ce{HI}]^{2}}{[\\ce{H2}]\\,[\\ce{I2}]}$$"
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"c3c73a6408c50738\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "26f0bfdfcdae67681c81275eb58eb01ccdfff792b8f9c46c029d018ade2abd41"
+  }
+}

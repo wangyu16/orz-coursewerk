@@ -8,12 +8,16 @@
 //   node scripts/units.mjs link   --root <pkg> --links <file.json> --model <model id>      { "<unit id>": ["<spine node id>", …] }
 //   node scripts/units.mjs confirm --root <pkg> --units <id,…> --what fact|still-correct --name <instructor> --words "<their words>"
 //   node scripts/units.mjs obligations --root <pkg>                                        the core obligations, grouped
+//   node scripts/units.mjs reverify --root <pkg> --units <id,…> --model <model id>      record that units which owed
+//        re-verification were re-checked: only when a logged blind review of each unit's CURRENT text (and current
+//        question/dependencies) exists that is newer than the obligation (run verify.mjs knowledge --units … first);
+//        refuses otherwise. Editing, relinking or re-indexing a unit never clears what it owes.
 //   node scripts/units.mjs restamp --root <pkg> --reason "<harness change>"                re-baseline every stamp after the
 //        harness's dependency rules changed (logged as a harness action; never a substitute for re-verification)
 import fs from "node:fs";
 import { liveReader } from "./lib/core/package_reader.mjs";
 import { beginSession, claimAuthorship, deliverablesOf, readSidecar, unindexedFindings } from "./lib/core/units_index.mjs";
-import { confirmUnits, coreObligations, indexAndStamp, linkUnits, loadUnits, restamp } from "./lib/core/obligations.mjs";
+import { confirmUnits, coreObligations, indexAndStamp, linkUnits, loadUnits, restamp, reverifyUnits } from "./lib/core/obligations.mjs";
 import { appendLogRecord } from "./lib/records/log.mjs";
 import { segmentDeliverable, uncoveredLines } from "./lib/core/segment.mjs";
 
@@ -21,7 +25,7 @@ const [cmd, ...args] = process.argv.slice(2);
 const opt = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : undefined; };
 const fail = (m, c = 2) => { console.error(m); process.exit(c); };
 const root = opt("--root");
-if (!cmd || !root || !fs.existsSync(root)) fail("usage: units.mjs <begin|index|claim|status|link|confirm|obligations> --root <package> … (see the header of scripts/units.mjs)");
+if (!cmd || !root || !fs.existsSync(root)) fail("usage: units.mjs <begin|index|claim|status|link|confirm|reverify|obligations|restamp> --root <package> … (see the header of scripts/units.mjs)");
 const reader = liveReader(root);
 const agent = () => { const model = opt("--model"); if (!model) fail("--model <model id> is required for the agent"); return { role: "agent", name: "executor", model }; };
 try {
@@ -64,6 +68,12 @@ try {
     const words = opt("--words") || fail('--words "<the instructor\'s own words>" is required: a confirmation quotes them');
     confirmUnits(root, reader, ids, { what: opt("--what"), instructorWords: words }, { role: "instructor", name });
     console.log(JSON.stringify({ confirmed: ids.length, what: opt("--what") }, null, 2)); process.exit(0);
+  }
+  if (cmd === "reverify") {
+    const ids = String(opt("--units") || "").split(",").filter(Boolean);
+    if (!ids.length) fail("--units <id,…> is required: name the units whose blind re-check you are recording");
+    const r = reverifyUnits(root, reader, ids, agent());
+    console.log(JSON.stringify({ reverified: ids.length, reviews: r.payload.reviews }, null, 2)); process.exit(0);
   }
   if (cmd === "restamp") {
     const reason = opt("--reason") || fail("--reason is required: name the harness change that altered the dependency rules");

@@ -43,7 +43,7 @@ function run(s) {
   }
   for (const [id, recs] of byUnit) {
     const u = byId.get(id);
-    if (!u || !reviewable(u)) continue;
+    if (!u || !(reviewable(u) || u.role === "framing")) continue; // D42: framing is read for off-plan content
     const inp = reviewInputs(u, all, plan), basis = reviewBasis(u, inp);
     const declared = inp.declared.map((n) => n.id), guides = inp.guides.map((g) => g.id), known = new Set(inp.chapterNodes.map((n) => n.id));
     // the unit's current reviews, newest first (a review of something else is history)

@@ -174,7 +174,7 @@ test("[req.versions.carry] units carried into a new major version start as oblig
   assert.throws(() => carryUnits(p.root, [ice], { version: 2, scope: "chapter:melting" }, AGENT), /instructor's version decision/);
   carryUnits(p.root, [ice], { version: 2, scope: "chapter:melting" }, I);
   const k = p.obligations().filter((f) => f.units[0] === ice).map((f) => f.kind).sort();
-  assert.deepEqual(k, ["carried-unverified", "evidence-missing"]);
+  assert.deepEqual(k.filter((x) => x !== "link-review-owed"), ["carried-unverified", "evidence-missing"]); // (its covering link was never reviewed: D41)
   assert.equal(readSidecar(p.root, "study-guide/melting.md").units.find((u) => u.id === ice).evidence.length, 0);
   recordVerification(p.root, p.r(), [ice], { module: "ms1-sources", basis: "b" });
   assert.ok(!p.obligations().some((f) => f.kind === "carried-unverified"));

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-d035be5fe8a83d22",
+  "kind": "knowledge",
+  "unit": "u-practice-chemical-equilibrium-questions-2",
+  "factHash": "5e2d813d377fc67cf1277f8f78a9b63342feee34c61a196341ca3352be7e6a29",
+  "contentHash": "15035938fc3f15007d80273d34b5c7710f35851724bb7a7a64e9b1adbb66564d",
+  "at": "2026-10-06T20:19:36.347Z",
+  "bundle": {
+    "nonce": "5e610cb35e1af412",
+    "bundleHash": "d035be5fe8a83d2229401330df91279dd35ca2369fc35c7cad378dd9ae16cad7",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"5e610cb35e1af412\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nQ 1: A sealed flask contains $\\ce{N2O4}$ and $\\ce{NO2}$. The brown colour of the mixture stops changing.\nA student concludes that both reactions have stopped. Is the student right? Explain what is\nhappening at the molecular level. *(Objective 1)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 2: At equilibrium a reaction mixture contains 0.80 M of a reactant and 0.20 M of a product, and these\nvalues stay constant for an hour. Is this system at equilibrium, given that the concentrations are\nnot equal? *(Objective 1)*\n\nPASSAGE (Answer 1)\nThe student is wrong. The colour stops changing because the forward and reverse reactions have\nreached **equal, nonzero** rates, so the concentrations no longer change. Molecules of $\\ce{N2O4}$\ncontinue to dissociate and molecules of $\\ce{NO2}$ continue to recombine, at matching rates. The\nequilibrium is dynamic, not static."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"5e610cb35e1af412\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "d80111d5e59fbde258dccff953aa20b403e3b46398bf2d5efb219c44eefb3d54"
+  }
+}

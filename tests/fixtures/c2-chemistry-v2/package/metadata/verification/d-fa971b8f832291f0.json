@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-fa971b8f832291f0",
+  "kind": "knowledge",
+  "unit": "u-practice-chemical-equilibrium-questions-24",
+  "factHash": "9243d3b5e698575ea404d740bfe8a1ec83b589acc28d69c053dc2b672421f36c",
+  "contentHash": "e661a4a58c2f534d2167723639d112e48d305930e182bfce290adeda9409be9d",
+  "at": "2026-10-06T20:19:36.472Z",
+  "bundle": {
+    "nonce": "8bb9ee12101aa2ac",
+    "bundleHash": "fa971b8f832291f009a37dc8c8ad8b7cc8a164d0420cf455add0726f1dd8f0d0",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"8bb9ee12101aa2ac\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 11: $\\Delta G^\\ominus = -RT\\ln K = -(8.314)(298)\\ln(4.0) = -3435\\ \\text{J mol}^{-1} \\approx\n-3.4\\ \\text{kJ mol}^{-1}$.\n\nThe negative sign is consistent with $K > 1$, meaning products are favoured. *(The value\n$K = 4.0$ is a teaching hypothetical, not a source datum.)*\n\nQ 12: Without calculating, state whether $K$ is greater or less than one for a reaction whose standard\nGibbs energy change is positive. Justify your answer. *(Objective 5)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 13: An endothermic reaction is at equilibrium. The temperature is raised. What happens to the value of\n$K$? *(Objective 6)*\n\nPASSAGE (Answer 12)\n$K < 1$. From $\\Delta G^\\ominus = -RT\\ln K$, a positive $\\Delta G^\\ominus$ requires $\\ln K$ to be\nnegative, which means $K < 1$. Reactants are favoured at equilibrium."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"8bb9ee12101aa2ac\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "089f18764133d42b0c624815fa22f279a460356fd2021e7f6643c7cd6fb112db"
+  }
+}

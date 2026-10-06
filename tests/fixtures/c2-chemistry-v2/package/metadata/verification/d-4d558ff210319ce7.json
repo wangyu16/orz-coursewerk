@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-4d558ff210319ce7",
+  "kind": "knowledge",
+  "unit": "u-practice-le-chatelier-questions-28",
+  "factHash": "0a4832bc69acd007bb0820af0803c063e4cf058a725a5a6c5352184efe1e6e53",
+  "contentHash": "81051f1cd6e3de3db92b86263f893c7b50559cd70ef8cfe943415acaf25b8af7",
+  "at": "2026-10-06T20:19:36.729Z",
+  "bundle": {
+    "nonce": "0358bf490b0d2c65",
+    "bundleHash": "4d558ff210319ce74fec4104b549091f90379a7912b685df64e26d50aaafeb77",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"0358bf490b0d2c65\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 13: It fails by treating total pressure as the driver. What moves a gas-phase equilibrium is a change\nin the **partial pressures** of the reacting species, which is what a volume change produces. An\ninert gas added at constant volume raises the total pressure while leaving every partial pressure\nuntouched.\n\nQ 14: A catalyst is added to a reaction at equilibrium. What happens to the amount of product present?\n*(Objective 5)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 15: Four changes are applied separately to a gas-phase equilibrium: adding a reactant, raising the\ntemperature, adding an inert gas at constant volume, and adding a catalyst. Which shift the\nposition of the equilibrium, and which change the value of $K$? *(Objective 5)*\n\nPASSAGE (Answer 14)\nNothing. A catalyst speeds up the forward and reverse reactions by the same factor, so it changes\nneither the position nor the composition of the equilibrium. It shortens the time needed to reach\nequilibrium, which is valuable industrially, but it does not raise the yield."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"0358bf490b0d2c65\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "9213229d05c03fa0a413f3139e65a2f746c3833509b2d1357e843064df5a4a88"
+  }
+}

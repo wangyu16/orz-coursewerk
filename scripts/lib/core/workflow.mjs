@@ -109,10 +109,12 @@ export function chapterOfFinding(f, unitDeliverable) {
  * Which chapters may be published (skeleton §7): PACKAGE, with a valid approval, and no open defect or obligation
  * that concerns the chapter or the whole package. Returns { chapters: {slug: {publishable, why[]}}, course }.
  */
-export function eligibility(root, reader, gateResult, unitDeliverable) {
+/** The obligations a publish may set aside offline, as the agent's recorded choice (D41, D42): reviews still owed. */
+export const REVIEW_OWED = Object.freeze(["link-review-owed", "framing-review-owed"]);
+export function eligibility(root, reader, gateResult, unitDeliverable, { withoutReview = false } = {}) {
   const states = chapterStates(root, reader);
   const approvals = approvalStatus(reader, Object.keys(states), readLogText(root)).scopes;
-  const blocking = gateResult.gate.blocking;
+  const blocking = gateResult.gate.blocking.filter((f) => !(withoutReview && REVIEW_OWED.includes(f.kind)));
   const packageWide = blocking.filter((f) => chapterOfFinding(f, unitDeliverable) === null);
   const out = {};
   for (const [ch, s] of Object.entries(states)) {
@@ -148,11 +150,13 @@ export function publishContentHash(root) {
  * Open questions never block (D14), but they are raised first: with any open, the instructor publishes only by
  * saying so (`overQuestions`), and the decision records that it was made over them (operator, 2026-10-02).
  */
-export function publishDecision(root, reader, { gateResult, unitInfo, instructorWords, chapters: wanted = null, includeDrafts = false, overQuestions = false }, party) {
+export function publishDecision(root, reader, { gateResult, unitInfo, instructorWords, chapters: wanted = null, includeDrafts = false, overQuestions = false, withoutReview = false }, party) {
   const unitDeliverable = new Map([...unitInfo].map(([k, v]) => [k, v.deliverable])), unitHash = new Map([...unitInfo].map(([k, v]) => [k, v.contentHash]));
   if (party?.role !== "instructor") throw new Error("publishing is the instructor's decision (M6)");
   if (!String(instructorWords || "").trim()) throw new Error("a publish decision quotes the instructor's words");
-  const el = eligibility(root, reader, gateResult, unitDeliverable);
+  const el = eligibility(root, reader, gateResult, unitDeliverable, { withoutReview });
+  // what a publish without the owed reviews set aside, recorded in the decision (D41: offline, the agent's choice)
+  const skippedReviews = withoutReview ? gateResult.gate.blocking.filter((f) => REVIEW_OWED.includes(f.kind)).map((f) => ({ kind: f.kind, units: f.units })) : [];
   const asked = wanted || Object.keys(el.chapters);
   const unknown = asked.filter((c) => !el.chapters[c]);
   if (unknown.length) throw new Error(`not chapters of this package: ${unknown.join(", ")}`);
@@ -175,7 +179,7 @@ export function publishDecision(root, reader, { gateResult, unitInfo, instructor
     course: el.course.publishable ? { approval: approvalOf("course") } : null,
     excluded: asked.filter((c) => !included.includes(c) && !drafts.includes(c)).map((c) => ({ chapter: c, why: el.chapters[c].why })),
     drafts: drafts.map((c) => ({ chapter: c, note: "a draft: outside the package promises, private use only" })),
-    openQuestions, overQuestions: openQuestions.length > 0, instructorWords,
+    openQuestions, overQuestions: openQuestions.length > 0, ...(skippedReviews.length ? { withoutReview: skippedReviews } : {}), instructorWords,
   };
   const rec = appendLogRecord(root, { type: "publish", party, payload });
   fs.mkdirSync(recordFile(root, "metadata/publish"), { recursive: true });

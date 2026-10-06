@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-5460556129cda298",
+  "kind": "knowledge",
+  "unit": "u-practice-le-chatelier-questions-14",
+  "factHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "contentHash": "547cfe3be5eec49469171002a8420b9ea6d508dc3c4d5777eb880d7229c4f439",
+  "at": "2026-10-06T20:19:36.616Z",
+  "bundle": {
+    "nonce": "5393164c208e68c6",
+    "bundleHash": "5460556129cda2983128e6dc86edf01101e98b06342ee0e0f84e8e6422a6e05d",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"5393164c208e68c6\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 6: Toward the reactants, to the left. For an exothermic reaction heat behaves as a **product**, so\nadding heat is like adding a product, and the equilibrium shifts away from it. The yield of ammonia\nfalls at higher temperature.\n\nQ 7: An endothermic reaction is at equilibrium and the mixture is cooled. Which way does the equilibrium\nshift? *(Objective 3)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 8: \"Raising the temperature always increases the yield of product.\" Evaluate this claim.\n*(Objective 3)*\n\nPASSAGE (Answer 7)\nToward the reactants. For an endothermic reaction heat behaves as a **reactant**; removing heat is\nlike removing a reactant, so the equilibrium shifts toward the reactant side to replace it."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"5393164c208e68c6\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "15694df8ef187e3a3c06e2842cb9a5805c5fe34a3ffe09dcdcd1f92682052057"
+  }
+}

@@ -13,6 +13,7 @@ import { liveReader } from "../core/package_reader.mjs";
 import { spineCoreFindings, restatedObjectiveFindings, approvalCoreProblems } from "../core/core_checks.mjs";
 import { unindexedFindings } from "../core/units_index.mjs";
 import { coreObligations } from "../core/obligations.mjs";
+import { unitRecordFindings } from "../core/unit_records.mjs";
 
 /** The package's use profile: the FOUNDATION's usageProfile ("public-oer" → public), unless given. */
 export function profileOf(root, given = null) {
@@ -36,6 +37,8 @@ export function runGate(root, { checkpoint = "V8", profile = null, inputsDir = n
     if (checkpoint === "V8") approvalProblems.push(...approvalCoreProblems(root, reader));
     if (["V2", "V8"].includes(checkpoint)) core.push(...unindexedFindings(root, reader, run.snapshot.id));
     if (["V4", "V6", "V8"].includes(checkpoint)) core.push(...coreObligations(root, reader, run.snapshot.id));
+    // a unit record (stamps, owed re-verifications, carries, links) edited outside the harness (R1 coherence F6)
+    if (["V2", "V4", "V6", "V8"].includes(checkpoint)) core.push(...unitRecordFindings(root, run.snapshot.id));
   }
   const findings = [...run.findings, ...core, ...logFindings(root, run.snapshot.id)];
   const maturityOf = (name) => run.wiring.ran.find((r) => r.name === name)?.maturity || "stable";

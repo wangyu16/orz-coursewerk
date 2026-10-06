@@ -13,23 +13,34 @@
 // never for a claim the instructor asked to change (F15).
 // And one defect: a unit that links to a spine node that does not exist.
 //
-// What clears them, and nothing else: the agent revising the unit (a fresh stamp); a stable module re-checking it
-// (recordVerification); the instructor confirming it (confirmUnits). The agent cannot clear an obligation by saying so.
+// A STAMP IS NOT A RE-VERIFICATION (red team R1 coherence, F4/F5/F14). A stamp records the hashes of a unit's
+// dependencies, and is renewed whenever the unit is (re)written or relinked. But a unit that OWED re-verification when
+// it was restamped keeps owing it (`owes`, with the log seq it arose at), and a carried unit stays carried: editing the
+// text, relinking or re-indexing never clears either. What clears them, and nothing else:
+//   - a logged re-check of the unit's CURRENT text made after the obligation arose: a blind review (knowledge, semi or
+//     alignment dispatch) of the unit at its current content and dependencies, recorded by `units.mjs reverify`
+//     (reverifyUnits), or a named module's re-check (recordVerification);
+//   - the instructor's confirmation (confirmUnits).
+// The agent cannot clear an obligation by saying so.
 import fs from "node:fs";
 import path from "node:path";
+import { canonicalJson, sha256 } from "../records/canonical.mjs";
 import { makeFinding } from "../records/findings.mjs";
-import { appendLogRecord } from "../records/log.mjs";
-import { unitsPathFor, recordFile } from "../records/paths.mjs";
+import { appendLogRecord, parseLog, verifyLog } from "../records/log.mjs";
+import { recordFile } from "../records/paths.mjs";
 import { validateUnitSidecar } from "../records/units.mjs";
-import { classifyUnit, derivedRole, segmentDeliverable } from "./segment.mjs";
+import { classifyUnit, derivedRole, segmentDeliverable, unitHash } from "./segment.mjs";
 import { readLogText } from "../records/log.mjs";
 import { checkableClaims, claimsHash } from "../verify/claims.mjs";
 import { absoluteSentences, absolutesHash, readAbsoluteReview } from "../verify/absolutes.mjs";
 import { deliverablesOf, indexUnits, readSidecar } from "./units_index.mjs";
-import { parseSpine, nodeIndex } from "./spine.mjs";
+import { parseSpine, nodeIndex, termsOfMap, COURSE_MAP } from "./spine.mjs";
 import { manifestChapters } from "./package_reader.mjs";
 import { openMajorVersion } from "./versions.mjs";
-import { dependencyEdges, factHash, sourceHashes, stampFor, staleTargets, targetHashes } from "./dependencies.mjs";
+import { approvalStatus } from "./approvals.mjs";
+import { dependencyEdges, factHash, nodeHash, questionBindingProblems, questionHash, sourceHashes, stampFor, staleTargets, targetHashes, termHash } from "./dependencies.mjs";
+import { assertUnaltered, deliverableOfSidecar, logUnitRecords } from "./unit_records.mjs";
+import { currentReviewsAt } from "../verify/alignment.mjs";
 
 // quote-verified: admitted by the verdict path (P7); instructor-confirmation: one confirmation (D19-D);
 // authorized-divergence: the instructor kept their text against evidence, after seeing it — the double confirmation (Q10).
@@ -130,14 +141,57 @@ export function loadUnits(root, reader) {
   return out;
 }
 
+/**
+ * Earlier target hashes that still count as current (F13): for a scope whose current approval is a valid glance
+ * confirmation — a change the classifier judged LIGHT against the last full approval — the hashes the spine nodes,
+ * guide entries and key terms had at that full approval. Units stamped then are not stale for a light rewording.
+ */
+function lightAccept(reader, chapters, logText) {
+  const accept = new Map();
+  const add = (t, h) => { if (!accept.has(t)) accept.set(t, new Set()); accept.get(t).add(h); };
+  if (verifyLog(logText).length) return accept;
+  let status; try { status = approvalStatus(reader, chapters, logText); } catch { return accept; }
+  const recs = parseLog(logText).filter((r) => r.type === "approval" && r.party?.role === "instructor");
+  for (const [key, s] of Object.entries(status.scopes)) {
+    if (!s.valid || s.record?.type !== "glance-confirmation" || s.record.payload?.change !== "light") continue;
+    const full = recs.filter((r) => r.payload?.scope === s.scope).at(-1);
+    if (!full?.payload?.parsed) continue;
+    for (const n of [...(full.payload.parsed.nodes || []), ...(full.payload.parsed.entries || [])]) if (n?.id) add(`spine:${n.id}`, nodeHash(n));
+    const mapText = key === "course" ? full.payload.text : full.payload.text?.[`concepts/${key}.md`];
+    for (const t of typeof mapText === "string" ? termsOfMap(mapText, key === "course" ? "course" : key, key === "course" ? COURSE_MAP : null) : []) if (t.label) add(`term:${t.label.toLowerCase()}`, termHash(t));
+  }
+  return accept;
+}
+
 function context(root, reader) {
   const chapters = manifestChapters(reader);
   const spine = parseSpine(reader, chapters);
   const units = loadUnits(root, reader);
   const edges = dependencyEdges(units, spine, sourceHashes(reader));
   const hashes = targetHashes(units, spine, sourceHashes(reader));
-  return { chapters, spine, units, edges, hashes };
+  let accept = null; // computed only when a spine or term target moved (it reads the approval history)
+  const acceptOf = () => (accept ??= lightAccept(reader, chapters, readLogText(root)));
+  return { chapters, spine, units, edges, hashes, acceptOf, byId: new Map(units.map((u) => [u.id, u])) };
 }
+
+/** What a unit owes because of its stamp: moved targets, and a question binding that no longer holds (F1, F3). */
+export function owedTargets(u, ctx) {
+  if (!u.stamp) return [];
+  let moved = staleTargets(u.stamp, ctx.hashes);
+  if (moved.some((t) => /^(spine|term):/.test(t))) moved = staleTargets(u.stamp, ctx.hashes, ctx.acceptOf());
+  const binding = u.form === "answer" ? questionBindingProblems(u.stamp, ctx.edges.get(u.id)).map((b) => `question-binding:${b}`) : [];
+  return [...moved, ...binding];
+}
+/** Does the unit owe re-verification now (a stale stamp, an obligation carried over a restamp, or a version carry)? */
+const owesNow = (u, ctx) => !!u.carried || !!u.owes || owedTargets(u, ctx).length > 0;
+/** The hash of a unit's dependencies as they are now: a re-check counts only if made against these (reverifyUnits). */
+const depsOf = (id, ctx) => sha256(canonicalJson(stampFor(id, ctx.edges, ctx.hashes)));
+/** unit id → the hash of its dependencies now (passed to the blind reviews, which log it with their dispatch). */
+export function unitDepsHashes(root, reader) {
+  const ctx = context(root, reader);
+  return new Map(ctx.units.map((u) => [u.id, depsOf(u.id, ctx)]));
+}
+const lastSeq = (root) => { const recs = parseLog(readLogText(root)); return recs.length ? recs[recs.length - 1].seq || recs.length : 0; };
 
 function rewriteUnits(root, ids, fn) {
   const want = new Set(ids), done = new Set();
@@ -145,6 +199,7 @@ function rewriteUnits(root, ids, fn) {
   const files = [];
   const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const f = path.join(d, e.name); if (e.isDirectory()) walk(f); else if (e.name.endsWith(".json")) files.push(f); } };
   if (fs.existsSync(dir)) walk(dir);
+  const writes = [];
   for (const f of files) {
     const side = JSON.parse(fs.readFileSync(f, "utf8"));
     let touched = false;
@@ -152,37 +207,54 @@ function rewriteUnits(root, ids, fn) {
     if (touched) {
       const problems = validateUnitSidecar(side);
       if (problems.length) throw new Error(`refusing an invalid unit sidecar: ${problems[0]}`);
-      fs.writeFileSync(f, JSON.stringify(side, null, 2) + "\n");
+      writes.push([f, side]);
     }
   }
   const missing = [...want].filter((x) => !done.has(x));
   if (missing.length) throw new Error(`no such unit: ${missing.join(", ")}`);
-}
-
-/** Stamp units with the current hashes of their dependencies. */
-export function restamp(root, reader, ids) {
-  if (!ids.length) return;
-  const { edges, hashes } = context(root, reader);
-  rewriteUnits(root, ids, (u) => { u.stamp = stampFor(u.id, edges, hashes); delete u.carried; });
+  const rels = writes.map(([f]) => deliverableOfSidecar(root, f));
+  assertUnaltered(root, rels); // never write over (and so launder) a record edited outside the harness (F6)
+  for (const [f, side] of writes) fs.writeFileSync(f, JSON.stringify(side, null, 2) + "\n");
+  if (rels.length) logUnitRecords(root, rels);
 }
 
 /**
- * A dependency target the harness added after a unit was stamped (the direction-sensitive `question:` target, P11):
- * when the unit's stamp is otherwise current, the new target is baselined at its current hash — the state a restamp
- * would record. Targets that just changed are never baselined (`except`), so an edit is not silently absorbed.
+ * Stamp units with the current hashes of their dependencies. A unit that owed re-verification keeps owing it (its
+ * `owes` records what had moved and the log seq the obligation is older than), and a carried unit stays carried:
+ * rewriting or relinking a unit is not re-verifying it (F4, F5, F14).
+ */
+export function restamp(root, reader, ids) {
+  if (!ids.length) return;
+  const ctx = context(root, reader), since = lastSeq(root);
+  rewriteUnits(root, ids, (u) => {
+    const cur = ctx.byId.get(u.id), owed = cur ? owedTargets(cur, ctx) : [];
+    if (owed.length || u.owes) u.owes = { since: u.owes?.since ?? since, targets: [...new Set([...(u.owes?.targets || []), ...owed])].sort() };
+    u.stamp = stampFor(u.id, ctx.edges, ctx.hashes);
+  });
+}
+
+/**
+ * A dependency target the harness added after a unit was stamped (a new edge kind, P11; plurals and unitless values,
+ * R1): when the unit's stamp is otherwise current, the new target is baselined at its current hash — the state a
+ * restamp would record. Never baselined: targets that just changed (`except`); a target that REPLACES one of the same
+ * kind the stamp still holds (a re-pairing is a change, F3); and the question binding of an answer (an answer whose
+ * stamp predates it owes a re-check once, F1 — a later edit of the question would otherwise become its baseline).
  */
 export function upgradeStamps(root, reader, { except = [] } = {}) {
-  const { units, edges, hashes } = context(root, reader), skip = new Set(except), add = new Map();
-  for (const u of units) {
-    if (!u.stamp || u.carried || staleTargets(u.stamp, hashes).length) continue;
-    const full = stampFor(u.id, edges, hashes), missing = Object.keys(full).filter((t) => !(t in u.stamp) && !skip.has(t));
+  const ctx = context(root, reader), skip = new Set(except), add = new Map();
+  const kind = (t) => t.slice(0, t.indexOf(":"));
+  for (const u of ctx.units) {
+    if (!u.stamp || owesNow(u, ctx)) continue;
+    const full = stampFor(u.id, ctx.edges, ctx.hashes);
+    const dropped = new Set(Object.keys(u.stamp).filter((t) => !(t in full)).map(kind));
+    const missing = Object.keys(full).filter((t) => !(t in u.stamp) && !skip.has(t) && !t.startsWith("question:") && !dropped.has(kind(t)));
     if (missing.length) add.set(u.id, Object.fromEntries(missing.map((t) => [t, full[t]])));
   }
   if (add.size) rewriteUnits(root, [...add.keys()], (u) => { u.stamp = { ...u.stamp, ...add.get(u.id) }; });
   return add.size;
 }
 
-/** Index, then stamp every unit that changed (its author wrote it against the package as it is now). */
+/** Index, then stamp every unit that changed (a unit that owed re-verification still owes it). */
 export function indexAndStamp(root, reader, opts) {
   const r = indexUnits(root, reader, opts);
   restamp(root, reader, r.changedIds);
@@ -218,7 +290,7 @@ export function confirmUnits(root, reader, ids, { what, instructorWords }, party
   }
   rewriteUnits(root, ids, (u) => {
     if (what === "fact") u.evidence = [...(u.evidence || []), { type: "instructor-confirmation", by: party.name, at, factHash: factHash(text.get(u.id) || "") }];
-    u.stamp = stampFor(u.id, edges, hashes); delete u.carried;
+    u.stamp = stampFor(u.id, edges, hashes); delete u.carried; delete u.owes;
   });
   appendLogRecord(root, { type: "confirmation", party, payload: { what, units: ids, weight: "single", instructorWords, ...(what === "fact" ? { factHashes: Object.fromEntries(ids.map((id) => [id, factHash(text.get(id) || "")])) } : {}) } });
 }
@@ -279,14 +351,65 @@ function liveContradictions(root, factHashes) {
 export function recordVerification(root, reader, ids, { module, basis }) {
   if (!module || module === "agent") throw new Error("a verification names the module that re-checked the units");
   const { edges, hashes } = context(root, reader);
-  rewriteUnits(root, ids, (u) => { u.stamp = stampFor(u.id, edges, hashes); delete u.carried; });
+  rewriteUnits(root, ids, (u) => { u.stamp = stampFor(u.id, edges, hashes); delete u.carried; delete u.owes; });
   appendLogRecord(root, { type: "revision", party: { role: "harness", name: module }, payload: { event: "units-reverified", units: ids, basis } });
+}
+
+/** The "wrong" concerns a knowledge dispatch raised about words the unit still contains (as verdicts.mjs reads them). */
+function wrongConcerns(root, dispatch, unitText) {
+  let r; try { r = JSON.parse(fs.readFileSync(recordFile(root, `metadata/verification/${dispatch}.json`), "utf8")); } catch { return [{ kind: "wrong", text: "(the review record is missing)", problem: "its record cannot be read" }]; }
+  if (sha256(r.answer?.raw ?? "") !== r.answer?.responseHash) return [{ kind: "wrong", text: "(the review record was edited)", problem: "its answer does not match the logged response" }];
+  const m = String(r.answer?.raw || "").match(/\{[\s\S]*\}/);
+  let v; try { v = JSON.parse(m?.[0] || ""); } catch { return []; }
+  if (v?.nonce !== r.bundle?.nonce || !Array.isArray(v.concerns)) return [];
+  const bare = (t) => String(t).replace(/[$*_`]/g, "").replace(/\s+/g, " ").trim();
+  return v.concerns.filter((c) => typeof c?.text === "string" && bare(c.text).length >= 8 && bare(unitText).includes(bare(c.text)) && c.kind !== "clarify")
+    .map((c) => ({ kind: "wrong", text: bare(c.text), problem: String(c.problem || "") }));
+}
+
+// the blind reviews that can re-verify a unit, and the logged outcome each must have
+const REVIEW_COUNTS = { knowledge: () => true, semi: (p) => p.status === "admitted", alignment: (p) => p.status === "reviewed" };
+export const REVERIFY_ROUTE = (root, ids) => `node scripts/verify.mjs knowledge --root ${root} --units ${ids.join(",")}`;
+
+/**
+ * The agent records that units which owed re-verification were re-checked (`units.mjs reverify`). Only a LOGGED blind
+ * review counts: a knowledge, semi or alignment dispatch of the unit made after its obligation arose, at its current
+ * text (contentHash) and its current dependencies (the question it answers, the values it shares …). A knowledge
+ * review that found the text wrong does not count: revise it, and have it reviewed again. Refuses — naming the review
+ * to run — when any unit lacks one; nothing is recorded then.
+ */
+export function reverifyUnits(root, reader, ids, party, { verdicts = (d, text) => wrongConcerns(root, d, text) } = {}) {
+  if (party?.role !== "agent") throw new Error("reverify is the agent's record of a blind re-check (the instructor confirms instead: units.mjs confirm)");
+  if (!ids.length) throw new Error("name the units to reverify");
+  const logText = readLogText(root);
+  if (verifyLog(logText).length) throw new Error("the decision log does not verify: restore it before recording anything");
+  const recs = parseLog(logText), ctx = context(root, reader);
+  const carriedAt = (id) => recs.filter((r) => r.type === "revision" && r.payload?.event === "units-carried" && (r.payload.units || []).includes(id)).at(-1)?.seq || 0;
+  const problems = [], unreviewed = [], used = {};
+  for (const id of ids) {
+    const u = ctx.byId.get(id);
+    if (!u) { problems.push(`${id}: no such indexed unit (run units.mjs index first)`); continue; }
+    if (!owesNow(u, ctx)) { problems.push(`${id} owes no re-verification`); continue; }
+    const since = Math.max(u.owes?.since || 0, u.carried ? carriedAt(id) : 0), deps = depsOf(id, ctx);
+    const review = recs.filter((r) => r.type === "dispatch" && r.party?.role === "harness" && r.seq > since && r.payload?.unit === id &&
+      r.payload?.contentHash === u.locator.contentHash && r.payload?.deps === deps && REVIEW_COUNTS[r.payload?.kind]?.(r.payload)).at(-1);
+    if (!review) { unreviewed.push(id); continue; }
+    if (review.payload.kind === "knowledge" && verdicts) {
+      const wrong = verdicts(review.payload.dispatch, u.text).filter((c) => c.kind === "wrong");
+      if (wrong.length) { problems.push(`${id}: its blind review (${review.payload.dispatch}) found it wrong ("${wrong[0].text.slice(0, 80)}": ${wrong[0].problem.slice(0, 120)}) — revise it, then have it reviewed again`); continue; }
+    }
+    used[id] = review.payload.dispatch;
+  }
+  if (unreviewed.length) problems.push(`${unreviewed.join(", ")}: no logged blind review of the current text (and its current question and dependencies) since the re-verification was owed — run ${REVERIFY_ROUTE(root, unreviewed)}, then reverify`);
+  if (problems.length) throw new Error(`refusing to record a re-verification: ${problems.join("; ")}`);
+  rewriteUnits(root, ids, (u) => { u.stamp = stampFor(u.id, ctx.edges, ctx.hashes); delete u.owes; delete u.carried; });
+  return appendLogRecord(root, { type: "revision", party, payload: { event: "units-reverified", units: ids, reviews: used } });
 }
 
 /** Units carried into a new major version start as obligations: their evidence and stamps no longer count (D15). */
 export function carryUnits(root, ids, { version, scope }, party) {
   if (party?.role !== "instructor") throw new Error("carrying units into a new version follows the instructor's version decision");
-  rewriteUnits(root, ids, (u) => { u.evidence = []; delete u.stamp; u.carried = { scope, version }; });
+  rewriteUnits(root, ids, (u) => { u.evidence = []; delete u.stamp; delete u.owes; u.carried = { scope, version }; });
   appendLogRecord(root, { type: "revision", party, payload: { event: "units-carried", scope, version, units: ids } });
 }
 
@@ -297,6 +420,14 @@ export function carryUnits(root, ids, { version, scope }, party) {
  */
 export function openVersionCarrying(root, reader, { scopes, reason, instructorWords }, party) {
   if (!String(instructorWords || "").trim()) throw new Error("opening a new major version quotes the instructor's words");
+  // loadUnits skips a deliverable whose index is out of date, so a version opened over unindexed edits would carry
+  // none of its units (F12): every deliverable in scope must be indexed first
+  const inScopeRel = (rel) => scopes.some((sc) => sc === "course" || (sc.startsWith("chapter:") && rel.endsWith(`/${sc.slice("chapter:".length)}.md`)));
+  const stale = deliverablesOf(reader).filter(inScopeRel).filter((rel) => {
+    const side = readSidecar(root, rel), now = segmentDeliverable(reader.text(rel), rel).units.map((s) => unitHash(s.text));
+    return !side || JSON.stringify(now) !== JSON.stringify(side.units.map((u) => u.locator.contentHash));
+  });
+  if (stale.length) throw new Error(`refusing to open a new version: ${stale.join(", ")} ${stale.length === 1 ? "has" : "have"} edits not yet indexed — run units.mjs index first, so every unit of the scope is carried`);
   const units = loadUnits(root, reader);
   const inScope = (sc) => sc === "course" ? units : units.filter((u) => sc.startsWith("chapter:") && u.locator.deliverable.endsWith(`/${sc.slice("chapter:".length)}.md`));
   const r = openMajorVersion(root, { scopes, reason, instructorWords, carried: [...new Set(scopes.flatMap((sc) => inScope(sc).map((u) => u.id)))] }, party);
@@ -306,10 +437,11 @@ export function openVersionCarrying(root, reader, { scopes, reason, instructorWo
 
 /** All core obligations (and dangling-link defects) of a package. */
 export function coreObligations(root, reader, basis) {
-  const { chapters, spine, units, hashes } = context(root, reader);
+  const ctx = context(root, reader), { chapters, spine, units } = ctx;
   const nodes = nodeIndex(spine);
   const acts = loggedInstructorActs(root), leads = recordedLeads(root);
   const reviewed = reviewedAbsolutes(root);
+  const reviews = currentReviewsAt(root, reader, units);
   const F = [];
   const ob = (kind, ids, what) => F.push(makeFinding({ module: "skeleton", kind, units: ids, statusClass: "obligation", route: "agent", basis, evidence: { type: "missing", what } }));
   for (const u of units) {
@@ -331,23 +463,35 @@ export function coreObligations(root, reader, basis) {
     const dangling = (u.spineNodes || []).filter((n) => !nodes.has(n));
     if (dangling.length) F.push(makeFinding({ module: "skeleton", kind: "unit-link-dangling", units: [u.id], statusClass: "defect", route: "agent", basis, evidence: { type: "rule", rule: "a unit links only to existing spine nodes", dangling } }));
     if (u.carried) ob("carried-unverified", [u.id], `re-verification of ${u.id} in ${u.carried.scope} version ${u.carried.version}`);
-    else if (u.stamp) {
-      const moved = staleTargets(u.stamp, hashes);
-      if (moved.length) {
-        ob("reverify", [u.id], `re-verification of ${u.id}: ${moved.join(", ")} changed since it was written`);
-        // an answer whose question changed: only the instructor (or a re-written answer) can say it still holds. The
-        // check recommends nothing: "accept all" must not confirm an answer nobody re-read (P11 K4 scenario). The agent
-        // re-reads the answer with its question (verify knowledge) and recommends.
-        if (u.form === "answer" && moved.some((t) => units.some((x) => (`unit:${x.id}` === t || `question:${x.id}` === t) && x.form === "question")))
-          F.push(makeFinding({ module: "skeleton", kind: "answer-still-correct", units: [u.id], statusClass: "question", route: "digest", basis,
-            evidence: { type: "judgment", note: `${u.id}: its question changed — is the answer still correct as written? (the agent re-reads it with its question and recommends)` } }));
+    else {
+      const moved = [...new Set([...owedTargets(u, ctx), ...(u.owes?.targets || [])])];
+      if (moved.length || u.owes) {
+        const why = moved.map((t) => t.replace("question-binding:legacy", "its question binding predates the harness's (a re-check once)").replace("question-binding:re-paired", "it now follows another question"));
+        ob("reverify", [u.id], `re-verification of ${u.id}: ${why.join(", ") || "an earlier change"} since it was last verified — a blind re-check of its current text (${REVERIFY_ROUTE("<pkg>", [u.id])}, then units.mjs reverify), or the instructor's confirmation`);
+        // an answer whose question changed (or was re-paired): the agent re-reads it with its question — a cheap blind
+        // re-review, never a question for the instructor (F7). Bound to the question's wording, so a second change of
+        // the question is a new finding (F15).
+        const qs = (ctx.edges.get(u.id) || []).filter((e) => e.target.startsWith("question:")).map((e) => e.target.slice("question:".length));
+        if (u.form === "answer" && qs.length && moved.some((t) => t.startsWith("question-binding:") || qs.some((q) => t === `unit:${q}` || t === `question:${q}`) || /^(unit|question):/.test(t) && ctx.byId.get(t.slice(t.indexOf(":") + 1))?.form === "question"))
+          F.push(makeFinding({ module: "skeleton", kind: "answer-still-correct", units: [u.id], statusClass: "question", route: "agent", basis,
+            evidence: { type: "judgment", question: qs.map((q) => ({ unit: q, wording: ctx.byId.get(q) ? questionHash(ctx.byId.get(q).text) : null })),
+              note: `${u.id}: its question changed — re-read the answer with its question (${REVERIFY_ROUTE("<pkg>", [u.id])}); if it still holds, record it (units.mjs reverify), else revise it` } }));
       }
     }
   }
   for (const ch of chapters) {
     const s = spine.chapters[ch];
-    for (const o of s.map.nodes.filter((n) => n.kind === "objective" && n.id))
-      if (!units.some((u) => teachesInDeliverable(u, o.id))) ob("objective-uncovered", [], `a teaching unit (study guide or slides) that serves ${o.id}`);
+    // D41: coverage counts VERIFIED links — a unit whose current blind link review says it teaches the objective. An
+    // unreviewed covering link is the agent's to review (cheap, never the instructor's); links that are all "in
+    // passing" or "no" do not cover (C2-01, C1-09).
+    for (const o of s.map.nodes.filter((n) => n.kind === "objective" && n.id)) {
+      const teachers = units.filter((u) => teachesInDeliverable(u, o.id));
+      if (!teachers.length) { ob("objective-uncovered", [], `a teaching unit (study guide or slides) that serves ${o.id}`); continue; }
+      if (teachers.some((u) => reviews.get(u.id)?.verdicts.get(o.id) === "yes")) continue;
+      const unreviewed = teachers.filter((u) => !reviews.get(u.id)?.verdicts.has(o.id));
+      if (unreviewed.length) ob("link-review-owed", unreviewed.map((u) => u.id), `a blind link review of the units that would teach ${o.id} (node scripts/verify.mjs alignment --units ${unreviewed.map((u) => u.id).join(",")})`);
+      else ob("objective-uncovered", [], `a teaching unit that teaches ${o.id}: its links were reviewed, and none teaches it (only in passing, or not at all)`);
+    }
     const assigned = guideAssignment(s.guide.entries, units);
     for (const e of s.guide.entries.filter((x) => x.id)) {
       const got = assigned.get(e.id) || [], linked = units.filter((u) => u.form === "question" && (u.spineNodes || []).includes(e.id));
@@ -355,6 +499,10 @@ export function coreObligations(root, reader, basis) {
         ob("guide-entry-short", linked.map((u) => u.id), `${e.count - got.length} more question(s) for ${e.id} (has ${got.length} of ${e.count})`); // only practice questions count, each toward one entry
     }
   }
+  // D42: everything that ships is read — a framing unit (introduction, summary, closing) no current review has read for
+  // off-plan content is the agent's to review (C3-07: a whole lesson under "## Introduction to …" went unread)
+  const unreadFraming = units.filter((u) => u.role === "framing" && !reviews.has(u.id));
+  if (unreadFraming.length) ob("framing-review-owed", unreadFraming.map((u) => u.id), `a blind review of ${unreadFraming.length} framing unit(s) for off-plan content (node scripts/verify.mjs alignment --units ${unreadFraming.map((u) => u.id).join(",")})`);
   // course-map objectives (redteam r1 C1-10). The grammar links a chapter to the course map only through [prereq: …]
   // (the slice chapterCoverage binds into the chapter's approval), so a course objective is covered when a chapter
   // objective or concept names it as a prerequisite — that node is itself checked above — or a teaching unit links it.

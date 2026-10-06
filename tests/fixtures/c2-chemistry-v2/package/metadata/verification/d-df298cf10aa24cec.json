@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-df298cf10aa24cec",
+  "kind": "knowledge",
+  "unit": "u-practice-chemical-equilibrium-questions-16",
+  "factHash": "d4b113b5dfe68391b0474ee8ff09c533dd4d0b43a8563419249f636ed029101f",
+  "contentHash": "07905f415e414caec8287f131b2331692f19ad35d9526c61c0cc657560a94916",
+  "at": "2026-10-06T20:19:36.429Z",
+  "bundle": {
+    "nonce": "0049a9e378230dee",
+    "bundleHash": "df298cf10aa24cec90aa45b7d511af98bf2155868ed659f650f2cad090cbfc45",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"0049a9e378230dee\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 7: $Q_r > K$, so there are too many products. The reaction shifts **reverse**, toward reactants, until\n$Q_r$ falls to 50. If $Q_r = K = 50$ the system is already at equilibrium and there is no net shift\nin either direction.\n\nQ 8: Without using any numbers, explain through $Q_r$ and $K$ why adding more product to a system at\nequilibrium drives the reaction in reverse. *(Objective 3)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 9: Write the equilibrium constant expression for the decomposition of solid calcium carbonate,\n$\\ce{CaCO3(s) <=> CaO(s) + CO2(g)}$. *(Objective 4)*\n\nPASSAGE (Answer 8)\nAdding product raises the numerator of the quotient while the denominator is unchanged, so $Q_r$\nrises above $K$. Since $Q_r > K$, the system shifts in reverse, consuming product, until $Q_r$\nfalls back to $K$. The value of $K$ itself never changed."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"0049a9e378230dee\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "7bf50e91f128fcdb2e1aefcb9492d2c2330051e0f4586f98ad04909f366cd3c8"
+  }
+}

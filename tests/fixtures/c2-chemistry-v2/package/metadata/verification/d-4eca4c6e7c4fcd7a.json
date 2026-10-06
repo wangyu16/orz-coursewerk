@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-4eca4c6e7c4fcd7a",
+  "kind": "knowledge",
+  "unit": "u-practice-le-chatelier-questions-4",
+  "factHash": "a30aa3905d0e3b3e12d8ed606240261a77acf91b2265fa334583c5b1978d7341",
+  "contentHash": "5c4fe6fd32aae0de8e2cc9d19afa88dd8314038fea612c8b7792390d1d9c4cd4",
+  "at": "2026-10-06T20:19:36.551Z",
+  "bundle": {
+    "nonce": "ded8e6d22b82fb98",
+    "bundleHash": "4eca4c6e7c4fcd7acea379b75230b4252949f1b8bb09874e1d7b1fc66a080c01",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"ded8e6d22b82fb98\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 1: The principle states that a system at equilibrium, disturbed by a change in a determining factor,\nadjusts to a **new** equilibrium that **partially counteracts** the change. The student's phrasing\nis wrong in two ways: the counteraction is only partial, and the system settles at a new\nequilibrium rather than returning to the original one.\n\nQ 2: After a disturbance, a system reaches a new equilibrium. Are the concentrations the same as before\nthe disturbance? *(Objective 1)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 3: For $\\ce{N2(g) + 3 H2(g) <=> 2 NH3(g)}$ at equilibrium, extra $\\ce{H2}$ is injected. Which way does\nthe equilibrium shift? *(Objective 2)*\n\nPASSAGE (Answer 2)\nNo. The system moves to partially oppose the change, so the new concentrations lie between the\noriginal values and the values immediately after the disturbance. Complete restoration would mean\nthe disturbance had no effect at all, which the word *partially* rules out."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"ded8e6d22b82fb98\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "eae83fb4ae8f26ee13a8c45ed440f5311f83313cc2439a5bc02b41059c777c70"
+  }
+}

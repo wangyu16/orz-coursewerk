@@ -130,17 +130,23 @@ Work in batches (one to three chapters, or a session's budget). In each batch:
 
 A substantial rewrite of a unit makes it a new unit: link it again after you rewrite it.
 
+**Re-verification is a re-check, not a stamp.** A unit owes re-verification (`reverify`, `carried-unverified`) when
+something it depends on changed: its question (any rewording), a shared value, a key term, a spine node, or a new
+major version. Editing, relinking or re-indexing the unit never clears it. To clear it, have the unit's current text
+reviewed blind, then record the re-check:
+`verify.mjs knowledge --units <ids>`, then `units.mjs reverify --units <ids> --model <id>`. An answer is reviewed
+with its question. A review that finds the text wrong does not count: revise it, and review it again. The instructor
+may confirm a unit instead (`units.mjs confirm --what still-correct`). Unit records (`metadata/units/`) change only
+through these tools. A hand edit is a blocking defect; restore it from git.
+
 **Before you deliver the digest,** attach your recommendation to any entry that has none (`coursewerk.mjs recommend`).
-"Accept all" then covers it, and the instructor sees it marked as yours. For an answer whose question changed,
-re-read the answer with its question first (`verify.mjs knowledge --units <answer>`), and recommend "still correct"
-only if it is.
+"Accept all" then covers it, and the instructor sees it marked as yours.
 
 **What only the instructor can settle comes to the digest as a question.** For example:
 - invented exercise data, which no source can show;
-- an answer whose question changed;
 - a source that disagrees with the blind reviewer. Show both sides and recommend one.
 
-Answering "confirm" or "still correct" records the instructor's confirmation. An instructor who says "later" defers
+Answering "confirm" records the instructor's confirmation. An instructor who says "later" defers
 an entry: record `--choice later`. It stays open and comes back first, marked as owed. The digest's size is the
 instructor's setting (`coursewerk.mjs digest-cap`); the overflow waits for the next digest and is never dropped.
 
@@ -180,7 +186,7 @@ To read or present the materials locally, assemble the framework shells: `script
 |---|---|
 | workflow | `scripts/coursewerk.mjs` — status, assemble, back-to-draft, approve, digest, recommend, answer, publish, revert, interrupt, digest-cap, history (how each issue was found and settled, rebuilt from the records) |
 | spine | `scripts/spine.mjs` — check, migrate, anchor, propose, critique, review, status, preview, approve, version, steering |
-| units | `scripts/units.mjs` — begin, index, claim, status, link, confirm, obligations, restamp |
+| units | `scripts/units.mjs` — begin, index, claim, status, link, confirm, reverify, obligations, restamp |
 | verification | `scripts/verify.mjs` — destinations, search, fetch, semi, readmit, absolutes, knowledge, alignment, correct, revert, corrections, links, status |
 | gate | `scripts/gate.mjs` |
 | pack | `scripts/pack.mjs` (checks the newest Alembic contract first); `scripts/alembic_check.mjs` checks it on its own |

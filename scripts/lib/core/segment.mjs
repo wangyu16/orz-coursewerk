@@ -77,6 +77,8 @@ export function segmentDeliverable(text, deliverable) {
   while (i < lines.length) {
     const l = lines[i], t = l.trim();
     if (!t) { i++; continue; }
+    // an orz-paged settings block ({{nyml … }}) is notation, not content (D42: declared documents are deliverables)
+    if (/^\{\{nyml\b/.test(t)) { let j = i; while (j < lines.length && !/\}\}\s*$/.test(lines[j].trim())) struct(j++); if (j < lines.length) struct(j); i = j + 1; continue; }
     // HTML comments: deck header, slide markers, notes
     if (t.startsWith("<!--")) {
       const m = /<!--\s*slide\b([^>]*)-->/.exec(t);

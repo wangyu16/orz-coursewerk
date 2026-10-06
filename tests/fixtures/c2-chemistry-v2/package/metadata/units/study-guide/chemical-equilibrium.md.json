@@ -1315,6 +1315,7 @@
       ],
       "stamp": {
         "unit:u-study-guide-chemical-equilibrium-worked-examples-1": "1d17850dcef728ce29128d53aee81fe14fd1d51ff1e2c37b4bba450d1895d2c9",
+        "question:u-study-guide-chemical-equilibrium-worked-examples-1": "86ef1be1ad6e7a2cfa5e4d54ed7e09ef8eda608dfcb05d868b29c8836cd74c36",
         "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185"
       }
     },
@@ -1364,6 +1365,8 @@
       ],
       "stamp": {
         "unit:u-practice-chemical-equilibrium-questions-21": "035de8f2db3e2d39d24a207e1f0153d94f8671a224e0afd4d958551d1ff51990",
+        "unit:u-study-guide-chemical-equilibrium-worked-examples-4": "35bb57f1a45c8711dea0b86f6d0d68029f4c829834a82b37114830009f98e47f",
+        "unit:u-practice-chemical-equilibrium-questions-22": "35bb57f1a45c8711dea0b86f6d0d68029f4c829834a82b37114830009f98e47f",
         "term:standard gibbs energy change": "d552936944bea24ed9c4e3352ddbde4042404a1cee16a2a630952f89afbf1fdc",
         "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd"
       }
@@ -1422,6 +1425,8 @@
       "stamp": {
         "unit:u-practice-chemical-equilibrium-questions-22": "35bb57f1a45c8711dea0b86f6d0d68029f4c829834a82b37114830009f98e47f",
         "unit:u-study-guide-chemical-equilibrium-worked-examples-3": "a112c43329ba04c5821de7f9c6ec41e9af81a50e0dcd02596094e7b4e3f70772",
+        "unit:u-practice-chemical-equilibrium-questions-21": "035de8f2db3e2d39d24a207e1f0153d94f8671a224e0afd4d958551d1ff51990",
+        "question:u-study-guide-chemical-equilibrium-worked-examples-3": "15eabd964a21e82e60b4bc4d81aeff3e5c7d8a121487b6d5807c34b533fe43bf",
         "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd"
       }
     },

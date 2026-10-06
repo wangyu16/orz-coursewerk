@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-ed78315a11c53383",
+  "kind": "knowledge",
+  "unit": "u-practice-chemical-equilibrium-questions-12",
+  "factHash": "b21c342945064710c4a7f3cdc36eb6044681d17032c22fd78ee6cc8e6f46a0c3",
+  "contentHash": "b9cfe537a0ed2f4c80013026efd49d8e91b4faf3212292d7bf0711ccdb52553e",
+  "at": "2026-10-06T20:19:36.408Z",
+  "bundle": {
+    "nonce": "e7ba787ef03a46a3",
+    "bundleHash": "ed78315a11c5338398877c850e4212767a3204a5927237744ebd4591a889ea66",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"e7ba787ef03a46a3\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 5: Two errors. First, the products and reactants are the wrong way round: products belong in the\nnumerator. Second, the coefficient 2 on $\\ce{HI}$ has been dropped as an exponent. Correct:\n$$K = \\frac{[\\ce{HI}]^{2}}{[\\ce{H2}]\\,[\\ce{I2}]}$$\n\nQ 6: For a reaction with $K = 50$, a mixture is found to have $Q_r = 12$. Which direction will the\nreaction shift, and why? *(Objective 3)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 7: For the same reaction ($K = 50$), a second mixture has $Q_r = 140$. Which direction will it shift?\nWhat would $Q_r = 50$ mean? *(Objective 3)*\n\nPASSAGE (Answer 6)\n$Q_r < K$, so there are too few products relative to equilibrium. The reaction shifts **forward**,\ntoward products, until $Q_r$ rises to equal $K$."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"e7ba787ef03a46a3\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "bf597309a50e740a9b082fc139aebabfc6a9a295f5a96ed6634dd4a3b3498e53"
+  }
+}

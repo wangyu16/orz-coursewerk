@@ -150,7 +150,7 @@ try {
     const info = unitInfoOf(root, reader);
     const { party, words } = instructor();
     let r;
-    try { r = publishDecision(root, reader, { gateResult: g, unitInfo: info, instructorWords: words, chapters: opt("--chapters")?.split(",").filter(Boolean) || null, includeDrafts: flag("--include-drafts"), overQuestions: flag("--over-open-questions") }, party); }
+    try { r = publishDecision(root, reader, { gateResult: g, unitInfo: info, instructorWords: words, chapters: opt("--chapters")?.split(",").filter(Boolean) || null, includeDrafts: flag("--include-drafts"), overQuestions: flag("--over-open-questions"), withoutReview: flag("--without-review") }, party); }
     catch (e) {
       if (!e.openQuestions) throw e;
       // questions never block (D14), but they are raised before publishing; the instructor may still insist
