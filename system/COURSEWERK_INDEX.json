@@ -1127,7 +1127,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "ebd99d4f2144e44a0556e5a6d5901e865c9238ddff7ed92ef958e26f63b1b31e"
+      "hash": "df18eee7c364c7ba17355d132684bfd689d476931d2db88c1030d5eb75c0a9f2"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1140,6 +1140,12 @@
       "path": "system/rounds/P10-dogfood.md",
       "type": "system-governance",
       "hash": "461080edcd65897a4d9e40038d91c3d1bd9fdc2be34521dbd658cbb3d676220c"
+    },
+    {
+      "id": "repo:system/rounds/P11-3c-redteam-r1.md",
+      "path": "system/rounds/P11-3c-redteam-r1.md",
+      "type": "system-governance",
+      "hash": "0e19fb28dd6ba51d38751ebd656f7df33fcaef3bde94c770f9a7c841521c739e"
     },
     {
       "id": "repo:system/rounds/P11-autocorrect-T3.md",
@@ -3100,7 +3106,8 @@
         "id": "req.3c.c1",
         "phase": "P11",
         "tiers": [
-          "T1"
+          "T1",
+          "T4"
         ],
         "status": "closed"
       },
@@ -3108,7 +3115,8 @@
         "id": "req.3c.c2",
         "phase": "P11",
         "tiers": [
-          "T1"
+          "T1",
+          "T4"
         ],
         "status": "closed"
       },
@@ -3148,7 +3156,8 @@
         "id": "req.3c.h2",
         "phase": "P11",
         "tiers": [
-          "T1"
+          "T1",
+          "T4"
         ],
         "status": "closed"
       },
@@ -3180,7 +3189,8 @@
         "id": "req.3c.k1",
         "phase": "P11",
         "tiers": [
-          "T1"
+          "T1",
+          "T4"
         ],
         "status": "closed"
       },
