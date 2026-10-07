@@ -134,7 +134,7 @@ const TABLE = [
   { id: "fahrenheit", dim: "temperature", symbols: ["°F", "℉", "ºF", "˚F"], words: ["fahrenheit", "degF", "degrees fahrenheit", "degree fahrenheit"], spellingOnly: ["f"], to: (v) => ((v - 32) * 5) / 9 + 273.15 },
   // `K` is kelvin; `k` is kilo-. The symbol is CASE-SENSITIVE and there is no `k` form: M6 must
   // not read "5 k" as 5 kelvin. M3 still gets "k" -> kelvin, because it lowercases `K` first.
-  { id: "kelvin", dim: "temperature", symbols: ["K"], words: ["kelvin"], to: (v) => v },
+  { id: "kelvin", dim: "temperature", symbols: ["K"], words: ["kelvin", "kelvins"], to: (v) => v },
 
   // --- specific energy -> J/g  (before bare energy; see the ordering note on `unitForms`) ---
   { id: "kilojoule-per-gram", dim: "specific-energy", symbols: ["kJ/g"], words: [], to: (v) => v * 1000 },
@@ -147,45 +147,52 @@ const TABLE = [
   { id: "joule-per-mole", dim: "molar-energy", symbols: ["J/mol"], words: [], to: (v) => v },
 
   // --- energy -> J ---------------------------------------------------------------------------
-  { id: "kilojoule", dim: "energy", symbols: ["kJ"], words: ["kilojoule"], to: (v) => v * 1000 },
+  { id: "kilojoule", dim: "energy", symbols: ["kJ"], words: ["kilojoule", "kilojoules"], to: (v) => v * 1000 },
   { id: "joule", dim: "energy", symbols: ["J"], words: ["joule", "joules"], to: (v) => v },
-  { id: "kilocalorie", dim: "energy", symbols: ["kcal"], words: [], to: (v) => v * 4184 },
-  { id: "calorie", dim: "energy", symbols: ["cal"], words: ["calorie"], to: (v) => v * 4.184 },
+  { id: "kilocalorie", dim: "energy", symbols: ["kcal"], words: ["kilocalorie", "kilocalories"], to: (v) => v * 4184 },
+  { id: "calorie", dim: "energy", symbols: ["cal"], words: ["calorie", "calories"], to: (v) => v * 4.184 },
+  // 1 eV = 1.602176634e-19 J exactly (SI 2019 fixes the elementary charge).
+  { id: "electronvolt", dim: "energy", symbols: ["eV"], words: ["electronvolt", "electronvolts", "electron volt", "electron volts"], to: (v) => v * 1.602176634e-19 },
 
   // --- mass -> g -----------------------------------------------------------------------------
+  // the metric tonne is 1000 kg by definition; it has no symbol here ("t" is a time, a variable, a word)
+  { id: "tonne", dim: "mass", symbols: [], words: ["tonne", "tonnes", "metric ton", "metric tons"], to: (v) => v * 1e6 },
   { id: "kilogram", dim: "mass", symbols: ["kg"], words: ["kilogram", "kilograms"], to: (v) => v * 1000 },
-  { id: "milligram", dim: "mass", symbols: ["mg"], words: [], to: (v) => v / 1000 },
+  { id: "milligram", dim: "mass", symbols: ["mg"], words: ["milligram", "milligrams"], to: (v) => v / 1000 },
   { id: "microgram", dim: "mass", symbols: ["µg"], words: [], to: (v) => v / 1e6 },
   { id: "gram", dim: "mass", symbols: ["g"], words: ["gram", "grams"], to: (v) => v },
 
   // --- length -> m ---------------------------------------------------------------------------
-  { id: "kilometre", dim: "length", symbols: ["km"], words: [], to: (v) => v * 1000 },
-  { id: "centimetre", dim: "length", symbols: ["cm"], words: [], to: (v) => v / 100 },
-  { id: "millimetre", dim: "length", symbols: ["mm"], words: [], to: (v) => v / 1000 },
+  { id: "kilometre", dim: "length", symbols: ["km"], words: ["kilometre", "kilometres", "kilometer", "kilometers"], to: (v) => v * 1000 },
+  { id: "centimetre", dim: "length", symbols: ["cm"], words: ["centimetre", "centimetres", "centimeter", "centimeters"], to: (v) => v / 100 },
+  { id: "millimetre", dim: "length", symbols: ["mm"], words: ["millimetre", "millimetres", "millimeter", "millimeters"], to: (v) => v / 1000 },
   { id: "micrometre", dim: "length", symbols: ["µm"], words: [], to: (v) => v / 1e6 },
-  { id: "nanometre", dim: "length", symbols: ["nm"], words: [], to: (v) => v / 1e9 },
-  { id: "metre", dim: "length", symbols: ["m"], words: ["metre", "meter"], to: (v) => v },
+  { id: "nanometre", dim: "length", symbols: ["nm"], words: ["nanometre", "nanometres", "nanometer", "nanometers"], to: (v) => v / 1e9 },
+  { id: "metre", dim: "length", symbols: ["m"], words: ["metre", "meter", "metres", "meters"], to: (v) => v },
 
   // --- volume -> L ---------------------------------------------------------------------------
-  { id: "millilitre", dim: "volume", symbols: ["mL"], words: [], to: (v) => v / 1000 },
-  { id: "litre", dim: "volume", symbols: ["L"], words: ["litre", "liter"], to: (v) => v },
+  { id: "millilitre", dim: "volume", symbols: ["mL"], words: ["millilitre", "millilitres", "milliliter", "milliliters"], to: (v) => v / 1000 },
+  { id: "litre", dim: "volume", symbols: ["L"], words: ["litre", "liter", "litres", "liters"], to: (v) => v },
 
   // --- amount -> mol -------------------------------------------------------------------------
-  { id: "millimole", dim: "amount", symbols: ["mmol"], words: [], to: (v) => v / 1000 },
+  { id: "millimole", dim: "amount", symbols: ["mmol"], words: ["millimole", "millimoles"], to: (v) => v / 1000 },
   { id: "mole", dim: "amount", symbols: ["mol"], words: ["mole", "moles"], to: (v) => v },
 
   // --- pressure -> Pa ------------------------------------------------------------------------
-  { id: "megapascal", dim: "pressure", symbols: ["MPa"], words: [], to: (v) => v * 1e6 },
-  { id: "kilopascal", dim: "pressure", symbols: ["kPa"], words: [], to: (v) => v * 1000 },
-  { id: "atmosphere", dim: "pressure", symbols: ["atm"], words: [], to: (v) => v * 101325 },
+  { id: "megapascal", dim: "pressure", symbols: ["MPa"], words: ["megapascal", "megapascals"], to: (v) => v * 1e6 },
+  { id: "kilopascal", dim: "pressure", symbols: ["kPa"], words: ["kilopascal", "kilopascals"], to: (v) => v * 1000 },
+  { id: "hectopascal", dim: "pressure", symbols: ["hPa"], words: ["hectopascal", "hectopascals"], to: (v) => v * 100 },
+  { id: "atmosphere", dim: "pressure", symbols: ["atm"], words: ["atmosphere", "atmospheres"], to: (v) => v * 101325 },
   { id: "bar", dim: "pressure", symbols: ["bar"], words: [], to: (v) => v * 1e5 },
   // 1 atm = 760 torr = 101325 Pa, both definitional -> 1 torr = 101325/760 Pa exactly.
   { id: "torr", dim: "pressure", symbols: ["torr"], words: [], to: (v) => (v * 101325) / 760 },
   // The conventional millimetre of mercury is DEFINED as 13.5951 g/cm3 x 9.80665 m/s2 x 1 mm = 133.322387415 Pa
   // exactly (it differs from the torr in the seventh digit). Added after red-team round 1 (CONFIDENCE F2): "700 mmHg"
   // minted no claim at all.
-  { id: "millimetre-of-mercury", dim: "pressure", symbols: ["mmHg"], words: [], to: (v) => v * 133.322387415 },
-  { id: "pascal", dim: "pressure", symbols: ["Pa"], words: [], to: (v) => v },
+  { id: "millimetre-of-mercury", dim: "pressure", symbols: ["mmHg"], words: ["millimetres of mercury", "millimeters of mercury"], to: (v) => v * 133.322387415 },
+  { id: "pascal", dim: "pressure", symbols: ["Pa"], words: ["pascal", "pascals"], to: (v) => v },
+  // 1 psi = 1 lbf/in² = (0.45359237 kg × 9.80665 m/s²) / (0.0254 m)² — every factor exact by definition.
+  { id: "pound-per-square-inch", dim: "pressure", symbols: ["psi"], words: ["pounds per square inch", "pound per square inch"], to: (v) => (v * 0.45359237 * 9.80665) / (0.0254 * 0.0254) },
 
   // --- time -> s -----------------------------------------------------------------------------
   { id: "minute", dim: "time", symbols: ["min"], words: ["minute", "minutes"], to: (v) => v * 60 },
@@ -198,7 +205,7 @@ const TABLE = [
   // --- electrical / frequency ----------------------------------------------------------------
   // The four M3 knew and M2's scanner did not — the live blind spot this module was built to fix.
   // Each is its dimension's canonical unit, so the conversion is identity: certain, not guessed.
-  { id: "volt", dim: "voltage", symbols: ["V"], words: ["volt"], to: (v) => v },
+  { id: "volt", dim: "voltage", symbols: ["V"], words: ["volt", "volts"], to: (v) => v },
   // `A` IS AN ENGLISH ARTICLE. [MOVED to spellingOnly 2026-07-17 — MEASURED, not theorized: wiring M6
   // into the gate made the CLEAN reference package flag
   //   `practice/melting.md asserts 9 A; practice/melting.md asserts 3 A for term.melting-point`
@@ -224,8 +231,8 @@ const TABLE = [
   // followed by a lowercase word") would separate "5 A of current" from "9 A flat plateau"; this project
   // does not guess.
   { id: "ampere", dim: "current", symbols: [], words: [], spellingOnly: ["a"], to: (v) => v },
-  { id: "watt", dim: "power", symbols: ["W"], words: [], to: (v) => v },
-  { id: "hertz", dim: "frequency", symbols: ["Hz"], words: [], to: (v) => v },
+  { id: "watt", dim: "power", symbols: ["W"], words: ["watt", "watts"], to: (v) => v },
+  { id: "hertz", dim: "frequency", symbols: ["Hz"], words: ["hertz"], to: (v) => v },
 ];
 
 // --- load-time invariants ---------------------------------------------------------------------
@@ -443,8 +450,10 @@ export function scanProjection() {
 export function valueProjection() {
   const out = [];
   for (const u of TABLE) {
-    const symbol = u.symbols?.[0];
-    if (!symbol) continue; // spellingOnly-only units (ampere) are never a value's unit here
+    // a unit with words and no symbol (the tonne) is read under its first word; spellingOnly-only units (ampere) are
+    // never a value's unit here
+    const symbol = u.symbols?.[0] ?? u.words?.[0];
+    if (!symbol) continue;
     for (const s of u.symbols ?? []) out.push({ form: s, pattern: escapeRe(s), symbol });
     for (const w of u.words ?? []) out.push({ form: w, pattern: wordPattern(w), symbol });
   }
@@ -464,6 +473,12 @@ export function valueProjection() {
 //    merged were themselves irregular. Adding the missing plurals is a RECALL decision (it changes
 //    which claims get minted), not a refactor, and it does not belong in a defect fix. Left as a
 //    reported gap rather than smuggled in.
+//    [CLOSED 2026-10-06, red-team round 2 CONFIDENCE R2-K04/K05.] The gap stopped being a recall
+//    nicety once the value parser (core/values.mjs) read this table: a value whose unit form is not
+//    here is no value, so "2,000 atmospheres", "29,000 psi", "40.65 kilojoules per mole" and
+//    "52 kilocalories" owed no evidence at all — a wrong simple fact published unchecked. The
+//    ordinary spelled and plural forms are now words, and psi, eV, hPa and the tonne are units
+//    (each conversion exact by definition). Missing a form is still silence, never a guess.
 // 3. `M9 lib/propagate.mjs` MUST NOT import this module, and does not. It has no unit table on
 //    purpose: it VERIFIES the unit at the consumer and refuses on mismatch instead of converting.
 //    That asymmetry is deliberate and worth stating where the temptation lives — a verifier only

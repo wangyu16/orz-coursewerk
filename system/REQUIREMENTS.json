@@ -1893,12 +1893,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "One value parser (F1–F4, F7, F10): the claim extractor and the semi-mechanical classifier read values through core/values.mjs over the harness's unit table (lib/units.mjs) — mmHg, kcal, °F, V …; thousands separators; every typeset minus; scientific notation with its mantissa, exactly; units with their denominators (kJ/mol ≠ kJ/g ≠ kJ); dimensionless values bound to a symbol (K, K_p, pH) and powers of ten are required tokens. A correction never doubles a sign.",
+      "statement": "One value parser (F1–F4, F7, F10): the claim extractor and the semi-mechanical classifier read values through core/values.mjs over the harness's unit table (lib/units.mjs) — mmHg, kcal, °F, V …; thousands separators; every typeset minus; scientific notation with its mantissa, exactly; units with their denominators (kJ/mol ≠ kJ/g ≠ kJ); dimensionless values bound to a symbol (K, K_p, pH) and powers of ten are required tokens. A correction never doubles a sign. Round 2 (R2-K04, K05, K07): the unit table's ordinary spelled and plural forms (kilojoules, kilocalories, calories, atmospheres, metres, litres …) and psi, eV, hPa and the tonne are units; HTML character references (&minus;, &#8722;, &#x2212;, &ndash; …) are decoded before values are read.",
       "source": "3C red team round 1, CONFIDENCE (operator design direction, 2026-10-06)",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r1-confidence.test.mjs"
+          "tests/redteam-r1-confidence.test.mjs",
+          "tests/redteam-r2-confidence.test.mjs"
         ]
       }
     },
@@ -1908,12 +1909,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Support checks the predicate, not only the tokens (F5, F6, F8): a quote stating the opposite direction (left/right, toward reactants/products, increase/decrease, endothermic/exothermic) never supports; a sentence-initial lone surname as the subject of an attribution is a required name; an equation claim's reaction is required — the quote must state the same reaction.",
+      "statement": "Support checks the predicate, not only the tokens (F5, F6, F8): a quote stating the opposite direction (left/right, toward reactants/products, increase/decrease, endothermic/exothermic) never supports; a sentence-initial lone surname as the subject of an attribution is a required name; an equation claim's reaction is required — the quote must state the same reaction. Round 2 (R2-K01–K03): magnitude words (large/small, high/low, mostly/little, fast/slow, strong/weak, positive/negative …) are directions too, read over the whole quote and beside the content word they modify; a claim that negates a predicate its quote asserts, or asserts one its quote negates, is not supported; a quantity the claim names in words (free energy, enthalpy, entropy, equilibrium constant, rate constant …) must be the quantity the quote names. A doubt is a refusal (evidence stays missing), never an admission.",
       "source": "3C red team round 1, CONFIDENCE (operator design direction, 2026-10-06)",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r1-confidence.test.mjs"
+          "tests/redteam-r1-confidence.test.mjs",
+          "tests/redteam-r2-confidence.test.mjs"
         ]
       }
     },
@@ -1923,12 +1925,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Reaction anchoring compares stoichiometry (coefficients, fractions included; a scaled equation is another equation) and the quantity named (ΔH vs ΔG° vs K): a mismatch never anchors a contradiction, so a correct value is never a defect nor auto-corrected (F9, F10).",
+      "statement": "Reaction anchoring compares stoichiometry (coefficients, fractions included; a scaled equation is another equation) and the quantity named (ΔH vs ΔG° vs K): a mismatch never anchors a contradiction, so a correct value is never a defect nor auto-corrected (F9, F10). Round 2 (R2-K06): an equation is read in \\mathrm{}/\\text{} math and in plain Unicode or ASCII (⇌ → <=> ->), not only in \\ce{}; a claim that writes its reaction is anchored only by a quote stating the same reaction — a lead-in's name never anchors a contradiction onto it.",
       "source": "3C red team round 1, CONFIDENCE (operator design direction, 2026-10-06)",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r1-confidence.test.mjs"
+          "tests/redteam-r1-confidence.test.mjs",
+          "tests/redteam-r2-confidence.test.mjs"
         ]
       }
     },
@@ -1983,12 +1986,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "The verifier's 'hypothetical' label is trusted only for exercise-like units (questions, answers, worked-example or practice sections, exercise cues); elsewhere it is no evidence and no question — the evidence stays missing and nothing recommends 'confirm' (F14).",
+      "statement": "The verifier's 'hypothetical' label is trusted only for exercise-like units (questions, answers, worked-example or practice sections); elsewhere it is no evidence and no question — the evidence stays missing and nothing recommends 'confirm' (F14). Round 2 (R2-K09): exercise-likeness comes from the unit's form and role (a question or answer, a practice deliverable, a worked-example or exercise section), never from a cue word in its text.",
       "source": "3C red team round 1, CONFIDENCE (operator design direction, 2026-10-06)",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r1-confidence.test.mjs"
+          "tests/redteam-r1-confidence.test.mjs",
+          "tests/redteam-r2-confidence.test.mjs"
         ]
       }
     },
@@ -2004,6 +2008,81 @@
       "evidence": {
         "T1": [
           "tests/redteam-r1-confidence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.correction.well-formed",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "An auto-correction replaces a value's sign or prefix together with its number (+, −, a spaced minus, &minus; …), and the corrected text must read as the source's value with one sign: a correction that would produce a malformed value ('+−92.2', '&minus;−92.2', '0 - −92.2') is refused and becomes the instructor's question (round 2, K06/K07).",
+      "source": "3C red team round 2, CONFIDENCE (operator design direction, 2026-10-06)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r2-confidence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.consistency.one-parser",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "MS7 (value consistency and the range audit) reads values through the one value parser, core/values.mjs, never its own regex: every minus form (spaced, typeset, HTML), thousands separators, and denominators (kJ mol^{-1} is kJ/mol) — so a sign disagreement or a molar-energy disagreement is a value-disagreement (round 2, R2-K08).",
+      "source": "3C red team round 2, CONFIDENCE (operator design direction, 2026-10-06)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r2-confidence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.knowledge.concern-located",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A knowledge concern's quote is located in the passage as written or as a reader sees it (rendered math: ΔH < 0 for $\\Delta H < 0$). A concern whose words the reviewed passage does not contain, or an answer that cannot be read, makes the review unscorable (knowledge-unscorable, the agent's): it is never counted as a clean review — not for review coverage, not to clear an owed re-verification (round 2, R2-K10).",
+      "source": "3C red team round 2, CONFIDENCE (operator design direction, 2026-10-06)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r2-confidence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.absolute.log-bound",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "An absolute-statement review counts only through what the decision log binds: the unit, sentences, context and nonce are read from the logged prompt (bundleHash) and the answer from the logged response (responseHash) — never from the record's editable fields — and a record whose log entry carries a recordHash must match it (round 2, Control attacker's handoff: 29 pre-round-1 records had no recordHash).",
+      "source": "3C red team round 2, CONFIDENCE (operator design direction, 2026-10-06)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r2-confidence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.dependency.binding-parser",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A unitless shared value is bound through the one value parser as well as 'symbol = value': 'whose K is 50', 'K of 50', 'K equals 50', 'K ≈ 50' bind K to 50, so a changed K reaches every unit stating it (round 2, Coherence F7).",
+      "source": "3C red team round 2, CONFIDENCE (operator design direction, 2026-10-06)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r2-confidence.test.mjs"
         ]
       }
     },

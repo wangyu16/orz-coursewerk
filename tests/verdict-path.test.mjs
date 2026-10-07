@@ -296,8 +296,10 @@ test("[req.knowledge.no-autochange] a knowledge-based concern is a question with
   assert.deepEqual(files(), before, "no deliverable changed");
   const r = run(p, "ms8-verdicts");
   const qs = r.findings.filter((f) => f.module === "ms8-verdicts");
-  assert.deepEqual(qs.map((f) => `${f.kind}:${f.statusClass}:${f.route}`), ["knowledge-concern:question:digest"], "one question; the concern quoting words the unit lacks is dropped");
-  assert.match(qs[0].evidence.suggestion, /rate constants/);
+  // red-team round 2 (R2-K10): a concern quoting words the passage lacks is no longer dropped without trace — it makes
+  // the review unscorable, the agent's to re-run (it is never a question for the instructor, and never a clean review)
+  assert.deepEqual(qs.map((f) => `${f.kind}:${f.statusClass}:${f.route}`).sort(), ["knowledge-concern:question:digest", "knowledge-unscorable:question:agent"], "one question; the concern quoting words the unit lacks marks the review unscorable");
+  assert.match(qs.find((f) => f.kind === "knowledge-concern").evidence.suggestion, /rate constants/);
 });
 
 // ---- MS4 links (T1) ----------------------------------------------------------------------------------------------

@@ -5,11 +5,13 @@
 import { computeSemanticIndex } from "../lib/semantic_index.mjs";
 import { scanConsistency, rangeAudit } from "../lib/consistency.mjs";
 import { base, recheckByRerun } from "./_shared.mjs";
-import { plainForQuantities } from "../lib/core/dependencies.mjs";
+import { decodeEntities } from "../lib/core/values.mjs";
 
-// the package writes its quantities in LaTeX ($\Delta H = -92.2\ \text{kJ}$); the scanners read plain text, so the
-// notation is folded first (P11 wiring sweep: a disagreement in LaTeX went unseen; in Unicode it was caught)
-const plain = (t) => plainForQuantities(String(t).replace(/\\Delta\s*/g, "Δ").replace(/\\ce\{([^}]*)\}/g, " $1 ").replace(/\$\$/g, " ")).replace(/[ \t]+/g, " ");
+// the package writes its quantities in LaTeX ($\Delta H = -92.2\ \text{kJ}$); the scanners read values through the one
+// value parser (core/values.mjs, which folds the rest of the notation itself: "^{-1}" stays a denominator, every
+// minus a sign — red-team round 2, R2-K08), so only what names the subject is folded here (P11 wiring sweep: a
+// disagreement in LaTeX went unseen; in Unicode it was caught)
+const plain = (t) => decodeEntities(String(t)).replace(/\\Delta\s*/g, "Δ").replace(/\\ce\{([^}]*)\}/g, " $1 ").replace(/\$\$/g, " ").replace(/[ \t]+/g, " ");
 
 function unitClaims(s) {
   const claims = [];

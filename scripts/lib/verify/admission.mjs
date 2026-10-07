@@ -13,6 +13,7 @@
 // three content words, and the claimed value appears nowhere in the pinned texts near the claim's topic. A year or a
 // name, or anything less anchored, is DISPUTED — a question (D12-F). Anything else admits nothing.
 import { EXCLUSIVE, NEGATION, fold, folded, namesIn, proseOf, quantitiesIn, yearsIn, nameKey, contentWords } from "./claims.mjs";
+import { decodeEntities } from "../core/values.mjs";
 
 const MIN_QUOTE_CHARS = 12;
 
@@ -34,29 +35,115 @@ export const sameAtPrecision = (claim, src) => {
   return Math.abs(Number(scale(src.value).toFixed(claim.decimals)) - scale(claim.value)) < 1e-9;
 };
 
-// ---- the predicate a quote states (red-team round 1, CONFIDENCE F5, F8, F9) ---------------------------------------
-// Tokens are not the whole fact: a quote that carries every value but says the opposite direction, or states the value
-// for another reaction or another quantity, does not support the claim and never anchors a contradiction.
+// ---- the predicate a quote states (red-team round 1, CONFIDENCE F5, F8, F9; round 2, R2-K01–K03) -----------------
+// Tokens are not the whole fact: a quote that carries every value but says the opposite direction or size, negates
+// what the claim asserts (or the reverse), or states the value for another reaction or another quantity, does not
+// support the claim and never anchors a contradiction. These are word checks, so they err one way only: a doubt is a
+// refusal (the claim stays evidence-missing and goes back to the blind check), never an admission.
 const DIRECTIONS = [
   { a: /\b(?:left|toward(?:s)?\s+(?:the\s+)?reactants?|favou?r(?:s|ing|ed)?\s+(?:the\s+)?(?:reactants?|reverse(?:\s+reaction)?))\b/, b: /\b(?:right|toward(?:s)?\s+(?:the\s+)?products?|favou?r(?:s|ing|ed)?\s+(?:the\s+)?(?:products?|product\s+formation|forward(?:\s+reaction)?))\b/, label: "left/right (reactants/products)" },
   { a: /\bincreas(?:e|es|ed|ing)\b/, b: /\bdecreas(?:e|es|ed|ing)\b/, label: "increase/decrease" },
   { a: /\bendothermic\b|\babsorb(?:s|ed|ing)?\s+heat\b/, b: /\bexothermic\b|\b(?:releas(?:e|es|ed|ing)|gives?\s+off|giving\s+off|evolv(?:e|es|ed|ing))\s+heat\b/, label: "endothermic/exothermic" },
+  // magnitude (round 2, R2-K01): a value kept while its meaning is flipped ("relatively LARGE … MOSTLY ammonia")
+  { a: /\b(?:large|larger|largest|big|bigger|biggest|huge|vast|great|greater|greatest)\b/, b: /\b(?:small|smaller|smallest|tiny|negligible)\b/, label: "large/small" },
+  { a: /\b(?:high|higher|highest|elevated)\b/, b: /\b(?:low|lower|lowest)\b/, label: "high/low" },
+  { a: /\b(?:mostly|mainly|largely|predominantly|primarily|chiefly|almost\s+(?:all|entirely|completely)|most\s+of)\b/, b: /\b(?:little|hardly\s+any|barely\s+any|scarcely\s+any|almost\s+no(?:ne)?|few)\b/, label: "mostly/little" },
+  { a: /\b(?:fast|faster|fastest|rapid|rapidly|quick|quickly|quicker)\b/, b: /\b(?:slow|slower|slowest|slowly|sluggish)\b/, label: "fast/slow" },
+  { a: /\bstrong(?:er|est|ly)?\b/, b: /\bweak(?:er|est|ly)?\b/, label: "strong/weak" },
+  { a: /(?<!non-?)\bspontaneous(?:ly)?\b/, b: /\bnon-?spontaneous(?:ly)?\b/, label: "spontaneous/nonspontaneous" },
+  { a: /\bpositive\b/, b: /\bnegative\b/, label: "positive/negative" },
 ];
-/** A direction the claim states that the quote states the opposite of: its label, or null. */
+// words that carry no predicate of their own (a polarity or negation word is read with the content word beside it)
+const LIGHT = new Set("the a an of to in on at by for and or nor but is are was were be been being am do does did done has have had having it its this that these those there their they them which who whom whose what when where while as than then so such very relatively quite rather more less most least also only just even still yet both either each any some all no not never can could may might must shall should will would about into onto from with without over under between after before during through".split(" "));
+const wordsAt = (f) => [...f.matchAll(/[a-z][a-z'-]*/g)].map((m) => ({ w: m[0], at: m.index }));
+const stemOf = (w) => w.slice(0, Math.max(4, w.length - 3));
+const sameWord = (x, y) => x.length >= 4 && y.length >= 4 && (x.startsWith(stemOf(y)) || y.startsWith(stemOf(x)));
+/** The content words within three words of each match of `re` in folded text f: [[word, …], …], one list per match. */
+function besideEach(re, f) {
+  const ws = wordsAt(f), out = [];
+  for (const m of f.matchAll(new RegExp(re.source, "g"))) {
+    const i = ws.findIndex((x) => x.at >= m.index), j = ws.findIndex((x) => x.at >= m.index + m[0].length);
+    const lo = Math.max(0, (i < 0 ? ws.length : i) - 3), hi = (j < 0 ? ws.length : j) + 3;
+    out.push([...ws.slice(lo, i < 0 ? ws.length : i), ...ws.slice(j < 0 ? ws.length : j, hi)].map((x) => x.w).filter((w) => w.length >= 4 && !LIGHT.has(w)));
+  }
+  return out;
+}
+/** A direction or size the claim states that the quote states the opposite of: its label, or null. Two readings:
+ *  over the whole text (the claim says only one side, the quote only the other), and word by word (the quote puts the
+ *  opposite word beside a content word the claim put its own word beside, and never the claim's word there). */
 export function directionClash(claimText, quoteText) {
   const c = folded(proseOf(claimText)), q = folded(quoteText);
   for (const d of DIRECTIONS) {
     const ca = d.a.test(c), cb = d.b.test(c), qa = d.a.test(q), qb = d.b.test(q);
     if ((ca && !cb && qb && !qa) || (cb && !ca && qa && !qb)) return d.label;
+    for (const [mine, theirs] of [[d.a, d.b], [d.b, d.a]]) {
+      const anchors = besideEach(mine, c).flat();
+      if (!anchors.length) continue;
+      const opposite = besideEach(theirs, q).flat(), same = besideEach(mine, q).flat();
+      if (anchors.some((w) => opposite.some((x) => sameWord(w, x)) && !same.some((x) => sameWord(w, x)))) return d.label;
+    }
   }
   return null;
 }
-/** The thermodynamic quantity a text names beside its value: H, G, S, U (Δ…) or K. */
+
+// negation (round 2, R2-K02): the predicate a negation governs is the first content word after it, and the first
+// content word after each "or"/"nor"/"and" that continues the negated clause ("do not shift … right or favor …")
+const NEGATOR = /\b(?:not|no|never|neither|nor|without|cannot|can't|don't|doesn't|didn't|isn't|aren't|wasn't|weren't|won't|hardly|fails?\s+to|failed\s+to)\b/g;
+const HEDGED = /^\s*(?:only|just|merely|necessarily|always|simply|so|too|as)\b/;
+/** The predicate heads a text negates, and every content word it uses outside a negated clause. */
+function polarityOf(f) {
+  const negated = [], spans = [];
+  for (const m of f.matchAll(NEGATOR)) {
+    const rest = f.slice(m.index + m[0].length);
+    if (HEDGED.test(rest)) continue; // "not only", "not necessarily": no denial
+    const clause = rest.split(/[,;:.!?()¶]|\bbut\b|\bbecause\b|\bwhile\b|\bwhereas\b/)[0];
+    const ws = wordsAt(clause);
+    let head = true;
+    for (const { w } of ws.slice(0, 10)) {
+      if (/^(?:or|nor|and)$/.test(w)) { head = true; continue; }
+      if (head && w.length >= 4 && !LIGHT.has(w)) { negated.push(w); head = false; }
+    }
+    spans.push([m.index, m.index + m[0].length + clause.length]);
+  }
+  const asserted = wordsAt(f).filter((x) => !spans.some(([a, b]) => x.at >= a && x.at < b)).map((x) => x.w).filter((w) => w.length >= 4 && !LIGHT.has(w));
+  return { negated, asserted };
+}
+/** The claim only denies a predicate the quote only asserts, or only asserts one the quote only denies. A text that
+ *  both asserts and denies a predicate ("only temperature changes K; concentration does not change it") has no single
+ *  polarity on it, and the exclusivity check (D29) reads it instead. */
+export function negationClash(claimText, quoteText) {
+  const c = polarityOf(folded(proseOf(claimText))), q = polarityOf(folded(quoteText));
+  const has = (list, w) => list.some((x) => sameWord(w, x));
+  const denied = c.negated.find((w) => !has(c.asserted, w) && has(q.asserted, w) && !has(q.negated, w));
+  if (denied) return `the claim denies "${denied}", which the quotes assert`;
+  const asserted = q.negated.find((w) => !has(q.asserted, w) && has(c.asserted, w) && !has(c.negated, w));
+  if (asserted) return `the quotes deny "${asserted}", which the claim asserts`;
+  return null;
+}
+
+/** The quantity a text names beside its value: H, G, S, U (Δ…), K, a rate constant k, Ea, E (a potential), Q, C — by
+ *  symbol, or in words ("the standard free energy change", "the equilibrium constant", round 2 R2-K03). */
+const QUANTITY_WORDS = [
+  [/\b(?:gibbs(?:\s+free)?(?:\s+energy)?|free\s+energy)\b/, "G"],
+  [/\benthalp(?:y|ies)\b|\bheats?\s+of\s+(?:reaction|formation|combustion|vapou?ri[sz]ation|fusion|solution|neutrali[sz]ation)\b/, "H"],
+  [/\bentrop(?:y|ies)\b/, "S"],
+  [/\binternal\s+energ(?:y|ies)\b/, "U"],
+  [/\bequilibrium\s+constants?\b|\bsolubility\s+products?\b|\bionization\s+constants?\b|\bdissociation\s+constants?\b/, "K"],
+  [/\brate\s+constants?\b/, "k"],
+  [/\bactivation\s+energ(?:y|ies)\b/, "Ea"],
+  [/\b(?:cell|electrode|reduction|oxidation|standard)\s+potentials?\b|\belectromotive\s+force\b/, "E"],
+  [/\breaction\s+quotients?\b/, "Q"],
+  [/\bheat\s+capacit(?:y|ies)\b|\bspecific\s+heats?\b/, "C"],
+];
 export function quantityNames(text) {
-  const t = String(text || "").normalize("NFKC");
+  const t = decodeEntities(String(text || "")).normalize("NFKC");
   const out = new Set();
-  for (const m of t.matchAll(/(?:Δ|\\Delta)\s*_?\{?\s*(?:r\s*)?\}?\s*([HGSU])(?![a-z])/g)) out.add(m[1]);
+  for (const m of t.matchAll(/(?:Δ|∆|\\Delta)\s*_?\{?\s*(?:r\s*)?\}?\s*([HGSU])(?![a-z])/g)) out.add(m[1]);
   for (const m of t.matchAll(/(?<![\p{L}\\])K\s*_?\{?\s*(?:p|c|eq|a|b|w|sp)?\s*\}?\s*(?:=|≈|~|\\approx)/gu)) { void m; out.add("K"); }
+  for (const m of t.matchAll(/(?<![\p{L}\\])k\s*_?\{?\s*(?:\d|f|r|obs)?\s*\}?\s*=/gu)) { void m; out.add("k"); }
+  for (const m of t.matchAll(/(?<![\p{L}\\])E\s*_\s*\{?\s*a\s*\}?/gu)) { void m; out.add("Ea"); }
+  const f = folded(t.replace(/\\[a-zA-Z]+/g, " "));
+  for (const [re, q] of QUANTITY_WORDS) if (re.test(f)) out.add(q);
   return out;
 }
 const otherQuantity = (claimText, quoteText) => {
@@ -198,6 +285,10 @@ export function supports(claim, found) {
     if (equationIn(claim.text) && !sameReaction(claim, joined)) { reason = "the quotes do not state the claim's reaction"; continue; }
     const clash = directionClash(claim.text, joined);
     if (clash) { reason = `the quotes state the opposite direction (${clash})`; continue; }
+    // a scoped exclusivity asserts for its member and denies for each alternative: the D29 conjunction reads that
+    // polarity member by member (excl-pos / excl-neg tokens), so the whole-claim negation check defers to it
+    const denial = !claim.required.exclusive && negationClash(claim.text, joined);
+    if (denial) { reason = `the quotes state the opposite predicate (${denial})`; continue; }
     if (otherQuantity(claim.text, joined)) { reason = "the quotes give the value for another quantity"; continue; }
     const quoteNames = namesIn(joined).map((n) => ({ key: nameKey(n), parts: nameParts(n) })).filter((n) => n.parts.length);
     const qPos = namePositions(P, quoteNames);
@@ -244,15 +335,37 @@ export function conflicts(claim, quotes) {
   return out;
 }
 
-/** The reaction a claim writes in \ce{…}: its species on each side of the arrow (coefficients and states set aside). */
+/** The reaction a claim writes: its species on each side of the arrow (coefficients and states set aside). */
 export function reactionOf(text) {
   const e = equationIn(text);
   return e && { left: Object.keys(e.left).sort(), right: Object.keys(e.right).sort() };
 }
-/** The balanced equation a text writes in \ce{…}: { left: { species: coefficient }, right: { … } } (fractions read). */
+/** The balanced equation a text writes: { left: { species: coefficient }, right: { … } } (fractions read) — in \ce{…},
+ *  and (red-team round 2, R2-K06) in \mathrm{…} / \text{…} math or plain prose with ⇌ → <=> -> and their LaTeX arrows.
+ *  Outside \ce{} every species must read as a chemical formula ("NH3(g)", "Al(OH)3"), so prose never makes a reaction. */
 export function equationIn(text) {
   const m = String(text || "").match(/\\ce\{([^}]*(?:<=>|->|<->|⇌|→)[^}]*)\}/);
-  return m ? equationOf(m[1]) : null;
+  if (m) return equationOf(m[1]);
+  const t = mathPlain(text);
+  const e = t.match(new RegExp(`((?:${FORMULA_SP}\\s*\\+\\s*)*${FORMULA_SP})\\s*(${ARROW})\\s*((?:${FORMULA_SP}\\s*\\+\\s*)*${FORMULA_SP})(?![A-Za-z0-9(])`));
+  return e ? equationOf(`${e[1]} ${e[2]} ${e[3]}`) : null;
+}
+const ARROW = "⇌|⇄|<=>|<->|↔|⟷|→|⟶|->";
+// a species outside \ce{}: an optional coefficient, then element symbols and bracketed groups with counts, a state
+const FORMULA_SP = "(?:\\d+\\/\\d+|\\d+(?:\\.\\d+)?|[½⅓⅔¼¾])?\\s*(?:(?:[A-Z][a-z]?|\\((?:[A-Z][a-z]?\\d*)+\\))\\d*)+(?:\\((?:g|l|s|aq)\\))?";
+/** LaTeX math and HTML as plain text an equation can be read from: arrows as arrows, \mathrm{}/\text{} unwrapped,
+ *  subscripts joined ("NH_3", "N_{2}" → "NH3", "N2"), spacing commands as spaces. */
+function mathPlain(text) {
+  return decodeEntities(String(text || ""))
+    .replace(/\\(?:rightleftharpoons|leftrightharpoons|rightleftarrows|longleftrightarrow|leftrightarrow|Longleftrightarrow|rightleftarrow)(?![A-Za-z])/g, " ⇌ ")
+    .replace(/\\(?:longrightarrow|rightarrow|Rightarrow|Longrightarrow|to)(?![A-Za-z])/g, " → ")
+    .replace(/\\(?:mathrm|text|textrm|rm|mbox|mathbf|mathsf)\s*\{/g, "{")
+    .replace(/\\frac\s*\{?\s*(\d+)\s*\}?\s*\{?\s*(\d+)\s*\}?/g, "$1/$2")
+    .replace(/\\(?:[,;:! ]|q?quad)/g, " ")
+    .replace(/\^\s*\{[^}]*\}|\^\s*[-+]?\d*[-+]?/g, "").replace(/[{}]/g, "")
+    .replace(/_\s*(\d+)/g, "$1")
+    .replace(/\\[a-zA-Z]+/g, " ").replace(/\$/g, " ")
+    .replace(/\s*\(\s*(g|l|s|aq)\s*\)/g, "($1)").replace(/[ \t]+/g, " ");
 }
 const FRACTIONS = { "½": 1 / 2, "⅓": 1 / 3, "⅔": 2 / 3, "¼": 1 / 4, "¾": 3 / 4 };
 const coefficient = (c) => (!c ? 1 : FRACTIONS[c] ?? (c.includes("/") ? Number(c.split("/")[0]) / Number(c.split("/")[1]) : Number(c)));
@@ -308,6 +421,9 @@ export function anchored(claim, found, k) {
   if (statesOtherReaction(claim, joined) || otherQuantity(claim.text, joined)) return false;
   const byReaction = sameReaction(claim, joined);
   if (!byClaim && !byLead && !byReaction) return false;
+  // a claim that writes its reaction is anchored only by a quote stating that same reaction: a name (the lead-in's
+  // "Haber-Bosch") never carries a contradiction onto a reaction the claim wrote out (red-team round 2, R2-K06)
+  if (equationIn(claim.text) && !byReaction) return false;
   const keys = [...tokensOf(claim).filter((t) => t.kind === "name"), ...leadNames].flatMap((t) => [t.key, ...t.parts.map(folded)]);
   // a quote's name is the claim's when it is, or shares a part with, one of the claim's names ("Haber-Bosch" / "Haber")
   if (namesIn(joined).some((n) => !keys.includes(nameKey(n)) && !nameParts(n).some((p) => keys.includes(folded(p))))) return false;

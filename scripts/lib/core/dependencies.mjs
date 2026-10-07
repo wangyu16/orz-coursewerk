@@ -17,30 +17,34 @@
 import { canonicalJson, sha256 } from "../records/canonical.mjs";
 import { factTokens, questionWording } from "./change.mjs";
 import { nodeIndex } from "./spine.mjs";
+import { parseNumber, plainForQuantities, valueText, valuesIn } from "./values.mjs";
 
 export const factHash = (text) => sha256(canonicalJson(factTokens(text)));
 const QUANTITY = /[−-]?\d+(?:[.,]\d+)?\s*(?:°C|K\b|kJ|J\b|mol|M\b|atm|bar|Pa|kPa|g\b|kg|mg|L\b|mL|%)/g;
 // Quantities are found after folding LaTeX spellings ("-92\\ \\text{kJ mol}^{-1}" → "-92 kJ mol"), since the
 // packages write most values in LaTeX; a value written two ways is still one shared value.
-export const plainForQuantities = (text) => String(text)
-  .replace(/\\text\{([^}]*)\}/g, " $1 ").replace(/\\mathrm\{([^}]*)\}/g, " $1 ").replace(/\\(?:,|;|!| |quad|qquad)/g, " ")
-  .replace(/\^\{[^}]*\}/g, "").replace(/[{}$]/g, " ").replace(/\\(?:approx|times)/g, " ").replace(/−/g, "-");
+// (plainForQuantities lives in core/values.mjs, beside the one value parser that also reads bindings; re-exported)
+export { plainForQuantities };
 const quantities = (text) => [...new Set((plainForQuantities(text).match(QUANTITY) || []).map((q) => q.replace(/\s+/g, "")))];
 export { quantities };
 
 // A unitless value bound to a symbol ("K = 50", "Q_r = 50", "pH = 7", "K_c = 4.0") is a shared value too: two units
 // stating the same binding depend on each other (red team R1 coherence, F11: Q7 "for the same reaction (K = 50)" was
-// never found when Q6's K changed). A chain "Q_r = K = 50" binds every symbol in it.
+// never found when Q6's K changed). A chain "Q_r = K = 50" binds every symbol in it. The binding is read as the value
+// parser reads it (core/values.mjs) as well: "whose K is 50", "K of 50", "K equals 50", "K ≈ 50" bind K to 50 exactly
+// as "K = 50" does (red team R2 coherence, F7). A binding's key is its symbol without subscript marks and its number
+// as a number ("K_c = 4.0" and "Kc is 4" are one binding).
 const UNIT_AFTER = /^\s*(?:°C|K\b|kJ|J\b|mol|M\b|atm|bar|Pa|kPa|g\b|kg|mg|L\b|mL|%)/;
 const BINDING = /((?:\b[A-Za-z][A-Za-z]?(?:_[A-Za-z0-9,]+)?\s*=\s*)+)([−-]?\d+(?:[.,]\d+)?)/g;
+const bindingKey = (sym, value) => `${String(sym).replace(/[_{}\s]/g, "")}=${String(parseNumber(String(value)))}`;
 export function bindings(text) {
   const plain = plainForQuantities(text).replace(/_\s*\{?\s*([A-Za-z0-9,]+)\s*\}?/g, "_$1");
   const out = new Set();
   for (const m of plain.matchAll(BINDING)) {
     if (UNIT_AFTER.test(plain.slice(m.index + m[0].length))) continue; // a quantity with a unit: QUANTITY covers it
-    const value = m[2].replace(/−/g, "-").replace(",", ".");
-    for (const sym of m[1].split("=").map((x) => x.replace(/\s+/g, "")).filter(Boolean)) out.add(`${sym}=${value}`);
+    for (const sym of m[1].split("=").map((x) => x.replace(/\s+/g, "")).filter(Boolean)) out.add(bindingKey(sym, m[2]));
   }
+  for (const v of valuesIn(valueText(text))) if (v.symbol && v.unit === "1") out.add(bindingKey(v.symbol, String(v.value)));
   return [...out];
 }
 
