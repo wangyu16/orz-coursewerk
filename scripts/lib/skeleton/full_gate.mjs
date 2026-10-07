@@ -12,7 +12,9 @@ import { buildWiringReport } from "./wiring.mjs";
 import { liveReader } from "../core/package_reader.mjs";
 import { spineCoreFindings, restatedObjectiveFindings, approvalCoreProblems, spineReviewQuestions } from "../core/core_checks.mjs";
 import { unindexedFindings } from "../core/units_index.mjs";
-import { coreObligations } from "../core/obligations.mjs";
+import { coreObligations, loadUnits, loggedInstructorActs } from "../core/obligations.mjs";
+import { factHash } from "../core/dependencies.mjs";
+import { mechanicalFindings } from "../verify/mechanical.mjs";
 import { unitRecordFindings } from "../core/unit_records.mjs";
 import { uncheckedShippedFindings } from "../core/shipped.mjs";
 
@@ -42,6 +44,8 @@ export function runGate(root, { checkpoint = "V8", profile = null, inputsDir = n
     // D42: what would ship unread — an undeclared document, an include of a file no check reads (round 2, C3-04/07)
     if (["V2", "V8"].includes(checkpoint)) core.push(...uncheckedShippedFindings(root, reader, run.snapshot.id));
     if (["V4", "V6", "V8"].includes(checkpoint)) core.push(...coreObligations(root, reader, run.snapshot.id));
+    // K2: computable content is recomputed — worked expressions and equation balance (red-team round 3, R3-K03)
+    if (["V4", "V6", "V8"].includes(checkpoint)) core.push(...mechanicalFindings(loadUnits(root, reader), run.snapshot.id, { confirmed: loggedInstructorActs(root).confirmed, factHashOf: factHash }));
     // a unit record (stamps, owed re-verifications, carries, links) edited outside the harness (R1 coherence F6)
     if (["V2", "V4", "V6", "V8"].includes(checkpoint)) core.push(...unitRecordFindings(root, run.snapshot.id));
   }

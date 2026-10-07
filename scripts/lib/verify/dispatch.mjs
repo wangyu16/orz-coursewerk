@@ -17,6 +17,8 @@ import { recordFile } from "../records/paths.mjs";
 import { appendLogRecord } from "../records/log.mjs";
 import { NEGATION, folded, quantitiesIn, nameKey, yearsIn } from "./claims.mjs";
 import { decodeEntities } from "../core/values.mjs";
+import { unitHash } from "../core/segment.mjs";
+import { factHash } from "../core/dependencies.mjs";
 
 export const VERIFICATION_DIR = "metadata/verification";
 const SYSTEM = "You are a context-blind fact verifier. You see only the material in the user message. Answer only from it, and reply with JSON only.";
@@ -151,28 +153,42 @@ export function quoteIn(quote, text) {
 /** The passage a knowledge bundle showed the reviewer (what its concerns may quote). */
 export const reviewedPassage = (prompt) => { const p = String(prompt || ""); const m = p.match(/\nPASSAGE(?: \([^\n]*\))?\n([\s\S]*)$/); return m ? m[1] : ""; };
 /**
- * A knowledge review as the harness reads it: { ok, reason, concerns, unlocated }. `concerns` point at words the
- * unit contains now; a concern whose words are no longer in the unit but were in the passage reviewed is settled by
- * the text (it is neither). `unlocated`: concerns whose words are in neither — the reviewer quoted something the
+ * A knowledge review as the harness reads it: { ok, reason, concerns, unlocated, gone }. `concerns` point at words the
+ * unit contains now; `gone`: concerns whose words are no longer in the unit but were in the passage reviewed — a
+ * "wrong" one is settled only as MS8 rules (red-team round 3, R3-K06: a synonym swap removed the words, not the error). `unlocated`: concerns whose words are in neither — the reviewer quoted something the
  * passage does not say, so the review cannot be scored. A review that does not parse, or answers another bundle, is
  * not ok. Neither counts as a clean review (R2-K10).
  */
 export function readKnowledgeReview(record, unitText) {
   const m = String(record?.answer?.raw || "").match(/\{[\s\S]*\}/);
   let v; try { v = JSON.parse(m?.[0] || ""); } catch { return { ok: false, reason: "the answer is not JSON", concerns: [], unlocated: [] }; }
-  if (v?.nonce !== record?.bundle?.nonce) return { ok: false, reason: "the answer does not echo the bundle's nonce", concerns: [], unlocated: [] };
-  if (!Array.isArray(v.concerns)) return { ok: false, reason: "the answer has no concerns list", concerns: [], unlocated: [] };
+  if (v?.nonce !== record?.bundle?.nonce) return { ok: false, reason: "the answer does not echo the bundle's nonce", concerns: [], unlocated: [], gone: [] };
+  if (!Array.isArray(v.concerns)) return { ok: false, reason: "the answer has no concerns list", concerns: [], unlocated: [], gone: [] };
   const norm = (t) => String(t).replace(/\s+/g, " ").trim();
   const passage = reviewedPassage(record.bundle?.prompt);
-  const concerns = [], unlocated = [];
+  const concerns = [], unlocated = [], gone = [];
   for (const c of v.concerns) {
     if (typeof c?.text !== "string" || typeof c.problem !== "string") continue; // a malformed entry says nothing
     // a concern without a kind (records before D35) is read as "wrong": it keeps the path it had
     const x = { kind: c.kind === "clarify" ? "clarify" : "wrong", text: norm(c.text), problem: String(c.problem).slice(0, 600), suggestion: String(c.suggestion || "").slice(0, 600) };
     if (quoteIn(c.text, unitText)) concerns.push(x);
     else if (!passage || !quoteIn(c.text, passage)) unlocated.push(x);
+    else gone.push(x); // its words were in the passage reviewed and are gone from the unit: settled only as MS8 says
   }
-  return { ok: true, concerns, unlocated };
+  return { ok: true, concerns, unlocated, gone };
+}
+
+/**
+ * Was a concern settled by putting its suggestion in place of its words, and changing nothing else (red-team round 3,
+ * R3-K06)? The passage the review read, with the concern's words replaced by its suggestion, must be the unit's text
+ * now (whitespace and emphasis aside). A rewording of the words at issue ("raises" → "increases"), or any other edit
+ * of the passage, is not — the concern stays open until a fresh review reads the new text.
+ */
+export function settledBySuggestion(concern, passage, unitText) {
+  const norm = (t) => String(t || "").replace(/[*_`]/g, "").replace(/\s+/g, " ").trim();
+  const P = norm(passage), q = norm(concern.text), sug = norm(concern.suggestion);
+  if (!q || sug.length < 8 || P.split(q).length !== 2) return false;
+  return P.replace(q, () => sug) === norm(unitText);
 }
 
 // ---- running a verifier -------------------------------------------------------------------------------------------
@@ -236,6 +252,43 @@ export function recordDispatch(root, { kind, unit, factHash, contentHash, bundle
  * the record a dispatch the log does not vouch for. Records logged before round 1 carry no recordHash.
  */
 export const recordHashOf = (record) => sha256(canonicalJson(record));
+
+/**
+ * The log entry that vouches for a dispatch record, or null: the same dispatch, unit, bundle and answer (round P7-1,
+ * B12/B13) and, for records logged since red-team round 1, the same whole record (recordHash: C2-03).
+ */
+export function dispatchLogEntry(record, logRecords) {
+  if (!record || sha256(record.bundle?.prompt ?? "") !== record.bundle?.bundleHash || sha256(record.answer?.raw ?? "") !== record.answer?.responseHash) return null;
+  return (logRecords || []).find((l) => l.type === "dispatch" && l.party?.role === "harness" && l.payload?.dispatch === record.dispatch && l.payload?.unit === record.unit && l.payload?.bundleHash === record.bundle.bundleHash && l.payload?.responseHash === record.answer.responseHash
+    && (l.payload?.recordHash == null || l.payload.recordHash === recordHashOf(record))) || null;
+}
+
+/**
+ * A dispatch record as the log vouches for it (red-team round 3, CONFIDENCE R3-K05/K08), or null when the log does not
+ * vouch for it. A record logged with its recordHash is bound whole, so its fields are read as written. A record logged
+ * before round 1 (no recordHash: 195 semi, 1134 knowledge and 29 absolute records in the P11 course) binds only its
+ * dispatch, unit, kind, prompt (bundleHash), answer (responseHash) and admission status (logged with the dispatch); every
+ * other field of it is editable without trace, so nothing is read from them. What decides currency is DERIVED from
+ * what the log binds:
+ *   knowledge  contentHash and factHash from the passage its prompt showed (reviewedPassage);
+ *   semi       the claims its prompt printed (recordClaimTexts) — "the facts it checked"; its factHash cannot be
+ *              derived (the prompt holds the claims, not the unit) and is null: a semi record's currency is its claims;
+ *   absolute   the sentences its prompt printed (absolutes.mjs absoluteReviewOf); factHash null likewise.
+ * The admission status of a legacy record is the logged one. A field that cannot be derived is null, and nothing may
+ * count a record through a null field.
+ * Returns { entry, seq, unit, kind, hashed, contentHash, factHash, status }.
+ */
+export function boundRecord(record, logRecords) {
+  const entry = dispatchLogEntry(record, logRecords);
+  if (!entry || entry.payload?.kind !== record.kind) return null;
+  const p = entry.payload, base = { entry, seq: entry.seq ?? 0, unit: p.unit, kind: p.kind };
+  if (p.recordHash) return { ...base, hashed: true, contentHash: record.contentHash ?? null, factHash: record.factHash ?? null, status: record.admission?.status ?? p.status ?? null };
+  if (p.kind === "knowledge") {
+    const passage = reviewedPassage(record.bundle?.prompt).trim();
+    return { ...base, hashed: false, contentHash: passage ? unitHash(passage) : null, factHash: passage ? factHash(passage) : null, status: p.status ?? null };
+  }
+  return { ...base, hashed: false, contentHash: null, factHash: null, status: p.status ?? null };
+}
 
 export function readDispatches(readText, paths) {
   return paths.filter((p) => p.startsWith(VERIFICATION_DIR + "/") && p.endsWith(".json")).sort().map((p) => { try { return JSON.parse(readText(p)); } catch { return null; } }).filter(Boolean);

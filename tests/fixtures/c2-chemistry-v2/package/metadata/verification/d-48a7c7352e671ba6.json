@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-48a7c7352e671ba6",
+  "kind": "absolute",
+  "unit": "u-slides-chemical-equilibrium-slide-8-building-k-from-a-balanced-equat-3",
+  "factHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "contentHash": "a46d2f4d4f8bf910a4b645ec2938da5d415c6550b2735fd312bd877d1eeef5c9",
+  "at": "2026-10-07T16:09:05.612Z",
+  "bundle": {
+    "nonce": "b20a351f523536d0",
+    "bundleHash": "48a7c7352e671ba66036482420bfc7b467baed0376b1dcdad834f3ad5745638b",
+    "prompt": "Below are sentences from teaching material for a college course, each containing an absolute word (only, always, never, every, each, any, all, none, invariably, without exception, …), and the section of the material they come from.\nRead the context and classify each sentence:\n- \"casual\": the absolute is ordinary usage and makes no claim about the world that could be wrong.\n- \"accurate-in-context\": it is a scientific claim, and the context limits it so that it is accurate. Copy, word for word, the words of the context that limit it.\n- \"over-general\": it is a scientific claim broader than the truth, even in context. Say why in one sentence and suggest a rewording that is accurate (scope it, or soften it).\nReply with JSON only, exactly this shape: {\"nonce\": \"b20a351f523536d0\", \"sentences\": [{\"n\": 1, \"class\": \"...\", \"context\": \"exact words (accurate-in-context only)\", \"why\": \"...\", \"suggestion\": \"...\"}]}\n\nSENTENCES\n1. Each concentration raised to its **stoichiometric coefficient**.\n\nCONTEXT\nFor $\\ce{\\alpha A + \\beta B <=> \\sigma S + \\tau T}$:\n\n$$K = \\frac{[\\ce{S}]^{\\sigma}\\,[\\ce{T}]^{\\tau}}{[\\ce{A}]^{\\alpha}\\,[\\ce{B}]^{\\beta}}$$\n\nProducts in the numerator. Each concentration raised to its **stoichiometric coefficient**."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"b20a351f523536d0\",\"sentences\":[{\"n\":1,\"class\":\"casual\",\"why\":\"fixture replay\"}]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "7046a5e99d4b26be3217242c531620e8c036bff5072981678f716e7dc3f0097d"
+  },
+  "admission": {
+    "status": "reviewed"
+  },
+  "sentences": [
+    "Each concentration raised to its **stoichiometric coefficient**."
+  ],
+  "context": "For $\\ce{\\alpha A + \\beta B <=> \\sigma S + \\tau T}$:\n\n$$K = \\frac{[\\ce{S}]^{\\sigma}\\,[\\ce{T}]^{\\tau}}{[\\ce{A}]^{\\alpha}\\,[\\ce{B}]^{\\beta}}$$\n\nProducts in the numerator. Each concentration raised to its **stoichiometric coefficient**.",
+  "absolutesHash": "944233a22a3dd65415a97c184a48359064be5fa3ffde5a39b6f8f9d31ee5f733"
+}

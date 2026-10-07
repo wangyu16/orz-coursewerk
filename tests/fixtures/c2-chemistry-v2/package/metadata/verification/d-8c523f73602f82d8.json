@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-8c523f73602f82d8",
+  "kind": "absolute",
+  "unit": "u-study-guide-le-chatelier-changing-the-volume-or-pressure-1",
+  "factHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "contentHash": "34946c7ff7d8da8a51e5dd344ef5db8622a1b6a11e831690e195519c7b36690d",
+  "at": "2026-10-07T16:09:08.551Z",
+  "bundle": {
+    "nonce": "de9abaf614bd4e1b",
+    "bundleHash": "8c523f73602f82d886f68a1024e018ef37c52f1c6da63c6a7d332d499cf08dd5",
+    "prompt": "Below are sentences from teaching material for a college course, each containing an absolute word (only, always, never, every, each, any, all, none, invariably, without exception, …), and the section of the material they come from.\nRead the context and classify each sentence:\n- \"casual\": the absolute is ordinary usage and makes no claim about the world that could be wrong.\n- \"accurate-in-context\": it is a scientific claim, and the context limits it so that it is accurate. Copy, word for word, the words of the context that limit it.\n- \"over-general\": it is a scientific claim broader than the truth, even in context. Say why in one sentence and suggest a rewording that is accurate (scope it, or soften it).\nReply with JSON only, exactly this shape: {\"nonce\": \"de9abaf614bd4e1b\", \"sentences\": [{\"n\": 1, \"class\": \"...\", \"context\": \"exact words (accurate-in-context only)\", \"why\": \"...\", \"suggestion\": \"...\"}]}\n\nSENTENCES\n1. Compare the moles of gas on each side of the balanced equation:\n\nCONTEXT\nFor a gas-phase equilibrium, what matters is the **partial pressures**, and those change when the volume changes. Compare the moles of gas on each side of the balanced equation:\n\n- **Decrease the volume** (raise the pressure) → the equilibrium shifts toward the side with **fewer** moles of gas, which exerts less pressure.\n\n- **Increase the volume** (lower the pressure) → the equilibrium shifts toward the side with **more** moles of gas.\n\n- **Equal moles** of gas on both sides → a volume/pressure change has **no effect**.\n\nIn the ammonia equilibrium the reactant side has 4 moles of gas ($\\ce{N2 + 3 H2}$) and the product side has 2 moles ($\\ce{2 NH3}$):\n\n$$\\underset{\\text{4 mol gas}}{\\ce{N2 + 3 H2}} \\ce{<=>} \\underset{\\text{2 mol gas}}{\\ce{2 NH3}}$$\n\nDecreasing the volume shifts this equilibrium to the right (toward the 2-mole side); increasing the volume shifts it to the left."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"de9abaf614bd4e1b\",\"sentences\":[{\"n\":1,\"class\":\"casual\",\"why\":\"fixture replay\"}]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "d1386a8929d566784dab5396a30cfaebbd7370417c6b854f7f480ebeb666d0f7"
+  },
+  "admission": {
+    "status": "reviewed"
+  },
+  "sentences": [
+    "Compare the moles of gas on each side of the balanced equation:"
+  ],
+  "context": "For a gas-phase equilibrium, what matters is the **partial pressures**, and those change when the volume changes. Compare the moles of gas on each side of the balanced equation:\n\n- **Decrease the volume** (raise the pressure) → the equilibrium shifts toward the side with **fewer** moles of gas, which exerts less pressure.\n\n- **Increase the volume** (lower the pressure) → the equilibrium shifts toward the side with **more** moles of gas.\n\n- **Equal moles** of gas on both sides → a volume/pressure change has **no effect**.\n\nIn the ammonia equilibrium the reactant side has 4 moles of gas ($\\ce{N2 + 3 H2}$) and the product side has 2 moles ($\\ce{2 NH3}$):\n\n$$\\underset{\\text{4 mol gas}}{\\ce{N2 + 3 H2}} \\ce{<=>} \\underset{\\text{2 mol gas}}{\\ce{2 NH3}}$$\n\nDecreasing the volume shifts this equilibrium to the right (toward the 2-mole side); increasing the volume shifts it to the left.",
+  "absolutesHash": "687d7ed70c946e1a771895a47f3e8bcc3c97539c66edc4e3f215d9d9667ec062"
+}

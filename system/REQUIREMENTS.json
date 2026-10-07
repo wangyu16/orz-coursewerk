@@ -1893,13 +1893,14 @@
       "tiers": [
         "T1"
       ],
-      "statement": "One value parser (F1–F4, F7, F10): the claim extractor and the semi-mechanical classifier read values through core/values.mjs over the harness's unit table (lib/units.mjs) — mmHg, kcal, °F, V …; thousands separators; every typeset minus; scientific notation with its mantissa, exactly; units with their denominators (kJ/mol ≠ kJ/g ≠ kJ); dimensionless values bound to a symbol (K, K_p, pH) and powers of ten are required tokens. A correction never doubles a sign. Round 2 (R2-K04, K05, K07): the unit table's ordinary spelled and plural forms (kilojoules, kilocalories, calories, atmospheres, metres, litres …) and psi, eV, hPa and the tonne are units; HTML character references (&minus;, &#8722;, &#x2212;, &ndash; …) are decoded before values are read.",
+      "statement": "One value parser (F1–F4, F7, F10): the claim extractor and the semi-mechanical classifier read values through core/values.mjs over the harness's unit table (lib/units.mjs) — mmHg, kcal, °F, V …; thousands separators; every typeset minus; scientific notation with its mantissa, exactly; units with their denominators (kJ/mol ≠ kJ/g ≠ kJ); dimensionless values bound to a symbol (K, K_p, pH) and powers of ten are required tokens. A correction never doubles a sign. Round 2 (R2-K04, K05, K07): the unit table's ordinary spelled and plural forms (kilojoules, kilocalories, calories, atmospheres, metres, litres …) and psi, eV, hPa and the tonne are units; HTML character references (&minus;, &#8722;, &#x2212;, &ndash; …) are decoded before values are read. Round 3 (R3-K01, K07): bars, kbar, mbar, GPa, ksi and Torr are units; a symbol's subscript in any LaTeX spelling (K_{p}, K_\\mathrm{p}, K<sub>p</sub>) is the symbol; a sign written as a word (minus, negative, plus, positive) or outside a bracket (−(63.7), (−63.7)) is a sign; an HTML <sup> exponent is an exponent with any minus.",
       "source": "3C red team round 1, CONFIDENCE (operator design direction, 2026-10-06)",
       "status": "closed",
       "evidence": {
         "T1": [
           "tests/redteam-r1-confidence.test.mjs",
-          "tests/redteam-r2-confidence.test.mjs"
+          "tests/redteam-r2-confidence.test.mjs",
+          "tests/redteam-r3-confidence.test.mjs"
         ]
       }
     },
@@ -1956,12 +1957,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "A concern is settled by the text only when the unit carries the suggestion and no longer carries the concern's quoted words, unless the suggestion extends them: a deletion-type fix is never 'already applied' while the wrong words stand (F12).",
+      "statement": "A concern is settled by the text only when the unit carries the suggestion and no longer carries the concern's quoted words, unless the suggestion extends them: a deletion-type fix is never 'already applied' while the wrong words stand (F12). Round 3 (R3-K06): a 'wrong' concern whose words are gone is settled only when a fresh review of the unit's current text (contentHash) was logged after it — a review that clears it — or its suggestion went in place of its words and the unit's text changed nowhere else. A synonym swap or any other rewording that removes the words keeps it open; the newest review of a unit always speaks for it, so a rewrite that changes a fact token cannot silence it.",
       "source": "3C red team round 1, CONFIDENCE (operator design direction, 2026-10-06)",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r1-confidence.test.mjs"
+          "tests/redteam-r1-confidence.test.mjs",
+          "tests/redteam-r3-confidence.test.mjs"
         ]
       }
     },
@@ -2017,12 +2019,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "An auto-correction replaces a value's sign or prefix together with its number (+, −, a spaced minus, &minus; …), and the corrected text must read as the source's value with one sign: a correction that would produce a malformed value ('+−92.2', '&minus;−92.2', '0 - −92.2') is refused and becomes the instructor's question (round 2, K06/K07).",
+      "statement": "An auto-correction replaces a value's sign or prefix together with its number (+, −, a spaced minus, &minus; …), and the corrected text must read as the source's value with one sign: a correction that would produce a malformed value ('+−92.2', '&minus;−92.2', '0 - −92.2') is refused and becomes the instructor's question (round 2, K06/K07). Round 3 (R3-K02): a sign word is replaced with the number ('minus 63.7 kJ' → '−92.2 kJ'); the corrected text is re-read with the full parser, and a sign word beside a signed number is malformed and refused.",
       "source": "3C red team round 2, CONFIDENCE (operator design direction, 2026-10-06)",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r2-confidence.test.mjs"
+          "tests/redteam-r2-confidence.test.mjs",
+          "tests/redteam-r3-confidence.test.mjs"
         ]
       }
     },
@@ -2637,6 +2640,81 @@
       "evidence": {
         "T1": [
           "tests/redteam-r3-coherence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.values.fail-closed",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The value parser fails closed (R3-K01): a number followed by a unit-like token the unit table does not hold (mixed case like GPa or kDa, a short lowercase token like ppm, a short capitalised one like Torr — never an English word, a count, a label or a chemical formula) is a value with an OPAQUE unit, kept as written: the sentence is semi-mechanical and owes evidence, and a quote must carry the same number and token. An opaque unit is never converted or compared across units. A value the parser reads in a semi sentence that an honest quote contradicts is a contradiction (fact-contradicted), not evidence-missing.",
+      "source": "3C red team round 3, CONFIDENCE (studies/p11/redteam-r3/confidence)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r3-confidence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.classifier.names",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The semi-mechanical classifier's name trigger is the claim extractor's own name reader (core/names.mjs namesIn), less a name used only as an eponymous term ('the Gibbs energy', 'the van 't Hoff equation', 'the Haber process'), which asserts nothing about the person: 'the work of Arrhenius' is a fact that owes evidence (R3-K01). A list marker or a value's unit is never a name.",
+      "source": "3C red team round 3, CONFIDENCE (studies/p11/redteam-r3/confidence)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r3-confidence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.mechanical.recompute",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "K2: computable content is checked (R3-K03). At V4/V6/V8 the gate recomputes every worked expression it can read without a guess — a math chain 'X = <arithmetic> = <value>' with numbers, scientific notation, + − × · / \\frac ^ \\sqrt \\ln \\log \\exp, brackets and implicit products — and compares it with the value written, at the precision written (beyond half a unit in the last place, and more than half a percent off); and balances every reaction the harness reads (equationIn: each \\ce{…} with an arrow, and the plain one) in every element and in charge. A mismatch is a defect routed to the agent (computation-mismatch, equation-unbalanced) with the recomputed value or the unbalanced element in its evidence; what cannot be parsed (a symbol, a unit inside the arithmetic, a change of unit, an unknown species) is skipped. A unit the instructor confirmed at its current facts is not re-raised. The real course (C2) raises none.",
+      "source": "3C red team round 3, CONFIDENCE (studies/p11/redteam-r3/confidence)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r3-confidence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.absolute.wide",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "D30 absolutes are not a closed word list (R3-K04): only, solely, exclusively, alone, always, never, every, each, any, all, none, nothing, nobody, no one, invariably, universally, necessarily, inevitably, unconditionally, without exception, in all/every/any cases, under all conditions, regardless of, no matter, whatever, whenever, wherever, everything, everyone, everywhere owe a context review. Text in double quotes is exempt only as a quoted misconception: introduced as what someone says, thinks or claims, or followed at once by a correction (No…, Not…, but…, In fact…, it depends…, Evaluate this claim…); a scare-quoted word in the author's own claim counts.",
+      "source": "3C red team round 3, CONFIDENCE (studies/p11/redteam-r3/confidence)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r3-confidence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.log-bound",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Every verification record is read through what the decision log binds (R3-K05, K08): a record logged with its recordHash is bound whole; a record logged before round 1 (no recordHash) binds only its dispatch, unit, kind, prompt, answer and logged status, so its currency is DERIVED — a knowledge review's contentHash and factHash from the passage its prompt showed, a semi record's from the claims its prompt printed, an absolute review's from its printed sentences — and its admission is the logged status. Nothing counts through a field that cannot be derived. This holds in MS8, unreviewedKnowledge, liveContradictions (a confirmation is refused over a live contradiction) and the correction guard.",
+      "source": "3C red team round 3, CONFIDENCE (studies/p11/redteam-r3/confidence)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r3-confidence.test.mjs"
         ]
       }
     }

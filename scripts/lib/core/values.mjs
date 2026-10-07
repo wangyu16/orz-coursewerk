@@ -60,8 +60,26 @@ function foldSci(t) {
 /** Text for value extraction: LaTeX folded to plain, scientific notation to an exact "<mantissa>e<exponent>", unit
  *  exponents kept ("g^{-1}" → "g^-1"). Markup is left to the caller (claims.proseOf). */
 export function valueText(text) {
-  let t = clean(supFold(decodeEntities(text || ""))).replace(/<br\s*\/?>/gi, ". ").replace(/<\/?[a-zA-Z][^>]*>/g, " ").replace(/[‐-―](?=\s*\d)/g, "-");
+  let t = clean(supFold(decodeEntities(text || "")))
+    // an HTML superscript is an exponent whatever its minus (red-team round 3, R3-K07: "10<sup>-5</sup>" read as 10)
+    .replace(/<sup>\s*([-−‐-―+]?)\s*(\d+)\s*<\/sup>/gi, (_, s, d) => `^{${s && s !== "+" ? "-" : ""}${d}}`)
+    .replace(/<sub>\s*([A-Za-z]{1,3})\s*<\/sub>/gi, "$1") // K<sub>p</sub> is Kp
+    .replace(/<br\s*\/?>/gi, ". ").replace(/<\/?[a-zA-Z][^>]*>/g, " ").replace(/[‐-―](?=\s*\d)/g, "-");
   t = t.replace(/\{\s*([-−])\s*\}/g, "$1"); // {-}92
+  // a symbol's subscript in any LaTeX spelling is the symbol (R3-K01: "K_{p}", "K_\mathrm{p}", "K_{\text{eq}}")
+  t = t.replace(/(?<![A-Za-z\\])(K|pK)\s*_\s*(?:\{\s*)?(?:\\(?:mathrm|text|textrm|rm|mathit)\s*\{?\s*)?([A-Za-z]{1,3})\s*\}?\s*\}?/g, "$1$2");
+  // a sign written as a word is a sign (R3-K02/K07: "minus 63.7 kJ" was read as +63.7): "minus"/"negative" before a
+  // number reads as the minus a typesetter writes, "plus"/"positive" as a plus. A minus right after a number stays a
+  // subtraction (SIGN below), so "100 minus 37 kJ" is never "−37 kJ".
+  t = t.replace(/\b(?:minus|negative)\s+(?=[(\d])/gi, "−").replace(/\b(?:plus|positive)\s+(?=[(\d])/gi, "+");
+  // a bracketed value with its sign outside or inside: "−(63.7) kJ", "(−63.7) kJ" — never an expression ("(0.20)^2",
+  // "(0.10)(0.30)"), which the arithmetic check reads (verify/mechanical.mjs)
+  t = t.replace(new RegExp(`(?:([-−+])\\s*)?\\(\\s*(?:([-−+])\\s*)?(${NUM})\\s*\\)(?!\\s*[\\^(\\d.])`, "g"), (m, s1, s2, n, at, all) => {
+    if (/[\d)\]]\s*$/.test(all.slice(0, at)) || /[\d)]\s*$/.test(all.slice(0, at) + (s1 || ""))) return m; // a product or difference
+    if (!s1 && !s2) return m; // an unsigned bracket is left as written
+    const neg = [s1, s2].filter((x) => x && x !== "+").length % 2 === 1;
+    return `${neg ? "−" : ""}${n}`;
+  });
   t = t.replace(/\\(?:approx|simeq)(?![A-Za-z])/g, "≈").replace(/\\sim(?![A-Za-z])/g, "~"); // "K \approx 50" binds K
   t = foldSci(t);
   t = t.replace(/\^\s*\{\s*([-−+]?)\s*(\d+)\s*\}/g, (_, s, d) => `^${s === "−" ? "-" : s}${d}`);
@@ -142,7 +160,37 @@ export function valuesIn(P) {
     out.push({ value: parseNumber(num), unit: `1${den}`, raw: num + den, ...shape(m[2]), at: m.index, end });
     taken.push([m.index, end]);
   }
+  // FAIL CLOSED (red-team round 3, R3-K01): a number followed by a token that looks like a unit the table does not hold
+  // ("2 GPa" before GPa was added, "5 ppm", "3 kDa") is still a value — its unit OPAQUE, kept as written. A wrong guess
+  // costs one cheap check (the sentence owes evidence, and a quote must carry the same number and token); a value
+  // nobody reads is a silent fact (K1). Never converted, never compared across units (lib/consistency.mjs drops it).
+  for (const m of P.matchAll(OPAQUE)) {
+    const tok = m[3], before = P.slice(0, m.index);
+    if (!free(m.index, m.index + m[0].length) || !unitLike(tok) || LABEL_BEFORE.test(before)) continue;
+    const num = signed(m[1], m[2]);
+    out.push({ value: parseNumber(num), unit: tok, raw: num + tok, opaque: true, ...shape(m[2]), at: m.index, end: m.index + m[0].length });
+    taken.push([m.index, m.index + m[0].length]);
+  }
   return out.sort((a, b) => a.at - b.at);
+}
+
+// what an opaque unit looks like: a short token straight after a number that is no English word and no formula
+const OPAQUE = new RegExp(`${SIGN}(?<![\\w.^])(${NUM}(?:e-?\\d+)?)[ \\u00A0]?([A-Za-zµμΩÅ][A-Za-z]{1,4})(?![\\p{L}\\d'’-])`, "gu");
+// a number that labels a thing ("Figure 3", "Q 5", "step 2") is no value, whatever follows it
+const LABEL_BEFORE = /\b(?:figure|fig|table|step|chapter|section|question|q|example|problem|part|unit|lesson|exercise|answer|slide|week|day|lecture|module|item|no|number|page|equation|eq|objective|level|round|case|stage|option|group|period|row|column|line|version|test|trial|experiment|sample|run)\.?\s*$/i;
+const ENGLISH = new Set(("a an the of to in on at by as is are was be am or and nor for but so if it its we you he she his her our my me us do did does has had can may not no yes all any one two six ten new old way day out up per via how who why off own too now set use see get let put few try run key end row top low big far ago age art act add ask cut lot men net tie etc vs ie eg pm th st nd rd also each more most less than then that this with from into over when what them they were will been have here there such only both some must very much many just like even same well good best both pair parts half times ways sets rows days years steps")
+  .split(" "));
+// element symbols: a token that reads as a formula ("HI", "CO", "NaCl") is a species after its coefficient, not a unit
+const ELEMENTS = new Set("H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr Rb Sr Y Zr Nb Mo Tc Ru Rh Pd Ag Cd In Sn Sb Te I Xe Cs Ba La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu Hf Ta W Re Os Ir Pt Au Hg Tl Pb Bi Po At Rn Fr Ra Ac Th Pa U Np Pu".split(" "));
+const isFormula = (t) => /^(?:[A-Z][a-z]?)+$/.test(t) && (t.match(/[A-Z][a-z]?/g) || []).every((e) => ELEMENTS.has(e));
+/** A token a reader takes for a unit: mixed case ("GPa", "kDa", "MHz"), or a short lowercase token ("ppm", "ksi"),
+ *  or a short capitalised one ("Torr", "Gy") — never an English word, never a chemical formula. */
+export function unitLike(tok) {
+  if (ENGLISH.has(tok.toLowerCase()) || isFormula(tok) || /^[A-Z]{3,}$/.test(tok)) return false; // "5 HIGH" is a count
+  if (/^[a-zµμ][a-z]*[A-Z]/.test(tok) || /^[A-Z][a-z]*[A-Z]/.test(tok)) return true; // kDa, GPa, MHz, mmHg
+  if (/^[a-zµμ]{2,3}$/.test(tok)) return true; // ppm, ksi, rpm
+  if (/^[A-ZΩÅ][a-z]{1,3}$/.test(tok)) return true; // Torr, Gy, Da
+  return false;
 }
 
 /** Does a text state a value (the classifier's question)? */

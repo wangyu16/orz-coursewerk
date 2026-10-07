@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-88a4cbbb1b32eea5",
+  "kind": "absolute",
+  "unit": "u-study-guide-chemical-equilibrium-worked-examples-2",
+  "factHash": "71171873f84a60100d6cebc958d7d5ce9a5dfc093b9e0af18495ff209d198583",
+  "contentHash": "d5d7e3a8ca68e500df67b395fbfb05bd4203a617abcfde2b3837e530944214b6",
+  "at": "2026-10-07T16:09:04.866Z",
+  "bundle": {
+    "nonce": "a0e3663d7b86c8fa",
+    "bundleHash": "88a4cbbb1b32eea5171ec8663d68bf24287f278a076529a15bc58f7a27ade10f",
+    "prompt": "Below are sentences from teaching material for a college course, each containing an absolute word (only, always, never, every, each, any, all, none, invariably, without exception, …), and the section of the material they come from.\nRead the context and classify each sentence:\n- \"casual\": the absolute is ordinary usage and makes no claim about the world that could be wrong.\n- \"accurate-in-context\": it is a scientific claim, and the context limits it so that it is accurate. Copy, word for word, the words of the context that limit it.\n- \"over-general\": it is a scientific claim broader than the truth, even in context. Say why in one sentence and suggest a rewording that is accurate (scope it, or soften it).\nReply with JSON only, exactly this shape: {\"nonce\": \"a0e3663d7b86c8fa\", \"sentences\": [{\"n\": 1, \"class\": \"...\", \"context\": \"exact words (accurate-in-context only)\", \"why\": \"...\", \"suggestion\": \"...\"}]}\n\nSENTENCES\n1. Products over reactants, each raised to its coefficient: $$K = \\frac{[\\ce{NH3}]^{2}}{[\\ce{N2}]\\,[\\ce{H2}]^{3}}.$$\n\nCONTEXT\nWrite the equilibrium constant expression for the ammonia synthesis $\\ce{N2 + 3 H2 <=> 2 NH3}$.\n\nProducts over reactants, each raised to its coefficient:\n$$K = \\frac{[\\ce{NH3}]^{2}}{[\\ce{N2}]\\,[\\ce{H2}]^{3}}.$$\n\nSuppose a reaction has $K = 4.0$ at $T = 298\\ \\text{K}$. Using $R = 8.314\\ \\text{J mol}^{-1}\\text{K}^{-1}$, estimate the standard Gibbs energy change.\n\n$\\Delta G^\\ominus = -RT\\ln K = -(8.314)(298)\\ln(4.0) = -3435\\ \\text{J mol}^{-1} \\approx -3.4\\ \\text{kJ mol}^{-1}$. The negative sign is consistent with $K > 1$ (products favoured). *(The value $K = 4.0$ is a teaching hypothetical, not a source datum.)*"
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"a0e3663d7b86c8fa\",\"sentences\":[{\"n\":1,\"class\":\"casual\",\"why\":\"fixture replay\"}]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "8a02d166afec4edbe5a7ba9970a9b7a568e6576ac586e725d2f2ff63fda96236"
+  },
+  "admission": {
+    "status": "reviewed"
+  },
+  "sentences": [
+    "Products over reactants, each raised to its coefficient: $$K = \\frac{[\\ce{NH3}]^{2}}{[\\ce{N2}]\\,[\\ce{H2}]^{3}}.$$"
+  ],
+  "context": "Write the equilibrium constant expression for the ammonia synthesis $\\ce{N2 + 3 H2 <=> 2 NH3}$.\n\nProducts over reactants, each raised to its coefficient:\n$$K = \\frac{[\\ce{NH3}]^{2}}{[\\ce{N2}]\\,[\\ce{H2}]^{3}}.$$\n\nSuppose a reaction has $K = 4.0$ at $T = 298\\ \\text{K}$. Using $R = 8.314\\ \\text{J mol}^{-1}\\text{K}^{-1}$, estimate the standard Gibbs energy change.\n\n$\\Delta G^\\ominus = -RT\\ln K = -(8.314)(298)\\ln(4.0) = -3435\\ \\text{J mol}^{-1} \\approx -3.4\\ \\text{kJ mol}^{-1}$. The negative sign is consistent with $K > 1$ (products favoured). *(The value $K = 4.0$ is a teaching hypothetical, not a source datum.)*",
+  "absolutesHash": "8e98548999fadc1a78674f0826abd7656bceaa824bc376157a7effd5bb8628cf"
+}
