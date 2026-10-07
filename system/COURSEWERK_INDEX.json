@@ -473,7 +473,7 @@
       "id": "repo:scripts/lib/core/pack_v2.mjs",
       "path": "scripts/lib/core/pack_v2.mjs",
       "type": "kernel",
-      "hash": "efdac5cf1c2ddf6a61a09aea415ce1979cfd9a9d0e95f968b6672348cd8bfd54"
+      "hash": "8a4f24397759beb46d54f9236a8ae6688eefb5f50e925e0486c9ada06ce8a3b1"
     },
     {
       "id": "repo:scripts/lib/core/package_reader.mjs",
@@ -488,16 +488,22 @@
       "hash": "80582aa147b7e1eeae2dc6b22e1c0918adef1d91c225db8f2048ff5d4e4f208e"
     },
     {
+      "id": "repo:scripts/lib/core/printed.mjs",
+      "path": "scripts/lib/core/printed.mjs",
+      "type": "kernel",
+      "hash": "ed29674dba06b76e938a2ead8c189fd63255e9651ad09546f744e6051b8561d2"
+    },
+    {
       "id": "repo:scripts/lib/core/segment.mjs",
       "path": "scripts/lib/core/segment.mjs",
       "type": "kernel",
-      "hash": "c0ebefab7ced36a9ae88699492c92ca6f0d71316aa7b8d2a6739d1df7bffcce6"
+      "hash": "edcc956acb02deb2cc715bcfe1ee09b4cbf9b4d07a4c77ee5e9eb63152636825"
     },
     {
       "id": "repo:scripts/lib/core/shipped.mjs",
       "path": "scripts/lib/core/shipped.mjs",
       "type": "kernel",
-      "hash": "3d70120947658d5ea9318622dd3fbbc3c3d2617737df27f5bbd6cffa744a2ea0"
+      "hash": "14b8f17da25e83bd08aaf40cab15e849c60a3eb7c5a67a1c6953d3f903f759ab"
     },
     {
       "id": "repo:scripts/lib/core/spine_review.mjs",
@@ -1133,7 +1139,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "f5b59ed1bd7a00a985910517b1dd84e460bb099eac63d01c35e864c9a6e69bc2"
+      "hash": "a114c2ff5c611eb8f73d6bcad771c5bf80606b393e0ec407b008d660a299bea1"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1734,6 +1740,12 @@
       "path": "tests/redteam-r2-control.test.mjs",
       "type": "test",
       "hash": "dc538ebfb168faa93a6007720e44c2ba6783464728365e513d690d51f52248ad"
+    },
+    {
+      "id": "repo:tests/redteam-r3-control.test.mjs",
+      "path": "tests/redteam-r3-control.test.mjs",
+      "type": "test",
+      "hash": "4b2149645b4087eab5c23a99be3d109dd727d88eaf00c6d3484f21fb898502c4"
     },
     {
       "id": "repo:tests/requirements.test.mjs",
@@ -3542,7 +3554,23 @@
         "status": "closed"
       },
       {
+        "id": "req.control.no-hidden-content",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.control.objectives-section",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.control.printed-by-parser",
         "phase": "P11",
         "tiers": [
           "T1"
