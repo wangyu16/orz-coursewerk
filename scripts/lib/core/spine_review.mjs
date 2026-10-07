@@ -22,10 +22,13 @@ import { COURSE_MAP, checkSpine, parseSpine, spinePaths } from "./spine.mjs";
 /** The files an approval of the scope covers (and binds): a chapter's concept map and assessment guide; the course map. */
 const filesOf = (scope) => (scope === "course" ? [COURSE_MAP] : Object.values(spinePaths(scope.slice("chapter:".length))));
 
-function lastApprovedText(root, scope) {
+/** The last full approval of a scope: its text (null: none) and its seq, the baseline every changed line is read
+ *  against (red team R3 coherence F2: a meaning answer is bound to the approved text it compared with). */
+function lastApproval(root, scope) {
   const recs = parseLog(readLogText(root)).filter((r) => r.type === "approval" && r.party?.role === "instructor" && r.payload?.scope === scope);
-  const t = recs.at(-1)?.payload?.text;
-  return t == null ? null : t;
+  const last = recs.at(-1);
+  const t = last?.payload?.text;
+  return t == null ? { text: null, seq: null, hash: null } : { text: t, seq: last.seq, hash: last.hash || null };
 }
 
 /** Each non-blank line keyed by the headings it stands under and its text (a list item's number folded: renumbering
@@ -57,33 +60,50 @@ function lineDiff(was, now) {
 /** The lines of `now` that a longest-common-subsequence diff against `was` does not match: inserted, changed or moved. */
 export const diffLines = (was, now) => lineDiff(was, now).added;
 
-/** The spine lines that changed since the last full approval of a scope ("chapter:<slug>" or "course"). */
+/**
+ * The spine lines that changed since the last full approval of a scope ("chapter:<slug>" or "course").
+ *   lines    — the lines now there that the approved text did not have where they are (added, changed, moved): the
+ *              accuracy review reads these;
+ *   removed  — the approved lines no longer where they were;
+ *   asked    — what the meaning question (D43) asks about: every added line AND every removed one (red team R3, F1 /
+ *              C4-01: a change made only of deletions asked nothing and so passed as "the same"). For a removed line the
+ *              question is whether the plan still says it.
+ *   baseSeq, baseHash, askedHash — the binding of a review: the approval it diffed against and exactly what it asked.
+ */
 export function changedSpineLines(root, reader, scope) {
-  const before = lastApprovedText(root, scope);
-  if (before == null) return { reapproval: false, lines: [], context: "" };
+  const base = lastApproval(root, scope), before = base.text;
+  if (before == null) return { reapproval: false, lines: [], removed: [], asked: [], context: "" };
   const out = [], removed = [];
   let context = "";
   for (const file of filesOf(scope)) {
     const now = reader.text(file) || "", was = typeof before === "string" ? (file === COURSE_MAP || scope === "course" ? before : "") : before[file] || "";
     const d = lineDiff(was, now);
     for (const l of d.added) out.push({ file, n: l.n, text: l.text });
-    for (const l of d.removed) removed.push({ file, text: l.text });
+    for (const l of d.removed) removed.push({ file, n: l.n, text: l.text, removed: true });
     context += `${file}\n${now}\n`;
   }
-  const lines = out;
-  return { reapproval: true, lines, removed, context, textHash: sha256(canonicalJson(filesOf(scope).map((f) => reader.text(f) || ""))), linesHash: sha256(canonicalJson(lines.map((l) => [l.file, l.n, l.text]))) };
+  const lines = out, asked = [...lines, ...removed];
+  return { reapproval: true, lines, removed, asked, context, baseSeq: base.seq, baseHash: base.hash,
+    textHash: sha256(canonicalJson(filesOf(scope).map((f) => reader.text(f) || ""))), linesHash: sha256(canonicalJson(lines.map((l) => [l.file, l.n, l.text]))),
+    askedHash: sha256(canonicalJson({ base: [base.seq, base.hash], asked: asked.map((l) => [l.removed ? "removed" : "now", l.file, l.n, l.text]) })) };
 }
 
+/**
+ * The blind review's prompt. `lines` are the numbered lines it is asked about: the changed lines, then the approved lines
+ * that were removed (each `removed: true`, shown "(removed)"). Concerns are about the changed lines; the meaning
+ * question covers every numbered line.
+ */
 export function spineReviewBundle(lines, context, nonce = randomBytes(8).toString("hex"), removed = []) {
+  if (!lines.some((l) => l.removed) && removed.length) lines = [...lines, ...removed.map((l) => ({ ...l, removed: true }))];
   const prompt = [
-    "Below are lines from the plan of a college course (its concept map and assessment guide, which its teaching and assessment follow) that were changed, added or moved since the instructor last approved it, and the whole plan for context.",
-    'Check each changed line for errors of fact or concept, at the level the course is taught. Raise a concern of one of two kinds. "wrong": the line states something false. "clarify": the line is correct as meant, but a few added or changed words would remove a likely misreading.',
+    "Below are lines from the plan of a college course (its concept map and assessment guide, which its teaching and assessment follow) that were changed, added, moved or removed since the instructor last approved it, and the whole plan for context.",
+    'Check each changed line (not the ones marked "(removed)") for errors of fact or concept, at the level the course is taught. Raise a concern of one of two kinds. "wrong": the line states something false. "clarify": the line is correct as meant, but a few added or changed words would remove a likely misreading.',
     "Judge accuracy only: not style, structure, or what the course chooses to cover. Do not raise exceptions beyond what the line is about.",
-    'Also say, for each changed line, whether it says the same as the approved text it replaces (listed below): "same" when only the wording differs (the same facts, conditions, directions, quantities and scope), "changed" when it says something different, adds a point or drops one. A line that replaces nothing is "changed".',
-    `Reply with JSON only, exactly this shape: {"nonce": "${nonce}", "concerns": [{"line": 1, "kind": "wrong" | "clarify", "text": "exact words", "problem": "...", "suggestion": "the words to put in their place"}], "meaning": [{"line": 1, "meaning": "same" | "changed"}]} — concerns: an empty list if there is nothing to raise; meaning: one entry per changed line.`,
+    'Also say, for EVERY numbered line, whether the plan still says the same as the approved text: for a changed line, "same" when it says the same as the approved text it replaces (listed below) and only the wording differs (the same facts, conditions, directions, signs, quantities and scope), "changed" when it says something different, adds a point or drops one — a line that replaces nothing is "changed"; for a line marked "(removed)" (an approved line that is gone), "same" only when the plan still says it elsewhere, "changed" when its point is dropped. Struck-through text says nothing. If unsure, "changed".',
+    `Reply with JSON only, exactly this shape: {"nonce": "${nonce}", "concerns": [{"line": 1, "kind": "wrong" | "clarify", "text": "exact words", "problem": "...", "suggestion": "the words to put in their place"}], "meaning": [{"line": 1, "meaning": "same" | "changed"}]} — concerns: an empty list if there is nothing to raise; meaning: one entry per numbered line.`,
     "",
     "CHANGED LINES",
-    ...lines.map((l, i) => `${i + 1}. ${l.text}`),
+    ...lines.map((l, i) => `${i + 1}. ${l.removed ? "(removed) " : ""}${l.text}`),
     "",
     "THE APPROVED TEXT THEY REPLACE (lines of the last approved version no longer where they were)",
     ...(removed.length ? removed.map((l) => `- ${l.text}`) : ["(none)"]),
@@ -101,8 +121,9 @@ const parseAnswer = (raw, nonce) => {
   let v = null; try { v = JSON.parse(m?.[0] || ""); } catch { v = null; }
   return v?.nonce === nonce && Array.isArray(v.concerns) ? v : null;
 };
-/** Does every changed line say the same as the approved text it replaces (D43)? Only an explicit "same" for every line
- *  counts: a "changed", a missing or unreadable answer, or an answer from before D43 asked nothing — all fail closed. */
+/** Does every changed line say the same as the approved text it replaces, and does the plan still say every removed
+ *  line (D43)? Only an explicit "same" for every line asked counts: a "changed", a missing or unreadable answer, an
+ *  answer from before D43, or nothing asked at all (a change is never "the same" by default) — all fail closed. */
 export function readSpineMeaning(raw, nonce, lines) {
   const v = parseAnswer(raw, nonce);
   if (!v || !Array.isArray(v.meaning)) return { same: false, byLine: lines.map(() => "unanswered") };
@@ -113,7 +134,7 @@ export function readSpineMeaning(raw, nonce, lines) {
 function readSpineConcerns(raw, nonce, lines) {
   const v = parseAnswer(raw, nonce);
   if (!v) return null;
-  return v.concerns.filter((c) => Number.isInteger(c?.line) && lines[c.line - 1] && typeof c.problem === "string" && String(lines[c.line - 1].text).includes(String(c.text || "").trim()))
+  return v.concerns.filter((c) => Number.isInteger(c?.line) && lines[c.line - 1] && !lines[c.line - 1].removed && typeof c.problem === "string" && String(lines[c.line - 1].text).includes(String(c.text || "").trim()))
     .map((c) => ({ kind: c.kind === "clarify" ? "clarify" : "wrong", file: lines[c.line - 1].file, lineNo: lines[c.line - 1].n, line: lines[c.line - 1].text, text: String(c.text || ""), problem: String(c.problem).slice(0, 600), suggestion: String(c.suggestion || "").slice(0, 600) }));
 }
 
@@ -122,19 +143,19 @@ function readSpineConcerns(raw, nonce, lines) {
 export async function reviewSpineChanges(root, reader, scope, { verifier }) {
   const ch = changedSpineLines(root, reader, scope);
   if (!ch.reapproval) return { scope, reapproval: false, concerns: [] };
-  let concerns = [], meaning = { same: true, byLine: [] }, dispatch = null, costUsd = 0;
-  if (ch.lines.length) {
-    const bundle = spineReviewBundle(ch.lines, ch.context, undefined, ch.removed);
+  let concerns = [], meaning = { same: false, byLine: [] }, dispatch = null, costUsd = 0;
+  if (ch.asked.length) {
+    const bundle = spineReviewBundle(ch.asked, ch.context, undefined, ch.removed);
     const answer = await verifier(bundle.prompt);
-    const read = readSpineConcerns(answer.raw, bundle.nonce, ch.lines);
+    const read = readSpineConcerns(answer.raw, bundle.nonce, ch.asked);
     const record = recordDispatch(root, { kind: "spine-review", unit: `spine:${scope}`, factHash: ch.textHash, contentHash: ch.textHash, bundle, answer, admission: { status: read ? "reviewed" : "unscorable" },
-      extra: { scope, linesHash: ch.linesHash, lines: ch.lines } });
+      extra: { scope, linesHash: ch.linesHash, lines: ch.lines, removed: ch.removed, baseSeq: ch.baseSeq, baseHash: ch.baseHash, askedHash: ch.askedHash } });
     dispatch = record.dispatch; costUsd = answer.costUsd ?? 0;
-    if (!read) return { scope, reapproval: true, lines: ch.lines.length, unscorable: true, dispatch };
+    if (!read) return { scope, reapproval: true, lines: ch.lines.length, asked: ch.asked.length, unscorable: true, dispatch };
     concerns = read;
-    meaning = readSpineMeaning(answer.raw, bundle.nonce, ch.lines);
+    meaning = readSpineMeaning(answer.raw, bundle.nonce, ch.asked);
   }
-  const out = { scope, textHash: ch.textHash, lines: ch.lines.length, dispatch, concerns, meaning, at: new Date().toISOString() };
+  const out = { scope, textHash: ch.textHash, baseSeq: ch.baseSeq, lines: ch.lines.length, asked: ch.asked.length, dispatch, concerns, meaning, at: new Date().toISOString() };
   fs.mkdirSync(recordFile(root, "metadata/spine/review"), { recursive: true });
   fs.writeFileSync(recordFile(root, reviewFile(scope)), JSON.stringify(out, null, 2) + "\n");
   return { ...out, costUsd };
@@ -159,20 +180,22 @@ export function approvalPrecondition(root, reader, chapters, { chapter = null, w
 /**
  * The review of a scope's CURRENT changed lines, if one was run (null: none, or the plan changed since). Read from the
  * logged dispatch, never from a file (red team round 2, C4-11): the newest spine-review record of the scope that the
- * log vouches for (its whole record bound by recordHash), made of the current text and exactly the current changed
- * lines, and readable; its concerns are re-read from its answer.
+ * log vouches for (its whole record bound by recordHash), made of the current text, against the CURRENT baseline (the
+ * last full approval it diffed against) and exactly the lines asked now — changed and removed (red team R3, F2: a
+ * review answered against one approved text is never current against another) — and readable; its concerns and
+ * meaning are re-read from its answer. With nothing to ask, the meaning is not "same" (R3 F1).
  */
 export function currentSpineReview(root, reader, scope) {
   const ch = changedSpineLines(root, reader, scope);
   if (!ch.reapproval) return null;
-  if (!ch.lines.length) return { scope, textHash: ch.textHash, lines: 0, dispatch: null, concerns: [], meaning: { same: true, byLine: [] } };
+  if (!ch.asked.length) return { scope, textHash: ch.textHash, lines: 0, asked: 0, dispatch: null, concerns: [], meaning: { same: false, byLine: [] } };
   const log = parseLog(readLogText(root));
   const entries = log.filter((r) => r.type === "dispatch" && r.party?.role === "harness" && r.payload?.kind === "spine-review" && r.payload?.unit === `spine:${scope}`).reverse();
   for (const e of entries) {
     let rec = null; try { rec = JSON.parse(fs.readFileSync(path.join(recordFile(root, "metadata/verification"), `${e.payload.dispatch}.json`), "utf8")); } catch { continue; }
-    if (!dispatchLogEntry(rec, log) || rec.kind !== "spine-review" || rec.factHash !== ch.textHash || rec.linesHash !== ch.linesHash) continue;
-    const concerns = readSpineConcerns(rec.answer?.raw, rec.bundle?.nonce, ch.lines);
-    if (concerns) return { scope, textHash: ch.textHash, lines: ch.lines.length, dispatch: rec.dispatch, concerns, meaning: readSpineMeaning(rec.answer?.raw, rec.bundle?.nonce, ch.lines) };
+    if (!dispatchLogEntry(rec, log) || rec.kind !== "spine-review" || rec.factHash !== ch.textHash || rec.linesHash !== ch.linesHash || rec.askedHash !== ch.askedHash || rec.baseSeq !== ch.baseSeq) continue;
+    const concerns = readSpineConcerns(rec.answer?.raw, rec.bundle?.nonce, ch.asked);
+    if (concerns) return { scope, textHash: ch.textHash, baseSeq: ch.baseSeq, lines: ch.lines.length, asked: ch.asked.length, dispatch: rec.dispatch, concerns, meaning: readSpineMeaning(rec.answer?.raw, rec.bundle?.nonce, ch.asked) };
   }
   return null;
 }

@@ -15,9 +15,9 @@
 // WHAT A RETIRED UNIT OWED IS NOT FORGOTTEN (red team R2 coherence, F1, F2, F14). A retired unit's record — its
 // stamp (so staleness that lives only in the stamp), what it owes, its version carry, links, origin and evidence — is
 // kept in its deliverable's sidecar (`retired`, the retired-unit register). A text that comes back byte for byte, in
-// any deliverable, or nearly (same deliverable and form, token overlap ≥ 0.5), takes back its old id and its whole
-// record. A new text that is a piece of a retired unit, or that covers one, inherits its stamp, owes and carry, as the
-// pieces of a split and a merge do. A retired id is never minted again for other text. So a placeholder round trip, a
+// any deliverable, or nearly (same form, token overlap ≥ 0.5, in any deliverable — its own first: red team R3 F4),
+// takes back its old id and its whole record. A new text in any deliverable that is a piece of a retired unit, or that
+// covers one, inherits its stamp, owes and carry, as the pieces of a split and a merge do. A retired id is never minted again for other text. So a placeholder round trip, a
 // blank-and-restore, or a split leaves every obligation where it was.
 import fs from "node:fs";
 import path from "node:path";
@@ -230,22 +230,34 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
   for (const p of plan) {
     p.back = new Map(); p.inherit = new Map();
     const open = p.seg.map((_, i) => i).filter((i) => !p.m.assigned.has(i) && !p.m.splits.some((x) => x.into.includes(i)) && !p.m.merges.some((x) => x.into === i));
-    const tok = new Map(open.map((i) => [i, tokensOf(p.seg[i].text)]));
-    // byte for byte (any deliverable, this one first), then a near return in this deliverable and form
+    // byte for byte (any deliverable, this one first)
     for (const i of open) {
       const h = unitHash(p.seg[i].text);
       const e = pool.find((x) => !back.has(x.id) && x.contentHash === h && x.deliverable === p.rel) || pool.find((x) => !back.has(x.id) && x.contentHash === h);
       if (e) { p.back.set(i, e); back.add(e.id); }
     }
-    for (const i of open.filter((k) => !p.back.has(k))) {
-      let best = null, score = 0.5;
-      for (const e of pool) { if (back.has(e.id) || e.deliverable !== p.rel || e.form !== p.seg[i].form) continue; const j = jaccard(e.tokens || [], tok.get(i)); if (j >= score) { best = e; score = j; } }
+  }
+  // then a near return and a piece, in ANY deliverable of the package (red team R3 coherence, F4: a stale answer moved
+  // with its question to another chapter's practice set, two commas made parentheses, came back as a new unit owing
+  // nothing). Every deliverable's byte-for-byte returns are taken first; a deliverable's own retired units are
+  // preferred over another's, and the closest match wins.
+  for (const p of plan) {
+    const open = p.seg.map((_, i) => i).filter((i) => !p.m.assigned.has(i) && !p.back.has(i) && !p.m.splits.some((x) => x.into.includes(i)) && !p.m.merges.some((x) => x.into === i));
+    const tok = new Map(open.map((i) => [i, tokensOf(p.seg[i].text)]));
+    for (const i of open) {
+      let best = null, rank = null;
+      for (const e of pool) {
+        if (back.has(e.id) || e.form !== p.seg[i].form) continue;
+        const j = jaccard(e.tokens || [], tok.get(i)); if (j < 0.5) continue;
+        const mine = e.deliverable === p.rel ? 1 : 0;
+        if (!best || mine > rank[0] || (mine === rank[0] && j >= rank[1])) { best = e; rank = [mine, j]; }
+      }
       if (best) { p.back.set(i, best); back.add(best.id); }
     }
     // a piece of a retired unit, or a text covering one, inherits what it owed (not its id)
     for (const i of open.filter((k) => !p.back.has(k))) {
       const t = tok.get(i);
-      const from = pool.filter((e) => e.deliverable === p.rel && e.form === p.seg[i].form && (e.tokens || []).length >= 3 && t.length >= 3 &&
+      const from = pool.filter((e) => e.form === p.seg[i].form && (e.tokens || []).length >= 3 && t.length >= 3 &&
         (contained(t, e.tokens) >= 0.6 || contained(e.tokens, t) >= 0.6));
       if (from.length) p.inherit.set(i, from);
     }

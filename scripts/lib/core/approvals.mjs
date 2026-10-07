@@ -69,18 +69,28 @@ export function approvalProblems(status, chapters) {
 }
 
 /**
- * Why a glance confirmation of a scope must wait (null: it may be given). A light change needs nothing more; a
- * rephrasing needs the current blind review of its changed lines (D39) to have said that every one says the same as the
- * approved text it replaces (D43, operator 2026-10-07) — a line judged changed, or not answered, means a full approval.
+ * Why a glance confirmation of a scope must wait (null: it may be given). A light change needs no review; a
+ * rephrasing needs the current blind review of its changed AND removed lines (D39) to have said that every changed line
+ * says the same as the approved text it replaces and that the plan still says every removed one (D43, operator
+ * 2026-10-07) — a line judged changed, or not answered, or nothing asked at all, means a full approval.
+ * Red team R3 (coherence F6, control C4-02): the review is read for a light change too — a light change whose current
+ * review says a line changed is not light — and a current review that raises a "wrong" concern refuses any glance: the
+ * glance skips the approval preview, where that concern is shown (it also reaches the gate as a question).
  */
 export function glanceProblem(root, reader, s, scope) {
   const kind = s?.change?.kind;
-  if (kind === "light") return null;
   const why = (s?.change?.reasons || [])[0]?.why || "no prior approval";
-  if (kind !== "rephrasing") return `a glance confirmation is only for a light change or a rephrasing that keeps its meaning; this change is ${kind} (${why})`;
+  if (kind !== "light" && kind !== "rephrasing") return `a glance confirmation is only for a light change or a rephrasing that keeps its meaning; this change is ${kind} (${why})`;
   const r = currentSpineReview(root, reader, scope);
+  const wrong = (r?.concerns || []).filter((c) => c.kind === "wrong");
+  if (wrong.length) return `a glance confirmation skips the approval preview, and the current blind review raises ${wrong.length} "wrong" concern(s) (e.g. "${wrong[0].text}": ${wrong[0].problem}) — read them (node scripts/spine.mjs preview) and approve in full`;
+  if (kind === "light") {
+    const off = (r?.meaning?.byLine || []).filter((m) => m === "changed").length;
+    return off ? `this change looks light by its words, but its current blind review found ${off} line(s) changed in meaning — approve in full` : null;
+  }
   if (!r) return `a glance confirmation is only for a light change, or a rephrasing whose blind review found every changed line the same in meaning; this rephrasing (${why}) has no current review — run it (node scripts/spine.mjs review), or approve in full`;
   if (r.meaning?.same) return null;
+  if (!r.asked) return `a glance confirmation is only for a light change, or a rephrasing whose blind review found every changed line the same in meaning; this rephrasing (${why}) leaves no changed or removed line to ask about, so nothing can say its meaning is kept — approve in full`;
   const off = (r.meaning?.byLine || []).filter((m) => m !== "same").length;
   return `a glance confirmation is only for a light change, or a rephrasing whose blind review found every changed line the same in meaning; the review found ${off} line(s) changed in meaning or did not say — approve in full`;
 }

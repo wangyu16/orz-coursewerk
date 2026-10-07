@@ -430,7 +430,8 @@ test("[req.spine.blind-review] at re-approval the lines changed since the last a
   let seen = "";
   const verifier = replayVerifier((pr) => ((seen = pr), { nonce: pr.match(/"nonce": "([0-9a-f]+)"/)[1], concerns: [{ line: 1, kind: "wrong", text: "Le Chatelier–Bunsen principle", problem: "The principle is co-named for Karl Ferdinand Braun, not Robert Bunsen.", suggestion: "Le Chatelier–Braun principle" }] }));
   const r = await reviewSpineChanges(p.root, liveReader(p.root), "chapter:le-chatelier", { verifier });
-  assert.match(seen, /CHANGED LINES\n1\. .*Bunsen/); assert.ok(!/CHANGED LINES[\s\S]*\n2\. /.test(seen.split("THE WHOLE MAP")[0]), "only the changed line is reviewed");
+  assert.match(seen, /CHANGED LINES\n1\. .*Bunsen/); // R3 (D43, coherence F1): the approved line it replaced is asked about too, marked "(removed)" — and nothing else
+  assert.match(seen, /CHANGED LINES\n1\. .*Bunsen.*\n2\. \(removed\) .*Braun/); assert.ok(!/CHANGED LINES[\s\S]*\n3\. /.test(seen.split("THE WHOLE MAP")[0]), "only the changed line (and the line it replaced) is reviewed");
   assert.equal(r.concerns.length, 1); assert.ok(currentSpineReview(p.root, liveReader(p.root), "chapter:le-chatelier"));
   assert.match(readLogText(p.root), /"type":"dispatch"/, "the review is a logged dispatch");
   const preview = spawnSync(process.execPath, [path.join(REPO, "scripts", "spine.mjs"), "preview", "--root", p.root, "--chapter", "le-chatelier"], { encoding: "utf8" });

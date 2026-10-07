@@ -15,15 +15,37 @@ import { SKELETON } from "./runner.mjs";
 /** The committed log text, from the package's own git. A package without git history cannot be checked. */
 // a package's log grows with its history: read it whole (Node's default 1 MB buffer made a 1.2 MB log "unreadable"
 // and the package unpublishable — found by the P11 wiring check)
-const GIT = { encoding: "utf8", maxBuffer: 1 << 30 };
+//
+// Git is read as it is, never as it is told to look (red team R3 coherence, F7): `git replace` (refs/replace/*) and a
+// graft file make every read of an object return another one while every object id, commit, reflog entry and ref
+// stays the same — so every committed log could be swapped for a forged one. Every git call of the log and history
+// checks runs with replacement off and no graft file, and a package whose git has either is log-broken by itself.
+const NO_GRAFTS = path.join(path.sep, "nonexistent", "coursewerk-no-grafts");
+const GIT_ENV = (() => { const e = { ...process.env, GIT_NO_REPLACE_OBJECTS: "1", GIT_GRAFT_FILE: NO_GRAFTS }; delete e.GIT_REPLACE_REF_BASE; return e; })();
+const GIT = { encoding: "utf8", maxBuffer: 1 << 30, env: GIT_ENV };
+const gitRaw = (root, args, input) => spawnSync("git", ["--no-replace-objects", "-C", root, ...args], { ...GIT, ...(input !== undefined ? { input } : {}) });
+
+/** What in a package's git would make git show other objects than the ones its ids name: replace refs, a graft file. */
+export function objectSubstitutions(root) {
+  root = path.resolve(root);
+  if (!fs.existsSync(path.join(root, ".git"))) return [];
+  const out = [];
+  const reps = gitRaw(root, ["for-each-ref", "--format=%(refname)", "refs/replace/"]).stdout.split("\n").filter(Boolean);
+  if (reps.length) out.push(`the package's git replaces objects (${reps.length} ref(s) under refs/replace/, e.g. ${reps[0]}): what git shows is not what its commits hold`);
+  const common = gitRaw(root, ["rev-parse", "--git-common-dir"]).stdout.trim();
+  const dirs = [...new Set([common && path.resolve(root, common), path.join(root, ".git")].filter(Boolean))];
+  if (dirs.some((d) => fs.existsSync(path.join(d, "info", "grafts")))) out.push("the package's git has a graft file (info/grafts): it rewrites the parents git reports");
+  return out;
+}
+
 export function committedLog(root) {
   root = path.resolve(root);
   if (!fs.existsSync(path.join(root, ".git"))) return { ok: false, reason: "the package has no git history" };
-  const head = spawnSync("git", ["-C", root, "rev-parse", "--verify", "HEAD"], GIT);
+  const head = gitRaw(root, ["rev-parse", "--verify", "HEAD"]);
   if (head.status !== 0) return { ok: true, text: "" }; // no commit yet: nothing committed to extend
-  const show = spawnSync("git", ["-C", root, "show", `HEAD:${RECORD_PATHS.log}`], GIT);
+  const show = gitRaw(root, ["show", `HEAD:${RECORD_PATHS.log}`]);
   if (show.status === 0) return { ok: true, text: show.stdout };
-  const tracked = spawnSync("git", ["-C", root, "ls-tree", "--name-only", "HEAD", RECORD_PATHS.log], GIT);
+  const tracked = gitRaw(root, ["ls-tree", "--name-only", "HEAD", RECORD_PATHS.log]);
   if (tracked.status === 0 && !tracked.stdout.trim()) return { ok: true, text: "" }; // log not yet committed
   return { ok: false, reason: `the committed log could not be read: ${(show.stderr || "").trim() || show.error?.message || `git exited ${show.status}`}` };
 }
@@ -46,7 +68,7 @@ export function committedLog(root) {
  */
 export function committedHistoryFailures(root) {
   root = path.resolve(root);
-  const git = (args, input) => spawnSync("git", ["-C", root, ...args], { ...GIT, ...(input !== undefined ? { input } : {}) });
+  const git = (args, input) => gitRaw(root, args, input);
   const list = git(["rev-list", "--parents", "--reverse", "HEAD"]);
   if (list.status !== 0) return [];
   const commits = list.stdout.split("\n").filter(Boolean).map((l) => l.split(" "));
@@ -98,7 +120,7 @@ function blobsOf(git, revs) {
 export function logFindings(root, basis) {
   const committed = committedLog(root);
   if (!committed.ok) return [makeFinding({ module: SKELETON, kind: "log-unverifiable", units: [], statusClass: "obligation", route: "agent", basis, evidence: { type: "missing", what: committed.reason } })];
-  const failures = [...verifyAgainstCommitted(committed.text, readLogText(root)), ...committedHistoryFailures(root)];
+  const failures = [...objectSubstitutions(root), ...verifyAgainstCommitted(committed.text, readLogText(root)), ...committedHistoryFailures(root)];
   return failures.length ? [makeFinding({ module: SKELETON, kind: "log-broken", units: [], statusClass: "defect", route: "agent", basis, evidence: { type: "rule", rule: "the decision log verifies and extends the committed log", failures } })] : [];
 }
 

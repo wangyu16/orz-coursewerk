@@ -55,10 +55,40 @@ export function meaningTokens(text) {
 const directions = (t) => (String(t || "").match(DIRECTION) || []).map((x) => x.toLowerCase());
 // the same facts: the fact and direction tokens, and the direction words in order. A change that keeps them but not the
 // words is a rephrasing (D43); one that does not is substantive.
-const sameFacts = (a, b) => JSON.stringify(meaningTokens(a)) === JSON.stringify(meaningTokens(b)) && JSON.stringify(directions(a)) === JSON.stringify(directions(b));
-const sameWords = (a, b) => questionWording(a) === questionWording(b);
-const wording = (a, b, what) => (!sameFacts(a, b) ? { kind: "substantive", why: `${what} changed (a value, name, number, negation or direction)` }
-  : !sameWords(a, b) ? { kind: "rephrasing", why: `${what} reworded (the same values, names, negations and directions)` } : null);
+//
+// Red team R3 (coherence F6, control C4-02): the "light" key was lossy. A spine change is judged on the words a reader
+// SEES: struck-through text (`~~…~~`, <del>, <s>, <strike>), comments and hidden elements are dropped before comparing
+// (they are not markup — "does ~~not~~ shift" renders as "does shift"); and every sign (−, -, +, ±, ∓) is a word and a
+// fact, so "ΔG° = −RT ln K" → "ΔG° = RT ln K" is never light. A hyphen inside a word ("gas-phase"), a list bullet and a
+// rule (---) are punctuation. questionWording (an answer's binding) is left as it is: changing it re-keys every stamp.
+const HIDDEN = [
+  /<!--[\s\S]*?(?:-->|$)/g,
+  /~~[\s\S]*?~~/g,
+  /<(del|s|strike)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,
+  /<([a-z][a-z0-9-]*)\b[^>]*?(?:\bhidden\b|display\s*:\s*none|visibility\s*:\s*hidden)[^>]*>[\s\S]*?<\/\1\s*>/gi,
+];
+/** A text as a reader sees it: struck-through, commented-out and hidden words dropped. */
+export function visibleText(text) {
+  let t = String(text || "");
+  for (const re of HIDDEN) t = t.replace(re, " ");
+  return t;
+}
+// a sign: −, ±, ∓ (and LaTeX \pm, \mp) anywhere; + anywhere; - unless it joins two letters (a hyphen), starts a list
+// item, or is part of a rule, an arrow or a run (---, ->, <-)
+const SIGN = /[−±∓+]|\\pm\b|\\mp\b|(?<![\p{L}\-<])-(?![\-\p{L}>])|(?<![\p{L}\-<])-(?=\p{L})|(?<=\p{L})-(?![\p{L}\->])/gu;
+const signsOf = (t) => String(t || "").split("\n").map((l) => l.replace(/^\s*[-*+]\s+/, " ").replace(/^\s*-{3,}\s*$/, " ")).join("\n").match(SIGN) || [];
+/** A spine text's wording for the light test: its visible words, lowercase, with every sign kept as a word. */
+export function spineWording(text) {
+  const t = String(visibleText(text)).split("\n").map((l) => l.replace(/^\s*[-*+]\s+/, " ").replace(/^\s*-{3,}\s*$/, " ")).join("\n")
+    .replace(/±|\\pm\b/g, " plusminus ").replace(/∓|\\mp\b/g, " minusplus ").replace(/−/g, " minus ")
+    .replace(/(?<![\p{L}\-<])-(?![\-\p{L}>])|(?<![\p{L}\-<])-(?=\p{L})|(?<=\p{L})-(?![\p{L}\->])/gu, " minus ");
+  return questionWording(t);
+}
+const sameFacts = (a, b) => { const A = visibleText(a), B = visibleText(b);
+  return JSON.stringify(meaningTokens(A)) === JSON.stringify(meaningTokens(B)) && JSON.stringify(directions(A)) === JSON.stringify(directions(B)) && JSON.stringify(signsOf(A)) === JSON.stringify(signsOf(B)); };
+const sameWords = (a, b) => spineWording(a) === spineWording(b);
+const wording = (a, b, what) => (!sameFacts(a, b) ? { kind: "substantive", why: `${what} changed (a value, name, number, sign, negation or direction)` }
+  : !sameWords(a, b) ? { kind: "rephrasing", why: `${what} reworded (the same values, names, signs, negations and directions)` } : null);
 const words = (t) => new Set(String(t || "").toLowerCase().match(/[a-z]{4,}/g) || []);
 const overlap = (a, b) => { const A = words(a), B = words(b); let n = 0; for (const w of A) if (B.has(w)) n++; return n / Math.max(1, Math.min(A.size, B.size)); };
 

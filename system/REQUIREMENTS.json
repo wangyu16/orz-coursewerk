@@ -2337,13 +2337,14 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Key-term dependencies match the label's plural (s/es), either apostrophe and declared aliases ([alias: …] or the glossary parenthetical), also in their LaTeX spellings ($Q_r$, Q_{r}, \\mathrm{Q_r}), a short alias in its own case; a unitless symbol=value binding (K = 50, Q_r = 50, pH = 7) is a shared value between the units stating it; a question or answer named by number (\"the answer to Q3\", \"Problem 3\") is a dependency bound to its full wording, of the unit naming it and of that unit's answer, resolved as the knowledge review resolves it.",
-      "source": "red team R1 coherence (2026-10-06): F8, F11; R2 F3, F12",
+      "statement": "Key-term dependencies match the label's plural (s/es), either apostrophe and declared aliases ([alias: …] or the glossary parenthetical), also in their LaTeX spellings ($Q_r$, Q_{r}, \\mathrm{Q_r}), a short alias in its own case; a unitless symbol=value binding (K = 50, Q_r = 50, pH = 7) is a shared value between the units stating it, its symbol read as its family (K, K_{eq}, K_c, K_\\mathrm{eq}, Keq are one symbol; a symbol not starting with a capital is kept whole); a question or answer named by number is a dependency bound to its full wording, of the unit naming it and of that unit's answer, resolved as the knowledge review resolves it — in every spelling: Q3, Q 3, Q.3, Question #3, Problem #3, Prob. 3, Ex. 3, item 3, question three (number words to twenty), and every number of a list or range (Questions 3 and 4, questions 3–5, Q3–Q5).",
+      "source": "red team R1 coherence (2026-10-06): F8, F11; R2 F3, F12; R3 coherence F3, F5",
       "status": "closed",
       "evidence": {
         "T1": [
           "tests/redteam-r1-coherence.test.mjs",
-          "tests/redteam-r2-coherence.test.mjs"
+          "tests/redteam-r2-coherence.test.mjs",
+          "tests/redteam-r3-coherence.test.mjs"
         ]
       }
     },
@@ -2384,13 +2385,14 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Every committed version of the decision log extends the version committed in each of its parents, for every commit reachable from HEAD (an orphan merged in with -s ours is caught); the log at every anchor (the branch's reflog, remote-tracking branches, tags) is an earlier or later version of HEAD's; a release receipt names the log's last record and a later pack refuses a log that no longer holds it. A rewrite onto a new root with every anchor removed is out of reach (documented in gate.mjs).",
-      "source": "red team R1 coherence (2026-10-06): F10; R2 F5",
+      "statement": "Every committed version of the decision log extends the version committed in each of its parents, for every commit reachable from HEAD (an orphan merged in with -s ours is caught); the log at every anchor (the branch's reflog, remote-tracking branches, tags) is an earlier or later version of HEAD's; a release receipt names the log's last record and a later pack refuses a log that no longer holds it. A rewrite onto a new root with every anchor removed is out of reach (documented in gate.mjs). Every git call of the log and history checks runs with object replacement off (--no-replace-objects, GIT_NO_REPLACE_OBJECTS=1) and no graft file, and a package whose git has refs/replace/* or info/grafts is log-broken.",
+      "source": "red team R1 coherence (2026-10-06): F10; R2 F5; R3 coherence F7",
       "status": "closed",
       "evidence": {
         "T1": [
           "tests/redteam-r1-coherence.test.mjs",
-          "tests/redteam-r2-coherence.test.mjs"
+          "tests/redteam-r2-coherence.test.mjs",
+          "tests/redteam-r3-coherence.test.mjs"
         ]
       }
     },
@@ -2415,13 +2417,14 @@
       "tiers": [
         "T1"
       ],
-      "statement": "A spine or key-term change is light only when its wording is unchanged (whitespace, markup, punctuation and case only). A change of words that keeps every value, name, number, negation and direction word is a rephrasing: a glance confirms it only when the current D39 blind review says every changed line says the same as the approved text it replaces; a line judged changed, an unanswered meaning or no review means full re-approval (D43). Any other changed word is substantive. A light or meaning-kept, glance-confirmed change raises no re-verification: spine node, guide entry and key-term targets keep counting at their hash from the last full approval; a substantive change still makes linked units owe re-verification.",
-      "source": "red team R1 coherence (2026-10-06): F13; R2 F4",
+      "statement": "A spine or key-term change is light only when its VISIBLE wording is unchanged (whitespace, markup, punctuation and case only): struck-through (~~…~~, <del>, <s>, <strike>), commented-out and hidden words are dropped before comparing, and every sign (−, -, +, ±, ∓; not a hyphen inside a word) is a word and a fact. A change of words that keeps every value, name, number, sign, negation and direction word is a rephrasing: a glance confirms it only when the current D39 blind review says every changed line says the same as the approved text it replaces and that the plan still says every removed approved line; a line judged changed, an unanswered meaning, nothing to ask about, or no review means full re-approval (D43). A light change whose current review says a line changed is not glanced, and no glance is given while the current review raises a \"wrong\" concern. Any other changed word is substantive. A light or meaning-kept, glance-confirmed change raises no re-verification: spine node, guide entry and key-term targets keep counting at their hash from the last full approval; a substantive change still makes linked units owe re-verification.",
+      "source": "red team R1 coherence (2026-10-06): F13; R2 F4; R3 coherence F1, F6; R3 control C4-01, C4-02",
       "status": "closed",
       "evidence": {
         "T1": [
           "tests/redteam-r1-coherence.test.mjs",
-          "tests/redteam-r2-coherence.test.mjs"
+          "tests/redteam-r2-coherence.test.mjs",
+          "tests/redteam-r3-coherence.test.mjs"
         ]
       }
     },
@@ -2431,12 +2434,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "An identity break forgets nothing: a retired unit's record (stamp, owed re-verification, version carry, links, origin, evidence) is kept in its deliverable's unit record; a text that comes back byte for byte (any deliverable) or nearly (same deliverable and form) takes back its id and record, a piece of a retired unit or a text covering one inherits its stamp and obligations (as split and merge pieces do), and a retired id is never minted for other text.",
-      "source": "red team R2 coherence (2026-10-06): F1, F2, F14",
+      "statement": "An identity break forgets nothing: a retired unit's record (stamp, owed re-verification, version carry, links, origin, evidence) is kept in its deliverable's unit record; a text that comes back byte for byte or nearly (same form, token overlap ≥ 0.5) in ANY deliverable of the package (its own deliverable's retired units first) takes back its id and record, a piece of a retired unit or a text covering one, in any deliverable, inherits its stamp and obligations (as split and merge pieces do), and a retired id is never minted for other text.",
+      "source": "red team R2 coherence (2026-10-06): F1, F2, F14; R3 coherence F4",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r2-coherence.test.mjs"
+          "tests/redteam-r2-coherence.test.mjs",
+          "tests/redteam-r3-coherence.test.mjs"
         ]
       }
     },
@@ -2551,12 +2555,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "The D39 review that lets a re-approval through is the logged spine-review dispatch — its record vouched for by the log (recordHash), made of the current text and exactly the current changed lines; its concerns are re-read from the answer. A file under metadata/spine/review/ is a copy and satisfies nothing.",
-      "source": "3C red team round 2, CONTROL (studies/p11/redteam-r2/control, 2026-10-06) C4-11",
+      "statement": "The D39 review that lets a re-approval through is the logged spine-review dispatch — its record vouched for by the log (recordHash), made of the current text and exactly the current changed lines; its concerns are re-read from the answer. A file under metadata/spine/review/ is a copy and satisfies nothing. Its meaning answer is bound to its baseline: the full approval it diffed against (seq and hash) and exactly the lines it was asked about, changed and removed — a review answered against one approved text is never current against another.",
+      "source": "3C red team round 2, CONTROL (studies/p11/redteam-r2/control, 2026-10-06) C4-11; R3 coherence F2",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r2-control.test.mjs"
+          "tests/redteam-r2-control.test.mjs",
+          "tests/redteam-r3-coherence.test.mjs"
         ]
       }
     },
@@ -2587,6 +2592,51 @@
       "evidence": {
         "T1": [
           "tests/redteam-r2-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.spine.meaning-covers-removed",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The D43 meaning question covers every approved line a change removed as well as every line it added or changed: the blind review is shown each removed line, marked \"(removed)\", and asked whether the plan still says it; a change made only of deletions is never \"the same\" by default, and a change with nothing to ask about is never glanceable as a rephrasing.",
+      "source": "3C red team round 3, COHERENCE F1 and CONTROL C4-01 (studies/p11/redteam-r3, 2026-10-07)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r3-coherence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.spine.concerns-at-gate",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A \"wrong\" concern the current D39 spine review raises about a changed plan line reaches the gate as the instructor's question (skeleton spine-review-concern, routed to the digest, never blocking), for as long as that review is current — not only in the approval preview a glance skips.",
+      "source": "3C red team round 3, CONTROL C4-02 and COHERENCE F6 (studies/p11/redteam-r3, 2026-10-07)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r3-coherence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.coherence.reference-binding",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A unit that names a question or answer by number is bound to the units its reference resolved to when it was stamped: when a stamped reference is no longer an edge (a renumbering made the number name another unit, or none), the unit owes a re-check (reference-binding:re-targeted). References only added beside every stamped one (a spelling the harness newly reads) are baselined.",
+      "source": "3C red team round 3, COHERENCE F8 (studies/p11/redteam-r3, 2026-10-07)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r3-coherence.test.mjs"
         ]
       }
     }

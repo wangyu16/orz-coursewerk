@@ -44,7 +44,7 @@ import { parseSpine, nodeIndex, termsOfMap, COURSE_MAP } from "./spine.mjs";
 import { manifestChapters } from "./package_reader.mjs";
 import { openMajorVersion } from "./versions.mjs";
 import { approvalStatus } from "./approvals.mjs";
-import { dependencyEdges, factHash, nodeHash, questionBindingProblems, questionHash, sourceHashes, stampFor, staleTargets, targetHashes, termHash } from "./dependencies.mjs";
+import { dependencyEdges, factHash, nodeHash, questionBindingProblems, questionHash, referenceBindingProblems, sourceHashes, stampFor, staleTargets, targetHashes, termHash } from "./dependencies.mjs";
 import { deliverableOfSidecar, writeUnitRecords } from "./unit_records.mjs";
 import { currentReviewsAt } from "../verify/alignment.mjs";
 import { readKnowledgeReview, recordHashOf } from "../verify/dispatch.mjs";
@@ -189,7 +189,8 @@ export function owedTargets(u, ctx) {
   let moved = staleTargets(u.stamp, ctx.hashes);
   if (moved.some((t) => /^(spine|term):/.test(t))) moved = staleTargets(u.stamp, ctx.hashes, ctx.acceptOf());
   const binding = u.form === "answer" ? questionBindingProblems(u.stamp, ctx.edges.get(u.id)).map((b) => `question-binding:${b}`) : [];
-  return [...moved, ...binding];
+  const refs = referenceBindingProblems(u.stamp, ctx.edges.get(u.id)).map((b) => `reference-binding:${b}`);
+  return [...moved, ...binding, ...refs];
 }
 /** Does the unit owe re-verification now (a stale stamp, an obligation carried over a restamp, or a version carry)? */
 const owesNow = (u, ctx) => !!u.carried || !!u.owes || owedTargets(u, ctx).length > 0;
@@ -511,7 +512,7 @@ export function coreObligations(root, reader, basis) {
     else {
       const moved = [...new Set([...owedTargets(u, ctx), ...(u.owes?.targets || [])])];
       if (moved.length || u.owes) {
-        const why = moved.map((t) => t.replace("question-binding:legacy", "its question binding predates the harness's (a re-check once)").replace("question-binding:re-paired", "it now follows another question"));
+        const why = moved.map((t) => t.replace("question-binding:legacy", "its question binding predates the harness's (a re-check once)").replace("question-binding:re-paired", "it now follows another question").replace("reference-binding:re-targeted", "a question it names by number is now another one (renumbered)"));
         ob("reverify", [u.id], `re-verification of ${u.id}: ${why.join(", ") || "an earlier change"} since it was last verified — a blind re-check of its current text (${REVERIFY_ROUTE("<pkg>", [u.id])}, then units.mjs reverify), or the instructor's confirmation`);
         // an answer whose question changed (or was re-paired): the agent re-reads it with its question — a cheap blind
         // re-review, never a question for the instructor (F7). Bound to the question's wording, so a second change of

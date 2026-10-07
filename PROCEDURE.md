@@ -94,12 +94,14 @@ Mark every item you added as your proposal (`spine.mjs propose`), and record you
 <slug>` (and `--course` for the course map).
 
 **Re-approval** after a spine revision:
-- a **light** change (no word changed: only punctuation, markup, spacing or letter case) needs only a glance
-  (`--glance`);
-- a **rephrasing** (words changed, every value, name, number, negation and direction kept) needs only a glance
-  once the blind review of the changed lines (`spine.mjs review`) has found every line the same in meaning;
-- anything else, or a rephrasing the review found changed (or did not say), needs a full re-approval, with the diff
-  and its impact.
+- a **light** change (no visible word changed: only punctuation, markup, spacing or letter case; struck-through or
+  hidden words and signs count as words) needs only a glance (`--glance`);
+- a **rephrasing** (words changed, every value, name, number, sign, negation and direction kept) needs only a glance
+  once the blind review of the changed and removed lines (`spine.mjs review`) has found every line the same in
+  meaning, and every removed line still said by the plan;
+- anything else, a rephrasing the review found changed (or did not say), or any change while the review raises a
+  "wrong" concern (it is also the instructor's question at the gate), needs a full re-approval, with the diff and its
+  impact.
 
 Never edit an approved spine on your own: the edit voids the approval.
 

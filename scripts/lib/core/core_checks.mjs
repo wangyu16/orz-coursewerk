@@ -4,6 +4,7 @@ import { makeFinding } from "../records/findings.mjs";
 import { readLogText } from "../records/log.mjs";
 import { checkSpine, itemParts, parseSpine } from "./spine.mjs";
 import { approvalProblems, approvalStatus } from "./approvals.mjs";
+import { currentSpineReview } from "./spine_review.mjs";
 import { manifestChapters } from "./package_reader.mjs";
 import { deliverablesOf } from "./units_index.mjs";
 import { learningObjectiveSections } from "./segment.mjs";
@@ -68,4 +69,21 @@ export function restatedObjectiveFindings(reader, basis) {
 export function approvalCoreProblems(root, reader) {
   const chapters = manifestChapters(reader);
   return approvalProblems(approvalStatus(reader, chapters, readLogText(root)), chapters);
+}
+
+/**
+ * The D39 blind review's "wrong" concerns, at the gate (red team R3, control C4-02 / coherence F6): a concern the
+ * current spine review raises about a changed plan line is the instructor's question, in the digest, while that review
+ * is current (until the next full approval) — never only in `spine.mjs preview`, which a glance skips. Questions never
+ * block (operator 2026-10-02).
+ */
+export function spineReviewQuestions(root, reader, basis) {
+  const out = [];
+  for (const scope of ["course", ...manifestChapters(reader).map((c) => `chapter:${c}`)]) {
+    let r = null; try { r = currentSpineReview(root, reader, scope); } catch { r = null; }
+    for (const c of (r?.concerns || []).filter((x) => x.kind === "wrong"))
+      out.push(makeFinding({ module: "skeleton", kind: "spine-review-concern", units: [], statusClass: "question", route: "digest", basis,
+        evidence: { type: "judgment", scope, file: c.file, line: c.lineNo, text: c.text, note: `Possibly wrong (${c.file}, line ${c.lineNo}): "${c.text}". ${c.problem}${c.suggestion ? ` Suggested: "${c.suggestion}".` : ""}`, dispatch: r.dispatch } }));
+  }
+  return out;
 }

@@ -36,7 +36,12 @@ export { quantities };
 // as a number ("K_c = 4.0" and "Kc is 4" are one binding).
 const UNIT_AFTER = /^\s*(?:°C|K\b|kJ|J\b|mol|M\b|atm|bar|Pa|kPa|g\b|kg|mg|L\b|mL|%)/;
 const BINDING = /((?:\b[A-Za-z][A-Za-z]?(?:_[A-Za-z0-9,]+)?\s*=\s*)+)([−-]?\d+(?:[.,]\d+)?)/g;
-const bindingKey = (sym, value) => `${String(sym).replace(/[_{}\s]/g, "")}=${String(parseNumber(String(value)))}`;
+// A binding's symbol is read as its FAMILY (red team R3 coherence, F5): "K", "K_{eq}", "K_c", "K_\mathrm{eq}", "Keq"
+// are one symbol — a capital letter and its subscript — so "$K_{eq} = 50$" and "K = 50" are one shared value. No rule
+// can tell a renamed K_eq from a different K_p soundly, so they fold too: an extra edge costs a cheap re-check, a
+// missing one a silent contradiction. A symbol that does not start with a capital ("pH") is kept whole.
+export const symbolFamily = (sym) => { const s = String(sym).replace(/\\(?:mathrm|text|rm|mathit)\b/g, "").replace(/[_{}\s]/g, ""); return /^[A-Z][a-z0-9,]*$/.test(s) ? s[0] : s; };
+const bindingKey = (sym, value) => `${symbolFamily(sym)}=${String(parseNumber(String(value)))}`;
 export function bindings(text) {
   const plain = plainForQuantities(text).replace(/_\s*\{?\s*([A-Za-z0-9,]+)\s*\}?/g, "_$1");
   const out = new Set();
@@ -75,9 +80,32 @@ export function termMatcher(t) {
 // A label's number: "Q 6", "Question 6", "Problem 3", "Answer 6 (continued)", "Solution 2", "Worked example 1".
 const LABEL_NUMBER = /^\s*(?:q|question|problem|exercise|worked example|example|answer|solution|worked answer)\s*(\d+)\b/i;
 export const labelNumber = (label) => LABEL_NUMBER.exec(String(label || ""))?.[1] ?? null;
-// A reference by number in running text: "Q3", "Q 3", "Question 3", "Problem 3", "Exercise 3".
-const REFERENCE = /\b(?:Q|Question|Problem|Exercise)\s*(\d+)\b/gi;
-export const referencedNumbers = (text) => [...new Set([...String(text || "").matchAll(REFERENCE)].map((m) => m[1]))];
+// A reference by number in running text (R2 F3; every spelling, red team R3 coherence F3): "Q3", "Q 3", "Q.3",
+// "Question 3", "Question #3", "Questions 3 and 4", "questions 3–5", "Q3–Q5", "question three", "item 3", "Ex. 3",
+// "Exercise 3", "Problem #3", "Prob. 3", "No. 3" after a noun, "Example 2", "Answer 3", "Solution 3". A list or range
+// names every number in it; number words are read up to twenty. Fail toward an edge: a reference read too often costs
+// a cheap re-check, one missed a silent contradiction.
+const NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"];
+const NUM = `(?:\\d+|${NUMBER_WORDS.join("|")})`;
+const NOUN = "(?:q|qq|questions?|problems?|probs?|exercises?|exs?|items?|examples?|worked examples?|answers?|solutions?|parts?)";
+const SEP = "\\s*(?:\\.\\s*|#\\s*|no\\.?\\s*|number\\s+)?";
+const LIST_JOIN = "\\s*(?:,\\s*(?:and\\s+|or\\s+|&\\s*)?|\\s+and\\s+|\\s+or\\s+|\\s*&\\s*|\\s*(?:[-–—]|to|through|thru)\\s*)" + `(?:${NOUN}${SEP})?`;
+const REFERENCE = new RegExp(`(?<![\\p{L}\\p{N}])${NOUN}${SEP}(${NUM}(?:\\s*\\([a-z]\\))?(?:${LIST_JOIN}${NUM}(?:\\s*\\([a-z]\\))?)*)(?![\\p{L}\\p{N}]|[.,]\\d)`, "giu");
+const numberOf = (w) => { const n = /^\d+$/.test(w) ? Number(w) : NUMBER_WORDS.indexOf(w.toLowerCase()); return n >= 0 ? n : null; };
+export function referencedNumbers(text) {
+  const out = new Set();
+  for (const m of String(text || "").matchAll(REFERENCE)) {
+    const parts = [...m[1].matchAll(new RegExp(`(${NUM})|([-–—]|\\bto\\b|\\bthrough\\b|\\bthru\\b)`, "giu"))];
+    let prev = null, range = false;
+    for (const p of parts) {
+      if (p[2]) { range = prev != null; continue; }
+      const n = numberOf(p[1]); if (n == null) continue;
+      if (range && prev != null && n > prev && n - prev <= 40) for (let k = prev + 1; k < n; k++) out.add(String(k));
+      out.add(String(n)); prev = n; range = false;
+    }
+  }
+  return [...out];
+}
 const sameDeliverable = (units, u) => units.filter((v) => v.locator.deliverable === u.locator.deliverable);
 // the units a number names, in a unit's deliverable: its own section first, else anywhere in the deliverable
 function numbered(units, u, n, forms) {
@@ -186,6 +214,21 @@ export function questionBindingProblems(stamp, edgeList) {
   const had = Object.keys(stamp).filter((t) => t.startsWith("question:")).sort();
   if (!had.length) return ["legacy"];
   return JSON.stringify(had) === JSON.stringify(now) ? [] : ["re-paired"];
+}
+
+/**
+ * How a unit is bound to what it names by number (red team R3 coherence, F8): a `ref:` edge resolves to whichever
+ * question or answer carries the number NOW, so a renumbering re-targets "the answer to Q3" without touching the unit or
+ * its old target. The stamp holds the targets it was written and verified against; a stamped reference that is no
+ * longer an edge (the number names another unit now, or none) is "re-targeted". References only ADDED to a stamp that
+ * still holds every old one (a spelling the harness newly reads) are baselined by upgradeStamps instead.
+ */
+export function referenceBindingProblems(stamp, edgeList) {
+  if (!stamp) return [];
+  const had = Object.keys(stamp).filter((t) => t.startsWith("ref:"));
+  if (!had.length) return [];
+  const now = new Set((edgeList || []).filter((e) => e.target.startsWith("ref:")).map((e) => e.target));
+  return had.some((t) => !now.has(t)) ? ["re-targeted"] : [];
 }
 
 /** Source hashes from the package's compact source record. */
