@@ -63,10 +63,14 @@ const normClaim = (t) => String(t || "").replace(/\s+/g, " ").trim();
 /** The same, from parsed log records. `changes`: unit → Map(claim text → the instructor's answer) — the changes the
  *  instructor asked for on disputed claims (red-team round 1, F15); a later "keep" on the same claim withdraws one. */
 export function instructorActsOf(logRecords) {
-  const acts = { confirmed: new Map(), diverged: new Map(), changes: new Map() };
+  // confirmedText: "unit|contentHash" — the unit's whole text as the instructor confirmed it. What a confirmation
+  // exempts from the mechanical check (an intended wrong worked answer) is bound to every word and operator: a factHash
+  // does not see "Spot the error" turned into "This working is correct" (red-team round 4, R4-K07).
+  const acts = { confirmed: new Map(), confirmedText: new Set(), diverged: new Map(), changes: new Map() };
   for (const r of logRecords) {
     if (r.party?.role !== "instructor") continue;
     if (r.type === "confirmation" && r.payload?.what === "fact") for (const [id, fh] of Object.entries(r.payload.factHashes || {})) acts.confirmed.set(`${id}|${fh}`, true);
+    if (r.type === "confirmation" && r.payload?.what === "fact") for (const [id, ch] of Object.entries(r.payload.contentHashes || {})) acts.confirmedText.add(`${id}|${ch}`);
     if (r.type === "divergence" && r.payload?.unit && r.payload?.correction) acts.diverged.set(`${r.payload.unit}|${r.payload.correction}`, true);
     if (r.type === "answer") for (const a of r.payload?.answers || []) {
       if (!a.claimKey || !a.claimText || !Array.isArray(a.units) || /^\s*later\b/i.test(a.choice)) continue;
@@ -300,7 +304,7 @@ export function confirmUnits(root, reader, ids, { what, instructorWords }, party
     if (what === "fact") u.evidence = [...(u.evidence || []), { type: "instructor-confirmation", by: party.name, at, factHash: factHash(text.get(u.id) || "") }];
     u.stamp = stampFor(u.id, edges, hashes); delete u.carried; delete u.owes;
   });
-  appendLogRecord(root, { type: "confirmation", party, payload: { what, units: ids, weight: "single", instructorWords, ...(what === "fact" ? { factHashes: Object.fromEntries(ids.map((id) => [id, factHash(text.get(id) || "")])) } : {}) } });
+  appendLogRecord(root, { type: "confirmation", party, payload: { what, units: ids, weight: "single", instructorWords, ...(what === "fact" ? { factHashes: Object.fromEntries(ids.map((id) => [id, factHash(text.get(id) || "")])), contentHashes: Object.fromEntries(ids.map((id) => [id, unitHash(text.get(id) || "")])) } : {}) } });
 }
 
 /** The verdict path admits evidence for a unit's CURRENT facts (only the harness writes it; admission.mjs decided it). */

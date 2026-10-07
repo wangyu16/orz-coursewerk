@@ -26,7 +26,7 @@ if (!["public", "private"].includes(profile)) { console.error("profile must be p
 // Modules load only from the harness's own scripts/modules/, by validated name (runner.moduleFile) — never from the
 // package. The registry is validated by the runner; an invalid one is a blocking obligation.
 try {
-  const { findings, approvalProblems, gate, wiring, basis } = runGate(root, { checkpoint, profile, inputsDir: opt("--inputs") || null });
+  const { findings, approvalProblems, gate, wiring, basis, mechanical } = runGate(root, { checkpoint, profile, inputsDir: opt("--inputs") || null });
   // corrections the agent applied since they were last shown: listed with their diff at every checkpoint (D19-B)
   const corrections = correctionsToShow(root);
   // a question the instructor answered (at its current basis) is not open, though the module still raises it
@@ -34,14 +34,16 @@ try {
   const openQuestions = gate.questions.filter((f) => !isAnswered(answered, f, hashes));
   const unreviewed = unreviewedKnowledge(root, liveReader(root));
   const report = { checkpoint, profile, basis, canPublish: gate.canPublish, corrections, knowledgeUnreviewed: unreviewed,
-    counts: { blocking: gate.blocking.length, questions: openQuestions.length, answered: gate.questions.length - openQuestions.length, total: findings.length }, approvalProblems, findings, wiring };
+    counts: { blocking: gate.blocking.length, questions: openQuestions.length, answered: gate.questions.length - openQuestions.length, total: findings.length }, approvalProblems, findings, wiring, mechanical };
   if (opt("--json")) fs.writeFileSync(opt("--json"), JSON.stringify(report, null, 2) + "\n");
   if (opt("--wiring")) fs.writeFileSync(opt("--wiring"), JSON.stringify(wiring, null, 2) + "\n");
   console.log(JSON.stringify({ checkpoint, profile, canPublish: gate.canPublish, blocking: gate.blocking.map((f) => `${f.module}/${f.kind}`), approvalProblems, questions: openQuestions.length, corrections: corrections.map((c) => ({ id: c.id, unit: c.unit, diff: c.diff })),
     // questions routed to the agent (clarifications owed, over-general absolutes, frame-name notes…): the agent's own
     // work, so they are listed, not just counted (P11 wiring sweep)
     forYou: openQuestions.filter((f) => f.route === "agent").map((f) => ({ module: f.module, kind: f.kind, units: f.units, note: String(f.evidence?.note || f.evidence?.what || f.evidence?.rule || "").slice(0, 240) })),
-    knowledgeUnreviewed: unreviewed.length ? { count: unreviewed.length, units: unreviewed.slice(0, 10), next: "best effort, not blocking: node scripts/verify.mjs knowledge --root <pkg> --units <ids>" } : 0, modulesRan: wiring.modulesRan }, null, 2));
+    knowledgeUnreviewed: unreviewed.length ? { count: unreviewed.length, units: unreviewed.slice(0, 10), next: "best effort, not blocking: node scripts/verify.mjs knowledge --root <pkg> --units <ids>" } : 0, modulesRan: wiring.modulesRan,
+    // K2: what the mechanical check compared and balanced, and what it could not read (not checked, not passed)
+    ...(mechanical ? { mechanical: { compared: mechanical.compared, balanced: mechanical.balanced, notChecked: mechanical.skipped.length, ...(mechanical.skipped.length ? { notCheckedForms: mechanical.skipped.slice(0, 10) } : {}) } } : {}) }, null, 2));
   process.exit(gate.canPublish ? 0 : 1);
 } catch (e) {
   const message = `the gate could not run: ${e.message}`;

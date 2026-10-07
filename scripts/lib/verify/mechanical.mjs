@@ -1,36 +1,82 @@
-// K2 — computable content is recomputed (red-team round 3, CONFIDENCE R3-K03). The classifier has always marked
-// worked answers, conversions and equations "mechanical"; until this file nothing read that kind, so a worked
-// "Q_r = (0.20)^2/((0.10)(0.30)^3) = 1.48" (the true value is 14.8) and an unbalanced "CO + H2 <=> CH3OH" published.
+// K2 — computable content is recomputed (red-team round 3, CONFIDENCE R3-K03; widened in round 4, R4-K01…K07,
+// K09…K12). The classifier has always marked worked answers, conversions and equations "mechanical"; this file reads
+// that kind, so a worked "Q_r = (0.20)^2/((0.10)(0.30)^3) = 1.48" (the true value is 14.8) and an unbalanced
+// "CO + H2 <=> CH3OH" do not publish.
 //
-// Two checks, both deterministic and both conservative — what cannot be parsed without a guess is skipped, never
-// guessed at (a false alarm on correct work is the cost the queue dies of):
-//   1. WORKED EXPRESSIONS. In math ($…$, $$…$$, \(…\), \[…\]) a chain "X = <arithmetic> = <value>" (or ≈) is split at
-//      its top-level relations; every purely numeric part with an operator is evaluated and compared with the literal
-//      value that follows it, at the precision written: they disagree when the recomputed value rounds to another
-//      value at the written precision AND differs by more than half a percent (what rounded intermediates explain; a
-//      slipped decimal, a wrong exponent or a dropped term never hides there).
-//      Read: numbers (thousands "{,}", scientific "×10^{n}", "e-n"), + − × · * / ÷, \frac, ^ (integer or decimal),
-//      parentheses and \left/\right, implicit products "(0.10)(0.30)", \ln, \log, \sqrt, \exp. A part with a symbol, a
-//      unit inside the arithmetic, or anything else unknown is not numeric and is skipped. Values that carry units are
-//      compared only when the expression carries the same trailing unit or none.
-//   2. EQUATION BALANCE. Every reaction the harness reads (verify/admission.mjs equationIn, one per \ce{…} and the
-//      plain one) is balanced atom by atom and in charge. A species that does not parse as a formula of real elements
-//      skips the equation.
+// Two checks, both deterministic and both conservative — what cannot be read without a guess is SKIPPED, never
+// guessed at (a false alarm on correct work is the cost the queue dies of) — and every skip is COUNTED
+// (mechanicalCoverage): a form the check could not read is reported as not checked, never passed in silence.
+//
+//   1. WORKED CHAINS. In math ($…$, $$…$$, \(…\), \[…\]) a chain "X = a = b = … = v" is split at its relations
+//      (=, ≈, \approx, \simeq, \sim) and EVERY link between two numeric parts is compared (R4-K01): arithmetic with a
+//      literal (at the literal's written precision), arithmetic with arithmetic (a restatement: one side's exact value
+//      must lie in what the other's rounded inputs allow), and a literal with a literal (a re-rounding). Read: numbers
+//      ("{,}" thousands, ×10^{n}, e-n), + − × · * / ÷, \frac, ^, parentheses and \left/\right, implicit products,
+//      \ln \log \sqrt \exp; "\%" and "%" as the percent unit (R4-K02); aligned/align/gather/split environments, whose
+//      "&" and "\\" are layout, and whose lines that open with a relation continue the chain (R4-K03); a math span that
+//      opens (or the one before it ends) with a relation continues the chain across spans. Inequalities end a chain.
+//      A part with a symbol is not numeric (no link to compare); a numeric part the reader cannot evaluate — a unit
+//      inside the arithmetic, e^x, an n-th root, an implicit product after "/" whose precedence is a guess (R4-K11) —
+//      is a skipped link. Units are compared by MEANING through the shared unit table (lib/units.mjs): "mol/L",
+//      "mol L^{-1}" and "M" are one unit (R4-K12); a real change of unit is skipped; a percent on one side only is
+//      compared under both readings (fraction or per cent) and reported only when neither holds.
+//   2. EQUATION BALANCE. A dedicated reaction reader (R4-K04…K06, K09, K10) — not the claim reader that identifies a
+//      reaction: every \ce{…} with an arrow (braces matched, mhchem arrow conditions "->[MnO2]", "<=>[a][b]" dropped,
+//      states, hydrates, "+ heat"), and every reaction written outside \ce{} (\mathrm/\text math, prose, Unicode
+//      sub- and superscripts). Ion charges are kept in every notation ("Ag+", "Cu^2+", "^{3+}", "^{-}", "Fe³⁺"),
+//      bracketed complexes and electrons are read; a caret-less "NH4+" or "Fe3+" is read both ways (count or charge)
+//      and called unbalanced only when no reading balances. A nuclear equation (^{14}_{6}C) is balanced in mass and
+//      atomic number. A species that does not parse, or a side that is not wholly read, skips the equation.
 // A mismatch is a DEFECT routed to the agent, with the recomputed value or the unbalanced element in its evidence.
-// A unit the instructor confirmed at its current text (an intended wrong worked answer, say) is not re-raised.
+// A unit the instructor confirmed at its current TEXT (contentHash; an intended wrong worked answer, say) is not
+// re-raised; any edit of the unit voids the confirmation (R4-K07).
 // PURE and DETERMINISTIC.
 import { makeFinding } from "../records/findings.mjs";
-import { equationIn } from "./admission.mjs";
-import { parseNumber } from "../core/values.mjs";
+import { decodeEntities, parseNumber } from "../core/values.mjs";
+import { dimensionProjection } from "../units.mjs";
 
-// ---- 1. worked expressions ---------------------------------------------------------------------------------------
+// ---- 1. worked chains --------------------------------------------------------------------------------------------
 const MATH = /\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)/g;
+const ENVS = "aligned|alignedat|align\\*?|alignat\\*?|gather\\*?|gathered|split|multline\\*?|eqnarray\\*?|equation\\*?";
+const BREAK = "\u0001"; // an inequality or an implication: the chain ends there
 
-/** Split a math string at its top-level relations (=, ≈, \approx), outside braces and brackets. */
-function relationParts(m) {
+/** A math string as relation text: environments and tags out, approximate relations as "≈", inequalities as breaks. */
+function prepMath(m) {
+  return String(m)
+    .replace(/\\%/g, "%")
+    .replace(new RegExp(`\\\\(?:begin|end)\\s*\\{(?:${ENVS})\\}(?:\\s*\\{\\d+\\})?`, "g"), " \\\\ ")
+    .replace(/\\(?:nonumber|notag)(?![A-Za-z])|\\tag\*?\s*\{[^{}]*\}/g, " ")
+    .replace(/\\(?:approx|simeq|sim|thickapprox|thicksim|cong)(?![A-Za-z])|[≈≃∼≅]/g, "≈")
+    .replace(/\\(?:leq?|geq?|leqslant|geqslant|ll|gg|neq?|lt|gt|lesssim|gtrsim|propto|Rightarrow|implies|Longrightarrow|iff)(?![A-Za-z])|[≤≥≠≪≫∝⇒]|(?<![<\\])<(?![=-])|(?<![-=])>/g, BREAK);
+}
+const opensWithRelation = (s) => /^\s*(?:=|≈)/.test(s);
+const endsWithRelation = (s) => /(?:=|≈)\s*$/.test(s);
+
+/** The chains of a text: [{ text }] — one per line of a derivation, continued across lines and adjacent spans. */
+function chainsOf(text) {
+  const chains = [];
+  let open = null; // the chain the next span may continue
+  for (const m of String(text || "").matchAll(MATH)) {
+    const math = prepMath(m[1] ?? m[2] ?? m[3] ?? m[4]);
+    const lines = math.split(/\\\\(?:\s*\[\s*-?\d+(?:\.\d+)?\s*(?:pt|em|ex|mm|cm)\s*\])?/).map((l) => l.replace(/&/g, " "));
+    for (const line of lines) {
+      const pieces = line.split(BREAK);
+      for (const [j, piece] of pieces.entries()) {
+        if (!piece.trim()) { if (j < pieces.length - 1) open = null; continue; }
+        const continues = j === 0 && open && (opensWithRelation(piece) || endsWithRelation(open.text));
+        if (continues) open.text += ` ${piece}`;
+        else { open = { text: piece }; chains.push(open); }
+        if (j < pieces.length - 1) open = null;
+      }
+    }
+  }
+  return chains;
+}
+
+/** Split a math string at its top-level relations (=, ≈), outside braces and brackets. */
+function relationParts(s) {
   const parts = [], rels = [];
   let depth = 0, cur = "";
-  const s = m.replace(/\\approx(?![A-Za-z])|\\simeq(?![A-Za-z])/g, "≈");
   for (let i = 0; i < s.length; i++) {
     const c = s[i];
     if ("{([".includes(c)) depth++;
@@ -42,7 +88,7 @@ function relationParts(m) {
   return { parts, rels };
 }
 
-// a trailing unit: \text{…}/\mathrm{…} groups and unit-like words with exponents ("J mol^{-1}", "\,\text{kJ}")
+// a trailing unit: \text{…}/\mathrm{…} groups and unit-like words with exponents ("J mol^{-1}", "\,\text{kJ}", "%")
 const TRAIL_UNIT = /(?:\s|\\[,;:! ]|~)*((?:(?:\\(?:text|mathrm|rm)\s*\{[^{}]*\}|[A-Za-z°%µ]+)(?:\s*\^\s*(?:\{\s*[-−]?\d+\s*\}|[-−]?\d))?(?:\s|\\[,;:! ]|~|\/|\\cdot)*)+)$/;
 const unitKey = (u) => String(u || "").replace(/\\(?:text|mathrm|rm)\s*\{([^{}]*)\}/g, "$1").replace(/\\[,;:! ]|~|\\cdot/g, " ").replace(/\s+/g, " ").replace(/\s*\^\s*\{?\s*([-−]?\d+)\s*\}?/g, "^$1").replace(/−/g, "-").trim();
 
@@ -54,6 +100,40 @@ function splitUnit(part) {
   const body = p.slice(0, p.length - m[0].length).trim();
   if (!/[\d)}]\s*$/.test(body)) return { body: p, unit: "" }; // "x" alone is a symbol, not a value with a unit
   return { body, unit: unitKey(m[1]) };
+}
+
+// ---- units by meaning (R4-K12): one unit table, read as { unit id: exponent } --------------------------------------
+const DIM = dimensionProjection();
+const MOLAR = { M: { mole: 1, litre: -1 }, mM: { millimole: 1, litre: -1 } }; // the value parser's extra forms
+/** A unit string as its meaning ("mol/L", "mol L^-1", "M" → "litre^-1 mole^1"), or null when any factor is unknown
+ *  or the denominator is ambiguous ("J/mol K"). */
+export function unitMeaning(key) {
+  const toks = String(key || "").replace(/\s*\/\s*/g, " / ").replace(/[·*]/g, " ").trim().split(/\s+/).filter(Boolean);
+  if (!toks.length) return null;
+  const out = {};
+  let div = false, afterDiv = 0;
+  for (const t of toks) {
+    if (t === "/") { if (div) return null; div = true; continue; }
+    const m = t.match(/^(.+?)(?:\^(-?\d+))?$/);
+    let e = m[2] ? Number(m[2]) : 1;
+    if (div) { if (++afterDiv > 1) return null; e = -e; }
+    const hit = MOLAR[m[1]] ?? (DIM.lookup(m[1]) ? { [DIM.lookup(m[1]).id]: 1 } : null);
+    if (!hit) return null;
+    for (const [id, k] of Object.entries(hit)) out[id] = (out[id] || 0) + k * e;
+  }
+  const s = Object.entries(out).filter(([, k]) => k).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([id, k]) => `${id}^${k}`).join(" ");
+  return s || null;
+}
+const isPercent = (u) => unitMeaning(u) === "percent^1";
+/** How two parts' units relate: "same" (compare), "percent" (one side per cent only), "conversion" (skip). */
+function unitRelation(ua, ub) {
+  if (ua && ub) {
+    const ma = unitMeaning(ua), mb = unitMeaning(ub);
+    if (ma && mb) return ma === mb ? "same" : "conversion";
+    return ua === ub ? "same" : "conversion";
+  }
+  if (isPercent(ua) || isPercent(ub)) return "percent";
+  return "same"; // a unit on one side only: the value with its result's unit (as written since round 3)
 }
 
 /** Tokenize LaTeX arithmetic; null when anything is not arithmetic. */
@@ -71,7 +151,14 @@ function tokens(src) {
     const c = s[i];
     if (/\s/.test(c)) { i++; continue; }
     const num = s.slice(i).match(/^(?:\d{1,3}(?:,\d{3})+(?!\d)|\d+)(?:\.\d+)?(?:[eE][-+]?\d+)?|^\.\d+/);
-    if (num) { out.push({ t: "num", v: parseNumber(num[0].replace(/^\./, "0.")), raw: num[0] }); i += num[0].length; continue; }
+    if (num) {
+      const raw = num[0].replace(/^\./, "0.");
+      const mant = raw.replace(/,/g, "").split(/[eE]/);
+      const decimals = (mant[0].split(".")[1] || "").length, eExp = Number(mant[1] || 0);
+      // the half-width a written decimal allows (an integer is exact: a count, a coefficient, an exponent)
+      out.push({ t: "num", v: parseNumber(raw), w: decimals ? 0.5 * 10 ** (eExp - decimals) : 0, raw: num[0] });
+      i += num[0].length; continue;
+    }
     const fn = s.slice(i).match(/^\\(frac|sqrt|ln|log|exp)(?![A-Za-z])/);
     if (fn) { out.push({ t: "fn", v: fn[1] }); i += fn[0].length; continue; }
     if ("+-*/^(){}[]".includes(c)) { out.push({ t: c }); i++; continue; }
@@ -80,7 +167,13 @@ function tokens(src) {
   return out;
 }
 
-/** Evaluate tokens: a tiny recursive-descent parser. Returns a finite number, or null. */
+// interval arithmetic: every value is { v, lo, hi } — v exact as written, [lo, hi] what rounded inputs allow
+const I = (v, lo = v, hi = v) => ({ v, lo, hi });
+const span = (v, xs) => { const ys = xs.filter((x) => !Number.isNaN(x)); return ys.length === xs.length ? I(v, Math.min(...ys), Math.max(...ys)) : I(v, -Infinity, Infinity); };
+const AMBIGUOUS = Symbol("ambiguous");
+
+/** Evaluate tokens: a tiny recursive-descent parser. Returns { v, lo, hi }, null, or AMBIGUOUS (R4-K11: an implicit
+ *  product after "/" — "a/(b)(c)" — is a/(b·c) to one reader and (a/b)·c to another; the check does not pick). */
 function evaluate(toks) {
   let k = 0;
   const peek = () => toks[k], take = (t) => (toks[k]?.t === t ? toks[k++] : null);
@@ -88,52 +181,61 @@ function evaluate(toks) {
     for (const [o, c] of [["{", "}"], ["(", ")"], ["[", "]"]]) if (take(o)) { const v = expr(); if (!take(c)) throw 0; return v; }
     return null;
   };
+  const mono = (f, a) => span(f(a.v), [f(a.lo), f(a.hi)]);
   function atom() {
     const t = peek();
     if (!t) throw 0;
-    if (t.t === "num") { k++; return t.v; }
+    if (t.t === "num") { k++; return I(t.v, t.v - t.w, t.v + t.w); }
     if (t.t === "fn") {
       k++;
-      if (t.v === "frac") { const a = group(), b = group(); if (a == null || b == null) throw 0; return a / b; }
-      if (t.v === "sqrt") { if (peek()?.t === "[") throw 0; const a = group() ?? atom(); return Math.sqrt(a); }
+      if (t.v === "frac") { const a = group(), b = group(); if (a == null || b == null) throw 0; return div(a, b); }
+      if (t.v === "sqrt") { if (peek()?.t === "[") throw 0; const a = group() ?? atom(); return mono(Math.sqrt, a); }
       const a = group() ?? atom();
-      return t.v === "ln" ? Math.log(a) : t.v === "log" ? Math.log10(a) : Math.exp(a);
+      return mono(t.v === "ln" ? Math.log : t.v === "log" ? Math.log10 : Math.exp, a);
     }
     const g = group();
     if (g != null) return g;
     throw 0;
   }
+  const mul = (a, b) => span(a.v * b.v, [a.lo * b.lo, a.lo * b.hi, a.hi * b.lo, a.hi * b.hi]);
+  const div = (a, b) => (b.lo <= 0 && b.hi >= 0 ? I(a.v / b.v, -Infinity, Infinity) : span(a.v / b.v, [a.lo / b.lo, a.lo / b.hi, a.hi / b.lo, a.hi / b.hi]));
   function power() {
-    let b = atom();
+    const b = atom();
     if (take("^")) {
       const sign = take("-") ? -1 : (take("+"), 1);
-      const e = peek()?.t === "num" ? (k++, toks[k - 1].v) : group();
+      const e = peek()?.t === "num" ? (k++, toks[k - 1].v) : group()?.v;
       if (e == null) throw 0;
-      b = b ** (sign * e);
+      const x = sign * e, f = (y) => y ** x;
+      const ends = [f(b.lo), f(b.hi)];
+      if (b.lo < 0 && b.hi > 0 && x > 0) ends.push(0);
+      return span(f(b.v), ends);
     }
     return b;
   }
-  function unary() { if (take("-")) return -unary(); if (take("+")) return unary(); return power(); }
+  function unary() { if (take("-")) { const a = unary(); return I(-a.v, -a.hi, -a.lo); } if (take("+")) return unary(); return power(); }
+  const implicitNext = () => ["(", "{", "fn"].includes(peek()?.t);
   function term() {
-    let v = unary();
+    let v = unary(), afterSlash = false;
     for (;;) {
-      if (take("*")) v *= unary();
-      else if (take("/")) v /= unary();
-      else if (["(", "{", "fn"].includes(peek()?.t)) v *= unary(); // implicit product: (0.10)(0.30)
+      if (take("*")) { v = mul(v, unary()); afterSlash = false; }
+      else if (take("/")) { v = div(v, unary()); afterSlash = true; if (implicitNext()) throw AMBIGUOUS; }
+      else if (implicitNext()) { if (afterSlash) throw AMBIGUOUS; v = mul(v, unary()); } // implicit product: (0.10)(0.30)
       else return v;
     }
   }
   function expr() {
     let v = term();
-    for (;;) { if (take("+")) v += term(); else if (take("-")) v -= term(); else return v; }
+    for (;;) {
+      if (take("+")) { const b = term(); v = I(v.v + b.v, v.lo + b.lo, v.hi + b.hi); }
+      else if (take("-")) { const b = term(); v = I(v.v - b.v, v.lo - b.hi, v.hi - b.lo); }
+      else return v;
+    }
   }
-  try { const v = expr(); return k === toks.length && Number.isFinite(v) ? v : null; } catch { return null; }
+  try { const v = expr(); return k === toks.length && Number.isFinite(v.v) ? v : null; } catch (e) { return e === AMBIGUOUS ? AMBIGUOUS : null; }
 }
 
 /** A literal value as written: { value, ulp } (one unit in its last place), or null. */
-function literal(body) {
-  const t = tokens(body);
-  if (!t) return null;
+function literal(t) {
   const s = t.map((x) => (x.t === "num" ? "n" : x.t)).join("");
   // "n", "-n", "n*10^n", "n*10^{-n}", "10^{n}"
   if (!/^-?(?:n|n\*n\^\{?-?n\}?|n\^\{?-?n\}?)$/.test(s)) return null;
@@ -141,73 +243,79 @@ function literal(body) {
   if (nums.length > 1 && nums[nums.length - 2].v !== 10 && nums.length === 3) return null;
   if (nums.length === 2 && nums[0].v !== 10) return null; // n^n is arithmetic, not a literal
   const value = evaluate(t);
-  if (value == null) return null;
+  if (!value || value === AMBIGUOUS) return null;
   const mant = nums[0].raw.replace(/,/g, "");
   const decimals = (mant.split(/[eE]/)[0].split(".")[1] || "").length;
   const eNot = Number((mant.match(/[eE]([-+]?\d+)/) || [])[1] || 0);
   const exp = nums.length > 1 ? (t.some((x) => x.t === "-" && t.indexOf(x) > 0) ? -1 : 1) * nums[nums.length - 1].v : 0;
   const scale = nums.length === 2 && nums[0].v === 10 ? 10 ** exp : nums.length === 3 ? 10 ** exp : 1;
-  return { value, ulp: 10 ** (-decimals + eNot) * scale, written: body.trim() };
+  return { value: value.v, ulp: 10 ** (-decimals + eNot) * scale };
 }
 
 const hasOperator = (toks) => toks.some((x, i) => ["*", "/", "+", "fn", "^"].includes(x.t) || (x.t === "-" && i > 0) || (x.t === "(" && i > 0 && ["num", ")"].includes(toks[i - 1].t)));
+const GREEK = /\\(?:alpha|beta|gamma|delta|epsilon|varepsilon|zeta|eta|theta|vartheta|iota|kappa|lambda|mu|nu|xi|rho|sigma|tau|upsilon|phi|varphi|chi|psi|omega|Gamma|Delta|Theta|Lambda|Xi|Sigma|Upsilon|Phi|Psi|Omega|ce|ominus|circ|ddagger|dagger|prime|bar|hat|vec|dot|overline|mathit|mathbf|operatorname)(?![A-Za-z])/;
 
-/** The worked expressions of a text that do not compute: [{ expression, written, recomputed }]. */
-export const arithmeticMismatches = (text) => workedExpressions(text).filter((x) => !x.ok).map(({ ok, ...x }) => x);
-
-/** Every worked expression the check reads in a text, compared: [{ expression, written, recomputed, ok }]. */
-export function workedExpressions(text) {
-  const out = [];
-  for (const m of String(text || "").matchAll(MATH)) {
-    const math = m[1] ?? m[2] ?? m[3] ?? m[4];
-    const { parts } = relationParts(math);
-    if (parts.length < 2) continue;
-    for (let i = 0; i + 1 < parts.length; i++) {
-      const a = splitUnit(parts[i]), b = splitUnit(parts[i + 1]);
-      const ta = tokens(a.body);
-      if (!ta || !ta.length || !hasOperator(ta)) continue;
-      const lit = literal(b.body);
-      if (!lit) continue;
-      if (a.unit && b.unit && a.unit !== b.unit) continue; // another unit: a conversion we do not guess
-      const v = evaluate(ta);
-      if (v == null) continue;
-      // beyond the precision written (half a unit in the last place) AND beyond what rounded intermediates explain
-      // (half a percent): a slipped decimal, a wrong exponent or a dropped term is far outside both
-      const d = Math.abs(v - lit.value);
-      const ok = !(d > 0.5 * lit.ulp * (1 + 1e-9) && d > 0.005 * Math.abs(v));
-      out.push({ expression: a.body.trim(), written: lit.written, recomputed: Number(v.toPrecision(6)), ok });
+/** One part of a chain: { kind: "num", … } | { kind: "sym" } (a symbol: nothing to compare) | { kind: "unread", reason }. */
+function partOf(raw) {
+  const { body, unit } = splitUnit(raw);
+  if (!/\d/.test(body)) return { kind: "sym" };
+  const t = tokens(body);
+  if (t && t.length) {
+    const v = evaluate(t);
+    if (v === AMBIGUOUS) return { kind: "unread", reason: "an implicit product after \"/\": the precedence would be a guess", raw: body.trim() };
+    if (v) {
+      const lit = hasOperator(t) ? null : literal(t);
+      return { kind: "num", raw: body.trim(), unit, v: v.v, lo: v.lo, hi: v.hi, op: hasOperator(t), lit };
     }
   }
-  return out;
+  // not evaluable: a symbol makes it symbolic; otherwise it is a numeric form the reader cannot read
+  const bare = body.replace(/\\(?:text|mathrm|rm|textrm|mbox)\s*\{[^{}]*\}/g, "¤").replace(/(?<![A-Za-z\\])e(?=\s*\^)/g, "¤");
+  if (GREEK.test(bare) || /(?<!\\)\b[A-Za-z]/.test(bare.replace(/\\[A-Za-z]+/g, " "))) return { kind: "sym" };
+  return { kind: "unread", reason: /¤/.test(bare) ? "a unit or e^x inside the arithmetic" : "a form the reader does not evaluate", raw: body.trim() };
 }
+
+/** Do two numeric parts agree? A literal is held to its written precision; arithmetic to what its rounded inputs
+ *  allow; both beyond half a percent (what rounded intermediates explain) before a disagreement counts. */
+function agree(a, b) {
+  const tol = (x) => 0.005 * Math.abs(x) + 1e-12 * Math.abs(x);
+  if (a.lit && b.lit) { const d = Math.abs(a.v - b.v); return d <= 0.5 * Math.max(a.lit.ulp, b.lit.ulp) * (1 + 1e-9) || d <= tol(Math.max(Math.abs(a.v), Math.abs(b.v))); }
+  if (a.lit || b.lit) { const [x, l] = a.lit ? [b, a] : [a, b]; const d = Math.abs(x.v - l.v); return !(d > 0.5 * l.lit.ulp * (1 + 1e-9) && d > tol(x.v)); }
+  const inside = (x, y) => x.v >= y.lo - tol(x.v) && x.v <= y.hi + tol(x.v);
+  return inside(a, b) || inside(b, a);
+}
+const scaled = (p, f) => ({ ...p, v: p.v * f, lo: p.lo * f, hi: p.hi * f, lit: p.lit && { ...p.lit, value: p.lit.value * f, ulp: p.lit.ulp * f } });
+
+/** Every link of every worked chain in a text: { compared: [{ expression, written, recomputed, ok }], skipped: [{ link, reason }] }. */
+export function workedLinks(text) {
+  const compared = [], skipped = [];
+  for (const { text: chain } of chainsOf(text)) {
+    const { parts, rels } = relationParts(chain);
+    const P = parts.map((p) => (p.trim() ? partOf(p) : { kind: "sym" }));
+    for (let i = 0; i + 1 < P.length; i++) {
+      const a = P[i], b = P[i + 1];
+      if (a.kind === "sym" || b.kind === "sym") continue;
+      const link = `${parts[i].trim()} ${rels[i]} ${parts[i + 1].trim()}`;
+      if (a.kind === "unread" || b.kind === "unread") { skipped.push({ link, reason: (a.kind === "unread" ? a : b).reason }); continue; }
+      if (!a.op && !b.op && !(a.lit && b.lit)) { skipped.push({ link, reason: "a form the reader does not evaluate" }); continue; }
+      const rel = unitRelation(a.unit, b.unit);
+      if (rel === "conversion") { skipped.push({ link, reason: "a change of unit" }); continue; }
+      const ok = rel === "percent" ? agree(a, b) || agree(isPercent(a.unit) ? scaled(a, 0.01) : a, isPercent(b.unit) ? scaled(b, 0.01) : b) : agree(a, b);
+      // the side recomputed is the arithmetic one (or the earlier, when both are); the other is what was written
+      const [x, w] = !a.op && b.op ? [b, a] : [a, b];
+      compared.push({ expression: x.raw, written: w.raw, recomputed: Number(x.v.toPrecision(6)), ok });
+    }
+  }
+  return { compared, skipped };
+}
+
+/** Every worked expression the check reads in a text, compared: [{ expression, written, recomputed, ok }]. */
+export const workedExpressions = (text) => workedLinks(text).compared;
+/** The worked expressions of a text that do not compute: [{ expression, written, recomputed }]. */
+export const arithmeticMismatches = (text) => workedLinks(text).compared.filter((x) => !x.ok).map(({ ok, ...x }) => x);
 
 // ---- 2. equation balance -----------------------------------------------------------------------------------------
 const ELEMENTS = new Set("H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr Rb Sr Y Zr Nb Mo Tc Ru Rh Pd Ag Cd In Sn Sb Te I Xe Cs Ba La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu Hf Ta W Re Os Ir Pt Au Hg Tl Pb Bi Po At Rn Fr Ra Ac Th Pa U Np Pu Am Cm D T".split(" "));
 
-/** Atoms and charge of one species ("Al2(SO4)3", "Fe^{3+}", "SO4^2-", "CuSO4.5H2O", "e-"): { atoms, charge } or null. */
-export function speciesOf(sp) {
-  let s = String(sp).replace(/\s+/g, "").replace(/[{}]/g, "");
-  if (/^e-?$|^e\^-$/.test(s)) return { atoms: {}, charge: -1 };
-  let charge = 0;
-  const ch = s.match(/\^?(\d*)([+-])$/);
-  if (ch && /[A-Za-z)\d]/.test(s.slice(0, ch.index))) {
-    // "SO4^2-": charge 2-; "Cl-": 1-; without "^" a digit before the sign is the formula's count ("H2-" is not a thing)
-    const n = s[ch.index] === "^" ? (ch[1] ? Number(ch[1]) : 1) : (ch[1] ? null : 1);
-    if (n == null) return null;
-    charge = ch[2] === "+" ? n : -n;
-    s = s.slice(0, ch.index);
-  }
-  const atoms = {};
-  const add = (into, from, k) => { for (const [e, n] of Object.entries(from)) into[e] = (into[e] || 0) + n * k; };
-  for (const [j, piece] of s.split(/[.·•*]/).entries()) {
-    const lead = j > 0 ? piece.match(/^(\d+)/) : null;
-    const body = lead ? piece.slice(lead[0].length) : piece;
-    const parsed = formula(body);
-    if (!parsed) return null;
-    add(atoms, parsed, lead ? Number(lead[1]) : 1);
-  }
-  return Object.keys(atoms).length || charge ? { atoms, charge } : null;
-}
 function formula(s) {
   let i = 0;
   function seq(close) {
@@ -227,65 +335,273 @@ function formula(s) {
   const r = seq(null);
   return r && Object.keys(r).length ? r : null;
 }
-
-/** Every reaction a text writes (one per \ce{…} with an arrow, and the plain one equationIn reads). */
-export function equationsIn(text) {
-  const t = String(text || ""), out = [], seen = new Set();
-  for (const m of t.matchAll(/\\ce\{([^}]*(?:<=>|->|<->|⇌|→)[^}]*)\}/g)) {
-    const e = equationIn(`\\ce{${m[1]}}`);
-    if (e) { out.push({ e, raw: m[1].trim() }); seen.add(JSON.stringify(e)); }
+/** Atoms of a neutral body with hydrate dots ("CuSO4.5H2O"), or null. */
+function bodyAtoms(s) {
+  const atoms = {};
+  for (const [j, piece] of s.split(/[.·•*]/).entries()) {
+    const lead = j > 0 ? piece.match(/^(\d+)/) : null;
+    const parsed = formula(lead ? piece.slice(lead[0].length) : piece);
+    if (!parsed) return null;
+    for (const [e, n] of Object.entries(parsed)) atoms[e] = (atoms[e] || 0) + n * (lead ? Number(lead[1]) : 1);
   }
-  const plain = equationIn(t.replace(/\\ce\{[^}]*\}/g, " "));
-  if (plain && !seen.has(JSON.stringify(plain))) out.push({ e: plain, raw: null });
-  return out;
+  return atoms;
 }
 
-/** The imbalance of a reaction: null when balanced or unreadable; else { element, left, right } or { charge, … }. */
-export function imbalanceOf(e) {
-  const tally = (side) => {
-    const atoms = {}; let charge = 0;
-    for (const [sp, k] of Object.entries(side)) {
-      const p = speciesOf(sp);
-      if (!p) return null;
-      for (const [el, n] of Object.entries(p.atoms)) atoms[el] = (atoms[el] || 0) + n * k;
-      charge += p.charge * k;
-    }
-    return { atoms, charge };
-  };
-  const L = tally(e.left), R = tally(e.right);
-  if (!L || !R) return null;
-  for (const el of [...new Set([...Object.keys(L.atoms), ...Object.keys(R.atoms)])].sort()) {
-    const l = L.atoms[el] || 0, r = R.atoms[el] || 0;
-    if (Math.abs(l - r) > 1e-9) return { element: el, left: l, right: r };
+/** Every reading of one species: [{ atoms, charge }] or [{ nuclear: { A, Z } }]; [] when it does not parse.
+ *  A caret-less digit before a sign ("NH4+", "Fe3+") is a count to mhchem and a charge to many authors: both. */
+export function speciesReadings(sp) {
+  const s = String(sp).replace(/\s+/g, "").replace(/[{}]/g, "");
+  if (/^e(?:-|\^-|\^-1|\^1-)$/.test(s)) return [{ atoms: {}, charge: -1 }];
+  // a nuclide: ^{A}_{Z}X or _{Z}^{A}X (mhchem and LaTeX), X an element or a particle (e, n, p, α, β, γ)
+  const PARTICLE = "(?:[A-Z][a-z]?|[enp]|[αβγ]|\\\\(?:alpha|beta|gamma))$";
+  const az = s.replace(/−/g, "-").match(new RegExp(`^\\^(\\d+)_(-?\\d+)${PARTICLE}`)), za = s.replace(/−/g, "-").match(new RegExp(`^_(-?\\d+)\\^(\\d+)${PARTICLE}`));
+  if (az || za) return [{ nuclear: az ? { A: Number(az[1]), Z: Number(az[2]) } : { A: Number(za[2]), Z: Number(za[1]) } }];
+  if (/^\^/.test(s) || /^_/.test(s)) return []; // a mass number without an atomic number: not read
+  const caret = s.match(/\^(?:(\d*)([+-])|([+-])(\d*))$/);
+  if (caret) {
+    const n = Number(caret[1] || caret[4] || 1), sign = caret[2] || caret[3];
+    const atoms = bodyAtoms(s.slice(0, caret.index));
+    return atoms ? [{ atoms, charge: sign === "+" ? n : -n }] : [];
   }
-  if (Math.abs(L.charge - R.charge) > 1e-9) return { element: "charge", left: L.charge, right: R.charge };
-  return null;
+  const bare = s.match(/(\d*)([+-])$/);
+  if (bare) {
+    const sign = bare[2] === "+" ? 1 : -1, out = [];
+    const asCount = bodyAtoms(s.slice(0, bare.index + bare[1].length));
+    if (asCount) out.push({ atoms: asCount, charge: sign });
+    if (bare[1]) { const asCharge = bodyAtoms(s.slice(0, bare.index)); if (asCharge) out.push({ atoms: asCharge, charge: sign * Number(bare[1]) }); }
+    return out;
+  }
+  const atoms = bodyAtoms(s);
+  return atoms ? [{ atoms, charge: 0 }] : [];
+}
+/** Atoms and charge of one species, in its first reading: { atoms, charge } or null. */
+export function speciesOf(sp) {
+  const r = speciesReadings(sp)[0];
+  return r && !r.nuclear ? r : null;
+}
+
+const ENERGY = /^(?:heat|energy|light|electricity|h\\nu|hν|\\Delta|Δ)$/i;
+const COEF = /^(\d+\/\d+|\d+(?:\.\d+)?|[½⅓⅔¼¾]|\\[dt]?frac\{(\d+)\}\{(\d+)\})\s*(?=\S)/;
+const FRACTIONS = { "½": 1 / 2, "⅓": 1 / 3, "⅔": 2 / 3, "¼": 1 / 4, "¾": 3 / 4 };
+/** One term of a side: { coef, sp } | { energy: true } | null (not read). */
+function termOf(piece) {
+  let p = String(piece).trim().replace(/\\(?:text|mathrm|rm)\s*\{([^{}]*)\}/g, "$1").replace(/\s+[v^]$/, "").trim();
+  if (ENERGY.test(p)) return { energy: true };
+  let coef = 1;
+  const m = p.match(COEF);
+  if (m) {
+    coef = m[2] ? Number(m[2]) / Number(m[3]) : FRACTIONS[m[1]] ?? (m[1].includes("/") ? Number(m[1].split("/")[0]) / Number(m[1].split("/")[1]) : Number(m[1]));
+    p = p.slice(m[0].length);
+  }
+  p = p.replace(/\s*\((?:g|l|s|aq|cr)\)/g, "").replace(/\s*([.*·•])\s*/g, "$1").replace(/[{}]/g, "").trim();
+  if (!p || /\s/.test(p) || !(coef > 0)) return null;
+  return { coef, sp: p };
+}
+/** A side's terms as { species: coefficient }, or null when any term is not read. */
+function sideOf(pieces) {
+  const out = {};
+  for (const x of pieces) {
+    const t = termOf(x);
+    if (!t) return null;
+    if (t.energy) continue;
+    out[t.sp] = (out[t.sp] || 0) + t.coef;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+// \ce{…} with its braces matched (R4-K09: "[^}]*" stopped at the first "}" of "Fe^{3+}")
+function ceBlocks(text) {
+  const out = [];
+  const re = /\\ce\s*\{/g;
+  let m;
+  while ((m = re.exec(text))) {
+    let depth = 1, i = m.index + m[0].length;
+    for (; i < text.length && depth; i++) { if (text[i] === "{") depth++; else if (text[i] === "}") depth--; }
+    if (depth) break;
+    out.push({ at: m.index, end: i, body: text.slice(m.index + m[0].length, i - 1) });
+    re.lastIndex = i;
+  }
+  return out;
+}
+const CE_ARROWS = ["<=>>", "<<=>", "<-->", "<=>", "<->", "->", "<-", "⇌", "⇄", "⇋", "→", "⟶", "↔", "⟷"];
+/** The sides of an mhchem reaction, arrows (and their conditions "->[MnO2]", "<=>[a][b]") removed: [side text]. */
+function ceSides(body) {
+  const sides = [];
+  let depth = 0, cur = "", i = 0;
+  while (i < body.length) {
+    const c = body[i];
+    if ("{[(".includes(c)) depth++;
+    else if ("}])".includes(c)) depth = Math.max(0, depth - 1);
+    const arrow = depth === 0 && CE_ARROWS.find((a) => body.startsWith(a, i));
+    if (arrow) {
+      sides.push(cur); cur = ""; i += arrow.length;
+      for (let g = 0; g < 2 && body[i] === "["; g++) { // the arrow's conditions, brackets matched
+        let d = 0;
+        for (; i < body.length; i++) { if (body[i] === "[") d++; else if (body[i] === "]" && --d === 0) { i++; break; } }
+      }
+      continue;
+    }
+    cur += c; i++;
+  }
+  sides.push(cur);
+  return sides.length > 1 ? sides : null;
+}
+
+// Unicode sub- and superscripts as ASCII ("N₂" → "N2", "Fe³⁺" → "Fe^3+")
+const SUB = "₀₁₂₃₄₅₆₇₈₉", SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+const unicodeScripts = (t) => t.replace(/[₀-₉]/g, (c) => String(SUB.indexOf(c)))
+  .replace(/([⁰¹²³⁴⁵⁶⁷⁸⁹]*)([⁺⁻])([⁰¹²³⁴⁵⁶⁷⁸⁹]*)/g, (_, a, s, b) => `^${[...(a || b)].map((c) => SUP.indexOf(c)).join("")}${s === "⁺" ? "+" : "-"}`);
+/** Text outside \ce{} as text a reaction can be read from: math unwrapped, sub/superscripts joined, arrows as arrows. */
+function plainChem(text) {
+  let t = decodeEntities(String(text || ""));
+  for (const b of ceBlocks(t).reverse()) t = `${t.slice(0, b.at)} ¤ ${t.slice(b.end)}`;
+  return unicodeScripts(t)
+    .replace(/\\x(?:rightleftharpoons|leftrightharpoons|leftrightarrow)\s*(?:\[[^\]]*\])?\s*\{[^{}]*\}/g, " ⇌ ")
+    .replace(/\\x(?:rightarrow|longrightarrow)\s*(?:\[[^\]]*\])?\s*\{[^{}]*\}/g, " → ")
+    .replace(/\\(?:overset|stackrel)\s*\{[^{}]*\}\s*\{\s*(\\[A-Za-z]+)\s*\}/g, " $1 ")
+    .replace(/\\(?:rightleftharpoons|leftrightharpoons|rightleftarrows|longleftrightarrow|leftrightarrow|Longleftrightarrow|rightleftarrow)(?![A-Za-z])/g, " ⇌ ")
+    .replace(/\\(?:longrightarrow|rightarrow|Rightarrow|Longrightarrow|to)(?![A-Za-z])/g, " → ")
+    .replace(/\\(?:mathrm|text|textrm|rm|mbox|mathbf|mathsf)\s*\{/g, "{")
+    .replace(/\\[dt]?frac\s*\{?\s*(\d+)\s*\}?\s*\{?\s*(\d+)\s*\}?/g, "$1/$2")
+    .replace(/\\(?:[,;:! ]|q?quad)/g, " ")
+    .replace(/_\s*\{\s*(\d+)\s*\}|_\s*(\d)/g, (_, a, b) => a ?? b)
+    .replace(/\^\s*\{\s*([^{}]*?)\s*\}/g, (_, x) => `^${x.replace(/\s+/g, "")}`)
+    .replace(/[{}]/g, "")
+    .replace(/\\[a-zA-Z]+/g, " ¤ ").replace(/\$/g, " ")
+    .replace(/[ \t]+/g, " ");
+}
+// a species outside \ce{}: coefficient, element groups (brackets and parentheses), hydrate, charge, state; an electron
+const EL = "[A-Z][a-z]?", PAR = `\\((?:${EL}\\d*)+\\)`, BRK = `\\[(?:${EL}\\d*|${PAR}\\d*)+\\]`;
+const GRP = `(?:(?:${EL}|${PAR}|${BRK})\\d*)+`;
+const CHG = "(?:\\^(?:\\d*[+-]|[+-]\\d*)|[+-](?![\\w(\\[]))";
+const SP = `(?:(?:\\d+\\/\\d+|\\d+(?:\\.\\d+)?|[½⅓⅔¼¾])\\s*)?(?:${GRP}(?:[.·*•]\\d*${GRP})*${CHG}?(?:\\((?:g|l|s|aq|cr)\\))?${CHG}?|e\\^?-)`;
+const SIDE = `${SP}(?:\\s*\\+\\s*${SP})*`;
+const PLAIN_ARROW = "⇌|⇄|⇋|<=>|<->|↔|⟷|→|⟶|->";
+const REACTION = new RegExp(`(?<![A-Za-z0-9_^\\])/.-])(${SIDE})\\s*(?<!-)(${PLAIN_ARROW})(?!>)\\s*(${SIDE})(?![A-Za-z0-9(\\[^_])`, "g");
+const SP_STICKY = new RegExp(`(${SP})(?:\\s*\\+\\s*|\\s*$)`, "y");
+/** A plain side's terms: split at its "+" separators, never at an ion's own "+". */
+function plainPieces(side) {
+  const out = [];
+  SP_STICKY.lastIndex = 0;
+  while (SP_STICKY.lastIndex < side.length) {
+    const at = SP_STICKY.lastIndex, m = SP_STICKY.exec(side);
+    if (!m || SP_STICKY.lastIndex === at) return null;
+    out.push(m[1]);
+  }
+  return out;
+}
+const OPEN_BEFORE = /(?:^|[^\s+])\s*\+\s*$/, OPEN_AFTER = /^\s*\+\s*(?!(?:heat|energy|light)\b)\S/i;
+
+/** Every reaction a text writes, read or not: [{ e, raw } | { raw, unread: reason }]. */
+export function reactionsIn(text) {
+  const t = String(text || ""), out = [];
+  for (const b of ceBlocks(t)) {
+    const sides = ceSides(b.body);
+    if (!sides) continue;
+    for (let i = 0; i + 1 < sides.length; i++) {
+      const [l, r] = [sides[i], sides[i + 1]].map((s) => (s.trim() ? sideOf(s.trim().split(/\s+\+\s+/)) : null));
+      const raw = sides.length > 2 ? `${sides[i].trim()} → ${sides[i + 1].trim()}` : b.body.trim();
+      out.push(l && r ? { e: { left: l, right: r }, raw } : { raw, unread: "a species or side the reader does not parse" });
+    }
+  }
+  const p = plainChem(t);
+  for (const m of p.matchAll(REACTION)) {
+    const raw = m[0].trim(), before = p.slice(0, m.index), after = p.slice(m.index + m[0].length);
+    if (OPEN_BEFORE.test(before) || OPEN_AFTER.test(after)) { out.push({ raw, unread: "the reaction continues past what the reader reads" }); continue; }
+    const [lp, rp] = [plainPieces(m[1].trim()), plainPieces(m[3].trim())];
+    const l = lp && sideOf(lp), r = rp && sideOf(rp);
+    out.push(l && r ? { e: { left: l, right: r }, raw } : { raw, unread: "a species the reader does not parse" });
+  }
+  return out.map((x) => { const b = x.e && balanceOf(x.e); return b?.status === "unread" ? { raw: x.raw, unread: b.reason } : x; });
+}
+/** Every reaction a text writes that the reader reads: [{ e, raw }]. */
+export const equationsIn = (text) => reactionsIn(text).filter((x) => x.e);
+
+/** The balance of a reaction: { status: "balanced" | "unbalanced" | "unread", x?, reason? }. */
+function balanceOf(e) {
+  const species = [...Object.keys(e.left), ...Object.keys(e.right)];
+  const R = new Map(species.map((sp) => [sp, speciesReadings(sp)]));
+  if ([...R.values()].some((r) => !r.length)) return { status: "unread", reason: "a species that is not a formula of real elements" };
+  const nuclear = [...R.values()].map((r) => r.some((x) => x.nuclear));
+  if (nuclear.some(Boolean)) {
+    if (!nuclear.every(Boolean)) return { status: "unread", reason: "a nuclear equation with a species that carries no mass and atomic number" };
+    const sum = (side, k) => Object.entries(side).reduce((a, [sp, n]) => a + R.get(sp)[0].nuclear[k] * n, 0);
+    for (const [k, name] of [["A", "mass number"], ["Z", "atomic number"]]) {
+      const l = sum(e.left, k), r = sum(e.right, k);
+      if (Math.abs(l - r) > 1e-9) return { status: "unbalanced", x: { element: name, left: l, right: r } };
+    }
+    return { status: "balanced" };
+  }
+  const combos = [...R.values()].reduce((n, r) => n * r.length, 1);
+  if (combos > 64) return { status: "unread", reason: "too many ambiguous ion charges" };
+  let first = null;
+  for (let c = 0; c < combos; c++) {
+    let rest = c;
+    const pick = new Map(species.map((sp) => { const r = R.get(sp), x = r[rest % r.length]; rest = Math.floor(rest / r.length); return [sp, x]; }));
+    const tally = (side) => {
+      const atoms = {}; let charge = 0;
+      for (const [sp, k] of Object.entries(side)) { const p = pick.get(sp); for (const [el, n] of Object.entries(p.atoms)) atoms[el] = (atoms[el] || 0) + n * k; charge += p.charge * k; }
+      return { atoms, charge };
+    };
+    const L = tally(e.left), Rt = tally(e.right);
+    let x = null;
+    for (const el of [...new Set([...Object.keys(L.atoms), ...Object.keys(Rt.atoms)])].sort()) {
+      const l = L.atoms[el] || 0, r = Rt.atoms[el] || 0;
+      if (Math.abs(l - r) > 1e-9) { x = { element: el, left: l, right: r }; break; }
+    }
+    if (!x && Math.abs(L.charge - Rt.charge) > 1e-9) x = { element: "charge", left: L.charge, right: Rt.charge };
+    if (!x) return { status: "balanced" };
+    first ??= x;
+  }
+  return { status: "unbalanced", x: first };
+}
+
+/** The imbalance of a reaction: null when balanced or unreadable; else { element, left, right } (element may be
+ *  "charge", "mass number" or "atomic number"). */
+export function imbalanceOf(e) {
+  const b = balanceOf(e);
+  return b.status === "unbalanced" ? b.x : null;
 }
 
 /** The unbalanced reactions of a text: [{ equation, element, left, right }]. */
 export function unbalancedEquations(text) {
-  const fmt = (side) => Object.entries(side).map(([sp, k]) => `${k === 1 ? "" : k} ${sp}`.trim()).join(" + ");
-  return equationsIn(text).map(({ e, raw }) => ({ e, raw, x: imbalanceOf(e) })).filter((r) => r.x)
-    .map(({ e, raw, x }) => ({ equation: raw || `${fmt(e.left)} → ${fmt(e.right)}`, ...x }));
+  return equationsIn(text).map(({ e, raw }) => ({ raw, x: imbalanceOf(e) })).filter((r) => r.x).map(({ raw, x }) => ({ equation: raw, ...x }));
+}
+
+// ---- coverage: what was read, what was skipped -------------------------------------------------------------------
+/** What the check read in a set of units, and what it could not: { compared, balanced, skipped: [{ unit, what, form, reason }] }. */
+export function mechanicalCoverage(units) {
+  const out = { compared: 0, balanced: 0, skipped: [] };
+  for (const u of units) {
+    const w = workedLinks(u.text);
+    out.compared += w.compared.length;
+    for (const s of w.skipped) out.skipped.push({ unit: u.id, what: "worked link", form: s.link, reason: s.reason });
+    for (const r of reactionsIn(u.text)) {
+      if (r.e) out.balanced++;
+      else out.skipped.push({ unit: u.id, what: "reaction", form: r.raw, reason: r.unread });
+    }
+  }
+  return out;
 }
 
 // ---- the gate check ----------------------------------------------------------------------------------------------
 /**
  * The mechanical check over a package's units (wired in skeleton/full_gate.mjs at V4/V6/V8, beside the core
- * obligations). `confirmed` is the set of "unitId|factHash" the instructor confirmed (an intended wrong answer stands).
+ * obligations). `confirmed` is the set of "unitId|contentHash" the instructor confirmed (an intended wrong answer
+ * stands) — bound to the unit's whole text, so any edit voids it (R4-K07: a factHash does not see operators or words).
  */
-export function mechanicalFindings(units, basis, { confirmed = new Set(), factHashOf = () => "" } = {}) {
+export function mechanicalFindings(units, basis, { confirmed = new Set(), contentHashOf = () => "" } = {}) {
   const F = [];
   for (const u of units) {
-    if (confirmed.has(`${u.id}|${factHashOf(u.text)}`)) continue;
+    if (confirmed.has(`${u.id}|${contentHashOf(u.text)}`)) continue;
     for (const x of arithmeticMismatches(u.text))
       F.push(makeFinding({ module: "skeleton", kind: "computation-mismatch", units: [u.id], statusClass: "defect", route: "agent", basis,
-        evidence: { type: "computation", rule: "a worked expression equals the value written after it, at the precision written", expression: x.expression, written: x.written, recomputed: x.recomputed, deliverable: u.locator?.deliverable },
+        evidence: { type: "computation", rule: "every link of a worked chain computes, at the precision written", expression: x.expression, written: x.written, recomputed: x.recomputed, deliverable: u.locator?.deliverable },
         recommendation: `${u.id}: ${x.expression} recomputes to ${x.recomputed}, not ${x.written} — correct the arithmetic or the value` }));
     for (const x of unbalancedEquations(u.text))
       F.push(makeFinding({ module: "skeleton", kind: "equation-unbalanced", units: [u.id], statusClass: "defect", route: "agent", basis,
-        evidence: { type: "computation", rule: "a written reaction balances in every element and in charge", equation: x.equation, element: x.element, left: x.left, right: x.right, deliverable: u.locator?.deliverable },
-        recommendation: `${u.id}: ${x.equation} is not balanced — ${x.element === "charge" ? "charge" : x.element} ${x.left} on the left, ${x.right} on the right` }));
+        evidence: { type: "computation", rule: "a written reaction balances in every element and in charge (a nuclear one in mass and atomic number)", equation: x.equation, element: x.element, left: x.left, right: x.right, deliverable: u.locator?.deliverable },
+        recommendation: `${u.id}: ${x.equation} is not balanced — ${x.element} ${x.left} on the left, ${x.right} on the right` }));
   }
   return F;
 }

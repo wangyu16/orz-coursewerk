@@ -2710,12 +2710,28 @@
       "tiers": [
         "T1"
       ],
-      "statement": "K2: computable content is checked (R3-K03). At V4/V6/V8 the gate recomputes every worked expression it can read without a guess — a math chain 'X = <arithmetic> = <value>' with numbers, scientific notation, + − × · / \\frac ^ \\sqrt \\ln \\log \\exp, brackets and implicit products — and compares it with the value written, at the precision written (beyond half a unit in the last place, and more than half a percent off); and balances every reaction the harness reads (equationIn: each \\ce{…} with an arrow, and the plain one) in every element and in charge. A mismatch is a defect routed to the agent (computation-mismatch, equation-unbalanced) with the recomputed value or the unbalanced element in its evidence; what cannot be parsed (a symbol, a unit inside the arithmetic, a change of unit, an unknown species) is skipped. A unit the instructor confirmed at its current facts is not re-raised. The real course (C2) raises none.",
-      "source": "3C red team round 3, CONFIDENCE (studies/p11/redteam-r3/confidence)",
+      "statement": "K2: computable content is checked (R3-K03, R4-K01/K02/K03/K07/K11/K12). At V4/V6/V8 the gate reads every worked chain in math ($…$, $$…$$, \\(…\\), \\[…\\], and aligned/align/gather/split environments, whose '&' and '\\\\' are layout; a span or line that opens with a relation continues the chain) and compares EVERY link between two numeric parts: arithmetic with a literal at the literal's written precision, arithmetic with arithmetic (a restatement, held to what its rounded inputs allow), and a literal with a literal; both beyond half a percent before a disagreement counts. It reads numbers, scientific notation, + − × · / \\frac ^ \\sqrt \\ln \\log \\exp, brackets, implicit products, =, ≈, \\approx, \\sim, and '\\%' as the percent unit (a percent on one side only holds under either reading). Units are compared by meaning through the shared unit table ('mol/L', 'mol L^{-1}' and 'M' are one unit); a real change of unit is not converted. What cannot be read without a guess — a unit inside the arithmetic, e^x, an n-th root, an implicit product after '/' — is skipped AND counted (runGate's `mechanical`, the gate's notChecked), never passed in silence. A mismatch is a defect routed to the agent (computation-mismatch) with the recomputed value in its evidence. A unit the instructor confirmed is not re-raised only at the text confirmed (contentHash): any edit voids the exemption. The real course (C2) raises none.",
+      "source": "3C red team rounds 3 and 4, CONFIDENCE (studies/p11/redteam-r3/confidence, redteam-r4/confidence)",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r3-confidence.test.mjs"
+          "tests/redteam-r3-confidence.test.mjs",
+          "tests/redteam-r4-confidence-k2.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.mechanical.balance",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "K2: every reaction a unit writes is balanced by a dedicated reaction reader (R3-K03, R4-K04/K05/K06/K09/K10), not the claim reader that identifies a reaction: each \\ce{…} with an arrow (braces matched; mhchem arrow conditions such as '->[MnO2]' or '<=>[a][b]' dropped, never read as a species; states, hydrates, '+ heat'), and every reaction written outside \\ce{} (\\mathrm/\\text math, prose, Unicode sub- and superscripts), not only the first. Ion charges are kept in every notation ('Ag+', 'Cu^2+', '^{3+}', '^{-}', 'Fe³⁺'); bracketed complexes and electrons are read; a caret-less 'NH4+' or 'Fe3+' is read both ways and is unbalanced only when no reading balances. A nuclear equation is balanced in mass and atomic number. An unbalanced element, charge, mass or atomic number is a defect routed to the agent (equation-unbalanced). A species that does not parse, a nuclide without its atomic number, or a side that continues past what is read skips the equation and is counted as not checked — never reported unbalanced. Correct ionic equilibria raise none; the real course (C2) raises none.",
+      "source": "3C red team round 4, CONFIDENCE (studies/p11/redteam-r4/confidence)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r4-confidence-k2.test.mjs"
         ]
       }
     },

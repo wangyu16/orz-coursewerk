@@ -317,7 +317,7 @@
       "id": "repo:scripts/gate.mjs",
       "path": "scripts/gate.mjs",
       "type": "executable",
-      "hash": "af67808f542005865885dd4f64567882d071d9df0142b2c8e918bb863663c8e4"
+      "hash": "ec7acc001b2784276e60f0faca2fc86ec23264a767c18fdee25ae25ee0fa4778"
     },
     {
       "id": "repo:scripts/generate_attribution.mjs",
@@ -473,7 +473,7 @@
       "id": "repo:scripts/lib/core/obligations.mjs",
       "path": "scripts/lib/core/obligations.mjs",
       "type": "kernel",
-      "hash": "412febac94ddad35f7b1b5865ae4762660d1561249c15c325437cea01c4a3102"
+      "hash": "5249ee3eb34c15b3578b55344952391d1d034531717004529624a1129a8d4412"
     },
     {
       "id": "repo:scripts/lib/core/pack_v2.mjs",
@@ -701,7 +701,7 @@
       "id": "repo:scripts/lib/skeleton/full_gate.mjs",
       "path": "scripts/lib/skeleton/full_gate.mjs",
       "type": "kernel",
-      "hash": "533c16fb0b44bc996093dbfacf22af13d1c388ae1daf36e0c98b37838298b234"
+      "hash": "c52e76cabaf777ccf4917a425973dd8f424f0306a16e95e2e5f3ae4ac8fb2f11"
     },
     {
       "id": "repo:scripts/lib/skeleton/gate.mjs",
@@ -821,7 +821,7 @@
       "id": "repo:scripts/lib/verify/mechanical.mjs",
       "path": "scripts/lib/verify/mechanical.mjs",
       "type": "kernel",
-      "hash": "1896fba185ae4cefe97eef77cfecabda0b13f4354ee70a28b3eadaeb86f49dab"
+      "hash": "0e6d6606505e516b8ab55dff495d43070c4452490017b13d9068a975f2904e17"
     },
     {
       "id": "repo:scripts/lib/verify/references.mjs",
@@ -1151,7 +1151,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "1d29fc0b22c1accd9aaa9ef3167166be2a95e4b1d4f753c77aab6f15c5253d0d"
+      "hash": "8d662552c9f7098cc666f65ffb61130159cbccf377d537c3f1e85baf37b251fc"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1782,6 +1782,12 @@
       "path": "tests/redteam-r3-control.test.mjs",
       "type": "test",
       "hash": "4b2149645b4087eab5c23a99be3d109dd727d88eaf00c6d3484f21fb898502c4"
+    },
+    {
+      "id": "repo:tests/redteam-r4-confidence-k2.test.mjs",
+      "path": "tests/redteam-r4-confidence-k2.test.mjs",
+      "type": "test",
+      "hash": "cd9d7d67497f9e420cc8b51efd30c2ef962a7ad6a467af17b1f5ae6a6e82659e"
     },
     {
       "id": "repo:tests/requirements.test.mjs",
@@ -3907,6 +3913,14 @@
         "tiers": [
           "T1",
           "T3"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.mechanical.balance",
+        "phase": "P11",
+        "tiers": [
+          "T1"
         ],
         "status": "closed"
       },
