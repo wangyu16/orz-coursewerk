@@ -536,25 +536,62 @@ export function coreObligations(root, reader, basis) {
       if (unreviewed.length) ob("link-review-owed", unreviewed.map((u) => u.id), `a blind link review of the units that would teach ${o.id} (node scripts/verify.mjs alignment --units ${unreviewed.map((u) => u.id).join(",")})`);
       else ob("objective-uncovered", [], `a teaching unit that teaches ${o.id}: its links were reviewed, and none teaches it (only in passing, or not at all)`);
     }
-    const assigned = guideAssignment(s.guide.entries, units);
+    // D41 for the guide (red team round 2, C5-08): a question fills an entry's Count only when its current blind
+    // review says it practises the entry's objective ("yes") and is the entry's type and level; a framing question is
+    // never asked its fidelity, so it never fills one. A Count short only of reviews owed is the agent's review to run.
+    const { verified, owed } = guideReviewState(s.guide.entries, ch, reviews);
+    const assigned = guideAssignment(s.guide.entries, units, verified), possible = guideAssignment(s.guide.entries, units, (q, e) => verified(q, e) || owed(q, e));
     for (const e of s.guide.entries.filter((x) => x.id)) {
-      const got = assigned.get(e.id) || [], linked = units.filter((u) => u.form === "question" && (u.spineNodes || []).includes(e.id));
-      if (got.length < (Number.isInteger(e.count) ? e.count : 0))
-        ob("guide-entry-short", linked.map((u) => u.id), `${e.count - got.length} more question(s) for ${e.id} (has ${got.length} of ${e.count})`); // only practice questions count, each toward one entry
+      const need = Number.isInteger(e.count) ? e.count : 0, got = assigned.get(e.id) || [];
+      if (got.length >= need) continue;
+      const linked = units.filter((u) => u.form === "question" && (u.spineNodes || []).includes(e.id)), unreviewed = linked.filter((q) => reviewable(q) && owed(q, e));
+      // the questions awaiting their review count as had (the review is owed, below); the rest is short
+      const had = (possible.get(e.id) || []).length;
+      if (unreviewed.length) ob("link-review-owed", unreviewed.map((u) => u.id), `a blind link and level review of the questions that would fill ${e.id} (node scripts/verify.mjs alignment --units ${unreviewed.map((u) => u.id).join(",")})`);
+      if (had < need) ob("guide-entry-short", linked.map((u) => u.id), `${need - had} more question(s) for ${e.id} (has ${had} of ${need})`); // only practice questions whose review says they fit, each toward one entry
     }
   }
   // D42: everything that ships is read — a framing unit (introduction, summary, closing) no current review has read for
-  // off-plan content is the agent's to review (C3-07: a whole lesson under "## Introduction to …" went unread)
-  const unreadFraming = units.filter((u) => u.role === "framing" && !reviews.has(u.id));
+  // off-plan content is the agent's to review (C3-07: a whole lesson under "## Introduction to …" went unread). Only an
+  // explicit off-plan answer reads it (round 2, C2-13: a missing or unreadable answer left it read).
+  const unreadFraming = units.filter((u) => u.role === "framing" && (!reviews.has(u.id) || reviews.get(u.id).offPlan === null));
   if (unreadFraming.length) ob("framing-review-owed", unreadFraming.map((u) => u.id), `a blind review of ${unreadFraming.length} framing unit(s) for off-plan content (node scripts/verify.mjs alignment --units ${unreadFraming.map((u) => u.id).join(",")})`);
-  // course-map objectives (redteam r1 C1-10). The grammar links a chapter to the course map only through [prereq: …]
-  // (the slice chapterCoverage binds into the chapter's approval), so a course objective is covered when a chapter
-  // objective or concept names it as a prerequisite — that node is itself checked above — or a teaching unit links it.
-  const chapterNodes = chapters.flatMap((ch) => spine.chapters[ch].map.nodes);
-  for (const o of spine.course.nodes.filter((n) => n.kind === "objective" && n.id))
-    if (!chapterNodes.some((n) => (n.prereqs || []).includes(o.id)) && !units.some((u) => teachesInDeliverable(u, o.id)))
-      ob("course-objective-uncovered", [], `a chapter objective or concept that names ${o.id} in [prereq: …], or a teaching unit (study guide or slides) that serves it`);
+  // course-map objectives (redteam r1 C1-10; round 2 C1-10). The grammar links a chapter to the course map only through
+  // [prereq: …]. A mention is not teaching: a course objective is covered only by what is TAUGHT (D41) — a chapter
+  // objective or concept that names it in [prereq: …] and that a unit's current review says it teaches, or a study-
+  // guide/slides unit linking the course objective itself, reviewed "yes".
+  const chapterNodes = chapters.flatMap((ch) => spine.chapters[ch].map.nodes).filter((n) => ["objective", "concept"].includes(n.kind) && n.id);
+  const teachersOf = (id) => units.filter((u) => teachesInDeliverable(u, id));
+  const taught = (id) => teachersOf(id).some((u) => reviews.get(u.id)?.verdicts.get(id) === "yes");
+  const unreviewedOf = (id) => teachersOf(id).filter((u) => !["yes", "passing", "no"].includes(reviews.get(u.id)?.verdicts.get(id)));
+  for (const o of spine.course.nodes.filter((n) => n.kind === "objective" && n.id)) {
+    const via = chapterNodes.filter((n) => (n.prereqs || []).includes(o.id)).map((n) => n.id);
+    if ([o.id, ...via].some(taught)) continue;
+    const unreviewed = [...new Set([o.id, ...via].flatMap(unreviewedOf).map((u) => u.id))];
+    if (unreviewed.length) ob("link-review-owed", unreviewed, `a blind link review of the units that would teach ${o.id}${via.length ? ` (through ${via.join(", ")})` : ""} (node scripts/verify.mjs alignment --units ${unreviewed.join(",")})`);
+    else ob("course-objective-uncovered", [], `a taught chapter objective or concept that names ${o.id} in [prereq: …], or a teaching unit (study guide or slides) that teaches it — a [prereq: …] mention alone does not cover it${via.length ? ` (${via.join(", ")} ${via.length === 1 ? "names it, but is" : "name it, but are"} taught by no reviewed unit)` : ""}`);
+  }
   return F;
+}
+
+/**
+ * Which question fills which guide entry, as the current reviews say (round 2, C5-08). `verified(q, e)`: q's current
+ * review says it practises e's objective ("yes") and matches e's type and level. `owed(q, e)`: q has no usable current
+ * review for e yet (none, or a verdict or fidelity left unanswered) — the agent's review to run.
+ */
+export function guideReviewState(entries, chapter, reviews) {
+  const fidelityFor = (r, e) => (r.fidelity || []).find((f) => f.id === e.id) || ((r.fidelity || []).length === 1 && r.fidelity[0].id == null ? r.fidelity[0] : null);
+  const objectiveOf = (e) => `objective.${chapter}.${e.objective}`;
+  const verified = (q, e) => {
+    const r = q.role === "teaching" ? reviews.get(q.id) : null, f = r && fidelityFor(r, e);
+    return !!(r && r.verdicts.get(objectiveOf(e)) === "yes" && f && f.type === "matches" && f.level === "matches");
+  };
+  const owed = (q, e) => {
+    if (q.role !== "teaching") return false;
+    const r = reviews.get(q.id), f = r && fidelityFor(r, e), v = r?.verdicts.get(objectiveOf(e));
+    return !r || !["yes", "passing", "no"].includes(v) || !f || f.type === "unanswered" || f.level === "unanswered";
+  };
+  return { verified, owed };
 }
 
 /**
@@ -569,13 +606,16 @@ export const teachesInDeliverable = (u, id) => reviewable(u) && /^(study-guide|s
  * Which practice question fills which guide entry's Count (redteam r1 C5-08, C5-17): only questions in practice/ count
  * (a worked example's solution is printed beside it), and each question counts toward ONE entry — a maximum matching
  * of questions to the entries' Count slots, so a question linked to several entries goes where it is needed.
+ * `eligible(q, entry)` narrows which links count (coreObligations: only links the current review verified, D41).
  * Returns Map(entry id → [question ids]).
  */
-export function guideAssignment(entries, units) {
+export function guideAssignment(entries, units, eligible = (q) => q.role === "teaching") {
   const cap = new Map(entries.filter((e) => e.id).map((e) => [e.id, Number.isInteger(e.count) && e.count > 0 ? e.count : 0]));
+  const byId = new Map(entries.filter((e) => e.id).map((e) => [e.id, e]));
   const got = new Map([...cap.keys()].map((id) => [id, []]));
-  const qs = units.filter((u) => u.form === "question" && u.locator.deliverable.startsWith("practice/"));
-  const linksOf = new Map(qs.map((q) => [q.id, (q.spineNodes || []).filter((n) => cap.get(n) > 0)]));
+  // a framing question (under a summary heading) is never a practice question of an entry (round 2, C5-08)
+  const qs = units.filter((u) => u.form === "question" && u.role === "teaching" && u.locator.deliverable.startsWith("practice/"));
+  const linksOf = new Map(qs.map((q) => [q.id, (q.spineNodes || []).filter((n) => cap.get(n) > 0 && eligible(q, byId.get(n)))]));
   const place = (q, seen) => {
     for (const e of linksOf.get(q)) {
       if (seen.has(e)) continue;

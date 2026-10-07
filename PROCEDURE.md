@@ -77,7 +77,8 @@ materials:
 - the concept map (`concepts/<slug>.md`): objectives, concept sequence, key terms, misconceptions, prerequisites;
 - the assessment guide (`assessment-support/<slug>.md`): per objective, `
 **Re-approval after a spine change:** run `spine.mjs review --chapter <slug>` (or `--course`) first. A blind verifier
-reads only the lines changed since the last approval. Its concerns appear in `spine.mjs preview` as questions for the
+reads only the lines changed since the last approval (in the concept map and the assessment guide, moved lines
+included). Its concerns appear in `spine.mjs preview` as questions for the
 instructor, and the spine is never edited. Approval waits for the review. Offline, approve with `--without-review`,
 which is recorded.
 
@@ -106,10 +107,16 @@ Work in batches (one to three chapters, or a session's budget). In each batch:
    your own knowledge.
    - Run `units.mjs begin` before writing and `units.mjs index --as agent` after: every unit gets its origin.
    - Follow the skills, `docs/authoring-guidelines.md` and `docs/writing-checkable-statements.md`.
+   - Everything that ships is read. Declare any other markdown the course ships (a handout, a reading) in
+     `metadata/DOCUMENTS.json`; it is then checked like a study guide. Only the instructor exempts one as
+     administrative (`coursewerk.mjs administrative --document <path>`, in their words). An `{{md …}}` include must
+     name a declared document. Whatever prints is content: a sub-heading, a printed `{{nyml}}` element, text after
+     a comment.
 2. **Link** each teaching unit to the spine nodes it serves (`units.mjs link`), and each practice question to its
    assessment-guide entry. A guide entry is for practice questions: a passage linked only to one is still unlinked,
    a worked example in a study guide does not count toward an entry's Count, and one question counts toward one
-   entry only.
+   entry only. A question fills a Count only once its alignment review says it practises the entry's objective at
+   the entry's type and level.
 3. **Run the gate** (`gate.mjs --inputs <corpus>`) and fix what is routed to you. Facts:
    - `verify.mjs search` (claim-only retrieval and pinning), then `semi` (the blind verifier);
    - `absolutes` (a context review of absolute statements);

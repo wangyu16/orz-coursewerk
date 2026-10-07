@@ -33,6 +33,7 @@ import { packPublished } from "../scripts/lib/core/pack_v2.mjs";
 import { appendLogRecord, recordHash, verifyLog } from "../scripts/lib/records/log.mjs";
 import { replayVerifier } from "../scripts/lib/verify/dispatch.mjs";
 import { verifyKnowledge } from "../scripts/lib/verify/verdicts.mjs";
+import { reviewAlignment } from "../scripts/lib/verify/alignment.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.join(HERE, "..");
@@ -67,6 +68,13 @@ function course(t) {
 const nonceOf = (pr) => pr.match(/"nonce": "([0-9a-f]+)"/)[1];
 const clean = replayVerifier((pr) => ({ nonce: nonceOf(pr), concerns: [] }));
 /** The routed fix: a blind re-review of each unit with its context, then the recorded re-check. */
+/** A replayed link-and-level review that finds the question fits its links and guide entries (test double). */
+const fitsGuide = replayVerifier((pr) => {
+  const declared = (pr.split("\nDECLARED ITEMS\n")[1] || "").split("\n\n")[0].split("\n").filter((l) => l.startsWith("- ")).map((l) => l.slice(2));
+  const gids = [...pr.matchAll(/^- (guide\.\S+): /gm)].map((m) => m[1]), fid = { type: "matches", level: "matches", why: "test double" };
+  return { nonce: pr.match(/"nonce": "([0-9a-f]+)"/)[1], links: declared.map((id) => ({ id, verdict: "yes", why: "test double" })), also: [], offPlan: false,
+    ...(/its assessment guide entry asks for/.test(pr) ? { fidelity: fid } : gids.length ? { fidelity: gids.map((id) => ({ id, ...fid })) } : {}) };
+});
 async function reverified(c, ids) {
   await verifyKnowledge(c.root, c.r(), { verifier: clean, only: ids });
   reverifyUnits(c.root, c.r(), ids, AGENT);
@@ -184,6 +192,11 @@ test("[req.coherence.question-binding] F7: a synonymous rewording of a question 
   const d = buildDigest(c.root, g.findings, unitInfoOf(c.root, c.r()), { cap: 50 });
   assert.ok(!d.entries.some((e) => ["reverify", "answer-still-correct"].includes(e.kind)), "nothing asks the instructor about a correct answer");
   await reverified(c, owed);
+  // red team round 2 (C5-08, D41 for the guide): a reworded practice question also owes its cheap link-and-level
+  // review before it fills its guide entry's Count again — the agent's, never the instructor's (replayed: it fits)
+  const linkOwed = c.gate().findings.filter((f) => f.kind === "link-review-owed");
+  assert.ok(linkOwed.every((f) => f.route === "agent" && f.units.every((u) => /^u-practice-/.test(u))));
+  await reviewAlignment(c.root, c.r(), { verifier: fitsGuide, only: linkOwed.flatMap((f) => f.units) });
   const after = c.gate().findings.filter((f) => !base.findings.some((b) => b.kind === f.kind && JSON.stringify(b.units) === JSON.stringify(f.units)));
   assert.deepEqual(after.filter((f) => !["absolute-unreviewed", "evidence-missing"].includes(f.kind)).map((f) => f.kind), [], "re-checked: nothing of the change remains (its own new text's facts aside)");
 });

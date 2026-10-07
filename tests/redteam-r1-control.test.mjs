@@ -233,7 +233,9 @@ test("[req.control.objectives-section] C3-06: only the list items of a Learning 
   const before = c.units().filter((u) => u.locator.deliverable === SG).length;
   c.asAgent(() => c.edit(SG, at, `${at}\n${OFF}\n\n### Also in this chapter\n\n- Name the anode and the cathode of a galvanic cell and say which electrode is oxidized.\n- Explain what the salt bridge does.\n`));
   const now = c.units().filter((u) => u.locator.deliverable === SG);
-  assert.equal(now.length, before + 1, "the paragraph is a unit; the lists are not");
+  // the paragraph is a unit; so is the ### sub-heading, which prints (red team round 2, C3-03); the lists are not
+  assert.equal(now.length, before + 2, "the paragraph and the sub-heading are units; the lists are not");
+  assert.ok(now.some((u) => u.form === "heading" && u.text === "### Also in this chapter"));
   const off = now.find((u) => u.text === OFF);
   assert.ok(off && off.role === "teaching");
   const f = added(c);
@@ -447,6 +449,11 @@ test("[req.ship.checked] D42: a declared document is a deliverable unless the in
   fs.mkdirSync(path.dirname(c.file(H)), { recursive: true });
   c.write(H, "{{nyml\nkind: document\n}}\n\n# Schedule\n\nWeek 1: equilibrium. Week 2: Le Chatelier's principle.\n");
   c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "schedule", title: "Schedule", source: H, carrier: "paged", role: "administrative" }] }, null, 2) + "\n");
+  // red team round 2 (C3-06): the mark is the instructor's logged act, never the field alone — until they confirm it,
+  // the document is a deliverable like any other
+  assert.ok(added(c).some((f) => JSON.stringify(f).includes(H) && f.kind === "units-not-indexed"), "the field alone: a deliverable to index");
+  const ok = c.cli("coursewerk.mjs", "administrative", "--root", c.root, "--document", H, "--name", "Yu Wang (wangyu16)", "--words", "The schedule is administrative.");
+  assert.equal(ok.status, 0, ok.stderr);
   assert.ok(!c.units().some((u) => u.locator.deliverable === H), "administrative: not segmented as teaching");
   assert.ok(!added(c).some((f) => JSON.stringify(f).includes(H) && f.kind === "units-not-indexed"));
   assert.deepEqual(segmentDeliverable("{{nyml\nkind: document\n}}\n\n# H\n\nText here.\n", H).units.map((u) => u.text), ["Text here."], "the settings block is notation, not content");

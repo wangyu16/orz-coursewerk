@@ -191,7 +191,7 @@
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "14bb5c2b6079306821a7ad776b7dcac0dc5ec15572178274298af1614c363779"
+      "hash": "6614d73030a255bc584545ab8ddc59633bf42b1eb8a6ca7736c3051a15cfdc55"
     },
     {
       "id": "repo:README.md",
@@ -269,7 +269,7 @@
       "id": "repo:scripts/coursewerk.mjs",
       "path": "scripts/coursewerk.mjs",
       "type": "executable",
-      "hash": "9bf2310666a30a97593ba0fc88eaaf27de6a942d06d2d4e2a1f3782ae370ebaa"
+      "hash": "7f4f4cd94a283cac8a9090ce76697176dfdfede220c3e441a5ce242aaf906a5d"
     },
     {
       "id": "repo:scripts/data/license-texts.json",
@@ -419,7 +419,7 @@
       "id": "repo:scripts/lib/core/core_checks.mjs",
       "path": "scripts/lib/core/core_checks.mjs",
       "type": "kernel",
-      "hash": "6a10395327b8be9cb3c8c1386ab6af80fc92c58ed857331c5d84d80f9128776f"
+      "hash": "b93e16815fe7d84db52bd0cf14abae172df4781f796f88adc488ec34383c1d76"
     },
     {
       "id": "repo:scripts/lib/core/critique.mjs",
@@ -467,13 +467,13 @@
       "id": "repo:scripts/lib/core/obligations.mjs",
       "path": "scripts/lib/core/obligations.mjs",
       "type": "kernel",
-      "hash": "33511f39f9f2f29476423bd0f3124d77fa335572868ad8ce38366724acc617b9"
+      "hash": "29f1c316ec7a305d895808f1ae9d358abbb90be2b934e60f93cb9eb317781d2f"
     },
     {
       "id": "repo:scripts/lib/core/pack_v2.mjs",
       "path": "scripts/lib/core/pack_v2.mjs",
       "type": "kernel",
-      "hash": "b9cfe3abacff0360924abb758cdd8898af6f7923d5de2afc2d7b2ac2977137bd"
+      "hash": "efdac5cf1c2ddf6a61a09aea415ce1979cfd9a9d0e95f968b6672348cd8bfd54"
     },
     {
       "id": "repo:scripts/lib/core/package_reader.mjs",
@@ -491,13 +491,19 @@
       "id": "repo:scripts/lib/core/segment.mjs",
       "path": "scripts/lib/core/segment.mjs",
       "type": "kernel",
-      "hash": "c4dcefd357f23102e368e051e56eefa2fe192c806a6f46df80e21468276058e7"
+      "hash": "c0ebefab7ced36a9ae88699492c92ca6f0d71316aa7b8d2a6739d1df7bffcce6"
+    },
+    {
+      "id": "repo:scripts/lib/core/shipped.mjs",
+      "path": "scripts/lib/core/shipped.mjs",
+      "type": "kernel",
+      "hash": "3d70120947658d5ea9318622dd3fbbc3c3d2617737df27f5bbd6cffa744a2ea0"
     },
     {
       "id": "repo:scripts/lib/core/spine_review.mjs",
       "path": "scripts/lib/core/spine_review.mjs",
       "type": "kernel",
-      "hash": "17eaa998b5a0d82f2db0527301218b9d01b733e610b538417ae493bc7c3b27f0"
+      "hash": "445ba7d3235e4105ba14f72242158309acb1675903262fa58752eaed9c694771"
     },
     {
       "id": "repo:scripts/lib/core/spine.mjs",
@@ -521,7 +527,7 @@
       "id": "repo:scripts/lib/core/units_index.mjs",
       "path": "scripts/lib/core/units_index.mjs",
       "type": "kernel",
-      "hash": "604651676c7bc452e0dd27d521efc3fcd1efaff715726e44af92b8de10535b39"
+      "hash": "db8a398552bac26f3b9924a6f6838809f869c3b2e28d473c4556bb2438f9bec4"
     },
     {
       "id": "repo:scripts/lib/core/values.mjs",
@@ -665,7 +671,7 @@
       "id": "repo:scripts/lib/records/units.mjs",
       "path": "scripts/lib/records/units.mjs",
       "type": "kernel",
-      "hash": "1b522a53989210dc9dbbd540f07fa81a5ea902e51e8f0c85e91fb91737628b95"
+      "hash": "02f2cb0842352215943eab6ab5c17f82ad72efac382263badd65dc0e0f63ba14"
     },
     {
       "id": "repo:scripts/lib/rights_preflight.mjs",
@@ -683,7 +689,7 @@
       "id": "repo:scripts/lib/skeleton/full_gate.mjs",
       "path": "scripts/lib/skeleton/full_gate.mjs",
       "type": "kernel",
-      "hash": "57c650880b6ca80f876352def44f4883fcf37a37a40bba75c8d56a4df55cffb2"
+      "hash": "2a937a37b2a08918129873bb7f1e2263c22eedd504927763f4a06423ac9d6702"
     },
     {
       "id": "repo:scripts/lib/skeleton/gate.mjs",
@@ -785,7 +791,7 @@
       "id": "repo:scripts/lib/verify/alignment.mjs",
       "path": "scripts/lib/verify/alignment.mjs",
       "type": "kernel",
-      "hash": "68a2f63afe5ff409d2b39f62201a7621d9cdcfa19f6aa28aa012fc828b4a089b"
+      "hash": "a32fbb82ca92e7e3c2e8aee7ff696cc068ccda9557f4f1bbce5bf11e384327b7"
     },
     {
       "id": "repo:scripts/lib/verify/claims.mjs",
@@ -881,7 +887,7 @@
       "id": "repo:scripts/modules/ms9-alignment.mjs",
       "path": "scripts/modules/ms9-alignment.mjs",
       "type": "executable",
-      "hash": "6cb6e301f08f6ca8a2611d4c8046858b7e1860b696343da227b284d91bbf41f2"
+      "hash": "63677bdef2894106dcb9b29c022a4ffcb9e8a65f531f46a3cf2464bb8732347f"
     },
     {
       "id": "repo:scripts/modules/README.md",
@@ -1127,7 +1133,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "da613e9898c5968d407e11d28780e24cb2d0a1988526df83b37d793347c3d765"
+      "hash": "98cf38489643ce5abc0a55fb8b8ff882fc4615e3bd9a0f3bd0beab7b6bfb6b08"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1460,6 +1466,12 @@
       "hash": "9dd1e66edc4ecd575f1638739b571081291405a9168dbe62eecd90900cd61229"
     },
     {
+      "id": "repo:tests/fixtures/migrate-r2-link-reviews.mjs",
+      "path": "tests/fixtures/migrate-r2-link-reviews.mjs",
+      "type": "test",
+      "hash": "218a142c3796f254a6605913489633f56b2a8fc568d343d88124a70e512c97aa"
+    },
+    {
       "id": "repo:tests/fixtures/mini-package/assessment-support/phase-change.md",
       "path": "tests/fixtures/mini-package/assessment-support/phase-change.md",
       "type": "test",
@@ -1685,7 +1697,7 @@
       "id": "repo:tests/redteam-r1-coherence.test.mjs",
       "path": "tests/redteam-r1-coherence.test.mjs",
       "type": "test",
-      "hash": "593d6f08a4b487c702f879e6b64ecd244bc895d6e336688c51dfe1343e538478"
+      "hash": "4e8878ed80bb2e63b009574c070ab053c39b905e5025664a9c3684814573684a"
     },
     {
       "id": "repo:tests/redteam-r1-confidence.test.mjs",
@@ -1697,7 +1709,7 @@
       "id": "repo:tests/redteam-r1-control.test.mjs",
       "path": "tests/redteam-r1-control.test.mjs",
       "type": "test",
-      "hash": "4332af56f86fbcccc8bad0732ba2a5c6ea32fab398fd7bb71d85c4db262f873a"
+      "hash": "0a29dfa0b033d43892a23e39af79f961aded339221c25cb3d02ad7452bf0ad6b"
     },
     {
       "id": "repo:tests/redteam-r2-coherence.test.mjs",
@@ -1710,6 +1722,12 @@
       "path": "tests/redteam-r2-confidence.test.mjs",
       "type": "test",
       "hash": "97c26f5ca505994ebb2c87fe8ecdaf16cf5651d2f8d0afb669d7b985c12a72ee"
+    },
+    {
+      "id": "repo:tests/redteam-r2-control.test.mjs",
+      "path": "tests/redteam-r2-control.test.mjs",
+      "type": "test",
+      "hash": "c1dbe38344a8be8313ebaf85cd5f326c0d0df2a4cb3f417b5781feea75fb0b48"
     },
     {
       "id": "repo:tests/requirements.test.mjs",
@@ -3478,6 +3496,14 @@
         "status": "closed"
       },
       {
+        "id": "req.control.guide-count-verified",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.control.guide-fidelity-every-link",
         "phase": "P11",
         "tiers": [
@@ -3526,6 +3552,14 @@
         "status": "closed"
       },
       {
+        "id": "req.control.review-basis-judged",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.control.review-current-record",
         "phase": "P11",
         "tiers": [
@@ -3551,6 +3585,14 @@
       },
       {
         "id": "req.control.role-derived",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.control.structure-unprinted",
         "phase": "P11",
         "tiers": [
           "T1"
@@ -4149,7 +4191,23 @@
         "status": "closed"
       },
       {
+        "id": "req.ship.administrative-instructor",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.ship.checked",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.ship.same-computation",
         "phase": "P11",
         "tiers": [
           "T1"
@@ -4166,6 +4224,22 @@
       },
       {
         "id": "req.spine.blind-review",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.spine.blind-review-bound",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.spine.blind-review-diff",
         "phase": "P11",
         "tiers": [
           "T1"

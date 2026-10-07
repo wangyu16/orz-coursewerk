@@ -2,7 +2,7 @@
 // This module fixes the record's shape. Segmentation, identity matching and classification come in P4.
 import { HEX64 } from "./canonical.mjs";
 
-export const UNIT_FORMS = Object.freeze(["paragraph", "list-item", "table-row", "equation", "callout", "figure", "slide-group", "question", "answer"]);
+export const UNIT_FORMS = Object.freeze(["paragraph", "list-item", "table-row", "equation", "callout", "figure", "slide-group", "question", "answer", "heading", "element"]);
 export const UNIT_ROLES = Object.freeze(["teaching", "framing"]);
 export const JUDGMENT_KINDS = Object.freeze(["mechanical", "semi-mechanical", "knowledge-based"]);
 // Origin kinds and the fields each must carry. `unknown` is an edit of unknown authorship (D20).

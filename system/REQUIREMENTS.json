@@ -592,7 +592,7 @@
         "T1",
         "T2"
       ],
-      "statement": "The harness segments every deliverable into units (paragraph, list item, table row, equation, callout, figure, slide group, question, answer); no prose is left out.",
+      "statement": "The harness segments every deliverable into units (paragraph, list item, table row, equation, callout, figure, slide group, question, answer, a heading that prints, a printed orz-paged element); no prose is left out.",
       "source": "F1",
       "status": "closed",
       "evidence": {
@@ -1592,7 +1592,7 @@
       "tiers": [
         "T1"
       ],
-      "statement": "At re-approval, the concept-map lines changed since the last approval are reviewed by a context-blind verifier (accuracy only, wrong/clarify); its concerns are questions in the approval preview and never edit the spine; re-approval waits for the review unless the agent records that it was approved without it (offline).",
+      "statement": "At re-approval, the spine lines changed since the last approval (concept map and assessment guide: req.spine.blind-review-diff) are reviewed by a context-blind verifier (accuracy only, wrong/clarify); its concerns are questions in the approval preview and never edit the spine; re-approval waits for the review unless the agent records that it was approved without it (offline).",
       "source": "D39 (operator, 2026-10-03)",
       "status": "closed",
       "evidence": {
@@ -2122,12 +2122,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "The link review fails closed: verdicts and fidelity words are read case-insensitively; a declared link the answer omits, a word that is no verdict, a fidelity the harness cannot read, or an unscorable answer is a question (alignment-unscorable, route agent); an unreadable re-run does not hide an earlier readable verdict.",
-      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C2-16",
+      "statement": "The link review fails closed: verdicts and fidelity words are read case-insensitively; a declared link the answer omits, a word that is no verdict, a fidelity the harness cannot read, an off-plan answer that is not an explicit true or false, or an unscorable answer is a question (alignment-unscorable, route agent); a framing unit whose review leaves the off-plan answer unanswered still owes its review; an unreadable re-run does not hide an earlier readable verdict.",
+      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C2-16; 3C red team round 2, CONTROL (studies/p11/redteam-r2/control, 2026-10-06) C2-13",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r1-control.test.mjs"
+          "tests/redteam-r1-control.test.mjs",
+          "tests/redteam-r2-control.test.mjs"
         ]
       }
     },
@@ -2152,12 +2153,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "An approved course-map objective is covered when a chapter objective or concept names it in [prereq: …] (the grammar's link from a chapter to the course map) or a study-guide/slides teaching unit links it; otherwise it is the obligation course-objective-uncovered.",
-      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C1-10",
+      "statement": "An approved course-map objective is covered only by what is taught (D41): a chapter objective or concept that names it in [prereq: …] AND that a unit's current blind link review says it teaches, or a study-guide/slides unit linking the course objective itself, reviewed \"yes\". A [prereq: …] mention alone covers nothing (round 2 C1-10); an unreviewed candidate is link-review-owed; otherwise course-objective-uncovered.",
+      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C1-10; 3C red team round 2, CONTROL (studies/p11/redteam-r2/control, 2026-10-06) C1-10",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r1-control.test.mjs"
+          "tests/redteam-r1-control.test.mjs",
+          "tests/redteam-r2-control.test.mjs"
         ]
       }
     },
@@ -2212,12 +2214,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Restated objectives are compared with the approved ones on their full text, maths included, with notation normalized (LaTeX and Unicode, spacing, emphasis, punctuation); every approved objective must be restated where the section exists (objective-not-restated); a `#` Learning objectives heading is read like `##`.",
-      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C4-12",
+      "statement": "Restated objectives are compared with the approved ones on their full text, maths included, with notation normalized (LaTeX and Unicode, spacing, emphasis, punctuation) but case kept (ln K is not ln k); trailing [anchor: …]/[prereq: …] groups must be the node's own, and any other bracketed text is part of the text; every approved objective must be restated where the section exists (objective-not-restated); a `#` Learning objectives heading is read like `##`.",
+      "source": "3C red team round 1, CONTROL (studies/p11/redteam/control, 2026-10-06) C4-12; 3C red team round 2, CONTROL (studies/p11/redteam-r2/control, 2026-10-06) C4-09",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r1-control.test.mjs"
+          "tests/redteam-r1-control.test.mjs",
+          "tests/redteam-r2-control.test.mjs"
         ]
       }
     },
@@ -2473,12 +2476,117 @@
       "tiers": [
         "T1"
       ],
-      "statement": "D42: everything that ships is checked — framing units are read for off-plan content (framing-review-owed until read; off-plan → the instructor's question); documents declared in DOCUMENTS.json are deliverables unless marked administrative; an orz-paged settings block is notation.",
+      "statement": "D42: everything that ships is checked — framing units are read for off-plan content (framing-review-owed until read; off-plan → the instructor's question); documents declared in DOCUMENTS.json are deliverables unless the instructor confirmed them administrative (req.ship.administrative-instructor); an orz-paged settings or metadata block is notation.",
       "source": "D42 (operator 2026-10-06)",
       "status": "closed",
       "evidence": {
         "T1": [
           "tests/redteam-r1-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.structure-unprinted",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Structure is only what the frame does not print: text after a comment's \"-->\", `###`–`######` headings, a `#`/`##` heading or table header that reads as sentences, a header-only table, a credit-line paragraph that carries more than a short single attribution line, and every {{nyml}} block but the orz-paged settings and metadata blocks (document, meta) are units, segmented, linked and reviewed like any other.",
+      "source": "3C red team round 2, CONTROL (studies/p11/redteam-r2/control, 2026-10-06) C3-01, C3-02, C3-03, C3-05",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r2-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.ship.same-computation",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "What ships and what is checked are one computation (shipped.mjs): every markdown file the pack would ship is a deliverable, the spine, an instructor-confirmed administrative document or a harness record — otherwise document-unchecked (a blocking defect) and the pack refuses; a {{md}}/{{markdown}}/{{md-include}} include must name a deliverable (read on its own), otherwise include-unchecked and the pack refuses.",
+      "source": "3C red team round 2, CONTROL (studies/p11/redteam-r2/control, 2026-10-06) C3-04, C3-07",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r2-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.ship.administrative-instructor",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "`role: administrative` in DOCUMENTS.json exempts a document from the deliverable checks only while a logged instructor confirmation (coursewerk.mjs administrative, quoting their words) names it at its current content; the field alone, or an edit after the confirmation, leaves it a deliverable.",
+      "source": "3C red team round 2, CONTROL (studies/p11/redteam-r2/control, 2026-10-06) C3-06",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r2-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.guide-count-verified",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "D41 for the assessment guide: a practice question fills an entry's Count only when its current blind review says it practises the entry's objective (\"yes\") and matches the entry's type and level; a framing question never fills one; a Count short only of reviews owed is link-review-owed (the agent's), otherwise guide-entry-short.",
+      "source": "3C red team round 2, CONTROL (studies/p11/redteam-r2/control, 2026-10-06) C5-08",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r2-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.spine.blind-review-bound",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The D39 review that lets a re-approval through is the logged spine-review dispatch — its record vouched for by the log (recordHash), made of the current text and exactly the current changed lines; its concerns are re-read from the answer. A file under metadata/spine/review/ is a copy and satisfies nothing.",
+      "source": "3C red team round 2, CONTROL (studies/p11/redteam-r2/control, 2026-10-06) C4-11",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r2-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.spine.blind-review-diff",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The D39 changed lines are a longest-common-subsequence diff of every file the approval covers (a chapter's concept map and assessment guide; the course map), each line keyed by its text and the headings it stands under: a reworded, added or moved line, or a line under a renamed heading, is changed; renumbering a list is not.",
+      "source": "3C red team round 2, CONTROL (studies/p11/redteam-r2/control, 2026-10-06) C4-12",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r2-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.review-basis-judged",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A link or framing review is bound to the plan items it judged (a linked unit: its links, declared items and guide entries; framing: the whole plan it was shown) and to their text as the instructor last fully approved it while the current approval is a glance-confirmed light change: an edit of another plan item, or a confirmed light rewording, voids no review; a real change to a judged item voids it. Records made before round 2 stay current under their whole-plan basis.",
+      "source": "3C red team round 2, Coherence F11 (studies/p11/redteam-r2/coherence)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r2-control.test.mjs"
         ]
       }
     }
