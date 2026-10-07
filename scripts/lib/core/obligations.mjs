@@ -16,10 +16,15 @@
 // A STAMP IS NOT A RE-VERIFICATION (red team R1 coherence, F4/F5/F14). A stamp records the hashes of a unit's
 // dependencies, and is renewed whenever the unit is (re)written or relinked. But a unit that OWED re-verification when
 // it was restamped keeps owing it (`owes`, with the log seq it arose at), and a carried unit stays carried: editing the
-// text, relinking or re-indexing never clears either. What clears them, and nothing else:
-//   - a logged re-check of the unit's CURRENT text made after the obligation arose: a blind review (knowledge, semi or
-//     alignment dispatch) of the unit at its current content and dependencies, recorded by `units.mjs reverify`
-//     (reverifyUnits), or a named module's re-check (recordVerification);
+// text, relinking or re-indexing never clears either — nor does retiring the unit and bringing its text back, or
+// splitting it (R2 F1, F2, F14: units_index.mjs keeps a retired unit's record). What clears them, and nothing else:
+//   - a logged CORRECTNESS re-check of the unit's current text made after the obligation arose: a blind knowledge
+//     review (or, for a unit that is not an answer, a semi review that admitted its claims) of the unit at its current
+//     content and dependencies, recorded by `units.mjs reverify` (reverifyUnits). The review is checked against the
+//     dispatch that produced it: its record must be the one the log vouches for, show the unit's current text (and an
+//     answer's question), and hold a readable answer. A link (alignment) review does not count: it judges what a
+//     passage does for a student, never whether it is right (R2 F6). There is no other library path: the old
+//     `recordVerification`, which cleared on a module's name alone, is gone (R2 F9);
 //   - the instructor's confirmation (confirmUnits).
 // The agent cannot clear an obligation by saying so.
 import fs from "node:fs";
@@ -39,8 +44,9 @@ import { manifestChapters } from "./package_reader.mjs";
 import { openMajorVersion } from "./versions.mjs";
 import { approvalStatus } from "./approvals.mjs";
 import { dependencyEdges, factHash, nodeHash, questionBindingProblems, questionHash, sourceHashes, stampFor, staleTargets, targetHashes, termHash } from "./dependencies.mjs";
-import { assertUnaltered, deliverableOfSidecar, logUnitRecords } from "./unit_records.mjs";
+import { deliverableOfSidecar, writeUnitRecords } from "./unit_records.mjs";
 import { currentReviewsAt } from "../verify/alignment.mjs";
+import { recordHashOf } from "../verify/dispatch.mjs";
 
 // quote-verified: admitted by the verdict path (P7); instructor-confirmation: one confirmation (D19-D);
 // authorized-divergence: the instructor kept their text against evidence, after seeing it — the double confirmation (Q10).
@@ -130,12 +136,14 @@ export function loadUnits(root, reader) {
     const side = readSidecar(root, rel);
     const seg = segmentDeliverable(reader.text(rel), rel).units;
     if (!side || side.units.length !== seg.length) continue; // out of date: the units-not-indexed obligation covers it
-    // the judgment and the role are recomputed from the text and its structure, never trusted from the sidecar
-    // (round P7-1, B17; redteam r1 C3-15: a sidecar role set to "framing" un-linked an off-spine paragraph)
+    // the judgment, the role and where the unit is (its deliverable, section, place and lines) are recomputed from the
+    // text and its structure, never trusted from the sidecar (round P7-1, B17; redteam r1 C3-15: a sidecar role set to
+    // "framing" un-linked an off-spine paragraph; R2 F8: a practice answer relabelled as a study-guide unit)
     side.units.forEach((u, i) => {
       const text = seg[i]?.text ?? "";
       const judgment = [...new Set([...classifyUnit({ form: seg[i].form, text }), ...(u.judgmentAdded || [])])];
-      out.push({ ...u, form: seg[i].form, ...(seg[i].label ? { label: seg[i].label } : {}), judgment, role: derivedRole(seg[i].role, judgment), text });
+      const locator = { ...u.locator, deliverable: rel, section: seg[i].section, ordinal: i, lines: [seg[i].startLine, seg[i].endLine] };
+      out.push({ ...u, locator, form: seg[i].form, ...(seg[i].label ? { label: seg[i].label } : {}), judgment, role: derivedRole(seg[i].role, judgment), text });
     });
   }
   return out;
@@ -212,10 +220,8 @@ function rewriteUnits(root, ids, fn) {
   }
   const missing = [...want].filter((x) => !done.has(x));
   if (missing.length) throw new Error(`no such unit: ${missing.join(", ")}`);
-  const rels = writes.map(([f]) => deliverableOfSidecar(root, f));
-  assertUnaltered(root, rels); // never write over (and so launder) a record edited outside the harness (F6)
-  for (const [f, side] of writes) fs.writeFileSync(f, JSON.stringify(side, null, 2) + "\n");
-  if (rels.length) logUnitRecords(root, rels);
+  // never write over (and so launder) a record edited outside the harness (F6); write and log in one step
+  if (writes.length) writeUnitRecords(root, writes.map(([f, side]) => ({ ...side, deliverable: deliverableOfSidecar(root, f) })));
 }
 
 /**
@@ -302,6 +308,9 @@ export function admitEvidence(root, reader, unitId, evidence) {
   if (!u) throw new Error(`no such unit: ${unitId}`);
   if (evidence.factHash !== factHash(u.text)) throw new Error(`${unitId}: the evidence is for other facts than the unit states now`);
   if (!["quote-verified", "authorized-divergence"].includes(evidence.type)) throw new Error("the verdict path writes quote-verified or authorized-divergence evidence only");
+  // evidence names the logged fact-check dispatch it came from (R2: nothing clears without what produced it)
+  const logged = parseLog(readLogText(root)).some((r) => r.type === "dispatch" && r.party?.role === "harness" && r.payload?.kind === "semi" && r.payload?.dispatch === evidence.dispatch);
+  if (!evidence.dispatch || !logged) throw new Error(`${unitId}: evidence must name the logged fact-check dispatch it came from (${evidence.dispatch || "none named"} is not in the log)`);
   rewriteUnits(root, [unitId], (x) => { x.evidence = [...(x.evidence || []).filter((e) => !(e.type === evidence.type && e.factHash === evidence.factHash && e.dispatch === evidence.dispatch)), evidence]; });
 }
 
@@ -347,14 +356,6 @@ function liveContradictions(root, factHashes) {
   return out;
 }
 
-/** A stable module (or the harness on its behalf) records that it re-checked these units against the current package. */
-export function recordVerification(root, reader, ids, { module, basis }) {
-  if (!module || module === "agent") throw new Error("a verification names the module that re-checked the units");
-  const { edges, hashes } = context(root, reader);
-  rewriteUnits(root, ids, (u) => { u.stamp = stampFor(u.id, edges, hashes); delete u.carried; delete u.owes; });
-  appendLogRecord(root, { type: "revision", party: { role: "harness", name: module }, payload: { event: "units-reverified", units: ids, basis } });
-}
-
 /** The "wrong" concerns a knowledge dispatch raised about words the unit still contains (as verdicts.mjs reads them). */
 function wrongConcerns(root, dispatch, unitText) {
   let r; try { r = JSON.parse(fs.readFileSync(recordFile(root, `metadata/verification/${dispatch}.json`), "utf8")); } catch { return [{ kind: "wrong", text: "(the review record is missing)", problem: "its record cannot be read" }]; }
@@ -367,16 +368,46 @@ function wrongConcerns(root, dispatch, unitText) {
     .map((c) => ({ kind: "wrong", text: bare(c.text), problem: String(c.problem || "") }));
 }
 
-// the blind reviews that can re-verify a unit, and the logged outcome each must have
-const REVIEW_COUNTS = { knowledge: () => true, semi: (p) => p.status === "admitted", alignment: (p) => p.status === "reviewed" };
+// the blind reviews that can re-verify a unit, and the logged outcome each must have: a CORRECTNESS review only (R2 F6:
+// a link review judges what a passage does for a student, never whether it is right). A semi review checks the claims
+// against sources but never shows an answer its question, so only a knowledge review re-verifies an answer.
+const REVIEW_COUNTS = { knowledge: () => true, semi: (p, u) => p.status === "admitted" && u.form !== "answer" };
 export const REVERIFY_ROUTE = (root, ids) => `node scripts/verify.mjs knowledge --root ${root} --units ${ids.join(",")}`;
+const shownForm = (t) => String(t || "").replace(/\s+/g, " ").trim();
+
+/**
+ * Is a logged review what it claims to be (R2 F9/F10: nothing clears without evidence)? The record on disk must be the
+ * one the log vouches for (its whole-record hash, prompt hash and answer hash), be of this unit at its current text,
+ * show that text (and, for an answer, the question it is bound to), and hold a readable answer to that very bundle.
+ * Returns null, or why it does not count.
+ */
+export function reviewRecordProblem(root, logged, u, ctx) {
+  const p = logged.payload || {};
+  let r; try { r = JSON.parse(fs.readFileSync(recordFile(root, `metadata/verification/${p.dispatch}.json`), "utf8")); } catch { return "its review record is missing or unreadable"; }
+  if (!p.recordHash || recordHashOf(r) !== p.recordHash) return "its review record is not the one the log vouches for";
+  if (r.dispatch !== p.dispatch || r.unit !== u.id || r.kind !== p.kind || r.contentHash !== u.locator.contentHash) return "its review record is of other text";
+  if (sha256(r.bundle?.prompt ?? "") !== r.bundle?.bundleHash || r.bundle?.bundleHash !== p.bundleHash) return "its review prompt does not match its logged hash";
+  if (sha256(r.answer?.raw ?? "") !== r.answer?.responseHash || r.answer?.responseHash !== p.responseHash) return "its review answer does not match its logged hash";
+  if (r.kind === "semi") return r.admission?.status === "admitted" && r.factHash === factHash(u.text) ? null : "its fact check did not admit the unit's current claims";
+  const shown = shownForm(r.bundle.prompt);
+  if (!shown.includes(shownForm(u.text))) return "the reviewer was not shown the unit's current text";
+  if (u.form === "answer") for (const e of (ctx.edges.get(u.id) || []).filter((x) => x.target.startsWith("question:"))) {
+    const q = ctx.byId.get(e.target.slice("question:".length));
+    if (q && !shown.includes(shownForm(q.text))) return `the reviewer was not shown the question it answers (${q.id})`;
+  }
+  const m = String(r.answer?.raw || "").match(/\{[\s\S]*\}/);
+  let v; try { v = JSON.parse(m?.[0] || ""); } catch { v = null; }
+  if (v?.nonce !== r.bundle?.nonce || !Array.isArray(v?.concerns)) return "the reviewer's answer is unreadable (no answer to this bundle)";
+  return null;
+}
 
 /**
  * The agent records that units which owed re-verification were re-checked (`units.mjs reverify`). Only a LOGGED blind
- * review counts: a knowledge, semi or alignment dispatch of the unit made after its obligation arose, at its current
- * text (contentHash) and its current dependencies (the question it answers, the values it shares …). A knowledge
- * review that found the text wrong does not count: revise it, and have it reviewed again. Refuses — naming the review
- * to run — when any unit lacks one; nothing is recorded then.
+ * correctness review counts: a knowledge (or, for a non-answer, an admitting semi) dispatch of the unit made after its
+ * obligation arose, at its current text (contentHash) and its current dependencies (the question it answers, the values
+ * it shares …), whose record checks out against the log (reviewRecordProblem). A knowledge review that found the text
+ * wrong does not count: revise it, and have it reviewed again. Refuses — naming the review to run — when any unit lacks
+ * one; nothing is recorded then.
  */
 export function reverifyUnits(root, reader, ids, party, { verdicts = (d, text) => wrongConcerns(root, d, text) } = {}) {
   if (party?.role !== "agent") throw new Error("reverify is the agent's record of a blind re-check (the instructor confirms instead: units.mjs confirm)");
@@ -391,16 +422,22 @@ export function reverifyUnits(root, reader, ids, party, { verdicts = (d, text) =
     if (!u) { problems.push(`${id}: no such indexed unit (run units.mjs index first)`); continue; }
     if (!owesNow(u, ctx)) { problems.push(`${id} owes no re-verification`); continue; }
     const since = Math.max(u.owes?.since || 0, u.carried ? carriedAt(id) : 0), deps = depsOf(id, ctx);
-    const review = recs.filter((r) => r.type === "dispatch" && r.party?.role === "harness" && r.seq > since && r.payload?.unit === id &&
-      r.payload?.contentHash === u.locator.contentHash && r.payload?.deps === deps && REVIEW_COUNTS[r.payload?.kind]?.(r.payload)).at(-1);
-    if (!review) { unreviewed.push(id); continue; }
+    const candidates = recs.filter((r) => r.type === "dispatch" && r.party?.role === "harness" && r.seq > since && r.payload?.unit === id &&
+      r.payload?.contentHash === u.locator.contentHash && r.payload?.deps === deps && REVIEW_COUNTS[r.payload?.kind]?.(r.payload, u));
+    const checked = candidates.map((r) => [r, reviewRecordProblem(root, r, u, ctx)]);
+    const review = checked.filter(([, why]) => !why).at(-1)?.[0];
+    if (!review) {
+      if (checked.length) problems.push(`${id}: its blind review (${checked.at(-1)[0].payload.dispatch}) does not count — ${checked.at(-1)[1]}; run ${REVERIFY_ROUTE(root, [id])} again`);
+      else unreviewed.push(id);
+      continue;
+    }
     if (review.payload.kind === "knowledge" && verdicts) {
       const wrong = verdicts(review.payload.dispatch, u.text).filter((c) => c.kind === "wrong");
       if (wrong.length) { problems.push(`${id}: its blind review (${review.payload.dispatch}) found it wrong ("${wrong[0].text.slice(0, 80)}": ${wrong[0].problem.slice(0, 120)}) — revise it, then have it reviewed again`); continue; }
     }
     used[id] = review.payload.dispatch;
   }
-  if (unreviewed.length) problems.push(`${unreviewed.join(", ")}: no logged blind review of the current text (and its current question and dependencies) since the re-verification was owed — run ${REVERIFY_ROUTE(root, unreviewed)}, then reverify`);
+  if (unreviewed.length) problems.push(`${unreviewed.join(", ")}: no logged blind correctness review of the current text (and its current question and dependencies) since the re-verification was owed — run ${REVERIFY_ROUTE(root, unreviewed)}, then reverify (a link review does not count)`);
   if (problems.length) throw new Error(`refusing to record a re-verification: ${problems.join("; ")}`);
   rewriteUnits(root, ids, (u) => { u.stamp = stampFor(u.id, ctx.edges, ctx.hashes); delete u.owes; delete u.carried; });
   return appendLogRecord(root, { type: "revision", party, payload: { event: "units-reverified", units: ids, reviews: used } });

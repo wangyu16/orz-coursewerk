@@ -12,7 +12,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { liveReader } from "../scripts/lib/core/package_reader.mjs";
-import { confirmUnits, indexAndStamp, linkUnits, loadUnits, openVersionCarrying, recordVerification, reverifyUnits } from "../scripts/lib/core/obligations.mjs";
+import { confirmUnits, indexAndStamp, linkUnits, loadUnits, openVersionCarrying, reverifyUnits } from "../scripts/lib/core/obligations.mjs";
 import { beginSession, claimAuthorship } from "../scripts/lib/core/units_index.mjs";
 import { runGate } from "../scripts/lib/skeleton/full_gate.mjs";
 import { loopStep } from "../scripts/lib/core/loop.mjs";
@@ -259,7 +259,7 @@ test("[req.3c.h3] a change that changes nothing raises nothing: a reflow, and a 
   assert.deepEqual(now.map((x) => x.kind), [], "no re-verification, no question");
 });
 
-test("[req.3c.h4] identity survives revision: an edit keeps the unit; a new major version carries the chapter, each unit owing re-verification", (t) => {
+test("[req.3c.h4] identity survives revision: an edit keeps the unit; a new major version carries the chapter, each unit owing re-verification", async (t) => {
   const c = course(t);
   const u = c.units().find((x) => x.id === "u-study-guide-le-chatelier-adding-a-catalyst-1");
   const w = u.text.match(/forward and reverse reactions by the same factor/)[0];
@@ -268,7 +268,10 @@ test("[req.3c.h4] identity survives revision: an edit keeps the unit; a new majo
   openVersionCarrying(c.root, c.r(), { scopes: ["chapter:le-chatelier"], reason: "an objective split", instructorWords: "Open version 2." }, I);
   const carried = c.gate().findings.filter((x) => x.kind === "carried-unverified");
   assert.ok(carried.length > 0 && carried.every((x) => x.units.every((id) => /-le-chatelier-/.test(id))));
-  recordVerification(c.root, c.r(), carried.flatMap((x) => x.units), { module: "ms1-sources", basis: "b" });
+  // the routed re-check of every carried unit: a blind review each (replayed clean), then units.mjs reverify
+  const ids = carried.flatMap((x) => x.units);
+  await verifyKnowledge(c.root, c.r(), { verifier: replayVerifier((pr) => ({ nonce: nonceOf(pr), concerns: [] })), only: ids });
+  reverifyUnits(c.root, c.r(), ids, AGENT);
   assert.ok(!c.gate().findings.some((x) => x.kind === "carried-unverified"), "re-verified into the new version");
 });
 

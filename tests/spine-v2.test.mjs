@@ -194,8 +194,11 @@ test("[req.approval.weights] a light change needs only a glance; anything else, 
   const p = pkg(t);
   recordApproval(p.root, p.reader, ["melting"], { chapter: "melting", instructorWords: "approve" }, I);
   const change = () => approvalStatus(liveReader(p.root), ["melting"], readLogText(p.root)).scopes.melting.change;
-  // typo and rephrasing → light
+  // punctuation, markup, spacing and case → light; a rephrase is substantive (R2 coherence F4: no word list tells a
+  // rephrase from a reversal, so a glance — which re-baselines every dependent — is kept for edits that change no word)
   p.w("concepts/melting.md", MAP().replace("Solids melt.", "Solids do melt eventually.").replace("Explain why a mixture melts over a range.", "Explain why a mixture melts across a range."));
+  assert.equal(change().kind, "substantive");
+  p.w("concepts/melting.md", MAP().replace("Solids melt.", "Solids **melt**!").replace("Explain why a mixture melts over a range.", "Explain why a mixture  melts over a range;"));
   assert.equal(change().kind, "light");
   assert.equal(recordApproval(p.root, liveReader(p.root), ["melting"], { chapter: "melting", glance: true, instructorWords: "fine" }, I).type, "glance-confirmation");
   // a number changed → substantive; glance refused

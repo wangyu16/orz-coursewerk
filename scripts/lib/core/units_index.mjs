@@ -11,16 +11,24 @@
 // section and form, a close rewording (token overlap ≥ 0.5) → same id; (3) a new unit mostly contained in an old one,
 // with siblings, records a split; a new unit covering several old ones records a merge; (4) the rest are new ids,
 // and unmatched old units are retired (logged).
+//
+// WHAT A RETIRED UNIT OWED IS NOT FORGOTTEN (red team R2 coherence, F1, F2, F14). A retired unit's record — its
+// stamp (so staleness that lives only in the stamp), what it owes, its version carry, links, origin and evidence — is
+// kept in its deliverable's sidecar (`retired`, the retired-unit register). A text that comes back byte for byte, in
+// any deliverable, or nearly (same deliverable and form, token overlap ≥ 0.5), takes back its old id and its whole
+// record. A new text that is a piece of a retired unit, or that covers one, inherits its stamp, owes and carry, as the
+// pieces of a split and a merge do. A retired id is never minted again for other text. So a placeholder round trip, a
+// blank-and-restore, or a split leaves every obligation where it was.
 import fs from "node:fs";
 import path from "node:path";
 import { appendLogRecord, parseLog, readLogText, verifyLog } from "../records/log.mjs";
 import { unitsPathFor, recordFile } from "../records/paths.mjs";
-import { validateUnitSidecar } from "../records/units.mjs";
+import { JUDGMENT_KINDS, validateUnitSidecar } from "../records/units.mjs";
 import { makeFinding } from "../records/findings.mjs";
 import { DELIVERABLE_DIRS, classifyUnit, derivedRole, segmentDeliverable, slugify, tokensOf, unitHash } from "./segment.mjs";
 import { manifestChapters } from "./package_reader.mjs";
 import { upgradeStamps } from "./obligations.mjs";
-import { assertUnaltered, logUnitRecords } from "./unit_records.mjs";
+import { assertUnaltered, upgradeUnitRecordDigests, writeUnitRecords } from "./unit_records.mjs";
 
 export function deliverablesOf(reader) {
   const chapters = manifestChapters(reader).flatMap((ch) => DELIVERABLE_DIRS.map((d) => `${d}/${ch}.md`));
@@ -41,32 +49,57 @@ export function readSidecar(root, deliverable) {
   const f = recordFile(root, unitsPathFor(deliverable));
   return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, "utf8")) : null;
 }
-function writeSidecar(root, sidecar) {
-  const problems = validateUnitSidecar(sidecar);
-  if (problems.length) throw new Error(`refusing an invalid unit sidecar for ${sidecar.deliverable}: ${problems[0]}`);
-  const f = recordFile(root, unitsPathFor(sidecar.deliverable));
-  fs.mkdirSync(path.dirname(f), { recursive: true });
-  fs.writeFileSync(f, JSON.stringify(sidecar, null, 2) + "\n");
-}
-
-// what a unit inherits: its own record's, or (a new unit from a split or a merge) its sources'
-const sourcesOf = (prev, split, merge, old) => (prev ? [prev] : [split?.from, ...(merge?.from || [])].filter(Boolean).map((id) => old.find((o) => o.id === id)).filter(Boolean));
-function carriedOf(prev, split, merge, old) { const c = sourcesOf(prev, split, merge, old).find((o) => o.carried)?.carried; return c ? { carried: c } : {}; }
-function owesOf(prev, split, merge, old) {
-  const o = sourcesOf(prev, split, merge, old).filter((x) => x.owes).map((x) => x.owes);
+// what a unit inherits: its own record's, or (a new unit from a split or a merge, or a piece of a retired unit) its
+// sources'
+const sourcesOf = (prev, split, merge, old, inherit = []) => (prev ? [prev] : [...[split?.from, ...(merge?.from || [])].filter(Boolean).map((id) => old.find((o) => o.id === id)).filter(Boolean), ...inherit]);
+function carriedOf(sources) { const c = sources.find((o) => o.carried)?.carried; return c ? { carried: c } : {}; }
+function owesOf(sources) {
+  const o = sources.filter((x) => x.owes).map((x) => x.owes);
   if (!o.length) return {};
   return { owes: { since: Math.min(...o.map((x) => x.since || 0)), targets: [...new Set(o.flatMap((x) => x.targets || []))].sort() } };
+}
+/**
+ * The stamp a new unit inherits from the units it came from (R2 F14): their stamps merged, so a dependency that moved
+ * while they were stamped is still seen as moved — the next restamp records it as owed. A target the sources were
+ * stamped at different hashes is kept as a conflict (it counts as moved).
+ */
+function stampOf(sources) {
+  const stamped = sources.filter((x) => x.stamp);
+  if (!stamped.length) return {};
+  const out = {};
+  for (const x of stamped) for (const [t, h] of Object.entries(x.stamp)) out[t] = t in out && out[t] !== h ? "inherited-conflict" : h;
+  return { stamp: out };
+}
+
+// the retired-unit register (R2 F1, F2, F14): what a retired unit was, kept with its deliverable's sidecar
+const REGISTER_FIELDS = ["form", "origin", "spineNodes", "evidence", "stamp", "carried", "owes", "judgmentAdded", "tokens"];
+function registerEntry(u) {
+  const e = { id: u.id, deliverable: u.locator?.deliverable ?? u.deliverable, section: u.locator?.section ?? u.section, contentHash: u.locator?.contentHash ?? u.contentHash };
+  for (const k of REGISTER_FIELDS) if (u[k] !== undefined) e[k] = u[k];
+  return e;
+}
+// a register entry read as an old unit (to take back its id and record)
+const asOldUnit = (e) => ({ ...e, locator: { deliverable: e.deliverable, section: e.section, ordinal: -1, contentHash: e.contentHash } });
+/** Every unit id the package ever used: live, in a register, or logged as retired (never minted again, R2 F1). */
+function usedIds(sidecars, logText) {
+  const ids = new Set();
+  for (const side of sidecars) { for (const u of side?.units || []) ids.add(u.id); for (const e of side?.retired || []) ids.add(e.id); }
+  if (!verifyLog(logText).length) for (const r of parseLog(logText)) if (r.type === "unit-retirement") for (const id of r.payload?.units || []) ids.add(id);
+  return ids;
 }
 
 const jaccard = (a, b) => { const A = new Set(a), B = new Set(b); let n = 0; for (const x of A) if (B.has(x)) n++; return n / Math.max(1, A.size + B.size - n); };
 const contained = (inner, outer) => { const O = new Set(outer); return inner.filter((x) => O.has(x)).length / Math.max(1, inner.length); };
 
 /** Match new segments to old units. Returns { assigned: Map(newIndex → oldUnit), splits, merges, retired }. */
-export function matchUnits(oldUnits, segs) {
+export function matchUnits(oldUnits, segs, { reserved = new Set() } = {}) {
   const assigned = new Map(), usedOld = new Set(), usedNew = new Set();
   const segTokens = segs.map((s) => tokensOf(s.text)), segHash = segs.map((s) => unitHash(s.text));
   // 1. exact text, wherever it moved
   segs.forEach((s, i) => { const o = oldUnits.find((u) => !usedOld.has(u.id) && u.locator.contentHash === segHash[i]); if (o) { assigned.set(i, o); usedOld.add(o.id); usedNew.add(i); } });
+  // a text that is byte for byte a retired unit's is that unit coming back (R2 F1, F2): never a rewording of another
+  segs.forEach((_, i) => { if (!usedNew.has(i) && reserved.has(segHash[i])) usedNew.add(i); });
+  const returning = new Set(segs.map((_, i) => i).filter((i) => reserved.has(segHash[i]) && !assigned.has(i)));
   // 1b. edits in place: same position, form and section, real overlap — the commonest edit, so it is matched before
   // splits and merges, which otherwise pair look-alike answers across a section (P10 scenario)
   segs.forEach((s, i) => {
@@ -105,6 +138,7 @@ export function matchUnits(oldUnits, segs) {
   });
   const consumed = [...splits.map((x) => x.from), ...merges.flatMap((m) => m.from)];
   const retired = oldUnits.filter((u) => !usedOld.has(u.id)).map((u) => u.id);
+  returning.forEach((i) => usedNew.delete(i)); // left for the register (indexUnits)
   return { assigned, splits, merges, retired, consumed };
 }
 
@@ -124,6 +158,7 @@ export function openSession(logText) {
 
 export function beginSession(root, reader, party, { step = "authoring" } = {}) {
   if (party?.role !== "agent") throw new Error("a session belongs to the agent that will write");
+  try { upgradeUnitRecordDigests(root); } catch { /* a broken log: the gate reports it */ }
   try { upgradeStamps(root, reader); } catch { /* an unindexed or partial package: indexing reports it */ }
   const baseline = {};
   for (const rel of deliverablesOf(reader)) baseline[rel] = segmentDeliverable(reader.text(rel), rel).units.map((s) => unitHash(s.text));
@@ -145,22 +180,54 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
     if (party.role === "agent" && initialOrigin.kind !== "agent-knowledge") throw new Error("the agent can only state that pre-existing text was agent-written");
     appendLogRecord(root, { type: "authorship-confirmation", party, payload: { initial: true, origin: initialOrigin } });
   }
-  const findings = [], summary = { deliverables: 0, units: 0, kept: 0, reworded: 0, new: 0, retired: 0, splits: 0, merges: 0, agent: 0, unknown: 0 };
+  const findings = [], summary = { deliverables: 0, units: 0, kept: 0, reworded: 0, new: 0, returned: 0, retired: 0, splits: 0, merges: 0, agent: 0, unknown: 0 };
   const retiredAll = [], changedIds = [];
-  for (const rel of deliverablesOf(reader)) {
-    const text = reader.text(rel);
-    const seg = segmentDeliverable(text, rel).units;
-    const old = readSidecar(root, rel)?.units || [];
-    const m = matchUnits(old, seg);
-    const taken = new Set(old.map((u) => u.id));
-    const baseline = new Set(session?.payload.baseline?.[rel] || []);
+  const rels = deliverablesOf(reader);
+  const sidecars = new Map(rels.map((rel) => [rel, readSidecar(root, rel)]));
+  const register = rels.flatMap((rel) => (sidecars.get(rel)?.retired || []).map((e) => ({ ...e, deliverable: e.deliverable || rel })));
+  const taken = usedIds([...sidecars.values()], logText);
+  const reserved = new Set(register.map((e) => e.contentHash));
+  // 1. live matching, deliverable by deliverable
+  const plan = rels.map((rel) => {
+    const seg = segmentDeliverable(reader.text(rel), rel).units, old = sidecars.get(rel)?.units || [];
+    return { rel, seg, old, m: matchUnits(old, seg, { reserved }) };
+  });
+  // 2. what is left is matched against every retired unit: the register, and the units retired by this index run
+  const pool = [...register, ...plan.flatMap((p) => [...p.m.retired, ...p.m.consumed].map((id) => registerEntry(p.old.find((o) => o.id === id))))];
+  const back = new Set(); // pool ids taken back
+  for (const p of plan) {
+    p.back = new Map(); p.inherit = new Map();
+    const open = p.seg.map((_, i) => i).filter((i) => !p.m.assigned.has(i) && !p.m.splits.some((x) => x.into.includes(i)) && !p.m.merges.some((x) => x.into === i));
+    const tok = new Map(open.map((i) => [i, tokensOf(p.seg[i].text)]));
+    // byte for byte (any deliverable, this one first), then a near return in this deliverable and form
+    for (const i of open) {
+      const h = unitHash(p.seg[i].text);
+      const e = pool.find((x) => !back.has(x.id) && x.contentHash === h && x.deliverable === p.rel) || pool.find((x) => !back.has(x.id) && x.contentHash === h);
+      if (e) { p.back.set(i, e); back.add(e.id); }
+    }
+    for (const i of open.filter((k) => !p.back.has(k))) {
+      let best = null, score = 0.5;
+      for (const e of pool) { if (back.has(e.id) || e.deliverable !== p.rel || e.form !== p.seg[i].form) continue; const j = jaccard(e.tokens || [], tok.get(i)); if (j >= score) { best = e; score = j; } }
+      if (best) { p.back.set(i, best); back.add(best.id); }
+    }
+    // a piece of a retired unit, or a text covering one, inherits what it owed (not its id)
+    for (const i of open.filter((k) => !p.back.has(k))) {
+      const t = tok.get(i);
+      const from = pool.filter((e) => e.deliverable === p.rel && e.form === p.seg[i].form && (e.tokens || []).length >= 3 && t.length >= 3 &&
+        (contained(t, e.tokens) >= 0.6 || contained(e.tokens, t) >= 0.6));
+      if (from.length) p.inherit.set(i, from);
+    }
+  }
+  const sides = [];
+  for (const { rel, seg, old, m, back: returned, inherit } of plan) {
+    const sessionBaseline = new Set(session?.payload.baseline?.[rel] || []);
     const units = seg.map((s, i) => {
-      const prev = m.assigned.get(i);
+      const prev = m.assigned.get(i) || (returned.has(i) ? asOldUnit(returned.get(i)) : null);
       const hash = unitHash(s.text);
       const changed = !prev || prev.locator.contentHash !== hash;
       let origin = prev?.origin;
       if (changed) {
-        const beforeSession = session && baseline.has(hash) && !old.some((u) => u.locator.contentHash === hash);
+        const beforeSession = session && sessionBaseline.has(hash) && !old.some((u) => u.locator.contentHash === hash);
         if (as === "agent" && !beforeSession) {
           // the agent revising the instructor's text keeps the instructor's credit, with the revision on record
           // (operator, 2026-10-02: "keep crediting me is fine")
@@ -169,14 +236,17 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
           else origin = origins[hash] || { kind: "agent-knowledge", model: party.model, step: session.payload.step, date };
           summary.agent++;
         }
-        else if (!old.length && initialOrigin) origin = initialOrigin;
+        else if (!old.length && !prev && initialOrigin) origin = initialOrigin;
         else { origin = origins[hash] || { kind: "unknown" }; if (origin.kind === "unknown") summary.unknown++; }
       }
       const split = m.splits.find((x) => x.into.includes(i)), merge = m.merges.find((x) => x.into === i);
+      const pieceOf = !prev ? (inherit.get(i) || []).map(asOldUnit) : [];
+      const sources = sourcesOf(prev, split, merge, old, pieceOf);
       // the pieces of a split, and a merge, keep the spine links of what they came from
-      const inherited = !prev ? [...new Set([split?.from, ...(merge?.from || [])].filter(Boolean).flatMap((id) => old.find((o) => o.id === id)?.spineNodes || []))] : null;
+      const inherited = !prev ? [...new Set(sources.flatMap((o) => o.spineNodes || []))] : null;
       const id = prev?.id || mintId(rel, s.section, taken);
       if (prev && prev.locator.contentHash === hash) summary.kept++; else if (prev) summary.reworded++; else summary.new++;
+      if (returned.has(i)) summary.returned++;
       if (changed) changedIds.push(id);
       const classified = classifyUnit(s);
       const added = (prev?.judgmentAdded || []).filter((k) => !classified.includes(k));
@@ -185,16 +255,22 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
       return {
         id, locator: { deliverable: rel, section: s.section, ordinal: i, contentHash: hash, lines: [s.startLine, s.endLine] },
         form: s.form, role, origin, spineNodes: prev?.spineNodes || inherited || [], judgment, ...(added.length ? { judgmentAdded: added } : {}),
-        // evidence is bound to fact tokens (P5), so it survives a rephrase; obligations.mjs decides what still counts
-        // an owed re-verification and a version carry survive every re-index — and pass to the pieces of a split and to
-        // a merge (R1 coherence F4/F5: a stamp is not a re-verification)
-        evidence: prev?.evidence || [], ...(prev?.stamp ? { stamp: prev.stamp } : {}), ...carriedOf(prev, split, merge, old), ...owesOf(prev, split, merge, old), tokens: tokensOf(s.text),
-        ...(split ? { splitFrom: split.from } : {}), ...(merge ? { mergedFrom: merge.from } : {}),
+        // evidence is bound to fact tokens (P5), so it survives a rephrase; obligations.mjs decides what still counts.
+        // An owed re-verification, a version carry and the stamp itself (where staleness may live) survive every
+        // re-index, and pass to the pieces of a split, to a merge and to a returning text (R1 F4/F5, R2 F1/F2/F14)
+        evidence: prev?.evidence || [], ...(prev ? (prev.stamp ? { stamp: prev.stamp } : {}) : stampOf(sources)), ...carriedOf(sources), ...owesOf(sources), tokens: tokensOf(s.text),
+        ...(split ? { splitFrom: split.from } : {}), ...(merge ? { mergedFrom: merge.from } : {}), ...(pieceOf.length ? { inheritedFrom: pieceOf.map((x) => x.id) } : {}),
       };
     });
-    summary.splits += m.splits.length; summary.merges += m.merges.length; summary.retired += m.retired.length + m.consumed.length;
-    retiredAll.push(...m.retired, ...m.consumed);
-    writeSidecar(root, { schemaVersion: 1, deliverable: rel, units });
+    summary.splits += m.splits.length; summary.merges += m.merges.length;
+    const gone = [...m.retired, ...m.consumed].filter((id) => !back.has(id));
+    summary.retired += gone.length;
+    retiredAll.push(...gone);
+    // the register: what it held (less what came back or retired again), and what retired now
+    const kept = (sidecars.get(rel)?.retired || []).filter((e) => !back.has(e.id) && !gone.includes(e.id));
+    const now = gone.map((id) => registerEntry(old.find((o) => o.id === id)));
+    const retired = [...kept, ...now];
+    sides.push({ schemaVersion: 1, deliverable: rel, units, ...(retired.length ? { retired } : {}) });
     summary.deliverables++; summary.units += units.length;
     // one question per deliverable, listing every unit of unknown authorship in it (clustered by root cause, D8)
     const unknown = units.filter((x) => x.origin.kind === "unknown" && !x.origin.namedAuthor);
@@ -203,10 +279,37 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
         evidence: { type: "judgment", note: `${rel}: ${unknown.length} passage(s) changed outside an agent session — yours (accept as mine), someone else's (name them), or revert?`, hashes: unknown.map((u) => u.locator.contentHash) },
         recommendation: "accept as mine", basis: unknown.map((u) => u.locator.contentHash).join(",") }));
   }
-  logUnitRecords(root, deliverablesOf(reader));
+  for (const side of sides) { const problems = validateUnitSidecar(side); if (problems.length) throw new Error(`refusing an invalid unit sidecar for ${side.deliverable}: ${problems[0]}`); }
+  writeUnitRecords(root, sides);
   if (as === "agent") appendLogRecord(root, { type: "revision", party, payload: { event: "agent-session-end", summary } });
   if (retiredAll.length) appendLogRecord(root, { type: "unit-retirement", party: party || { role: "harness", name: "units index" }, payload: { units: retiredAll } });
   return { findings, summary, changedIds };
+}
+
+/**
+ * The agent (or the instructor) adds judgment kinds the classifier missed — never removes one (the classifier errs
+ * toward inclusion; an added kind only adds checks). The only way to change them: a unit record is the harness's
+ * (R2 coherence F8: a hand edit of any field is unit-record-altered).
+ */
+export function addJudgmentKinds(root, reader, kindsByUnit, party) {
+  if (!party || !["agent", "instructor"].includes(party.role)) throw new Error("judgment kinds are added by the agent or the instructor");
+  const want = new Map(Object.entries(kindsByUnit)), writes = [];
+  for (const k of [...want.values()].flat()) if (!JUDGMENT_KINDS.includes(k)) throw new Error(`unknown judgment kind ${k}`);
+  for (const rel of deliverablesOf(reader)) {
+    const side = readSidecar(root, rel); if (!side) continue;
+    let touched = false;
+    for (const u of side.units) if (want.has(u.id)) {
+      const add = want.get(u.id).filter((k) => !(u.judgment || []).includes(k));
+      if (add.length) { u.judgmentAdded = [...new Set([...(u.judgmentAdded || []), ...add])]; u.judgment = [...new Set([...(u.judgment || []), ...add])]; touched = true; }
+      want.delete(u.id);
+    }
+    if (touched) writes.push(side);
+  }
+  if (want.size) throw new Error(`no such unit: ${[...want.keys()].join(", ")}`);
+  for (const side of writes) { const problems = validateUnitSidecar(side); if (problems.length) throw new Error(`refusing an invalid unit sidecar for ${side.deliverable}: ${problems[0]}`); }
+  writeUnitRecords(root, writes);
+  appendLogRecord(root, { type: "revision", party, payload: { event: "judgment-added", units: kindsByUnit } });
+  return writes.length;
 }
 
 /** The instructor claims authorship of units of unknown authorship (accept as mine) — D20. */
@@ -226,9 +329,8 @@ export function claimAuthorship(root, { units, as = "instructor", instructorWord
   }
   const missing = units.filter((u) => !done.includes(u));
   if (missing.length) throw new Error(`no such unit: ${missing.join(", ")}`);
-  assertUnaltered(root, writes.map((s) => s.deliverable));
-  for (const side of writes) writeSidecar(root, side);
-  logUnitRecords(root, writes.map((s) => s.deliverable));
+  for (const side of writes) { const problems = validateUnitSidecar(side); if (problems.length) throw new Error(`refusing an invalid unit sidecar for ${side.deliverable}: ${problems[0]}`); }
+  writeUnitRecords(root, writes);
   appendLogRecord(root, { type: "authorship-confirmation", party, payload: { units: done, as, instructorWords } });
   return done;
 }

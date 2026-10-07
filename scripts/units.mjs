@@ -12,11 +12,13 @@
 //        re-verification were re-checked: only when a logged blind review of each unit's CURRENT text (and current
 //        question/dependencies) exists that is newer than the obligation (run verify.mjs knowledge --units … first);
 //        refuses otherwise. Editing, relinking or re-indexing a unit never clears what it owes.
+//   node scripts/units.mjs judge  --root <pkg> --units <id,…> --add semi-mechanical|mechanical|knowledge-based --model <model id>
+//        add a judgment kind the classifier missed (add only; a unit record is never edited by hand)
 //   node scripts/units.mjs restamp --root <pkg> --reason "<harness change>"                re-baseline every stamp after the
 //        harness's dependency rules changed (logged as a harness action; never a substitute for re-verification)
 import fs from "node:fs";
 import { liveReader } from "./lib/core/package_reader.mjs";
-import { beginSession, claimAuthorship, deliverablesOf, readSidecar, unindexedFindings } from "./lib/core/units_index.mjs";
+import { addJudgmentKinds, beginSession, claimAuthorship, deliverablesOf, readSidecar, unindexedFindings } from "./lib/core/units_index.mjs";
 import { confirmUnits, coreObligations, indexAndStamp, linkUnits, loadUnits, restamp, reverifyUnits } from "./lib/core/obligations.mjs";
 import { appendLogRecord } from "./lib/records/log.mjs";
 import { segmentDeliverable, uncoveredLines } from "./lib/core/segment.mjs";
@@ -25,7 +27,7 @@ const [cmd, ...args] = process.argv.slice(2);
 const opt = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : undefined; };
 const fail = (m, c = 2) => { console.error(m); process.exit(c); };
 const root = opt("--root");
-if (!cmd || !root || !fs.existsSync(root)) fail("usage: units.mjs <begin|index|claim|status|link|confirm|reverify|obligations|restamp> --root <package> … (see the header of scripts/units.mjs)");
+if (!cmd || !root || !fs.existsSync(root)) fail("usage: units.mjs <begin|index|claim|status|link|confirm|reverify|judge|obligations|restamp> --root <package> … (see the header of scripts/units.mjs)");
 const reader = liveReader(root);
 const agent = () => { const model = opt("--model"); if (!model) fail("--model <model id> is required for the agent"); return { role: "agent", name: "executor", model }; };
 try {
@@ -74,6 +76,12 @@ try {
     if (!ids.length) fail("--units <id,…> is required: name the units whose blind re-check you are recording");
     const r = reverifyUnits(root, reader, ids, agent());
     console.log(JSON.stringify({ reverified: ids.length, reviews: r.payload.reviews }, null, 2)); process.exit(0);
+  }
+  if (cmd === "judge") {
+    const ids = String(opt("--units") || "").split(",").filter(Boolean), kind = opt("--add") || fail("--add <judgment kind> is required");
+    if (!ids.length) fail("--units <id,…> is required");
+    const n = addJudgmentKinds(root, reader, Object.fromEntries(ids.map((id) => [id, [kind]])), agent());
+    console.log(JSON.stringify({ added: kind, units: ids.length, recordsWritten: n }, null, 2)); process.exit(0);
   }
   if (cmd === "restamp") {
     const reason = opt("--reason") || fail("--reason is required: name the harness change that altered the dependency rules");

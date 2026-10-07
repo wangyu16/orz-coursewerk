@@ -24,13 +24,13 @@ import { fileURLToPath } from "node:url";
 import { liveReader, manifestChapters } from "../scripts/lib/core/package_reader.mjs";
 import { confirmUnits, coreObligations, indexAndStamp, linkUnits, loadUnits, openVersionCarrying, reverifyUnits } from "../scripts/lib/core/obligations.mjs";
 import { beginSession, claimAuthorship, deliverablesOf } from "../scripts/lib/core/units_index.mjs";
-import { logUnitRecords } from "../scripts/lib/core/unit_records.mjs";
+import { UNIT_RECORDS_EVENT, currentDigests } from "../scripts/lib/core/unit_records.mjs";
 import { runGate } from "../scripts/lib/skeleton/full_gate.mjs";
 import { recordApproval } from "../scripts/lib/core/approvals.mjs";
 import { buildDigest } from "../scripts/lib/core/digest.mjs";
 import { publishDecision, unitInfoOf } from "../scripts/lib/core/workflow.mjs";
 import { packPublished } from "../scripts/lib/core/pack_v2.mjs";
-import { recordHash, verifyLog } from "../scripts/lib/records/log.mjs";
+import { appendLogRecord, recordHash, verifyLog } from "../scripts/lib/records/log.mjs";
 import { replayVerifier } from "../scripts/lib/verify/dispatch.mjs";
 import { verifyKnowledge } from "../scripts/lib/verify/verdicts.mjs";
 
@@ -135,7 +135,10 @@ test("[req.coherence.question-binding] F1: a legacy answer stamp without the que
     for (const u of side.units) if (u.stamp) for (const k of Object.keys(u.stamp)) if (k.startsWith("question:")) delete u.stamp[k];
     fs.writeFileSync(f, JSON.stringify(side, null, 2) + "\n");
   }
-  logUnitRecords(c.root, deliverablesOf(c.r())); c.commit("pre-R1 stamps");
+  // TEST DOUBLE: the pre-R1 harness wrote these records and logged their digests. Since R2 (F10) no library call logs
+  // over an edited record, so the double writes the log record that harness would have written.
+  appendLogRecord(c.root, { type: "revision", party: { role: "harness", name: "unit records" }, payload: { event: UNIT_RECORDS_EVENT, digests: currentDigests(c.root) } });
+  c.commit("pre-R1 stamps");
   assert.ok(c.owes(A6).some((f) => /predates/.test(f.evidence.what)), "a legacy answer owes a re-check once");
   // the attack: the question is reversed outside a session, claimed, and the agent's next session begins
   c.edit(PR, Q6_RAISED, Q6_RAISED.replace("raised", "lowered"));
@@ -301,7 +304,9 @@ test("[req.versions.carry-indexed] F12: a version is not opened while a delivera
 test("[req.coherence.light-spine] F13: a light, glance-confirmed rewording of the spine raises no re-verification; a substantive one still does", (t) => {
   const c = course(t);
   const owed = () => c.gate().findings.filter((f) => f.kind === "reverify").length;
-  c.edit("concepts/le-chatelier.md", "1. Le Chatelier's principle states that a system at equilibrium disturbed by", "1. Le Chatelier's principle states that a system at equilibrium, when disturbed by");
+  // a comma and emphasis, no word changed (R2 F4: since round 2 a light change keeps every word; the round-1 edit,
+  // which also added "when", is now substantive — tests/redteam-r2-coherence.test.mjs)
+  c.edit("concepts/le-chatelier.md", "1. Le Chatelier's principle states that a system at equilibrium disturbed by", "1. Le Chatelier's principle states that a *system at equilibrium*, disturbed by");
   const rec = recordApproval(c.root, c.r(), manifestChapters(c.r()), { chapter: "le-chatelier", glance: true, instructorWords: "Fine, just a wording fix." }, I);
   assert.equal(rec.type, "glance-confirmation");
   assert.equal(owed(), 0, "a light change re-verifies nothing");

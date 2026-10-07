@@ -77,7 +77,11 @@ function parseMap(text, scope, kinds, file) {
       for (const raw of listItems(sec.lines)) {
         const p = itemParts(raw);
         const label = /^\*\*(.+?)\*\*/.exec(p.text)?.[1] || p.text;
-        terms.push({ label, parent: p.parent, text: p.text, ...(p.aliases.length ? { aliases: p.aliases } : {}), file });
+        // the house glossary form declares aliases in a parenthetical after the label — "**reaction quotient** (Qr)",
+        // "(K, aliases: Keq, Kc)" — as terms.mjs reads it; a unit using one depends on the term (R2 coherence F12)
+        const paren = /^\*\*.+?\*\*\s*\(([^)]*)\)/.exec(p.text)?.[1];
+        const aliases = [...new Set([...p.aliases, ...(paren ? paren.split(",").map((a) => a.replace(/^\s*aliases?\s*:\s*/i, "").trim()).filter(Boolean) : [])])];
+        terms.push({ label, parent: p.parent, text: p.text, ...(aliases.length ? { aliases } : {}), file });
       }
     } else if (key === "chapter sequence") {
       chapterSequence = listItems(sec.lines).map((raw) => /^\*\*([a-z0-9-]+)\*\*/.exec(raw.trim())?.[1] || null);

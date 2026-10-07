@@ -6,12 +6,20 @@ import os from "node:os";
 import path from "node:path";
 import { liveReader } from "../scripts/lib/core/package_reader.mjs";
 import { readSidecar, beginSession } from "../scripts/lib/core/units_index.mjs";
-import { carryUnits, confirmUnits, coreObligations, indexAndStamp, linkUnits, loadUnits, recordVerification } from "../scripts/lib/core/obligations.mjs";
+import { carryUnits, confirmUnits, coreObligations, indexAndStamp, linkUnits, loadUnits, reverifyUnits } from "../scripts/lib/core/obligations.mjs";
+import * as obligations from "../scripts/lib/core/obligations.mjs";
+import { replayVerifier } from "../scripts/lib/verify/dispatch.mjs";
+import { verifyKnowledge } from "../scripts/lib/verify/verdicts.mjs";
 import { dependencyEdges } from "../scripts/lib/core/dependencies.mjs";
 import { parseSpine } from "../scripts/lib/core/spine.mjs";
 import { evaluateGate } from "../scripts/lib/skeleton/gate.mjs";
 
 const AGENT = { role: "agent", name: "executor", model: "claude-opus-5-5" };
+// the routed re-check (R2 coherence F9 removed recordVerification): a blind review of each unit, replayed clean, recorded
+const reverified = async (p, ids) => {
+  await verifyKnowledge(p.root, p.r(), { verifier: replayVerifier((pr) => ({ nonce: pr.match(/"nonce": "([0-9a-f]+)"/)[1], concerns: [] })), only: ids });
+  return reverifyUnits(p.root, p.r(), ids, AGENT);
+};
 const I = { role: "instructor", name: "Yu Wang (wangyu16)" };
 const MAP = `# Concept Map — Melting
 
@@ -133,7 +141,7 @@ test("[req.core.impact] impact follows every mechanical dependency kind", (t) =>
   assert.ok(kinds("Ice melts at 0 °C ").includes("source:source:src.wiki"), "source");
 });
 
-test("[req.core.reverify-obligation] a change makes exactly its dependents stale; only revision, a module re-check or the instructor clears them", (t) => {
+test("[req.core.reverify-obligation] a change makes exactly its dependents stale; only a logged blind re-check or the instructor clears them", async (t) => {
   const p = pkg(t); linkAll(p);
   const id = p.ids();
   const stale = () => p.obligations().filter((f) => f.kind === "reverify").map((f) => f.units[0]).sort();
@@ -142,9 +150,10 @@ test("[req.core.reverify-obligation] a change makes exactly its dependents stale
   p.w("study-guide/melting.md", SG.replace("0 °C", "4 °C"));
   beginSession(p.root, p.r(), AGENT); indexAndStamp(p.root, p.r(), { as: "agent", party: AGENT });
   assert.deepEqual(stale(), [id["At 0 °C."], id["At what temperatur"]].sort());
-  // the agent cannot clear by saying so; a stable module's re-check can
-  assert.throws(() => recordVerification(p.root, p.r(), [id["At 0 °C."]], { module: "agent" }), /names the module/);
-  recordVerification(p.root, p.r(), [id["At 0 °C."], id["At what temperatur"]], { module: "ms7-consistency", basis: "b" });
+  // the agent cannot clear by saying so (nor by naming a module: there is no such path, R2 F9); a logged blind re-check can
+  assert.equal(obligations.recordVerification, undefined);
+  assert.throws(() => reverifyUnits(p.root, p.r(), [id["At 0 °C."]], AGENT), /no logged blind correctness review/);
+  await reverified(p, [id["At 0 °C."], id["At what temperatur"]]);
   assert.deepEqual(stale(), []);
   // a spine change: the concept's text changes → units linked to it go stale
   p.w("concepts/melting.md", MAP.replace("A pure solid melts at one temperature.", "A pure solid melts at exactly one temperature, 0 K wide."));
@@ -167,7 +176,7 @@ test("[req.core.null-edit] a meaning-preserving edit raises nothing beyond its o
   assert.ok(p.obligations().some((f) => f.kind === "evidence-missing" && f.units[0] === p.ids()["Ice does not melt "]));
 });
 
-test("[req.versions.carry] units carried into a new major version start as obligations", (t) => {
+test("[req.versions.carry] units carried into a new major version start as obligations", async (t) => {
   const p = pkg(t); linkAll(p);
   const ice = p.ids()["Ice melts at 0 °C "];
   confirmUnits(p.root, p.r(), [ice], { what: "fact", instructorWords: "I confirm these." }, I);
@@ -176,6 +185,6 @@ test("[req.versions.carry] units carried into a new major version start as oblig
   const k = p.obligations().filter((f) => f.units[0] === ice).map((f) => f.kind).sort();
   assert.deepEqual(k.filter((x) => x !== "link-review-owed"), ["carried-unverified", "evidence-missing"]); // (its covering link was never reviewed: D41)
   assert.equal(readSidecar(p.root, "study-guide/melting.md").units.find((u) => u.id === ice).evidence.length, 0);
-  recordVerification(p.root, p.r(), [ice], { module: "ms1-sources", basis: "b" });
+  await reverified(p, [ice]);
   assert.ok(!p.obligations().some((f) => f.kind === "carried-unverified"));
 });

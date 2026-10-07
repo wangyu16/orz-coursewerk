@@ -16,6 +16,7 @@ import { canonicalJson, sha256 } from "../records/canonical.mjs";
 import { loadUnits, reviewable, unitDepsHashes } from "../core/obligations.mjs";
 import { manifestChapters } from "../core/package_reader.mjs";
 import { parseSpine } from "../core/spine.mjs";
+import { questionsOf } from "../core/dependencies.mjs";
 import { readDispatches, recordDispatch } from "./dispatch.mjs";
 import { dispatchLogEntry } from "./verdicts.mjs";
 
@@ -120,7 +121,8 @@ export function reviewInputs(u, all, plan) {
   const guides = u.form === "question" ? guideLinks : [];
   const guide = guides.length === 1 ? guideAsk(guides[0]) : null;
   const prev = all.filter((x) => x.locator.deliverable === u.locator.deliverable && x.locator.section === u.locator.section && x.locator.ordinal < u.locator.ordinal).sort((a, b) => b.locator.ordinal - a.locator.ordinal)[0];
-  const before = u.form === "answer" ? (prev?.form === "question" ? prev.text : "") : prev?.form === "paragraph" || prev?.form === "callout" ? prev.text : "";
+  // an answer is read with the question its label names (else the nearest before it): R2 coherence F13
+  const before = u.form === "answer" ? questionsOf(all, u).map((q) => q.text).join("\n\n") : prev?.form === "paragraph" || prev?.form === "callout" ? prev.text : "";
   // D42: framing is read for off-plan content only — whatever it links to, nothing is declared for it to teach
   if (u.role === "framing") return { ch, chapterNodes, links, declared: [], guides: [], guide: null, before };
   return { ch, chapterNodes, links, declared, guides, guide, before };

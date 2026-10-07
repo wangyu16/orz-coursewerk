@@ -7,7 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 import { classifyUnit, segmentDeliverable, uncoveredLines, unitHash } from "../scripts/lib/core/segment.mjs";
-import { beginSession, claimAuthorship, indexUnits, readSidecar, unindexedFindings } from "../scripts/lib/core/units_index.mjs";
+import { addJudgmentKinds, beginSession, claimAuthorship, indexUnits, readSidecar, unindexedFindings } from "../scripts/lib/core/units_index.mjs";
 import { liveReader } from "../scripts/lib/core/package_reader.mjs";
 import { parseLog, readLogText } from "../scripts/lib/records/log.mjs";
 import { validateUnit } from "../scripts/lib/records/units.mjs";
@@ -170,8 +170,15 @@ test("[req.units.classifier] judgment kinds are assigned deterministically, erri
   assert.ok(classifyUnit({ form: "answer", text: "0 + 273.15 = 273.15 K." }).includes("mechanical"));
   const p = pkg(t);
   indexUnits(p.root, p.reader(), { initialOrigin: { kind: "agent-knowledge", model: "m", step: "pre-existing", date: "2026-10-01" }, party: AGENT });
-  const side = p.side(); side.units[2].judgmentAdded = ["semi-mechanical"]; side.units[2].judgment = side.units[2].judgment.filter((k) => k === "knowledge-based");
-  fs.writeFileSync(path.join(p.root, "metadata/units/study-guide/melting.md.json"), JSON.stringify(side));
+  // the agent adds a kind through the harness (R2 coherence F8: a unit record is never hand-edited — a hand edit that
+  // removes a classified kind is unit-record-altered, and the harness refuses to index over it)
+  const sc = path.join(p.root, "metadata/units/study-guide/melting.md.json"), orig = fs.readFileSync(sc, "utf8");
+  const side = p.side(), eq = side.units.find((u) => u.form === "equation");
+  eq.judgment = eq.judgment.filter((k) => k !== "mechanical").concat(eq.judgment.includes("knowledge-based") ? [] : ["knowledge-based"]);
+  fs.writeFileSync(sc, JSON.stringify(side));
+  assert.throws(() => indexUnits(p.root, p.reader()), /changed outside the harness/);
+  fs.writeFileSync(sc, orig);
+  addJudgmentKinds(p.root, p.reader(), { [side.units[2].id]: ["semi-mechanical"] }, AGENT);
   indexUnits(p.root, p.reader());
   assert.ok(p.side().units[2].judgment.includes("semi-mechanical"), "an added kind is kept");
   assert.ok(p.side().units.find((u) => u.form === "equation").judgment.includes("mechanical"), "a classified kind cannot be removed");

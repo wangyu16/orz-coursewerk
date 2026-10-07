@@ -311,10 +311,13 @@ test("[req.spine.direction-substantive] C4-13: a fewer/more swap in the spine is
   assert.equal(ok.status, 0, ok.stderr);
   const rec = readLogText(c.root).trim().split("\n").map((l) => JSON.parse(l)).filter((r) => r.type === "approval").at(-1);
   assert.match(rec.payload.note, /without the blind review/);
-  // a light change stays light
+  // a light change stays light: no word changed (R2 coherence F4: a rephrase such as "toward" → "towards" is now
+  // substantive, since no word list tells a rephrase from a reversal)
   const c2 = course(t);
-  c2.edit(MAP, "toward the side with fewer moles of gas", "towards the side with fewer moles of gas");
+  c2.edit(MAP, "toward the side with fewer moles of gas", "toward the side with *fewer* moles of gas");
   assert.equal(approvalStatus(c2.r(), manifestChapters(c2.r()), readLogText(c2.root)).scopes["le-chatelier"].change.kind, "light");
+  c2.edit(MAP, "toward the side with *fewer* moles of gas", "towards the side with fewer moles of gas");
+  assert.equal(approvalStatus(c2.r(), manifestChapters(c2.r()), readLogText(c2.root)).scopes["le-chatelier"].change.kind, "substantive");
 });
 
 // ================================================== C5 ===========================================================

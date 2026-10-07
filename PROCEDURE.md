@@ -93,7 +93,8 @@ Mark every item you added as your proposal (`spine.mjs propose`), and record you
 <slug>` (and `--course` for the course map).
 
 **Re-approval** after a spine revision:
-- a **light** change (wording, every node and value kept) needs only a glance (`--glance`);
+- a **light** change (no word changed: only punctuation, markup, spacing or letter case) needs only a glance
+  (`--glance`);
 - anything else needs a full re-approval, with the diff and its impact.
 
 Never edit an approved spine on your own: the edit voids the approval.
@@ -132,10 +133,11 @@ A substantial rewrite of a unit makes it a new unit: link it again after you rew
 
 **Re-verification is a re-check, not a stamp.** A unit owes re-verification (`reverify`, `carried-unverified`) when
 something it depends on changed: its question (any rewording), a shared value, a key term, a spine node, or a new
-major version. Editing, relinking or re-indexing the unit never clears it. To clear it, have the unit's current text
-reviewed blind, then record the re-check:
+major version. Editing, relinking or re-indexing the unit never clears it, nor does deleting it and writing it back,
+or splitting it. To clear it, have the unit's current text reviewed blind, then record the re-check:
 `verify.mjs knowledge --units <ids>`, then `units.mjs reverify --units <ids> --model <id>`. An answer is reviewed
-with its question. A review that finds the text wrong does not count: revise it, and review it again. The instructor
+with its question. A link review (`verify.mjs alignment`) does not count. A review that finds the text wrong does not
+count: revise it, and review it again. The instructor
 may confirm a unit instead (`units.mjs confirm --what still-correct`). Unit records (`metadata/units/`) change only
 through these tools. A hand edit is a blocking defect; restore it from git.
 

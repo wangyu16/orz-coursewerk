@@ -12,7 +12,7 @@ import { canonicalJson, sha256 } from "../records/canonical.mjs";
 import path from "node:path";
 import { recordFile } from "../records/paths.mjs";
 import { appendLogRecord } from "../records/log.mjs";
-import { factHash } from "../core/dependencies.mjs";
+import { factHash, questionsOf, referencedUnits } from "../core/dependencies.mjs";
 import { unitHash } from "../core/segment.mjs";
 import { admitEvidence, evidenceStands, hasAdmittedEvidence, indexAndStamp, leadOf, loadUnits, loggedInstructorActs, needsEvidence, recordLeads, recordedLeads, reviewedAbsolutes, unitDepsHashes } from "../core/obligations.mjs";
 import { absoluteBundle, absoluteSentences, absolutesHash, readAbsoluteReview } from "./absolutes.mjs";
@@ -161,16 +161,14 @@ export async function verifyKnowledge(root, reader, { verifier, only = null, onP
     const list = sections.get(place(u)), i = list.indexOf(u);
     const shown = (x) => (x.label ? `${x.label}: ${x.text}` : x.text);
     const near = [...list.slice(Math.max(0, i - 2), i), list[i + 1]].filter(Boolean);
-    // questions referred to by number ("Justify the answer to Q3"), in the passage or the units just before it
-    const nums = new Set([u, ...list.slice(Math.max(0, i - 2), i)].flatMap((x) => [...x.text.matchAll(/\b(?:Q|Question)\s*(\d+)\b/gi)].map((m) => m[1])));
-    const own = /(\d+)\s*$/.exec(u.label || "")?.[1];
-    const referenced = all.filter((x) => x.locator.deliverable === u.locator.deliverable && x !== u && !near.includes(x) && x.label &&
-      [...nums].some((n) => n !== own && new RegExp(`^(?:q|question|answer|solution)\\s*${n}$`, "i").test(x.label.trim())));
-    // an answer is always read with the question it answers (the nearest question before it in its deliverable)
-    if (u.form === "answer") {
-      const k = all.indexOf(u);
-      for (let j = k - 1; j >= 0 && all[j].locator.deliverable === u.locator.deliverable; j--) if (all[j].form === "question") { if (!near.includes(all[j]) && !referenced.includes(all[j])) referenced.unshift(all[j]); break; }
-    }
+    // what the passage refers to by number ("Justify the answer to Q3"), resolved as the impact analysis resolves it
+    // (dependencies.mjs, R2 F3), plus numbers in the units just before it
+    const ownQs = questionsOf(all, u);
+    const before = list.slice(Math.max(0, i - 2), i);
+    const referenced = [...referencedUnits(all, u, ownQs), ...before.flatMap((x) => referencedUnits(all, { ...x, label: u.label, form: "callout" }, []))]
+      .filter((x, k, arr) => x !== u && !near.includes(x) && arr.indexOf(x) === k && !ownQs.includes(x));
+    // an answer is always read with the question it answers: the one its label names, else the nearest before it (F13)
+    for (const q of [...ownQs].reverse()) if (!near.includes(q) && !referenced.includes(q)) referenced.unshift(q);
     const bundle = knowledgeBundle(u.text, undefined, { before: list.slice(Math.max(0, i - 2), i).map(shown).join("\n\n"), after: list[i + 1] ? shown(list[i + 1]) : "", referenced: referenced.map(shown).join("\n\n"), label: u.label || null });
     const answer = await verifier(bundle.prompt);
     const record = recordDispatch(root, { kind: "knowledge", unit: u.id, factHash: factHash(u.text), contentHash: u.locator.contentHash, bundle, answer, deps: deps.get(u.id) });

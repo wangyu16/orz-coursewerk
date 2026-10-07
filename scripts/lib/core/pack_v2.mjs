@@ -55,8 +55,11 @@ export function packPublished(pkg, outDir) {
     files++;
   } };
   walk(pkg);
+  // the log's last record at packing: an anchor outside the package — a later package whose log does not hold this
+  // record at this seq had its history rewritten (R2 coherence F5, the squash onto a new root)
+  const last = parseLog(readLogText(pkg)).at(-1);
   const decision = { publishSeq: pub.seq, profile: pub.profile, contentHash: pub.contentHash, chapters: [...published], drafts: [...drafts], course: !!pub.course,
-    openQuestions: pub.openQuestions.length, clearedForPublicRelease: pub.profile === "public" && drafts.size === 0 };
+    openQuestions: pub.openQuestions.length, clearedForPublicRelease: pub.profile === "public" && drafts.size === 0, logHead: { seq: last.seq, hash: last.hash } };
   fs.mkdirSync(path.join(staged, "metadata", "publish"), { recursive: true });
   fs.writeFileSync(path.join(staged, recordRel), JSON.stringify(record, null, 2) + "\n");
   fs.utimesSync(path.join(staged, recordRel), new Date("2000-01-01T00:00:00Z"), new Date("2000-01-01T00:00:00Z"));
@@ -66,6 +69,10 @@ export function packPublished(pkg, outDir) {
   fs.mkdirSync(outDir, { recursive: true });
   const title = JSON.parse(fs.readFileSync(path.join(pkg, "alembic.json"), "utf8")).title || "course";
   const base = (title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "course") + (pub.profile === "private" ? ".private" : "");
+  // an earlier release of this package is an anchor: the log it shipped must still be the start of this one
+  let earlier = null; try { earlier = JSON.parse(fs.readFileSync(path.join(outDir, `${base}.release.json`), "utf8")); } catch { earlier = null; }
+  const held = earlier?.logHead && parseLog(readLogText(pkg)).find((r) => r.seq === earlier.logHead.seq);
+  if (earlier?.logHead && held?.hash !== earlier.logHead.hash) { fs.rmSync(work, { recursive: true, force: true }); return { ok: false, error: `the decision log no longer holds record ${earlier.logHead.seq} as it was when ${base}.release.json was packed: its history was rewritten since that release` }; }
   const zipPath = path.join(outDir, `${base}.alembic.zip`);
   fs.rmSync(zipPath, { force: true });
   const z = spawnSync("zip", ["-r", "-q", "-X", "-D", zipPath, "."], { cwd: staged, encoding: "utf8" });

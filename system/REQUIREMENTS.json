@@ -2223,12 +2223,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "A stamp is not a re-verification: an owed re-verification or version carry survives edits, relinks and re-indexing (also through a split or merge), and clears only through a logged blind re-check of the unit's current text and dependencies made after it arose (units.mjs reverify, which refuses otherwise and names the review to run; a review that found the text wrong does not count), a named module's re-check, or the instructor's confirmation.",
-      "source": "red team R1 coherence (2026-10-06): F4, F5, F14",
+      "statement": "A stamp is not a re-verification: an owed re-verification or version carry survives edits, relinks and re-indexing (also through a split or merge, and a retire-and-return), and clears only through a logged blind correctness re-check of the unit's current text and dependencies made after it arose (units.mjs reverify, which refuses otherwise and names the review to run; a review that found the text wrong does not count; a link review never counts), or the instructor's confirmation.",
+      "source": "red team R1 coherence (2026-10-06): F4, F5, F14; R2 F6, F9",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r1-coherence.test.mjs"
+          "tests/redteam-r1-coherence.test.mjs",
+          "tests/redteam-r2-coherence.test.mjs"
         ]
       }
     },
@@ -2238,12 +2239,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "An answer is bound to its question by the question's id and the hash of its full normalized wording (case, whitespace, markup and punctuation folded; relation and sign symbols kept): any rewording or re-pairing makes the answer owe a re-check, routed to the agent as a cheap blind re-review, never to the instructor's digest; a legacy stamp without the binding owes it once and is never baselined by upgradeStamps; the still-correct finding is bound to the question's wording.",
-      "source": "red team R1 coherence (2026-10-06): F1, F2, F3, F7, F15",
+      "statement": "An answer is bound to the question its label names (\"Answer 6\" to \"Q 6\"; by position only when there are no labels, and a label beats position) by the question's id and the hash of its full normalized wording (case, whitespace, markup and punctuation folded; relation and sign symbols kept): any rewording or re-pairing makes the answer owe a re-check, routed to the agent as a cheap blind re-review, never to the instructor's digest; a legacy stamp without the binding owes it once and is never baselined by upgradeStamps; the still-correct finding is bound to the question's wording; the knowledge and link reviews read an answer with the same question.",
+      "source": "red team R1 coherence (2026-10-06): F1, F2, F3, F7, F15; R2 F13",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r1-coherence.test.mjs"
+          "tests/redteam-r1-coherence.test.mjs",
+          "tests/redteam-r2-coherence.test.mjs"
         ]
       }
     },
@@ -2253,12 +2255,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Key-term dependencies match the label's plural (s/es), either apostrophe and declared aliases ([alias: …]); a unitless symbol=value binding (K = 50, Q_r = 50, pH = 7) is a shared value between the units stating it.",
-      "source": "red team R1 coherence (2026-10-06): F8, F11",
+      "statement": "Key-term dependencies match the label's plural (s/es), either apostrophe and declared aliases ([alias: …] or the glossary parenthetical), also in their LaTeX spellings ($Q_r$, Q_{r}, \\mathrm{Q_r}), a short alias in its own case; a unitless symbol=value binding (K = 50, Q_r = 50, pH = 7) is a shared value between the units stating it; a question or answer named by number (\"the answer to Q3\", \"Problem 3\") is a dependency bound to its full wording, of the unit naming it and of that unit's answer, resolved as the knowledge review resolves it.",
+      "source": "red team R1 coherence (2026-10-06): F8, F11; R2 F3, F12",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r1-coherence.test.mjs"
+          "tests/redteam-r1-coherence.test.mjs",
+          "tests/redteam-r2-coherence.test.mjs"
         ]
       }
     },
@@ -2268,12 +2271,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Every harness write of a unit record logs a digest of the sidecars it wrote; a sidecar that differs from its last logged digest is a blocking defect, and the harness refuses to write over it (no laundering by re-index).",
-      "source": "red team R1 coherence (2026-10-06): F6",
+      "statement": "Every harness write of a unit record logs a digest of the whole sidecar it wrote (locator, register and every other field); a sidecar that differs from its last logged digest is a blocking defect, the harness refuses to write over it (no laundering by re-index), and logUnitRecords refuses to log over it; the gate recomputes a unit's deliverable, section and place from the text.",
+      "source": "red team R1 coherence (2026-10-06): F6; R2 F8, F10",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r1-coherence.test.mjs"
+          "tests/redteam-r1-coherence.test.mjs",
+          "tests/redteam-r2-coherence.test.mjs"
         ]
       }
     },
@@ -2298,12 +2302,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Every committed version of the decision log (first-parent history of metadata/LOG.jsonl) extends the version committed before it; a past record rewritten, re-chained and committed as a new commit is a log-broken defect.",
-      "source": "red team R1 coherence (2026-10-06): F10",
+      "statement": "Every committed version of the decision log extends the version committed in each of its parents, for every commit reachable from HEAD (an orphan merged in with -s ours is caught); the log at every anchor (the branch's reflog, remote-tracking branches, tags) is an earlier or later version of HEAD's; a release receipt names the log's last record and a later pack refuses a log that no longer holds it. A rewrite onto a new root with every anchor removed is out of reach (documented in gate.mjs).",
+      "source": "red team R1 coherence (2026-10-06): F10; R2 F5",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r1-coherence.test.mjs"
+          "tests/redteam-r1-coherence.test.mjs",
+          "tests/redteam-r2-coherence.test.mjs"
         ]
       }
     },
@@ -2328,12 +2333,43 @@
       "tiers": [
         "T1"
       ],
-      "statement": "A spine change the classifier judged light and the instructor glance-confirmed raises no re-verification: spine node, guide entry and key-term targets keep counting at their hash from the last full approval; a substantive change still makes linked units owe re-verification.",
-      "source": "red team R1 coherence (2026-10-06): F13",
+      "statement": "A spine or key-term change is light only when its wording is unchanged (whitespace, markup, punctuation and case only); any changed word is substantive and needs full re-approval. A light, glance-confirmed change raises no re-verification: spine node, guide entry and key-term targets keep counting at their hash from the last full approval; a substantive change still makes linked units owe re-verification.",
+      "source": "red team R1 coherence (2026-10-06): F13; R2 F4",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r1-coherence.test.mjs"
+          "tests/redteam-r1-coherence.test.mjs",
+          "tests/redteam-r2-coherence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.coherence.retired-register",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "An identity break forgets nothing: a retired unit's record (stamp, owed re-verification, version carry, links, origin, evidence) is kept in its deliverable's unit record; a text that comes back byte for byte (any deliverable) or nearly (same deliverable and form) takes back its id and record, a piece of a retired unit or a text covering one inherits its stamp and obligations (as split and merge pieces do), and a retired id is never minted for other text.",
+      "source": "red team R2 coherence (2026-10-06): F1, F2, F14",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r2-coherence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.clearing-evidence",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "No exported call clears an obligation without evidence: re-verification counts only a correctness review (knowledge; an admitting semi for a non-answer) whose dispatch record is the one the log vouches for (record, prompt and answer hashes), is of the unit's current text, showed that text (and an answer's question) and holds a readable answer; there is no module-name clearing path; admitted evidence names a logged fact-check dispatch.",
+      "source": "red team R2 coherence (2026-10-06): F6, F9, F10",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r2-coherence.test.mjs"
         ]
       }
     },
