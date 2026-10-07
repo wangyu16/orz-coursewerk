@@ -1727,7 +1727,7 @@
       "id": "repo:tests/redteam-r2-control.test.mjs",
       "path": "tests/redteam-r2-control.test.mjs",
       "type": "test",
-      "hash": "c1dbe38344a8be8313ebaf85cd5f326c0d0df2a4cb3f417b5781feea75fb0b48"
+      "hash": "de8dc57d9531ee218de502a677d49d56f26697c69ee0fdd08e82803d4cbca600"
     },
     {
       "id": "repo:tests/requirements.test.mjs",

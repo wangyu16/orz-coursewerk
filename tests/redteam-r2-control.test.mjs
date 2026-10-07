@@ -378,8 +378,9 @@ test("[req.control.review-basis-judged] F11: a review is bound to the plan items
   assert.ok(before.size > 50, `${before.size} current reviews in the fixture`);
   const owed = () => c.core().filter((f) => ["link-review-owed", "framing-review-owed"].includes(f.kind));
   assert.deepEqual(kinds(owed()), []);
-  // the round-1 F13 rewording, glance-confirmed: nothing to review again
-  c.edit(MAP, "1. Le Chatelier's principle states that a system at equilibrium disturbed by", "1. Le Chatelier's principle states that a system at equilibrium, when disturbed by");
+  // the round-1 F13 light edit, glance-confirmed: nothing to review again (no word changed — markup and a comma; since
+  // round 2 coherence F4 a changed word is substantive)
+  c.edit(MAP, "1. Le Chatelier's principle states that a system at equilibrium disturbed by", "1. Le Chatelier's principle states that a *system at equilibrium*, disturbed by");
   const rec = recordApproval(c.root, c.r(), manifestChapters(c.r()), { chapter: "le-chatelier", glance: true, instructorWords: "Fine, a wording fix." }, I);
   assert.equal(rec.type, "glance-confirmation");
   assert.equal(currentReviewsAt(c.root, c.r(), c.units()).size, before.size);
