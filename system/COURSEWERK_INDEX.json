@@ -1697,7 +1697,7 @@
       "id": "repo:tests/redteam-r1-coherence.test.mjs",
       "path": "tests/redteam-r1-coherence.test.mjs",
       "type": "test",
-      "hash": "9ad5b4b90297e94f182e7432b5431ba04ae6b5ac87926881f387e5778e6e7dfa"
+      "hash": "06ce331b01f71895e191bef810a59873829e3c8ff8d287c247b341f807b3631e"
     },
     {
       "id": "repo:tests/redteam-r1-confidence.test.mjs",
@@ -1709,7 +1709,7 @@
       "id": "repo:tests/redteam-r1-control.test.mjs",
       "path": "tests/redteam-r1-control.test.mjs",
       "type": "test",
-      "hash": "0e87792e329cca253621dfbfe3088255835ac877b3402d59a4b009c14a01f018"
+      "hash": "b1295256c9b79575cc980474cb53f05895ce035ba3aa75b3eacc27e04c25e9fa"
     },
     {
       "id": "repo:tests/redteam-r2-control.test.mjs",

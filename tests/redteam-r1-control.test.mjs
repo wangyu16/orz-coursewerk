@@ -446,6 +446,11 @@ test("[req.ship.checked] D42: a declared document is a deliverable unless the in
   fs.mkdirSync(path.dirname(c.file(H)), { recursive: true });
   c.write(H, "{{nyml\nkind: document\n}}\n\n# Schedule\n\nWeek 1: equilibrium. Week 2: Le Chatelier's principle.\n");
   c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "schedule", title: "Schedule", source: H, carrier: "paged", role: "administrative" }] }, null, 2) + "\n");
+  // red team round 2 (C3-06): the mark is the instructor's logged act, never the field alone — until they confirm it,
+  // the document is a deliverable like any other
+  assert.ok(added(c).some((f) => JSON.stringify(f).includes(H) && f.kind === "units-not-indexed"), "the field alone: a deliverable to index");
+  const ok = c.cli("coursewerk.mjs", "administrative", "--root", c.root, "--document", H, "--name", "Yu Wang (wangyu16)", "--words", "The schedule is administrative.");
+  assert.equal(ok.status, 0, ok.stderr);
   assert.ok(!c.units().some((u) => u.locator.deliverable === H), "administrative: not segmented as teaching");
   assert.ok(!added(c).some((f) => JSON.stringify(f).includes(H) && f.kind === "units-not-indexed"));
   assert.deepEqual(segmentDeliverable("{{nyml\nkind: document\n}}\n\n# H\n\nText here.\n", H).units.map((u) => u.text), ["Text here."], "the settings block is notation, not content");
