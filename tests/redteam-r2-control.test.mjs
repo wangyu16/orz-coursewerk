@@ -224,7 +224,7 @@ test("[req.ship.administrative-instructor] C3-06: `role: administrative` exempts
 // ==================================== 3. D41 for guide Counts (C5-08) ===============================================
 const tab = (label, body, answer) => `:::: tabs\n::: tab ${label}\n${body}\n:::\n::: tab Answer ${label.replace(/^Q /, "")}\n${answer}\n:::\n::::`;
 
-test("[req.control.guide-count-verified] C5-08 A: a never-reviewed question does not fill a Count — the agent owes its review; a review that says it differs from the entry leaves the entry short", async (t) => {
+test("[req.control.guide-count-verified] C5-08 A: a never-reviewed question does not fill a Count — the agent owes its review; a review that says it practises another objective leaves the entry short; a type or level that differs is a question (D44)", async (t) => {
   const c = course(t);
   const Q2 = "u-practice-le-chatelier-questions-3"; // Q 2, the only question of guide.le-chatelier.statement-critique
   c.asAgent(() => c.write(PR, `${c.read(PR).trimEnd()}\n\n${tab("Q 16", "In a galvanic cell, at which electrode does reduction take place?", "Reduction takes place at the cathode.")}\n`));
@@ -237,9 +237,12 @@ test("[req.control.guide-count-verified] C5-08 A: a never-reviewed question does
   await reviewAlignment(c.root, c.r(), { verifier: reviewer(() => ({ verdicts: { "objective.le-chatelier.state-principle": "no" }, fidelity: { type: "differs", level: "differs" } })).verifier, only: [q.id] });
   const short = c.core().filter((f) => f.kind === "guide-entry-short" && /statement-critique/.test(f.evidence.what));
   assert.equal(short.length, 1, kinds(c.core()).join(" ")); assert.match(short[0].evidence.what, /has 0 of 1/);
-  // a review that says it practises the objective but is not the entry's type still does not fill it
+  // D44 (operator 2026-10-07): a review that says it practises the objective but is not the entry's type fills the
+  // Count — the type is the instructor's assessment-fidelity question, which never blocks; an UNANSWERED type does not
   await reviewAlignment(c.root, c.r(), { verifier: reviewer(() => ({ fidelity: { type: "differs", level: "matches" } })).verifier, only: [q.id] });
-  assert.ok(c.core().some((f) => f.kind === "guide-entry-short" && /statement-critique/.test(f.evidence.what)));
+  assert.ok(!c.core().some((f) => f.kind === "guide-entry-short" && /statement-critique/.test(f.evidence.what)), kinds(c.core()).join(" "));
+  await reviewAlignment(c.root, c.r(), { verifier: reviewer(() => ({ fidelity: { level: "not sure" } })).verifier, only: [q.id] });
+  assert.ok(c.core().some((f) => f.kind === "link-review-owed" && f.units.includes(q.id)), "a level left unanswered: the review is owed again");
   // yes, and the entry's type and level: it fills
   await reviewAlignment(c.root, c.r(), { verifier: reviewer().verifier, only: [q.id] });
   assert.ok(!c.core().some((f) => /statement-critique/.test(f.evidence.what || "") || f.units.includes(q.id) && f.kind === "link-review-owed"));

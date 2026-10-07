@@ -27,6 +27,7 @@
 //     `recordVerification`, which cleared on a module's name alone, is gone (R2 F9);
 //   - the instructor's confirmation (confirmUnits).
 // The agent cannot clear an obligation by saying so.
+import { GLANCE_KINDS } from "./change.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { canonicalJson, sha256 } from "../records/canonical.mjs";
@@ -161,7 +162,7 @@ function lightAccept(reader, chapters, logText) {
   let status; try { status = approvalStatus(reader, chapters, logText); } catch { return accept; }
   const recs = parseLog(logText).filter((r) => r.type === "approval" && r.party?.role === "instructor");
   for (const [key, s] of Object.entries(status.scopes)) {
-    if (!s.valid || s.record?.type !== "glance-confirmation" || s.record.payload?.change !== "light") continue;
+    if (!s.valid || s.record?.type !== "glance-confirmation" || !GLANCE_KINDS.includes(s.record.payload?.change)) continue;
     const full = recs.filter((r) => r.payload?.scope === s.scope).at(-1);
     if (!full?.payload?.parsed) continue;
     for (const n of [...(full.payload.parsed.nodes || []), ...(full.payload.parsed.entries || [])]) if (n?.id) add(`spine:${n.id}`, nodeHash(n));
@@ -537,7 +538,7 @@ export function coreObligations(root, reader, basis) {
       else ob("objective-uncovered", [], `a teaching unit that teaches ${o.id}: its links were reviewed, and none teaches it (only in passing, or not at all)`);
     }
     // D41 for the guide (red team round 2, C5-08): a question fills an entry's Count only when its current blind
-    // review says it practises the entry's objective ("yes") and is the entry's type and level; a framing question is
+    // review says it practises the entry's objective ("yes") and has answered its type and level (D44); a framing question is
     // never asked its fidelity, so it never fills one. A Count short only of reviews owed is the agent's review to run.
     const { verified, owed } = guideReviewState(s.guide.entries, ch, reviews);
     const assigned = guideAssignment(s.guide.entries, units, verified), possible = guideAssignment(s.guide.entries, units, (q, e) => verified(q, e) || owed(q, e));
@@ -576,7 +577,7 @@ export function coreObligations(root, reader, basis) {
 
 /**
  * Which question fills which guide entry, as the current reviews say (round 2, C5-08). `verified(q, e)`: q's current
- * review says it practises e's objective ("yes") and matches e's type and level. `owed(q, e)`: q has no usable current
+ * review says it practises e's objective ("yes") and has answered e's type and level (a "differs" is a question, D44). `owed(q, e)`: q has no usable current
  * review for e yet (none, or a verdict or fidelity left unanswered) — the agent's review to run.
  */
 export function guideReviewState(entries, chapter, reviews) {
@@ -584,7 +585,9 @@ export function guideReviewState(entries, chapter, reviews) {
   const objectiveOf = (e) => `objective.${chapter}.${e.objective}`;
   const verified = (q, e) => {
     const r = q.role === "teaching" ? reviews.get(q.id) : null, f = r && fidelityFor(r, e);
-    return !!(r && r.verdicts.get(objectiveOf(e)) === "yes" && f && f.type === "matches" && f.level === "matches");
+    // the type and level must be ANSWERED, not "matches": one that differs is the instructor's assessment-fidelity
+    // question, and questions never block (D44, operator 2026-10-07) — so it never leaves a Count short
+    return !!(r && r.verdicts.get(objectiveOf(e)) === "yes" && f && f.type !== "unanswered" && f.level !== "unanswered");
   };
   const owed = (q, e) => {
     if (q.role !== "teaching") return false;

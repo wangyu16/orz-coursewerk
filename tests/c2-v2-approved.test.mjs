@@ -26,16 +26,17 @@ test("[req.approval.record] [req.approval.scope] the approved C2 spine: well-for
   assert.ok(Object.values(st.scopes).every((s) => s.valid));
 });
 
-test("[req.approval.voiding] [req.approval.weights] on the real spine: a punctuation edit is light, a rephrase or a changed count is substantive, and only that chapter voids", (t) => {
+test("[req.approval.voiding] [req.approval.weights] on the real spine: a punctuation edit is light, a rephrase is a rephrasing (D43), a changed count is substantive, and only that chapter voids", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-c2v2-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   fs.cpSync(FIX, root, { recursive: true });
   const guide = path.join(root, "assessment-support", "le-chatelier.md");
   const status = () => approvalStatus(liveReader(root), ["chemical-equilibrium", "le-chatelier"], readLogText(root)).scopes;
-  // R2 coherence F4: light means no word changed; a rephrase ("single" → "one") is substantive
+  // R2 coherence F4 + D43: light means no word changed; a rephrase ("single" → "one") is a rephrasing — a glance only
+  // after its blind review finds the meaning kept (approvals.glanceProblem)
   const orig = fs.readFileSync(guide, "utf8");
   fs.writeFileSync(guide, orig.replace("This single item covers the whole chapter", "This one item covers the whole chapter"));
-  assert.equal(status()["le-chatelier"].change.kind, "substantive");
+  assert.equal(status()["le-chatelier"].change.kind, "rephrasing");
   fs.writeFileSync(guide, orig.replace("This single item covers the whole chapter", "This *single* item covers the whole chapter"));
   assert.equal(status()["le-chatelier"].change.kind, "light");
   assert.equal(status()["chemical-equilibrium"].valid, true);

@@ -2415,7 +2415,7 @@
       "tiers": [
         "T1"
       ],
-      "statement": "A spine or key-term change is light only when its wording is unchanged (whitespace, markup, punctuation and case only); any changed word is substantive and needs full re-approval. A light, glance-confirmed change raises no re-verification: spine node, guide entry and key-term targets keep counting at their hash from the last full approval; a substantive change still makes linked units owe re-verification.",
+      "statement": "A spine or key-term change is light only when its wording is unchanged (whitespace, markup, punctuation and case only). A change of words that keeps every value, name, number, negation and direction word is a rephrasing: a glance confirms it only when the current D39 blind review says every changed line says the same as the approved text it replaces; a line judged changed, an unanswered meaning or no review means full re-approval (D43). Any other changed word is substantive. A light or meaning-kept, glance-confirmed change raises no re-verification: spine node, guide entry and key-term targets keep counting at their hash from the last full approval; a substantive change still makes linked units owe re-verification.",
       "source": "red team R1 coherence (2026-10-06): F13; R2 F4",
       "status": "closed",
       "evidence": {
@@ -2536,7 +2536,7 @@
       "tiers": [
         "T1"
       ],
-      "statement": "D41 for the assessment guide: a practice question fills an entry's Count only when its current blind review says it practises the entry's objective (\"yes\") and matches the entry's type and level; a framing question never fills one; a Count short only of reviews owed is link-review-owed (the agent's), otherwise guide-entry-short.",
+      "statement": "D41 for the assessment guide: a practice question fills an entry's Count only when its current blind review says it practises the entry's objective (\"yes\") and has answered the entry's type and level — a type or level that differs is the instructor's assessment-fidelity question and never leaves a Count short (D44); a framing question never fills one; a Count short only of reviews owed is link-review-owed (the agent's), otherwise guide-entry-short.",
       "source": "3C red team round 2, CONTROL (studies/p11/redteam-r2/control, 2026-10-06) C5-08",
       "status": "closed",
       "evidence": {

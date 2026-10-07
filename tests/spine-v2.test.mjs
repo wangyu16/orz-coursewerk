@@ -190,14 +190,16 @@ test("[req.approval.scope] [req.approval.voiding] one approval per chapter and o
   assert.equal(evaluateGate({ findings: [], approvalProblems: approvalProblems(st(), ["melting"]) }).canPublish, false);
 });
 
-test("[req.approval.weights] a light change needs only a glance; anything else, or anything uncertain, is substantive", (t) => {
+test("[req.approval.weights] a light change needs only a glance; a rephrasing a glance after a meaning-kept review (D43); anything else, or anything uncertain, is substantive", (t) => {
   const p = pkg(t);
   recordApproval(p.root, p.reader, ["melting"], { chapter: "melting", instructorWords: "approve" }, I);
   const change = () => approvalStatus(liveReader(p.root), ["melting"], readLogText(p.root)).scopes.melting.change;
-  // punctuation, markup, spacing and case → light; a rephrase is substantive (R2 coherence F4: no word list tells a
-  // rephrase from a reversal, so a glance — which re-baselines every dependent — is kept for edits that change no word)
+  // punctuation, markup, spacing and case → light; a rephrase is a rephrasing (R2 coherence F4 + D43: no word list tells
+  // a rephrase from a reversal, so a glance — which re-baselines every dependent — needs the blind review of the changed
+  // lines to find each one the same in meaning; without it the glance is refused)
   p.w("concepts/melting.md", MAP().replace("Solids melt.", "Solids do melt eventually.").replace("Explain why a mixture melts over a range.", "Explain why a mixture melts across a range."));
-  assert.equal(change().kind, "substantive");
+  assert.equal(change().kind, "rephrasing");
+  assert.throws(() => recordApproval(p.root, liveReader(p.root), ["melting"], { chapter: "melting", glance: true, instructorWords: "fine" }, I), /has no current review/);
   p.w("concepts/melting.md", MAP().replace("Solids melt.", "Solids **melt**!").replace("Explain why a mixture melts over a range.", "Explain why a mixture  melts over a range;"));
   assert.equal(change().kind, "light");
   assert.equal(recordApproval(p.root, liveReader(p.root), ["melting"], { chapter: "melting", glance: true, instructorWords: "fine" }, I).type, "glance-confirmation");

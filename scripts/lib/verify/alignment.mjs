@@ -8,6 +8,7 @@
 // linked only to guide entries (their declared items are the entries and the entries' objectives) — and checks a
 // question against EVERY guide entry it is linked to. An answer it cannot read is never "no problem" (C2-16): a
 // verdict is matched case-insensitively, and an omitted or unrecognized verdict leaves the review unscorable.
+import { GLANCE_KINDS } from "../core/change.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { randomBytes } from "node:crypto";
@@ -45,7 +46,7 @@ function lightAccepted(reader, chapters) {
   let status; try { status = approvalStatus(reader, chapters, logText); } catch { return out; }
   const recs = parseLog(logText).filter((r) => r.type === "approval" && r.party?.role === "instructor");
   for (const s of Object.values(status.scopes)) {
-    if (!s.valid || s.record?.type !== "glance-confirmation" || s.record.payload?.change !== "light") continue;
+    if (!s.valid || s.record?.type !== "glance-confirmation" || !GLANCE_KINDS.includes(s.record.payload?.change)) continue;
     const parsed = recs.filter((r) => r.payload?.scope === s.scope).at(-1)?.payload?.parsed;
     for (const n of parsed?.nodes || []) if (n?.id) out.set(n.id, n);
     for (const e of parsed?.entries || []) if (e?.id) out.set(e.id, { ...e, text: e.title });

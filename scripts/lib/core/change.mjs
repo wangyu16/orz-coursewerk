@@ -1,16 +1,20 @@
 // How big is a spine change? (D16, D19-F, D21.) Compares two parsed chapter spines (or two course maps):
 //   none        — identical;
 //   light       — every node and anchor kept, and the WORDING unchanged: only whitespace, markup, punctuation and
-//                 letter case differ (a reflow, a comma, bold to italic) → a glance confirmation. No word list can tell a
-//                 rephrase from a reversal ("added at constant volume" → "added at constant pressure": red team R2
-//                 coherence F4, after R1 C4-13 and R1 F2), so any change of the words themselves is substantive — as an
-//                 answer's question is bound to its full wording (R1 F2). A glance re-baselines every dependent unit, so
-//                 it is kept for edits that cannot change what a line says;
+//                 letter case differ (a reflow, a comma, bold to italic) → a glance confirmation;
+//   rephrasing  — words changed, but every value, name, number, symbol, negation and direction word kept, in order →
+//                 a glance, but only after the D39 blind review of the changed lines has said each one says the same as
+//                 the approved text (D43, operator 2026-10-07). No word list can tell a rephrase from a reversal ("added
+//                 at constant volume" → "at constant pressure": red team R2 coherence F4), so the reviewer decides, and
+//                 an unclear answer is a change (approvals.mjs). A glance re-baselines every dependent unit;
 //   substantive — anything else within the version (sub-concept added or removed, depth, guidance, a new
 //                 objective, a reorder of items) → full re-approval with diff and impact;
 //   structural  — identity cannot be carried (an objective appears to be split or merged; objectives moved
 //                 between chapters; the course's chapter list or order changed) → a new major version (D15).
 // When unsure, it is substantive: every rule below errs away from "light".
+
+/** The change kinds a glance confirmation may record (D43): a rephrasing only once its blind review found the meaning kept. */
+export const GLANCE_KINDS = ["light", "rephrasing"];
 
 const NEGATION = /\b(?:not|no|never|none|neither|nor|without|cannot|can't|doesn't|don't|isn't|aren't|won't|nothing)\b/gi;
 /** The tokens a light change must not touch: numbers (with units), capitalized names, symbols, negations. */
@@ -49,9 +53,12 @@ export function meaningTokens(text) {
 // a swap of direction words reverses a statement without touching a fact token (C4-13): a spine change compares the
 // meaning tokens AND the order of the direction words ("fewer … more" → "more … fewer" keeps the sorted multiset)
 const directions = (t) => (String(t || "").match(DIRECTION) || []).map((x) => x.toLowerCase());
-// light only when the words are the same words, in the same order (R2 F4); the fact and direction tokens are kept as
-// a second, redundant check
-const sameTokens = (a, b) => questionWording(a) === questionWording(b) && JSON.stringify(meaningTokens(a)) === JSON.stringify(meaningTokens(b)) && JSON.stringify(directions(a)) === JSON.stringify(directions(b));
+// the same facts: the fact and direction tokens, and the direction words in order. A change that keeps them but not the
+// words is a rephrasing (D43); one that does not is substantive.
+const sameFacts = (a, b) => JSON.stringify(meaningTokens(a)) === JSON.stringify(meaningTokens(b)) && JSON.stringify(directions(a)) === JSON.stringify(directions(b));
+const sameWords = (a, b) => questionWording(a) === questionWording(b);
+const wording = (a, b, what) => (!sameFacts(a, b) ? { kind: "substantive", why: `${what} changed (a value, name, number, negation or direction)` }
+  : !sameWords(a, b) ? { kind: "rephrasing", why: `${what} reworded (the same values, names, negations and directions)` } : null);
 const words = (t) => new Set(String(t || "").toLowerCase().match(/[a-z]{4,}/g) || []);
 const overlap = (a, b) => { const A = words(a), B = words(b); let n = 0; for (const w of A) if (B.has(w)) n++; return n / Math.max(1, Math.min(A.size, B.size)); };
 
@@ -81,7 +88,7 @@ export function classifyChapterChange(before, after, o = {}) {
   for (const [id, b] of bN) {
     const a = aN.get(id); if (!a) continue;
     if (JSON.stringify([...b.prereqs].sort()) !== JSON.stringify([...a.prereqs].sort())) reasons.push({ kind: "substantive", why: `${id}: prerequisites changed` });
-    if (!sameTokens(b.text, a.text)) reasons.push({ kind: "substantive", why: `${id}: its wording changed (a word, value, name, number, negation or direction)` });
+    const w = wording(b.text, a.text, `${id}: its text`); if (w) reasons.push(w);
   }
   const bE = new Map(before.entries.map((e) => [e.id, e])), aE = new Map(after.entries.map((e) => [e.id, e]));
   for (const k of [...bE.keys()].filter((k) => !aE.has(k))) reasons.push({ kind: "substantive", why: `guide entry ${k} removed` });
@@ -90,9 +97,10 @@ export function classifyChapterChange(before, after, o = {}) {
     const a = aE.get(id); if (!a) continue;
     for (const f of ["objective", "type", "count", "levels", "targets"]) if (String(b[f] ?? "") !== String(a[f] ?? "")) reasons.push({ kind: "substantive", why: `${id}: ${f} changed` });
   }
-  // edits outside parsed items (key terms, summary, scope, guide prose, rubrics): light only if no word changed
-  if (o.beforeText !== undefined && !sameTokens(o.beforeText, o.afterText)) reasons.push({ kind: "substantive", why: "the wording of the document's prose or key terms changed (a word, value, name, number, negation or direction)" });
-  const kind = reasons.some((r) => r.kind === "structural") ? "structural" : reasons.length ? "substantive" : "light";
+  // edits outside parsed items (key terms, summary, scope, guide prose, rubrics): light only if no word changed; a
+  // rephrasing if only words changed
+  if (o.beforeText !== undefined) { const w = wording(o.beforeText, o.afterText, "the document's prose or key terms"); if (w) reasons.push(w); }
+  const kind = reasons.some((r) => r.kind === "structural") ? "structural" : reasons.some((r) => r.kind === "substantive") ? "substantive" : reasons.length ? "rephrasing" : "light";
   return { kind, reasons };
 }
 

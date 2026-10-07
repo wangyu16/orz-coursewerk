@@ -1,11 +1,12 @@
 // Spine approvals (F3; D14, D21). One approval per chapter (its concept map + assessment guide) and one for the course
 // map, each a log record bound to exact content. A chapter's approval also binds the slice of the course map that bears
 // on it (its place in the chapter sequence, the course concepts its prerequisites name), so a course-map edit voids
-// only the chapters it touches. Re-approval has two weights: a light change needs a glance confirmation; anything else
-// a full approval.
+// only the chapters it touches. Re-approval has two weights: a light change, or a rephrasing its blind review found
+// unchanged in meaning (D43), needs a glance confirmation; anything else a full approval.
 import { appendLogRecord, parseLog, readLogText, verifyLog } from "../records/log.mjs";
 import { chapterCoverage, courseCoverage, parseSpine, spinePaths, COURSE_MAP } from "./spine.mjs";
 import { classifyChapterChange, classifyCourseChange } from "./change.mjs";
+import { currentSpineReview } from "./spine_review.mjs";
 import { currentVersion, versionOpenedAt } from "./versions.mjs";
 
 const scopeOf = (chapter) => (chapter ? `chapter:${chapter}` : "course");
@@ -67,7 +68,24 @@ export function approvalProblems(status, chapters) {
   return p;
 }
 
-/** Record an approval (full) or a glance confirmation (light) by the instructor. */
+/**
+ * Why a glance confirmation of a scope must wait (null: it may be given). A light change needs nothing more; a
+ * rephrasing needs the current blind review of its changed lines (D39) to have said that every one says the same as the
+ * approved text it replaces (D43, operator 2026-10-07) — a line judged changed, or not answered, means a full approval.
+ */
+export function glanceProblem(root, reader, s, scope) {
+  const kind = s?.change?.kind;
+  if (kind === "light") return null;
+  const why = (s?.change?.reasons || [])[0]?.why || "no prior approval";
+  if (kind !== "rephrasing") return `a glance confirmation is only for a light change or a rephrasing that keeps its meaning; this change is ${kind} (${why})`;
+  const r = currentSpineReview(root, reader, scope);
+  if (!r) return `a glance confirmation is only for a light change, or a rephrasing whose blind review found every changed line the same in meaning; this rephrasing (${why}) has no current review — run it (node scripts/spine.mjs review), or approve in full`;
+  if (r.meaning?.same) return null;
+  const off = (r.meaning?.byLine || []).filter((m) => m !== "same").length;
+  return `a glance confirmation is only for a light change, or a rephrasing whose blind review found every changed line the same in meaning; the review found ${off} line(s) changed in meaning or did not say — approve in full`;
+}
+
+/** Record an approval (full) or a glance confirmation (light, or a rephrasing that keeps its meaning) by the instructor. */
 export function recordApproval(root, reader, chapters, { chapter = null, glance = false, instructorWords, note = "" }, party) {
   if (party?.role !== "instructor") throw new Error("only the instructor approves the spine");
   if (!String(instructorWords || "").trim()) throw new Error("an approval quotes the instructor's words");
@@ -78,7 +96,7 @@ export function recordApproval(root, reader, chapters, { chapter = null, glance 
   const s = chapter ? status.scopes[chapter] : status.scopes.course;
   if (!s) throw new Error(`unknown chapter ${chapter}`);
   if (s.valid) throw new Error(`${scope} is already approved at its current content`);
-  if (glance && s.change?.kind !== "light") throw new Error(`a glance confirmation is only for a light change; this change is ${s.change?.kind} (${(s.change?.reasons || [])[0]?.why || "no prior approval"})`);
+  if (glance) { const p = glanceProblem(root, reader, s, scope); if (p) throw new Error(p); }
   if (!glance && s.change?.kind === "structural" && !(versionOpenedAt(logText, scope) > (s.record?.seq || 0)))
     throw new Error(`this is a structural change (${s.change.reasons[0].why}); it opens a new major version first`);
   const texts = Object.fromEntries(s.covers.map((rel) => [rel, reader.text(rel)]));

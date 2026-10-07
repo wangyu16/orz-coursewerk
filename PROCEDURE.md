@@ -96,7 +96,10 @@ Mark every item you added as your proposal (`spine.mjs propose`), and record you
 **Re-approval** after a spine revision:
 - a **light** change (no word changed: only punctuation, markup, spacing or letter case) needs only a glance
   (`--glance`);
-- anything else needs a full re-approval, with the diff and its impact.
+- a **rephrasing** (words changed, every value, name, number, negation and direction kept) needs only a glance
+  once the blind review of the changed lines (`spine.mjs review`) has found every line the same in meaning;
+- anything else, or a rephrasing the review found changed (or did not say), needs a full re-approval, with the diff
+  and its impact.
 
 Never edit an approved spine on your own: the edit voids the approval.
 

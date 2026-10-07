@@ -9,7 +9,8 @@
 //              gone; logUnitRecords refuses to log over an edited record;
 //   F3 F12 F13 edges are not lexical guesses: a question named by number is a dependency, a declared alias matches its
 //              LaTeX spellings, an answer pairs with the question its label names;
-//   F4         a spine or key-term change is light only when no word changed;
+//   F4         a spine or key-term change is light only when no word changed; a rephrasing is a glance only when its
+//              blind review finds the meaning kept (D43, operator 2026-10-07);
 //   F5 F8      the unit-record digest binds the whole sidecar (and the gate recomputes where a unit is); every commit
 //              reachable is checked against every parent, and the branch's reflog, remote-tracking branches, tags and
 //              an earlier release's receipt anchor the log against a squash.
@@ -30,6 +31,7 @@ import { logUnitRecords, unitRecordFindings } from "../scripts/lib/core/unit_rec
 import { recordApproval, approvalStatus } from "../scripts/lib/core/approvals.mjs";
 import { questionsOf, referencedUnits, termMatcher } from "../scripts/lib/core/dependencies.mjs";
 import { classifyChapterChange } from "../scripts/lib/core/change.mjs";
+import { reviewSpineChanges } from "../scripts/lib/core/spine_review.mjs";
 import { logFindings } from "../scripts/lib/skeleton/gate.mjs";
 import { runGate } from "../scripts/lib/skeleton/full_gate.mjs";
 import { publishDecision, unitInfoOf } from "../scripts/lib/core/workflow.mjs";
@@ -272,17 +274,40 @@ test("[req.coherence.question-binding] F13: an answer pairs with the question it
 });
 
 // ============================================ light spine changes =================================================
-test("[req.coherence.light-spine] F4: a key-term or spine change is light only when no word changed; a reversal through any words is substantive and cannot be glance-confirmed", (t) => {
+test("[req.coherence.light-spine] F4 + D43: no changed word is light; a rephrasing is glance-confirmed only when its blind review finds every changed line the same in meaning — a reversal through any words is not", async (t) => {
   const node = (text) => ({ nodes: [{ id: "n", kind: "concept", text, prereqs: [] }], entries: [] });
   const kind = (a, b) => classifyChapterChange(node(a), node(b), { beforeText: a, afterText: b }).kind;
   assert.equal(kind("a system at equilibrium disturbed by a change", "a *system at equilibrium*, disturbed by a change"), "light", "markup and a comma");
-  assert.equal(kind("a system at equilibrium disturbed by", "a system at equilibrium, when disturbed by"), "substantive", "a word added (the round-1 example)");
-  assert.equal(kind("added at constant volume, does not shift", "added at constant pressure, does not shift"), "substantive");
+  assert.equal(kind("a system at equilibrium disturbed by", "a system at equilibrium, when disturbed by"), "rephrasing", "a word added (the round-1 example)");
+  assert.equal(kind("added at constant volume, does not shift", "added at constant pressure, does not shift"), "rephrasing", "no word list tells this from a rephrase: the reviewer does");
+  assert.equal(kind("added at 1 atm, does not shift", "added at 2 atm, does not shift"), "substantive", "a value changed");
+  assert.equal(kind("added at constant volume, does not shift", "added at constant volume, does shift"), "substantive", "a negation dropped");
+  const spineReviewer = (meaningOf) => replayVerifier((pr) => {
+    const lines = (pr.split("\nCHANGED LINES\n")[1] || "").split("\n\n")[0].split("\n").filter((l) => /^\d+\. /.test(l));
+    return { nonce: nonceOf(pr), concerns: [], meaning: lines.map((l, i) => ({ line: i + 1, meaning: meaningOf(l) })) };
+  });
+  const glance = (c) => recordApproval(c.root, c.r(), manifestChapters(c.r()), { chapter: "le-chatelier", glance: true, instructorWords: "Fine, a wording fix." }, I);
+  // the R2 F4 reversal: a rephrasing by its words, refused at a glance without the review, and refused when the review
+  // (honest) finds the line changed in meaning
   const c = course(t);
   c.edit("concepts/le-chatelier.md", "a gas that does not react and, added at constant volume, does not shift a gas-phase equilibrium", "a gas that does not react and, added at constant pressure, does not shift a gas-phase equilibrium");
-  const r = c.r(), chapters = manifestChapters(r);
-  assert.equal(approvalStatus(r, chapters, readLogText(c.root)).scopes["le-chatelier"].change.kind, "substantive");
-  assert.throws(() => recordApproval(c.root, r, chapters, { chapter: "le-chatelier", glance: true, instructorWords: "Fine, a wording fix." }, I), /only for a light change/);
+  assert.equal(approvalStatus(c.r(), manifestChapters(c.r()), readLogText(c.root)).scopes["le-chatelier"].change.kind, "rephrasing");
+  assert.throws(() => glance(c), /has no current review/);
+  const rv = await reviewSpineChanges(c.root, c.r(), "chapter:le-chatelier", { verifier: spineReviewer((l) => (/constant pressure/.test(l) ? "changed" : "same")) });
+  assert.equal(rv.meaning.same, false);
+  assert.throws(() => glance(c), /changed in meaning or did not say/);
+  // a review that does not say (an answer from before D43, or a line left out) is a change too
+  await reviewSpineChanges(c.root, c.r(), "chapter:le-chatelier", { verifier: replayVerifier((pr) => ({ nonce: nonceOf(pr), concerns: [] })) });
+  assert.throws(() => glance(c), /changed in meaning or did not say/);
+  // an honest rephrasing, found the same in meaning: a glance, and nothing that depends on it owes a re-check
+  const d = course(t), reverify = () => d.owed().filter((f) => f.kind === "reverify").flatMap((f) => f.units).length;
+  const before = reverify();
+  d.edit("concepts/le-chatelier.md", "1. Le Chatelier's principle states that a system at equilibrium disturbed by", "1. Le Chatelier's principle states that a system at equilibrium, when disturbed by");
+  assert.ok(reverify() > before, "unconfirmed, the rewording makes its dependents owe a re-check");
+  await reviewSpineChanges(d.root, d.r(), "chapter:le-chatelier", { verifier: spineReviewer(() => "same") });
+  const rec = glance(d);
+  assert.equal(rec.type, "glance-confirmation"); assert.equal(rec.payload.change, "rephrasing");
+  assert.equal(reverify(), before, "a meaning-kept rephrasing re-baselines its dependents, as a light change does");
 });
 
 // ============================================ record integrity =====================================================

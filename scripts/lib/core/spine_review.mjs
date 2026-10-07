@@ -42,42 +42,51 @@ function keyedLines(text) {
   });
   return out;
 }
-/** The lines of `now` that a longest-common-subsequence diff against `was` does not match: inserted, changed or moved. */
-export function diffLines(was, now) {
+/** A longest-common-subsequence match of two texts' keyed lines: what `now` added, changed or moved (`added`), and the
+ *  approved lines it no longer has where they were (`removed`). */
+function lineDiff(was, now) {
   const a = keyedLines(was), b = keyedLines(now), m = a.length, n = b.length;
   const L = Array.from({ length: m + 1 }, () => new Uint32Array(n + 1));
   for (let i = m - 1; i >= 0; i--) for (let j = n - 1; j >= 0; j--) L[i][j] = a[i].key === b[j].key ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
-  const kept = new Set();
+  const keptA = new Set(), keptB = new Set();
   for (let i = 0, j = 0; i < m && j < n;) {
-    if (a[i].key === b[j].key) { kept.add(j); i++; j++; } else if (L[i + 1][j] >= L[i][j + 1]) i++; else j++;
+    if (a[i].key === b[j].key) { keptA.add(i); keptB.add(j); i++; j++; } else if (L[i + 1][j] >= L[i][j + 1]) i++; else j++;
   }
-  return b.filter((_, j) => !kept.has(j));
+  return { added: b.filter((_, j) => !keptB.has(j)), removed: a.filter((_, i) => !keptA.has(i)) };
 }
+/** The lines of `now` that a longest-common-subsequence diff against `was` does not match: inserted, changed or moved. */
+export const diffLines = (was, now) => lineDiff(was, now).added;
 
 /** The spine lines that changed since the last full approval of a scope ("chapter:<slug>" or "course"). */
 export function changedSpineLines(root, reader, scope) {
   const before = lastApprovedText(root, scope);
   if (before == null) return { reapproval: false, lines: [], context: "" };
-  const out = [];
+  const out = [], removed = [];
   let context = "";
   for (const file of filesOf(scope)) {
     const now = reader.text(file) || "", was = typeof before === "string" ? (file === COURSE_MAP || scope === "course" ? before : "") : before[file] || "";
-    for (const l of diffLines(was, now)) out.push({ file, n: l.n, text: l.text });
+    const d = lineDiff(was, now);
+    for (const l of d.added) out.push({ file, n: l.n, text: l.text });
+    for (const l of d.removed) removed.push({ file, text: l.text });
     context += `${file}\n${now}\n`;
   }
   const lines = out;
-  return { reapproval: true, lines, context, textHash: sha256(canonicalJson(filesOf(scope).map((f) => reader.text(f) || ""))), linesHash: sha256(canonicalJson(lines.map((l) => [l.file, l.n, l.text]))) };
+  return { reapproval: true, lines, removed, context, textHash: sha256(canonicalJson(filesOf(scope).map((f) => reader.text(f) || ""))), linesHash: sha256(canonicalJson(lines.map((l) => [l.file, l.n, l.text]))) };
 }
 
-export function spineReviewBundle(lines, context, nonce = randomBytes(8).toString("hex")) {
+export function spineReviewBundle(lines, context, nonce = randomBytes(8).toString("hex"), removed = []) {
   const prompt = [
     "Below are lines from the plan of a college course (its concept map and assessment guide, which its teaching and assessment follow) that were changed, added or moved since the instructor last approved it, and the whole plan for context.",
     'Check each changed line for errors of fact or concept, at the level the course is taught. Raise a concern of one of two kinds. "wrong": the line states something false. "clarify": the line is correct as meant, but a few added or changed words would remove a likely misreading.',
     "Judge accuracy only: not style, structure, or what the course chooses to cover. Do not raise exceptions beyond what the line is about.",
-    `Reply with JSON only, exactly this shape: {"nonce": "${nonce}", "concerns": [{"line": 1, "kind": "wrong" | "clarify", "text": "exact words", "problem": "...", "suggestion": "the words to put in their place"}]} — an empty list if there is nothing to raise.`,
+    'Also say, for each changed line, whether it says the same as the approved text it replaces (listed below): "same" when only the wording differs (the same facts, conditions, directions, quantities and scope), "changed" when it says something different, adds a point or drops one. A line that replaces nothing is "changed".',
+    `Reply with JSON only, exactly this shape: {"nonce": "${nonce}", "concerns": [{"line": 1, "kind": "wrong" | "clarify", "text": "exact words", "problem": "...", "suggestion": "the words to put in their place"}], "meaning": [{"line": 1, "meaning": "same" | "changed"}]} — concerns: an empty list if there is nothing to raise; meaning: one entry per changed line.`,
     "",
     "CHANGED LINES",
     ...lines.map((l, i) => `${i + 1}. ${l.text}`),
+    "",
+    "THE APPROVED TEXT THEY REPLACE (lines of the last approved version no longer where they were)",
+    ...(removed.length ? removed.map((l) => `- ${l.text}`) : ["(none)"]),
     "",
     "THE WHOLE MAP AND GUIDE (context only)",
     String(context).trim(),
@@ -87,11 +96,23 @@ export function spineReviewBundle(lines, context, nonce = randomBytes(8).toStrin
 
 const reviewFile = (scope) => `metadata/spine/review/${scope.replace(":", "-")}.json`;
 
-/** The concerns a spine-review answer raises about the changed lines it was shown (null: not the reply asked for). */
-function readSpineConcerns(raw, nonce, lines) {
+const parseAnswer = (raw, nonce) => {
   const m = String(raw || "").match(/\{[\s\S]*\}/);
   let v = null; try { v = JSON.parse(m?.[0] || ""); } catch { v = null; }
-  if (v?.nonce !== nonce || !Array.isArray(v.concerns)) return null;
+  return v?.nonce === nonce && Array.isArray(v.concerns) ? v : null;
+};
+/** Does every changed line say the same as the approved text it replaces (D43)? Only an explicit "same" for every line
+ *  counts: a "changed", a missing or unreadable answer, or an answer from before D43 asked nothing — all fail closed. */
+export function readSpineMeaning(raw, nonce, lines) {
+  const v = parseAnswer(raw, nonce);
+  if (!v || !Array.isArray(v.meaning)) return { same: false, byLine: lines.map(() => "unanswered") };
+  const byLine = lines.map((_, i) => { const e = v.meaning.find((x) => x?.line === i + 1); return e?.meaning === "same" ? "same" : e?.meaning === "changed" ? "changed" : "unanswered"; });
+  return { same: byLine.length > 0 && byLine.every((x) => x === "same"), byLine };
+}
+/** The concerns a spine-review answer raises about the changed lines it was shown (null: not the reply asked for). */
+function readSpineConcerns(raw, nonce, lines) {
+  const v = parseAnswer(raw, nonce);
+  if (!v) return null;
   return v.concerns.filter((c) => Number.isInteger(c?.line) && lines[c.line - 1] && typeof c.problem === "string" && String(lines[c.line - 1].text).includes(String(c.text || "").trim()))
     .map((c) => ({ kind: c.kind === "clarify" ? "clarify" : "wrong", file: lines[c.line - 1].file, lineNo: lines[c.line - 1].n, line: lines[c.line - 1].text, text: String(c.text || ""), problem: String(c.problem).slice(0, 600), suggestion: String(c.suggestion || "").slice(0, 600) }));
 }
@@ -101,9 +122,9 @@ function readSpineConcerns(raw, nonce, lines) {
 export async function reviewSpineChanges(root, reader, scope, { verifier }) {
   const ch = changedSpineLines(root, reader, scope);
   if (!ch.reapproval) return { scope, reapproval: false, concerns: [] };
-  let concerns = [], dispatch = null, costUsd = 0;
+  let concerns = [], meaning = { same: true, byLine: [] }, dispatch = null, costUsd = 0;
   if (ch.lines.length) {
-    const bundle = spineReviewBundle(ch.lines, ch.context);
+    const bundle = spineReviewBundle(ch.lines, ch.context, undefined, ch.removed);
     const answer = await verifier(bundle.prompt);
     const read = readSpineConcerns(answer.raw, bundle.nonce, ch.lines);
     const record = recordDispatch(root, { kind: "spine-review", unit: `spine:${scope}`, factHash: ch.textHash, contentHash: ch.textHash, bundle, answer, admission: { status: read ? "reviewed" : "unscorable" },
@@ -111,8 +132,9 @@ export async function reviewSpineChanges(root, reader, scope, { verifier }) {
     dispatch = record.dispatch; costUsd = answer.costUsd ?? 0;
     if (!read) return { scope, reapproval: true, lines: ch.lines.length, unscorable: true, dispatch };
     concerns = read;
+    meaning = readSpineMeaning(answer.raw, bundle.nonce, ch.lines);
   }
-  const out = { scope, textHash: ch.textHash, lines: ch.lines.length, dispatch, concerns, at: new Date().toISOString() };
+  const out = { scope, textHash: ch.textHash, lines: ch.lines.length, dispatch, concerns, meaning, at: new Date().toISOString() };
   fs.mkdirSync(recordFile(root, "metadata/spine/review"), { recursive: true });
   fs.writeFileSync(recordFile(root, reviewFile(scope)), JSON.stringify(out, null, 2) + "\n");
   return { ...out, costUsd };
@@ -143,14 +165,14 @@ export function approvalPrecondition(root, reader, chapters, { chapter = null, w
 export function currentSpineReview(root, reader, scope) {
   const ch = changedSpineLines(root, reader, scope);
   if (!ch.reapproval) return null;
-  if (!ch.lines.length) return { scope, textHash: ch.textHash, lines: 0, dispatch: null, concerns: [] };
+  if (!ch.lines.length) return { scope, textHash: ch.textHash, lines: 0, dispatch: null, concerns: [], meaning: { same: true, byLine: [] } };
   const log = parseLog(readLogText(root));
   const entries = log.filter((r) => r.type === "dispatch" && r.party?.role === "harness" && r.payload?.kind === "spine-review" && r.payload?.unit === `spine:${scope}`).reverse();
   for (const e of entries) {
     let rec = null; try { rec = JSON.parse(fs.readFileSync(path.join(recordFile(root, "metadata/verification"), `${e.payload.dispatch}.json`), "utf8")); } catch { continue; }
     if (!dispatchLogEntry(rec, log) || rec.kind !== "spine-review" || rec.factHash !== ch.textHash || rec.linesHash !== ch.linesHash) continue;
     const concerns = readSpineConcerns(rec.answer?.raw, rec.bundle?.nonce, ch.lines);
-    if (concerns) return { scope, textHash: ch.textHash, lines: ch.lines.length, dispatch: rec.dispatch, concerns };
+    if (concerns) return { scope, textHash: ch.textHash, lines: ch.lines.length, dispatch: rec.dispatch, concerns, meaning: readSpineMeaning(rec.answer?.raw, rec.bundle?.nonce, ch.lines) };
   }
   return null;
 }
