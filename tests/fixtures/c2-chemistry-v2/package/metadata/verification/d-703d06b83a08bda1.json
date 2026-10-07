@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-703d06b83a08bda1",
+  "kind": "absolute",
+  "unit": "u-study-guide-chemical-equilibrium-the-equilibrium-constant-3",
+  "factHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "contentHash": "286e6b6b7d8ba74f66765c441c26104cdd6514734b6af26260f828795438c46c",
+  "at": "2026-10-07T16:09:03.055Z",
+  "bundle": {
+    "nonce": "0c29ee59287b9c26",
+    "bundleHash": "703d06b83a08bda155f7f43fc905d0ebdc338d2920481bba9cc93575cc667bed",
+    "prompt": "Below are sentences from teaching material for a college course, each containing an absolute word (only, always, never, every, each, any, all, none, invariably, without exception, …), and the section of the material they come from.\nRead the context and classify each sentence:\n- \"casual\": the absolute is ordinary usage and makes no claim about the world that could be wrong.\n- \"accurate-in-context\": it is a scientific claim, and the context limits it so that it is accurate. Copy, word for word, the words of the context that limit it.\n- \"over-general\": it is a scientific claim broader than the truth, even in context. Say why in one sentence and suggest a rewording that is accurate (scope it, or soften it).\nReply with JSON only, exactly this shape: {\"nonce\": \"0c29ee59287b9c26\", \"sentences\": [{\"n\": 1, \"class\": \"...\", \"context\": \"exact words (accurate-in-context only)\", \"why\": \"...\", \"suggestion\": \"...\"}]}\n\nSENTENCES\n1. the **equilibrium constant** collects the product concentrations in the numerator and the reactant concentrations in the denominator, each raised to its stoichiometric coefficient:\n\nCONTEXT\nFor a balanced reversible reaction\n\n$$\\ce{\\alpha A + \\beta B <=> \\sigma S + \\tau T}$$\n\nthe **equilibrium constant** collects the product concentrations in the numerator and the reactant concentrations in the denominator, each raised to its stoichiometric coefficient:\n\n$$K = \\frac{[\\ce{S}]^{\\sigma}\\,[\\ce{T}]^{\\tau}}{[\\ce{A}]^{\\alpha}\\,[\\ce{B}]^{\\beta}}$$\n\nThis form follows from Guldberg and Waage's **law of mass action** (1865): the forward rate is $k_{+}[\\ce{A}]^{\\alpha}[\\ce{B}]^{\\beta}$ and the reverse rate is $k_{-}[\\ce{S}]^{\\sigma}[\\ce{T}]^{\\tau}$; setting them equal at equilibrium gives $K = k_{+}/k_{-}$. The equilibrium position lies \"far to the right\" when nearly all reactants are consumed, and \"far to the left\" when hardly any product forms."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"0c29ee59287b9c26\",\"sentences\":[{\"n\":1,\"class\":\"casual\",\"why\":\"fixture replay\"}]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "6bfc2e6a80d84c24631d769e9c250d5b30edfa46da8063800f563cbf2bdcad86"
+  },
+  "admission": {
+    "status": "reviewed"
+  },
+  "sentences": [
+    "the **equilibrium constant** collects the product concentrations in the numerator and the reactant concentrations in the denominator, each raised to its stoichiometric coefficient:"
+  ],
+  "context": "For a balanced reversible reaction\n\n$$\\ce{\\alpha A + \\beta B <=> \\sigma S + \\tau T}$$\n\nthe **equilibrium constant** collects the product concentrations in the numerator and the reactant concentrations in the denominator, each raised to its stoichiometric coefficient:\n\n$$K = \\frac{[\\ce{S}]^{\\sigma}\\,[\\ce{T}]^{\\tau}}{[\\ce{A}]^{\\alpha}\\,[\\ce{B}]^{\\beta}}$$\n\nThis form follows from Guldberg and Waage's **law of mass action** (1865): the forward rate is $k_{+}[\\ce{A}]^{\\alpha}[\\ce{B}]^{\\beta}$ and the reverse rate is $k_{-}[\\ce{S}]^{\\sigma}[\\ce{T}]^{\\tau}$; setting them equal at equilibrium gives $K = k_{+}/k_{-}$. The equilibrium position lies \"far to the right\" when nearly all reactants are consumed, and \"far to the left\" when hardly any product forms.",
+  "absolutesHash": "357d4d44384d317afa0fe3ccea4f0e939ef9005533775512f0727399af589255"
+}

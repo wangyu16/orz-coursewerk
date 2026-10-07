@@ -8,7 +8,15 @@ Write so that a true statement *can* be shown true.
 "never" and "every" claim more than any source can show, and they are often imprecise as well: "K depends only on the
 reacting species" leaves out temperature. Every absolute is read by a context reviewer, an agent and not the
 instructor. Casual usage passes. A scientific absolute passes when its section scopes it. An over-general one comes
-back to you, the agent, with a suggested rewording.
+back to you, the agent, with a suggested rewording. The absolute words are not a short list: "each", "any",
+"invariably", "without exception", "in all cases", "regardless of" and their kin are absolutes too. Words in double
+quotes are skipped only when they are a quoted misconception — introduced as what students say or think, or corrected
+at once ("No — …", "Evaluate this claim.") — never as scare quotes around your own claim.
+
+**Write numbers so they read once.** A sign in words ("minus 92.2 kJ") is read as a sign, but "−92.2 kJ" is clearer.
+A number followed by a unit the harness does not know ("5 ppm") is still a value: it owes evidence, and a quote must
+carry the same number and unit. A worked expression ("$Q_r = \frac{(0.20)^2}{(0.10)(0.30)^3} = 14.8$") is recomputed
+and a written equation is balanced: a mismatch is `computation-mismatch` or `equation-unbalanced`, a defect for you.
 
 **When exclusivity is the point, name the set in the same sentence, in words:**
 

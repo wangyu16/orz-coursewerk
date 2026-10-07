@@ -13,14 +13,31 @@ import { sha256, canonicalJson } from "../records/canonical.mjs";
 import { clean, exclusivityOf, folded, sentencesOf } from "./claims.mjs";
 import { recordHashOf } from "./dispatch.mjs";
 
-const ABSOLUTE = /\b(?:only|solely|exclusively|alone|always|never|every|all|none|nothing|nobody)\b/i;
+// Red-team round 3 (R3-K04): the word list was closed, and "invariably", "any", "each", "without exception" carried the
+// same over-general claim as "always" and "every" without owing a review. The list now holds the universal quantifiers
+// and their adverbs; a review is cheap (a context-blind agent), a silent over-general absolute is a K1 hole.
+const ABSOLUTE = /\b(?:only|solely|exclusively|alone|always|never|every|each|any|all|none|nothing|nobody|no\s+one|invariably|universally|necessarily|inevitably|unconditionally|without\s+exception|in\s+(?:all|every|each|any)\s+cases?|under\s+(?:all|any)\s+(?:conditions|circumstances)|regardless\s+of|no\s+matter|whatever|whenever|wherever|everything|everywhere|everyone)\b/i;
 const QUOTED = /"[^"]*"|“[^”]*”/g;
+// A quotation is a quoted MISCONCEPTION — exempt — only when the sentence says so: it is introduced as what someone
+// says, thinks or claims ("Students often say "…""), or a correction follows it ("… — but that is wrong", "In fact, …").
+// Anything else in quotes is the author's own claim with scare quotes, and its absolute counts (R3-K04).
+const MISCONCEPTION_INTRO = /\b(?:says?|said|saying|think|thinks|thinking|thought|believes?|believed|believing|claims?|claimed|assumes?|assumed|assuming|hears?|heard|writes?|wrote|misconceptions?|myths?|mistakes?|mistaken(?:ly)?|tempting|wrongly|incorrectly|so-called|(?:the|an?)\s+(?:idea|notion|statement|belief|slogan|rule\s+of\s+thumb)(?:\s+that)?)\b[^"“”]{0,60}$/i;
+// the correction must follow the quotation at once — after its own punctuation or a dash, or as the next sentence —
+// so a scare-quoted "always" in the author's own sentence is never exempted by a "but" further on
+const CORRECTION_AFTER = /^[\s*_)\]]*(?:[.!?,;:]+[\s*_]*|\s*[—–-]+\s*)?(?:no\b|not\b|wrong\b|false\b|incorrect\b|untrue\b|but\b|however\b|in\s+fact\b|actually\b|it\s+depends\b|this\s+is\s+(?:wrong|false|not\s+(?:true|so|correct)|a\s+(?:misconception|myth|mistake))\b|that\s+is\s+(?:wrong|false|not\s+(?:true|so|correct))\b|evaluate\s+(?:this|the)\s+(?:claim|statement)\b|is\s+(?:this|that|it)\s+(?:true|right|correct)\b|true\s+or\s+false\b)/i;
+function withoutMisconceptions(s, next = "") {
+  return s.replace(QUOTED, (q, at) => {
+    const before = s.slice(0, at), after = `${s.slice(at + q.length)} ${next}`;
+    return MISCONCEPTION_INTRO.test(before) || CORRECTION_AFTER.test(after) ? " " : q.slice(1, -1);
+  });
+}
 
 /** The sentences of a unit that carry an absolute the context reviewer must see. */
 export function absoluteSentences(text) {
   const out = [];
-  for (const s of sentencesOf(text)) {
-    const t = clean(s).replace(QUOTED, " ").replace(/(?<=[A-Za-z])[*_]+(?=[A-Za-z])/g, "");
+  const all = sentencesOf(text);
+  for (const [i, s] of all.entries()) {
+    const t = withoutMisconceptions(clean(s), clean(all[i + 1] || "")).replace(/(?<=[A-Za-z])[*_]+(?=[A-Za-z])/g, "");
     const plain = t.replace(/\bnot\s+only\b/gi, " ").replace(/\bonly\s+(?:\*+)?(?:partially|partial|in part)\b/gi, " ").replace(/\$[^$]*\$/g, " ");
     if (!ABSOLUTE.test(plain)) continue;
     const ex = exclusivityOf(s);
@@ -33,7 +50,7 @@ export const absolutesHash = (text) => sha256(canonicalJson(absoluteSentences(te
 
 export function absoluteBundle(sentences, context, nonce) {
   const prompt = [
-    "Below are sentences from teaching material for a college course, each containing an absolute word (only, always, never, every, all, none, …), and the section of the material they come from.",
+    "Below are sentences from teaching material for a college course, each containing an absolute word (only, always, never, every, each, any, all, none, invariably, without exception, …), and the section of the material they come from.",
     "Read the context and classify each sentence:",
     '- "casual": the absolute is ordinary usage and makes no claim about the world that could be wrong.',
     '- "accurate-in-context": it is a scientific claim, and the context limits it so that it is accurate. Copy, word for word, the words of the context that limit it.',

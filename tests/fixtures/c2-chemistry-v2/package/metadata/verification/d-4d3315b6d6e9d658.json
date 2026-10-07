@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-4d3315b6d6e9d658",
+  "kind": "absolute",
+  "unit": "u-study-guide-chemical-equilibrium-the-reaction-quotient-1",
+  "factHash": "de504e22fe2030c38e4f30edfa0b6c81135199e9af03793b2f5c62b18ede593c",
+  "contentHash": "b4d67385eb9d50c8475e1e4cc68151cded28ab7e9ff5b8ec8b7d1fac33a78ff9",
+  "at": "2026-10-07T16:09:04.075Z",
+  "bundle": {
+    "nonce": "1f1d87e9e70a8a0a",
+    "bundleHash": "4d3315b6d6e9d658491f2c7e5f58c378a9272c7ee73aa158c73a54aefc7f10ef",
+    "prompt": "Below are sentences from teaching material for a college course, each containing an absolute word (only, always, never, every, each, any, all, none, invariably, without exception, …), and the section of the material they come from.\nRead the context and classify each sentence:\n- \"casual\": the absolute is ordinary usage and makes no claim about the world that could be wrong.\n- \"accurate-in-context\": it is a scientific claim, and the context limits it so that it is accurate. Copy, word for word, the words of the context that limit it.\n- \"over-general\": it is a scientific claim broader than the truth, even in context. Say why in one sentence and suggest a rewording that is accurate (scope it, or soften it).\nReply with JSON only, exactly this shape: {\"nonce\": \"1f1d87e9e70a8a0a\", \"sentences\": [{\"n\": 1, \"class\": \"...\", \"context\": \"exact words (accurate-in-context only)\", \"why\": \"...\", \"suggestion\": \"...\"}]}\n\nSENTENCES\n1. The **reaction quotient** $Q_r$ has exactly the same algebraic form as $K$, but is evaluated at *any* composition — not only at equilibrium.\n\nCONTEXT\nThe **reaction quotient** $Q_r$ has exactly the same algebraic form as $K$, but is evaluated at *any* composition — not only at equilibrium. Comparing $Q_r$ to $K$ predicts the direction of change:\n\n- $Q_r < K$ — too few products; the reaction shifts **forward** (toward products).\n\n- $Q_r > K$ — too many products; the reaction shifts **reverse** (toward reactants).\n\n- $Q_r = K$ — the system is already at equilibrium; no net shift."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"1f1d87e9e70a8a0a\",\"sentences\":[{\"n\":1,\"class\":\"casual\",\"why\":\"fixture replay\"}]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "faca4487a573c5dbaffb7d5d9e5c081ab6a50851064b0b1237699fccca85cd22"
+  },
+  "admission": {
+    "status": "reviewed"
+  },
+  "sentences": [
+    "The **reaction quotient** $Q_r$ has exactly the same algebraic form as $K$, but is evaluated at *any* composition — not only at equilibrium."
+  ],
+  "context": "The **reaction quotient** $Q_r$ has exactly the same algebraic form as $K$, but is evaluated at *any* composition — not only at equilibrium. Comparing $Q_r$ to $K$ predicts the direction of change:\n\n- $Q_r < K$ — too few products; the reaction shifts **forward** (toward products).\n\n- $Q_r > K$ — too many products; the reaction shifts **reverse** (toward reactants).\n\n- $Q_r = K$ — the system is already at equilibrium; no net shift.",
+  "absolutesHash": "4ffd84c39fdcbc4fa7478c8ac2645725b83a1629992e23d538033c9adb57d250"
+}

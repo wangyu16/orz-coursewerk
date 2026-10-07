@@ -20,7 +20,7 @@ import { randomBytes } from "node:crypto";
 import { readLogText } from "../records/log.mjs";
 import { checkableClaims, claimsHash, claimOf, quantitiesIn, withLead } from "./claims.mjs";
 import { admit, sameAtPrecision, supports } from "./admission.mjs";
-import { knowledgeBundle, readDispatches, readKnowledgeReview, recordDispatch, recordHashOf, selectPassages, semiBundle } from "./dispatch.mjs";
+import { boundRecord, dispatchLogEntry, knowledgeBundle, readDispatches, readKnowledgeReview, recordDispatch, recordHashOf, selectPassages, semiBundle } from "./dispatch.mjs";
 
 export const CORRECTIONS_DIR = "metadata/corrections";
 
@@ -30,15 +30,9 @@ export { leadOf, recordLeads };
 
 /** The log, parsed. */
 export function logRecordsOf(text) { return String(text || "").split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean); }
-/**
- * A dispatch record counts only if the log names it with the same bundle and answer (round P7-1, B12/B13) and, for
- * records logged since redteam round 1, the same whole record (recordHash: C2-03). Returns the log record, or null.
- */
-export function dispatchLogEntry(record, logRecords) {
-  if (!record || sha256(record.bundle?.prompt ?? "") !== record.bundle?.bundleHash || sha256(record.answer?.raw ?? "") !== record.answer?.responseHash) return null;
-  return logRecords.find((l) => l.type === "dispatch" && l.party?.role === "harness" && l.payload?.dispatch === record.dispatch && l.payload?.unit === record.unit && l.payload?.bundleHash === record.bundle.bundleHash && l.payload?.responseHash === record.answer.responseHash
-    && (l.payload?.recordHash == null || l.payload.recordHash === recordHashOf(record))) || null;
-}
+// A dispatch record counts only if the log names it with the same bundle and answer (round P7-1, B12/B13) and, for
+// records logged since redteam round 1, the same whole record (recordHash: C2-03): dispatch.mjs dispatchLogEntry.
+export { dispatchLogEntry, boundRecord };
 export const dispatchLogged = (record, logRecords) => !!dispatchLogEntry(record, logRecords);
 /** The claims a semi record checked, as printed in its prompt. */
 export const recordClaimTexts = (record) => { const lines = String(record.bundle?.prompt || "").split("\n"); return lines.slice(lines.indexOf("CLAIMS") + 1, lines.indexOf("PASSAGES")).map((l) => l.match(/^\d+\. (.*)$/)?.[1]).filter(Boolean); };
@@ -211,7 +205,8 @@ export function correctionGuard({ unit, lead = null, records, plainTexts, meta =
   const fh = factHash(unit.text);
   if ((unit.evidence || []).some((e) => e.type === "authorized-divergence" && e.factHash === fh)) return { ok: false, reason: "the instructor kept this text as an authorized divergence" };
   if (hasAdmittedEvidence(unit, { confirmed: new Map(), diverged: new Map() }, { lead, recordedLead: (e) => Object.values(recordLeads(records.find((r) => r.dispatch === e.dispatch) || {}))[0] ?? null }) || (unit.evidence || []).some((e) => e.type === "instructor-confirmation" && e.factHash === fh)) return { ok: false, reason: "contested: evidence or a confirmation stands for the unit as it is" };
-  const mine = records.filter((r) => r.kind === "semi" && r.unit === unit.id && r.factHash === fh && dispatchLogged(r, logRecords) && checksCurrentClaims(r, unit.text, lead)).map((r) => ({ r, a: rederive(r, plainTexts) }));
+  // read through what the log binds (round 3, R3-K05): a legacy record's factHash is unbound, its claims are not
+  const mine = records.filter((r) => { const b = r.kind === "semi" && boundRecord(r, logRecords); return b && b.unit === unit.id && (!b.hashed || b.factHash === fh) && checksCurrentClaims(r, unit.text, lead); }).map((r) => ({ r, a: rederive(r, plainTexts) }));
   if (mine.some(({ a }) => a?.status === "disputed")) return { ok: false, reason: "contested: a verification disputes the unit's value" };
   const supportedQuotes = mine.flatMap(({ a }) => (a?.perClaim || []).filter((c) => c.status === "supported").flatMap((c) => c.quotes.map((q) => q.quote)));
   const hits = mine.flatMap(({ r, a }) => (a?.perClaim || []).filter((c) => c.status === "contradicted").map((c) => ({ r, c })));
@@ -241,12 +236,15 @@ export function correctionGuard({ unit, lead = null, records, plainTexts, meta =
     // the sign or prefix as typeset ("−92.2", "- 92.2", "-\,92.2", "{-}92", "&minus;92.2", "+92.2") is replaced
     // together with the number, never left beside the new one (red-team round 1, F10: "= - 92.2" became "= - −92.2";
     // round 2, R2-K06/K07: "+92.2" became "+−92.2" and "&minus;92.2" became "&minus;−92.2")
-    const prefix = q.value < 0 ? `(?:${MINUS_FORMS}|\\{[-−]\\})\\s*(?:\\\\[,;:! ]\\s*)*` : `(?:(?:\\+|&plus;|&#0*43;|\\{\\+\\})\\s*(?:\\\\[,;:! ]\\s*)*)?`;
+    // round 3 (R3-K02): a sign written as a word ("minus 63.7 kJ") is a sign, and is replaced with the number too
+    const prefix = q.value < 0 ? `(?:${SIGN_WORD_NEG}|${MINUS_FORMS}|\\{[-−]\\})\\s*(?:\\\\[,;:! ]\\s*)*` : `(?:(?:${SIGN_WORD_POS}|\\+|&plus;|&#0*43;|\\{\\+\\})\\s*(?:\\\\[,;:! ]\\s*)*)?`;
     const re = new RegExp(`(?<![\\d.,])(${prefix})${num.replace(/[.]/g, "\\.")}(?![\\d])`, "g");
     const at = [...unit.text.matchAll(re)];
     if (at.length !== 1) return { ok: false, reason: `${claimed} is not a single, unambiguous number in the unit` };
     const decimals = (num.split(".")[1] || "").length;
-    const sign = t.sourceValue < 0 ? (q.value < 0 ? at[0][1] : "−") : (at[0][1] ? "+" : "");
+    // a written sign is kept as typeset; a sign word becomes the typeset sign ("minus 63.7" → "−92.2")
+    const word = /[A-Za-z]/.test(at[0][1]);
+    const sign = t.sourceValue < 0 ? (q.value < 0 && !word ? at[0][1] : "−") : (at[0][1] ? "+" : "");
     edits.push({ index: at[0].index, length: at[0][0].length, replacement: sign + Math.abs(t.sourceValue).toFixed(Math.max(decimals, decimalsOf(t.source))), claimed, source: t.source, sources: [...t.sources], unit: q.unit, value: t.sourceValue });
   }
   // the corrected text must read as the source's values, each once, with one sign: anything else is malformed and
@@ -256,10 +254,15 @@ export function correctionGuard({ unit, lead = null, records, plainTexts, meta =
   for (const e of edits) {
     const around = after.slice(Math.max(0, e.index - 24), e.index + e.replacement.length + 1);
     const reads = quantitiesIn(after).some((x) => x.unit === e.unit && Math.abs(x.value - e.value) <= 1e-9 * Math.max(1, Math.abs(e.value)));
-    if (doubled.test(around) || !reads) return { ok: false, reason: `the correction of ${e.claimed} would produce a malformed value ("${around.trim()}"): a question for the instructor` };
+    // the corrected text is re-read with the full parser: it must state the source's value, and no sign word may stand
+    // beside a signed number ("minus −92.2" reads +92.2 to a student; round 3, R3-K02)
+    if (doubled.test(around) || SIGN_WORD_BESIDE.test(after) || !reads) return { ok: false, reason: `the correction of ${e.claimed} would produce a malformed value ("${around.trim()}"): a question for the instructor` };
   }
   return { ok: true, plan: { edits, dispatches: [...new Set(hits.map(({ r }) => r.dispatch))], quotes: hits.flatMap(({ c }) => c.quotes) } };
 }
+// a sign written as a word, and a sign word standing beside a signed number (malformed: two signs)
+const SIGN_WORD_NEG = "\\b(?:[Mm]inus|[Nn]egative)\\s+", SIGN_WORD_POS = "\\b(?:[Pp]lus|[Pp]ositive)\\s+";
+const SIGN_WORD_BESIDE = new RegExp(`\\b(?:minus|negative|plus|positive)\\s*(?:\\\\[,;:! ]\\s*)*(?:[-−‐-―+±]|&minus;|&plus;|&#0*8722;|&#[xX]0*2212;|&ndash;|&#0*45;)\\s*(?:\\\\[,;:! ]\\s*)*\\(?\\d`, "i");
 const decimalsOf = (raw) => (String(raw).match(/\.(\d+)/)?.[1] || "").length;
 // every way a minus is typeset or written as an HTML reference
 const MINUS_FORMS = "[-−‐-―]|&minus;|&#0*8722;|&#[xX]0*2212;|&ndash;|&mdash;|&#0*821[12];|&#[xX]0*201[34];|&hyphen;|&#0*45;";

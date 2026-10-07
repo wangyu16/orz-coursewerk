@@ -179,13 +179,18 @@ const TABLE = [
   { id: "mole", dim: "amount", symbols: ["mol"], words: ["mole", "moles"], to: (v) => v },
 
   // --- pressure -> Pa ------------------------------------------------------------------------
+  // GPa, kbar, mbar, ksi and the plural/capitalised bar and torr forms: red-team round 3 (CONFIDENCE R3-K01) — "2 GPa",
+  // "2.0 kbar", "29 ksi", "2,000 bars" and "15,000 Torr" were no value at all. Each conversion is exact by definition.
+  { id: "gigapascal", dim: "pressure", symbols: ["GPa"], words: ["gigapascal", "gigapascals"], to: (v) => v * 1e9 },
   { id: "megapascal", dim: "pressure", symbols: ["MPa"], words: ["megapascal", "megapascals"], to: (v) => v * 1e6 },
   { id: "kilopascal", dim: "pressure", symbols: ["kPa"], words: ["kilopascal", "kilopascals"], to: (v) => v * 1000 },
   { id: "hectopascal", dim: "pressure", symbols: ["hPa"], words: ["hectopascal", "hectopascals"], to: (v) => v * 100 },
   { id: "atmosphere", dim: "pressure", symbols: ["atm"], words: ["atmosphere", "atmospheres"], to: (v) => v * 101325 },
-  { id: "bar", dim: "pressure", symbols: ["bar"], words: [], to: (v) => v * 1e5 },
-  // 1 atm = 760 torr = 101325 Pa, both definitional -> 1 torr = 101325/760 Pa exactly.
-  { id: "torr", dim: "pressure", symbols: ["torr"], words: [], to: (v) => (v * 101325) / 760 },
+  { id: "kilobar", dim: "pressure", symbols: ["kbar"], words: ["kilobar", "kilobars"], to: (v) => v * 1e8 },
+  { id: "bar", dim: "pressure", symbols: ["bar"], words: ["bars"], to: (v) => v * 1e5 },
+  { id: "millibar", dim: "pressure", symbols: ["mbar"], words: ["millibar", "millibars"], to: (v) => v * 100 },
+  // 1 atm = 760 torr = 101325 Pa, both definitional -> 1 torr = 101325/760 Pa exactly. "Torr" is the standard symbol.
+  { id: "torr", dim: "pressure", symbols: ["torr", "Torr"], words: ["torrs"], to: (v) => (v * 101325) / 760 },
   // The conventional millimetre of mercury is DEFINED as 13.5951 g/cm3 x 9.80665 m/s2 x 1 mm = 133.322387415 Pa
   // exactly (it differs from the torr in the seventh digit). Added after red-team round 1 (CONFIDENCE F2): "700 mmHg"
   // minted no claim at all.
@@ -193,6 +198,7 @@ const TABLE = [
   { id: "pascal", dim: "pressure", symbols: ["Pa"], words: ["pascal", "pascals"], to: (v) => v },
   // 1 psi = 1 lbf/in² = (0.45359237 kg × 9.80665 m/s²) / (0.0254 m)² — every factor exact by definition.
   { id: "pound-per-square-inch", dim: "pressure", symbols: ["psi"], words: ["pounds per square inch", "pound per square inch"], to: (v) => (v * 0.45359237 * 9.80665) / (0.0254 * 0.0254) },
+  { id: "kilopound-per-square-inch", dim: "pressure", symbols: ["ksi"], words: [], to: (v) => (v * 1000 * 0.45359237 * 9.80665) / (0.0254 * 0.0254) },
 
   // --- time -> s -----------------------------------------------------------------------------
   { id: "minute", dim: "time", symbols: ["min"], words: ["minute", "minutes"], to: (v) => v * 60 },

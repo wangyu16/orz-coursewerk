@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-962f9f4a2809a8f8",
+  "kind": "absolute",
+  "unit": "u-slides-chemical-equilibrium-slide-12-the-reaction-quotient-1",
+  "factHash": "f7aa55a1e56412f92f247638aaba010914b4ebbb2be1a8bee4c94bc8be2a0b01",
+  "contentHash": "0090c1f672098e81d0aaec53e0849089d00353cae83521ac5638e65ca5a231a8",
+  "at": "2026-10-07T16:09:06.308Z",
+  "bundle": {
+    "nonce": "c89e1aff747ac11c",
+    "bundleHash": "962f9f4a2809a8f890e18974e6f0e6c669d9ce5622061d4b8c723628b5db119b",
+    "prompt": "Below are sentences from teaching material for a college course, each containing an absolute word (only, always, never, every, each, any, all, none, invariably, without exception, …), and the section of the material they come from.\nRead the context and classify each sentence:\n- \"casual\": the absolute is ordinary usage and makes no claim about the world that could be wrong.\n- \"accurate-in-context\": it is a scientific claim, and the context limits it so that it is accurate. Copy, word for word, the words of the context that limit it.\n- \"over-general\": it is a scientific claim broader than the truth, even in context. Say why in one sentence and suggest a rewording that is accurate (scope it, or soften it).\nReply with JSON only, exactly this shape: {\"nonce\": \"c89e1aff747ac11c\", \"sentences\": [{\"n\": 1, \"class\": \"...\", \"context\": \"exact words (accurate-in-context only)\", \"why\": \"...\", \"suggestion\": \"...\"}]}\n\nSENTENCES\n1. $Q_r$ has the same algebraic form as $K$, but is evaluated at **any** composition.\n\nCONTEXT\n$Q_r$ has the same algebraic form as $K$, but is evaluated at **any** composition.\n\n- $Q_r < K$ — too few products; shifts **forward**\n- $Q_r > K$ — too many products; shifts **reverse**\n- $Q_r = K$ — already at equilibrium; no net shift"
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"c89e1aff747ac11c\",\"sentences\":[{\"n\":1,\"class\":\"casual\",\"why\":\"fixture replay\"}]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "facdd92f30eb4b335fceb5b368eb23002d34a2a324bd5d8e5d1935efd65106d2"
+  },
+  "admission": {
+    "status": "reviewed"
+  },
+  "sentences": [
+    "$Q_r$ has the same algebraic form as $K$, but is evaluated at **any** composition."
+  ],
+  "context": "$Q_r$ has the same algebraic form as $K$, but is evaluated at **any** composition.\n\n- $Q_r < K$ — too few products; shifts **forward**\n- $Q_r > K$ — too many products; shifts **reverse**\n- $Q_r = K$ — already at equilibrium; no net shift",
+  "absolutesHash": "454f687692ce49715099deb8983e07dba349d3a900317f07adbeb076751359ec"
+}

@@ -20,6 +20,7 @@
 import { sha256 } from "../records/canonical.mjs";
 import { plainForQuantities } from "./dependencies.mjs";
 import { statesValue } from "./values.mjs";
+import { factNamesIn } from "./names.mjs";
 
 export const DELIVERABLE_DIRS = Object.freeze(["study-guide", "slides", "practice"]);
 const FRAMING_SECTION = /^(summary|overview|introduction|what we will cover|key takeaways|looking ahead|recap|outline)\b/i;
@@ -244,7 +245,10 @@ export function classifyUnit({ form, text }) {
   const t = String(text || "");
   if (form === "equation" || MECH.some((r) => r.test(t)) || (form === "answer" && /\d/.test(t))) kinds.add("mechanical");
   // values are mostly written in LaTeX: test the patterns on the folded form too (round P7-1, B19)
-  if (statesValue(t) || SEMI.some((r) => r.test(t) || r.test(plainForQuantities(t)))) kinds.add("semi-mechanical");
+  // a name the claim extractor would require is a fact to check: the name trigger is the extractor's own reader
+  // (red-team round 3, R3-K01: "the work of Arrhenius" named someone with no classifier verb, and owed nothing),
+  // less a name used only as an eponymous term ("the Gibbs energy"), which asserts nothing about the person
+  if (statesValue(t) || SEMI.some((r) => r.test(t) || r.test(plainForQuantities(t))) || factNamesIn(t).length) kinds.add("semi-mechanical");
   const proseWords = (t.replace(/\$[^$]*\$/g, " ").match(/[A-Za-z]{3,}/g) || []).length;
   if (proseWords >= 6 || form === "question" || form === "answer" || (!kinds.size)) kinds.add("knowledge-based");
   return ["mechanical", "semi-mechanical", "knowledge-based"].filter((k) => kinds.has(k));

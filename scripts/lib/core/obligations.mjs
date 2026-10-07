@@ -47,7 +47,7 @@ import { approvalStatus } from "./approvals.mjs";
 import { dependencyEdges, factHash, nodeHash, questionBindingProblems, questionHash, sourceHashes, stampFor, staleTargets, targetHashes, termHash } from "./dependencies.mjs";
 import { deliverableOfSidecar, writeUnitRecords } from "./unit_records.mjs";
 import { currentReviewsAt } from "../verify/alignment.mjs";
-import { readKnowledgeReview, recordHashOf } from "../verify/dispatch.mjs";
+import { boundRecord, readKnowledgeReview, recordHashOf } from "../verify/dispatch.mjs";
 
 // quote-verified: admitted by the verdict path (P7); instructor-confirmation: one confirmation (D19-D);
 // authorized-divergence: the instructor kept their text against evidence, after seeing it — the double confirmation (Q10).
@@ -291,7 +291,7 @@ export function confirmUnits(root, reader, ids, { what, instructorWords }, party
   const text = new Map(units.map((u) => [u.id, u.text]));
   const at = new Date().toISOString();
   if (what === "fact") {
-    const live = liveContradictions(root, new Map(units.map((u) => [u.id, factHash(u.text)])));
+    const live = liveContradictions(root, units);
     const blocked = ids.filter((id) => live.has(id));
     if (blocked.length) throw new Error(`${blocked.join(", ")}: a verification contradicts the current text — answer it through the correction (or its revert), not a confirmation`);
   }
@@ -337,32 +337,54 @@ export function reviewedAbsolutes(root) {
  * blocking: Level 2 is best effort (P11 K4 scenario: an agent that never ran the review saw nothing to tell it so).
  */
 export function unreviewedKnowledge(root, reader) {
-  const dir = recordFile(root, "metadata/verification"), seen = new Set(), logged = new Set();
+  const dir = recordFile(root, "metadata/verification"), seen = new Set();
   const units = loadUnits(root, reader), textOf = new Map(units.map((u) => [`${u.id}|${u.locator.contentHash}`, u.text]));
-  for (const line of readLogText(root).split("\n").filter(Boolean)) { try { const r = JSON.parse(line); if (r.type === "dispatch" && r.party?.role === "harness") logged.add(`${r.payload?.dispatch}|${r.payload?.unit}`); } catch { /* the log module reports it */ } }
+  const log = logDispatches(root);
   if (fs.existsSync(dir)) for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json"))) {
     let r; try { r = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")); } catch { continue; }
-    if (r.kind !== "knowledge" || !logged.has(`${r.dispatch}|${r.unit}`)) continue;
+    // the unit and the text reviewed are what the log binds (red-team round 3, R3-K08): a legacy record's contentHash
+    // is derived from the passage its logged prompt showed, never read from the record
+    const b = r.kind === "knowledge" ? boundRecord(r, log) : null;
+    if (!b?.contentHash) continue;
     // a review that cannot be scored (no readable answer, or a concern quoting words the passage does not have) is not
     // a review of the unit (red-team round 2, R2-K10)
-    const key = `${r.unit}|${r.contentHash}`, k = textOf.has(key) && readKnowledgeReview(r, textOf.get(key));
+    const key = `${b.unit}|${b.contentHash}`, k = textOf.has(key) && readKnowledgeReview(r, textOf.get(key));
     if (k && k.ok && !k.unlocated.length) seen.add(key);
   }
   return units.filter((u) => u.judgment.includes("knowledge-based") && u.role === "teaching" && !seen.has(`${u.id}|${u.locator.contentHash}`)).map((u) => u.id);
 }
+/** The harness's dispatch log records. */
+function logDispatches(root) {
+  const out = [];
+  for (const line of readLogText(root).split("\n").filter(Boolean)) { try { const r = JSON.parse(line); if (r.type === "dispatch" && r.party?.role === "harness") out.push(r); } catch { /* the log module reports it */ } }
+  return out;
+}
 
-/** Units whose current facts a recorded verification contradicts or disputes. */
-function liveContradictions(root, factHashes) {
+/** Units whose current facts a recorded verification contradicts. Read through what the log binds (round 3, R3-K05):
+ *  a record bound whole is current at its factHash and contradicted by its admission; a legacy record is current when
+ *  the claims its prompt printed are the unit's current claims, and contradicted by the status logged with it. */
+function liveContradictions(root, units) {
   const dir = recordFile(root, "metadata/verification"), out = new Set();
   if (!fs.existsSync(dir)) return out;
+  const log = logDispatches(root), byId = new Map(units.map((u) => [u.id, u]));
   for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json"))) {
     let r; try { r = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")); } catch { continue; }
+    if (r.kind !== "semi") continue;
+    const b = boundRecord(r, log), u = b && byId.get(b.unit);
+    if (!u || b.status !== "contradicted") continue;
     // a contradiction (a defect) must go through its correction or revert; a dispute between sources is the
     // instructor's to settle, and a confirmation is how they settle it (D12-F)
-    if (r.kind === "semi" && factHashes.get(r.unit) === r.factHash && r.admission?.status === "contradicted") out.add(r.unit);
+    const current = b.hashed ? b.factHash === factHash(u.text) : sameClaims(r, u.text);
+    if (current) out.add(u.id);
   }
   return out;
 }
+/** The claims a semi record's prompt printed are the unit's current checkable claims. */
+const sameClaims = (r, text) => {
+  const lines = String(r.bundle?.prompt || "").split("\n");
+  const printed = lines.slice(lines.indexOf("CLAIMS") + 1, lines.indexOf("PASSAGES")).map((l) => l.match(/^\d+\. (.*)$/)?.[1]).filter(Boolean);
+  return printed.length > 0 && JSON.stringify(printed) === JSON.stringify(checkableClaims(text).map((c) => c.text.replace(/\s+/g, " ")));
+};
 
 /** The "wrong" concerns a knowledge dispatch raised about words the unit still contains (as verdicts.mjs reads them);
  *  a review that cannot be scored — no readable answer, or a concern whose words the passage does not have — is never
