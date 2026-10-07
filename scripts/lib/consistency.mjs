@@ -128,6 +128,7 @@
 
 import { resolve, labelMatcher, findLabelOccurrences } from "./terms.mjs";
 import { dimensionProjection } from "./units.mjs";
+import { valueText, valuesIn } from "./core/values.mjs";
 
 /**
  * Claim types whose numbers are ASSERTIONS ABOUT THE TERM, and so can contradict each other.
@@ -194,16 +195,38 @@ const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
  */
 const UNIT_VIEW = dimensionProjection();
 
-/**
- * One regex for every unit form, LONGEST FIRST so "kJ/mol" wins over "kJ" and "min" over "m".
- * The trailing lookahead stops "g" from matching inside "gravity" (and "J" inside "J/g").
- * Built by `lib/units.mjs` so that M2's recognizer and this scan cannot disagree about what a
- * unit looks like — a form M2 does not see is a claim that never reaches this scan.
- */
-const QUANTITY_RE = UNIT_VIEW.quantityRe();
+// Values are read by the one value parser (core/values.mjs, `scanValues` below), over the same shared table —
+// longest unit form first, so "kJ/mol" wins over "kJ" and "min" over "m". (Until red-team round 2 this scan had
+// its own regex, `quantityRegexSource`; see R2-K08.)
 
 /** Look a matched unit form up: symbols exactly (case-sensitive), words case-insensitively. */
 const unitEntry = (form) => UNIT_VIEW.lookup(form);
+
+/**
+ * THE ONE VALUE PARSER (red-team round 2, CONFIDENCE R2-K08). This scan once read values with its own regex
+ * (`quantityRegexSource`: `-?\d+` glued to a unit form), so a spaced or typeset minus was no sign ("= - 92.2 kJ"
+ * agreed with "= 92.2 kJ"), "1,200 kJ" read as "200 kJ", and "kJ mol^{-1}" lost its denominator and was compared as
+ * an energy while "kJ/mol" was a molar energy. It now reads values exactly as the verdict path does
+ * (core/values.mjs: every minus, thousands separators, HTML entities, denominators) and dimensions them through the
+ * shared table. A value with denominators the table has no row for is dimensioned only where the result is certain
+ * (an energy per mole / per gram / per kilogram); anything else stays silence, never a guess.
+ * @returns {Array<{entry: {id, dim, to}, value: number, raw: string, at: number}>} positions index valueText(text)
+ */
+function unitEntryOf(unit) {
+  const direct = unitEntry(unit);
+  if (direct) return direct;
+  const [base, ...den] = String(unit).split("/");
+  const b = unitEntry(base);
+  if (!b || b.dim !== "energy" || den.length !== 1) return null;
+  if (den[0] === "mol") return { id: `${b.id}-per-mole`, dim: "molar-energy", to: b.to };
+  if (den[0] === "g") return { id: `${b.id}-per-gram`, dim: "specific-energy", to: b.to };
+  if (den[0] === "kg") return { id: `${b.id}-per-kilogram`, dim: "specific-energy", to: (v) => b.to(v) / 1000 };
+  return null;
+}
+export function scanValues(text) {
+  const P = valueText(text);
+  return valuesIn(P).map((v) => ({ entry: unitEntryOf(v.unit), value: v.value, raw: P.slice(v.at, v.end).replace(/\s+/g, " ").trim(), at: v.at })).filter((x) => x.entry);
+}
 
 /**
  * Strip the markdown noise that carries no meaning ("**Answer:** 100 °C" ⇒ "Answer: 100 °C"),
@@ -346,15 +369,12 @@ function quantitiesByDimension(text) {
   // values of one dimension is neither compared nor trusted: it is an `ambiguous` decision for a
   // human (a review item), never a guess in either direction.
   const ambiguous = new Set();
-  QUANTITY_RE.lastIndex = 0;
-  let m;
-  while ((m = QUANTITY_RE.exec(scanned))) {
-    const entry = unitEntry(m[2]);
-    if (!entry) continue; // recognized-but-ambiguous (e.g. bare "degrees") ⇒ silence
-    const key = valueKey(entry.to(Number(m[1])));
+  // recognized-but-ambiguous units (bare "degrees") never reach here: no value, silence
+  for (const { entry, value, raw } of scanValues(scanned)) {
+    const key = valueKey(entry.to(value));
     const prior = byDim.get(entry.dim);
-    if (!prior) byDim.set(entry.dim, { key, raw: m[0].trim() });
-    else if (prior.key !== key) { dropped.add(entry.dim); if (inAnswer) ambiguous.add(`${entry.dim}: ${prior.raw} vs ${m[0].trim()}`); }
+    if (!prior) byDim.set(entry.dim, { key, raw });
+    else if (prior.key !== key) { dropped.add(entry.dim); if (inAnswer) ambiguous.add(`${entry.dim}: ${prior.raw} vs ${raw}`); }
   }
   for (const dim of dropped) byDim.delete(dim);
   byDim.ambiguous = ambiguous;
@@ -374,7 +394,8 @@ function governedQuantities(text, terms, scope) {
   let start = 0;
   const bounds = [...t.matchAll(/(?<=[.!?])\s+(?=[A-Z$(\\])/g)].map((m) => m.index);
   for (const end of [...bounds, t.length]) {
-    const sentence = t.slice(start, end);
+    // the sentence as the value parser reads it: term mentions and values index the same folded text
+    const sentence = valueText(t.slice(start, end));
     start = end;
     const mentions = [];
     for (const term of terms?.terms ?? []) {
@@ -385,18 +406,14 @@ function governedQuantities(text, terms, scope) {
       }
     }
     if (!mentions.length) continue;
-    const re = UNIT_VIEW.quantityRe();
-    let m;
-    while ((m = re.exec(sentence))) {
-      const entry = unitEntry(m[2]);
-      if (!entry) continue;
-      const before = mentions.filter((x) => x.at < m.index).sort((a, b) => b.at - a.at)[0];
-      const owner = before || mentions.filter((x) => x.at > m.index).sort((a, b) => a.at - b.at)[0];
+    for (const { entry, value, raw, at } of scanValues(sentence)) {
+      const before = mentions.filter((x) => x.at < at).sort((a, b) => b.at - a.at)[0];
+      const owner = before || mentions.filter((x) => x.at > at).sort((a, b) => a.at - b.at)[0];
       if (!owner) continue;
-      const key = valueKey(entry.to(Number(m[1])));
+      const key = valueKey(entry.to(value));
       if (!out.has(owner.id)) out.set(owner.id, new Map());
       const dims = out.get(owner.id), prior = dims.get(entry.dim);
-      if (!prior) dims.set(entry.dim, { key, raw: m[0].trim() });
+      if (!prior) dims.set(entry.dim, { key, raw });
       else if (prior.key !== key) dropped.add(`${owner.id}|${entry.dim}`);
     }
   }
@@ -689,16 +706,12 @@ export function rangeAudit(claims) {
     const text = claimText(claim);
     if (DELTA_RE.test(text)) continue; // a change is legitimately signed — skip the whole claim
     const breaches = [];
-    QUANTITY_RE.lastIndex = 0;
-    let m;
-    while ((m = QUANTITY_RE.exec(text))) {
-      const entry = unitEntry(m[2]);
-      if (!entry) continue; // recognized-but-ambiguous ("90 degrees") ⇒ silence, never a guess
-      const value = Number(m[1]);
+    // the one value parser (R2-K08); recognized-but-ambiguous ("90 degrees") is no value ⇒ silence, never a guess
+    for (const { entry, value, raw } of scanValues(text)) {
       const canonical = Number(entry.to(value).toPrecision(9)); // toPrecision folds float noise, not digits
       const impossible =
         entry.dim === "temperature" ? canonical < 0 : NONNEGATIVE_DIMS.has(entry.dim) && value < 0;
-      if (impossible) breaches.push({ raw: m[0].trim(), dim: entry.dim, canonical, value });
+      if (impossible) breaches.push({ raw, dim: entry.dim, canonical, value });
     }
     if (breaches.length === 0) continue;
     const b = breaches[0];

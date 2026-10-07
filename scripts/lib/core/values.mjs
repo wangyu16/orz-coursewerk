@@ -13,14 +13,29 @@
 // Bare integers stay out ("step 3", "Chapter 2"): only a unit, a symbol or a power of ten makes a number a value.
 //
 // PURE and DETERMINISTIC.
-import { plainForQuantities } from "./dependencies.mjs";
 import { valueProjection } from "../units.mjs";
+
+// Quantities are found after folding LaTeX spellings ("-92\\ \\text{kJ mol}^{-1}" → "-92 kJ mol"), since the packages
+// write most values in LaTeX; a value written two ways is still one shared value. (Moved here from core/dependencies.mjs,
+// which re-exports it, so the dependency edges can read bindings through this parser without an import cycle.)
+export const plainForQuantities = (text) => String(text)
+  .replace(/\\text\{([^}]*)\}/g, " $1 ").replace(/\\mathrm\{([^}]*)\}/g, " $1 ").replace(/\\(?:,|;|!| |quad|qquad)/g, " ")
+  .replace(/\^\{[^}]*\}/g, "").replace(/[{}$]/g, " ").replace(/\\(?:approx|times)/g, " ").replace(/−/g, "-");
 
 // Cyrillic and Greek letters that render like Latin ones (a word spelled with them must not escape the checks)
 const CONFUSABLE = { "а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "у": "y", "х": "x", "і": "i", "ј": "j", "ѕ": "s", "ο": "o", "α": "a", "ν": "v", "Ο": "O", "О": "O", "А": "A", "Е": "E", "С": "C", "Р": "P", "Т": "T", "Н": "H", "К": "K", "М": "M", "В": "B", "Х": "X" };
 export const clean = (t) => String(t || "").normalize("NFKC").replace(/[\p{Cf}­]/gu, "")
   .replace(/[Ѐ-ӿͰ-Ͽ](?=[A-Za-z])|(?<=[A-Za-z])[Ѐ-ӿͰ-Ͽ]/g, (c) => CONFUSABLE[c] ?? c)
   .replace(/(?<=[A-Za-z])[*_]+(?=[A-Za-z])/g, "");
+
+// HTML character references a markdown renderer shows as characters (red-team round 2, R2-K07: "&minus;92.2 kJ" reads
+// as −92.2 kJ to every student and was read as +92.2 by the harness). Named minus/dash/space/sign entities and every
+// numeric reference are decoded before anything else reads the text.
+const ENTITIES = { minus: "−", ndash: "–", mdash: "—", hyphen: "‐", dash: "‐", plus: "+", plusmn: "±", pm: "±", nbsp: "\u00A0", thinsp: "\u2009", ensp: "\u2002", emsp: "\u2003", deg: "°", times: "×", middot: "·", sdot: "⋅", sup1: "¹", sup2: "²", sup3: "³", micro: "µ", mu: "μ", Delta: "Δ", amp: "&", lt: "<", gt: ">", le: "≤", ge: "≥", rarr: "→", harr: "↔", rlarr: "⇄", rlhar: "⇌", lrhar: "⇋" };
+export const decodeEntities = (t) => String(t ?? "").replace(/&(?:#(\d{1,7})|#[xX]([0-9a-fA-F]{1,6})|([A-Za-z][A-Za-z0-9]{1,8}));/g, (m, dec, hex, name) => {
+  if (dec || hex) { const cp = dec ? Number(dec) : parseInt(hex, 16); return cp > 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : m; }
+  return ENTITIES[name] ?? m;
+});
 
 // Unicode superscripts are read as exponents BEFORE NFKC folds them into plain digits ("10⁵" would become "105")
 const SUP = { "⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4", "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9", "⁻": "-", "⁺": "+" };
@@ -45,8 +60,9 @@ function foldSci(t) {
 /** Text for value extraction: LaTeX folded to plain, scientific notation to an exact "<mantissa>e<exponent>", unit
  *  exponents kept ("g^{-1}" → "g^-1"). Markup is left to the caller (claims.proseOf). */
 export function valueText(text) {
-  let t = clean(supFold(String(text || ""))).replace(/<br\s*\/?>/gi, ". ").replace(/<\/?[a-zA-Z][^>]*>/g, " ").replace(/[‐-―](?=\s*\d)/g, "-");
+  let t = clean(supFold(decodeEntities(text || ""))).replace(/<br\s*\/?>/gi, ". ").replace(/<\/?[a-zA-Z][^>]*>/g, " ").replace(/[‐-―](?=\s*\d)/g, "-");
   t = t.replace(/\{\s*([-−])\s*\}/g, "$1"); // {-}92
+  t = t.replace(/\\(?:approx|simeq)(?![A-Za-z])/g, "≈").replace(/\\sim(?![A-Za-z])/g, "~"); // "K \approx 50" binds K
   t = foldSci(t);
   t = t.replace(/\^\s*\{\s*([-−+]?)\s*(\d+)\s*\}/g, (_, s, d) => `^${s === "−" ? "-" : s}${d}`);
   return plainForQuantities(t);

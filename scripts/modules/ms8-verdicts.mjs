@@ -7,6 +7,8 @@
 //                                  truth; the agent rewords it (D30) — the instructor sees it only if it stays open;
 //   knowledge-concern   (question) a blind verifier's concern that a knowledge-based unit is wrong — never a defect,
 //                                  never an automatic change (req.knowledge.no-autochange);
+//   knowledge-unscorable (question, routed to the agent) a blind review that cannot be scored: no readable answer, or a
+//                                  concern quoting words the passage does not contain (R2-K10) — run it again;
 //   clarification-owed  (question, routed to the agent) the reviewer finds the agent's own text correct as meant and
 //                                  gives a few words that make it precise; the agent applies them (D35)
 //   clarification-proposed (question) the same for the instructor's text: a one-line diff to accept or not (D35 (a));
@@ -20,18 +22,20 @@ import { segmentDeliverable } from "../lib/core/segment.mjs";
 import { factHash } from "../lib/core/dependencies.mjs";
 import { checkableClaims, claimsHash } from "../lib/verify/claims.mjs";
 import { supports } from "../lib/verify/admission.mjs";
-import { readDispatches } from "../lib/verify/dispatch.mjs";
+import { quoteIn, readDispatches, readKnowledgeReview } from "../lib/verify/dispatch.mjs";
 import { pinnedTexts, snapshotInputReader } from "../lib/verify/references.mjs";
-import { absolutesHash, readAbsoluteReview } from "../lib/verify/absolutes.mjs";
+import { absoluteReviewOf, absolutesHash } from "../lib/verify/absolutes.mjs";
 import { checksCurrentClaims, claimKey, correctionLogged, dispatchLogged, instructorAuthored, keptClaims, knowledgeConcerns, leadOf, logRecordsOf, recordClaimTexts, recordLeads, rederive } from "../lib/verify/verdicts.mjs";
 import { findingId } from "../lib/records/findings.mjs";
 import { base, recheckByRerun } from "./_shared.mjs";
 
-/** A unit that can hold invented exercise data: a question or answer, a worked-example or practice section, or text
- *  with an exercise cue ("Suppose …", "Calculate …"). */
+/** A unit that can hold invented exercise data: by its form and role, never by a word in it — a question or answer,
+ *  a unit of a practice deliverable, or a unit in a worked-example / exercise section. (Red-team round 2, R2-K09: a cue
+ *  word anywhere — "a temperature a student can use" — made a real-world study-guide fact "exercise-like", and the
+ *  instructor's accept-all confirmed a wrong Haber-process temperature as a teaching hypothetical.) A worked example in
+ *  a study guide is set as one: an "Example" or "Exercise" callout (form "question") or its own section. */
 const EXERCISE_SECTION = /(?:^|-)(?:worked-examples?|examples?|exercises?|problems?|practice|questions?|check-your-understanding|try-it)(?:-|$)/;
-const EXERCISE_CUE = /\b(?:suppose|imagine|assume|hypothetical(?:ly)?|calculate|compute|determine the|find the|a student|consider a|in this (?:example|exercise|problem))\b/i;
-const exerciseLike = (u) => ["question", "answer"].includes(u.form) || String(u.locator?.deliverable || "").startsWith("practice/") || EXERCISE_SECTION.test(String(u.locator?.section || "")) || EXERCISE_CUE.test(u.text);
+const exerciseLike = (u) => ["question", "answer"].includes(u.form) || String(u.locator?.deliverable || "").startsWith("practice/") || EXERCISE_SECTION.test(String(u.locator?.section || ""));
 
 function currentUnits(s) {
   const out = new Map();
@@ -64,19 +68,29 @@ function run(s) {
     out.push({ kind: "dispatch-record-missing", units: units.has(l.payload.unit) ? [l.payload.unit] : [], evidence: { type: "rule", rule: "every logged dispatch keeps its record in metadata/verification/", dispatch: l.payload.dispatch } });
 
   const kept = keptClaims(log);
+  const latestKnowledge = new Set(); // units whose newest knowledge review of the current text was read
   const askedExercise = new Set(); // one question per unit, however many records read it as exercise data
   for (const r of [...records].sort((x, y) => String(y.at).localeCompare(String(x.at)))) {
     const u = units.get(r.unit);
     if (!u || r.factHash !== factHash(u.text) || !dispatchLogged(r, log)) continue;
     if (r.kind === "absolute") {
       // a context review (D30): an over-general scientific absolute is a question for the agent, with a rewording
-      if (r.absolutesHash !== absolutesHash(u.text)) continue;
-      const v = readAbsoluteReview(r.answer?.raw, r.bundle?.nonce, r.sentences || [], r.context || "");
+      // read from what the log binds (the prompt and the answer), never from the record's editable fields (round 2)
+      const a = absoluteReviewOf(r, log);
+      if (!a || a.unit !== u.id || a.absolutesHash !== absolutesHash(u.text)) continue;
+      const v = a.review;
       if (v.ok) for (const x of v.results.filter((y) => y.class === "over-general"))
         out.push({ kind: "absolute-overgeneral", units: [u.id], evidence: { type: "judgment", note: x.why, quote: x.sentence, suggestion: x.suggestion, dispatch: r.dispatch } });
       continue;
     }
     if (r.kind === "knowledge") {
+      // a review that cannot be scored is said so, never read as a clean review (red-team round 2, R2-K10): an answer
+      // that does not parse, or a concern quoting words the reviewed passage does not contain (even read as rendered)
+      if (r.contentHash === u.contentHash && !latestKnowledge.has(u.id) && latestKnowledge.add(u.id)) { // the newest review of this text decides
+        const k = readKnowledgeReview(r, u.text);
+        if (!k.ok || k.unlocated.length)
+          out.push({ kind: "knowledge-unscorable", units: [u.id], evidence: { type: "judgment", note: !k.ok ? `the blind review of ${u.id} cannot be read (${k.reason}): run it again (node scripts/verify.mjs knowledge --units ${u.id})` : `the blind review of ${u.id} raised a concern about words the passage does not contain ("${k.unlocated[0].text.slice(0, 120)}": ${k.unlocated[0].problem.slice(0, 200)}): it cannot be scored — run it again (node scripts/verify.mjs knowledge --units ${u.id})`, quote: k.unlocated[0]?.text ?? "", dispatch: r.dispatch } });
+      }
       for (const c of knowledgeConcerns(r, u.text)) {
         const evidence = { type: "judgment", note: c.problem, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch };
         // applied: the unit now says what the concern proposed. Added words often touch no fact token, so the record is
@@ -86,8 +100,8 @@ function run(s) {
         // itself extends them (red-team round 1, F12: a deletion's suggestion is a substring of the wrong words, and a
         // substring test settled the concern while the wrong words stood). The quoted words are in the unit whenever the
         // concern is current, so in practice: settled when the suggestion contains them and the unit contains it.
-        const bare = (t) => String(t).replace(/[$*_`]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
-        const applied = c.suggestion.trim().length >= 8 && bare(u.text).includes(bare(c.suggestion)) && (!bare(u.text).includes(bare(c.text)) || bare(c.suggestion).includes(bare(c.text)));
+        // read as written or as rendered, like the concern's own quote (R2-K10)
+        const applied = c.suggestion.trim().length >= 8 && quoteIn(c.suggestion, u.text) && (!quoteIn(c.text, u.text) || quoteIn(c.text, c.suggestion));
         if (applied) continue;
         if (c.kind !== "clarify" || !c.suggestion.trim()) { out.push({ kind: "knowledge-concern", units: [u.id], evidence }); continue; }
         if (!instructorAuthored(u, log)) { out.push({ kind: "clarification-owed", units: [u.id], evidence }); continue; }
@@ -164,6 +178,7 @@ export default {
       { kind: "fact-check-own", statusClass: "question", evidenceType: "conflict", route: "agent" },
       { kind: "knowledge-concern", statusClass: "question", evidenceType: "judgment", route: "digest" },
       { kind: "clarification-owed", statusClass: "question", evidenceType: "judgment", route: "agent" },
+      { kind: "knowledge-unscorable", statusClass: "question", evidenceType: "judgment", route: "agent" },
       { kind: "clarification-proposed", statusClass: "question", evidenceType: "judgment", route: "digest" },
       { kind: "clarification-accepted", statusClass: "obligation", evidenceType: "missing", route: "agent" },
       { kind: "exercise-data-confirm", statusClass: "question", evidenceType: "judgment", route: "digest" },

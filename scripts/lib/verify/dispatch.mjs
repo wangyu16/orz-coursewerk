@@ -16,6 +16,7 @@ import { sha256, canonicalJson } from "../records/canonical.mjs";
 import { recordFile } from "../records/paths.mjs";
 import { appendLogRecord } from "../records/log.mjs";
 import { NEGATION, folded, quantitiesIn, nameKey, yearsIn } from "./claims.mjs";
+import { decodeEntities } from "../core/values.mjs";
 
 export const VERIFICATION_DIR = "metadata/verification";
 const SYSTEM = "You are a context-blind fact verifier. You see only the material in the user message. Answer only from it, and reply with JSON only.";
@@ -117,6 +118,61 @@ export function knowledgeBundle(text, nonce = randomBytes(8).toString("hex"), { 
     String(text).trim(),
   ].join("\n");
   return { kind: "knowledge", nonce, prompt, bundleHash: sha256(prompt) };
+}
+
+// ---- reading a knowledge review ----------------------------------------------------------------------------------
+// A reviewer quotes the passage as a student reads it: rendered math, not its LaTeX ("ΔH < 0" for "$\Delta H < 0$").
+// Both sides are folded to that reading before a quote is located (red-team round 2, R2-K10: the rendered quote was
+// dropped without trace while the dispatch still counted as the unit's review).
+const SYMBOLS = { Delta: "Δ", delta: "δ", Gamma: "Γ", gamma: "γ", alpha: "α", beta: "β", epsilon: "ε", varepsilon: "ε", lambda: "λ", Lambda: "Λ", mu: "μ", nu: "ν", pi: "π", rho: "ρ", sigma: "σ", Sigma: "Σ", tau: "τ", theta: "θ", phi: "φ", chi: "χ", psi: "ψ", omega: "ω", Omega: "Ω",
+  lt: "<", gt: ">", le: "≤", leq: "≤", ge: "≥", geq: "≥", neq: "≠", ne: "≠", approx: "≈", sim: "~", times: "×", cdot: "·", pm: "±", mp: "∓", circ: "°", degree: "°", infty: "∞", propto: "∝", partial: "∂",
+  rightleftharpoons: "⇌", leftrightharpoons: "⇌", rightarrow: "→", longrightarrow: "→", to: "→", leftarrow: "←", leftrightarrow: "↔", Rightarrow: "⇒", ldots: "…", dots: "…", cdots: "⋯", ominus: "⊖", standardstate: "°", minus: "−" };
+/** A passage as a reader sees it: entities decoded, \text{}/\mathrm{}/\ce{} unwrapped, symbol macros as symbols,
+ *  sub- and superscripts inline, "$", braces and emphasis markup removed, whitespace collapsed. */
+export function readerText(text) {
+  let t = decodeEntities(String(text ?? "")).replace(/\$\$?/g, " ");
+  for (let k = 0; k < 3; k++) t = t.replace(/\\(?:text|textrm|textbf|textit|mathrm|mathbf|mathit|mathsf|operatorname|emph|ce|mbox|boldsymbol)\s*\{([^{}]*)\}/g, "$1");
+  t = t.replace(/\^\s*\{?\s*\\circ\s*\}?/g, "°").replace(/\\frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g, "$1/$2")
+    .replace(/\\([A-Za-z]+)(?![A-Za-z])/g, (m, name) => SYMBOLS[name] ?? (/^(?:left|right|big|Big|bigg|displaystyle|textstyle|quad|qquad)$/.test(name) ? " " : m))
+    .replace(/\\[,;:! ]/g, " ").replace(/[_^]\s*\{([^{}]*)\}/g, "$1").replace(/[_^](?=\S)/g, "")
+    .replace(/[{}*`]/g, "").replace(/(?<![A-Za-z0-9])_+|_+(?![A-Za-z0-9])/g, "");
+  return t.replace(/\s+/g, " ").trim();
+}
+/** Is a reviewer's quote in this text, as written or as a reader sees it? (≥ 8 characters, or it locates nothing) */
+export function quoteIn(quote, text) {
+  const bare = (t) => String(t).replace(/[$*_`]/g, "").replace(/\s+/g, " ").trim();
+  if (bare(quote).length < 8) return false;
+  if (bare(text).includes(bare(quote))) return true;
+  // spacing is the typesetter's, not the reader's ("( Δ H < 0 )" from "($\Delta H < 0$)" reads "(ΔH < 0)")
+  const squeeze = (t) => folded(readerText(t)).replace(/\s+/g, "");
+  const q = squeeze(quote);
+  return q.length >= 8 && squeeze(text).includes(q);
+}
+/** The passage a knowledge bundle showed the reviewer (what its concerns may quote). */
+export const reviewedPassage = (prompt) => { const p = String(prompt || ""); const m = p.match(/\nPASSAGE(?: \([^\n]*\))?\n([\s\S]*)$/); return m ? m[1] : ""; };
+/**
+ * A knowledge review as the harness reads it: { ok, reason, concerns, unlocated }. `concerns` point at words the
+ * unit contains now; a concern whose words are no longer in the unit but were in the passage reviewed is settled by
+ * the text (it is neither). `unlocated`: concerns whose words are in neither — the reviewer quoted something the
+ * passage does not say, so the review cannot be scored. A review that does not parse, or answers another bundle, is
+ * not ok. Neither counts as a clean review (R2-K10).
+ */
+export function readKnowledgeReview(record, unitText) {
+  const m = String(record?.answer?.raw || "").match(/\{[\s\S]*\}/);
+  let v; try { v = JSON.parse(m?.[0] || ""); } catch { return { ok: false, reason: "the answer is not JSON", concerns: [], unlocated: [] }; }
+  if (v?.nonce !== record?.bundle?.nonce) return { ok: false, reason: "the answer does not echo the bundle's nonce", concerns: [], unlocated: [] };
+  if (!Array.isArray(v.concerns)) return { ok: false, reason: "the answer has no concerns list", concerns: [], unlocated: [] };
+  const norm = (t) => String(t).replace(/\s+/g, " ").trim();
+  const passage = reviewedPassage(record.bundle?.prompt);
+  const concerns = [], unlocated = [];
+  for (const c of v.concerns) {
+    if (typeof c?.text !== "string" || typeof c.problem !== "string") continue; // a malformed entry says nothing
+    // a concern without a kind (records before D35) is read as "wrong": it keeps the path it had
+    const x = { kind: c.kind === "clarify" ? "clarify" : "wrong", text: norm(c.text), problem: String(c.problem).slice(0, 600), suggestion: String(c.suggestion || "").slice(0, 600) };
+    if (quoteIn(c.text, unitText)) concerns.push(x);
+    else if (!passage || !quoteIn(c.text, passage)) unlocated.push(x);
+  }
+  return { ok: true, concerns, unlocated };
 }
 
 // ---- running a verifier -------------------------------------------------------------------------------------------

@@ -32,7 +32,7 @@ import { validateUnitSidecar } from "../records/units.mjs";
 import { classifyUnit, derivedRole, segmentDeliverable, unitHash } from "./segment.mjs";
 import { readLogText } from "../records/log.mjs";
 import { checkableClaims, claimsHash } from "../verify/claims.mjs";
-import { absoluteSentences, absolutesHash, readAbsoluteReview } from "../verify/absolutes.mjs";
+import { absoluteReviewOf, absoluteSentences, absolutesHash } from "../verify/absolutes.mjs";
 import { deliverablesOf, indexUnits, readSidecar } from "./units_index.mjs";
 import { parseSpine, nodeIndex, termsOfMap, COURSE_MAP } from "./spine.mjs";
 import { manifestChapters } from "./package_reader.mjs";
@@ -41,6 +41,7 @@ import { approvalStatus } from "./approvals.mjs";
 import { dependencyEdges, factHash, nodeHash, questionBindingProblems, questionHash, sourceHashes, stampFor, staleTargets, targetHashes, termHash } from "./dependencies.mjs";
 import { assertUnaltered, deliverableOfSidecar, logUnitRecords } from "./unit_records.mjs";
 import { currentReviewsAt } from "../verify/alignment.mjs";
+import { readKnowledgeReview } from "../verify/dispatch.mjs";
 
 // quote-verified: admitted by the verdict path (P7); instructor-confirmation: one confirmation (D19-D);
 // authorized-divergence: the instructor kept their text against evidence, after seeing it — the double confirmation (Q10).
@@ -305,17 +306,19 @@ export function admitEvidence(root, reader, unitId, evidence) {
   rewriteUnits(root, [unitId], (x) => { x.evidence = [...(x.evidence || []).filter((e) => !(e.type === evidence.type && e.factHash === evidence.factHash && e.dispatch === evidence.dispatch)), evidence]; });
 }
 
-/** Absolute reviews that count: a logged dispatch whose record parses and covers the unit's sentences → "unit|hash". */
+/** Absolute reviews that count: a logged dispatch whose prompt and answer the log binds, and whose review parses and
+ *  covers the unit's sentences → "unit|hash" — the unit and the sentences read from what the log binds, never from
+ *  the record's editable fields (absoluteReviewOf; red-team round 2). */
 export function reviewedAbsolutes(root) {
   const out = new Set();
   const dir = recordFile(root, "metadata/verification");
   if (!fs.existsSync(dir)) return out;
-  const logged = new Set();
-  for (const line of readLogText(root).split("\n").filter(Boolean)) { try { const r = JSON.parse(line); if (r.type === "dispatch" && r.party?.role === "harness") logged.add(`${r.payload?.dispatch}|${r.payload?.unit}|${r.payload?.responseHash}`); } catch { /* the log module reports it */ } }
+  const log = [];
+  for (const line of readLogText(root).split("\n").filter(Boolean)) { try { const r = JSON.parse(line); if (r.type === "dispatch" && r.party?.role === "harness") log.push(r); } catch { /* the log module reports it */ } }
   for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json"))) {
     let r; try { r = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")); } catch { continue; }
-    if (r.kind !== "absolute" || !logged.has(`${r.dispatch}|${r.unit}|${r.answer?.responseHash}`)) continue;
-    if (readAbsoluteReview(r.answer?.raw, r.bundle?.nonce, r.sentences || [], r.context || "").ok) out.add(`${r.unit}|${r.absolutesHash}`);
+    const a = absoluteReviewOf(r, log);
+    if (a?.review.ok) out.add(`${a.unit}|${a.absolutesHash}`);
   }
   return out;
 }
@@ -326,12 +329,17 @@ export function reviewedAbsolutes(root) {
  */
 export function unreviewedKnowledge(root, reader) {
   const dir = recordFile(root, "metadata/verification"), seen = new Set(), logged = new Set();
+  const units = loadUnits(root, reader), textOf = new Map(units.map((u) => [`${u.id}|${u.locator.contentHash}`, u.text]));
   for (const line of readLogText(root).split("\n").filter(Boolean)) { try { const r = JSON.parse(line); if (r.type === "dispatch" && r.party?.role === "harness") logged.add(`${r.payload?.dispatch}|${r.payload?.unit}`); } catch { /* the log module reports it */ } }
   if (fs.existsSync(dir)) for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json"))) {
     let r; try { r = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")); } catch { continue; }
-    if (r.kind === "knowledge" && logged.has(`${r.dispatch}|${r.unit}`)) seen.add(`${r.unit}|${r.contentHash}`);
+    if (r.kind !== "knowledge" || !logged.has(`${r.dispatch}|${r.unit}`)) continue;
+    // a review that cannot be scored (no readable answer, or a concern quoting words the passage does not have) is not
+    // a review of the unit (red-team round 2, R2-K10)
+    const key = `${r.unit}|${r.contentHash}`, k = textOf.has(key) && readKnowledgeReview(r, textOf.get(key));
+    if (k && k.ok && !k.unlocated.length) seen.add(key);
   }
-  return loadUnits(root, reader).filter((u) => u.judgment.includes("knowledge-based") && u.role === "teaching" && !seen.has(`${u.id}|${u.locator.contentHash}`)).map((u) => u.id);
+  return units.filter((u) => u.judgment.includes("knowledge-based") && u.role === "teaching" && !seen.has(`${u.id}|${u.locator.contentHash}`)).map((u) => u.id);
 }
 
 /** Units whose current facts a recorded verification contradicts or disputes. */
@@ -355,16 +363,16 @@ export function recordVerification(root, reader, ids, { module, basis }) {
   appendLogRecord(root, { type: "revision", party: { role: "harness", name: module }, payload: { event: "units-reverified", units: ids, basis } });
 }
 
-/** The "wrong" concerns a knowledge dispatch raised about words the unit still contains (as verdicts.mjs reads them). */
+/** The "wrong" concerns a knowledge dispatch raised about words the unit still contains (as verdicts.mjs reads them);
+ *  a review that cannot be scored — no readable answer, or a concern whose words the passage does not have — is never
+ *  a clean re-check either (red-team round 2, R2-K10). */
 function wrongConcerns(root, dispatch, unitText) {
   let r; try { r = JSON.parse(fs.readFileSync(recordFile(root, `metadata/verification/${dispatch}.json`), "utf8")); } catch { return [{ kind: "wrong", text: "(the review record is missing)", problem: "its record cannot be read" }]; }
   if (sha256(r.answer?.raw ?? "") !== r.answer?.responseHash) return [{ kind: "wrong", text: "(the review record was edited)", problem: "its answer does not match the logged response" }];
-  const m = String(r.answer?.raw || "").match(/\{[\s\S]*\}/);
-  let v; try { v = JSON.parse(m?.[0] || ""); } catch { return []; }
-  if (v?.nonce !== r.bundle?.nonce || !Array.isArray(v.concerns)) return [];
-  const bare = (t) => String(t).replace(/[$*_`]/g, "").replace(/\s+/g, " ").trim();
-  return v.concerns.filter((c) => typeof c?.text === "string" && bare(c.text).length >= 8 && bare(unitText).includes(bare(c.text)) && c.kind !== "clarify")
-    .map((c) => ({ kind: "wrong", text: bare(c.text), problem: String(c.problem || "") }));
+  const k = readKnowledgeReview(r, unitText);
+  if (!k.ok) return [{ kind: "wrong", text: "(the review cannot be read)", problem: `${k.reason}: run it again` }];
+  if (k.unlocated.length) return [{ kind: "wrong", text: k.unlocated[0].text, problem: `the review quotes words the passage does not contain, so it cannot be scored: run it again (${k.unlocated[0].problem})` }];
+  return k.concerns.filter((c) => c.kind !== "clarify");
 }
 
 // the blind reviews that can re-verify a unit, and the logged outcome each must have

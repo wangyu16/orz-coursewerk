@@ -11,6 +11,7 @@
 // Until a logged review covers the unit's current absolute sentences, the unit carries `absolute-unreviewed`.
 import { sha256, canonicalJson } from "../records/canonical.mjs";
 import { clean, exclusivityOf, folded, sentencesOf } from "./claims.mjs";
+import { recordHashOf } from "./dispatch.mjs";
 
 const ABSOLUTE = /\b(?:only|solely|exclusively|alone|always|never|every|all|none|nothing|nobody)\b/i;
 const QUOTED = /"[^"]*"|“[^”]*”/g;
@@ -70,4 +71,28 @@ export function readAbsoluteReview(raw, nonce, sentences, context) {
     results.push({ n: i, sentence: sentences[i - 1], class: r.class, context: r.context || null, why: String(r.why || "").slice(0, 500), suggestion: String(r.suggestion || "").slice(0, 500) });
   }
   return { ok: true, results };
+}
+
+/**
+ * An absolute review as the decision log vouches for it, or null. Every field that decides whether the review covers
+ * a unit — the unit, its sentences, its section context, the nonce and the answer — is read from what the log binds:
+ * the logged unit, the prompt (bundleHash) and the answer (responseHash); never from the editable record's own
+ * `sentences`, `context`, `absolutesHash` or `unit` (red-team round 2, from the CONTROL attacker: 29 records logged
+ * before round 1 carry no recordHash, and their fields were read from the file). A record that carries a recordHash
+ * must match it as well. Returns { unit, absolutesHash, sentences, context, nonce, review }.
+ */
+export function absoluteReviewOf(record, logRecords) {
+  if (record?.kind !== "absolute") return null;
+  const prompt = String(record.bundle?.prompt ?? "");
+  const bundleHash = sha256(prompt), responseHash = sha256(record.answer?.raw ?? "");
+  const log = (logRecords || []).find((l) => l.type === "dispatch" && l.party?.role === "harness" && l.payload?.kind === "absolute" && l.payload?.dispatch === record.dispatch && l.payload?.bundleHash === bundleHash && l.payload?.responseHash === responseHash
+    && (l.payload?.recordHash == null || l.payload.recordHash === recordHashOf(record)));
+  if (!log) return null;
+  const lines = prompt.split("\n"), a = lines.indexOf("SENTENCES"), b = lines.indexOf("CONTEXT");
+  if (a < 0 || b < a) return null;
+  const sentences = lines.slice(a + 1, b).filter((l) => l.trim()).map((l, i) => { const m = l.match(/^(\d+)\. (.*)$/); return m && Number(m[1]) === i + 1 ? m[2] : null; });
+  if (!sentences.length || sentences.some((x) => x == null)) return null;
+  const context = lines.slice(b + 1).join("\n");
+  const nonce = prompt.match(/"nonce": "([0-9a-f]+)"/)?.[1] ?? null;
+  return { unit: log.payload.unit, absolutesHash: sha256(canonicalJson(sentences)), sentences, context, nonce, review: readAbsoluteReview(record.answer?.raw, nonce, sentences, context) };
 }

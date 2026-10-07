@@ -20,7 +20,7 @@ import { randomBytes } from "node:crypto";
 import { readLogText } from "../records/log.mjs";
 import { checkableClaims, claimsHash, claimOf, quantitiesIn, withLead } from "./claims.mjs";
 import { admit, sameAtPrecision, supports } from "./admission.mjs";
-import { knowledgeBundle, readDispatches, recordDispatch, recordHashOf, selectPassages, semiBundle } from "./dispatch.mjs";
+import { knowledgeBundle, readDispatches, readKnowledgeReview, recordDispatch, recordHashOf, selectPassages, semiBundle } from "./dispatch.mjs";
 
 export const CORRECTIONS_DIR = "metadata/corrections";
 
@@ -180,17 +180,11 @@ export async function verifyKnowledge(root, reader, { verifier, only = null, onP
   return results;
 }
 
-/** The concerns of a knowledge dispatch that point at words the unit actually contains. */
+/** The concerns of a knowledge dispatch that point at words the unit actually contains — as written, or as a reader
+ *  sees them (rendered math: red-team round 2, R2-K10). An unlocatable concern is not dropped: see
+ *  readKnowledgeReview (dispatch.mjs), which MS8 raises as knowledge-unscorable. */
 export function knowledgeConcerns(record, unitText) {
-  const m = String(record.answer?.raw || "").match(/\{[\s\S]*\}/);
-  let v; try { v = JSON.parse(m?.[0] || ""); } catch { return []; }
-  if (v?.nonce !== record.bundle.nonce || !Array.isArray(v.concerns)) return [];
-  const norm = (t) => String(t).replace(/\s+/g, " ").trim();
-  // the quote is matched with math and emphasis markup set aside: "T the temperature" quotes "$T$ the temperature" (P11 dev)
-  const bare = (t) => norm(String(t).replace(/[$*_`]/g, ""));
-  return v.concerns.filter((c) => typeof c?.text === "string" && bare(c.text).length >= 8 && bare(unitText).includes(bare(c.text)) && typeof c.problem === "string")
-    // a concern without a kind (records before D35) is read as "wrong": it keeps the path it had
-    .map((c) => ({ kind: c.kind === "clarify" ? "clarify" : "wrong", text: norm(c.text), problem: String(c.problem).slice(0, 600), suggestion: String(c.suggestion || "").slice(0, 600) }));
+  return readKnowledgeReview(record, unitText).concerns;
 }
 
 // ---- contradictions and corrections ------------------------------------------------------------------------------
@@ -246,18 +240,33 @@ export function correctionGuard({ unit, lead = null, records, plainTexts, meta =
     const q = quantitiesIn(unit.text).find((x) => x.raw === claimed);
     const num = (String(claimed).match(/^-?(\d[\d,]*(?:\.\d+)?)(?![\de])/) || [])[1];
     if (!q || !num) return { ok: false, reason: `${claimed} is not a single, unambiguous number in the unit` };
-    // the sign as typeset ("−92.2", "- 92.2", "-\,92.2", "{-}92"): replaced together with the number, never doubled
-    // (red-team round 1, F10: "= - 92.2" became "= - −92.2")
-    const re = new RegExp(`(?<![\\d.,])(${q.value < 0 ? "(?:[-−‐-―]|\\{[-−]\\})\\s*(?:\\\\[,;:! ]\\s*)*" : ""})${num.replace(/[.]/g, "\\.")}(?![\\d])`, "g");
+    // the sign or prefix as typeset ("−92.2", "- 92.2", "-\,92.2", "{-}92", "&minus;92.2", "+92.2") is replaced
+    // together with the number, never left beside the new one (red-team round 1, F10: "= - 92.2" became "= - −92.2";
+    // round 2, R2-K06/K07: "+92.2" became "+−92.2" and "&minus;92.2" became "&minus;−92.2")
+    const prefix = q.value < 0 ? `(?:${MINUS_FORMS}|\\{[-−]\\})\\s*(?:\\\\[,;:! ]\\s*)*` : `(?:(?:\\+|&plus;|&#0*43;|\\{\\+\\})\\s*(?:\\\\[,;:! ]\\s*)*)?`;
+    const re = new RegExp(`(?<![\\d.,])(${prefix})${num.replace(/[.]/g, "\\.")}(?![\\d])`, "g");
     const at = [...unit.text.matchAll(re)];
     if (at.length !== 1) return { ok: false, reason: `${claimed} is not a single, unambiguous number in the unit` };
     const decimals = (num.split(".")[1] || "").length;
-    const sign = t.sourceValue < 0 ? (at[0][1] || "−") : "";
-    edits.push({ index: at[0].index, length: at[0][0].length, replacement: sign + Math.abs(t.sourceValue).toFixed(Math.max(decimals, decimalsOf(t.source))), claimed, source: t.source, sources: [...t.sources] });
+    const sign = t.sourceValue < 0 ? (q.value < 0 ? at[0][1] : "−") : (at[0][1] ? "+" : "");
+    edits.push({ index: at[0].index, length: at[0][0].length, replacement: sign + Math.abs(t.sourceValue).toFixed(Math.max(decimals, decimalsOf(t.source))), claimed, source: t.source, sources: [...t.sources], unit: q.unit, value: t.sourceValue });
+  }
+  // the corrected text must read as the source's values, each once, with one sign: anything else is malformed and
+  // the correction is refused — a question, never a harmful revision (round 2: "+−92.2", "&minus;−92.2")
+  const after = editedText(unit.text, edits);
+  const doubled = new RegExp(`(?:${MINUS_FORMS}|\\+|&plus;|±)\\s*(?:\\\\[,;:! ]\\s*)*(?:${MINUS_FORMS}|\\+|&plus;|±)\\s*(?:\\\\[,;:! ]\\s*)*\\d`);
+  for (const e of edits) {
+    const around = after.slice(Math.max(0, e.index - 24), e.index + e.replacement.length + 1);
+    const reads = quantitiesIn(after).some((x) => x.unit === e.unit && Math.abs(x.value - e.value) <= 1e-9 * Math.max(1, Math.abs(e.value)));
+    if (doubled.test(around) || !reads) return { ok: false, reason: `the correction of ${e.claimed} would produce a malformed value ("${around.trim()}"): a question for the instructor` };
   }
   return { ok: true, plan: { edits, dispatches: [...new Set(hits.map(({ r }) => r.dispatch))], quotes: hits.flatMap(({ c }) => c.quotes) } };
 }
 const decimalsOf = (raw) => (String(raw).match(/\.(\d+)/)?.[1] || "").length;
+// every way a minus is typeset or written as an HTML reference
+const MINUS_FORMS = "[-−‐-―]|&minus;|&#0*8722;|&#[xX]0*2212;|&ndash;|&mdash;|&#0*821[12];|&#[xX]0*201[34];|&hyphen;|&#0*45;";
+/** The unit's text with a correction's edits applied (from the end, so earlier indexes stay valid). */
+export const editedText = (text, edits) => [...edits].sort((a, b) => b.index - a.index).reduce((t, e) => t.slice(0, e.index) + e.replacement + t.slice(e.index + e.length), text);
 
 export const diffOf = (before, after) => `- ${before.replace(/\n/g, "\n- ")}\n+ ${after.replace(/\n/g, "\n+ ")}`;
 
@@ -286,8 +295,7 @@ export function applyCorrection(root, reader, { unitId, plainTexts, meta = new M
   if (!unit) throw new Error(`no such unit: ${unitId}`);
   const g = correctionGuard({ unit, lead: leadOf(unit, all), records: packageDispatches(root), plainTexts, meta, logRecords: logRecordsOf(readLogText(root)) });
   if (!g.ok) return { applied: false, question: { unit: unitId, reason: g.reason } };
-  let after = unit.text;
-  for (const e of [...g.plan.edits].sort((a, b) => b.index - a.index)) after = after.slice(0, e.index) + e.replacement + after.slice(e.index + e.length);
+  const after = editedText(unit.text, g.plan.edits);
   const group = supportingGroup(after, g.plan.quotes);
   if (!group) return { applied: false, question: { unit: unitId, reason: "the source's value would not be supported by its own quote once written: a question for the instructor" } };
   const id = `c-${sha256(unit.id + unit.text + after).slice(0, 12)}`;

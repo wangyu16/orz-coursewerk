@@ -163,7 +163,8 @@ test("[req.values.one-parser] F2: values in mmHg and kcal, a power of ten per mo
 
 test("[req.values.one-parser] F3: a thousands separator is read as one (200,000 bar is not carried by 200 bar)", async (t) => {
   assert.deepEqual(quantitiesIn("about 200,000 bar").map((q) => q.value), [200000]);
-  assert.deepEqual(quantitiesIn("2,900 psi and 1,013.25 hPa or 1,5 M").map((q) => q.value), [1.5], "psi and hPa are no units; a comma decimal stays a decimal");
+  // psi and hPa became units in red-team round 2 (R2-K05: a value in a unit form the table lacked owed no evidence)
+  assert.deepEqual(quantitiesIn("2,900 psi and 1,013.25 hPa or 1,5 M").map((q) => q.value), [2900, 1013.25, 1.5], "thousands separators are read in every unit; a comma decimal stays a decimal");
   const QUOTE = "Most plants continue to use the original Haber process (20 MPa (200 bar; 2,900 psi) and 500 °C";
   assertRefused(await addAndVerify(course(t), "Most plants still use the original Haber process, run at about 200,000 bar and 500 °C.", "supported", [QUOTE], ["haber"]), "200,000 bar");
   assertAdmitted(await addAndVerify(course(t), "Most plants still use the original Haber process, run at about 200 bar and 500 °C.", "supported", [QUOTE], ["haber"]), "200 bar");
