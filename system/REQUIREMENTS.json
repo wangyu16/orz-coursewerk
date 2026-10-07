@@ -2508,17 +2508,48 @@
       }
     },
     {
+      "id": "req.control.printed-by-parser",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Whether a line prints is orz-markdown's call, read from its own token stream (core/printed.mjs), not the segmenter's line grammar: a line the grammar took for structure that orz prints is a unit (prose inside a tab group outside every tab, text after a {{nyml}} block orz closed at the first line holding \"}}\"), unless it is a bounded printed label: a `#`/`##` label heading only while it heads content before the next heading of its level or slide marker (a section-template slide heads the slides up to the next framing-template slide); a `::: spoil`/`::: tab` label only as a label over a non-empty body; one credit line per deliverable (two or more are each a unit).",
+      "source": "3C red team round 3, CONTROL (studies/p11/redteam-r3/control, 2026-10-07) C3-03, C3-04, C3-06",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r3-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.no-hidden-content",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Text hidden from the student never counts: in a deliverable, raw HTML outside the visible phrasing set (any hidden/style/class attribute, <details>, <template>, <style>, <noscript> …), a comment inside printed text, a `<!…>`/`<?…>` declaration, maths that typesets invisibly (\\phantom, \\color), or a unit orz-markdown prints nothing of is content-hidden, a blocking defect for the agent, and the pack refuses it.",
+      "source": "3C red team round 3, CONTROL (studies/p11/redteam-r3/control, 2026-10-07) C1-05",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r3-control.test.mjs"
+        ]
+      }
+    },
+    {
       "id": "req.ship.same-computation",
       "phase": "P11",
       "tiers": [
         "T1"
       ],
-      "statement": "What ships and what is checked are one computation (shipped.mjs): every markdown file the pack would ship is a deliverable, the spine, an instructor-confirmed administrative document or a harness record — otherwise document-unchecked (a blocking defect) and the pack refuses; a {{md}}/{{markdown}}/{{md-include}} include must name a deliverable (read on its own), otherwise include-unchecked and the pack refuses.",
-      "source": "3C red team round 2, CONTROL (studies/p11/redteam-r2/control, 2026-10-06) C3-04, C3-07",
+      "statement": "What ships and what is checked are one computation (shipped.mjs): every markdown file the pack would ship is a deliverable, the spine, an instructor-confirmed administrative document or a harness record — otherwise document-unchecked (a blocking defect) and the pack refuses; a {{md}}/{{markdown}}/{{md-include}} include must name a deliverable (read on its own), otherwise include-unchecked and the pack refuses; an include is every form orz-markdown renders (read from its token stream: one line, [args], the path on its own lines up to \"}}\", inside containers, lists and quotes).",
+      "source": "3C red team round 2, CONTROL (studies/p11/redteam-r2/control, 2026-10-06) C3-04, C3-07; 3C red team round 3, CONTROL (studies/p11/redteam-r3/control, 2026-10-07) C3-07",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r2-control.test.mjs"
+          "tests/redteam-r2-control.test.mjs",
+          "tests/redteam-r3-control.test.mjs"
         ]
       }
     },

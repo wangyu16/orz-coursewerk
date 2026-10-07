@@ -10,7 +10,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { latestPublish } from "./workflow.mjs";
-import { shippedFiles, uncheckedShipped } from "./shipped.mjs";
+import { hiddenContent, shippedFiles, uncheckedShipped } from "./shipped.mjs";
 import { liveReader } from "./package_reader.mjs";
 import { parseLog, readLogText } from "../records/log.mjs";
 import { canonicalJson } from "../records/canonical.mjs";
@@ -34,6 +34,8 @@ export function packPublished(pkg, outDir) {
   const unchecked = uncheckedShipped(pkg, liveReader(pkg), { keep, course: !!pub.course });
   if (unchecked.documents.length || unchecked.includes.length)
     return { ok: false, error: `refusing to pack what nothing checked: ${[...unchecked.documents.map((r) => `${r} (not a declared document)`), ...unchecked.includes.map((x) => `${x.file} includes ${x.target} (not a deliverable)`)].join("; ")} — declare each in metadata/DOCUMENTS.json, or remove it` };
+  const hidden = hiddenContent(pkg, liveReader(pkg), { keep });
+  if (hidden.length) return { ok: false, error: `refusing to pack text hidden from the student: ${hidden.map((x) => `${x.file} line ${x.line} (${x.what})`).join("; ")}` };
   const work = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-pack-"));
   const staged = path.join(work, "staged");
   const shipped = shippedFiles(pkg, { keep, course: !!pub.course });
