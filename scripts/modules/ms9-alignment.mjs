@@ -8,7 +8,8 @@
 //   alignment-unscorable  (question, agent)   the current review cannot be read — not the reply shape, a declared link
 //                                             or a guide entry left unanswered, a word that is no verdict: run it
 //                                             again (redteam r1 C2-16: the review fails closed, never silent)
-// A review is current only while the unit's text, its links and the plan it was judged against are unchanged. The
+// A review is current only while the unit's text, its links and the plan items it judged are unchanged (round 2, F11:
+// an edit of another plan item, or a light rewording the instructor glance-confirmed, leaves it current). The
 // review used is the LATEST (in log order) of the unit's logged reviews that is current, so an older review that
 // matches the unit as it is now is not hidden by a newer one made stale by an edit and its revert (C2-02). What a
 // review declared is re-derived from the unit, never read from the record; the whole record is bound in the log (C2-03).
@@ -16,7 +17,7 @@
 import { classifyUnit, derivedRole, segmentDeliverable } from "../lib/core/segment.mjs";
 import { readDispatches } from "../lib/verify/dispatch.mjs";
 import { dispatchLogEntry, instructorAuthored, logRecordsOf } from "../lib/verify/verdicts.mjs";
-import { planOf, readAlignment, reviewBasis, reviewInputs, reviewable } from "../lib/verify/alignment.mjs";
+import { currentBases, planOf, readAlignment, reviewInputs, reviewable } from "../lib/verify/alignment.mjs";
 import { base } from "./_shared.mjs";
 
 function currentUnits(s) {
@@ -44,10 +45,10 @@ function run(s) {
   for (const [id, recs] of byUnit) {
     const u = byId.get(id);
     if (!u || !(reviewable(u) || u.role === "framing")) continue; // D42: framing is read for off-plan content
-    const inp = reviewInputs(u, all, plan), basis = reviewBasis(u, inp);
+    const inp = reviewInputs(u, all, plan), bases = currentBases(u, inp, plan);
     const declared = inp.declared.map((n) => n.id), guides = inp.guides.map((g) => g.id), known = new Set(inp.chapterNodes.map((n) => n.id));
     // the unit's current reviews, newest first (a review of something else is history)
-    const current = recs.filter(({ r }) => r.alignmentBasis === basis).sort((a, b) => b.seq - a.seq).map(({ r }) => r);
+    const current = recs.filter(({ r }) => bases.has(r.alignmentBasis)).sort((a, b) => b.seq - a.seq).map(({ r }) => r);
     if (!current.length) continue;
     const read = (r) => readAlignment(r.answer?.raw, r.bundle?.nonce, declared, known, r.guides ? guides : guides.length ? true : []);
     const v0 = read(current[0]);
@@ -58,7 +59,7 @@ function run(s) {
     if (!v) continue;
     for (const l of v.links.filter((x) => x.verdict === "no"))
       out.push({ kind: "link-doubtful", units: [u.id], evidence: { type: "judgment", note: `${u.id} is linked to ${l.id} but does not deal with it: ${l.why}${v.also.length ? ` It teaches ${v.also.join(", ")}.` : ""}`, link: l.id, suggested: v.also, dispatch: r.dispatch } });
-    if (v.offPlan) out.push({ kind: "off-spine", units: [u.id], evidence: { type: "judgment", note: `${u.id} teaches nothing in the chapter's approved plan: keep it (the spine may need it) or drop it?`, dispatch: r.dispatch } });
+    if (v.offPlan === true) out.push({ kind: "off-spine", units: [u.id], evidence: { type: "judgment", note: `${u.id} teaches nothing in the chapter's approved plan: keep it (the spine may need it) or drop it?`, dispatch: r.dispatch } });
     for (const f of v.fidelity.filter((x) => x.type === "differs" || x.level === "differs")) {
       const g = (f.id && inp.guides.find((x) => x.id === f.id)) || inp.guides[0];
       const ask = g ? `${g.type || "any type"} at the level "${g.levels || "unspecified"}" (${g.title})` : "";

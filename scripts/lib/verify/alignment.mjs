@@ -16,12 +16,17 @@ import { canonicalJson, sha256 } from "../records/canonical.mjs";
 import { loadUnits, reviewable, unitDepsHashes } from "../core/obligations.mjs";
 import { manifestChapters } from "../core/package_reader.mjs";
 import { parseSpine } from "../core/spine.mjs";
+import { approvalStatus } from "../core/approvals.mjs";
+import { parseLog, verifyLog } from "../records/log.mjs";
 import { readDispatches, recordDispatch } from "./dispatch.mjs";
 import { dispatchLogEntry } from "./verdicts.mjs";
 
 export { reviewable };
 
-/** Every spine node of the package, by id: objectives and concepts of each chapter and the course, and guide entries. */
+/** Every spine node of the package, by id: objectives and concepts of each chapter and the course, and guide entries.
+ *  `accepted`: for a scope whose current approval is a valid glance confirmation of a LIGHT change, each node as it
+ *  stood at the scope's last full approval (red team round 2, F11: a light rewording the instructor confirmed is not a
+ *  change any review judged — the same rule the unit stamps follow, R1 F13). */
 export function planOf(reader) {
   const chapters = manifestChapters(reader), spine = parseSpine(reader, chapters), nodes = new Map();
   for (const n of spine.course.nodes || []) if (n.id) nodes.set(n.id, { ...n, chapter: "course" });
@@ -29,15 +34,61 @@ export function planOf(reader) {
     for (const n of spine.chapters[ch]?.map.nodes || []) if (n.id) nodes.set(n.id, { ...n, chapter: ch });
     for (const e of spine.chapters[ch]?.guide.entries || []) if (e.id) nodes.set(e.id, { ...e, kind: "guide", chapter: ch, text: e.title });
   }
-  return { chapters, nodes };
+  return { chapters, nodes, accepted: lightAccepted(reader, chapters) };
 }
 
-/** What a review of a unit is bound to: its text, its links, and the text of every node it is judged against. */
-export const alignmentBasis = (u, nodes, chapterNodes) => sha256(canonicalJson([u.locator.contentHash, [...(u.spineNodes || [])].sort(), chapterNodes.map((n) => [n.id, n.text, n.type ?? null, n.levels ?? null])]));
-/** The basis of a review as reviewInputs prepared it: an answer's review is bound to its question too. */
-export const reviewBasis = (u, inp) => {
-  const b = alignmentBasis(u, null, [...inp.chapterNodes, ...inp.links]);
-  return u.form === "answer" ? sha256(canonicalJson([b, String(inp.before || "")])) : b;
+/** Plan nodes as they stood at the last full approval of every scope whose current approval is a valid light glance. */
+function lightAccepted(reader, chapters) {
+  const out = new Map(), logText = reader.text("metadata/LOG.jsonl") || "";
+  if (!logText || verifyLog(logText).length) return out;
+  let status; try { status = approvalStatus(reader, chapters, logText); } catch { return out; }
+  const recs = parseLog(logText).filter((r) => r.type === "approval" && r.party?.role === "instructor");
+  for (const s of Object.values(status.scopes)) {
+    if (!s.valid || s.record?.type !== "glance-confirmation" || s.record.payload?.change !== "light") continue;
+    const parsed = recs.filter((r) => r.payload?.scope === s.scope).at(-1)?.payload?.parsed;
+    for (const n of parsed?.nodes || []) if (n?.id) out.set(n.id, n);
+    for (const e of parsed?.entries || []) if (e?.id) out.set(e.id, { ...e, text: e.title });
+  }
+  return out;
+}
+
+const nodeKey = (n) => [n.id, n.text, n.type ?? null, n.levels ?? null];
+/** The legacy basis (before round 2): the unit's text, its links, and the text of EVERY node of its chapter's plan. */
+export const alignmentBasis = (u, nodes, chapterNodes) => sha256(canonicalJson([u.locator.contentHash, [...(u.spineNodes || [])].sort(), chapterNodes.map(nodeKey)]));
+/**
+ * The plan items a review JUDGES (round 2, F11): for a linked unit, the items declared for it, the guide entries its
+ * fidelity is judged against, and its links; for framing (read for off-plan content against the whole plan), every
+ * item of the plan it was shown. A review is bound to these alone, so an edit of another plan item leaves it current.
+ */
+export const judgedNodes = (u, inp) => {
+  const all = u.role === "framing" ? inp.chapterNodes : [...inp.links, ...inp.declared, ...inp.guides];
+  return [...new Map(all.map((n) => [n.id, n])).values()].sort((a, b) => String(a.id).localeCompare(String(b.id)));
+};
+const withBefore = (u, inp, b) => (u.form === "answer" ? sha256(canonicalJson([b, String(inp.before || "")])) : b);
+/**
+ * A passage's wording as a review reads it: whitespace, markup and punctuation folded (a reflow, emphasis or a comma is
+ * no change to what it teaches — the rule the answer binding follows, R1 F2), and so is a capitalized word's first letter
+ * (a sentence start); symbols, numbers and relation and sign symbols are kept ("ln K" is not "ln k"; "Q < K" is not
+ * "Q > K").
+ */
+export const reviewWording = (text) => String(text || "")
+  .replace(/≤|\\leq?\b/g, " le ").replace(/≥|\\geq?\b/g, " ge ").replace(/≠|\\neq?\b/g, " ne ")
+  .replace(/<(?!-)/g, " lt ").replace(/(?<!-)>/g, " gt ").replace(/[−-](?=\s*\d)/g, " minus ").replace(/\+/g, " plus ").replace(/=/g, " eq ")
+  .replace(/[^\p{L}\p{N}]+/gu, " ").trim()
+  .replace(/(?<![\p{L}\p{N}])\p{Lu}\p{Ll}+(?![\p{L}\p{N}])/gu, (w) => w.toLowerCase()); // a capitalized word (a sentence start), never a symbol
+/** The basis a review is recorded with: the unit's wording, its links, and the text of each plan item it judges; an
+ *  answer's review is bound to its question's wording too. */
+export const reviewBasis = (u, inp, accepted = null) => {
+  const text = (n) => { const a = accepted?.get(n.id); return a ? { ...n, text: a.text, type: a.type, levels: a.levels } : n; };
+  const b = sha256(canonicalJson(["judged", sha256(reviewWording(u.text)), [...(u.spineNodes || [])].sort(), judgedNodes(u, inp).map((n) => nodeKey(text(n)))]));
+  return u.form === "answer" ? sha256(canonicalJson([b, reviewWording(inp.before)])) : b;
+};
+/** Every basis under which a recorded review is current for the unit as it is now: its judged items as they are, or as
+ *  the instructor last fully approved them when the change since was a confirmed light one; and the legacy basis of
+ *  records made before round 2 (bound to the whole plan, so never more lenient). */
+export const currentBases = (u, inp, plan) => {
+  const legacy = (acc) => withBefore(u, inp, alignmentBasis(u, null, [...inp.chapterNodes, ...inp.links].map((n) => { const a = acc?.get(n.id); return a ? { ...n, text: a.text, type: a.type, levels: a.levels } : n; })));
+  return new Set([reviewBasis(u, inp), reviewBasis(u, inp, plan.accepted), legacy(null), legacy(plan.accepted)]);
 };
 
 const guideAsk = (g) => `${g.type || "any type"} at the level "${g.levels || "unspecified"}" (${g.title})`;
@@ -98,7 +149,11 @@ export function readAlignment(raw, nonce, declared, knownIds, guides = []) {
   });
   const unanswered = [...links.filter((l) => l.verdict === "unanswered").map((l) => l.id),
     ...fidelity.filter((f) => f.type === "unanswered" || f.level === "unanswered").map((f) => `fidelity${f.id ? `:${f.id}` : ""}`)];
-  return { links, also, offPlan: v.offPlan === true || word(v.offPlan) === "true", fidelity, unanswered };
+  // the off-plan answer fails closed too (round 2, C2-13): only an explicit true or false is an answer; "yes", 1 or a
+  // missing field is unanswered — for framing it is the review's only answer
+  const offPlan = v.offPlan === true || (typeof v.offPlan === "string" && word(v.offPlan) === "true") ? true : v.offPlan === false || (typeof v.offPlan === "string" && word(v.offPlan) === "false") ? false : null;
+  if (offPlan === null) unanswered.push("offPlan");
+  return { links, also, offPlan, fidelity, unanswered };
 }
 
 /**
@@ -138,7 +193,7 @@ export async function reviewAlignment(root, reader, { verifier, only = null, onP
     const basis = reviewBasis(u, inp);
     const status = !read ? "unscorable" : read.unanswered.length ? "incomplete" : "reviewed";
     const record = recordDispatch(root, { kind: "alignment", unit: u.id, factHash: basis, contentHash: u.locator.contentHash, bundle, answer, admission: { status }, deps: deps.get(u.id), extra: { alignmentBasis: basis, declared: inp.declared.map((n) => n.id), guides: inp.guides.map((g) => g.id) } });
-    results.push({ unit: u.id, dispatch: record.dispatch, status, doubtful: read ? read.links.filter((l) => l.verdict === "no").map((l) => l.id) : [], unanswered: read?.unanswered || [], offPlan: !!read?.offPlan, fidelity: read?.fidelity || [], costUsd: answer.costUsd ?? null });
+    results.push({ unit: u.id, dispatch: record.dispatch, status, doubtful: read ? read.links.filter((l) => l.verdict === "no").map((l) => l.id) : [], unanswered: read?.unanswered || [], offPlan: read?.offPlan ?? null, fidelity: read?.fidelity || [], costUsd: answer.costUsd ?? null });
     onProgress(results.at(-1));
   }
   return results;
@@ -146,8 +201,9 @@ export async function reviewAlignment(root, reader, { verifier, only = null, onP
 
 /**
  * What each unit's CURRENT link review says (D41; the same rule MS9 reads): of the logged alignment records whose basis
- * matches the unit as it is now, the newest readable one. Map(unit id → { verdicts: Map(node id → yes|passing|no),
- * offPlan, dispatch }). A unit absent from the map has no current review.
+ * matches the unit as it is now, the newest readable one. Map(unit id → { verdicts: Map(node id → yes|passing|no|
+ * unanswered), offPlan: true|false|null (null: not answered), fidelity: [{ id, type, level }], dispatch }). A unit
+ * absent from the map has no current review.
  */
 export function currentReviews(all, plan, records, log) {
   const out = new Map(), byUnit = new Map();
@@ -157,11 +213,11 @@ export function currentReviews(all, plan, records, log) {
   }
   for (const u of all) {
     const recs = byUnit.get(u.id); if (!recs || !(reviewable(u) || u.role === "framing")) continue;
-    const inp = reviewInputs(u, all, plan), basis = reviewBasis(u, inp);
+    const inp = reviewInputs(u, all, plan), bases = currentBases(u, inp, plan);
     const declared = inp.declared.map((n) => n.id), guides = inp.guides.map((g) => g.id), known = new Set(inp.chapterNodes.map((n) => n.id));
-    for (const { r } of recs.filter(({ r }) => r.alignmentBasis === basis).sort((a, b) => b.seq - a.seq)) {
+    for (const { r } of recs.filter(({ r }) => bases.has(r.alignmentBasis)).sort((a, b) => b.seq - a.seq)) {
       const v = readAlignment(r.answer?.raw, r.bundle?.nonce, declared, known, r.guides ? guides : guides.length ? true : []);
-      if (v) { out.set(u.id, { verdicts: new Map(v.links.map((l) => [l.id, l.verdict])), offPlan: v.offPlan, dispatch: r.dispatch }); break; }
+      if (v) { out.set(u.id, { verdicts: new Map(v.links.map((l) => [l.id, l.verdict])), offPlan: v.offPlan, fidelity: v.fidelity, dispatch: r.dispatch }); break; }
     }
   }
   return out;

@@ -3,8 +3,20 @@
 //
 // A unit is the smallest piece that can be checked on its own: a paragraph, a list item (on slides: a whole bullet
 // group), a table row, an equation block, a callout, a figure (image, Mermaid, chart, structure), a question and each
-// worked answer. Headings, the deck header, slide markers and the list items of the deliverable's restated "Learning
-// objectives" are structure (any other prose in that section is content). Title, outline, section and closing slides, and summary-like sections, are framing.
+// worked answer. Title, outline, section and closing slides, and summary-like sections, are framing.
+//
+// STRUCTURE IS ONLY WHAT THE FRAME DOES NOT PRINT (red team round 2, CONTROL C3-01/02/03/05). A line is structure only
+// when no reader of the rendered deliverable sees it as content:
+//   - a comment (deck header, slide marker, note) — but text after its "-->" on the same line prints, and is a unit;
+//   - a `#`/`##` heading that is a label (it names the section; a heading that reads as sentences is also a unit);
+//     `###`–`######` headings print as text and name nothing: each is a unit (form "heading");
+//   - a table's header row and separator when the table has data rows and the header cells are labels; a header-only
+//     table, or a header that reads as sentences, is a unit;
+//   - the credit line, only as a short single attribution line (every sentence of it a credit); a paragraph that opens
+//     "Adapted from …" and carries more is a unit;
+//   - an orz-paged settings or metadata block ({{nyml kind: document | meta}}); every other {{nyml}} block — abstract,
+//     question-open, exam-title … — is an element the frame prints, and is a unit;
+//   - the list items of the deliverable's restated "Learning objectives" (read in full by the restated-objective check).
 import { sha256 } from "../records/canonical.mjs";
 import { plainForQuantities } from "./dependencies.mjs";
 import { statesValue } from "./values.mjs";
@@ -14,6 +26,19 @@ const FRAMING_SECTION = /^(summary|overview|introduction|what we will cover|key 
 const FRAMING_TEMPLATES = new Set(["title", "outline", "section", "closing"]);
 
 export const LIST_ITEM = /^(?:[-*+]|\d+[.)])\s+/;
+/** orz-paged {{nyml}} kinds that print nothing: the document settings and the head metadata. Every other kind (the
+ *  curated elements — abstract, question-open, exam-title …; or a kind the harness does not know) is content. */
+export const NYML_NOTATION_KINDS = Object.freeze(["document", "meta"]);
+/** A label, not prose: a few words and no sentence boundary inside (a section title, a column heading). */
+export const isLabel = (t) => { const s = String(t).replace(/[*_`]/g, "").trim(); return (s.match(/\S+/g) || []).length <= 12 && !/[.!?;]\s+\S/.test(s); };
+const CREDIT_SENTENCE = /^\*?(?:Adapted (?:from|and reorganized|with)\b|Sources?:|Attribution:|Licen[cs]ed under\b)/i;
+/** A short single attribution line: one line, and every sentence of it a credit (round 2, C3-01). */
+export const isCreditLine = (t) => {
+  const s = String(t).trim();
+  if (s.length > 450 || !CREDIT_SENTENCE.test(s)) return false;
+  return s.replace(/^\*+|\*+$/g, "").split(/(?<=[.!?])\s+(?=[A-Z])/).every((x) => CREDIT_SENTENCE.test(x.trim()));
+};
+const nymlKind = (lines) => { for (const l of lines) { const m = /^\s*kind\s*:\s*(.*?)\s*$/.exec(l.replace(/^\{\{nyml\b/, "")); if (m) return m[1].replace(/^["']|["']$/g, "").toLowerCase(); } return ""; };
 /**
  * The restated "Learning objectives" lists of a deliverable (redteam r1 C3-06, C4-12). A "Learning objectives" heading
  * of any level opens a section that runs to the next heading of its level or higher (a `#` heading counts as `##`), a
@@ -67,8 +92,8 @@ export function segmentDeliverable(text, deliverable) {
   const restated = new Set(learningObjectiveSections(text).flatMap((s) => [...s.listLines])); // read by the restated-objective check
   const struct = (i) => covered.add(i);
   const roleFor = () => (isSlides && FRAMING_TEMPLATES.has(slideTemplate)) || FRAMING_SECTION.test(sectionTitle) ? "framing" : "teaching";
-  const push = (form, a, b, role = roleFor(), label = null) => {
-    const body = lines.slice(a, b + 1).join("\n").trim();
+  const push = (form, a, b, role = roleFor(), label = null, text = null) => {
+    const body = (text ?? lines.slice(a, b + 1).join("\n")).trim();
     for (let k = a; k <= b; k++) covered.add(k);
     if (!body) return;
     units.push({ form, role, section, text: body, startLine: a + 1, endLine: b + 1, ...(label ? { label } : {}) });
@@ -77,30 +102,39 @@ export function segmentDeliverable(text, deliverable) {
   while (i < lines.length) {
     const l = lines[i], t = l.trim();
     if (!t) { i++; continue; }
-    // an orz-paged settings block ({{nyml … }}) is notation, not content (D42: declared documents are deliverables)
-    if (/^\{\{nyml\b/.test(t)) { let j = i; while (j < lines.length && !/\}\}\s*$/.test(lines[j].trim())) struct(j++); if (j < lines.length) struct(j); i = j + 1; continue; }
-    // HTML comments: deck header, slide markers, notes
+    // {{nyml … }}: the orz-paged settings and metadata blocks are notation (D42); every other kind is an element the
+    // frame prints (an abstract, a question …), so it is a unit — a question element is a question (round 2, C3-05)
+    if (/^\{\{nyml\b/.test(t)) {
+      let j = i; while (j < lines.length && !/\}\}\s*$/.test(lines[j].trim())) j++;
+      const end = Math.min(j, lines.length - 1), kind = nymlKind(lines.slice(i, end + 1));
+      if (j >= lines.length || NYML_NOTATION_KINDS.includes(kind) || !kind) { for (let k = i; k <= end; k++) struct(k); }
+      else push(/^question-/.test(kind) ? "question" : "element", i, end, roleFor(), kind);
+      i = end + 1; continue;
+    }
+    // HTML comments: deck header, slide markers, notes. What follows the comment's "-->" on its last line is not a
+    // comment: the renderer prints it, so it is a unit (round 2, C3-02)
     if (t.startsWith("<!--")) {
       const m = /<!--\s*slide\b([^>]*)-->/.exec(t);
       if (m) { slideNo++; slideTemplate = /template=([a-z-]+)/.exec(m[1])?.[1] || null; section = `slide-${slideNo}`; sectionTitle = ""; }
       let j = i; while (j < lines.length && !lines[j].includes("-->")) j++;
       for (let k = i; k <= j; k++) struct(k);
+      const rest = j < lines.length ? lines[j].slice(lines[j].indexOf("-->") + 3).replace(/<!--[\s\S]*?-->/g, " ").trim() : "";
+      if (rest) push("paragraph", j, j, roleFor(), null, rest);
       i = j + 1; continue;
     }
-    // horizontal rules and the credit line are structure: attribution is the rights module's, not a teaching unit
+    // horizontal rules are structure; so is the credit line (the rights module's), but only as a short single
+    // attribution line — a paragraph that opens "Adapted from …" and goes on is content (round 2, C3-01)
     if (/^(?:-{3,}|\*{3,}|_{3,})$/.test(t)) { struct(i); i++; continue; }
-    if (/^\*?(?:Adapted from|Source:|Attribution:|Licensed under)\b/i.test(t)) {
-      let j = i; while (j + 1 < lines.length && lines[j + 1].trim()) j++;
-      for (let k = i; k <= j; k++) struct(k);
-      i = j + 1; continue;
-    }
+    if (isCreditLine(t) && !(i + 1 < lines.length && lines[i + 1].trim() && !/^(#{1,6}\s|<!--|\$\$|\{\{|:::|\||!\[|(?:[-*+]|\d+[.)])\s)/.test(lines[i + 1].trim()))) { struct(i); i++; continue; }
     const h = /^(#{1,6})\s+(.*)$/.exec(t);
     if (h) {
-      struct(i);
       if (h[1].length <= 2) {
         sectionTitle = h[2].trim();
         section = isSlides ? `slide-${slideNo}-${slugify(sectionTitle)}` : slugify(sectionTitle);
       }
+      // a heading prints: a `#`/`##` label names its section and is structure; a `###`+ heading, or a section heading
+      // that reads as sentences, is read like any other text (round 2, C3-03)
+      if (h[1].length <= 2 && isLabel(h[2])) struct(i); else push("heading", i, i);
       i++; continue;
     }
     // display equations
@@ -147,12 +181,15 @@ export function segmentDeliverable(text, deliverable) {
       if (j < lines.length) struct(j);
       i = j + 1; continue;
     }
-    // tables: header and separator are structure; each data row is a unit
+    // tables: each data row is a unit; the header row and separator are structure only while the table has data rows
+    // and the header cells are labels — a header-only table prints, and is a unit (round 2, C3-03)
     if (t.startsWith("|")) {
       let j = i; while (j < lines.length && lines[j].trim().startsWith("|")) j++;
-      struct(i); if (i + 1 < j && /^\|?\s*:?-{2,}/.test(lines[i + 1].trim())) struct(i + 1);
-      for (let k = i + 2; k < j; k++) push("table-row", k, k);
-      if (j === i + 1) push("table-row", i, i);
+      const sep = i + 1 < j && /^\|?\s*:?-{2,}/.test(lines[i + 1].trim());
+      const cells = t.replace(/^\||\|$/g, "").split("|");
+      if (sep) struct(i + 1);
+      if (sep && j > i + 2 && cells.every(isLabel)) struct(i); else push("table-row", i, i);
+      for (let k = sep ? i + 2 : i + 1; k < j; k++) push("table-row", k, k);
       i = j; continue;
     }
     // lists: on slides a whole contiguous list is one bullet group; elsewhere each item (with continuations)

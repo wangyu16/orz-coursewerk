@@ -233,7 +233,9 @@ test("[req.control.objectives-section] C3-06: only the list items of a Learning 
   const before = c.units().filter((u) => u.locator.deliverable === SG).length;
   c.asAgent(() => c.edit(SG, at, `${at}\n${OFF}\n\n### Also in this chapter\n\n- Name the anode and the cathode of a galvanic cell and say which electrode is oxidized.\n- Explain what the salt bridge does.\n`));
   const now = c.units().filter((u) => u.locator.deliverable === SG);
-  assert.equal(now.length, before + 1, "the paragraph is a unit; the lists are not");
+  // the paragraph is a unit; so is the ### sub-heading, which prints (red team round 2, C3-03); the lists are not
+  assert.equal(now.length, before + 2, "the paragraph and the sub-heading are units; the lists are not");
+  assert.ok(now.some((u) => u.form === "heading" && u.text === "### Also in this chapter"));
   const off = now.find((u) => u.text === OFF);
   assert.ok(off && off.role === "teaching");
   const f = added(c);

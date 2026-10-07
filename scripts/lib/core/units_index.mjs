@@ -14,6 +14,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { appendLogRecord, parseLog, readLogText, verifyLog } from "../records/log.mjs";
+import { sha256 } from "../records/canonical.mjs";
 import { unitsPathFor, recordFile } from "../records/paths.mjs";
 import { validateUnitSidecar } from "../records/units.mjs";
 import { makeFinding } from "../records/findings.mjs";
@@ -30,11 +31,42 @@ export function deliverablesOf(reader) {
  * D42: everything that ships is checked. A document declared in metadata/DOCUMENTS.json (a handout, a print
  * document) is a deliverable like the study guide — segmented, linked, fact-checked and reviewed — unless the
  * instructor marks it `role: administrative` (a schedule, a syllabus), which keeps only the format and rights checks.
+ * The mark is the INSTRUCTOR's act (red team round 2, C3-06): `role: administrative` in DOCUMENTS.json is a field
+ * anyone can write, so it exempts a document only while a logged instructor confirmation of that role, quoting their
+ * words, names the document at its current content (confirmAdministrative); otherwise the document is a deliverable.
  */
 export function declaredDocuments(reader) {
+  const admin = administrativeDocuments(reader);
+  return documentEntries(reader).filter((d) => !admin.has(d.source)).map((d) => d.source);
+}
+/** The documents DOCUMENTS.json declares: { source, role } (markdown sources inside the package, private/ excluded). */
+export function documentEntries(reader) {
   let docs = null; try { docs = JSON.parse(reader.text("metadata/DOCUMENTS.json") || "null"); } catch { docs = null; }
-  return (Array.isArray(docs?.documents) ? docs.documents : []).filter((d) => d && d.role !== "administrative")
-    .map((d) => String(d.source || d.path || "")).filter((p) => /\.md$/.test(p) && !p.startsWith("private/") && !p.includes(".."));
+  return (Array.isArray(docs?.documents) ? docs.documents : []).filter((d) => d && typeof d === "object")
+    .map((d) => ({ source: String(d.source || d.path || ""), role: d.role || null })).filter((d) => /\.md$/.test(d.source) && !d.source.startsWith("private/") && !d.source.includes(".."));
+}
+const docHash = (text) => sha256(String(text ?? ""));
+/** Declared documents the instructor confirmed as administrative, at their current content (source paths). */
+export function administrativeDocuments(reader) {
+  const marked = documentEntries(reader).filter((d) => d.role === "administrative");
+  if (!marked.length) return new Set();
+  const logText = reader.text("metadata/LOG.jsonl") || "";
+  if (verifyLog(logText).length) return new Set();
+  const confirmed = new Set(parseLog(logText).filter((r) => r.type === "confirmation" && r.party?.role === "instructor" && r.payload?.what === "administrative-document" && String(r.payload?.instructorWords || "").trim())
+    .map((r) => `${r.payload.source}|${r.payload.contentHash}`));
+  return new Set(marked.filter((d) => confirmed.has(`${d.source}|${docHash(reader.text(d.source))}`)).map((d) => d.source));
+}
+/** The instructor confirms that a declared document is administrative (a schedule, a syllabus): it keeps only the
+ *  format and rights checks while its content stays as confirmed (an edit makes it a deliverable again). */
+export function confirmAdministrative(root, reader, { source, instructorWords }, party) {
+  if (party?.role !== "instructor") throw new Error("marking a document administrative is the instructor's act");
+  if (!String(instructorWords || "").trim()) throw new Error("the confirmation quotes the instructor's words");
+  const d = documentEntries(reader).find((x) => x.source === source);
+  if (!d) throw new Error(`${source} is not a document declared in metadata/DOCUMENTS.json`);
+  if (d.role !== "administrative") throw new Error(`${source} is not marked role: administrative in metadata/DOCUMENTS.json`);
+  const text = reader.text(source);
+  if (text == null) throw new Error(`${source} does not exist`);
+  return appendLogRecord(root, { type: "confirmation", party, payload: { what: "administrative-document", source, contentHash: docHash(text), instructorWords } });
 }
 
 export function readSidecar(root, deliverable) {

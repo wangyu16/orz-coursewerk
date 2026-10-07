@@ -9,14 +9,11 @@ import os from "node:os";
 import path from "node:path";
 import crypto from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { isCarrierPath } from "../contract.mjs";
 import { latestPublish } from "./workflow.mjs";
+import { shippedFiles, uncheckedShipped } from "./shipped.mjs";
+import { liveReader } from "./package_reader.mjs";
 import { parseLog, readLogText } from "../records/log.mjs";
 import { canonicalJson } from "../records/canonical.mjs";
-import { COURSE_MAP } from "./spine.mjs";
-
-const CHAPTER_FILE = /^(?:study-guide|slides|practice|concepts|assessment-support)\/([^/]+)\.md$/;
-const CHAPTER_SIDECAR = /^metadata\/units\/(?:study-guide|slides|practice)\/([^/]+)\.md\.json$/;
 
 export function packPublished(pkg, outDir) {
   const pub = latestPublish(pkg);
@@ -33,28 +30,26 @@ export function packPublished(pkg, outDir) {
   }
   const published = new Set(pub.chapters.map((c) => c.chapter)), drafts = new Set((pub.drafts || []).map((d) => d.chapter));
   const keep = (slug) => published.has(slug) || drafts.has(slug);
+  // what ships is what the gate checked: one computation (shipped.mjs; red team round 2, C3-04, C3-07)
+  const unchecked = uncheckedShipped(pkg, liveReader(pkg), { keep, course: !!pub.course });
+  if (unchecked.documents.length || unchecked.includes.length)
+    return { ok: false, error: `refusing to pack what nothing checked: ${[...unchecked.documents.map((r) => `${r} (not a declared document)`), ...unchecked.includes.map((x) => `${x.file} includes ${x.target} (not a deliverable)`)].join("; ")} — declare each in metadata/DOCUMENTS.json, or remove it` };
   const work = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-pack-"));
   const staged = path.join(work, "staged");
-  let files = 0, left = 0;
-  const walk = (d, rel = "") => { for (const e of fs.readdirSync(d, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-    const r = rel ? `${rel}/${e.name}` : e.name;
-    // records the publish content hash does not bind are not shipped (the decision record is written from the log below)
-    if (r === ".git" || e.name === ".DS_Store" || r.startsWith("metadata/digest") || r.startsWith("metadata/publish") || r === "metadata/FINDINGS.json") continue;
-    if (e.isDirectory()) { walk(path.join(d, e.name), r); continue; }
-    if (!e.isFile() || isCarrierPath(r)) { left++; continue; }
-    const ch = r.match(CHAPTER_FILE)?.[1] || r.match(CHAPTER_SIDECAR)?.[1];
-    if ((ch && r !== COURSE_MAP && !keep(ch)) || (r === COURSE_MAP && !pub.course)) { left++; continue; }
+  const shipped = shippedFiles(pkg, { keep, course: !!pub.course });
+  let files = 0;
+  const left = shipped.left;
+  for (const r of shipped.files) {
     const dest = path.join(staged, r);
     fs.mkdirSync(path.dirname(dest), { recursive: true });
     if (r === "alembic.json") {
-      const m = JSON.parse(fs.readFileSync(path.join(d, e.name), "utf8"));
+      const m = JSON.parse(fs.readFileSync(path.join(pkg, r), "utf8"));
       m.chapters = (m.chapters || []).filter((c) => keep(c.slug)).map((c) => (drafts.has(c.slug) ? { ...c, draft: true } : c));
       fs.writeFileSync(dest, JSON.stringify(m, null, 2) + "\n");
-    } else fs.copyFileSync(path.join(d, e.name), dest);
+    } else fs.copyFileSync(path.join(pkg, r), dest);
     fs.utimesSync(dest, new Date("2000-01-01T00:00:00Z"), new Date("2000-01-01T00:00:00Z"));
     files++;
-  } };
-  walk(pkg);
+  }
   const decision = { publishSeq: pub.seq, profile: pub.profile, contentHash: pub.contentHash, chapters: [...published], drafts: [...drafts], course: !!pub.course,
     openQuestions: pub.openQuestions.length, clearedForPublicRelease: pub.profile === "public" && drafts.size === 0 };
   fs.mkdirSync(path.join(staged, "metadata", "publish"), { recursive: true });

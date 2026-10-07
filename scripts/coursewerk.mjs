@@ -13,6 +13,8 @@
 //   node scripts/coursewerk.mjs publish  --root <pkg> [--inputs <dir>] [--chapters a,b] [--include-drafts] --name <instructor> --words "…"   M6
 //   node scripts/coursewerk.mjs revert   --root <pkg> --correction <id> --name <instructor> --note "<why the text stands>"
 //   node scripts/coursewerk.mjs history  --root <pkg> [--out <file.md>]   how every issue was found and settled, from the records
+//   node scripts/coursewerk.mjs administrative --root <pkg> --document <source> --name <instructor> --words "…"   the instructor confirms a
+//                                                                     document declared role: administrative (D42: only format and rights checks)
 //   node scripts/coursewerk.mjs interrupt --root <pkg> --reason <reason> --question "…" --model <id>                M5
 // Interrupt reasons (D14): spine-scope-conflict, missing-input, rights-blocker, spine-change-request.
 import fs from "node:fs";
@@ -23,7 +25,7 @@ import { chapterStates, eligibility, latestPublish, publishDecision, transition,
 import { answerDigest, buildDigest, deliverDigest, recommendDigest, DEFAULT_CAP } from "./lib/core/digest.mjs";
 import { runGate } from "./lib/skeleton/full_gate.mjs";
 import { issueHistory, historyMarkdown } from "./lib/core/history.mjs";
-import { deliverablesOf, readSidecar } from "./lib/core/units_index.mjs";
+import { confirmAdministrative, deliverablesOf, readSidecar } from "./lib/core/units_index.mjs";
 import { correctionsToShow, revertCorrection } from "./lib/verify/verdicts.mjs";
 import { readConfig, writeConfig } from "./lib/records/config.mjs";
 import { appendLogRecord, readLogText } from "./lib/records/log.mjs";
@@ -36,7 +38,7 @@ const flag = (n) => args.includes(n);
 const refuse = (m, next) => { console.error(`${cmd}: ${m}${next ? `\nnext: ${next}` : ""}`); process.exit(1); };
 const out = (x) => console.log(JSON.stringify(x, null, 2));
 const root = opt("--root");
-const USAGE = "usage: coursewerk.mjs <status|assemble|back-to-draft|approve|digest|digest-cap|recommend|answer|publish|revert|history|interrupt> --root <package> … (see the header of scripts/coursewerk.mjs)";
+const USAGE = "usage: coursewerk.mjs <status|assemble|back-to-draft|approve|digest|digest-cap|recommend|answer|publish|revert|history|interrupt|administrative> --root <package> … (see the header of scripts/coursewerk.mjs)";
 if (!cmd || !root || !fs.existsSync(root)) { console.error(USAGE); process.exit(2); }
 try { if (readConfig(root).spine !== 2) refuse("this is a v0.12 package (no `\"spine\": 2` in metadata/coursewerk.json)", "migrate the spine first: node scripts/spine.mjs migrate --root <pkg>"); }
 catch (e) { refuse(e.message); }
@@ -88,6 +90,13 @@ try {
     const { party, words } = instructor();
     const r = recordApproval(root, reader, chapters, { chapter: ch, glance: flag("--glance"), instructorWords: words, note: pre.note }, party);
     out({ approved: ch || "course", logged: r.seq, state: ch ? chapterStates(root, reader)[ch].state : undefined }); process.exit(0);
+  }
+  if (cmd === "administrative") {
+    // D42 (red team round 2, C3-06): `role: administrative` exempts a document only by the instructor's own act
+    const doc = opt("--document"); if (!doc) refuse("name the document", "--document <its source path in metadata/DOCUMENTS.json>");
+    const { party, words } = instructor();
+    const r = confirmAdministrative(root, reader, { source: doc, instructorWords: words }, party);
+    out({ administrative: doc, logged: r.seq }); process.exit(0);
   }
   if (cmd === "history") {
     // how every issue was found and settled, rebuilt from the package's own records

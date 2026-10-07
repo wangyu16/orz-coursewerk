@@ -2,7 +2,7 @@
 // and approval problems at V8. Spine v2 packages only (metadata/coursewerk.json spine: 2).
 import { makeFinding } from "../records/findings.mjs";
 import { readLogText } from "../records/log.mjs";
-import { checkSpine, parseSpine } from "./spine.mjs";
+import { checkSpine, itemParts, parseSpine } from "./spine.mjs";
 import { approvalProblems, approvalStatus } from "./approvals.mjs";
 import { manifestChapters } from "./package_reader.mjs";
 import { deliverablesOf } from "./units_index.mjs";
@@ -20,15 +20,18 @@ export function spineCoreFindings(reader, basis) {
  * Nernst relation" in a restated objective raised nothing), and every approved objective is restated (redteam r1
  * C4-12: a dropped objective, and reversed signs inside the maths, raised nothing). Compared on the full text,
  * maths included, with notation normalized (objectiveKey): LaTeX in the deliverable and Unicode in the spine, spacing,
- * emphasis and punctuation do not count as a difference; a sign, a symbol, a number or a word does.
+ * emphasis and punctuation do not count as a difference; a sign, a symbol, a number, a word, a letter's case, or a
+ * bracketed group that is not the node's own anchor and prerequisites does.
  */
 export const proseWords = (t) => String(t).replace(/\[anchor:[^\]]*\]/g, " ").replace(/\$[^$]*\$/g, " ").replace(/\\[a-zA-Z]+(\{[^}]*\})?/g, " ").toLowerCase().match(/[a-z]{3,}/g)?.join(" ") || "";
 const LATEX = { Delta: "Δ", delta: "δ", Sigma: "Σ", sigma: "σ", alpha: "α", beta: "β", gamma: "γ", lambda: "λ", mu: "μ", nu: "ν", pi: "π", theta: "θ", rho: "ρ", tau: "τ", chi: "χ", omega: "ω", Omega: "Ω",
   ominus: "°", circ: "°", degree: "°", minus: "-", times: "×", cdot: "·", div: "÷", pm: "±", le: "≤", leq: "≤", ge: "≥", geq: "≥", ne: "≠", neq: "≠", lt: "<", gt: ">", approx: "≈", propto: "∝", infty: "∞",
   to: "→", rightarrow: "→", longrightarrow: "→", leftarrow: "←", rightleftharpoons: "⇌", leftrightharpoons: "⇌", leftrightarrow: "↔", ln: "ln", log: "log", exp: "exp" };
 const SUBSUP = { "₀": "0", "₁": "1", "₂": "2", "₃": "3", "₄": "4", "₅": "5", "₆": "6", "₇": "7", "₈": "8", "₉": "9", "⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4", "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9", "⁺": "+", "⁻": "-", "₊": "+", "₋": "-" };
+// Case is meaning (red team round 2, C4-09: "ln K", the equilibrium constant, is not "ln k", a rate constant), so the
+// key keeps it. Bracket groups are not stripped here: restatedParts reads the trailing [anchor: …]/[prereq: …] groups the
+// spine grammar reads, and they are compared with the approved node's; any other bracketed text stays in the key.
 export const objectiveKey = (t) => String(t)
-  .replace(/\s*\[(?:anchor|prereq):[^\]]*\]/gi, " ")
   .replace(/<=>/g, "⇌").replace(/->/g, "→")
   .replace(/\\(?:text|mathrm|mathit|mathbf|operatorname|ce|textrm)\s*\{([^{}]*)\}/g, "$1")
   .replace(/\\([A-Za-z]+)/g, (m, w) => LATEX[w] ?? w)
@@ -36,8 +39,9 @@ export const objectiveKey = (t) => String(t)
   .replace(/[₀-₉⁰-⁹⁺⁻₊₋¹²³]/g, (c) => SUBSUP[c] ?? c)
   .replace(/[⊖⦵]/g, "°").replace(/[−–—]/g, "-")
   .replace(/[$^_{}*`\\]/g, "")
-  .toLowerCase()
   .replace(/[\s.,;:!?'"“”‘’()]/g, "");
+/** A restated objective's text and the trailing bracket groups the spine grammar reads (anchor, prerequisites). */
+export const restatedParts = (t) => { const p = itemParts(String(t)); return { key: objectiveKey(p.text), anchor: p.anchor, prereqs: [...p.prereqs].sort(), other: p.parent || p.aliases.length }; };
 
 export function restatedObjectiveFindings(reader, basis) {
   const chapters = manifestChapters(reader), spine = parseSpine(reader, chapters), out = [];
@@ -49,8 +53,10 @@ export function restatedObjectiveFindings(reader, basis) {
     if (!sections.length || !objectives.length) continue;
     const approved = new Map(objectives.map((n) => [objectiveKey(n.text), n])), restated = new Set();
     for (const it of sections.flatMap((s) => s.items)) {
-      const key = objectiveKey(it.text);
-      if (approved.has(key)) restated.add(key);
+      // the text, case kept, and any [anchor: …]/[prereq: …] it restates must be the approved node's (round 2, C4-09)
+      const p = restatedParts(it.text), n = approved.get(p.key), key = p.key;
+      const groupsOk = n && !p.other && (!p.anchor || p.anchor === n.anchor) && (!p.prereqs.length || JSON.stringify(p.prereqs) === JSON.stringify([...(n.prereqs || [])].sort()));
+      if (groupsOk) restated.add(key);
       else defect("objective-restated-differently", rel, it.line + 1, `"${it.text.trim()}" is not an approved objective of ${ch}; restate the approved wording (concepts/${ch}.md)`);
     }
     for (const [key, n] of approved) if (!restated.has(key))
