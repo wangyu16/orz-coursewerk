@@ -13,6 +13,8 @@ import { makeFinding } from "../records/findings.mjs";
 import { COURSE_MAP, spinePaths } from "./spine.mjs";
 import { manifestChapters } from "./package_reader.mjs";
 import { administrativeDocuments, deliverablesOf } from "./units_index.mjs";
+import { printedModel } from "./printed.mjs";
+import { segmentDeliverable } from "./segment.mjs";
 
 const CHAPTER_FILE = /^(?:study-guide|slides|practice|concepts|assessment-support)\/([^/]+)\.md$/;
 const CHAPTER_SIDECAR = /^metadata\/units\/(?:study-guide|slides|practice)\/([^/]+)\.md\.json$/;
@@ -39,16 +41,45 @@ export function shippedFiles(pkg, { keep = () => true, course = true } = {}) {
 }
 
 const INCLUDE = /\{\{\s*(?:markdown|md-include|md)\b([^}]*)\}\}/g;
-/** The `{{md …}}` includes of a markdown text: [{ line, target }] (the block form `{{md}}\npath\n{{/md}}` too). */
+/**
+ * The `{{md …}}` includes of a markdown text: [{ line, target }]. Read from orz-markdown's own token stream, so every
+ * form it renders is seen — one line, `[args]`, the path on its own line(s) up to a line holding "}}", inside a
+ * container, list or quote (round 3, C3-07) — plus the harness's earlier line forms (a `{{md}}`/path/`{{/md}}` block
+ * orz does not render, a directive in running text): refusing one too many is safe, missing one is not.
+ */
 export function includesOf(text) {
-  const out = [], lines = String(text || "").split("\n");
+  const out = [...printedModel(text).includes], lines = String(text || "").split("\n");
   lines.forEach((l, i) => {
     for (const m of l.matchAll(INCLUDE)) {
-      let target = m[1].trim();
+      let target = m[1].replace(/^\[[^\]]*\]/, "").trim();
       if (!target) { const k = lines.findIndex((x, j) => j > i && x.trim()); target = k > i && !/^\{\{\//.test(lines[k].trim()) ? lines[k].trim() : ""; }
       out.push({ line: i + 1, target });
     }
   });
+  const seen = new Set();
+  return out.filter((x) => { const k = `${x.line}|${x.target}`; if (seen.has(k)) return false; seen.add(k); return true; }).sort((a, b) => a.line - b.line);
+}
+
+/**
+ * What a deliverable hides from its reader while the review reads it (round 3, C1-05): [{ file, line, what }] — raw
+ * HTML that can hide what it wraps (printed.mjs: anything outside the visible phrasing set; a comment inside printed
+ * text; maths that typesets invisibly), and a unit orz-markdown prints nothing of (a link reference definition, say).
+ * Coverage read from such text would be coverage no student sees, so each is a blocking defect for the agent.
+ */
+export function hiddenContent(root, reader, { keep = () => true } = {}) {
+  const out = [];
+  for (const file of deliverablesOf(reader)) {
+    const ch = file.match(CHAPTER_FILE)?.[1];
+    if (ch && !keep(ch)) continue;
+    const text = reader.text(file);
+    if (text == null) continue;
+    const m = printedModel(text);
+    for (const h of m.hidden) out.push({ file, line: h.line, what: h.what });
+    for (const u of segmentDeliverable(text, file).units) {
+      let shown = false; for (let k = u.startLine - 1; k < u.endLine && !shown; k++) shown = m.printed.has(k);
+      if (!shown) out.push({ file, line: u.startLine, what: `a ${u.form} that prints nothing ("${u.text.replace(/\s+/g, " ").slice(0, 60)}")` });
+    }
+  }
   return out;
 }
 
@@ -74,10 +105,12 @@ export function uncheckedShipped(root, reader, opts = {}) {
   return { documents, includes };
 }
 
-/** The gate's view: each unchecked document or include is a blocking defect for the agent. */
+/** The gate's view: each unchecked document or include, and each hidden passage, is a blocking defect for the agent. */
 export function uncheckedShippedFindings(root, reader, basis) {
   const { documents, includes } = uncheckedShipped(root, reader);
   return [
+    ...hiddenContent(root, reader).map((x) => makeFinding({ module: "skeleton", kind: "content-hidden", units: [], statusClass: "defect", route: "agent", basis,
+      evidence: { type: "rule", rule: "what is checked is what the student sees: no text hidden from the reader counts (round 3, C1-05)", file: x.file, line: x.line, detail: `${x.file} line ${x.line}: ${x.what} — it can hide text from the student that the review reads. Write it in orz-markdown (\`::: spoil <label>\` for a reveal, a container for a box), or remove it` } })),
     ...documents.map((rel) => makeFinding({ module: "skeleton", kind: "document-unchecked", units: [], statusClass: "defect", route: "agent", basis,
       evidence: { type: "rule", rule: "everything that ships is checked (D42)", file: rel, detail: `${rel} would ship, but nothing reads it: declare it in metadata/DOCUMENTS.json (it is then segmented, linked and reviewed like a study guide), or move it out of the package` } })),
     ...includes.map((x) => makeFinding({ module: "skeleton", kind: "include-unchecked", units: [], statusClass: "defect", route: "agent", basis,

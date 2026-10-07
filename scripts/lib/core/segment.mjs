@@ -17,18 +17,31 @@
 //   - an orz-paged settings or metadata block ({{nyml kind: document | meta}}); every other {{nyml}} block — abstract,
 //     question-open, exam-title … — is an element the frame prints, and is a unit;
 //   - the list items of the deliverable's restated "Learning objectives" (read in full by the restated-objective check).
+//
+// WHAT PRINTS IS THE PARSER'S CALL (red team round 3, CONTROL C3-03/04/06): the segmenter's line grammar decides where
+// units begin and end, but whether a line prints is read from orz-markdown's own token stream (printed.mjs). A line the
+// grammar took for structure that orz-markdown prints is a unit — prose inside a `:::: tabs` group but outside every
+// tab, a `{{nyml}}` block orz closed earlier than the grammar thought, an indented "comment" that is a code block —
+// unless it is one of the few printed labels, each bounded:
+//   - a `#`/`##` label heading only if it is a heading: it heads content (a unit, or the restated objectives) before the
+//     next heading of its level or a slide marker (a section-template slide heads the slides up to the next
+//     framing-template slide); a chain of headings over nothing is a chain of units;
+//   - a container label that prints (`::: spoil <label>` → its <summary>, `::: tab <label>` → its tab button) only as
+//     a label over a non-empty body;
+//   - the credit line only as THE attribution: one per deliverable (two or more are each a unit);
+//   - a table header over data rows, the restated objectives (above).
 import { sha256 } from "../records/canonical.mjs";
 import { plainForQuantities } from "./dependencies.mjs";
 import { statesValue } from "./values.mjs";
+import { NYML_NOTATION_KINDS, nymlKindOf, printedModel } from "./printed.mjs";
+
+export { NYML_NOTATION_KINDS };
 
 export const DELIVERABLE_DIRS = Object.freeze(["study-guide", "slides", "practice"]);
 const FRAMING_SECTION = /^(summary|overview|introduction|what we will cover|key takeaways|looking ahead|recap|outline)\b/i;
 const FRAMING_TEMPLATES = new Set(["title", "outline", "section", "closing"]);
 
 export const LIST_ITEM = /^(?:[-*+]|\d+[.)])\s+/;
-/** orz-paged {{nyml}} kinds that print nothing: the document settings and the head metadata. Every other kind (the
- *  curated elements — abstract, question-open, exam-title …; or a kind the harness does not know) is content. */
-export const NYML_NOTATION_KINDS = Object.freeze(["document", "meta"]);
 /** A label, not prose: a few words and no sentence boundary inside (a section title, a column heading). */
 export const isLabel = (t) => { const s = String(t).replace(/[*_`]/g, "").trim(); return (s.match(/\S+/g) || []).length <= 12 && !/[.!?;]\s+\S/.test(s); };
 const CREDIT_SENTENCE = /^\*?(?:Adapted (?:from|and reorganized|with)\b|Sources?:|Attribution:|Licen[cs]ed under\b)/i;
@@ -38,7 +51,7 @@ export const isCreditLine = (t) => {
   if (s.length > 450 || !CREDIT_SENTENCE.test(s)) return false;
   return s.replace(/^\*+|\*+$/g, "").split(/(?<=[.!?])\s+(?=[A-Z])/).every((x) => CREDIT_SENTENCE.test(x.trim()));
 };
-const nymlKind = (lines) => { for (const l of lines) { const m = /^\s*kind\s*:\s*(.*?)\s*$/.exec(l.replace(/^\{\{nyml\b/, "")); if (m) return m[1].replace(/^["']|["']$/g, "").toLowerCase(); } return ""; };
+const nymlKind = (lines) => nymlKindOf(lines.join("\n"));
 /**
  * The restated "Learning objectives" lists of a deliverable (redteam r1 C3-06, C4-12). A "Learning objectives" heading
  * of any level opens a section that runs to the next heading of its level or higher (a `#` heading counts as `##`), a
@@ -90,7 +103,10 @@ export function segmentDeliverable(text, deliverable) {
   const isSlides = deliverable.startsWith("slides/");
   let section = "top", sectionTitle = "", slideNo = 0, slideTemplate = null;
   const restated = new Set(learningObjectiveSections(text).flatMap((s) => [...s.listLines])); // read by the restated-objective check
-  const struct = (i) => covered.add(i);
+  const orz = printedModel(text);
+  // why each structure line is structure, and the section it stands in (read again once every unit is known)
+  const why = new Map(), ctx = new Map();
+  const struct = (i, reason = "silent") => { covered.add(i); if (!why.has(i)) { why.set(i, reason); ctx.set(i, { section, role: roleFor(), slideTemplate }); } };
   const roleFor = () => (isSlides && FRAMING_TEMPLATES.has(slideTemplate)) || FRAMING_SECTION.test(sectionTitle) ? "framing" : "teaching";
   const push = (form, a, b, role = roleFor(), label = null, text = null) => {
     const body = (text ?? lines.slice(a, b + 1).join("\n")).trim();
@@ -104,10 +120,12 @@ export function segmentDeliverable(text, deliverable) {
     if (!t) { i++; continue; }
     // {{nyml … }}: the orz-paged settings and metadata blocks are notation (D42); every other kind is an element the
     // frame prints (an abstract, a question …), so it is a unit — a question element is a question (round 2, C3-05)
-    if (/^\{\{nyml\b/.test(t)) {
-      let j = i; while (j < lines.length && !/\}\}\s*$/.test(lines[j].trim())) j++;
-      const end = Math.min(j, lines.length - 1), kind = nymlKind(lines.slice(i, end + 1));
-      if (j >= lines.length || NYML_NOTATION_KINDS.includes(kind) || !kind) { for (let k = i; k <= end; k++) struct(k); }
+    // where the block ends is orz-markdown's call: the first line that CONTAINS "}}" (round 3, C3-06); a {{nyml that
+    // orz does not read as a block (never closed) prints as text, and is read as a paragraph below
+    const nb = orz.blocks.get(i);
+    if (/^\{\{nyml\b/.test(t) && nb?.name === "nyml") {
+      const end = nb.end, kind = nymlKind(lines.slice(i, end + 1).map((l, k) => (k === end - i ? l.slice(0, l.indexOf("}}")) : l)));
+      if (NYML_NOTATION_KINDS.includes(kind) || !kind) { for (let k = i; k <= end; k++) struct(k); }
       else push(/^question-/.test(kind) ? "question" : "element", i, end, roleFor(), kind);
       i = end + 1; continue;
     }
@@ -125,7 +143,7 @@ export function segmentDeliverable(text, deliverable) {
     // horizontal rules are structure; so is the credit line (the rights module's), but only as a short single
     // attribution line — a paragraph that opens "Adapted from …" and goes on is content (round 2, C3-01)
     if (/^(?:-{3,}|\*{3,}|_{3,})$/.test(t)) { struct(i); i++; continue; }
-    if (isCreditLine(t) && !(i + 1 < lines.length && lines[i + 1].trim() && !/^(#{1,6}\s|<!--|\$\$|\{\{|:::|\||!\[|(?:[-*+]|\d+[.)])\s)/.test(lines[i + 1].trim()))) { struct(i); i++; continue; }
+    if (isCreditLine(t) && !(i + 1 < lines.length && lines[i + 1].trim() && !/^(#{1,6}\s|<!--|\$\$|\{\{|:::|\||!\[|(?:[-*+]|\d+[.)])\s)/.test(lines[i + 1].trim()))) { struct(i, "credit"); i++; continue; }
     const h = /^(#{1,6})\s+(.*)$/.exec(t);
     if (h) {
       if (h[1].length <= 2) {
@@ -134,7 +152,7 @@ export function segmentDeliverable(text, deliverable) {
       }
       // a heading prints: a `#`/`##` label names its section and is structure; a `###`+ heading, or a section heading
       // that reads as sentences, is read like any other text (round 2, C3-03)
-      if (h[1].length <= 2 && isLabel(h[2])) struct(i); else push("heading", i, i);
+      if (h[1].length <= 2 && isLabel(h[2])) struct(i, "heading"); else push("heading", i, i);
       i++; continue;
     }
     // display equations
@@ -158,7 +176,7 @@ export function segmentDeliverable(text, deliverable) {
       while (j < lines.length && !/^::::\s*$/.test(lines[j].trim())) {
         const tab = /^:::\s*tab\s+(.*)$/.exec(lines[j].trim());
         if (tab) {
-          struct(j);
+          struct(j, "label");
           let k = j + 1; while (k < lines.length && !/^:::\s*$/.test(lines[k].trim())) k++;
           const label = tab[1].trim();
           const form = /^(answer|solution|worked answer)\b/i.test(label) ? "answer" : /^(q\b|q\s*\d|question|worked example|example|exercise|problem)/i.test(label) ? "question" : "callout";
@@ -175,7 +193,7 @@ export function segmentDeliverable(text, deliverable) {
     // callouts
     const box = /^:::\s*([a-z-]+)\b/.exec(t);
     if (box) {
-      struct(i);
+      struct(i, "label");
       let j = i + 1; while (j < lines.length && !/^:::\s*$/.test(lines[j].trim())) j++;
       if (j > i + 1) push("callout", i + 1, j - 1);
       if (j < lines.length) struct(j);
@@ -188,13 +206,13 @@ export function segmentDeliverable(text, deliverable) {
       const sep = i + 1 < j && /^\|?\s*:?-{2,}/.test(lines[i + 1].trim());
       const cells = t.replace(/^\||\|$/g, "").split("|");
       if (sep) struct(i + 1);
-      if (sep && j > i + 2 && cells.every(isLabel)) struct(i); else push("table-row", i, i);
+      if (sep && j > i + 2 && cells.every(isLabel)) struct(i, "table-header"); else push("table-row", i, i);
       for (let k = sep ? i + 2 : i + 1; k < j; k++) push("table-row", k, k);
       i = j; continue;
     }
     // lists: on slides a whole contiguous list is one bullet group; elsewhere each item (with continuations)
     if (/^(?:[-*+]|\d+[.)])\s+/.test(t)) {
-      if (restated.has(i)) { while (restated.has(i)) struct(i++); continue; }
+      if (restated.has(i)) { while (restated.has(i)) struct(i++, "restated"); continue; }
       let j = i, items = [];
       while (j < lines.length) {
         const lt = lines[j].trim();
@@ -215,7 +233,60 @@ export function segmentDeliverable(text, deliverable) {
     }
     push("paragraph", i, j); i = j + 1;
   }
+  settlePrinted({ lines, units, covered, why, ctx, orz, isSlides });
+  units.sort((a, b) => a.startLine - b.startLine);
   return { units, covered, lineCount: lines.length };
+}
+
+const SLIDE_MARKER = /^<!--\s*slide\b([^>]*)-->/;
+const slideTemplateOf = (l) => /template=([a-z-]+)/.exec(SLIDE_MARKER.exec(String(l).trim())?.[1] || "")?.[1] || null;
+/**
+ * Every structure line orz-markdown prints is a unit unless it is a bounded printed label (round 3, C3-03/04/06): see
+ * the head of this file. Units are added in place (`units`, `covered`); the caller re-sorts them.
+ */
+function settlePrinted({ lines, units, covered, why, ctx, orz, isSlides }) {
+  const inUnit = new Set();
+  for (const u of units) for (let k = u.startLine - 1; k < u.endLine; k++) inUnit.add(k);
+  const add = (form, a, b, text, c) => {
+    for (let k = a; k <= b; k++) { inUnit.add(k); covered.add(k); }
+    if (String(text).trim()) units.push({ form, role: c.role, section: c.section, text: String(text).trim(), startLine: a + 1, endLine: b + 1 });
+  };
+  const struck = [...why.keys()].filter((k) => orz.printed.has(k) && !inUnit.has(k)).sort((a, b) => a - b);
+  // 1. what prints and is no label at all: the leaf block it belongs to (its struck lines) is a unit
+  const later = [];
+  for (let n = 0; n < struck.length; n++) {
+    const k = struck[n], reason = why.get(k);
+    if (inUnit.has(k)) continue;
+    if (reason === "restated" || reason === "table-header") continue;
+    if (reason === "heading" || reason === "credit" || reason === "label") { later.push(k); continue; }
+    const [a, b] = orz.leaf.get(k) || [k, k];
+    let e = k; while (e + 1 <= b && why.has(e + 1) && !inUnit.has(e + 1) && !["heading", "credit", "label", "restated", "table-header"].includes(why.get(e + 1))) e++;
+    add(orz.headings.has(k) ? "heading" : "paragraph", Math.max(a, k), e, lines.slice(Math.max(a, k), e + 1).join("\n"), ctx.get(k));
+  }
+  // 2. container labels: a label over a non-empty body; else the printed label is a unit
+  for (const k of later.filter((x) => why.get(x) === "label")) {
+    const label = orz.labels.get(k);
+    if (label === undefined) continue;
+    const body = k + 1 < lines.length && inUnit.has(k + 1);
+    if (!(isLabel(label) && body)) add("heading", k, k, label, ctx.get(k));
+  }
+  // 3. the credit line: ONE per deliverable (its attribution); where there are more, none is — each is read as a unit
+  const credits = later.filter((x) => why.get(x) === "credit");
+  if (credits.length > 1) for (const k of credits) add("paragraph", k, k, lines[k], ctx.get(k));
+  // 4. a label heading only if it heads content (a unit, or the restated objectives) within its scope
+  const content = (k) => inUnit.has(k) || why.get(k) === "restated";
+  for (const k of later.filter((x) => why.get(x) === "heading")) {
+    const level = Math.max(1, orz.headings.get(k) || 2), c = ctx.get(k);
+    const sectionSlide = isSlides && ["section", "title"].includes(c.slideTemplate);
+    let heads = false;
+    for (let m = k + 1; m < lines.length; m++) {
+      const marker = SLIDE_MARKER.test(lines[m].trim());
+      if (marker && !(sectionSlide && !["section", "title", "outline", "closing"].includes(slideTemplateOf(lines[m])))) break;
+      if (!sectionSlide && orz.headings.has(m) && orz.headings.get(m) <= level) break;
+      if (content(m)) { heads = true; break; }
+    }
+    if (!heads) add("heading", k, k, lines[k], c);
+  }
 }
 
 /** Non-blank lines that belong to no unit and no structure: must be empty (no prose is left out). */
