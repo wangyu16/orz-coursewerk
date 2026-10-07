@@ -149,7 +149,7 @@
       "id": "repo:docs/writing-checkable-statements.md",
       "path": "docs/writing-checkable-statements.md",
       "type": "documentation",
-      "hash": "c0a6c23c1e88077f913f822b854651ad80ca805c377f22209454fe14d2846377"
+      "hash": "cb2e7ba4ea57b209ac823b0ec26ccae88620dcfde918a2f2136b12a0c261115a"
     },
     {
       "id": "repo:FEATURES.md",
@@ -458,6 +458,12 @@
       "hash": "33f07fbf3b496429292508c20958a64412003a4c9fb1ed7369b29939e93a56a0"
     },
     {
+      "id": "repo:scripts/lib/core/names.mjs",
+      "path": "scripts/lib/core/names.mjs",
+      "type": "kernel",
+      "hash": "e8fdcc172964f615c2ee01825f458a8c1604387cb419a1aa15906efbae3770bf"
+    },
+    {
       "id": "repo:scripts/lib/core/notations.mjs",
       "path": "scripts/lib/core/notations.mjs",
       "type": "kernel",
@@ -467,7 +473,7 @@
       "id": "repo:scripts/lib/core/obligations.mjs",
       "path": "scripts/lib/core/obligations.mjs",
       "type": "kernel",
-      "hash": "060a28c608b1d24909b35e5566c0340c1cffb3d2bc489742151aea3545db7e2a"
+      "hash": "532f724062550e39501fff97d8dafdd963a0c6ff307c4f626da4c750fe5d78a0"
     },
     {
       "id": "repo:scripts/lib/core/pack_v2.mjs",
@@ -491,7 +497,7 @@
       "id": "repo:scripts/lib/core/segment.mjs",
       "path": "scripts/lib/core/segment.mjs",
       "type": "kernel",
-      "hash": "c0ebefab7ced36a9ae88699492c92ca6f0d71316aa7b8d2a6739d1df7bffcce6"
+      "hash": "3065a4591800be511768b6788680fd10b75a200b7455b1d775c0cfac79e3a101"
     },
     {
       "id": "repo:scripts/lib/core/shipped.mjs",
@@ -533,7 +539,7 @@
       "id": "repo:scripts/lib/core/values.mjs",
       "path": "scripts/lib/core/values.mjs",
       "type": "kernel",
-      "hash": "15ae50d73ed0bb646b36a20cf7e45d27f094433ebb13e34cc96a4ef157b4c802"
+      "hash": "9c5d53c7ebea178e73eec5b9d248941ef4d2b29e8bccba3b32accc04437c57f0"
     },
     {
       "id": "repo:scripts/lib/core/versions.mjs",
@@ -689,7 +695,7 @@
       "id": "repo:scripts/lib/skeleton/full_gate.mjs",
       "path": "scripts/lib/skeleton/full_gate.mjs",
       "type": "kernel",
-      "hash": "2a937a37b2a08918129873bb7f1e2263c22eedd504927763f4a06423ac9d6702"
+      "hash": "7c0111258ddd3e3ef0f78f14b43c549ef2e1ad838a21add0dc0aa3d5eda57567"
     },
     {
       "id": "repo:scripts/lib/skeleton/gate.mjs",
@@ -767,7 +773,7 @@
       "id": "repo:scripts/lib/units.mjs",
       "path": "scripts/lib/units.mjs",
       "type": "kernel",
-      "hash": "6aa540295c846c022a885906f2d2f29e0d23bcbbf883814e216f6a92d40bce05"
+      "hash": "a7a81beb4ee30897dd1c654891f6518f0006459ee347f4aa9e548bb06efe69b9"
     },
     {
       "id": "repo:scripts/lib/verbatim.mjs",
@@ -779,7 +785,7 @@
       "id": "repo:scripts/lib/verify/absolutes.mjs",
       "path": "scripts/lib/verify/absolutes.mjs",
       "type": "kernel",
-      "hash": "7e239e88de128ce54fb41b7026b0528a3d66cb07850b1f0e6f2ac90625a87205"
+      "hash": "049b6e6ddc069aaedb281de24c00f8867c44c239b6c71a7a0ea4b042fd4d7dbe"
     },
     {
       "id": "repo:scripts/lib/verify/admission.mjs",
@@ -797,13 +803,19 @@
       "id": "repo:scripts/lib/verify/claims.mjs",
       "path": "scripts/lib/verify/claims.mjs",
       "type": "kernel",
-      "hash": "8cac0d16e3f384373952747ee81926b3bd072c588b160919b405803743bd96a4"
+      "hash": "aac6f21716f9f88f24d6a84707c1204642bfcb4f8857f7c779202dad098dff85"
     },
     {
       "id": "repo:scripts/lib/verify/dispatch.mjs",
       "path": "scripts/lib/verify/dispatch.mjs",
       "type": "kernel",
-      "hash": "81592f9a0b713312369971563d3bae1f72ce75f2881088132666b5d9bde65841"
+      "hash": "99eac336ba28ce25ff2111fa287915a1efa8e7f2da6c97c33cd17928d4f70e25"
+    },
+    {
+      "id": "repo:scripts/lib/verify/mechanical.mjs",
+      "path": "scripts/lib/verify/mechanical.mjs",
+      "type": "kernel",
+      "hash": "1896fba185ae4cefe97eef77cfecabda0b13f4354ee70a28b3eadaeb86f49dab"
     },
     {
       "id": "repo:scripts/lib/verify/references.mjs",
@@ -821,7 +833,7 @@
       "id": "repo:scripts/lib/verify/verdicts.mjs",
       "path": "scripts/lib/verify/verdicts.mjs",
       "type": "kernel",
-      "hash": "fe140f15ce18c8c6f36f92a57f23e0b48cadd66f6a08b044ca75167fab667811"
+      "hash": "fa2ee66b71db94343152dba298097d95a5e206b1d3376181f21b9dc4301cd9fc"
     },
     {
       "id": "repo:scripts/lib/visual_review.mjs",
@@ -881,7 +893,7 @@
       "id": "repo:scripts/modules/ms8-verdicts.mjs",
       "path": "scripts/modules/ms8-verdicts.mjs",
       "type": "executable",
-      "hash": "1ac717c07eddaf1b7400c90a5ffa21a5d32fb3d267c300cfb983e8b3e4a59360"
+      "hash": "73eb4221fc4067e037ebaf9ab5bfb53dfcd44a4385281aeceee82e773b04f59e"
     },
     {
       "id": "repo:scripts/modules/ms9-alignment.mjs",
@@ -1133,7 +1145,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "f5b59ed1bd7a00a985910517b1dd84e460bb099eac63d01c35e864c9a6e69bc2"
+      "hash": "45157d949ce7e6c79946a804749f4d25a35ab9b85fadb96153a82bf568e4f316"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1478,6 +1490,12 @@
       "hash": "218a142c3796f254a6605913489633f56b2a8fc568d343d88124a70e512c97aa"
     },
     {
+      "id": "repo:tests/fixtures/migrate-r3-absolute-reviews.mjs",
+      "path": "tests/fixtures/migrate-r3-absolute-reviews.mjs",
+      "type": "test",
+      "hash": "db1edb17fd84c9e4d9bcd5a9634df869457c31549bd7bdb9de5b967d954ab0cc"
+    },
+    {
       "id": "repo:tests/fixtures/mini-package/assessment-support/phase-change.md",
       "path": "tests/fixtures/mini-package/assessment-support/phase-change.md",
       "type": "test",
@@ -1734,6 +1752,12 @@
       "path": "tests/redteam-r2-control.test.mjs",
       "type": "test",
       "hash": "dc538ebfb168faa93a6007720e44c2ba6783464728365e513d690d51f52248ad"
+    },
+    {
+      "id": "repo:tests/redteam-r3-confidence.test.mjs",
+      "path": "tests/redteam-r3-confidence.test.mjs",
+      "type": "test",
+      "hash": "85bbbca80b3d298077d22c6135e12bc6c433b2c0f1954445fdaf6855bf0584a7"
     },
     {
       "id": "repo:tests/requirements.test.mjs",
@@ -3297,6 +3321,14 @@
         "status": "closed"
       },
       {
+        "id": "req.absolute.wide",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.alembic.newest",
         "phase": "P11",
         "tiers": [
@@ -3393,6 +3425,14 @@
         "tiers": [
           "T1",
           "T3"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.classifier.names",
+        "phase": "P11",
+        "tiers": [
+          "T1"
         ],
         "status": "closed"
       },
@@ -3823,6 +3863,14 @@
         "status": "closed"
       },
       {
+        "id": "req.mechanical.recompute",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.modules.admission",
         "phase": "P2",
         "tiers": [
@@ -4100,6 +4148,14 @@
       {
         "id": "req.records.log-append",
         "phase": "P1",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.records.log-bound",
+        "phase": "P11",
         "tiers": [
           "T1"
         ],
@@ -4388,6 +4444,14 @@
         "tiers": [
           "T1",
           "T2"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.values.fail-closed",
+        "phase": "P11",
+        "tiers": [
+          "T1"
         ],
         "status": "closed"
       },
