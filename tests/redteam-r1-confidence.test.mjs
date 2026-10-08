@@ -147,7 +147,8 @@ test("[req.values.one-parser] F1: a dimensionless value bound to a symbol (K_p o
 test("[req.values.one-parser] F2: values in mmHg and kcal, a power of ten per mole, and a lone surname after 'by' are facts that owe evidence", (t) => {
   const WRONG = ["One standard atmosphere is 700 mmHg.", "The ammonia synthesis releases 52 kcal per mole of reaction.", "Avogadro's constant is about $6.022 \\times 10^{32}$ per mole.", "The industrial ammonia synthesis was developed by Ostwald."];
   const tokens = WRONG.map((s) => { const c = checkableClaims(s)[0]; return c ? [...c.required.quantities.map((q) => q.raw), ...c.required.names] : []; });
-  assert.deepEqual(tokens, [["700mmHg"], ["52kcal/mol"], ["6.022e32/mol", "Avogadro"], ["Ostwald"]]);
+  // "releases 52 kcal" states ΔH = −52 kcal/mol: the verb carries the sign (red-team round 4, R4-K13/K14)
+  assert.deepEqual(tokens, [["700mmHg"], ["-52kcal/mol"], ["6.022e32/mol", "Avogadro"], ["Ostwald"]]);
   assert.deepEqual(raws("212 °F, 1.5 V, 760 torr"), ["212°F", "1.5V", "760torr"], "the harness's own unit table");
   const c = course(t);
   const neighbour = c.units().find((u) => u.text.includes(ANCHOR));

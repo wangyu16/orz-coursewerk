@@ -84,6 +84,13 @@ export function readSidecar(root, deliverable) {
 // what a unit inherits: its own record's, or (a new unit from a split or a merge, or a piece of a retired unit) its
 // sources'
 const sourcesOf = (prev, split, merge, old, inherit = []) => (prev ? [prev] : [...[split?.from, ...(merge?.from || [])].filter(Boolean).map((id) => old.find((o) => o.id === id)).filter(Boolean), ...inherit]);
+// the units a text took over (red-team round 4, R4-K17): the pieces of a split, a merge, and a piece of a retired unit
+// name every unit whose text they hold, for good — so what was said about that text (a review's open concerns, MS8)
+// follows it, as the register keeps what it owed
+function lineageOf(prev, sources) {
+  const ids = prev ? prev.lineage || [] : [...new Set(sources.flatMap((o) => [o.id, ...(o.lineage || [])]))].filter(Boolean).sort();
+  return ids.length ? { lineage: ids } : {};
+}
 function carriedOf(sources) { const c = sources.find((o) => o.carried)?.carried; return c ? { carried: c } : {}; }
 function owesOf(sources) {
   const o = sources.filter((x) => x.owes).map((x) => x.owes);
@@ -104,7 +111,7 @@ function stampOf(sources) {
 }
 
 // the retired-unit register (R2 F1, F2, F14): what a retired unit was, kept with its deliverable's sidecar
-const REGISTER_FIELDS = ["form", "origin", "spineNodes", "evidence", "stamp", "carried", "owes", "judgmentAdded", "tokens"];
+const REGISTER_FIELDS = ["form", "origin", "spineNodes", "evidence", "stamp", "carried", "owes", "judgmentAdded", "tokens", "lineage"];
 function registerEntry(u) {
   const e = { id: u.id, deliverable: u.locator?.deliverable ?? u.deliverable, section: u.locator?.section ?? u.section, contentHash: u.locator?.contentHash ?? u.contentHash };
   for (const k of REGISTER_FIELDS) if (u[k] !== undefined) e[k] = u[k];
@@ -302,7 +309,7 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
         // evidence is bound to fact tokens (P5), so it survives a rephrase; obligations.mjs decides what still counts.
         // An owed re-verification, a version carry and the stamp itself (where staleness may live) survive every
         // re-index, and pass to the pieces of a split, to a merge and to a returning text (R1 F4/F5, R2 F1/F2/F14)
-        evidence: prev?.evidence || [], ...(prev ? (prev.stamp ? { stamp: prev.stamp } : {}) : stampOf(sources)), ...carriedOf(sources), ...owesOf(sources), tokens: tokensOf(s.text),
+        evidence: prev?.evidence || [], ...(prev ? (prev.stamp ? { stamp: prev.stamp } : {}) : stampOf(sources)), ...carriedOf(sources), ...owesOf(sources), ...lineageOf(prev, sources), tokens: tokensOf(s.text),
         ...(split ? { splitFrom: split.from } : {}), ...(merge ? { mergedFrom: merge.from } : {}), ...(pieceOf.length ? { inheritedFrom: pieceOf.map((x) => x.id) } : {}),
       };
     });

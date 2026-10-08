@@ -13,6 +13,8 @@
 //                                  gives a few words that make it precise; the agent applies them (D35)
 //   clarification-proposed (question) the same for the instructor's text: a one-line diff to accept or not (D35 (a));
 //   clarification-accepted (obligation, agent) the instructor accepted it; the agent applies it, keeping their credit
+//   instructor-edit-unasked (question)  the agent wrote a reviewer's suggestion into the instructor's text without their
+//                                  answer (R4-K16): the concern's own question stays theirs too; keep the edit, or revert
 //   evidence-unsupported (defect)  quote-verified evidence that does not re-derive: no dispatch record, a record that
 //                                  does not admit, or quotes that do not carry the unit's current facts.
 //   dispatch-unlogged / dispatch-record-missing (defect) a verification record the log does not vouch for, or a
@@ -68,6 +70,11 @@ function run(s) {
     out.push({ kind: "dispatch-record-missing", units: units.has(l.payload.unit) ? [l.payload.unit] : [], evidence: { type: "rule", rule: "every logged dispatch keeps its record in metadata/verification/", dispatch: l.payload.dispatch } });
 
   const kept = keptClaims(log);
+  // did the instructor accept this question's suggestion ("apply …")? keyed by the finding it was asked as
+  const acceptedBy = (u, kind, evidence) => {
+    const fid = findingId({ module: "ms8-verdicts", kind, units: [u.id], evidence });
+    return log.some((l) => l.type === "answer" && l.party?.role === "instructor" && (l.payload?.answers || []).some((a) => a.finding === fid && /^\s*apply/i.test(a.choice)));
+  };
   const askedExercise = new Set(); // one question per unit, however many records read it as exercise data
   // Every record is read through what the log binds (red-team round 3, R3-K05/K08): a record logged before round 1 has
   // no recordHash, so its unit, contentHash, factHash and status are DERIVED from the logged prompt and answer
@@ -76,16 +83,23 @@ function run(s) {
 
   // ---- knowledge reviews (unit by unit, newest first in LOG order: a legacy record's `at` is unbound) -------------
   const reviewsOf = new Map();
+  // open concerns travel with the text (red-team round 4, R4-K17): a reviewed unit split, merged or retired, whose
+  // text came back as pieces, hands its review to every unit that took its text over (`lineage`, kept by the unit
+  // index as the retired register keeps what it owed) — and there it speaks for the words the piece holds
+  const heirs = new Map();
+  for (const u of units.values()) for (const from of u.lineage || []) { if (!heirs.has(from)) heirs.set(from, []); heirs.get(from).push(u.id); }
+  const add = (id, x) => { if (!reviewsOf.has(id)) reviewsOf.set(id, []); reviewsOf.get(id).push(x); };
   for (const r of records) {
     const b = bound.get(r);
-    if (r.kind !== "knowledge" || !b || !units.has(b.unit) || !b.contentHash) continue; // nothing counts through a field that cannot be derived
-    if (!reviewsOf.has(b.unit)) reviewsOf.set(b.unit, []);
-    reviewsOf.get(b.unit).push({ r, b });
+    if (r.kind !== "knowledge" || !b || !b.contentHash) continue; // nothing counts through a field that cannot be derived
+    if (units.has(b.unit)) add(b.unit, { r, b });
+    else for (const id of heirs.get(b.unit) || []) add(id, { r, b, carried: true });
   }
   for (const [id, list] of reviewsOf) {
     const u = units.get(id), fh = factHash(u.text);
     list.sort((x, y) => y.b.seq - x.b.seq);
-    const fresh = list.filter((x) => x.b.contentHash === u.contentHash);
+    const own = list.filter((x) => !x.carried);
+    const fresh = own.filter((x) => x.b.contentHash === u.contentHash);
     if (fresh.length) {
       // a review that cannot be scored is said so, never read as a clean review (red-team round 2, R2-K10): an answer
       // that does not parse, or a concern quoting words the passage does not contain (even read as rendered)
@@ -94,37 +108,69 @@ function run(s) {
         out.push({ kind: "knowledge-unscorable", units: [u.id], evidence: { type: "judgment", note: !k.ok ? `the blind review of ${u.id} cannot be read (${k.reason}): run it again (node scripts/verify.mjs knowledge --units ${u.id})` : `the blind review of ${u.id} raised a concern about words the passage does not contain ("${k.unlocated[0].text.slice(0, 120)}": ${k.unlocated[0].problem.slice(0, 200)}): it cannot be scored — run it again (node scripts/verify.mjs knowledge --units ${u.id})`, quote: k.unlocated[0]?.text ?? "", dispatch: r.dispatch } });
     }
     // which reviews speak for the unit: those of its current facts (factHash, derived for a legacy record), and always
-    // its newest review — a rewrite that changes a fact token cannot silence the last review's concerns (R3-K06)
-    const speaking = list.filter((x, i) => i === 0 || x.b.factHash === fh);
-    for (const { r, b } of speaking) {
+    // its newest review — a rewrite that changes a fact token cannot silence the last review's concerns (R3-K06) — and
+    // the reviews its text carried in from a split, merge or retired unit (R4-K17). But the NEWEST review of the
+    // unit's current text (contentHash) speaks for the unit: every older review is history, whether or not its quoted
+    // words remain (red-team round 4, R4-K15: an error fixed at its cause, "an inert gas" → "hydrogen", left the words
+    // the reviewer quoted, and no clean fresh review could ever clear it)
+    const newestFresh = fresh.length ? fresh[0].b.seq : -Infinity;
+    const speaking = list.filter((x) => x.b.seq >= newestFresh && (x.carried || x === own[0] || x.b.factHash === fh));
+    // whose text it is, decided BEFORE whether a suggestion is in it (red-team round 4, R4-K16): on the instructor's
+    // text a suggestion the agent wrote in unasked settles nothing — the question stays theirs (D35 (a), D31), and the
+    // edit itself is raised (instructor-edit-unasked, below)
+    const instructors = instructorAuthored(u, log);
+    const agentEdited = (b) => instructors && b.contentHash !== u.contentHash && (u.origin?.revisedBy || []).length > 0;
+    for (const { r, b, carried } of speaking) {
       const k = readKnowledgeReview(r, u.text);
       if (!k.ok) continue;
       const passage = reviewedPassage(r.bundle?.prompt);
+      const unasked = agentEdited(b);
       // "settled by the text" (R3-K06): a "wrong" concern whose words are gone is settled only when a fresh review of
       // the unit's current text (contentHash) was made after it — a review that clears it — or its suggestion went in
       // place of its words and nothing else changed. A synonym swap ("raises" → "increases") is neither: it stays open.
       const clearedByFresh = fresh.some((x) => x.b.seq > b.seq);
-      const openGone = clearedByFresh ? [] : k.gone.filter((c) => c.kind === "wrong" && !settledBySuggestion(c, passage, u.text));
+      // a carried review speaks only for the words this piece holds: its other concerns went with the other pieces
+      const openGone = clearedByFresh || carried ? [] : k.gone.filter((c) => unasked || (c.kind === "wrong" && !settledBySuggestion(c, passage, u.text)));
       for (const c of [...k.concerns, ...openGone]) {
         const evidence = { type: "judgment", note: c.problem, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch };
         if (c.kind === "wrong") {
           // the error is still in the words the reviewer quoted, or was reworded: open — unless the suggestion itself
-          // extends the quoted words and the unit now carries it as the only change (R1 F12, R3-K06)
-          if (settledBySuggestion(c, passage, u.text)) continue;
+          // extends the quoted words and the unit now carries it as the only change (R1 F12, R3-K06) in the agent's
+          // own text, or the instructor accepted it (R4-K16)
+          if (settledBySuggestion(c, passage, u.text) && (!unasked || acceptedBy(u, "knowledge-concern", evidence))) continue;
           out.push({ kind: "knowledge-concern", units: [u.id], evidence }); continue;
         }
         // a clarification (the text is correct as meant): applied when the unit carries the suggestion and no longer
         // the quoted words, unless the suggestion extends them (P11; red-team round 1, F12) — read as written or rendered
-        const applied = c.suggestion.trim().length >= 8 && quoteIn(c.suggestion, u.text) && (!quoteIn(c.text, u.text) || quoteIn(c.text, c.suggestion));
-        if (applied) continue;
-        if (!c.suggestion.trim()) { out.push({ kind: "knowledge-concern", units: [u.id], evidence }); continue; }
-        if (!instructorAuthored(u, log)) { out.push({ kind: "clarification-owed", units: [u.id], evidence }); continue; }
-        // the instructor's text (D31 stands): proposed as a one-line diff; once accepted, applying it is the agent's job
         const proposed = { ...evidence, note: `Clarify: "${c.text}" → "${c.suggestion}". ${c.problem}` };
-        const fid = findingId({ module: "ms8-verdicts", kind: "clarification-proposed", units: [u.id], evidence: proposed });
-        const accepted = log.some((l) => l.type === "answer" && l.party?.role === "instructor" && (l.payload?.answers || []).some((a) => a.finding === fid && /^\s*apply/i.test(a.choice)));
+        const accepted = instructors && acceptedBy(u, "clarification-proposed", proposed);
+        const applied = c.suggestion.trim().length >= 8 && quoteIn(c.suggestion, u.text) && (!quoteIn(c.text, u.text) || quoteIn(c.text, c.suggestion));
+        if (applied && (!unasked || accepted)) continue;
+        if (!c.suggestion.trim()) { out.push({ kind: "knowledge-concern", units: [u.id], evidence }); continue; }
+        if (!instructors) { out.push({ kind: "clarification-owed", units: [u.id], evidence }); continue; }
+        // the instructor's text (D31 stands): proposed as a one-line diff; once accepted, applying it is the agent's job
         if (accepted) out.push({ kind: "clarification-accepted", units: [u.id], evidence: { type: "missing", what: `the clarification the instructor accepted, applied to ${u.id}: "${c.text}" → "${c.suggestion}" (their credit stays, D33)`, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch } });
         else out.push({ kind: "clarification-proposed", units: [u.id], evidence: proposed, recommendation: "apply" });
+      }
+    }
+    // the edit itself (red-team round 4, R4-K16): a reviewer's suggestion the agent wrote into the instructor's text
+    // without their answer is an unasked edit of their words (D31, D35 (a)) — raised whatever later reviews say, until
+    // they accept the suggestion, or answer this (keep the edit, or have it reverted)
+    const flagged = new Set();
+    for (const { r, b } of own.filter((x) => agentEdited(x.b))) {
+      const k = readKnowledgeReview(r, u.text);
+      if (!k.ok) continue;
+      const passage = reviewedPassage(r.bundle?.prompt);
+      for (const c of [...k.concerns, ...k.gone]) {
+        if (c.suggestion.trim().length < 8 || flagged.has(`${c.text}|${c.suggestion}`)) continue;
+        const carries = settledBySuggestion(c, passage, u.text) || (quoteIn(c.suggestion, u.text) && (!quoteIn(c.text, u.text) || quoteIn(c.text, c.suggestion)));
+        if (!carries) continue;
+        const evidence = { type: "judgment", note: c.problem, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch };
+        // the instructor's "apply" to the same words → suggestion, asked from any review of the unit, is their answer
+        const askedAs = (x) => { const e = { ...evidence, dispatch: x.r.dispatch }; return c.kind === "wrong" ? acceptedBy(u, "knowledge-concern", e) : acceptedBy(u, "clarification-proposed", { ...e, note: `Clarify: "${c.text}" → "${c.suggestion}". ${c.problem}` }); };
+        if (own.some(askedAs)) continue;
+        flagged.add(`${c.text}|${c.suggestion}`);
+        out.push({ kind: "instructor-edit-unasked", units: [u.id], evidence: { type: "judgment", note: `Your text was edited without your answer: the agent wrote the reviewer's suggestion "${c.suggestion}" in place of "${c.text}" (${c.kind === "wrong" ? "a concern that it is wrong" : "a clarification"}: ${c.problem}). Keep the edit, or have it reverted?`, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch, revisedBy: (u.origin?.revisedBy || []).at(-1) || null }, recommendation: "keep" });
       }
     }
   }
@@ -211,6 +257,7 @@ export default {
       { kind: "knowledge-unscorable", statusClass: "question", evidenceType: "judgment", route: "agent" },
       { kind: "clarification-proposed", statusClass: "question", evidenceType: "judgment", route: "digest" },
       { kind: "clarification-accepted", statusClass: "obligation", evidenceType: "missing", route: "agent" },
+      { kind: "instructor-edit-unasked", statusClass: "question", evidenceType: "judgment", route: "digest" },
       { kind: "exercise-data-confirm", statusClass: "question", evidenceType: "judgment", route: "digest" },
       { kind: "absolute-overgeneral", statusClass: "question", evidenceType: "judgment", route: "agent" },
       { kind: "evidence-unsupported", statusClass: "defect", evidenceType: "rule", route: "agent" },
