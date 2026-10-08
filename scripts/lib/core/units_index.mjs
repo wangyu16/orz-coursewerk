@@ -26,9 +26,9 @@ import { sha256 } from "../records/canonical.mjs";
 import { unitsPathFor, recordFile } from "../records/paths.mjs";
 import { JUDGMENT_KINDS, validateUnitSidecar } from "../records/units.mjs";
 import { makeFinding } from "../records/findings.mjs";
-import { DELIVERABLE_DIRS, classifyUnit, derivedRole, segmentDeliverable, slugify, tokensOf, unitHash } from "./segment.mjs";
+import { DELIVERABLE_DIRS, classifyUnit, derivedRole, headingsKey, labelBaseline, segmentDeliverable, slugify, tokensOf, unitHash } from "./segment.mjs";
 import { manifestChapters } from "./package_reader.mjs";
-import { migrateUnitRecords, upgradeStamps } from "./obligations.mjs";
+import { loadUnits, migrateUnitRecords, upgradeStamps } from "./obligations.mjs";
 import { assertUnaltered, upgradeUnitRecordDigests, writeUnitRecords } from "./unit_records.mjs";
 
 export function deliverablesOf(reader) {
@@ -202,7 +202,19 @@ export function beginSession(root, reader, party, { step = "authoring" } = {}) {
   try { upgradeStamps(root, reader); } catch { /* an unindexed or partial package: indexing reports it */ }
   const baseline = {};
   for (const rel of deliverablesOf(reader)) baseline[rel] = segmentDeliverable(reader.text(rel), rel).units.map((s) => unitHash(s.text));
-  return appendLogRecord(root, { type: "revision", party, payload: { event: "agent-session-begin", step, baseline } });
+  // the label baseline (red team round 5, CONTROL C3-01): the first session under round 5 logs the printed labels over
+  // every indexed unit — a link review recorded before then was shown none, and stands only while they are unchanged
+  let labels;
+  try {
+    const logText = readLogText(root);
+    if (!labelBaseline(parseLog(logText))) {
+      labels = {};
+      const units = loadUnits(root, reader);
+      for (const rel of new Set(units.map((u) => u.locator.deliverable))) labels[rel] = {};
+      for (const u of units) if (u.headings?.length) labels[u.locator.deliverable][u.id] = headingsKey(u);
+    }
+  } catch { labels = undefined; /* a broken log or index: the gate reports it */ }
+  return appendLogRecord(root, { type: "revision", party, payload: { event: "agent-session-begin", step, baseline, ...(labels ? { labels } : {}) } });
 }
 
 /**

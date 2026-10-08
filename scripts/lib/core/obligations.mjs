@@ -148,7 +148,7 @@ export function loadUnits(root, reader) {
       const text = seg[i]?.text ?? "";
       const judgment = [...new Set([...classifyUnit({ form: seg[i].form, text }), ...(u.judgmentAdded || [])])];
       const locator = { ...u.locator, deliverable: rel, section: seg[i].section, ordinal: i, lines: [seg[i].startLine, seg[i].endLine] };
-      out.push({ ...u, locator, form: seg[i].form, ...(seg[i].label ? { label: seg[i].label } : {}), judgment, role: derivedRole(seg[i].role, judgment), text });
+      out.push({ ...u, locator, form: seg[i].form, ...(seg[i].label ? { label: seg[i].label } : {}), headings: seg[i].headings, judgment, role: derivedRole(seg[i].role, judgment), text });
     });
   }
   return out;

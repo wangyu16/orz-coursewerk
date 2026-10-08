@@ -17,7 +17,7 @@
 import { classifyUnit, derivedRole, segmentDeliverable } from "../lib/core/segment.mjs";
 import { readDispatches } from "../lib/verify/dispatch.mjs";
 import { dispatchLogEntry, instructorAuthored, logRecordsOf } from "../lib/verify/verdicts.mjs";
-import { currentBases, planOf, readAlignment, reviewInputs, reviewable } from "../lib/verify/alignment.mjs";
+import { currentBases, labelBaseline, planOf, readAlignment, reviewInputs, reviewable } from "../lib/verify/alignment.mjs";
 import { base } from "./_shared.mjs";
 
 function currentUnits(s) {
@@ -27,7 +27,7 @@ function currentUnits(s) {
     const seg = segmentDeliverable(s.text(side.deliverable) || "", side.deliverable).units;
     if (seg.length !== side.units.length) continue;
     // the role is the segmenter's, never the sidecar's (C3-15)
-    side.units.forEach((u, i) => out.push({ ...u, form: seg[i].form, text: seg[i].text, role: derivedRole(seg[i].role, [...new Set([...classifyUnit(seg[i]), ...(u.judgmentAdded || [])])]), ...(seg[i].label ? { label: seg[i].label } : {}) }));
+    side.units.forEach((u, i) => out.push({ ...u, form: seg[i].form, text: seg[i].text, role: derivedRole(seg[i].role, [...new Set([...classifyUnit(seg[i]), ...(u.judgmentAdded || [])])]), ...(seg[i].label ? { label: seg[i].label } : {}), headings: seg[i].headings }));
   }
   return out;
 }
@@ -36,7 +36,7 @@ function run(s) {
   const out = [];
   const all = currentUnits(s), byId = new Map(all.map((u) => [u.id, u]));
   const log = logRecordsOf(s.text("metadata/LOG.jsonl"));
-  const plan = planOf(s);
+  const plan = planOf(s), baseline = labelBaseline(log);
   const byUnit = new Map();
   for (const r of readDispatches((p) => s.text(p), s.paths).filter((x) => x.kind === "alignment")) {
     const entry = dispatchLogEntry(r, log); if (!entry) continue; // MS8 reports a record the log does not vouch for
@@ -45,7 +45,7 @@ function run(s) {
   for (const [id, recs] of byUnit) {
     const u = byId.get(id);
     if (!u || !(reviewable(u) || u.role === "framing")) continue; // D42: framing is read for off-plan content
-    const inp = reviewInputs(u, all, plan), bases = currentBases(u, inp, plan);
+    const inp = reviewInputs(u, all, plan), bases = currentBases(u, inp, plan, baseline);
     const declared = inp.declared.map((n) => n.id), guides = inp.guides.map((g) => g.id), known = new Set(inp.chapterNodes.map((n) => n.id));
     // the unit's current reviews, newest first (a review of something else is history)
     const current = recs.filter(({ r }) => bases.has(r.alignmentBasis)).sort((a, b) => b.seq - a.seq).map(({ r }) => r);
