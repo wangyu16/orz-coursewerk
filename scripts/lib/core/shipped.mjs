@@ -13,7 +13,7 @@ import { makeFinding } from "../records/findings.mjs";
 import { COURSE_MAP, spinePaths } from "./spine.mjs";
 import { manifestChapters } from "./package_reader.mjs";
 import { administrativeDocuments, deliverablesOf } from "./units_index.mjs";
-import { printedModel } from "./printed.mjs";
+import { frameOf, printedModel } from "./printed.mjs";
 import { segmentDeliverable } from "./segment.mjs";
 
 const CHAPTER_FILE = /^(?:study-guide|slides|practice|concepts|assessment-support)\/([^/]+)\.md$/;
@@ -73,12 +73,21 @@ export function hiddenContent(root, reader, { keep = () => true } = {}) {
     if (ch && !keep(ch)) continue;
     const text = reader.text(file);
     if (text == null) continue;
-    const m = printedModel(text);
-    for (const h of m.hidden) out.push({ file, line: h.line, what: h.what });
-    for (const u of segmentDeliverable(text, file).units) {
-      let shown = false; for (let k = u.startLine - 1; k < u.endLine && !shown; k++) shown = m.printed.has(k);
-      if (!shown) out.push({ file, line: u.startLine, what: `a ${u.form} that prints nothing ("${u.text.replace(/\s+/g, " ").slice(0, 60)}")` });
-    }
+    out.push(...hiddenInText(text, file));
+  }
+  return out;
+}
+
+/** What one deliverable's text hides from its reader, read through its frame: [{ file, line, what }]. */
+export function hiddenInText(text, file) {
+  const out = [], m = printedModel(text, { frame: frameOf(file, text) }), lines = String(text).split("\n");
+  for (const h of m.hidden) out.push({ file, line: h.line, what: h.what });
+  for (const u of segmentDeliverable(text, file).units) {
+    // EVERY line of a unit must print (round 4): a link reference definition on a paragraph's first line, or a line
+    // the frame drops, is text the review reads and no student sees, even when the unit's other lines print
+    const dark = []; for (let k = u.startLine - 1; k < u.endLine; k++) if (lines[k]?.trim() && !m.printed.has(k)) dark.push(k);
+    if (dark.length && dark.length === lines.slice(u.startLine - 1, u.endLine).filter((l) => l.trim()).length) out.push({ file, line: u.startLine, what: `a ${u.form} that prints nothing ("${u.text.replace(/\s+/g, " ").slice(0, 60)}")` });
+    else if (dark.length) out.push({ file, line: dark[0] + 1, what: `a line of a ${u.form} that prints nothing ("${lines[dark[0]].trim().slice(0, 60)}")` });
   }
   return out;
 }

@@ -34,7 +34,7 @@ import { sha256 } from "../records/canonical.mjs";
 import { plainForQuantities } from "./dependencies.mjs";
 import { statesValue } from "./values.mjs";
 import { factNamesIn } from "./names.mjs";
-import { NYML_NOTATION_KINDS, nymlKindOf, printedModel } from "./printed.mjs";
+import { NYML_NOTATION_KINDS, frameOf, listItemsOf, nymlKindOf, printedModel } from "./printed.mjs";
 
 export { NYML_NOTATION_KINDS };
 
@@ -62,6 +62,9 @@ const nymlKind = (lines) => nymlKindOf(lines.join("\n"));
  */
 export function learningObjectiveSections(text) {
   const lines = String(text || "").split("\n"), out = [];
+  // which list item orz-markdown reads each line as part of (a lazy continuation line too: round 4, C2-01)
+  let owner = null;
+  const ownerOf = (k) => { if (!owner) { owner = new Map(); for (const it of listItemsOf(text)) for (const x of it.lines) owner.set(x, it.start); } return owner.get(k); };
   for (let i = 0; i < lines.length; i++) {
     const h = /^(#{1,6})\s+learning objectives\s*:?\s*$/i.exec(lines[i].trim());
     if (!h) continue;
@@ -75,7 +78,8 @@ export function learningObjectiveSections(text) {
       while (k < lines.length) {
         const lt = lines[k].trim();
         if (LIST_ITEM.test(lt)) { sec.items.push({ line: k, text: lt.replace(LIST_ITEM, "") }); sec.listLines.add(k); k++; continue; }
-        if (lt && /^\s{2,}/.test(lines[k]) && sec.items.length) { sec.items[sec.items.length - 1].text += ` ${lt}`; sec.listLines.add(k); k++; continue; }
+        const last = sec.items[sec.items.length - 1];
+        if (lt && last && (/^\s{2,}/.test(lines[k]) || (ownerOf(k) !== undefined && ownerOf(k) === ownerOf(last.line)))) { sec.items[sec.items.length - 1].text += ` ${lt}`; sec.listLines.add(k); k++; continue; }
         break;
       }
     }
@@ -104,7 +108,7 @@ export function segmentDeliverable(text, deliverable) {
   const isSlides = deliverable.startsWith("slides/");
   let section = "top", sectionTitle = "", slideNo = 0, slideTemplate = null;
   const restated = new Set(learningObjectiveSections(text).flatMap((s) => [...s.listLines])); // read by the restated-objective check
-  const orz = printedModel(text);
+  const orz = printedModel(text, { frame: frameOf(deliverable, text) });
   // why each structure line is structure, and the section it stands in (read again once every unit is known)
   const why = new Map(), ctx = new Map();
   const struct = (i, reason = "silent") => { covered.add(i); if (!why.has(i)) { why.set(i, reason); ctx.set(i, { section, role: roleFor(), slideTemplate }); } };
@@ -119,6 +123,9 @@ export function segmentDeliverable(text, deliverable) {
   while (i < lines.length) {
     const l = lines[i], t = l.trim();
     if (!t) { i++; continue; }
+    // speaker notes (orz-slides `<!-- @notes -->`) are the presenter's, not the students': they print nothing on a
+    // slide, so they are no unit and never count toward coverage (red team round 4, C1-01)
+    if (orz.notes.has(i)) { struct(i, "notes"); i++; continue; }
     // {{nyml … }}: the orz-paged settings and metadata blocks are notation (D42); every other kind is an element the
     // frame prints (an abstract, a question …), so it is a unit — a question element is a question (round 2, C3-05)
     // where the block ends is orz-markdown's call: the first line that CONTAINS "}}" (round 3, C3-06); a {{nyml that
@@ -137,6 +144,12 @@ export function segmentDeliverable(text, deliverable) {
       if (m) { slideNo++; slideTemplate = /template=([a-z-]+)/.exec(m[1])?.[1] || null; section = `slide-${slideNo}`; sectionTitle = ""; }
       let j = i; while (j < lines.length && !lines[j].includes("-->")) j++;
       for (let k = i; k <= j; k++) struct(k);
+      // the deck config values orz-slides prints are read (round 4, C3-01): `footer:` (on every content slide) and
+      // `author:` are each a framing unit; `title:` (the tab) is a label when it reads as one, else a unit too
+      if (orz.deck && orz.deck.start === i) for (const v of orz.deck.values) {
+        if (v.key === "title" && isLabel(v.value)) why.set(v.line, "deck-label");
+        else push("paragraph", v.line, v.line, "framing", null, v.value);
+      }
       const rest = j < lines.length ? lines[j].slice(lines[j].indexOf("-->") + 3).replace(/<!--[\s\S]*?-->/g, " ").trim() : "";
       if (rest) push("paragraph", j, j, roleFor(), null, rest);
       i = j + 1; continue;
@@ -258,7 +271,7 @@ function settlePrinted({ lines, units, covered, why, ctx, orz, isSlides }) {
   for (let n = 0; n < struck.length; n++) {
     const k = struck[n], reason = why.get(k);
     if (inUnit.has(k)) continue;
-    if (reason === "restated" || reason === "table-header") continue;
+    if (reason === "restated" || reason === "table-header" || reason === "deck-label") continue;
     if (reason === "heading" || reason === "credit" || reason === "label") { later.push(k); continue; }
     const [a, b] = orz.leaf.get(k) || [k, k];
     let e = k; while (e + 1 <= b && why.has(e + 1) && !inUnit.has(e + 1) && !["heading", "credit", "label", "restated", "table-header"].includes(why.get(e + 1))) e++;
