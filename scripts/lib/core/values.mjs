@@ -11,6 +11,9 @@
 // Numbers read thousands separators ("200,000" is two hundred thousand) and every minus a typesetter writes: "−92",
 // "- 92.2" after "=", "-\,92.2", "{-}92". A minus right after a number is a subtraction or a range, never a sign.
 // Bare integers stay out ("step 3", "Chapter 2"): only a unit, a symbol or a power of ten makes a number a value.
+// Round 5 (R5-K01/K02): a value is read in its compound spellings too — "a 2,000-atmosphere loop", "9 hundred kJ",
+// "K is about one hundred", "a pH of seven" — and a range with BOTH its ends. What the net catches but cannot read
+// without a guess ("several thousand atmospheres") is returned by unreadValues: never a value, never silent.
 //
 // PURE and DETERMINISTIC.
 import { valueProjection } from "../units.mjs";
@@ -109,8 +112,15 @@ const SMALL_WORDS = { zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 
 const TENS_WORDS = { twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90 };
 const SCALE_WORDS = { thousand: 1e3, million: 1e6, billion: 1e9 };
 const NUM_WORD = `(?:${[...Object.keys(SMALL_WORDS), ...Object.keys(TENS_WORDS), "hundred", ...Object.keys(SCALE_WORDS)].sort((a, b) => b.length - a.length).join("|")})`;
-const WORDS_PHRASE = new RegExp(`(?<![\\w-])(?:(an?)\\s+(?=(?:hundred|thousand|million|billion)\\b))?(${NUM_WORD}(?:(?:\\s+and\\s+|[\\s-]+)${NUM_WORD})*)(?![\\w-])`, "gi");
-const UNIT_AHEAD = new RegExp(`^[\\s\\u00A0]*(?:${UNIT_ALT})(?![A-Za-z0-9])`);
+// a phrase may end before a hyphen that joins it to its unit ("two-thousand-atmosphere loops", red-team round 5, R5-K01)
+const WORDS_PHRASE = new RegExp(`(?<![\\w-])(?:(an?)\\s+(?=(?:hundred|thousand|million|billion)\\b))?(${NUM_WORD}(?:(?:\\s+and\\s+|[\\s-]+)${NUM_WORD})*)(?![\\w])`, "gi");
+// the unit straight after a number: a space, or the hyphen of a compound adjective ("a 2,000-atmosphere loop", R5-K01)
+const UNIT_GAP = "(?:[\\s\\u00A0]*|-)";
+const UNIT_AHEAD = new RegExp(`^${UNIT_GAP}(?:${UNIT_ALT})(?![A-Za-z0-9])`);
+// a symbol binding straight before a number ("K is about", "a pH of", "K_p ≈"): the number after it is the symbol's value
+const BINDING = "(?:=|≈|~|≃|\\\\approx|is|was|of|on the order of|order of|equals|about|approximately|around|roughly|close to|near|only|just)";
+const SYMBOL_NAMES = "K(?:\\s?(?:sp|eq|p|c|a|b|w))?|pH|pOH|pK\\s?a";
+const BOUND_BEFORE = new RegExp(`(?<![\\p{L}\\d])(?:${SYMBOL_NAMES})(?![\\p{L}\\d])\\s*(?:${BINDING}\\s*){1,4}$`, "u");
 /** The value of a number written in words ("two thousand", "nine hundred and five", "twenty-five"), or null. */
 export function wordsValue(phrase, leadingA = false) {
   let total = 0, cur = leadingA ? 1 : 0, last = leadingA ? "small" : null;
@@ -124,13 +134,22 @@ export function wordsValue(phrase, leadingA = false) {
   return last ? total + cur : null;
 }
 function numberWords(t) {
+  // digits with a scale word are one number ("9 hundred kilojoules", "1.5 million pascals"; R5-K01)
+  t = t.replace(new RegExp(`(?<![\\w.,])(${NUM})[\\s-]+((?:hundred|thousand|million|billion)(?:[\\s-]+(?:thousand|million|billion))*)(?![\\w])`, "gi"), (m, n, scales) => {
+    const k = scales.toLowerCase().split(/[\s-]+/).reduce((x, w) => x * (w === "hundred" ? 100 : SCALE_WORDS[w]), 1);
+    const v = Number((parseNumber(n) * k).toPrecision(15));
+    return Number.isFinite(v) && v < 1e21 ? String(v) : m;
+  });
   return t.replace(WORDS_PHRASE, (m, a, phrase, at, all) => {
     const ahead = all.slice(at + m.length).match(UNIT_AHEAD);
-    if (!ahead) return m;
+    // a number word bound to a symbol is the symbol's value ("K is about one hundred", "a pH of seven"; R5-K01) — but a
+    // lone "one" before a noun is a determiner ("the K of one reaction"), not a value
+    const bound = !ahead && BOUND_BEFORE.test(all.slice(Math.max(0, at - 60), at)) && !(/^one$/i.test(phrase) && /^\s+[a-z]/i.test(all.slice(at + m.length)) && !/^\s+(?:and|or|at|in|for|when|if|so|but|which|while|under|with|by|to|than)\b/i.test(all.slice(at + m.length)));
+    if (!ahead && !bound) return m;
     const v = wordsValue(phrase, !!a);
     if (v == null) return m;
     const scaled = !!a || /hundred|thousand|million|billion/i.test(phrase);
-    if (!scaled && v <= 12 && symbolOf(ahead[0].trim()) === "mol") return m; // a count of moles: stoichiometry
+    if (ahead && !scaled && v <= 12 && symbolOf(ahead[0].replace(/^[\s\u00A0-]+/, "")) === "mol") return m; // a count of moles: stoichiometry
     return String(v);
   });
 }
@@ -155,7 +174,10 @@ function verbSignAt(P, at, end) {
   return m;
 }
 // a symbol unit embedding its own denominator ("kJ/mol") is the same unit as "kJ per mole": both read "kJ/mol"
-const QTY = new RegExp(`${SIGN}(?<![\\w.])(${NUM}(?:e-?\\d+)?)[\\s\\u00A0]*(${UNIT_ALT})(?![A-Za-z0-9])`, "g");
+const QTY = new RegExp(`${SIGN}(?<![\\w.])(${NUM}(?:e-?\\d+)?)${UNIT_GAP}(${UNIT_ALT})(?![A-Za-z0-9])`, "g");
+// the lower end of a range, straight before its upper end: "[between|from] 40 and|to|or|through 500 °C", "40–500 °C",
+// "40-500 °C" (a dash joins a range only with no space: "100 - 37 kJ" may be a subtraction, and is not guessed at)
+const RANGE_BEFORE = new RegExp(`(?<![\\w.,])(${MINUS}\\s*)?(${NUM})(?:[–—]|[-−]|\\s+(?:and|or|to|through)\\s+)$`);
 const DEN_WORDS = { mole: "mol", moles: "mol", mol: "mol", gram: "g", grams: "g", g: "g", kilogram: "kg", kg: "kg", litre: "L", liter: "L", litres: "L", liters: "L", L: "L", mL: "mL",
   second: "s", s: "s", minute: "min", min: "min", hour: "h", h: "h", kelvin: "K", K: "K", metre: "m", meter: "m", m: "m", cm: "cm", molecule: "molecule", atom: "atom", day: "day", year: "year" };
 const DEN_ALT = Object.keys(DEN_WORDS).sort((a, b) => b.length - a.length).join("|");
@@ -173,7 +195,7 @@ function denominators(P, at) {
 }
 
 // a dimensionless quantity bound to a symbol: K, K_p, K_c, K_a, K_b, K_sp, K_w, K_eq, pH, pOH, pK_a
-const SYMBOL = /(?<![\p{L}\d])(K(?:\s?(?:sp|eq|p|c|a|b|w))?|pH|pOH|pK\s?a)(?![\p{L}\d])\s*((?:(?:=|≈|~|≃|\\approx|is|was|of|on the order of|order of|equals|about|approximately|around|roughly|close to|near|only|just)\s*){1,4})/gu;
+const SYMBOL = new RegExp(`(?<![\\p{L}\\d])(${SYMBOL_NAMES})(?![\\p{L}\\d])\\s*((?:${BINDING}\\s*){1,4})`, "gu");
 const BARE = new RegExp(`${SIGN}(?<![\\w.])(${NUM}(?:e-?\\d+)?)`, "y");
 const SCIBARE = new RegExp(`${SIGN}(?<![\\w.])(\\d+(?:\\.\\d+)?e-?\\d+)(?![\\w.])`, "g");
 
@@ -197,6 +219,8 @@ export function valuesIn(P) {
   const free = (a, b) => !taken.some(([x, y]) => a < y && b > x);
   for (const m of P.matchAll(QTY)) {
     const base = symbolOf(m[3]);
+    // "the 2-mole side": a small whole count of moles joined by a hyphen is stoichiometry, as in words (R4-K08)
+    if (base === "mol" && /^\d{1,2}$/.test(m[2]) && Number(m[2]) <= 12 && P.slice(m.index, m.index + m[0].length).includes("-")) continue;
     const { unit: den, end } = denominators(P, m.index + m[0].length);
     let num = signed(m[1], m[2]);
     // a sign carried by a verb (R4-K13/K14): the value is the enthalpy change it states — the written number (with
@@ -205,6 +229,18 @@ export function valuesIn(P) {
     if (verb) num = signed((verb < 0) !== !!m[1], m[2]);
     out.push({ value: parseNumber(num), unit: base + den, raw: (num + base + den).replace(/\s+/g, ""), ...shape(m[2]), at: m.index, end, ...(verb ? { verbSign: verb, writtenSign: !!m[1] } : {}) });
     taken.push([m.index, end]);
+    // a range is read with BOTH ends (red-team round 5, R5-K02: "between 40 and 500 °C" was its upper end only): a bare
+    // number joined to this one by "and", "or", "to", "through" or a dash carries the same unit
+    const from = Math.max(0, m.index - 40), lo = P.slice(from, m.index).match(RANGE_BEFORE);
+    if (lo) {
+      const at = from + lo.index, lend = at + (lo[1] || "").length + lo[2].length;
+      const lnum = verb ? signed((verb < 0) !== !!lo[1], lo[2]) : signed(lo[1], lo[2]);
+      const year = (x) => /^(?:1[5-9]\d{2}|20\d{2})$/.test(x);
+      if (!LABEL_BEFORE.test(P.slice(0, at)) && free(at, lend) && !(year(lo[2]) && !year(m[2]))) {
+        out.push({ value: parseNumber(lnum), unit: base + den, raw: (lnum + base + den).replace(/\s+/g, ""), ...shape(lo[2]), at, end: lend, rangeOf: m.index, ...(verb ? { verbSign: verb, writtenSign: !!lo[1] } : {}) });
+        taken.push([at, lend]);
+      }
+    }
   }
   for (const m of P.matchAll(SYMBOL)) {
     BARE.lastIndex = m.index + m[0].length;
@@ -236,6 +272,42 @@ export function valuesIn(P) {
   return out.sort((a, b) => a.at - b.at);
 }
 
+// ---- candidates the reader does not read (red-team round 5, R5-K01: never pass silently, never guess) -------------
+// A wide net, cast after the reads above: a number in words or a vague count bound to a unit ("several thousand
+// atmospheres", "hundreds of kilojoules"), a number word before a unit that makes no number, and a number a symbol
+// governs through words the binding list does not know ("K for this reaction reaches 100"). None of them is read as a
+// value — the reader would have to guess — but none is silent: each makes its sentence OWE evidence (claims.mjs: a
+// required token whose quote must carry the same figure, or the same words), so a false one cannot publish unchecked.
+const VAGUE = "(?:a\\s+few|few|several|many|some|a\\s+couple\\s+of)";
+const SCALE_ANY = "(?:hundred|thousand|million|billion|dozen)";
+const UNREAD_NET = [
+  new RegExp(`(?<![\\w-])${VAGUE}\\s+${SCALE_ANY}s?(?:\\s+of)?${UNIT_GAP}(?:${UNIT_ALT})(?![A-Za-z0-9])`, "gi"),
+  new RegExp(`(?<![\\w-])(?:tens|dozens|hundreds|thousands|millions|billions)\\s+of\\s+(?:${UNIT_ALT})(?![A-Za-z0-9])`, "gi"),
+];
+const GOVERNED = new RegExp(`(?<![\\p{L}\\d])(?<![\\d.]\\s*)(?:${SYMBOL_NAMES})(?![\\p{L}\\d])((?:\\s+[\\p{L}'’-]+){1,8}?)\\s+(?:${SIGN})?(?<![\\w.])(${NUM}(?:e-?\\d+)?)(?![\\w])`, "gu");
+/** Value candidates in a text that the reader does not read: [{ raw, key, at, end, unread: reason }]. */
+export function unreadValues(P) {
+  const read = valuesIn(P), out = [];
+  const free = (a, b) => !read.some((q) => a < q.end && b > q.at) && !out.some((q) => a < q.end && b > q.at);
+  for (const re of UNREAD_NET) for (const m of P.matchAll(re)) {
+    if (free(m.index, m.index + m[0].length)) out.push({ raw: m[0].replace(/\s+/g, " ").trim(), key: m[0].replace(/\s+/g, " ").trim().toLowerCase(), at: m.index, end: m.index + m[0].length, unread: "a count in words bound to a unit, with no number to read" });
+  }
+  for (const m of P.matchAll(WORDS_PHRASE)) {
+    const ahead = P.slice(m.index + m[0].length).match(UNIT_AHEAD);
+    if (!ahead || wordsValue(m[2], !!m[1]) != null || !free(m.index, m.index + m[0].length + ahead[0].length)) continue;
+    const end = m.index + m[0].length + ahead[0].length;
+    out.push({ raw: P.slice(m.index, end).replace(/\s+/g, " ").trim(), key: P.slice(m.index, end).replace(/\s+/g, " ").trim().toLowerCase(), at: m.index, end, unread: "a number in words that makes no number" });
+  }
+  for (const m of P.matchAll(GOVERNED)) {
+    const words = m[1];
+    if (/[.;:!?]/.test(words)) continue;
+    const at = m.index + m[0].length - m[3].length, end = at + m[3].length;
+    if (!free(at, end) || LABEL_BEFORE.test(P.slice(0, at))) continue;
+    out.push({ raw: m[0].replace(/\s+/g, " ").trim(), key: m[3], at, end, unread: "a number a symbol governs through words the reader does not bind" });
+  }
+  return out.sort((a, b) => a.at - b.at);
+}
+
 // what an opaque unit looks like: a short token straight after a number that is no English word and no formula
 const OPAQUE = new RegExp(`${SIGN}(?<![\\w.^])(${NUM}(?:e-?\\d+)?)[ \\u00A0]?([A-Za-zµμΩÅ][A-Za-z]{1,4})(?![\\p{L}\\d'’-])`, "gu");
 // a number that labels a thing ("Figure 3", "Q 5", "step 2") is no value, whatever follows it
@@ -256,4 +328,4 @@ export function unitLike(tok) {
 }
 
 /** Does a text state a value (the classifier's question)? */
-export const statesValue = (text) => valuesIn(valueText(text)).length > 0;
+export const statesValue = (text) => { const P = valueText(text); return valuesIn(P).length > 0 || unreadValues(P).length > 0; };

@@ -42,8 +42,9 @@ try {
     // work, so they are listed, not just counted (P11 wiring sweep)
     forYou: openQuestions.filter((f) => f.route === "agent").map((f) => ({ module: f.module, kind: f.kind, units: f.units, note: String(f.evidence?.note || f.evidence?.what || f.evidence?.rule || "").slice(0, 240) })),
     knowledgeUnreviewed: unreviewed.length ? { count: unreviewed.length, units: unreviewed.slice(0, 10), next: "best effort, not blocking: node scripts/verify.mjs knowledge --root <pkg> --units <ids>" } : 0, modulesRan: wiring.modulesRan,
-    // K2: what the mechanical check compared and balanced, and what it could not read (not checked, not passed)
-    ...(mechanical ? { mechanical: { compared: mechanical.compared, balanced: mechanical.balanced, notChecked: mechanical.skipped.length, ...(mechanical.skipped.length ? { notCheckedForms: mechanical.skipped.slice(0, 10) } : {}) } } : {}) }, null, 2));
+    // K2: what the mechanical check compared and balanced, and what it could not read (not checked, not passed) —
+    // every form, with its reason (R5: a candidate the readers did not read is listed, never summarised away)
+    ...(mechanical ? { mechanical: { compared: mechanical.compared, balanced: mechanical.balanced, notChecked: mechanical.skipped.length, ...(mechanical.skipped.length ? { notCheckedForms: mechanical.skipped } : {}) } } : {}) }, null, 2));
   process.exit(gate.canPublish ? 0 : 1);
 } catch (e) {
   const message = `the gate could not run: ${e.message}`;

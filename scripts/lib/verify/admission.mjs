@@ -31,6 +31,7 @@ export function locate(quote, text) {
  *  mantissas at the exponent the claim wrote ("9 × 10⁻⁶" vs "5 × 10⁻⁶" differ; red-team round 1 F7). */
 export const sameAtPrecision = (claim, src) => {
   if (claim.unit !== src.unit) return false;
+  if (claim.unread || src.unread) return !!(claim.unread && src.unread && claim.key === src.key); // an unread candidate: the same figure or words
   const scale = (v) => Number(`${v}e${-(claim.exp || 0)}`);
   return Math.abs(Number(scale(src.value).toFixed(claim.decimals)) - scale(claim.value)) < 1e-9;
 };
@@ -168,6 +169,10 @@ function neighbours(claim, sup) {
 
 /** Where a required token sits in a text (an index into plainKeepCase(text)), or -1. */
 function tokenIndex(tok, P, claim) {
+  if (tok.kind === "quantity" && tok.q.unread) { // a value the reader does not read: the quote carries the same figure, or the same words
+    const f = fold(P), m = f.s.match(new RegExp(`(?<![\\w.,])${tok.q.key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w]|[.,]\\d)`));
+    return m ? f.map[m.index] : -1;
+  }
   if (tok.kind === "quantity") { const q = quantitiesIn(P).find((x) => sameAtPrecision(tok.q, x)); return q ? q.at : -1; }
   if (tok.kind === "year") { const m = P.match(new RegExp(`(?<![\\d])${tok.v}(?![\\d])`)); return m ? m.index : -1; }
   if (tok.kind === "month") { const m = P.match(wordRe(tok.v)); return m ? m.index : -1; }
@@ -325,7 +330,7 @@ export function carried(claim, quotes) {
 export function conflicts(claim, quotes) {
   const joined = quotes.join(" \n "), out = [];
   const srcQ = quantitiesIn(joined), srcY = yearsIn(joined);
-  for (const q of claim.required.quantities) {
+  for (const q of claim.required.quantities.filter((x) => !x.unread)) { // an unread candidate never anchors a contradiction
     // a dimensionless value contradicts only the same symbol's value (K vs K, pH vs pH), never a bare number
     const sym = (x) => String(x.symbol || "").toLowerCase();
     const same = srcQ.filter((s) => s.unit === q.unit && (!/^1/.test(q.unit) || (sym(q) && sym(q) === sym(s))));

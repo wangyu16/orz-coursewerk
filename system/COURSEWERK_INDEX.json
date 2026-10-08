@@ -317,7 +317,7 @@
       "id": "repo:scripts/gate.mjs",
       "path": "scripts/gate.mjs",
       "type": "executable",
-      "hash": "ec7acc001b2784276e60f0faca2fc86ec23264a767c18fdee25ae25ee0fa4778"
+      "hash": "c277f30f18e22344e5dbeb49560884e55ad5df76148a008bd3f2d53dddb6b5b0"
     },
     {
       "id": "repo:scripts/generate_attribution.mjs",
@@ -551,7 +551,7 @@
       "id": "repo:scripts/lib/core/values.mjs",
       "path": "scripts/lib/core/values.mjs",
       "type": "kernel",
-      "hash": "a157b22596ccd181b5dab88e26460a3258d9a4be109200b96011574fb8dea0b2"
+      "hash": "08ddfece010585a89209898edf189a666541c4b016a2bec4c806819331cf029f"
     },
     {
       "id": "repo:scripts/lib/core/versions.mjs",
@@ -803,7 +803,7 @@
       "id": "repo:scripts/lib/verify/admission.mjs",
       "path": "scripts/lib/verify/admission.mjs",
       "type": "kernel",
-      "hash": "4bf186d3461a19da7420ae7a3941b5caeb6d849f0824300964e7b79a457a15b6"
+      "hash": "7152950970971965de361ec96ba6b7906d9d81e553c1ddbeab6716649981f60f"
     },
     {
       "id": "repo:scripts/lib/verify/alignment.mjs",
@@ -815,7 +815,7 @@
       "id": "repo:scripts/lib/verify/claims.mjs",
       "path": "scripts/lib/verify/claims.mjs",
       "type": "kernel",
-      "hash": "aac6f21716f9f88f24d6a84707c1204642bfcb4f8857f7c779202dad098dff85"
+      "hash": "b6a622af92b679c99428444621ea5b0ad5e5f0d9ea0599eba1f4362e540b1e2f"
     },
     {
       "id": "repo:scripts/lib/verify/dispatch.mjs",
@@ -827,7 +827,7 @@
       "id": "repo:scripts/lib/verify/mechanical.mjs",
       "path": "scripts/lib/verify/mechanical.mjs",
       "type": "kernel",
-      "hash": "0e6d6606505e516b8ab55dff495d43070c4452490017b13d9068a975f2904e17"
+      "hash": "c35875185496760051a7eaccec935412244eb7896da051549c480ba4fcd82e98"
     },
     {
       "id": "repo:scripts/lib/verify/references.mjs",
@@ -1811,7 +1811,7 @@
       "id": "repo:tests/redteam-r4-confidence-k2.test.mjs",
       "path": "tests/redteam-r4-confidence-k2.test.mjs",
       "type": "test",
-      "hash": "cd9d7d67497f9e420cc8b51efd30c2ef962a7ad6a467af17b1f5ae6a6e82659e"
+      "hash": "184fba742e213eb193dde9130f6a1a33f20341366e43a221a27f168f4754fd82"
     },
     {
       "id": "repo:tests/redteam-r4-confidence.test.mjs",
@@ -1824,6 +1824,12 @@
       "path": "tests/redteam-r4-control.test.mjs",
       "type": "test",
       "hash": "6b1343f101bea84a41ca8068a62c6bc0f334811d16e22a6e6d0ef66facd34ae8"
+    },
+    {
+      "id": "repo:tests/redteam-r5-readers.test.mjs",
+      "path": "tests/redteam-r5-readers.test.mjs",
+      "type": "test",
+      "hash": "b3cdf6fc20a77dea6357f17f458b17e8abfe53cb7f429e455ed0c0dfd73fcd96"
     },
     {
       "id": "repo:tests/requirements.test.mjs",

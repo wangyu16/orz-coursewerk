@@ -202,7 +202,9 @@ test("[req.mechanical.recompute] the real course raises nothing, and what the ch
   assert.ok(cov.balanced >= 14 && cov.compared >= 1, JSON.stringify(cov));
   assert.ok(all.every((u) => !arithmeticMismatches(u.text).length && !unbalancedEquations(u.text).length));
   // the general form "αA + βB ⇌ σS + τT", a split "\ce{<=>}" and a kJ/J conversion: named, not passed in silence
-  assert.deepEqual(cov.skipped.map((s) => s.what).sort(), ["reaction", "reaction", "reaction", "worked link"]);
+  // (round 5: the practice set's copy of the ΔG° chain wraps its inline math across a line break; the reader now reads
+  // it, so its kJ/J conversion is a second counted "worked link" — one more form read, none hidden)
+  assert.deepEqual(cov.skipped.map((s) => s.what).sort(), ["reaction", "reaction", "reaction", "worked link", "worked link"]);
   assert.ok(cov.skipped.some((s) => /change of unit/.test(s.reason)));
 });
 
@@ -210,7 +212,7 @@ test("[req.mechanical.recompute] [req.mechanical.balance] R4-K01…K12 through t
   const c = course(t);
   const g0 = c.gate();
   assert.ok(!g0.findings.some((f) => /computation-mismatch|equation-unbalanced/.test(f.kind)), "the clean course raises none");
-  assert.ok(g0.mechanical && g0.mechanical.skipped.length === 4, "the gate reports what it could not read");
+  assert.ok(g0.mechanical && g0.mechanical.skipped.length === 5, "the gate reports what it could not read (5 since round 5: the wrapped ΔG° span is read)");
   const ATTACKS = ["Worked through, $Q_r = \\frac{(0.20)^2}{(0.10)(0.30)^3} = \\frac{0.40}{0.0027} = 148$.",
     "The fraction of nitrogen converted is $\\frac{0.12}{0.50} \\times 100\\% = 2.4\\%$.",
     "$$\\begin{aligned} Q_r &= \\frac{(0.20)^2}{(0.10)(0.30)^3} \\\\ &= 1.48 \\end{aligned}$$",
