@@ -2863,6 +2863,21 @@
           "tests/redteam-r4-control.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.coherence.reader-view",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Every binding about what a reader reads is derived from ONE reader view (scripts/lib/core/rendered.mjs): the text as orz-markdown renders it (struck, hidden, commented and link-destination/title text out; entities decoded; invisible characters out; NFC) with each formula as KaTeX typesets it (grouping braces, spacing and sizing commands and one-glyph synonyms vanish; every sign, relation, arrow, script, font and symbol kept). Link/framing review currency and absolute-review currency are bound to its meaning key; the answer-to-question and reference bindings and the D43 light test to its light key (letter case folded); a `unit:` dependency to the fact tokens a reader sees. If the reader sees a different word or symbol the binding changes; if the reader sees the same thing it does not. Records keyed on earlier normalisations are upgraded where the text is unchanged under both keys, otherwise one cheap re-check is owed. Identity and evidence keys (contentHash, factHash on evidence, knowledge-review passages, instructor confirmations) stay on the source by design (D17).",
+      "source": "3C red team round 5, cause 1 (D46): Control C2-01, Coherence F5, F7, the 'does [](not) shift' note",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r5-reader-view.test.mjs"
+        ]
+      }
     }
   ]
 }
