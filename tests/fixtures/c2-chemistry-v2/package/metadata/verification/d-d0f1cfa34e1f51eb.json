@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-d0f1cfa34e1f51eb",
+  "kind": "knowledge",
+  "unit": "u-study-guide-chemical-equilibrium-worked-examples-2",
+  "factHash": "71171873f84a60100d6cebc958d7d5ce9a5dfc093b9e0af18495ff209d198583",
+  "contentHash": "d5d7e3a8ca68e500df67b395fbfb05bd4203a617abcfde2b3837e530944214b6",
+  "at": "2026-10-07T22:18:21.900Z",
+  "bundle": {
+    "nonce": "0b263b0b56521400",
+    "bundleHash": "d0f1cfa34e1f51eb4dada8b751d5c7bc029703f59ca90a57a911c0ad866206f8",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"0b263b0b56521400\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nWHAT CHANGED SINCE THE PASSAGE WAS LAST CHECKED (context only: the passage must agree with it as it is now)\nWorked example 1, study-guide/chemical-equilibrium.md § worked-examples:\nWrite the equilibrium constant expression for the ammonia synthesis $\\ce{N2 + 3 H2 <=> 2 NH3}$.\n\nTEXT BEFORE THE PASSAGE (context only)\nWorked example 1: Write the equilibrium constant expression for the ammonia synthesis $\\ce{N2 + 3 H2 <=> 2 NH3}$.\n\nTEXT AFTER THE PASSAGE (context only)\nWorked example 2: Suppose a reaction has $K = 4.0$ at $T = 298\\ \\text{K}$. Using $R = 8.314\\ \\text{J mol}^{-1}\\text{K}^{-1}$, estimate the standard Gibbs energy change.\n\nPASSAGE (Solution 1)\nProducts over reactants, each raised to its coefficient:\n$$K = \\frac{[\\ce{NH3}]^{2}}{[\\ce{N2}]\\,[\\ce{H2}]^{3}}.$$"
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"0b263b0b56521400\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "8be6a1d44d3e1f5c46c082462c16c1b687f005902bb508df7f10fec2c032d12d"
+  }
+}

@@ -14,6 +14,7 @@ import { hiddenContent, shippedFiles, uncheckedShipped } from "./shipped.mjs";
 import { liveReader } from "./package_reader.mjs";
 import { parseLog, readLogText } from "../records/log.mjs";
 import { canonicalJson } from "../records/canonical.mjs";
+import { committedHistoryFailures, releaseAnchorFailures } from "../skeleton/gate.mjs";
 
 export function packPublished(pkg, outDir) {
   const pub = latestPublish(pkg);
@@ -70,6 +71,9 @@ export function packPublished(pkg, outDir) {
   let earlier = null; try { earlier = JSON.parse(fs.readFileSync(path.join(outDir, `${base}.release.json`), "utf8")); } catch { earlier = null; }
   const held = earlier?.logHead && parseLog(readLogText(pkg)).find((r) => r.seq === earlier.logHead.seq);
   if (earlier?.logHead && held?.hash !== earlier.logHead.hash) { fs.rmSync(work, { recursive: true, force: true }); return { ok: false, error: `the decision log no longer holds record ${earlier.logHead.seq} as it was when ${base}.release.json was packed: its history was rewritten since that release` }; }
+  // …and HEAD's committed history must hold it too, and extend every anchor the package's git keeps (R4 coherence F3)
+  const rewritten = [...releaseAnchorFailures(pkg, { releaseDirs: [outDir] }), ...committedHistoryFailures(pkg)];
+  if (rewritten.length) { fs.rmSync(work, { recursive: true, force: true }); return { ok: false, error: `refusing to pack a rewritten history: ${rewritten[0]}` }; }
   const zipPath = path.join(outDir, `${base}.alembic.zip`);
   fs.rmSync(zipPath, { force: true });
   const z = spawnSync("zip", ["-r", "-q", "-X", "-D", zipPath, "."], { cwd: staged, encoding: "utf8" });

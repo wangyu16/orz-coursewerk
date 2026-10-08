@@ -27,14 +27,14 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {},
       "tokens": [
         "disturbed",
         "equilibrium",
         "qualitative",
         "response",
         "the"
-      ],
-      "stamp": {}
+      ]
     },
     {
       "id": "u-slides-le-chatelier-slide-3-what-we-will-cover-1",
@@ -61,6 +61,7 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {},
       "tokens": [
         "and",
         "are",
@@ -83,8 +84,7 @@
         "volume",
         "why",
         "word"
-      ],
-      "stamp": {}
+      ]
     },
     {
       "id": "u-slides-le-chatelier-slide-5-partially-counteract-1",
@@ -114,6 +114,10 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.le-chatelier.state-principle": "5324ba0a821c95fd2cbc3ddb3ac4b939890d620dbf4818316c0c016e52c9c95d",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      },
       "tokens": [
         "adjusts",
         "change",
@@ -127,11 +131,7 @@
         "system",
         "that",
         "the"
-      ],
-      "stamp": {
-        "spine:objective.le-chatelier.state-principle": "5324ba0a821c95fd2cbc3ddb3ac4b939890d620dbf4818316c0c016e52c9c95d",
-        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
-      }
+      ]
     },
     {
       "id": "u-slides-le-chatelier-slide-5-partially-counteract-2",
@@ -161,6 +161,10 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.le-chatelier.state-principle": "5324ba0a821c95fd2cbc3ddb3ac4b939890d620dbf4818316c0c016e52c9c95d",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      },
       "tokens": [
         "and",
         "bearing",
@@ -177,11 +181,7 @@
         "system",
         "the",
         "word"
-      ],
-      "stamp": {
-        "spine:objective.le-chatelier.state-principle": "5324ba0a821c95fd2cbc3ddb3ac4b939890d620dbf4818316c0c016e52c9c95d",
-        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
-      }
+      ]
     },
     {
       "id": "u-slides-le-chatelier-slide-7-adding-and-removing-a-species-1",
@@ -211,6 +211,12 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
+        "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139",
+        "term:le-chatelier:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb"
+      },
       "tokens": [
         "added",
         "concentration",
@@ -229,13 +235,7 @@
         "toward",
         "was",
         "what"
-      ],
-      "stamp": {
-        "term:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
-        "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
-        "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8",
-        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
-      }
+      ]
     },
     {
       "id": "u-slides-le-chatelier-slide-7-adding-and-removing-a-species-2",
@@ -265,6 +265,13 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
+        "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139",
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "term:chemical-equilibrium:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f"
+      },
       "tokens": [
         "again",
         "change",
@@ -276,12 +283,7 @@
         "the",
         "until",
         "value"
-      ],
-      "stamp": {
-        "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
-        "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8",
-        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
-      }
+      ]
     },
     {
       "id": "u-slides-le-chatelier-slide-9-treat-heat-as-a-species-1",
@@ -311,6 +313,13 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:concept.le-chatelier.heat-as-species": "82e353cb2aacc9ac04cd1b28cd8b5e30d54efdf71750e082d6250554988f936b",
+        "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8",
+        "term:le-chatelier:exothermic reaction": "c20452115a1d09ee264abeb11c57548d06c6d732dbb57bd21fcd6673c570eb27",
+        "term:le-chatelier:endothermic reaction": "a6d35ce30483c0b5e231f8425ca24666d601ef261ec571088ad8d072e5be84ad"
+      },
       "tokens": [
         "behaves",
         "endothermic",
@@ -319,12 +328,7 @@
         "product",
         "reactant",
         "reaction"
-      ],
-      "stamp": {
-        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
-        "spine:concept.le-chatelier.heat-as-species": "82e353cb2aacc9ac04cd1b28cd8b5e30d54efdf71750e082d6250554988f936b",
-        "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8"
-      }
+      ]
     },
     {
       "id": "u-slides-le-chatelier-slide-9-treat-heat-as-a-species-2",
@@ -354,6 +358,11 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:concept.le-chatelier.heat-as-species": "82e353cb2aacc9ac04cd1b28cd8b5e30d54efdf71750e082d6250554988f936b",
+        "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8"
+      },
       "tokens": [
         "apply",
         "away",
@@ -374,12 +383,7 @@
         "the",
         "then",
         "where"
-      ],
-      "stamp": {
-        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
-        "spine:concept.le-chatelier.heat-as-species": "82e353cb2aacc9ac04cd1b28cd8b5e30d54efdf71750e082d6250554988f936b",
-        "spine:concept.le-chatelier.concentration-shift": "35cdd6e00eab18f267099f515896ab0ce4a2eb28017888c3b67c76b118d8dac8"
-      }
+      ]
     },
     {
       "id": "u-slides-le-chatelier-slide-10-temperature-is-the-special-one-1",
@@ -409,6 +413,12 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:concept.le-chatelier.temperature-changes-k": "f8d1d7dd60d00d977f210b6c1db25a63f5b77e7349a45294f0af5821bf62d85a",
+        "spine:concept.le-chatelier.heat-as-species": "82e353cb2aacc9ac04cd1b28cd8b5e30d54efdf71750e082d6250554988f936b",
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b"
+      },
       "tokens": [
         "change",
         "changes",
@@ -417,13 +427,7 @@
         "temperature",
         "the",
         "value"
-      ],
-      "stamp": {
-        "term:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
-        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
-        "spine:concept.le-chatelier.temperature-changes-k": "f8d1d7dd60d00d977f210b6c1db25a63f5b77e7349a45294f0af5821bf62d85a",
-        "spine:concept.le-chatelier.heat-as-species": "82e353cb2aacc9ac04cd1b28cd8b5e30d54efdf71750e082d6250554988f936b"
-      }
+      ]
     },
     {
       "id": "u-slides-le-chatelier-slide-10-temperature-is-the-special-one-2",
@@ -453,6 +457,12 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
+        "spine:concept.le-chatelier.temperature-changes-k": "f8d1d7dd60d00d977f210b6c1db25a63f5b77e7349a45294f0af5821bf62d85a",
+        "spine:concept.le-chatelier.heat-as-species": "82e353cb2aacc9ac04cd1b28cd8b5e30d54efdf71750e082d6250554988f936b",
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b"
+      },
       "tokens": [
         "and",
         "but",
@@ -471,12 +481,7 @@
         "this",
         "untouched",
         "volume"
-      ],
-      "stamp": {
-        "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
-        "spine:concept.le-chatelier.temperature-changes-k": "f8d1d7dd60d00d977f210b6c1db25a63f5b77e7349a45294f0af5821bf62d85a",
-        "spine:concept.le-chatelier.heat-as-species": "82e353cb2aacc9ac04cd1b28cd8b5e30d54efdf71750e082d6250554988f936b"
-      }
+      ]
     },
     {
       "id": "u-slides-le-chatelier-slide-12-count-the-moles-of-gas-1",
@@ -506,17 +511,17 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      },
       "tokens": [
         "equilibrium",
         "for",
         "gas",
         "phase"
-      ],
-      "stamp": {
-        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
-        "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f",
-        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
-      }
+      ]
     },
     {
       "id": "u-slides-le-chatelier-slide-12-count-the-moles-of-gas-2",
@@ -546,6 +551,11 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      },
       "tokens": [
         "decrease",
         "fewer",
@@ -561,12 +571,7 @@
         "toward",
         "volume",
         "with"
-      ],
-      "stamp": {
-        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
-        "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f",
-        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
-      }
+      ]
     },
     {
       "id": "u-slides-le-chatelier-slide-12-count-the-moles-of-gas-3",
@@ -596,6 +601,11 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
+        "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      },
       "tokens": [
         "both",
         "change",
@@ -607,12 +617,7 @@
         "pressure",
         "shifts",
         "sides"
-      ],
-      "stamp": {
-        "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
-        "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f",
-        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
-      }
+      ]
     },
     {
       "id": "u-slides-le-chatelier-slide-14-an-inert-gas-at-constant-volume-1",
@@ -642,6 +647,13 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
+        "spine:concept.le-chatelier.inert-gas-no-shift": "ebfca1d007354f867e6b52509b1fa1a94ee59f0063314813649910520ad720e6",
+        "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f",
+        "term:le-chatelier:partial pressure": "1911d9c4cb6332589c0c654fabfa7dd7bfd78d9bfceb7146973dee1784dcec0d",
+        "term:le-chatelier:inert gas": "91b328404fe9488574e97dda03a06991fc165308d1553889049deb255cba0d1a"
+      },
       "tokens": [
         "adding",
         "but",
@@ -655,14 +667,7 @@
         "the",
         "total",
         "volume"
-      ],
-      "stamp": {
-        "term:partial pressure": "1911d9c4cb6332589c0c654fabfa7dd7bfd78d9bfceb7146973dee1784dcec0d",
-        "term:inert gas": "91b328404fe9488574e97dda03a06991fc165308d1553889049deb255cba0d1a",
-        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
-        "spine:concept.le-chatelier.inert-gas-no-shift": "ebfca1d007354f867e6b52509b1fa1a94ee59f0063314813649910520ad720e6",
-        "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f"
-      }
+      ]
     },
     {
       "id": "u-slides-le-chatelier-slide-14-an-inert-gas-at-constant-volume-2",
@@ -692,6 +697,13 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
+        "spine:concept.le-chatelier.inert-gas-no-shift": "ebfca1d007354f867e6b52509b1fa1a94ee59f0063314813649910520ad720e6",
+        "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f",
+        "term:le-chatelier:partial pressure": "1911d9c4cb6332589c0c654fabfa7dd7bfd78d9bfceb7146973dee1784dcec0d",
+        "term:chemical-equilibrium:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f"
+      },
       "tokens": [
         "changes",
         "does",
@@ -702,13 +714,7 @@
         "shift",
         "the",
         "unchanged"
-      ],
-      "stamp": {
-        "term:partial pressure": "1911d9c4cb6332589c0c654fabfa7dd7bfd78d9bfceb7146973dee1784dcec0d",
-        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
-        "spine:concept.le-chatelier.inert-gas-no-shift": "ebfca1d007354f867e6b52509b1fa1a94ee59f0063314813649910520ad720e6",
-        "spine:concept.le-chatelier.volume-pressure-shift": "adbf238b9aff085bfc68f2ecd4472947c72a5d4ab5f6fb79f5947743ac784b2f"
-      }
+      ]
     },
     {
       "id": "u-slides-le-chatelier-slide-15-a-catalyst-1",
@@ -738,6 +744,13 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
+        "spine:concept.le-chatelier.catalyst-no-shift": "a33f01841a8f10946c063b98a941a57c8eec6c0180f63ee168c4afcc82427a76",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139",
+        "term:chemical-equilibrium:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
+        "term:le-chatelier:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22"
+      },
       "tokens": [
         "and",
         "catalyst",
@@ -748,13 +761,7 @@
         "same",
         "speeds",
         "the"
-      ],
-      "stamp": {
-        "term:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
-        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
-        "spine:concept.le-chatelier.catalyst-no-shift": "a33f01841a8f10946c063b98a941a57c8eec6c0180f63ee168c4afcc82427a76",
-        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
-      }
+      ]
     },
     {
       "id": "u-slides-le-chatelier-slide-15-a-catalyst-2",
@@ -785,6 +792,11 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
+        "spine:concept.le-chatelier.catalyst-no-shift": "a33f01841a8f10946c063b98a941a57c8eec6c0180f63ee168c4afcc82427a76",
+        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
+      },
       "tokens": [
         "changes",
         "composition",
@@ -799,12 +811,7 @@
         "system",
         "the",
         "there"
-      ],
-      "stamp": {
-        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
-        "spine:concept.le-chatelier.catalyst-no-shift": "a33f01841a8f10946c063b98a941a57c8eec6c0180f63ee168c4afcc82427a76",
-        "spine:concept.le-chatelier.principle-statement": "bf783ce79700b59131c5f0c809d5eb5179efe060c3adb11e66736e4b22fd7139"
-      }
+      ]
     },
     {
       "id": "u-slides-le-chatelier-slide-16-watch-out-for-these-1",
@@ -838,6 +845,17 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:misconception.le-chatelier.cancels-disturbance": "9355c81a7546167e3e5eb4781be62a7b2f3f136fdd73559d17bdb988e9ff2447",
+        "spine:misconception.le-chatelier.catalyst-increases-product": "1619ffd563d9eec0015828b95afe9851810d317dff14fe233d22b2e4976d2331",
+        "spine:misconception.le-chatelier.inert-gas-shifts": "76fc47d822faefc0623fd61b24fface39df83afc1debcb31a2f2f0cbca2bf616",
+        "spine:misconception.le-chatelier.heat-raises-yield": "de3be7752698491e87bbdc5b48484459214bd28e20d142871cc46ca0bea63d55",
+        "spine:misconception.le-chatelier.pressure-shifts-every": "158e81d88e7ef78247247a4d4bac2b5f7b81f59ef16e0a2a3dabddf8565c6361",
+        "term:chemical-equilibrium:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
+        "term:le-chatelier:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
+        "term:le-chatelier:partial pressure": "1911d9c4cb6332589c0c654fabfa7dd7bfd78d9bfceb7146973dee1784dcec0d",
+        "term:le-chatelier:inert gas": "91b328404fe9488574e97dda03a06991fc165308d1553889049deb255cba0d1a"
+      },
       "tokens": [
         "always",
         "amount",
@@ -877,17 +895,7 @@
         "unchanged",
         "when",
         "yield"
-      ],
-      "stamp": {
-        "term:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
-        "term:partial pressure": "1911d9c4cb6332589c0c654fabfa7dd7bfd78d9bfceb7146973dee1784dcec0d",
-        "term:inert gas": "91b328404fe9488574e97dda03a06991fc165308d1553889049deb255cba0d1a",
-        "spine:misconception.le-chatelier.cancels-disturbance": "9355c81a7546167e3e5eb4781be62a7b2f3f136fdd73559d17bdb988e9ff2447",
-        "spine:misconception.le-chatelier.catalyst-increases-product": "1619ffd563d9eec0015828b95afe9851810d317dff14fe233d22b2e4976d2331",
-        "spine:misconception.le-chatelier.inert-gas-shifts": "76fc47d822faefc0623fd61b24fface39df83afc1debcb31a2f2f0cbca2bf616",
-        "spine:misconception.le-chatelier.heat-raises-yield": "de3be7752698491e87bbdc5b48484459214bd28e20d142871cc46ca0bea63d55",
-        "spine:misconception.le-chatelier.pressure-shifts-every": "158e81d88e7ef78247247a4d4bac2b5f7b81f59ef16e0a2a3dabddf8565c6361"
-      }
+      ]
     },
     {
       "id": "u-slides-le-chatelier-slide-17-the-two-chapters-together-1",
@@ -917,6 +925,14 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:concept.course.le-chatelier-principle": "47fd302b7577d8b5dc191a5ec288fa643cdfba1fa475a9c991240e59467e31e6",
+        "spine:concept.course.dynamic-equilibrium": "472fd15589c620d679849f5e27679d2df69ea513a5b8d4a6c6b66bdd952e845e",
+        "spine:concept.course.temperature-changes-k": "450212a574f09d754afb1294bf6a7f99df93f07c51f6673052075caf17de689a",
+        "spine:concept.course.equilibrium-constant": "ac50d5fd58e2883f9e4b204905a1b8511836821a6df1cf550719ca99f1cbcc43",
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "term:chemical-equilibrium:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f"
+      },
       "tokens": [
         "all",
         "and",
@@ -938,13 +954,8 @@
         "what",
         "when",
         "which"
-      ],
-      "stamp": {
-        "spine:concept.course.le-chatelier-principle": "47fd302b7577d8b5dc191a5ec288fa643cdfba1fa475a9c991240e59467e31e6",
-        "spine:concept.course.dynamic-equilibrium": "472fd15589c620d679849f5e27679d2df69ea513a5b8d4a6c6b66bdd952e845e",
-        "spine:concept.course.temperature-changes-k": "450212a574f09d754afb1294bf6a7f99df93f07c51f6673052075caf17de689a",
-        "spine:concept.course.equilibrium-constant": "ac50d5fd58e2883f9e4b204905a1b8511836821a6df1cf550719ca99f1cbcc43"
-      }
+      ]
     }
-  ]
+  ],
+  "stamps": 2
 }

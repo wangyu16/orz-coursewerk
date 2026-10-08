@@ -13,6 +13,9 @@
 //                 between chapters; the course's chapter list or order changed) → a new major version (D15).
 // When unsure, it is substantive: every rule below errs away from "light".
 
+import { lightKey, readerView, renderedParts } from "./rendered.mjs";
+export { lightKey, readerView };
+
 /** The change kinds a glance confirmation may record (D43): a rephrasing only once its blind review found the meaning kept. */
 export const GLANCE_KINDS = ["light", "rephrasing"];
 
@@ -30,12 +33,20 @@ export function factTokens(text) {
 }
 
 /**
- * A text's wording, normalized: lowercase, with whitespace, markup and punctuation folded — but relation and sign
- * symbols kept as words, so "Q < K" and "Q > K" differ. An answer is bound to its question by this (red team R1
- * coherence, F2: a reversal through words outside any fixed list — "halved" → "doubled" — passed as a null edit), and
- * a spine change is light only when this is unchanged (R2 F4).
+ * The wording an answer is bound to its question by, and a spine change is light only when it is unchanged (R1 F2,
+ * R2 F4): since red team R4 (coherence F5, F8; control C4-01) the LIGHT KEY of the rendered text (rendered.mjs) —
+ * what a reader sees, with only whitespace, emphasis, list markers, letter case and prose punctuation folded. Struck
+ * text is gone, and every sign, relation, arrow and operator is a word: "~~held at constant volume~~" changes the
+ * question an answer answers, and "K ↓" → "K ↑" is not light.
  */
 export function questionWording(text) {
+  return lightKey(text);
+}
+/**
+ * The binding key before red team R4 (lowercase, markup and punctuation folded, < > = + − kept as words, struck text
+ * KEPT). Only read to migrate stamps written with it (dependencies.mjs legacyQuestionCurrent), never to bind.
+ */
+export function legacyQuestionWording(text) {
   return String(text || "").toLowerCase()
     .replace(/≤|\\leq?\b/g, " le ").replace(/≥|\\geq?\b/g, " ge ").replace(/≠|\\neq?\b/g, " ne ")
     .replace(/<(?!-)/g, " lt ").replace(/(?<!-)>/g, " gt ").replace(/[−-](?=\s*\d)/g, " minus ").replace(/\+/g, " plus ").replace(/=/g, " eq ")
@@ -77,15 +88,25 @@ export function visibleText(text) {
 // item, or is part of a rule, an arrow or a run (---, ->, <-)
 const SIGN = /[−±∓+]|\\pm\b|\\mp\b|(?<![\p{L}\-<])-(?![\-\p{L}>])|(?<![\p{L}\-<])-(?=\p{L})|(?<=\p{L})-(?![\p{L}\->])/gu;
 const signsOf = (t) => String(t || "").split("\n").map((l) => l.replace(/^\s*[-*+]\s+/, " ").replace(/^\s*-{3,}\s*$/, " ")).join("\n").match(SIGN) || [];
-/** A spine text's wording for the light test: its visible words, lowercase, with every sign kept as a word. */
+/**
+ * A spine text's wording for the light test (R4 F8, C4-01: inverted). Light means old and new differ ONLY by whitespace,
+ * `*`/`_` emphasis, list markers, letter case, and prose punctuation that is not a sign, relation, arrow or operator —
+ * compared on the RENDERED text (a word moved into a link destination is gone). Every other character change is at
+ * least a rephrasing, which needs the D43 meaning review.
+ */
 export function spineWording(text) {
-  const t = String(visibleText(text)).split("\n").map((l) => l.replace(/^\s*[-*+]\s+/, " ").replace(/^\s*-{3,}\s*$/, " ")).join("\n")
-    .replace(/±|\\pm\b/g, " plusminus ").replace(/∓|\\mp\b/g, " minusplus ").replace(/−/g, " minus ")
-    .replace(/(?<![\p{L}\-<])-(?![\-\p{L}>])|(?<![\p{L}\-<])-(?=\p{L})|(?<=\p{L})-(?![\p{L}\->])/gu, " minus ");
-  return questionWording(t);
+  return lightKey(text);
 }
-const sameFacts = (a, b) => { const A = visibleText(a), B = visibleText(b);
-  return JSON.stringify(meaningTokens(A)) === JSON.stringify(meaningTokens(B)) && JSON.stringify(directions(A)) === JSON.stringify(directions(B)) && JSON.stringify(signsOf(A)) === JSON.stringify(signsOf(B)); };
+// the signs, relations, arrows and operators a reader sees, in order (R4 F8, C4-01): a change among them reverses or
+// alters a statement whatever its words say ("T ↑ ⇒ K ↓" → "K ↑", "K ≫ 1" → "K ≪ 1", "Fe³⁺" → "Fe³⁻", "–RT" → "RT",
+// \ce{A -> B} → \ce{A <- B}, "a/b" → "a*b", "K_c" → "K^c") — so it is substantive, never a rephrasing to glance
+const OPERATOR = /->|<-|<=>|<->|[<>=≤≥≠≈≪≫⩽⩾⇌⇋⇄→←↔⇒⇐⇔⟶⟵⟷↑↓↗↘⇑⇓/×÷*^_±∓+−–‒－﹣⁻⁺₋₊]|\\(?:pm|mp|times|div|cdot|to|gets|rightarrow|leftarrow|leftrightarrow|rightleftharpoons|leftrightharpoons|Rightarrow|Leftarrow|uparrow|downarrow|ll|gg|leq?|geq?|neq?|approx|ominus|oplus)(?![A-Za-z])/g;
+const operatorsOf = (t) => String(t || "").match(OPERATOR) || [];
+const sameFacts = (a, b) => { const A = readerView(a), B = readerView(b);
+  return JSON.stringify(meaningTokens(A)) === JSON.stringify(meaningTokens(B)) && JSON.stringify(directions(A)) === JSON.stringify(directions(B)) && JSON.stringify(signsOf(A)) === JSON.stringify(signsOf(B))
+    && JSON.stringify(operatorsOf(A)) === JSON.stringify(operatorsOf(B)) && JSON.stringify(scriptsOf(a)) === JSON.stringify(scriptsOf(b)); };
+// markdown sub- and superscripts (H~2~O, 10^3^), in order: a subscript turned superscript is an operator change
+const scriptsOf = (t) => renderedParts(t).filter((p) => p.kind === "mark").map((p) => p.text);
 const sameWords = (a, b) => spineWording(a) === spineWording(b);
 const wording = (a, b, what) => (!sameFacts(a, b) ? { kind: "substantive", why: `${what} changed (a value, name, number, sign, negation or direction)` }
   : !sameWords(a, b) ? { kind: "rephrasing", why: `${what} reworded (the same values, names, signs, negations and directions)` } : null);

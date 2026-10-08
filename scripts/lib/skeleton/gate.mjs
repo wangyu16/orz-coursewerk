@@ -9,7 +9,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { blocksPublish, makeFinding } from "../records/findings.mjs";
 import { RECORD_PATHS } from "../records/paths.mjs";
-import { readLogText, verifyAgainstCommitted, verifyExtends } from "../records/log.mjs";
+import { parseLog, readLogText, verifyAgainstCommitted, verifyExtends } from "../records/log.mjs";
 import { SKELETON } from "./runner.mjs";
 
 /** The committed log text, from the package's own git. A package without git history cannot be checked. */
@@ -57,14 +57,15 @@ export function committedLog(root) {
  *
  * EVERY commit reachable from HEAD is checked against EVERY parent (R2 coherence, F5): a forged log committed on an
  * orphan branch, with the real history merged in by `git merge -s ours`, sits first in the first-parent chain, but its
- * merge commit does not extend its second parent. And the log at every ANCHOR — each commit the current branch's reflog
- * remembers, each remote-tracking branch and each tag — must be a prefix of HEAD's log or extend it: a squash onto a
- * new root leaves no parent to compare with, but the branch's reflog (and any pushed copy) still holds the old log.
+ * merge commit does not extend its second parent. And the log at every ANCHOR — each commit HEAD's reflog remembers,
+ * every local branch and its reflog, each remote-tracking branch and each tag (R4 F3) — must be a prefix of the current
+ * log: a squash onto a new root, or a forgery committed on a new branch made at an old commit, leaves no parent to
+ * compare with, but the reflogs and the other branches still hold the old log.
  *
  * Out of reach (the scope edge, as R1 F10 was for a re-chained log before it): a history rewritten onto a new root
- * with every anchor removed too — the reflog expired, no remote-tracking branch or tag left — has nothing in the package
- * to compare with. A shipped pack carries the log (pack_v2.mjs) and its receipt names the log's last record
- * (logHead), which is the anchor outside the package for that case.
+ * with every anchor removed too — every reflog expired, no other branch, remote-tracking branch or tag left — has
+ * nothing in the package to compare with. A shipped pack carries the log (pack_v2.mjs) and its receipt names the log's
+ * last record (logHead), the anchor outside the package for that case (releaseAnchorFailures).
  */
 export function committedHistoryFailures(root) {
   root = path.resolve(root);
@@ -88,23 +89,56 @@ export function committedHistoryFailures(root) {
       }
     }
   }
-  // anchors: what the branch's reflog remembers, and what was pushed or tagged
+  // anchors (red team R4 coherence F3: the current branch's reflog alone let a forgery committed on a NEW branch, made
+  // at an old commit, pass while master and HEAD's own reflog still held the true log): HEAD's reflog (.git/logs/HEAD —
+  // every commit HEAD was ever at, on any branch), every local branch and its reflog, every remote-tracking branch and
+  // tag. The current history must EXTEND every anchor's log: each is a byte-exact prefix of the working log.
   const head = blobs.get(commits.at(-1)?.[0]);
   if (!head) return [];
-  const seen = new Set(blobs.values());
+  const working = readLogText(root);
+  const seen = new Set([head]);
   const anchors = [];
-  const branch = git(["symbolic-ref", "-q", "HEAD"]).stdout.trim();
-  if (branch) anchors.push(...git(["reflog", "show", "--format=%H", branch, "--"]).stdout.split("\n").filter(Boolean).map((c) => [c, `the ${branch.replace(/^refs\/heads\//, "")} branch's reflog`]));
+  const reflog = (ref, what) => git(["reflog", "show", "--format=%H", ref, "--"]).stdout.split("\n").filter(Boolean).map((c) => [c, what]);
+  anchors.push(...reflog("HEAD", "HEAD's reflog"));
+  for (const ref of git(["for-each-ref", "--format=%(refname)", "refs/heads"]).stdout.split("\n").filter(Boolean)) {
+    const name = ref.replace(/^refs\/heads\//, "");
+    anchors.push([ref, `the ${name} branch`], ...reflog(ref, `the ${name} branch's reflog`));
+  }
   anchors.push(...git(["for-each-ref", "--format=%(refname)", "refs/remotes", "refs/tags"]).stdout.split("\n").filter(Boolean).map((r) => [r, r]));
   const anchorBlobs = blobsOf(git, anchors.map(([c]) => c));
   for (const [c, what] of anchors) {
     const b = anchorBlobs.get(c);
     if (!b || seen.has(b)) continue;
     seen.add(b);
-    const a = text(b), h = text(head);
-    if (!h.startsWith(a) && !a.startsWith(h)) return [`the log committed at ${short(c)} (${what}) is not an earlier or later version of HEAD's log: the history was rewritten (${verifyExtends(a, h)[0] || "not a byte-exact prefix"})`];
+    const a = text(b);
+    if (!working.startsWith(a)) return [`the log committed at ${short(c)} (${what}) is not an earlier version of the current log: the history was rewritten (${verifyExtends(a, working)[0] || "not a byte-exact prefix"})`];
   }
   return [];
+}
+
+/**
+ * A release is an anchor outside the package (R2 F5, R4 F3): the receipt of the last pack (`<title>.release.json`, in
+ * the `dist` directory beside the package, or any directory named) names the log's last record then (logHead). A
+ * package whose log — or whose committed history at HEAD — no longer holds that record as it was had its history
+ * rewritten since that release.
+ */
+export function releaseAnchorFailures(root, { releaseDirs = null } = {}) {
+  root = path.resolve(root);
+  let title = null; try { title = JSON.parse(fs.readFileSync(path.join(root, "alembic.json"), "utf8")).title || "course"; } catch { return []; }
+  const base = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "course";
+  const dirs = releaseDirs || [path.join(path.dirname(root), "dist")];
+  const working = parseLog(readLogText(root));
+  const committed = committedLog(root), headRecs = committed.ok ? parseLog(committed.text) : [];
+  const out = [];
+  for (const dir of dirs) for (const name of [`${base}.release.json`, `${base}.private.release.json`]) {
+    let r = null; try { r = JSON.parse(fs.readFileSync(path.join(dir, name), "utf8")); } catch { continue; }
+    const h = r?.logHead; if (!h?.seq || !h.hash) continue;
+    const held = working.find((x) => x.seq === h.seq);
+    if (held?.hash !== h.hash) { out.push(`the decision log does not hold record ${h.seq} as it was when ${name} was packed: its history was rewritten since that release`); continue; }
+    const inHead = headRecs.find((x) => x.seq === h.seq);
+    if (headRecs.length && headRecs.at(-1).seq >= h.seq && inHead?.hash !== h.hash) out.push(`the log committed at HEAD does not hold record ${h.seq} as it was when ${name} was packed: HEAD's history lacks the published log`);
+  }
+  return out;
 }
 // commit (or ref) → the blob id of its committed log, or null
 function blobsOf(git, revs) {
@@ -120,7 +154,7 @@ function blobsOf(git, revs) {
 export function logFindings(root, basis) {
   const committed = committedLog(root);
   if (!committed.ok) return [makeFinding({ module: SKELETON, kind: "log-unverifiable", units: [], statusClass: "obligation", route: "agent", basis, evidence: { type: "missing", what: committed.reason } })];
-  const failures = [...objectSubstitutions(root), ...verifyAgainstCommitted(committed.text, readLogText(root)), ...committedHistoryFailures(root)];
+  const failures = [...objectSubstitutions(root), ...verifyAgainstCommitted(committed.text, readLogText(root)), ...committedHistoryFailures(root), ...releaseAnchorFailures(root)];
   return failures.length ? [makeFinding({ module: SKELETON, kind: "log-broken", units: [], statusClass: "defect", route: "agent", basis, evidence: { type: "rule", rule: "the decision log verifies and extends the committed log", failures } })] : [];
 }
 

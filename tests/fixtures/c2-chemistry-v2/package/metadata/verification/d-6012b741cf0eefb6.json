@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-6012b741cf0eefb6",
+  "kind": "knowledge",
+  "unit": "u-practice-le-chatelier-questions-22",
+  "factHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "contentHash": "ca752ff8224880a3867051eae55eefa3c529d33e48a950d6eb53f69af159606e",
+  "at": "2026-10-07T22:18:30.873Z",
+  "bundle": {
+    "nonce": "448544eb085099a4",
+    "bundleHash": "6012b741cf0eefb639a72d4e0bf8f956341f2c7d87360f1eabd262d91ac29405",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"448544eb085099a4\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nWHAT CHANGED SINCE THE PASSAGE WAS LAST CHECKED (context only: the passage must agree with it as it is now)\nQ 11, practice/le-chatelier.md § questions:\nFor $\\ce{2 SO3(g) <=> 2 SO2(g) + O2(g)}$, the volume of the vessel is doubled. Which way does the\nequilibrium shift? *(Objective 4)*\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 10: It does not shift. There are two moles of gas on each side, so neither side is favoured by a\nvolume change. This is the case that shows a pressure change does not move every gas-phase\nequilibrium.\n\nQ 11: For $\\ce{2 SO3(g) <=> 2 SO2(g) + O2(g)}$, the volume of the vessel is doubled. Which way does the\nequilibrium shift? *(Objective 4)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 12: Argon is added to a gas-phase equilibrium mixture held at constant volume. Which way does the\nequilibrium shift? *(Objective 5)*\n\nPASSAGE (Answer 11)\nToward the products. There are two moles of gas on the left and three on the right. Increasing the\nvolume lowers the pressure, and the equilibrium shifts toward the side with **more** moles of gas."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"448544eb085099a4\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "8fd332740c53778ea17d65af77f1d701d2b6b38d35d58c97cec7cf0fc7f1057c"
+  }
+}

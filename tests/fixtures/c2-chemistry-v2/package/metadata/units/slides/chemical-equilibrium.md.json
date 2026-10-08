@@ -27,6 +27,10 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "term:chemical-equilibrium:chemical equilibrium": "a26e86a7360c03ec8fe04897e6fec2e0af396e866f38de8515fd15770f9dd962",
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b"
+      },
       "tokens": [
         "and",
         "dynamic",
@@ -35,8 +39,7 @@
         "quantitative",
         "temperature",
         "the"
-      ],
-      "stamp": {}
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-3-what-we-will-cover-1",
@@ -71,6 +74,16 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
+        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
+        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
+        "spine:objective.chemical-equilibrium.omit-pure-phases": "26f069ce2bba4c71ac7d536d53ae77f3979043b94b233dc42f0edaf4b2c75e2f",
+        "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
+        "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "term:chemical-equilibrium:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f"
+      },
       "tokens": [
         "and",
         "balanced",
@@ -100,17 +113,7 @@
         "temperature",
         "the",
         "why"
-      ],
-      "stamp": {
-        "term:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
-        "term:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f",
-        "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
-        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
-        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
-        "spine:objective.chemical-equilibrium.omit-pure-phases": "26f069ce2bba4c71ac7d536d53ae77f3979043b94b233dc42f0edaf4b2c75e2f",
-        "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
-        "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-5-equal-rates-not-zero-rates-1",
@@ -140,6 +143,11 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
+        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3",
+        "term:chemical-equilibrium:chemical equilibrium": "a26e86a7360c03ec8fe04897e6fec2e0af396e866f38de8515fd15770f9dd962"
+      },
       "tokens": [
         "and",
         "change",
@@ -159,12 +167,7 @@
         "the",
         "time",
         "with"
-      ],
-      "stamp": {
-        "term:chemical equilibrium": "a26e86a7360c03ec8fe04897e6fec2e0af396e866f38de8515fd15770f9dd962",
-        "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
-        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-5-equal-rates-not-zero-rates-2",
@@ -194,6 +197,10 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
+        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3"
+      },
       "tokens": [
         "balance",
         "because",
@@ -208,11 +215,7 @@
         "stopped",
         "the",
         "two"
-      ],
-      "stamp": {
-        "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
-        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-6-equilibrium-is-dynamic-1",
@@ -242,6 +245,11 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
+        "spine:concept.chemical-equilibrium.dynamic-exchange": "b40a06a2346be0ae9525175a0671e9fa3ae9a27cca51cdd804ef115cb4477aea",
+        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3"
+      },
       "tokens": [
         "both",
         "concentrations",
@@ -256,12 +264,7 @@
         "stay",
         "the",
         "though"
-      ],
-      "stamp": {
-        "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
-        "spine:concept.chemical-equilibrium.dynamic-exchange": "b40a06a2346be0ae9525175a0671e9fa3ae9a27cca51cdd804ef115cb4477aea",
-        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-6-equilibrium-is-dynamic-2",
@@ -291,6 +294,11 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
+        "spine:concept.chemical-equilibrium.dynamic-exchange": "b40a06a2346be0ae9525175a0671e9fa3ae9a27cca51cdd804ef115cb4477aea",
+        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3"
+      },
       "tokens": [
         "acetate",
         "acetic",
@@ -311,12 +319,7 @@
         "then",
         "unchanged",
         "water"
-      ],
-      "stamp": {
-        "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
-        "spine:concept.chemical-equilibrium.dynamic-exchange": "b40a06a2346be0ae9525175a0671e9fa3ae9a27cca51cdd804ef115cb4477aea",
-        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-8-building-k-from-a-balanced-equat-1",
@@ -346,18 +349,18 @@
         "mechanical"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3"
+      },
       "tokens": [
         "alpha",
         "beta",
         "for",
         "sigma",
         "tau"
-      ],
-      "stamp": {
-        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
-        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
-        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-8-building-k-from-a-balanced-equat-2",
@@ -387,18 +390,19 @@
         "mechanical"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3",
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b"
+      },
       "tokens": [
         "alpha",
         "beta",
         "frac",
         "sigma",
         "tau"
-      ],
-      "stamp": {
-        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
-        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
-        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-8-building-k-from-a-balanced-equat-3",
@@ -428,6 +432,12 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3",
+        "term:chemical-equilibrium:stoichiometric coefficient": "ceb28b3bd97ae3f16ba5825c706b367f558525ac2254ee1d080774a061a35222"
+      },
       "tokens": [
         "coefficient",
         "concentration",
@@ -438,13 +448,7 @@
         "raised",
         "stoichiometric",
         "the"
-      ],
-      "stamp": {
-        "term:stoichiometric coefficient": "ceb28b3bd97ae3f16ba5825c706b367f558525ac2254ee1d080774a061a35222",
-        "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
-        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
-        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-9-where-the-form-comes-from-1",
@@ -475,6 +479,11 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3",
+        "term:chemical-equilibrium:law of mass action": "3ae149d019c752d2dfefc4e9da9604e19fb7ddde3ce33116f07c0e3d2e6f7d61"
+      },
       "tokens": [
         "action",
         "alpha",
@@ -489,12 +498,7 @@
         "sigma",
         "tau",
         "waage"
-      ],
-      "stamp": {
-        "term:law of mass action": "3ae149d019c752d2dfefc4e9da9604e19fb7ddde3ce33116f07c0e3d2e6f7d61",
-        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
-        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-9-where-the-form-comes-from-2",
@@ -523,17 +527,18 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3",
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b"
+      },
       "tokens": [
         "equal",
         "equilibrium",
         "gives",
         "setting",
         "them"
-      ],
-      "stamp": {
-        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
-        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-10-pure-solids-and-pure-liquids-1",
@@ -563,18 +568,19 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.omit-pure-phases": "26f069ce2bba4c71ac7d536d53ae77f3979043b94b233dc42f0edaf4b2c75e2f",
+        "spine:concept.chemical-equilibrium.pure-phases-omitted": "f2297b60e50389978bf170a2d93841546bb1c33d4f4cc5bf3d04463e3aef0dc8",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b"
+      },
       "tokens": [
         "activities",
         "are",
         "strictly",
         "terms",
         "the"
-      ],
-      "stamp": {
-        "spine:objective.chemical-equilibrium.omit-pure-phases": "26f069ce2bba4c71ac7d536d53ae77f3979043b94b233dc42f0edaf4b2c75e2f",
-        "spine:concept.chemical-equilibrium.pure-phases-omitted": "f2297b60e50389978bf170a2d93841546bb1c33d4f4cc5bf3d04463e3aef0dc8",
-        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-10-pure-solids-and-pure-liquids-2",
@@ -604,6 +610,12 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.omit-pure-phases": "26f069ce2bba4c71ac7d536d53ae77f3979043b94b233dc42f0edaf4b2c75e2f",
+        "spine:concept.chemical-equilibrium.pure-phases-omitted": "f2297b60e50389978bf170a2d93841546bb1c33d4f4cc5bf3d04463e3aef0dc8",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "term:chemical-equilibrium:activity": "e44ef5ba96fa9bd4dd745d5abd13bb67b55934a4863d74d6bc02c108c1e73601"
+      },
       "tokens": [
         "activity",
         "appear",
@@ -624,13 +636,7 @@
         "treated",
         "water",
         "way"
-      ],
-      "stamp": {
-        "term:activity": "e44ef5ba96fa9bd4dd745d5abd13bb67b55934a4863d74d6bc02c108c1e73601",
-        "spine:objective.chemical-equilibrium.omit-pure-phases": "26f069ce2bba4c71ac7d536d53ae77f3979043b94b233dc42f0edaf4b2c75e2f",
-        "spine:concept.chemical-equilibrium.pure-phases-omitted": "f2297b60e50389978bf170a2d93841546bb1c33d4f4cc5bf3d04463e3aef0dc8",
-        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-12-the-reaction-quotient-1",
@@ -660,6 +666,13 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
+        "spine:concept.chemical-equilibrium.reaction-quotient": "03bd300dd7d3fb6b8434463a782faa7ddd54acfe00643bf73e39f0757dee1fc9",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "term:chemical-equilibrium:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f"
+      },
       "tokens": [
         "algebraic",
         "any",
@@ -670,12 +683,7 @@
         "has",
         "same",
         "the"
-      ],
-      "stamp": {
-        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
-        "spine:concept.chemical-equilibrium.reaction-quotient": "03bd300dd7d3fb6b8434463a782faa7ddd54acfe00643bf73e39f0757dee1fc9",
-        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-12-the-reaction-quotient-2",
@@ -705,6 +713,13 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
+        "spine:concept.chemical-equilibrium.reaction-quotient": "03bd300dd7d3fb6b8434463a782faa7ddd54acfe00643bf73e39f0757dee1fc9",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "term:chemical-equilibrium:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f"
+      },
       "tokens": [
         "already",
         "equilibrium",
@@ -717,12 +732,7 @@
         "shift",
         "shifts",
         "too"
-      ],
-      "stamp": {
-        "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
-        "spine:concept.chemical-equilibrium.reaction-quotient": "03bd300dd7d3fb6b8434463a782faa7ddd54acfe00643bf73e39f0757dee1fc9",
-        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-14-the-link-to-gibbs-energy-1",
@@ -752,6 +762,11 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
+        "spine:concept.chemical-equilibrium.k-and-gibbs": "24dfcac69f2f8de451de8830acb5e912c5046d5295e8174c701cbc8df655b5ff",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
+      },
       "tokens": [
         "energy",
         "equilibrium",
@@ -763,12 +778,7 @@
         "the",
         "vanishes",
         "where"
-      ],
-      "stamp": {
-        "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
-        "spine:concept.chemical-equilibrium.k-and-gibbs": "24dfcac69f2f8de451de8830acb5e912c5046d5295e8174c701cbc8df655b5ff",
-        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-14-the-link-to-gibbs-energy-2",
@@ -798,15 +808,16 @@
         "mechanical"
       ],
       "evidence": [],
-      "tokens": [
-        "delta",
-        "ominus"
-      ],
       "stamp": {
         "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
         "spine:concept.chemical-equilibrium.k-and-gibbs": "24dfcac69f2f8de451de8830acb5e912c5046d5295e8174c701cbc8df655b5ff",
-        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
-      }
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b"
+      },
+      "tokens": [
+        "delta",
+        "ominus"
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-14-the-link-to-gibbs-energy-3",
@@ -836,6 +847,12 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
+        "spine:concept.chemical-equilibrium.k-and-gibbs": "24dfcac69f2f8de451de8830acb5e912c5046d5295e8174c701cbc8df655b5ff",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b"
+      },
       "tokens": [
         "corresponds",
         "delta",
@@ -844,12 +861,7 @@
         "ominus",
         "positive",
         "products"
-      ],
-      "stamp": {
-        "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
-        "spine:concept.chemical-equilibrium.k-and-gibbs": "24dfcac69f2f8de451de8830acb5e912c5046d5295e8174c701cbc8df655b5ff",
-        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-15-only-temperature-changes-k-1",
@@ -879,6 +891,14 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
+        "spine:concept.chemical-equilibrium.k-depends-on-temperature": "4afac3949c64c3423c7ab120ec93402d9709c49f47abf70a2313623f8f766d26",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "spine:concept.chemical-equilibrium.k-and-gibbs": "24dfcac69f2f8de451de8830acb5e912c5046d5295e8174c701cbc8df655b5ff",
+        "term:chemical-equilibrium:van 't hoff equation": "c8f1a9ece0b32d45f0c15d92498889176d99734414f44c824283705a4f3266bd",
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b"
+      },
       "tokens": [
         "but",
         "composition",
@@ -897,14 +917,7 @@
         "through",
         "van",
         "with"
-      ],
-      "stamp": {
-        "term:van 't hoff equation": "c8f1a9ece0b32d45f0c15d92498889176d99734414f44c824283705a4f3266bd",
-        "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
-        "spine:concept.chemical-equilibrium.k-depends-on-temperature": "4afac3949c64c3423c7ab120ec93402d9709c49f47abf70a2313623f8f766d26",
-        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
-        "spine:concept.chemical-equilibrium.k-and-gibbs": "24dfcac69f2f8de451de8830acb5e912c5046d5295e8174c701cbc8df655b5ff"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-15-only-temperature-changes-k-2",
@@ -934,19 +947,20 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
+        "spine:concept.chemical-equilibrium.k-depends-on-temperature": "4afac3949c64c3423c7ab120ec93402d9709c49f47abf70a2313623f8f766d26",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "spine:concept.chemical-equilibrium.k-and-gibbs": "24dfcac69f2f8de451de8830acb5e912c5046d5295e8174c701cbc8df655b5ff",
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b"
+      },
       "tokens": [
         "decreases",
         "endothermic",
         "exothermic",
         "increases",
         "raising"
-      ],
-      "stamp": {
-        "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
-        "spine:concept.chemical-equilibrium.k-depends-on-temperature": "4afac3949c64c3423c7ab120ec93402d9709c49f47abf70a2313623f8f766d26",
-        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
-        "spine:concept.chemical-equilibrium.k-and-gibbs": "24dfcac69f2f8de451de8830acb5e912c5046d5295e8174c701cbc8df655b5ff"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-16-catalysts-change-neither-1",
@@ -975,6 +989,13 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:concept.chemical-equilibrium.catalyst-no-shift": "28d4d3946ce37b9f191fa337a0b9e71facabdb56302c8840aeac2d47411490c3",
+        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "term:chemical-equilibrium:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
+        "term:le-chatelier:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22"
+      },
       "tokens": [
         "and",
         "catalyst",
@@ -985,13 +1006,7 @@
         "same",
         "speeds",
         "the"
-      ],
-      "stamp": {
-        "term:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
-        "spine:concept.chemical-equilibrium.catalyst-no-shift": "28d4d3946ce37b9f191fa337a0b9e71facabdb56302c8840aeac2d47411490c3",
-        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3",
-        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-16-catalysts-change-neither-2",
@@ -1020,6 +1035,12 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:concept.chemical-equilibrium.catalyst-no-shift": "28d4d3946ce37b9f191fa337a0b9e71facabdb56302c8840aeac2d47411490c3",
+        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3",
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b"
+      },
       "tokens": [
         "and",
         "changes",
@@ -1032,12 +1053,7 @@
         "shortens",
         "the",
         "time"
-      ],
-      "stamp": {
-        "spine:concept.chemical-equilibrium.catalyst-no-shift": "28d4d3946ce37b9f191fa337a0b9e71facabdb56302c8840aeac2d47411490c3",
-        "spine:concept.chemical-equilibrium.equal-rates": "c79c727fcf4e34641dbf7873c96e51873e116a9ac974fe33514d54d9103404d3",
-        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-17-watch-out-for-these-1",
@@ -1071,6 +1087,17 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:misconception.chemical-equilibrium.reactions-stopped": "77198c547db80c67a820b2cb117ff69188c0ebdc4baf45263c174984e1a5441d",
+        "spine:misconception.chemical-equilibrium.concentrations-equal": "dbf247cd5de1c98c369998e8602808fdbdb07d376e434c3d8a34534a7c77e588",
+        "spine:misconception.chemical-equilibrium.catalyst-shifts-yield": "261be4ca58b6728b43c8aed788a131f33f30f525e9e61d946eca69611d3783a6",
+        "spine:misconception.chemical-equilibrium.solid-changes-k": "9992cff8ffae8cf7e05b3d997a42a655bf553f703d86d1ffa591e63d22aeb828",
+        "spine:misconception.chemical-equilibrium.concentration-changes-k": "789c5b5a1518d8f58b137e40dbd793dcce2dac27b389f496f79706b32d61974e",
+        "term:chemical-equilibrium:activity": "e44ef5ba96fa9bd4dd745d5abd13bb67b55934a4863d74d6bc02c108c1e73601",
+        "term:chemical-equilibrium:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
+        "term:le-chatelier:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b"
+      },
       "tokens": [
         "absent",
         "activity",
@@ -1105,16 +1132,7 @@
         "they",
         "unequal",
         "yield"
-      ],
-      "stamp": {
-        "term:activity": "e44ef5ba96fa9bd4dd745d5abd13bb67b55934a4863d74d6bc02c108c1e73601",
-        "term:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
-        "spine:misconception.chemical-equilibrium.reactions-stopped": "77198c547db80c67a820b2cb117ff69188c0ebdc4baf45263c174984e1a5441d",
-        "spine:misconception.chemical-equilibrium.concentrations-equal": "dbf247cd5de1c98c369998e8602808fdbdb07d376e434c3d8a34534a7c77e588",
-        "spine:misconception.chemical-equilibrium.catalyst-shifts-yield": "261be4ca58b6728b43c8aed788a131f33f30f525e9e61d946eca69611d3783a6",
-        "spine:misconception.chemical-equilibrium.solid-changes-k": "9992cff8ffae8cf7e05b3d997a42a655bf553f703d86d1ffa591e63d22aeb828",
-        "spine:misconception.chemical-equilibrium.concentration-changes-k": "789c5b5a1518d8f58b137e40dbd793dcce2dac27b389f496f79706b32d61974e"
-      }
+      ]
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-18-next-disturbing-the-equilibrium-1",
@@ -1143,6 +1161,10 @@
         "knowledge-based"
       ],
       "evidence": [],
+      "stamp": {
+        "spine:concept.course.le-chatelier-principle": "47fd302b7577d8b5dc191a5ec288fa643cdfba1fa475a9c991240e59467e31e6",
+        "spine:concept.course.dynamic-equilibrium": "472fd15589c620d679849f5e27679d2df69ea513a5b8d4a6c6b66bdd952e845e"
+      },
       "tokens": [
         "and",
         "asks",
@@ -1160,11 +1182,8 @@
         "the",
         "way",
         "which"
-      ],
-      "stamp": {
-        "spine:concept.course.le-chatelier-principle": "47fd302b7577d8b5dc191a5ec288fa643cdfba1fa475a9c991240e59467e31e6",
-        "spine:concept.course.dynamic-equilibrium": "472fd15589c620d679849f5e27679d2df69ea513a5b8d4a6c6b66bdd952e845e"
-      }
+      ]
     }
-  ]
+  ],
+  "stamps": 2
 }

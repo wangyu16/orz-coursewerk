@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-363ce165368b4368",
+  "kind": "knowledge",
+  "unit": "u-practice-chemical-equilibrium-questions-12",
+  "factHash": "b21c342945064710c4a7f3cdc36eb6044681d17032c22fd78ee6cc8e6f46a0c3",
+  "contentHash": "b9cfe537a0ed2f4c80013026efd49d8e91b4faf3212292d7bf0711ccdb52553e",
+  "at": "2026-10-07T22:18:24.770Z",
+  "bundle": {
+    "nonce": "8aba94e410212089",
+    "bundleHash": "363ce165368b4368a3e4134f10dab636c297e7463e7e9f42b88a3a43ae00641f",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"8aba94e410212089\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nWHAT CHANGED SINCE THE PASSAGE WAS LAST CHECKED (context only: the passage must agree with it as it is now)\nQ 6, practice/chemical-equilibrium.md § questions:\nFor a reaction with $K = 50$, a mixture is found to have $Q_r = 12$. Which direction will the\nreaction shift, and why? *(Objective 3)*\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 5: Two errors. First, the products and reactants are the wrong way round: products belong in the\nnumerator. Second, the coefficient 2 on $\\ce{HI}$ has been dropped as an exponent. Correct:\n$$K = \\frac{[\\ce{HI}]^{2}}{[\\ce{H2}]\\,[\\ce{I2}]}$$\n\nQ 6: For a reaction with $K = 50$, a mixture is found to have $Q_r = 12$. Which direction will the\nreaction shift, and why? *(Objective 3)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 7: For the same reaction ($K = 50$), a second mixture has $Q_r = 140$. Which direction will it shift?\nWhat would $Q_r = 50$ mean? *(Objective 3)*\n\nPASSAGE (Answer 6)\n$Q_r < K$, so there are too few products relative to equilibrium. The reaction shifts **forward**,\ntoward products, until $Q_r$ rises to equal $K$."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"8aba94e410212089\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "11e3e1dbaa009ff8d2d98e202fa12bddd316abec8b3831ee6b8c2232ccf4d9db"
+  }
+}

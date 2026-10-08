@@ -135,7 +135,7 @@ test("[req.core.impact] impact follows every mechanical dependency kind", (t) =>
   const kinds = (k) => (edges.get(id[k]) || []).map((e) => `${e.kind}:${e.target}`);
   assert.ok(kinds("Ice melts at 0 °C ").includes(`shared-value:unit:${id["At 0 °C."]}`), "shared value");
   assert.ok(kinds("At 0 °C.").includes(`derivation:unit:${id["At what temperatur"]}`), "answer → question");
-  assert.ok(kinds("The melting point ").includes("shared-term:term:melting point"), "key term");
+  assert.ok(kinds("The melting point ").includes("shared-term:term:melting:melting point"), "key term (namespaced by the map that defines it, R4 F6)");
   assert.ok(kinds("Impurities broaden").includes("spine-node:spine:concept.melting.impurities"), "spine node");
   assert.ok(kinds("Impurities broaden").includes("prerequisite:spine:concept.melting.pure-melts"), "declared prerequisite");
   assert.ok(kinds("Ice melts at 0 °C ").includes("source:source:src.wiki"), "source");

@@ -41,11 +41,11 @@ import { checkableClaims, claimsHash } from "../verify/claims.mjs";
 import { absoluteReviewOf, absoluteSentences, absolutesHash } from "../verify/absolutes.mjs";
 import { deliverablesOf, indexUnits, readSidecar } from "./units_index.mjs";
 import { parseSpine, nodeIndex, termsOfMap, COURSE_MAP } from "./spine.mjs";
-import { manifestChapters } from "./package_reader.mjs";
+import { liveReader, manifestChapters } from "./package_reader.mjs";
 import { openMajorVersion } from "./versions.mjs";
 import { approvalStatus } from "./approvals.mjs";
-import { dependencyEdges, factHash, nodeHash, questionBindingProblems, questionHash, referenceBindingProblems, sourceHashes, stampFor, staleTargets, targetHashes, termHash } from "./dependencies.mjs";
-import { deliverableOfSidecar, writeUnitRecords } from "./unit_records.mjs";
+import { dependencyEdges, factHash, groupTermHash, isLegacyQuestionHash, legacyQuestionCurrent, legacyTermLabel, nodeHash, questionBindingProblems, questionHash, referenceBindingProblems, sourceHashes, stampFor, staleTargets, targetHashes, termDefinitions, termHash, termKey } from "./dependencies.mjs";
+import { deliverableOfSidecar, UNIT_RECORDS_EVENT, writeUnitRecords } from "./unit_records.mjs";
 import { currentReviewsAt } from "../verify/alignment.mjs";
 import { boundRecord, readKnowledgeReview, recordHashOf } from "../verify/dispatch.mjs";
 
@@ -167,9 +167,72 @@ function lightAccept(reader, chapters, logText) {
     if (!full?.payload?.parsed) continue;
     for (const n of [...(full.payload.parsed.nodes || []), ...(full.payload.parsed.entries || [])]) if (n?.id) add(`spine:${n.id}`, nodeHash(n));
     const mapText = key === "course" ? full.payload.text : full.payload.text?.[`concepts/${key}.md`];
-    for (const t of typeof mapText === "string" ? termsOfMap(mapText, key === "course" ? "course" : key, key === "course" ? COURSE_MAP : null) : []) if (t.label) add(`term:${t.label.toLowerCase()}`, termHash(t));
+    // term targets are namespaced by the map that defines them (red team R4 coherence F6)
+    const scope = key === "course" ? "course" : key;
+    for (const [label, terms] of termsByLabel(typeof mapText === "string" ? termsOfMap(mapText, scope, key === "course" ? COURSE_MAP : null) : [])) add(termKey(scope, label), groupTermHash(terms));
   }
   return accept;
+}
+const termsByLabel = (terms) => { const m = new Map(); for (const t of terms) if (t.label) { const l = t.label.toLowerCase(); if (!m.has(l)) m.set(l, []); m.get(l).push(t); } return m; };
+
+// ---- stamps written by an earlier harness (red team R4 coherence F5, F6): read as they meant, migrated once ----------
+// A pre-R4 term key `term:<label>` stood for the LAST map's definition of the label only (F6). It is read as one key
+// per map that defines the label: the last at the stamped hash; every other at the definition its map had at its last
+// full approval BEFORE the unit's sidecar was last written (the stamp is no newer than that write) — so nothing is owed
+// when nothing changed, and a definition changed since is owed. A pre-R4 question binding (`question:`/`ref:` hashed
+// with the lossy key, F5) counts as current only when the text is unchanged under both keys (legacyQuestionCurrent);
+// otherwise it owes one re-check. Every harness write stores the migrated stamp (writeUnitRecords).
+function legacyInfo(root, ctx) {
+  if (ctx.legacy) return ctx.legacy;
+  const logText = readLogText(root), ok = !verifyLog(logText).length, recs = ok ? parseLog(logText) : [];
+  const lastWrite = new Map(), approvals = new Map();
+  for (const r of recs) {
+    if (r.type === "revision" && r.payload?.event === UNIT_RECORDS_EVENT) for (const rel of Object.keys(r.payload.digests || {})) lastWrite.set(rel, r.seq);
+    if (r.type === "approval" && r.party?.role === "instructor" && r.payload?.text) {
+      const sc = r.payload.scope === "course" ? "course" : String(r.payload.scope || "").replace(/^chapter:/, "");
+      const mapText = sc === "course" ? r.payload.text : r.payload.text?.[`concepts/${sc}.md`];
+      if (typeof mapText !== "string") continue;
+      if (!approvals.has(sc)) approvals.set(sc, []);
+      approvals.get(sc).push({ seq: r.seq, terms: termsByLabel(termsOfMap(mapText, sc, sc === "course" ? COURSE_MAP : null)) });
+    }
+  }
+  return (ctx.legacy = { lastWrite, approvals });
+}
+/** The hash a legacy stamp stands for, for one map's definition of a label that is not the last one (see above). */
+function legacyTermBaseline(root, ctx, def, rel) {
+  const { lastWrite, approvals } = legacyInfo(root, ctx), before = lastWrite.get(rel) ?? Infinity;
+  const a = (approvals.get(def.scope) || []).filter((x) => x.seq < before).at(-1);
+  const terms = a?.terms.get(def.label);
+  return terms ? groupTermHash(terms) : ctx.hashes[def.key];
+}
+/** A unit's stamp as the current harness reads it: pre-R4 term keys and question bindings migrated (see above). */
+export function migratedStamp(root, ctx, stamp, rel, id = null) {
+  if (!stamp) return stamp;
+  let out = null; const put = () => (out ??= { ...stamp });
+  for (const [k, h] of Object.entries(stamp)) {
+    const label = legacyTermLabel(k, ctx.scopes);
+    if (label != null) {
+      const defs = ctx.termDefs.filter((d) => d.label === label);
+      if (!defs.length) continue; // the term is gone: the key stays, and is owed (missing)
+      put(); delete out[k];
+      const last = defs.at(-1);
+      for (const d of defs) if (!(d.key in stamp)) out[d.key] = d.key === last.key ? h : legacyTermBaseline(root, ctx, d, rel);
+      continue;
+    }
+    if ((k.startsWith("question:") || k.startsWith("ref:")) && isLegacyQuestionHash(h)) {
+      const target = ctx.byId.get(k.slice(k.indexOf(":") + 1));
+      if (target && legacyQuestionCurrent(h, target.text)) { put(); out[k] = ctx.hashes[k] ?? h; }
+    }
+  }
+  // a key-term edge the stamp does not hold (a spelling the harness newly reads — "**Endothermic** reaction", R4 F1 —
+  // or a term defined in another map, F6) is baselined at the definition its map had when the stamp was written, never
+  // at today's: a definition changed since is owed
+  for (const e of (id && ctx.edges.get(id)) || []) {
+    if (!e.target.startsWith("term:") || e.target in (out || stamp)) continue;
+    const d = ctx.termDefs.find((x) => x.key === e.target);
+    if (d) { put(); out[e.target] = legacyTermBaseline(root, ctx, d, rel); }
+  }
+  return out || stamp;
 }
 
 function context(root, reader) {
@@ -180,7 +243,11 @@ function context(root, reader) {
   const hashes = targetHashes(units, spine, sourceHashes(reader));
   let accept = null; // computed only when a spine or term target moved (it reads the approval history)
   const acceptOf = () => (accept ??= lightAccept(reader, chapters, readLogText(root)));
-  return { chapters, spine, units, edges, hashes, acceptOf, byId: new Map(units.map((u) => [u.id, u])) };
+  const ctx = { root, chapters, spine, units, edges, hashes, acceptOf, byId: new Map(units.map((u) => [u.id, u])), termDefs: termDefinitions(spine), scopes: new Set(["course", ...chapters]) };
+  // stamps written by an earlier harness are read migrated (R4 F5, F6)
+  ctx.units = units.map((u) => { const st = migratedStamp(root, ctx, u.stamp, u.locator.deliverable, u.id); return st === u.stamp ? u : { ...u, stamp: st }; });
+  ctx.byId = new Map(ctx.units.map((u) => [u.id, u]));
+  return ctx;
 }
 
 /** What a unit owes because of its stamp: moved targets, and a question binding that no longer holds (F1, F3). */
@@ -192,6 +259,37 @@ export function owedTargets(u, ctx) {
   const refs = referenceBindingProblems(u.stamp, ctx.edges.get(u.id)).map((b) => `reference-binding:${b}`);
   return [...moved, ...binding, ...refs];
 }
+/**
+ * What a re-check must be SHOWN (red team R4 coherence F4): for a unit that owes because a dependency moved, each moved
+ * target as it is now — the unit stating a shared value (its new value), a key term's definition, a spine node's text,
+ * a question it answers or names. A re-check that never saw what moved cannot catch the incoherence it exists for, so
+ * the knowledge review carries these (verifyKnowledge) and `reverify` counts only a review whose prompt did.
+ * Returns [{ target, what, text }].
+ */
+export function movedForRecheck(u, ctx) {
+  const moved = [...new Set([...owedTargets(u, ctx), ...(u.owes?.targets || [])])];
+  const out = [], nodes = nodeIndex(ctx.spine);
+  const push = (target, what, text) => { const t = String(text ?? "").trim(); if (t && !out.some((x) => x.text === t)) out.push({ target, what, text: t }); };
+  const unitAt = (target, v) => { if (v && v.id !== u.id) push(target, `${v.label ? `${v.label}, ` : ""}${v.locator.deliverable}${v.locator.section ? ` § ${v.locator.section}` : ""}`, v.text); };
+  for (const t of moved) {
+    const i = t.indexOf(":"), kind = t.slice(0, i), id = t.slice(i + 1);
+    if (["unit", "ref", "question"].includes(kind)) unitAt(t, ctx.byId.get(id));
+    else if (kind === "term") {
+      const label = legacyTermLabel(t, ctx.scopes);
+      for (const d of ctx.termDefs.filter((x) => (label != null ? x.label === label : x.key === t))) push(d.key, `key term "${d.term.label}" (${d.scope === "course" ? "the course map" : `the ${d.scope} concept map`})`, d.term.text);
+    } else if (kind === "spine") { const n = nodes.get(id); if (n) push(t, id, nodeShown(n)); }
+    else if (kind === "question-binding" || kind === "reference-binding")
+      for (const e of (ctx.edges.get(u.id) || []).filter((x) => x.target.startsWith(kind === "question-binding" ? "question:" : "ref:"))) unitAt(e.target, ctx.byId.get(e.target.slice(e.target.indexOf(":") + 1)));
+  }
+  return out;
+}
+const nodeShown = (n) => [n.text ?? n.title, ...(n.type || n.count != null || n.levels || n.targets ? [`(type: ${n.type ?? "—"}; count: ${n.count ?? "—"}; level: ${n.levels ?? "—"}; targets: ${n.targets ?? "—"})`] : [])].join(" ");
+/** unit id → what its re-check must be shown (movedForRecheck), for every unit that owes one. */
+export function recheckShown(root, reader) {
+  const ctx = context(root, reader);
+  return new Map(ctx.units.filter((u) => owesNow(u, ctx)).map((u) => [u.id, movedForRecheck(u, ctx)]));
+}
+
 /** Does the unit owe re-verification now (a stale stamp, an obligation carried over a restamp, or a version carry)? */
 const owesNow = (u, ctx) => !!u.carried || !!u.owes || owedTargets(u, ctx).length > 0;
 /** The hash of a unit's dependencies as they are now: a re-check counts only if made against these (reverifyUnits). */
@@ -262,6 +360,18 @@ export function upgradeStamps(root, reader, { except = [] } = {}) {
   return add.size;
 }
 
+/**
+ * Write every unit record not yet migrated to the R4 stamps (term keys namespaced by map, question bindings on the
+ * visible-text key, key-term edges baselined: see migratedStamp). It changes no obligation — a stamp is read migrated
+ * either way — but fixes the baseline of a legacy stamp at the moment of migration. Run at every session begin.
+ */
+export function migrateUnitRecords(root, reader) {
+  const sides = deliverablesOf(reader).map((rel) => [rel, readSidecar(root, rel)]).filter(([, side]) => side && side.stamps !== 2);
+  if (!sides.length) return 0;
+  writeUnitRecords(root, sides.map(([rel, side]) => ({ ...side, deliverable: rel })));
+  return sides.length;
+}
+
 /** Index, then stamp every unit that changed (a unit that owed re-verification still owes it). */
 export function indexAndStamp(root, reader, opts) {
   const r = indexUnits(root, reader, opts);
@@ -296,11 +406,14 @@ export function confirmUnits(root, reader, ids, { what, instructorWords }, party
     const blocked = ids.filter((id) => live.has(id));
     if (blocked.length) throw new Error(`${blocked.join(", ")}: a verification contradicts the current text — answer it through the correction (or its revert), not a confirmation`);
   }
+  for (const id of ids) if (!text.has(id)) throw new Error(`no such unit: ${id}`);
+  // the confirmation is logged first: it is the evidence the record write checks (writeUnitRecords, R4 F7)
+  const rec = appendLogRecord(root, { type: "confirmation", party, payload: { what, units: ids, weight: "single", instructorWords, ...(what === "fact" ? { factHashes: Object.fromEntries(ids.map((id) => [id, factHash(text.get(id) || "")])) } : {}) } });
   rewriteUnits(root, ids, (u) => {
     if (what === "fact") u.evidence = [...(u.evidence || []), { type: "instructor-confirmation", by: party.name, at, factHash: factHash(text.get(u.id) || "") }];
     u.stamp = stampFor(u.id, edges, hashes); delete u.carried; delete u.owes;
   });
-  appendLogRecord(root, { type: "confirmation", party, payload: { what, units: ids, weight: "single", instructorWords, ...(what === "fact" ? { factHashes: Object.fromEntries(ids.map((id) => [id, factHash(text.get(id) || "")])) } : {}) } });
+  return rec;
 }
 
 /** The verdict path admits evidence for a unit's CURRENT facts (only the harness writes it; admission.mjs decided it). */
@@ -311,8 +424,22 @@ export function admitEvidence(root, reader, unitId, evidence) {
   if (evidence.factHash !== factHash(u.text)) throw new Error(`${unitId}: the evidence is for other facts than the unit states now`);
   if (!["quote-verified", "authorized-divergence"].includes(evidence.type)) throw new Error("the verdict path writes quote-verified or authorized-divergence evidence only");
   // evidence names the logged fact-check dispatch it came from (R2: nothing clears without what produced it)
-  const logged = parseLog(readLogText(root)).some((r) => r.type === "dispatch" && r.party?.role === "harness" && r.payload?.kind === "semi" && r.payload?.dispatch === evidence.dispatch);
+  const recs = parseLog(readLogText(root));
+  const logged = recs.find((r) => r.type === "dispatch" && r.party?.role === "harness" && r.payload?.kind === "semi" && r.payload?.dispatch === evidence.dispatch);
   if (!evidence.dispatch || !logged) throw new Error(`${unitId}: evidence must name the logged fact-check dispatch it came from (${evidence.dispatch || "none named"} is not in the log)`);
+  // an exported writer checks its evidence itself (red team R4 coherence F7, the same audit): the dispatch must be a
+  // fact check of THIS unit whose record the log binds — at the facts the evidence claims, unless it is the evidence of
+  // a logged auto-correction (the contradicting quotes now state the unit's value) or of the instructor's revert of one
+  if (evidence.correction) {
+    if (!recs.some((r) => r.type === "revision" && r.payload?.event === "autocorrect" && r.payload?.correction === evidence.correction && r.payload?.unit === logged.payload.unit))
+      throw new Error(`${unitId}: evidence names correction ${evidence.correction}, which no logged auto-correction of the checked unit made`);
+  } else {
+    let rec = null; try { rec = JSON.parse(fs.readFileSync(recordFile(root, `metadata/verification/${evidence.dispatch}.json`), "utf8")); } catch { rec = null; }
+    const b = rec && boundRecord(rec, recs.filter((r) => r.type === "dispatch" && r.party?.role === "harness"));
+    if (!b || b.unit !== unitId || logged.payload.unit !== unitId) throw new Error(`${unitId}: evidence must come from a logged fact check of this unit (${evidence.dispatch} is ${b ? `of ${b.unit}` : "not bound by the log"})`);
+    if (b.hashed && b.factHash !== evidence.factHash) throw new Error(`${unitId}: ${evidence.dispatch} checked other facts than the unit states now`);
+    if (b.status === "contradicted") throw new Error(`${unitId}: ${evidence.dispatch} found the unit's claims contradicted: it is no evidence for them`);
+  }
   rewriteUnits(root, [unitId], (x) => { x.evidence = [...(x.evidence || []).filter((e) => !(e.type === evidence.type && e.factHash === evidence.factHash && e.dispatch === evidence.dispatch)), evidence]; });
 }
 
@@ -426,10 +553,35 @@ export function reviewRecordProblem(root, logged, u, ctx) {
     const q = ctx.byId.get(e.target.slice("question:".length));
     if (q && !shown.includes(shownForm(q.text))) return `the reviewer was not shown the question it answers (${q.id})`;
   }
+  // what moved (R4 F4): the shared value, term, spine node or question whose change raised the obligation
+  for (const m of movedForRecheck(u, ctx)) if (!shown.includes(shownForm(m.text))) return `the reviewer was not shown what moved (${m.what}: "${shownForm(m.text).slice(0, 80)}")`;
   const m = String(r.answer?.raw || "").match(/\{[\s\S]*\}/);
   let v; try { v = JSON.parse(m?.[0] || ""); } catch { v = null; }
   if (v?.nonce !== r.bundle?.nonce || !Array.isArray(v?.concerns)) return "the reviewer's answer is unreadable (no answer to this bundle)";
   return null;
+}
+
+/**
+ * The logged blind correctness review that re-verifies a unit now, if there is one (reverifyUnits, and the evidence
+ * check of every unit-record write, unit_records.mjs): a knowledge (or, for a non-answer, an admitting semi) dispatch of
+ * the unit made after its obligation arose, at its current text and dependencies, whose record checks out against the
+ * log — showing the unit, its question and what moved (reviewRecordProblem) — and, for a knowledge review, raising no
+ * "wrong" concern. Returns { review } or { unreviewed: true } or { problem }.
+ */
+function countedReview(root, recs, u, ctx, verdicts = (d, text) => wrongConcerns(root, d, text)) {
+  const id = u.id;
+  const carriedAt = recs.filter((r) => r.type === "revision" && r.payload?.event === "units-carried" && (r.payload.units || []).includes(id)).at(-1)?.seq || 0;
+  const since = Math.max(u.owes?.since || 0, u.carried ? carriedAt : 0), deps = depsOf(id, ctx);
+  const candidates = recs.filter((r) => r.type === "dispatch" && r.party?.role === "harness" && r.seq > since && r.payload?.unit === id &&
+    r.payload?.contentHash === u.locator.contentHash && r.payload?.deps === deps && REVIEW_COUNTS[r.payload?.kind]?.(r.payload, u));
+  const checked = candidates.map((r) => [r, reviewRecordProblem(root, r, u, ctx)]);
+  const review = checked.filter(([, why]) => !why).at(-1)?.[0];
+  if (!review) return checked.length ? { problem: `${id}: its blind review (${checked.at(-1)[0].payload.dispatch}) does not count — ${checked.at(-1)[1]}; run ${REVERIFY_ROUTE(root, [id])} again` } : { unreviewed: true };
+  if (review.payload.kind === "knowledge" && verdicts) {
+    const wrong = verdicts(review.payload.dispatch, u.text).filter((c) => c.kind === "wrong");
+    if (wrong.length) return { problem: `${id}: its blind review (${review.payload.dispatch}) found it wrong ("${wrong[0].text.slice(0, 80)}": ${wrong[0].problem.slice(0, 120)}) — revise it, then have it reviewed again` };
+  }
+  return { review };
 }
 
 /**
@@ -446,32 +598,101 @@ export function reverifyUnits(root, reader, ids, party, { verdicts = (d, text) =
   const logText = readLogText(root);
   if (verifyLog(logText).length) throw new Error("the decision log does not verify: restore it before recording anything");
   const recs = parseLog(logText), ctx = context(root, reader);
-  const carriedAt = (id) => recs.filter((r) => r.type === "revision" && r.payload?.event === "units-carried" && (r.payload.units || []).includes(id)).at(-1)?.seq || 0;
   const problems = [], unreviewed = [], used = {};
   for (const id of ids) {
     const u = ctx.byId.get(id);
     if (!u) { problems.push(`${id}: no such indexed unit (run units.mjs index first)`); continue; }
     if (!owesNow(u, ctx)) { problems.push(`${id} owes no re-verification`); continue; }
-    const since = Math.max(u.owes?.since || 0, u.carried ? carriedAt(id) : 0), deps = depsOf(id, ctx);
-    const candidates = recs.filter((r) => r.type === "dispatch" && r.party?.role === "harness" && r.seq > since && r.payload?.unit === id &&
-      r.payload?.contentHash === u.locator.contentHash && r.payload?.deps === deps && REVIEW_COUNTS[r.payload?.kind]?.(r.payload, u));
-    const checked = candidates.map((r) => [r, reviewRecordProblem(root, r, u, ctx)]);
-    const review = checked.filter(([, why]) => !why).at(-1)?.[0];
-    if (!review) {
-      if (checked.length) problems.push(`${id}: its blind review (${checked.at(-1)[0].payload.dispatch}) does not count — ${checked.at(-1)[1]}; run ${REVERIFY_ROUTE(root, [id])} again`);
-      else unreviewed.push(id);
-      continue;
-    }
-    if (review.payload.kind === "knowledge" && verdicts) {
-      const wrong = verdicts(review.payload.dispatch, u.text).filter((c) => c.kind === "wrong");
-      if (wrong.length) { problems.push(`${id}: its blind review (${review.payload.dispatch}) found it wrong ("${wrong[0].text.slice(0, 80)}": ${wrong[0].problem.slice(0, 120)}) — revise it, then have it reviewed again`); continue; }
-    }
-    used[id] = review.payload.dispatch;
+    const c = countedReview(root, recs, u, ctx, verdicts);
+    if (c.unreviewed) unreviewed.push(id);
+    else if (c.problem) problems.push(c.problem);
+    else used[id] = c.review.payload.dispatch;
   }
   if (unreviewed.length) problems.push(`${unreviewed.join(", ")}: no logged blind correctness review of the current text (and its current question and dependencies) since the re-verification was owed — run ${REVERIFY_ROUTE(root, unreviewed)}, then reverify (a link review does not count)`);
   if (problems.length) throw new Error(`refusing to record a re-verification: ${problems.join("; ")}`);
   rewriteUnits(root, ids, (u) => { u.stamp = stampFor(u.id, ctx.edges, ctx.hashes); delete u.owes; delete u.carried; });
   return appendLogRecord(root, { type: "revision", party, payload: { event: "units-reverified", units: ids, reviews: used } });
+}
+
+// ---- the evidence check of every unit-record write (red team R4 coherence F7) --------------------------------------
+// writeUnitRecords is exported, and its content is the caller's: a sidecar handed to it with a stale unit's stamp
+// refreshed and its `owes` dropped would clear the obligation with no review. So every write is compared with the
+// records on disk, and a write that clears anything a unit owes — a moved target, an `owes` entry, a version carry, the
+// record itself — is refused unless the evidence that clears it is there: a counted blind re-check of the unit at its
+// current text and dependencies (countedReview, as `reverify` requires), or the instructor's confirmation logged since
+// the unit's record was last written. A clearing write must also stamp the unit exactly as it stands now. A carry is
+// an obligation of its own, so writing one clears nothing. Restamping keeps what was owed in `owes`, and indexing keeps
+// every record (a retired one in its deliverable's register), so neither clears anything.
+const recordIndex = (sides) => {
+  const m = new Map();
+  for (const [rel, side] of Object.entries(sides)) {
+    for (const u of side?.units || []) m.set(u.id, { rec: u, rel, live: true });
+    for (const e of side?.retired || []) if (!m.has(e.id)) m.set(e.id, { rec: e, rel, live: false });
+  }
+  return m;
+};
+const owesKept = (b, a) => !b || (!!a && (a.since ?? 0) <= (b.since ?? 0) && (b.targets || []).every((t) => (a.targets || []).includes(t)));
+/**
+ * Why a write of unit records may not happen (empty: it may). `before`/`after`: deliverable → sidecar, as on disk and
+ * as it would be after the write.
+ */
+export function unitRecordWriteProblems(root, before, after) {
+  const B = recordIndex(before), A = recordIndex(after), problems = [], check = [];
+  for (const [id, b] of B) {
+    const a = A.get(id);
+    if (!a) { if (b.rec.stamp || b.rec.owes || b.rec.carried) problems.push(`${id}: its record (what it owes) would be dropped`); continue; }
+    if (a.rec.carried) continue;
+    if (b.rec.carried || !owesKept(b.rec.owes, a.rec.owes) || canonicalJson(b.rec.stamp ?? null) !== canonicalJson(a.rec.stamp ?? null)) check.push([id, b, a]);
+  }
+  if (!check.length) return problems;
+  const reader = liveReader(root), ctx = context(root, reader);
+  let recs = null, info = null;
+  for (const [id, b, a] of check) {
+    const cu = b.live && a.live ? ctx.byId.get(id) : null;
+    const oldStamp = cu ? cu.stamp : migratedStamp(root, ctx, b.rec.stamp, b.rel);
+    if (!cu) {
+      // a record the package cannot load now (retired, or its deliverable not indexed): nothing can re-verify it, so a
+      // write may change it only by adding to what it owes
+      const newStamp = migratedStamp(root, ctx, a.rec.stamp, a.rel);
+      const changed = Object.keys(oldStamp || {}).filter((k) => (newStamp || {})[k] !== oldStamp[k] && !(a.rec.owes?.targets || []).includes(k));
+      if (b.rec.carried || !owesKept(b.rec.owes, a.rec.owes) || changed.length) problems.push(`${id}: the write would clear what it owes (${[...(b.rec.carried ? ["its version carry"] : []), ...changed].join(", ") || "its owed re-verification"}) with no re-check of it`);
+      continue;
+    }
+    const oldU = { ...cu, stamp: oldStamp, owes: b.rec.owes, carried: b.rec.carried };
+    const newU = { ...cu, stamp: migratedStamp(root, ctx, a.rec.stamp, a.rel, id), owes: a.rec.owes, carried: a.rec.carried };
+    const nowOwed = new Set([...owedTargets(newU, ctx), ...(a.rec.owes?.targets || [])]);
+    const cleared = [...new Set([...owedTargets(oldU, ctx), ...(b.rec.owes?.targets || [])])].filter((t) => !nowOwed.has(t));
+    if (b.rec.carried) cleared.push("its version carry");
+    if (b.rec.owes && a.rec.owes && (a.rec.owes.since ?? 0) > (b.rec.owes.since ?? 0)) cleared.push("the age of its obligation");
+    if (!cleared.length) continue;
+    // the clearing is a re-verification or a confirmation: the unit stamped as it stands now, and the evidence there
+    if (canonicalJson(a.rec.stamp ?? null) !== canonicalJson(stampFor(id, ctx.edges, ctx.hashes)) || a.rec.owes) { problems.push(`${id}: the write would clear what it owes (${cleared.join(", ")}) without stamping it as it stands now`); continue; }
+    recs ??= parseLog(readLogText(root)); info ??= legacyInfo(root, ctx);
+    const writtenAt = info.lastWrite.get(b.rel) ?? 0;
+    const confirmed = recs.some((r) => r.type === "confirmation" && r.party?.role === "instructor" && r.seq > writtenAt && (r.payload?.units || []).includes(id) && String(r.payload?.instructorWords || "").trim());
+    if (confirmed) continue;
+    const c = countedReview(root, recs, oldU, ctx);
+    if (!c.review) problems.push(`${id}: the write would clear what it owes (${cleared.join(", ")}) with no logged blind re-check of it${c.problem ? ` (${c.problem})` : ""} and no instructor confirmation since its record was last written`);
+  }
+  return problems;
+}
+
+/**
+ * The sides to write with every stamp migrated (pre-R4 term keys and question bindings, and key-term edges the stamp
+ * never held: see migratedStamp), marked `stamps: 2`. A side already marked on disk was migrated when it was written;
+ * its stamps come from it, so it is only marked again. `before`: deliverable → sidecar on disk.
+ */
+export function migrateRecordSides(root, sides, before = {}) {
+  const todo = sides.filter((side) => before[side.deliverable]?.stamps !== 2 && [...(side.units || []), ...(side.retired || [])].some((u) => u.stamp));
+  let ctx = null;
+  if (todo.length) { try { ctx = context(root, liveReader(root)); } catch { ctx = null; } }
+  return sides.map((side) => {
+    if (!ctx || !todo.includes(side)) return { ...side, stamps: 2 };
+    const live = (u) => (ctx.byId.get(u.id)?.locator.deliverable === side.deliverable ? u.id : null);
+    return { ...side, stamps: 2,
+      units: (side.units || []).map((u) => (u.stamp ? { ...u, stamp: migratedStamp(root, ctx, u.stamp, side.deliverable, live(u)) } : u)),
+      ...(side.retired ? { retired: side.retired.map((e) => (e.stamp ? { ...e, stamp: migratedStamp(root, ctx, e.stamp, side.deliverable) } : e)) } : {}) };
+  });
 }
 
 /** Units carried into a new major version start as obligations: their evidence and stamps no longer count (D15). */
