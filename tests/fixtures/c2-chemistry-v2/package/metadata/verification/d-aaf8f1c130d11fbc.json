@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-aaf8f1c130d11fbc",
+  "kind": "knowledge",
+  "unit": "u-practice-chemical-equilibrium-questions-8",
+  "factHash": "b469aac1c1844cc5e06f70259828535317b4b674abe3c9ec93256026a2fdc89f",
+  "contentHash": "7139e1f40954a47e9c811f3d73c3bc73328214104b1e2d3d3e263c977eb95bba",
+  "at": "2026-10-07T22:18:23.822Z",
+  "bundle": {
+    "nonce": "2ee4878cc2e993cb",
+    "bundleHash": "aaf8f1c130d11fbc47b827d07bff64626ce0b46c19d4d4dec3fd43da5dce64b3",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"2ee4878cc2e993cb\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nWHAT CHANGED SINCE THE PASSAGE WAS LAST CHECKED (context only: the passage must agree with it as it is now)\nQ 4, practice/chemical-equilibrium.md § questions:\nWrite the equilibrium constant expression for $\\ce{2 SO2(g) + O2(g) <=> 2 SO3(g)}$, then write it\nfor the same reaction written in reverse. How are the two related? *(Objective 2)*\n\nTEXT THE PASSAGE REFERS TO (context only)\nQ 3: Write the equilibrium constant expression for the ammonia synthesis\n$\\ce{N2(g) + 3 H2(g) <=> 2 NH3(g)}$. *(Objective 2)*\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 3: Products in the numerator, each concentration raised to its stoichiometric coefficient:\n$$K = \\frac{[\\ce{NH3}]^{2}}{[\\ce{N2}]\\,[\\ce{H2}]^{3}}$$\n\nQ 4: Write the equilibrium constant expression for $\\ce{2 SO2(g) + O2(g) <=> 2 SO3(g)}$, then write it\nfor the same reaction written in reverse. How are the two related? *(Objective 2)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 5: A student writes, for $\\ce{H2(g) + I2(g) <=> 2 HI(g)}$, the expression\n$K = \\dfrac{[\\ce{H2}][\\ce{I2}]}{[\\ce{HI}]}$. Identify both errors and give the correct expression.\n*(Objective 2)*\n\nPASSAGE (Answer 4)\nForward: $K = \\dfrac{[\\ce{SO3}]^{2}}{[\\ce{SO2}]^{2}[\\ce{O2}]}$.\n\nReverse: $K' = \\dfrac{[\\ce{SO2}]^{2}[\\ce{O2}]}{[\\ce{SO3}]^{2}}$.\n\nThe two are reciprocals: $K' = 1/K$. Reversing the equation swaps numerator and denominator."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"2ee4878cc2e993cb\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "5bacd2a46069ea86dd8364dc6c5f0d0ad7c3a61f05e4e2ffb4a07ee4835d98a6"
+  }
+}

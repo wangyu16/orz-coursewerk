@@ -2338,18 +2338,49 @@
       }
     },
     {
+      "id": "req.coherence.recheck-shows-moved",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A re-check owed because a dependency moved is shown what moved: the knowledge-review bundle of such a unit carries each moved target as it is now (the unit stating a shared value, a key term's definition, a spine node's text, a question it answers or names), and units.mjs reverify counts only a review whose logged prompt carried every one of them.",
+      "source": "red team R4 coherence (2026-10-07): F4",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r4-coherence.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.coherence.record-writes-checked",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "No exported writer clears an obligation on the caller's word: every unit-record write (writeUnitRecords) is compared with the records on disk, and a write that clears what a unit owes (a moved target, an owes entry, a version carry, or the record itself) is refused unless the unit is stamped as it stands now and the evidence is logged — a counted blind re-check (as reverify requires) or the instructor's confirmation since the record was last written. admitEvidence admits only evidence from a logged fact check of that unit at the facts it claims (or of a logged auto-correction of it).",
+      "source": "red team R4 coherence (2026-10-07): F7",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r4-coherence.test.mjs"
+        ]
+      }
+    },
+    {
       "id": "req.coherence.question-binding",
       "phase": "P11",
       "tiers": [
         "T1"
       ],
-      "statement": "An answer is bound to the question its label names (\"Answer 6\" to \"Q 6\"; by position only when there are no labels, and a label beats position) by the question's id and the hash of its full normalized wording (case, whitespace, markup and punctuation folded; relation and sign symbols kept): any rewording or re-pairing makes the answer owe a re-check, routed to the agent as a cheap blind re-review, never to the instructor's digest; a legacy stamp without the binding owes it once and is never baselined by upgradeStamps; the still-correct finding is bound to the question's wording; the knowledge and link reviews read an answer with the same question.",
-      "source": "red team R1 coherence (2026-10-06): F1, F2, F3, F7, F15; R2 F13",
+      "statement": "An answer is bound to the question its label names (\"Answer 6\" to \"Q 6\"; by position only when there are no labels, and a label beats position) by the question's id and the hash of its wording as a reader sees it (the light key of the rendered text: struck, hidden and link-destination text dropped; case, whitespace, emphasis, list markers and prose punctuation folded; every sign, relation, arrow and operator kept): any rewording or re-pairing makes the answer owe a re-check, routed to the agent as a cheap blind re-review, never to the instructor's digest; a legacy stamp without the binding owes it once and is never baselined by upgradeStamps; the still-correct finding is bound to the question's wording; the knowledge and link reviews read an answer with the same question. A stamp written with the pre-R4 key migrates once: it counts as current only where the question's text is unchanged under both keys (the old-key hash matches and the text holds nothing the old key folded that the new key reads), and otherwise owes one re-check.",
+      "source": "red team R1 coherence (2026-10-06): F1, F2, F3, F7, F15; R2 F13; R4 coherence F5",
       "status": "closed",
       "evidence": {
         "T1": [
           "tests/redteam-r1-coherence.test.mjs",
-          "tests/redteam-r2-coherence.test.mjs"
+          "tests/redteam-r2-coherence.test.mjs",
+          "tests/redteam-r4-coherence.test.mjs"
         ]
       }
     },
@@ -2359,14 +2390,15 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Key-term dependencies match the label's plural (s/es), either apostrophe and declared aliases ([alias: …] or the glossary parenthetical), also in their LaTeX spellings ($Q_r$, Q_{r}, \\mathrm{Q_r}), a short alias in its own case; a unitless symbol=value binding (K = 50, Q_r = 50, pH = 7) is a shared value between the units stating it, its symbol read as its family (K, K_{eq}, K_c, K_\\mathrm{eq}, Keq are one symbol; a symbol not starting with a capital is kept whole); a question or answer named by number is a dependency bound to its full wording, of the unit naming it and of that unit's answer, resolved as the knowledge review resolves it — in every spelling: Q3, Q 3, Q.3, Question #3, Problem #3, Prob. 3, Ex. 3, item 3, question three (number words to twenty), and every number of a list or range (Questions 3 and 4, questions 3–5, Q3–Q5).",
-      "source": "red team R1 coherence (2026-10-06): F8, F11; R2 F3, F12; R3 coherence F3, F5",
+      "statement": "Key-term dependencies are matched on the text as written AND as a reader sees it (rendered: emphasis, links and markup gone, so \"**Endothermic** reaction\" is a use), and are one target per map that defines the term (term:<chapter or course>:<label>; a label defined in two maps is two targets), and match the label's plural (s/es), either apostrophe and declared aliases ([alias: …] or the glossary parenthetical), also in their LaTeX spellings ($Q_r$, Q_{r}, \\mathrm{Q_r}), a short alias in its own case; a unitless symbol=value binding (K = 50, Q_r = 50, pH = 7) is a shared value between the units stating it, its symbol read as its family (K, K_{eq}, K_c, K_\\mathrm{eq}, Keq are one symbol; a symbol not starting with a capital is kept whole); a question or answer named by number is a dependency bound to its full wording, of the unit naming it and of that unit's answer, resolved as the knowledge review resolves it — in every spelling: Q3, Q 3, Q.3, Question #3, Problem #3, Prob. 3, Ex. 3, item 3, question three (number words to twenty), and every number of a list or range (Questions 3 and 4, questions 3–5, Q3–Q5). A reference WITHOUT a number (\"the same reaction\", \"the previous question\", \"the reaction above\", \"the reaction in Q…\", \"this reaction\") is a dependency on the nearest question before it in its deliverable and on the nearest unit before it that writes a reaction (fail toward an edge). Stamps written before R4 migrate once with no work when nothing changed: a label-only term key stands for every map's definition, each baselined at its map's last full approval before the unit's record was last written; a term edge the stamp never held is baselined the same way.",
+      "source": "red team R1 coherence (2026-10-06): F8, F11; R2 F3, F12; R3 coherence F3, F5; R4 coherence F1, F2, F6",
       "status": "closed",
       "evidence": {
         "T1": [
           "tests/redteam-r1-coherence.test.mjs",
           "tests/redteam-r2-coherence.test.mjs",
-          "tests/redteam-r3-coherence.test.mjs"
+          "tests/redteam-r3-coherence.test.mjs",
+          "tests/redteam-r4-coherence.test.mjs"
         ]
       }
     },
@@ -2407,14 +2439,15 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Every committed version of the decision log extends the version committed in each of its parents, for every commit reachable from HEAD (an orphan merged in with -s ours is caught); the log at every anchor (the branch's reflog, remote-tracking branches, tags) is an earlier or later version of HEAD's; a release receipt names the log's last record and a later pack refuses a log that no longer holds it. A rewrite onto a new root with every anchor removed is out of reach (documented in gate.mjs). Every git call of the log and history checks runs with object replacement off (--no-replace-objects, GIT_NO_REPLACE_OBJECTS=1) and no graft file, and a package whose git has refs/replace/* or info/grafts is log-broken.",
-      "source": "red team R1 coherence (2026-10-06): F10; R2 F5; R3 coherence F7",
+      "statement": "Every committed version of the decision log extends the version committed in each of its parents, for every commit reachable from HEAD (an orphan merged in with -s ours is caught); the log at every anchor (HEAD's reflog, every local branch and its reflog, remote-tracking branches, tags) is an earlier version of the current log (the current history extends it); a release receipt names the log's last record: a later pack refuses a log, or a HEAD whose committed log, that no longer holds it, and the gate reads the receipt beside the package (dist/) as an anchor. A rewrite onto a new root with every anchor removed is out of reach (documented in gate.mjs). Every git call of the log and history checks runs with object replacement off (--no-replace-objects, GIT_NO_REPLACE_OBJECTS=1) and no graft file, and a package whose git has refs/replace/* or info/grafts is log-broken.",
+      "source": "red team R1 coherence (2026-10-06): F10; R2 F5; R3 coherence F7; R4 coherence F3",
       "status": "closed",
       "evidence": {
         "T1": [
           "tests/redteam-r1-coherence.test.mjs",
           "tests/redteam-r2-coherence.test.mjs",
-          "tests/redteam-r3-coherence.test.mjs"
+          "tests/redteam-r3-coherence.test.mjs",
+          "tests/redteam-r4-coherence.test.mjs"
         ]
       }
     },
@@ -2439,14 +2472,15 @@
       "tiers": [
         "T1"
       ],
-      "statement": "A spine or key-term change is light only when its VISIBLE wording is unchanged (whitespace, markup, punctuation and case only): struck-through (~~…~~, <del>, <s>, <strike>), commented-out and hidden words are dropped before comparing, and every sign (−, -, +, ±, ∓; not a hyphen inside a word) is a word and a fact. A change of words that keeps every value, name, number, sign, negation and direction word is a rephrasing: a glance confirms it only when the current D39 blind review says every changed line says the same as the approved text it replaces and that the plan still says every removed approved line; a line judged changed, an unanswered meaning, nothing to ask about, or no review means full re-approval (D43). A light change whose current review says a line changed is not glanced, and no glance is given while the current review raises a \"wrong\" concern. Any other changed word is substantive. A light or meaning-kept, glance-confirmed change raises no re-verification: spine node, guide entry and key-term targets keep counting at their hash from the last full approval; a substantive change still makes linked units owe re-verification.",
-      "source": "red team R1 coherence (2026-10-06): F13; R2 F4; R3 coherence F1, F6; R3 control C4-01, C4-02",
+      "statement": "A spine or key-term change is light only when old and new differ ONLY by whitespace, `*`/`_` emphasis, list markers, letter case and prose punctuation that is not a sign, relation, arrow or operator, compared on the RENDERED text (orz-markdown): struck-through (~~…~~, <del>, <s>, <strike>), commented-out and hidden words and a link's destination are not there. Every other character change is at least a rephrasing; a change among the signs, relations, arrows and operators a reader sees (−, -, –, －, ⁻, ⁺, ±, ↑/↓, ≪/≫, ⩽/⩾, < > = ≤ ≥, `/` and `*`, `^` and `_`, sub- and superscripts, \\ce{->}/\\ce{<-}, ⇌ → ← ⇒) is substantive. A change of words that keeps every value, name, number, sign, negation and direction word is a rephrasing: a glance confirms it only when the current D39 blind review says every changed line says the same as the approved text it replaces and that the plan still says every removed approved line; a line judged changed, an unanswered meaning, nothing to ask about, or no review means full re-approval (D43). A light change whose current review says a line changed is not glanced, and no glance is given while the current review raises a \"wrong\" concern. Any other change is substantive. A light or meaning-kept, glance-confirmed change raises no re-verification: spine node, guide entry and key-term targets keep counting at their hash from the last full approval; a substantive change still makes linked units owe re-verification.",
+      "source": "red team R1 coherence (2026-10-06): F13; R2 F4; R3 coherence F1, F6; R3 control C4-01, C4-02; R4 coherence F8; R4 control C4-01",
       "status": "closed",
       "evidence": {
         "T1": [
           "tests/redteam-r1-coherence.test.mjs",
           "tests/redteam-r2-coherence.test.mjs",
-          "tests/redteam-r3-coherence.test.mjs"
+          "tests/redteam-r3-coherence.test.mjs",
+          "tests/redteam-r4-coherence.test.mjs"
         ]
       }
     },

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-9cebc7819eae6905",
+  "kind": "knowledge",
+  "unit": "u-practice-chemical-equilibrium-questions-6",
+  "factHash": "71171873f84a60100d6cebc958d7d5ce9a5dfc093b9e0af18495ff209d198583",
+  "contentHash": "dec3f40a0e7e3938900a2d05f88fd551817d8eadd7f19a513b1430370ddc0172",
+  "at": "2026-10-07T22:18:23.366Z",
+  "bundle": {
+    "nonce": "9f87f9cd5fddafaf",
+    "bundleHash": "9cebc7819eae690511fbed20de4813db7e79b2cc7b14f55d5ba402bb98b54fd8",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"9f87f9cd5fddafaf\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nWHAT CHANGED SINCE THE PASSAGE WAS LAST CHECKED (context only: the passage must agree with it as it is now)\nQ 3, practice/chemical-equilibrium.md § questions:\nWrite the equilibrium constant expression for the ammonia synthesis\n$\\ce{N2(g) + 3 H2(g) <=> 2 NH3(g)}$. *(Objective 2)*\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 2: Yes. Equilibrium requires the concentrations to be **constant**, not equal. Their unequal ratio is\nfixed by the value of the equilibrium constant. Expecting equal concentrations at equilibrium is a\ncommon error.\n\nQ 3: Write the equilibrium constant expression for the ammonia synthesis\n$\\ce{N2(g) + 3 H2(g) <=> 2 NH3(g)}$. *(Objective 2)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 4: Write the equilibrium constant expression for $\\ce{2 SO2(g) + O2(g) <=> 2 SO3(g)}$, then write it\nfor the same reaction written in reverse. How are the two related? *(Objective 2)*\n\nPASSAGE (Answer 3)\nProducts in the numerator, each concentration raised to its stoichiometric coefficient:\n$$K = \\frac{[\\ce{NH3}]^{2}}{[\\ce{N2}]\\,[\\ce{H2}]^{3}}$$"
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"9f87f9cd5fddafaf\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "8fc07c51d3d2eb82fdba18cf66da6e9968338dd9c286a1b4985f4cb9f331af8b"
+  }
+}

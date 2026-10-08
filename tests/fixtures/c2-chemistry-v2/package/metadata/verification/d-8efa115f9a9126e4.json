@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-8efa115f9a9126e4",
+  "kind": "knowledge",
+  "unit": "u-practice-le-chatelier-questions-6",
+  "factHash": "3e86359fd1425354844c60f68c7249d2619ae32cfbf07f03f813244c9dc63e2d",
+  "contentHash": "7ceabb1a0296643cf7d45391898903b4985466235697e6537bb3308f61143115",
+  "at": "2026-10-07T22:18:28.315Z",
+  "bundle": {
+    "nonce": "7f21db73d786e91e",
+    "bundleHash": "8efa115f9a9126e466b8a4bcbaae936954c91d5414b9d87ad9af03f15f045d3f",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"7f21db73d786e91e\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nWHAT CHANGED SINCE THE PASSAGE WAS LAST CHECKED (context only: the passage must agree with it as it is now)\nQ 3, practice/le-chatelier.md § questions:\nFor $\\ce{N2(g) + 3 H2(g) <=> 2 NH3(g)}$ at equilibrium, extra $\\ce{H2}$ is injected. Which way does\nthe equilibrium shift? *(Objective 2)*\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 2: No. The system moves to partially oppose the change, so the new concentrations lie between the\noriginal values and the values immediately after the disturbance. Complete restoration would mean\nthe disturbance had no effect at all, which the word *partially* rules out.\n\nQ 3: For $\\ce{N2(g) + 3 H2(g) <=> 2 NH3(g)}$ at equilibrium, extra $\\ce{H2}$ is injected. Which way does\nthe equilibrium shift? *(Objective 2)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 4: For the same reaction, ammonia is continuously removed from the vessel. Which way does the\nequilibrium shift, and why is this useful industrially? *(Objective 2)*\n\nPASSAGE (Answer 3)\nToward the products, to the right. Increasing the concentration of a reactant shifts the\nequilibrium toward the opposite side, consuming some of the added $\\ce{H2}$ and forming more\n$\\ce{NH3}$."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"7f21db73d786e91e\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "7d45a1377f27ffc0fc6da14d5d23399112dfbebf09f5e23de463d7bb72ceea2c"
+  }
+}

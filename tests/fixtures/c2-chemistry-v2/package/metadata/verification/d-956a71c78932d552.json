@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-956a71c78932d552",
+  "kind": "knowledge",
+  "unit": "u-practice-le-chatelier-questions-18",
+  "factHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "contentHash": "4bff27b84ee51b75041e22880148ce391072ab52533343643dafd503452367d0",
+  "at": "2026-10-07T22:18:29.788Z",
+  "bundle": {
+    "nonce": "6fc66ab6075ec9bb",
+    "bundleHash": "956a71c78932d552ac75f8e0f31de32553a3e0ca6ff11d8283f069276e44db05",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"6fc66ab6075ec9bb\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nWHAT CHANGED SINCE THE PASSAGE WAS LAST CHECKED (context only: the passage must agree with it as it is now)\nQ 9, practice/le-chatelier.md § questions:\nFor $\\ce{N2(g) + 3 H2(g) <=> 2 NH3(g)}$, the volume of the vessel is halved. Which way does the\nequilibrium shift? *(Objective 4)*\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 8: False. The effect depends on the sign of the reaction enthalpy. Raising the temperature increases\nthe yield for an endothermic reaction, because heat acts as a reactant, but decreases it for an\nexothermic reaction, because heat acts as a product. Temperature is also the only one of these\ndisturbances that changes the value of $K$.\n\nQ 9: For $\\ce{N2(g) + 3 H2(g) <=> 2 NH3(g)}$, the volume of the vessel is halved. Which way does the\nequilibrium shift? *(Objective 4)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 10: For $\\ce{H2(g) + I2(g) <=> 2 HI(g)}$, the volume is halved. Which way does the equilibrium shift?\n*(Objective 4)*\n\nPASSAGE (Answer 9)\nToward the products. There are four moles of gas on the left and two on the right. Decreasing the\nvolume raises the pressure, and the equilibrium shifts toward the side with **fewer** moles of gas,\nwhich is the product side."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"6fc66ab6075ec9bb\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "c71fe1ba276f2ad9ef57a3bdba4cc5f76004e78158c1b9a44e6fdf3e804a37c4"
+  }
+}

@@ -20,6 +20,7 @@ import { canonicalJson, sha256 } from "../records/canonical.mjs";
 import { appendLogRecord, parseLog, readLogText, verifyLog } from "../records/log.mjs";
 import { recordFile, unitsPathFor } from "../records/paths.mjs";
 import { makeFinding } from "../records/findings.mjs";
+import { migrateRecordSides, unitRecordWriteProblems } from "./obligations.mjs";
 
 const DIR = "metadata/units";
 export const UNIT_RECORDS_EVENT = "unit-records";
@@ -100,12 +101,21 @@ export function logUnitRecords(root, rels, party = { role: "harness", name: "uni
   return logDigests(root, rels, party);
 }
 /**
- * The one way the harness writes unit records: refuse if any sidecar it writes was changed outside the harness, write
- * them, and log their digests. `sides`: sidecar objects ({ deliverable, units, … }), validated by the caller.
+ * The one way the harness writes unit records: refuse if any sidecar it writes was changed outside the harness, refuse
+ * a write that clears an obligation without its evidence, write them (stamps migrated), and log their digests.
+ * `sides`: sidecar objects ({ deliverable, units, … }), validated by the caller.
+ * Red team R4 coherence F7: this function is exported and its content is the caller's, so it trusts none of it: a write
+ * that drops a unit's `owes` or carry, or refreshes a stale stamp, needs the same evidence `reverify` and `confirm`
+ * need — a counted blind re-check, or the instructor's logged confirmation (obligations.mjs unitRecordWriteProblems).
  */
 export function writeUnitRecords(root, sides, party = { role: "harness", name: "unit records" }) {
   const rels = sides.map((s) => s.deliverable);
   assertUnaltered(root, rels);
+  const before = currentSidecars(root), after = { ...before };
+  for (const side of sides) after[side.deliverable] = side;
+  const problems = unitRecordWriteProblems(root, before, after);
+  if (problems.length) throw new Error(`refusing to write unit records: ${problems.join("; ")} — an obligation clears only through its evidence: a logged blind re-check (node scripts/verify.mjs knowledge, then units.mjs reverify) or the instructor's confirmation (units.mjs confirm)`);
+  sides = migrateRecordSides(root, sides, before);
   for (const side of sides) {
     const f = recordFile(root, unitsPathFor(side.deliverable));
     fs.mkdirSync(path.dirname(f), { recursive: true });

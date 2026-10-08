@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-7d100b0d39362251",
+  "kind": "knowledge",
+  "unit": "u-practice-chemical-equilibrium-questions-22",
+  "factHash": "35bb57f1a45c8711dea0b86f6d0d68029f4c829834a82b37114830009f98e47f",
+  "contentHash": "c3e5c52c528217f7c6256917add6f2f576d12e6b71adb5d9b8b76efa91a2d062",
+  "at": "2026-10-07T22:18:27.311Z",
+  "bundle": {
+    "nonce": "bded2fa839db250e",
+    "bundleHash": "7d100b0d39362251dbc2c6026a8e4a4ee9dd33404199b641357cd6329ca46115",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"bded2fa839db250e\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nWHAT CHANGED SINCE THE PASSAGE WAS LAST CHECKED (context only: the passage must agree with it as it is now)\nQ 11, practice/chemical-equilibrium.md § questions:\nA reaction has $K = 4.0$ at $T = 298\\ \\text{K}$. Using $R = 8.314\\ \\text{J mol}^{-1}\\text{K}^{-1}$,\ncalculate the standard Gibbs energy change. *(Objective 5)*\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 10: The prediction is wrong. A pure solid has an activity of one regardless of how much is present, so\nit does not appear in the expression. Neither $K$ nor the equilibrium partial pressure of\n$\\ce{CO2}$ changes. Adding more solid changes only the amount of solid present.\n\nQ 11: A reaction has $K = 4.0$ at $T = 298\\ \\text{K}$. Using $R = 8.314\\ \\text{J mol}^{-1}\\text{K}^{-1}$,\ncalculate the standard Gibbs energy change. *(Objective 5)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 12: Without calculating, state whether $K$ is greater or less than one for a reaction whose standard\nGibbs energy change is positive. Justify your answer. *(Objective 5)*\n\nPASSAGE (Answer 11)\n$\\Delta G^\\ominus = -RT\\ln K = -(8.314)(298)\\ln(4.0) = -3435\\ \\text{J mol}^{-1} \\approx\n-3.4\\ \\text{kJ mol}^{-1}$.\n\nThe negative sign is consistent with $K > 1$, meaning products are favoured. *(The value\n$K = 4.0$ is a teaching hypothetical, not a source datum.)*"
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"bded2fa839db250e\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "f3b6eeb848a71e308cefcd4fb32bd9868d5494c4f801d599ff9117e646e58101"
+  }
+}

@@ -84,7 +84,7 @@ test("[req.coherence.light-spine] [req.spine.meaning-covers-removed] F1 + C4-01:
   // F1: the whole key-term entry "partial pressure" deleted (no fact token in it: a "rephrasing" by its words)
   const c = course(t);
   const term = c.read(MAP).split("\n").find((l) => l.startsWith("- **partial pressure**"));
-  const users = c.units().filter((u) => Object.keys(u.stamp || {}).includes("term:partial pressure")).map((u) => u.id);
+  const users = c.units().filter((u) => Object.keys(u.stamp || {}).includes("term:le-chatelier:partial pressure")).map((u) => u.id);
   assert.ok(users.length > 0);
   c.edit(MAP, term + "\n", "");
   assert.equal(c.kind(), "rephrasing");
@@ -140,7 +140,7 @@ test("[req.spine.blind-review-bound] [req.spine.meaning-covers-removed] F2: a me
   assert.equal(c.kind(), "rephrasing");
   assert.equal(currentSpineReview(c.root, c.r(), SCOPE), null, "the S2 review was against another approved text");
   assert.throws(() => c.glance(), /no current review/);
-  const users = c.units().filter((u) => Object.keys(u.stamp || {}).includes("term:inert gas")).map((u) => u.id);
+  const users = c.units().filter((u) => Object.keys(u.stamp || {}).includes("term:le-chatelier:inert gas")).map((u) => u.id);
   const owed = c.reverifyOwed();
   assert.deepEqual(users.filter((u) => !owed.has(u)), [], "its users still owe a re-check");
 });

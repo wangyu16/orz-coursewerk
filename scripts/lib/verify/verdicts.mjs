@@ -14,7 +14,7 @@ import { recordFile } from "../records/paths.mjs";
 import { appendLogRecord } from "../records/log.mjs";
 import { factHash, questionsOf, referencedUnits } from "../core/dependencies.mjs";
 import { unitHash } from "../core/segment.mjs";
-import { admitEvidence, evidenceStands, hasAdmittedEvidence, indexAndStamp, leadOf, loadUnits, loggedInstructorActs, needsEvidence, recordLeads, recordedLeads, reviewedAbsolutes, unitDepsHashes } from "../core/obligations.mjs";
+import { recheckShown, admitEvidence, evidenceStands, hasAdmittedEvidence, indexAndStamp, leadOf, loadUnits, loggedInstructorActs, needsEvidence, recordLeads, recordedLeads, reviewedAbsolutes, unitDepsHashes } from "../core/obligations.mjs";
 import { absoluteBundle, absoluteSentences, absolutesHash, readAbsoluteReview } from "./absolutes.mjs";
 import { randomBytes } from "node:crypto";
 import { readLogText } from "../records/log.mjs";
@@ -141,7 +141,7 @@ export async function reviewAbsolutes(root, reader, { verifier, only = null, onP
 }
 
 export async function verifyKnowledge(root, reader, { verifier, only = null, onProgress = () => {} }) {
-  const all = loadUnits(root, reader), deps = unitDepsHashes(root, reader);
+  const all = loadUnits(root, reader), deps = unitDepsHashes(root, reader), movedOf = recheckShown(root, reader);
   // by default the knowledge-based teaching units; a unit NAMED (--units) is reviewed whatever its kind — that is how
   // an answer that owes re-verification is re-read with its question (units.mjs reverify, R1 coherence)
   const units = all.filter((u) => (only ? only.includes(u.id) : u.judgment.includes("knowledge-based") && u.role === "teaching"));
@@ -163,7 +163,9 @@ export async function verifyKnowledge(root, reader, { verifier, only = null, onP
       .filter((x, k, arr) => x !== u && !near.includes(x) && arr.indexOf(x) === k && !ownQs.includes(x));
     // an answer is always read with the question it answers: the one its label names, else the nearest before it (F13)
     for (const q of [...ownQs].reverse()) if (!near.includes(q) && !referenced.includes(q)) referenced.unshift(q);
-    const bundle = knowledgeBundle(u.text, undefined, { before: list.slice(Math.max(0, i - 2), i).map(shown).join("\n\n"), after: list[i + 1] ? shown(list[i + 1]) : "", referenced: referenced.map(shown).join("\n\n"), label: u.label || null });
+    // what moved, for a unit that owes a re-check (R4 F4)
+    const moved = (movedOf.get(u.id) || []).map((m) => `${m.what}:\n${m.text}`).join("\n\n");
+    const bundle = knowledgeBundle(u.text, undefined, { before: list.slice(Math.max(0, i - 2), i).map(shown).join("\n\n"), after: list[i + 1] ? shown(list[i + 1]) : "", referenced: referenced.map(shown).join("\n\n"), label: u.label || null, moved });
     const answer = await verifier(bundle.prompt);
     const record = recordDispatch(root, { kind: "knowledge", unit: u.id, factHash: factHash(u.text), contentHash: u.locator.contentHash, bundle, answer, deps: deps.get(u.id) });
     results.push({ unit: u.id, dispatch: record.dispatch, concerns: knowledgeConcerns(record, u.text).length, costUsd: answer.costUsd ?? null });

@@ -15,7 +15,8 @@
 // with the same functions (F3); key terms match their declared aliases in LaTeX spellings too ($Q_r$, Q_{r},
 // \mathrm{Q_r}) — folded as bindings() folds them (F12).
 import { canonicalJson, sha256 } from "../records/canonical.mjs";
-import { factTokens, questionWording } from "./change.mjs";
+import { factTokens, legacyQuestionWording, questionWording, readerView } from "./change.mjs";
+import { renderedParts } from "./rendered.mjs";
 import { nodeIndex } from "./spine.mjs";
 import { parseNumber, plainForQuantities, valueText, valuesIn } from "./values.mjs";
 
@@ -54,7 +55,33 @@ export function bindings(text) {
 }
 
 export { questionWording };
-export const questionHash = (text) => sha256(questionWording(text));
+// The binding hash of a question (and of a unit named by number). Red team R4 coherence F5: it reads the rendered,
+// visible text with every sign, relation, arrow and operator kept (questionWording = the light key), so striking a
+// question's condition reaches its answer. Hashes carry a "q2:" prefix: a stamp value without it was written with the
+// pre-R4 key (legacyQuestionHash) and is migrated once (legacyQuestionCurrent).
+export const questionHash = (text) => `q2:${sha256(questionWording(text))}`;
+export const legacyQuestionHash = (text) => sha256(legacyQuestionWording(text));
+export const isLegacyQuestionHash = (h) => typeof h === "string" && /^[0-9a-f]{64}$/.test(h);
+// what the pre-R4 key read exactly as the new key does: letters and digits; prose punctuation both fold; < > = + ≤ ≥ ≠
+// (both read them as words); a hyphen joining two letters; a minus before a digit
+const SAFE_PROSE = /^(?:[\p{L}\p{N}\s.,;:!?'"‘’“”«»()[\]{}…—·•<>=+≤≥≠]|(?<=\p{L})-(?=\p{L})|[-−](?=\s*\p{N}))*$/u;
+const SAFE_MATH = /^(?:[\p{L}\p{N}\s<>=+≤≥≠]|[-−](?=\s*\p{N}))*$/u;
+/**
+ * The one-time migration of a question binding written with the pre-R4 key (F5): such a stamp value is current only
+ * when the text is unchanged under BOTH keys — its old-key hash still matches, and the text holds nothing the old key
+ * folded that the new key reads (struck, hidden or link-destination text; a sign, arrow or operator other than
+ * < > = +; a minus not before a digit; TeX commands, sub- and superscripts). Otherwise the dependent owes one re-check:
+ * the old key cannot say whether what it folded changed.
+ */
+export function legacyQuestionCurrent(stamped, text) {
+  if (!isLegacyQuestionHash(stamped) || stamped !== legacyQuestionHash(text)) return false;
+  const raw = String(text ?? "");
+  if (/~~|<\/?(?:del|s|strike)\b|<!--|\]\(|\]\[|<[a-z][^>]*(?:hidden|display\s*:|visibility)|\\/i.test(raw)) return false;
+  const parts = renderedParts(raw);
+  if (parts.some((p) => p.kind === "mark" || p.kind === "code")) return false;
+  return parts.every((p) => (p.kind === "math" ? SAFE_MATH : SAFE_PROSE).test(p.text))
+    && legacyQuestionWording(raw) === legacyQuestionWording(readerView(raw).replace(/\$/g, " "));
+}
 
 /** Math spellings folded to plain words: "$Q_r$", "Q_{r}", "\\mathrm{Q_r}" → "Qr" (as bindings() reads symbols). */
 export const foldMath = (text) => plainForQuantities(text).replace(/\\[A-Za-z]+/g, " ").replace(/_\s*([A-Za-z0-9]+)/g, "$1");
@@ -73,7 +100,9 @@ export function termMatcher(t) {
   const folded = [...new Set(forms.flatMap((f) => [f, foldMath(f).replace(/\s+/g, " ").trim()]).filter(Boolean))];
   const long = folded.filter((f) => f.length > 3), short = folded.filter((f) => f.length <= 3);
   const res = [long.length && formsPattern(long, "iu"), short.length && formsPattern(short, "u")].filter(Boolean);
-  return (text) => { const raw = String(text || ""), fm = foldMath(raw); return res.some((re) => re.test(raw) || re.test(fm)); };
+  // read on the text as written AND as a reader sees it (red team R4 coherence F1): "**Endothermic** reaction" is a use
+  // of "endothermic reaction" — emphasis, links and markup gone
+  return (text) => { const raw = String(text || ""), seen = readerView(raw); return [raw, foldMath(raw), seen, foldMath(seen)].some((t) => res.some((re) => re.test(t))); };
 }
 
 // ---- numbered questions ----------------------------------------------------------------------------------------
@@ -135,7 +164,30 @@ export function referencedUnits(units, u, own = questionsOf(units, u)) {
   const nums = new Set([u, ...own].flatMap((x) => referencedNumbers(x.text)));
   const mine = labelNumber(u.label);
   nums.delete(mine); for (const q of own) nums.delete(labelNumber(q.label));
-  return [...nums].flatMap((n) => numbered(units, u, n, ["question", "answer"])).filter((v, k, all) => v !== u && !own.includes(v) && all.indexOf(v) === k);
+  const byNumber = [...nums].flatMap((n) => numbered(units, u, n, ["question", "answer"]));
+  const self = new Set([u.id, ...own.map((q) => q.id)]);
+  return [...byNumber, ...[u, ...own].flatMap((x) => anaphoraTargets(units, x, self))].filter((v, k, all) => v !== u && !self.has(v.id) && all.findIndex((w) => w.id === v.id) === k);
+}
+
+// A reference WITHOUT a number (red team R4 coherence F2): "for the same reaction", "the previous question", "the
+// reaction above", "this reaction". It names the nearest question before it in its set, or the reaction it means — the
+// nearest unit before it that writes a reaction. Both are edges: an extra edge costs a cheap re-check, a missing one a
+// silent contradiction (Q4 "for the same reaction, ammonia is removed" after Q3 became H2 + I2).
+const ANAPHORA = new RegExp([
+  "\\b(?:the\\s+)?same\\s+(?:reaction|equilibrium|equilibria|system|mixture|process|equation|conditions?|vessel|container|sample|gas|solution|cell)s?\\b",
+  "\\b(?:the\\s+)?(?:previous|preceding|prior|last|above|earlier|former)\\s+(?:question|problem|exercise|example|reaction|equilibrium|system|mixture|part|item|equation|one)s?\\b",
+  "\\b(?:reaction|equilibrium|system|equation|mixture|process)s?\\s+(?:above|before|from\\s+(?:above|before|earlier)|(?:given|shown|described|stated|used|introduced)\\s+(?:above|earlier|before|previously))\\b",
+  "\\b(?:this|that|these|those)\\s+(?:reaction|equilibrium|equilibria|system|mixture|process)s?\\b",
+  "\\b(?:reaction|equilibrium|system|equation|mixture)s?\\s+(?:in|of|from)\\s+(?:q|question|problem|exercise|example)(?![a-z])",
+].join("|"), "i");
+const REACTION = /\\ce\s*\{[^}]*(?:<=>|->|<-|=)|[⇌⇋→⟶]|<=>/;
+export const anaphoric = (text) => ANAPHORA.test(readerView(text));
+function anaphoraTargets(units, x, self) {
+  if (!x?.locator || !anaphoric(x.text)) return [];
+  const before = units.filter((v) => v.locator.deliverable === x.locator.deliverable && v.locator.ordinal < x.locator.ordinal && v.id !== x.id && !self.has(v.id))
+    .sort((a, b) => b.locator.ordinal - a.locator.ordinal);
+  const question = before.find((v) => v.form === "question"), reaction = before.find((v) => REACTION.test(v.text));
+  return [question, reaction].filter(Boolean);
 }
 
 /**
@@ -156,10 +208,10 @@ export function dependencyEdges(units, spine, sources = {}) {
   for (const u of units) for (const v of questionsOf(units, u)) { add(u, `unit:${v.id}`, "derivation"); add(u, `question:${v.id}`, "derivation"); }
   // a question or answer named by number ("the answer to Q3"), bound to its full wording (F3)
   for (const u of units) for (const v of referencedUnits(units, u)) add(u, `ref:${v.id}`, "reference");
-  // key terms used in the unit
-  const terms = [...spine.course.terms || [], ...Object.values(spine.chapters).flatMap((c) => c.map.terms)];
-  const patterns = terms.filter((t) => t.label).map((t) => [t, termMatcher(t)]);
-  for (const u of units) for (const [t, uses] of patterns) if (uses(u.text)) add(u, `term:${t.label.toLowerCase()}`, "shared-term");
+  // key terms used in the unit: every definition of the term, in each concept map that defines it (red team R4
+  // coherence F6: keyed by label alone, a term defined in two chapters tracked only the last one's definition)
+  const patterns = termDefinitions(spine).map((d) => [d, termMatcher(d.term)]);
+  for (const u of units) for (const [d, uses] of patterns) if (uses(u.text)) add(u, d.key, "shared-term");
   // spine nodes the unit serves, and the prerequisites those nodes declare (D19-H)
   const nodes = nodeIndex(spine);
   for (const u of units) for (const n of u.spineNodes || []) {
@@ -179,14 +231,27 @@ export function dependencyEdges(units, spine, sources = {}) {
 export function targetHashes(units, spine, sources = {}) {
   const h = {};
   for (const u of units) { h[`unit:${u.id}`] = factHash(u.text); h[`ref:${u.id}`] = questionHash(u.text); if (u.form === "question") h[`question:${u.id}`] = questionHash(u.text); }
-  for (const t of [...(spine.course.terms || []), ...Object.values(spine.chapters).flatMap((c) => c.map.terms)]) if (t.label) h[`term:${t.label.toLowerCase()}`] = termHash(t);
+  for (const [key, defs] of groupBy(termDefinitions(spine), (d) => d.key)) h[key] = groupTermHash(defs.map((d) => d.term));
   for (const [id, n] of nodeIndex(spine)) h[`spine:${id}`] = nodeHash(n);
   for (const [id, hash] of Object.entries(sources)) h[`source:${id}`] = hash;
   return h;
 }
+const groupBy = (list, f) => { const m = new Map(); for (const x of list) { const k = f(x); if (!m.has(k)) m.set(k, []); m.get(k).push(x); } return m; };
+/** A key term's target: `term:<scope>:<label>` — the scope is "course" or the chapter whose concept map defines it (F6). */
+export const termKey = (scope, label) => `term:${scope}:${String(label).toLowerCase()}`;
+/** A stamp key from before R4 F6 (`term:<label>`, no scope): the label, else null. */
+export const legacyTermLabel = (key, scopes) => { if (!key.startsWith("term:")) return null; const rest = key.slice(5), i = rest.indexOf(":"); return i > 0 && scopes.has(rest.slice(0, i)) ? null : rest; };
+/** Every key-term definition of the spine, in the order the pre-R4 target table read them (course map, then chapters). */
+export function termDefinitions(spine) {
+  return [...(spine.course.terms || []).map((t) => ({ scope: "course", term: t })), ...Object.entries(spine.chapters).flatMap(([ch, c]) => c.map.terms.map((t) => ({ scope: ch, term: t })))]
+    .filter((d) => d.term.label).map((d) => ({ ...d, label: d.term.label.toLowerCase(), key: termKey(d.scope, d.term.label) }));
+}
+
 /** The hash a spine node (or guide entry) target has; also applied to the nodes an approval recorded (F13). */
 export const nodeHash = (n) => sha256(canonicalJson({ text: n.text ?? n.title, prereqs: n.prereqs ?? [], type: n.type ?? null, count: n.count ?? null, levels: n.levels ?? null }));
 export const termHash = (t) => sha256(t.text);
+/** The hash of a term target: its definition (or, defined twice in one map, both). */
+export const groupTermHash = (terms) => (terms.length === 1 ? termHash(terms[0]) : sha256(canonicalJson(terms.map((t) => t.text))));
 
 /** A unit's stamp: the hash of each of its dependencies now. */
 export function stampFor(unitId, edges, hashes) {

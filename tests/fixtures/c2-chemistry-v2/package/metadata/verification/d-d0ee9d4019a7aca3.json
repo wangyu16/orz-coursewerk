@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-d0ee9d4019a7aca3",
+  "kind": "knowledge",
+  "unit": "u-practice-chemical-equilibrium-questions-20",
+  "factHash": "41c2bb4b025e189443a0bf02c1baf7abad900d89963d6369e7acb345082ce01d",
+  "contentHash": "648e928979df52a3502ed869e0160164c536ce6f590e00f81d8ee64fb6ce3a72",
+  "at": "2026-10-07T22:18:26.808Z",
+  "bundle": {
+    "nonce": "7f344bc5b12a8cc8",
+    "bundleHash": "d0ee9d4019a7aca3c5ee873ffdf184ccff15af045f77c35630d03c0b7f9f97f8",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"7f344bc5b12a8cc8\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nWHAT CHANGED SINCE THE PASSAGE WAS LAST CHECKED (context only: the passage must agree with it as it is now)\nQ 10, practice/chemical-equilibrium.md § questions:\nFor the reaction in Q9, a student adds more solid $\\ce{CaCO3}$ to the sealed vessel and predicts\nthat more $\\ce{CO2}$ will form. Evaluate the prediction. *(Objective 4)*\n\nTEXT THE PASSAGE REFERS TO (context only)\nQ 9: Write the equilibrium constant expression for the decomposition of solid calcium carbonate,\n$\\ce{CaCO3(s) <=> CaO(s) + CO2(g)}$. *(Objective 4)*\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 9: Both solids have an activity of one and are omitted, leaving only the gas:\n$$K = [\\ce{CO2}]$$\n\nQ 10: For the reaction in Q9, a student adds more solid $\\ce{CaCO3}$ to the sealed vessel and predicts\nthat more $\\ce{CO2}$ will form. Evaluate the prediction. *(Objective 4)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 11: A reaction has $K = 4.0$ at $T = 298\\ \\text{K}$. Using $R = 8.314\\ \\text{J mol}^{-1}\\text{K}^{-1}$,\ncalculate the standard Gibbs energy change. *(Objective 5)*\n\nPASSAGE (Answer 10)\nThe prediction is wrong. A pure solid has an activity of one regardless of how much is present, so\nit does not appear in the expression. Neither $K$ nor the equilibrium partial pressure of\n$\\ce{CO2}$ changes. Adding more solid changes only the amount of solid present."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"7f344bc5b12a8cc8\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "ab583b289d368229038835e2b88609f3a558e4790ba630ec3aba507eadfc261f"
+  }
+}

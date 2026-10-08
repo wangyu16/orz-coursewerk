@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dispatch": "d-e4dd57d701cad0ed",
+  "kind": "knowledge",
+  "unit": "u-practice-le-chatelier-questions-10",
+  "factHash": "d73a969c75b34999e30918b01bc9f8642ac9e44590ba510ff5ba827dfc8872a2",
+  "contentHash": "d966508c125efada325d7b0b0c905e50d02b78dc6bb2cd89c942eb1845817ce3",
+  "at": "2026-10-07T22:18:28.799Z",
+  "bundle": {
+    "nonce": "f6742a0d4cf80cb6",
+    "bundleHash": "e4dd57d701cad0edb6872c5769d6b99dc160f0f9d4f5bee5227935c5bee81d08",
+    "prompt": "Below is a passage from teaching material for a college course. Read it as a student of that course would, at the level it is taught, and check it for errors of fact or concept.\nRaise a concern of one of two kinds. \"wrong\": the passage states or teaches something false at this level. \"clarify\": the passage is correct as meant, but a few added or changed words would remove a likely misreading (for example, by naming the condition it assumes).\nDo not raise exceptions or special cases beyond what the passage is about, and nothing about style or emphasis. For each concern copy the exact words at issue, and give the words to put in their place: for \"clarify\", the smallest edit that keeps the meaning.\nThe text around the passage is given so you can read it in place; raise concerns only about words in the PASSAGE itself.\nIf the passage refers to something that is not shown (a numbered question, a figure, another section), do not guess what it says, and raise nothing about it.\nReply with JSON only, exactly this shape: {\"nonce\": \"f6742a0d4cf80cb6\", \"concerns\": [{\"kind\": \"wrong\" | \"clarify\", \"text\": \"exact words\", \"problem\": \"...\", \"suggestion\": \"the words to put in their place\"}]} — an empty list if there is nothing to raise.\n\nWHAT CHANGED SINCE THE PASSAGE WAS LAST CHECKED (context only: the passage must agree with it as it is now)\nQ 5, practice/le-chatelier.md § questions:\nJustify the answer to Q3 using $Q_r$ and $K$ instead of Le Chatelier's principle. *(Objective 2)*\n\nTEXT THE PASSAGE REFERS TO (context only)\nQ 3: For $\\ce{N2(g) + 3 H2(g) <=> 2 NH3(g)}$ at equilibrium, extra $\\ce{H2}$ is injected. Which way does\nthe equilibrium shift? *(Objective 2)*\n\nAnswer 3: Toward the products, to the right. Increasing the concentration of a reactant shifts the\nequilibrium toward the opposite side, consuming some of the added $\\ce{H2}$ and forming more\n$\\ce{NH3}$.\n\nTEXT BEFORE THE PASSAGE (context only)\nAnswer 4: Toward the products. Decreasing the concentration of a product shifts the equilibrium toward that\nside to replace what was removed. Removing ammonia as it forms therefore keeps driving the reaction\nforward, which is why industrial processes remove product continuously.\n\nQ 5: Justify the answer to Q3 using $Q_r$ and $K$ instead of Le Chatelier's principle. *(Objective 2)*\n\nTEXT AFTER THE PASSAGE (context only)\nQ 6: The reaction $\\ce{N2(g) + 3 H2(g) <=> 2 NH3(g)}$ is exothermic. The temperature is raised. Which way\ndoes the equilibrium shift? *(Objective 3)*\n\nPASSAGE (Answer 5)\nAdding $\\ce{H2}$ increases the denominator of the quotient, so $Q_r$ falls below $K$. Since\n$Q_r < K$, the reaction shifts forward until $Q_r$ rises back to $K$. Note that $K$ itself is\nunchanged: only the composition moved."
+  },
+  "passages": [],
+  "answer": {
+    "mode": "replay",
+    "raw": "{\"nonce\":\"f6742a0d4cf80cb6\",\"concerns\":[]}",
+    "model": "replay",
+    "costUsd": 0,
+    "responseHash": "59df4da3bfa3b05f797f58e3f41b7ea7af3293f151f0b6567ec3d5bdc389fb05"
+  }
+}

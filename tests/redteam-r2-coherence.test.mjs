@@ -354,7 +354,7 @@ test("[req.records.history-extends] F5: every commit is checked against every pa
   gitIn(c.root, "branch", "-f", "main", "HEAD"); gitIn(c.root, "checkout", "-q", "main"); gitIn(c.root, "branch", "-D", "squashed");
   const squashed = logFindings(c.root, "t").find((x) => x.kind === "log-broken");
   assert.ok(squashed, "the squash is caught");
-  assert.match(squashed.evidence.failures.join(" "), /reflog\) is not an earlier or later version of HEAD's log/);
+  assert.match(squashed.evidence.failures.join(" "), /reflog\) is not an earlier version of the current log/);
 });
 
 test("[req.records.history-extends] F5: an earlier release's receipt anchors the log — a package whose log was rewritten since is not packed again", (t) => {

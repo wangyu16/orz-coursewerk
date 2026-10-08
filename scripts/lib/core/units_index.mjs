@@ -28,7 +28,7 @@ import { JUDGMENT_KINDS, validateUnitSidecar } from "../records/units.mjs";
 import { makeFinding } from "../records/findings.mjs";
 import { DELIVERABLE_DIRS, classifyUnit, derivedRole, segmentDeliverable, slugify, tokensOf, unitHash } from "./segment.mjs";
 import { manifestChapters } from "./package_reader.mjs";
-import { upgradeStamps } from "./obligations.mjs";
+import { migrateUnitRecords, upgradeStamps } from "./obligations.mjs";
 import { assertUnaltered, upgradeUnitRecordDigests, writeUnitRecords } from "./unit_records.mjs";
 
 export function deliverablesOf(reader) {
@@ -198,6 +198,7 @@ export function openSession(logText) {
 export function beginSession(root, reader, party, { step = "authoring" } = {}) {
   if (party?.role !== "agent") throw new Error("a session belongs to the agent that will write");
   try { upgradeUnitRecordDigests(root); } catch { /* a broken log: the gate reports it */ }
+  try { migrateUnitRecords(root, reader); } catch { /* an altered record or a broken log: the gate reports it */ }
   try { upgradeStamps(root, reader); } catch { /* an unindexed or partial package: indexing reports it */ }
   const baseline = {};
   for (const rel of deliverablesOf(reader)) baseline[rel] = segmentDeliverable(reader.text(rel), rel).units.map((s) => unitHash(s.text));
