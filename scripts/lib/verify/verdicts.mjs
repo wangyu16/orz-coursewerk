@@ -233,6 +233,18 @@ export function correctionGuard({ unit, lead = null, records, plainTexts, meta =
     const q = quantitiesIn(unit.text).find((x) => x.raw === claimed);
     const num = (String(claimed).match(/^-?(\d[\d,]*(?:\.\d+)?)(?![\de])/) || [])[1];
     if (!q || !num) return { ok: false, reason: `${claimed} is not a single, unambiguous number in the unit` };
+    // a sign carried by a verb (red-team round 4, R4-K13): "63.7 kJ of heat is released" states −63.7 kJ. The verb
+    // keeps the sign, so the number is written as a magnitude ("92.2 kJ … released"), a sign written beside it goes
+    // with the old number, and a source of the opposite sign is a question: the verb, not the number, would be wrong
+    if (q.verbSign) {
+      if (Math.sign(t.sourceValue) !== q.verbSign) return { ok: false, reason: `${claimed}: the sign is carried by the verb ("${q.verbSign < 0 ? "released" : "absorbed"}") and the source states the opposite: a question for the instructor` };
+      const re = new RegExp(`(?<![\\d.,])((?:(?:${SIGN_WORD_NEG}|${SIGN_WORD_POS}|${MINUS_FORMS}|\\+|&plus;|\\{[-−+]\\})\\s*(?:\\\\[,;:! ]\\s*)*)?)${num.replace(/[.]/g, "\\.")}(?![\\d])`, "g");
+      const at = [...unit.text.matchAll(re)];
+      if (at.length !== 1) return { ok: false, reason: `${claimed} is not a single, unambiguous number in the unit` };
+      const decimals = (num.split(".")[1] || "").length;
+      edits.push({ index: at[0].index, length: at[0][0].length, replacement: Math.abs(t.sourceValue).toFixed(Math.max(decimals, decimalsOf(t.source))), claimed, source: t.source, sources: [...t.sources], unit: q.unit, value: t.sourceValue });
+      continue;
+    }
     // the sign or prefix as typeset ("−92.2", "- 92.2", "-\,92.2", "{-}92", "&minus;92.2", "+92.2") is replaced
     // together with the number, never left beside the new one (red-team round 1, F10: "= - 92.2" became "= - −92.2";
     // round 2, R2-K06/K07: "+92.2" became "+−92.2" and "&minus;92.2" became "&minus;−92.2")
@@ -256,7 +268,9 @@ export function correctionGuard({ unit, lead = null, records, plainTexts, meta =
     const reads = quantitiesIn(after).some((x) => x.unit === e.unit && Math.abs(x.value - e.value) <= 1e-9 * Math.max(1, Math.abs(e.value)));
     // the corrected text is re-read with the full parser: it must state the source's value, and no sign word may stand
     // beside a signed number ("minus −92.2" reads +92.2 to a student; round 3, R3-K02)
-    if (doubled.test(around) || SIGN_WORD_BESIDE.test(after) || !reads) return { ok: false, reason: `the correction of ${e.claimed} would produce a malformed value ("${around.trim()}"): a question for the instructor` };
+    // nor a signed number beside a sign verb ("−92.2 kJ of heat is released" is heat absorbed; R4-K13)
+    const signedVerb = quantitiesIn(after).some((x) => x.verbSign && x.writtenSign);
+    if (doubled.test(around) || SIGN_WORD_BESIDE.test(after) || signedVerb || !reads) return { ok: false, reason: `the correction of ${e.claimed} would produce a malformed value ("${around.trim()}"): a question for the instructor` };
   }
   return { ok: true, plan: { edits, dispatches: [...new Set(hits.map(({ r }) => r.dispatch))], quotes: hits.flatMap(({ c }) => c.quotes) } };
 }

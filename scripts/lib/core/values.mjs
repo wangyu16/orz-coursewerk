@@ -71,6 +71,9 @@ export function valueText(text) {
   // a sign written as a word is a sign (R3-K02/K07: "minus 63.7 kJ" was read as +63.7): "minus"/"negative" before a
   // number reads as the minus a typesetter writes, "plus"/"positive" as a plus. A minus right after a number stays a
   // subtraction (SIGN below), so "100 minus 37 kJ" is never "−37 kJ".
+  // a number written in words before a unit is a value (red-team round 4, R4-K08: "two thousand atmospheres" made no
+  // claim at all); read before the sign words, so "minus nine hundred kJ" is −900 kJ
+  t = numberWords(t);
   t = t.replace(/\b(?:minus|negative)\s+(?=[(\d])/gi, "−").replace(/\b(?:plus|positive)\s+(?=[(\d])/gi, "+");
   // a bracketed value with its sign outside or inside: "−(63.7) kJ", "(−63.7) kJ" — never an expression ("(0.20)^2",
   // "(0.10)(0.30)"), which the arithmetic check reads (verify/mechanical.mjs)
@@ -96,6 +99,61 @@ const symbolOf = (matched) => {
   return matched;
 };
 const UNIT_ALT = FORMS.map((f) => f.pattern).join("|");
+
+// ---- numbers written in words (red-team round 4, R4-K08) ---------------------------------------------------------
+// "two thousand atmospheres" and "nine hundred kilojoules per mole" are values like "2,000 atm": a number written in
+// words straight before a unit of the table is read as its digits, so the sentence is semi-mechanical and owes
+// evidence (fail closed: a value nobody reads is a silent fact). A small count of moles ("four moles of gas → two
+// moles") is stoichiometry, a coefficient in words, and stays a word as "4 mol" in an equation would be a coefficient.
+const SMALL_WORDS = { zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19 };
+const TENS_WORDS = { twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90 };
+const SCALE_WORDS = { thousand: 1e3, million: 1e6, billion: 1e9 };
+const NUM_WORD = `(?:${[...Object.keys(SMALL_WORDS), ...Object.keys(TENS_WORDS), "hundred", ...Object.keys(SCALE_WORDS)].sort((a, b) => b.length - a.length).join("|")})`;
+const WORDS_PHRASE = new RegExp(`(?<![\\w-])(?:(an?)\\s+(?=(?:hundred|thousand|million|billion)\\b))?(${NUM_WORD}(?:(?:\\s+and\\s+|[\\s-]+)${NUM_WORD})*)(?![\\w-])`, "gi");
+const UNIT_AHEAD = new RegExp(`^[\\s\\u00A0]*(?:${UNIT_ALT})(?![A-Za-z0-9])`);
+/** The value of a number written in words ("two thousand", "nine hundred and five", "twenty-five"), or null. */
+export function wordsValue(phrase, leadingA = false) {
+  let total = 0, cur = leadingA ? 1 : 0, last = leadingA ? "small" : null;
+  for (const w of phrase.toLowerCase().split(/\s+and\s+|[\s-]+/).filter(Boolean)) {
+    if (w in SMALL_WORDS) { if (last === "small" || (last === "tens" && SMALL_WORDS[w] >= 10)) return null; cur += SMALL_WORDS[w]; last = "small"; }
+    else if (w in TENS_WORDS) { if (last === "small" || last === "tens") return null; cur += TENS_WORDS[w]; last = "tens"; }
+    else if (w === "hundred") { if (!cur || cur >= 100 || last === "hundred") return null; cur *= 100; last = "hundred"; }
+    else if (w in SCALE_WORDS) { if (!cur) return null; total += cur * SCALE_WORDS[w]; cur = 0; last = "scale"; }
+    else return null;
+  }
+  return last ? total + cur : null;
+}
+function numberWords(t) {
+  return t.replace(WORDS_PHRASE, (m, a, phrase, at, all) => {
+    const ahead = all.slice(at + m.length).match(UNIT_AHEAD);
+    if (!ahead) return m;
+    const v = wordsValue(phrase, !!a);
+    if (v == null) return m;
+    const scaled = !!a || /hundred|thousand|million|billion/i.test(phrase);
+    if (!scaled && v <= 12 && symbolOf(ahead[0].trim()) === "mol") return m; // a count of moles: stoichiometry
+    return String(v);
+  });
+}
+
+// ---- a sign carried by a verb (red-team round 4, R4-K13/K14) ------------------------------------------------------
+// "92.2 kJ of heat is released" states ΔH = −92.2 kJ; "absorbs 50 kJ" states +50 kJ. An amount of energy that a verb
+// says is released (given off, evolved, liberated, emitted) or absorbed (taken in, taken up) is read with the verb's
+// sign, as the enthalpy change it states — written number × the verb's sign, so "−92.2 kJ of heat is released" reads
+// +92.2 kJ, literally (negative heat released is heat absorbed). Only an energy, only with the verb in the same clause
+// right beside the value; a value bound to a symbol ("ΔH = −92.2 kJ, so heat is released") keeps its written sign.
+const ENERGY = /^(?:k?J|k?cal|eV)(?:\/|$)/;
+const RELEASE = "releas(?:e|es|ed|ing)|giv(?:e|es|ing)\\s+off|gave\\s+off|given\\s+off|evolv(?:e|es|ed|ing)|liberat(?:e|es|ed|ing)|emit(?:s|ted|ting)?|produc(?:e|es|ed|ing)";
+const ABSORB = "absorb(?:s|ed|ing)?|tak(?:e|es|ing)\\s+(?:in|up)|took\\s+(?:in|up)|taken\\s+(?:in|up)";
+const HEDGES = "(?:(?:about|approximately|roughly|nearly|around|some|only|just|exactly|almost|over|under|up\\s+to|close\\s+to|more\\s+than|less\\s+than|at\\s+least)\\s+)*";
+const VERB_AFTER = new RegExp(`^\\s*(?:of\\s+(?:heat|energy|thermal\\s+energy)\\s+)?(?:(?:is|are|was|were|be|been|being|gets?|got|will|would|has|have|had|can|could|may|must)\\s+)*(?:(${RELEASE})|(${ABSORB}))(?![A-Za-z])`, "i");
+const VERB_BEFORE = new RegExp(`(?:(?<![A-Za-z])(?:(${RELEASE})|(${ABSORB}))|(?:heat|energy)\\s+(?:(${RELEASE})|(${ABSORB}))\\s+(?:is|was|are|were|=|:|equals|amounts\\s+to|of))\\s+${HEDGES}$`, "i");
+/** The sign a verb gives an energy value at [at, end) of P: −1 (released), +1 (absorbed), or 0. */
+function verbSignAt(P, at, end) {
+  const before = P.slice(Math.max(0, at - 80), at).split(/[.;!?,(]/).pop(), after = P.slice(end, end + 80).split(/[.;!?,)]/)[0];
+  const b = before.match(VERB_BEFORE), a = after.match(VERB_AFTER);
+  const m = b ? (b[1] || b[3] ? -1 : 1) : a ? (a[1] ? -1 : 1) : 0;
+  return m;
+}
 // a symbol unit embedding its own denominator ("kJ/mol") is the same unit as "kJ per mole": both read "kJ/mol"
 const QTY = new RegExp(`${SIGN}(?<![\\w.])(${NUM}(?:e-?\\d+)?)[\\s\\u00A0]*(${UNIT_ALT})(?![A-Za-z0-9])`, "g");
 const DEN_WORDS = { mole: "mol", moles: "mol", mol: "mol", gram: "g", grams: "g", g: "g", kilogram: "kg", kg: "kg", litre: "L", liter: "L", litres: "L", liters: "L", L: "L", mL: "mL",
@@ -140,8 +198,12 @@ export function valuesIn(P) {
   for (const m of P.matchAll(QTY)) {
     const base = symbolOf(m[3]);
     const { unit: den, end } = denominators(P, m.index + m[0].length);
-    const num = signed(m[1], m[2]);
-    out.push({ value: parseNumber(num), unit: base + den, raw: (num + base + den).replace(/\s+/g, ""), ...shape(m[2]), at: m.index, end });
+    let num = signed(m[1], m[2]);
+    // a sign carried by a verb (R4-K13/K14): the value is the enthalpy change it states — the written number (with
+    // its written sign, if any) times the verb's sign
+    const verb = ENERGY.test(base + den) ? verbSignAt(P, m.index, end) : 0;
+    if (verb) num = signed((verb < 0) !== !!m[1], m[2]);
+    out.push({ value: parseNumber(num), unit: base + den, raw: (num + base + den).replace(/\s+/g, ""), ...shape(m[2]), at: m.index, end, ...(verb ? { verbSign: verb, writtenSign: !!m[1] } : {}) });
     taken.push([m.index, end]);
   }
   for (const m of P.matchAll(SYMBOL)) {
