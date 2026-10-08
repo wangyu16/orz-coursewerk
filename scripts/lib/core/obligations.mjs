@@ -564,20 +564,33 @@ export function coreObligations(root, reader, basis) {
       if (unreviewed.length) ob("link-review-owed", unreviewed.map((u) => u.id), `a blind link review of the units that would teach ${o.id} (node scripts/verify.mjs alignment --units ${unreviewed.map((u) => u.id).join(",")})`);
       else ob("objective-uncovered", [], `a teaching unit that teaches ${o.id}: its links were reviewed, and none teaches it (only in passing, or not at all)`);
     }
-    // D41 for the guide (red team round 2, C5-08): a question fills an entry's Count only when its current blind
-    // review says it practises the entry's objective ("yes") and has answered its type and level (D44); a framing question is
-    // never asked its fidelity, so it never fills one. A Count short only of reviews owed is the agent's review to run.
-    const { verified, owed } = guideReviewState(s.guide.entries, ch, reviews);
-    const assigned = guideAssignment(s.guide.entries, units, verified), possible = guideAssignment(s.guide.entries, units, (q, e) => verified(q, e) || owed(q, e));
-    for (const e of s.guide.entries.filter((x) => x.id)) {
-      const need = Number.isInteger(e.count) ? e.count : 0, got = assigned.get(e.id) || [];
-      if (got.length >= need) continue;
-      const linked = units.filter((u) => u.form === "question" && (u.spineNodes || []).includes(e.id)), unreviewed = linked.filter((q) => reviewable(q) && owed(q, e));
-      // the questions awaiting their review count as had (the review is owed, below); the rest is short
-      const had = (possible.get(e.id) || []).length;
-      if (unreviewed.length) ob("link-review-owed", unreviewed.map((u) => u.id), `a blind link and level review of the questions that would fill ${e.id} (node scripts/verify.mjs alignment --units ${unreviewed.map((u) => u.id).join(",")})`);
-      if (had < need) ob("guide-entry-short", linked.map((u) => u.id), `${need - had} more question(s) for ${e.id} (has ${had} of ${need})`); // only practice questions whose review says they fit, each toward one entry
-    }
+  }
+  // D41 for the guide (red team round 2, C5-08): a question fills an entry's Count only when its current blind
+  // review says it practises the entry's objective ("yes") and has answered its type and level (D44); a framing question is
+  // never asked its fidelity, so it never fills one. A Count short only of reviews owed is the agent's review to run.
+  // ONE matching over every chapter's entries (red team round 4, C5-01): a question linked to entries of two chapters
+  // counts toward one of them, never one in each.
+  const entries = chapters.flatMap((ch) => spine.chapters[ch].guide.entries);
+  const { verified, owed } = guideReviewState(entries, null, reviews);
+  const assigned = guideAssignment(entries, units, verified), possible = guideAssignment(entries, units, (q, e) => verified(q, e) || owed(q, e));
+  // Whether the Counts are met is a property of the WHOLE matching (round 4, C5-02): the verified maximum matching is
+  // compared with the total need. Per entry, a multi-entry question placed in A by the verified matching made A look
+  // full while the question B needed was the one owing its review — and which entry looked short hung on link order.
+  // When the verified matching is short, every question the `possible` matching relies on that owes its review is owed.
+  const byId = new Map(units.map((u) => [u.id, u]));
+  const need = (e) => (Number.isInteger(e.count) ? e.count : 0);
+  const totalNeed = entries.filter((e) => e.id).reduce((n, e) => n + need(e), 0);
+  const verifiedSize = [...assigned.values()].reduce((n, qs) => n + qs.length, 0);
+  const short = verifiedSize < totalNeed;
+  for (const e of entries.filter((x) => x.id)) {
+    const got = assigned.get(e.id) || [], relied = short ? (possible.get(e.id) || []).map((id) => byId.get(id)).filter((q) => q && reviewable(q) && owed(q, e)) : [];
+    if (got.length >= need(e) && !relied.length) continue;
+    const linked = units.filter((u) => u.form === "question" && (u.spineNodes || []).includes(e.id));
+    const unreviewed = [...new Set([...(got.length < need(e) ? linked.filter((q) => reviewable(q) && owed(q, e)) : []), ...relied])];
+    // the questions awaiting their review count as had (the review is owed, below); the rest is short
+    const had = (possible.get(e.id) || []).length;
+    if (unreviewed.length) ob("link-review-owed", unreviewed.map((u) => u.id), `a blind link and level review of the questions that would fill ${e.id} (node scripts/verify.mjs alignment --units ${unreviewed.map((u) => u.id).join(",")})`);
+    if (had < need(e)) ob("guide-entry-short", linked.map((u) => u.id), `${need(e) - had} more question(s) for ${e.id} (has ${had} of ${need(e)})`); // only practice questions whose review says they fit, each toward one entry
   }
   // D42: everything that ships is read — a framing unit (introduction, summary, closing) no current review has read for
   // off-plan content is the agent's to review (C3-07: a whole lesson under "## Introduction to …" went unread). Only an
@@ -609,7 +622,8 @@ export function coreObligations(root, reader, basis) {
  */
 export function guideReviewState(entries, chapter, reviews) {
   const fidelityFor = (r, e) => (r.fidelity || []).find((f) => f.id === e.id) || ((r.fidelity || []).length === 1 && r.fidelity[0].id == null ? r.fidelity[0] : null);
-  const objectiveOf = (e) => `objective.${chapter}.${e.objective}`;
+  // an entry's objective is in the entry's own chapter (entries of several chapters can be matched at once: round 4)
+  const objectiveOf = (e) => `objective.${e.chapter ?? chapter}.${e.objective}`;
   const verified = (q, e) => {
     const r = q.role === "teaching" ? reviews.get(q.id) : null, f = r && fidelityFor(r, e);
     // the type and level must be ANSWERED, not "matches": one that differs is the instructor's assessment-fidelity

@@ -16,6 +16,7 @@
 //
 // This module parses and checks; it never writes. Minting missing anchors is a separate, explicit tool (spine.mjs CLI).
 import { canonicalJson, sha256 } from "../records/canonical.mjs";
+import { listItemsOf } from "./printed.mjs";
 
 export const LEVELS = Object.freeze(["remember", "understand", "apply", "analyse", "analyze", "evaluate", "create"]);
 const CHAPTER_SECTIONS = { objectives: "objective", "concept sequence": "concept", "misconceptions to surface": "misconception" };
@@ -53,14 +54,37 @@ export function itemParts(raw) {
   return { text, ...parts };
 }
 
-function listItems(lines) {
+const MARKER = /^\s*(?:\d+[.)]|[-*+])\s+(.*)$/;
+/**
+ * The list items of some lines, each WITH its continuation lines (red team round 4, CONTROL C2-01): a line that
+ * starts with a list marker starts an item (the grammar's rule, kept), and every following line that orz-markdown
+ * reads as part of that same list item — indented, lazy, or a further paragraph of it — continues it. Markdown prints
+ * the continuation as part of the item, so it is part of the node's text, its review basis and every check that reads
+ * the node. Returns [{ line, parts: [text of each line, the marker stripped] }] (0-based lines).
+ */
+export function listItemLines(lines) {
+  const owner = new Map();
+  for (const it of listItemsOf(lines.join("\n"))) for (const k of it.lines) owner.set(k, it.start);
   const items = [];
-  for (const line of lines) {
-    const m = /^\s*(?:\d+[.)]|[-*+])\s+(.*)$/.exec(line);
-    if (m) items.push(m[1]);
-  }
+  let cur = null;
+  lines.forEach((line, k) => {
+    const m = MARKER.exec(line);
+    if (m) { cur = { line: k, owner: owner.get(k), parts: [m[1]] }; items.push(cur); return; }
+    if (!line.trim()) return;
+    if (cur && cur.owner !== undefined && owner.get(k) === cur.owner) cur.parts.push(line.trim());
+    else cur = null;
+  });
   return items;
 }
+/** An item's parts read as one: each line's trailing bracket groups (anchor, prerequisites, parent, aliases) are the
+ *  item's, wherever its lines break; its text is every line's text, joined. One line reads exactly as itemParts. */
+export function itemOfParts(parts) {
+  if (parts.length === 1) return itemParts(parts[0]);
+  const ps = parts.map((x) => itemParts(x));
+  return { text: ps.map((p) => p.text).filter(Boolean).join(" "), anchor: ps.find((p) => p.anchor)?.anchor ?? null, prereqs: ps.flatMap((p) => p.prereqs),
+    parent: ps.find((p) => p.parent)?.parent ?? null, aliases: ps.flatMap((p) => p.aliases) };
+}
+const listItems = (lines) => listItemLines(lines).map((it) => it.parts);
 
 function parseMap(text, scope, kinds, file) {
   const nodes = [], terms = [], problems = [], present = new Set();
@@ -70,12 +94,12 @@ function parseMap(text, scope, kinds, file) {
     present.add(key);
     if (kinds[key]) {
       for (const raw of listItems(sec.lines)) {
-        const p = itemParts(raw);
+        const p = itemOfParts(raw);
         nodes.push({ kind: kinds[key], scope, anchor: p.anchor, id: p.anchor ? `${kinds[key]}.${scope}.${p.anchor}` : null, text: p.text, prereqs: p.prereqs, file });
       }
     } else if (key === "key terms") {
       for (const raw of listItems(sec.lines)) {
-        const p = itemParts(raw);
+        const p = itemOfParts(raw);
         const label = /^\*\*(.+?)\*\*/.exec(p.text)?.[1] || p.text;
         // the house glossary form declares aliases in a parenthetical after the label — "**reaction quotient** (Qr)",
         // "(K, aliases: Keq, Kc)" — as terms.mjs reads it; a unit using one depends on the term (R2 coherence F12)
@@ -84,7 +108,7 @@ function parseMap(text, scope, kinds, file) {
         terms.push({ label, parent: p.parent, text: p.text, ...(aliases.length ? { aliases } : {}), file });
       }
     } else if (key === "chapter sequence") {
-      chapterSequence = listItems(sec.lines).map((raw) => /^\*\*([a-z0-9-]+)\*\*/.exec(raw.trim())?.[1] || null);
+      chapterSequence = listItems(sec.lines).map((raw) => /^\*\*([a-z0-9-]+)\*\*/.exec(raw.join(" ").trim())?.[1] || null);
     }
   }
   return { nodes, terms, problems, present, chapterSequence };
@@ -95,8 +119,11 @@ export const termsOfMap = (text, scope, file = null) => parseMap(text, scope, CH
 function parseGuide(text, chapter, file) {
   const objectives = [], entries = [], problems = [];
   let obj = null, entry = null, sub = null, n = 0;
-  for (const line of String(text || "").split(/\r?\n/)) {
+  // a field's value is its whole list item, continuation lines included (round 4, C2-01)
+  const all = String(text || "").split(/\r?\n/), whole = new Map(listItemLines(all).map((it) => [it.line, it.parts]));
+  for (const line0 of all) {
     n++;
+    const line = whole.has(n - 1) ? `${line0.slice(0, line0.length - line0.trimStart().length)}${line0.trim().match(/^(?:\d+[.)]|[-*+])\s+/)[0]}${whole.get(n - 1).join(" ")}` : line0;
     const h2 = /^##\s+(.*)$/.exec(line), h3 = /^###\s+(.*)$/.exec(line), h4 = /^#{4,6}\s+(.*)$/.exec(line);
     if (h2) {
       const m = /\[objective:\s*([^\]]+)\]\s*$/.exec(h2[1]);

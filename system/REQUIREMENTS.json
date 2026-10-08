@@ -2764,6 +2764,51 @@
           "tests/redteam-r3-confidence.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.control.printed-by-frame",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Whether text shows is the FRAME's call (orz-mdhtml, orz-slides, orz-paged with their stylesheets), not orz-markdown's alone (core/printed.mjs): a `::: tab` outside a `:::: tabs` group, a container class off the allowlist (success, info, warning, danger, left, right, center, spoil, tabs, tab, cols, col), a plugin block off the allowlist of kinds known to print (yaml/yml, test-block, {{nyml}} elements outside orz-paged, any unknown kind), an inline plugin that drops its text ({{attrs …text}}, {{space text}}, test-inline) or sets a class that may hide ({{sp[class]}} off the colour/badge set), a {{attrs[…]}} setting anything but an id or the step-reveal class, and a unit line that prints nothing (a link reference definition) are content-hidden, a blocking defect for the agent; speaker notes (`<!-- @notes -->` to the next region or slide) print nothing on a slide and are no unit, so they never count toward coverage; text before the first slide marker prints nothing; the deck config values orz-slides prints are read — `footer:` and `author:` as framing units, `title:` as a unit unless it is a label.",
+      "source": "3C red team round 4, CONTROL (studies/p11/redteam-r4/control and control-c245, 2026-10-07) C1-01, C1-02, C3-01 and the items seen but not developed",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r4-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.spine-item-extent",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A spine list item (objective, concept, misconception, key term, course-map item, guide field) is its marker line AND every continuation line orz-markdown reads as part of the same item (indented, lazy or a further paragraph); its bracket groups are read wherever its lines break. The whole item is the node's text, so it is the review basis and the review prompt's plan, and the restated-objective check compares the whole item (a deliverable's restated objectives read lazy continuation lines too). A nested item stays its own item; a one-line item reads exactly as before.",
+      "source": "3C red team round 4, CONTROL (studies/p11/redteam-r4/control and control-c245, 2026-10-07) C2-01",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r4-control.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.guide-count-one-matching",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Guide Counts are ONE maximum matching of practice questions over every chapter's guide entries, so a question linked to entries of two chapters fills one Count, never one in each; and whether the Counts are met is judged on the whole matching: when the verified matching is smaller than the total Count need, every question the possible (verified or owed) matching relies on that owes its review is link-review-owed, whatever the order of its links; an entry the possible matching cannot fill is guide-entry-short.",
+      "source": "3C red team round 4, CONTROL (studies/p11/redteam-r4/control and control-c245, 2026-10-07) C5-01, C5-02",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r4-control.test.mjs"
+        ]
+      }
     }
   ]
 }

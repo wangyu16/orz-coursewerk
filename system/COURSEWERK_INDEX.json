@@ -473,7 +473,7 @@
       "id": "repo:scripts/lib/core/obligations.mjs",
       "path": "scripts/lib/core/obligations.mjs",
       "type": "kernel",
-      "hash": "5249ee3eb34c15b3578b55344952391d1d034531717004529624a1129a8d4412"
+      "hash": "66c0563b7e5fd8e584e15480b399f870b0d479b4a05ed0aa632876d2454ca5e8"
     },
     {
       "id": "repo:scripts/lib/core/pack_v2.mjs",
@@ -497,19 +497,19 @@
       "id": "repo:scripts/lib/core/printed.mjs",
       "path": "scripts/lib/core/printed.mjs",
       "type": "kernel",
-      "hash": "ed29674dba06b76e938a2ead8c189fd63255e9651ad09546f744e6051b8561d2"
+      "hash": "ca24455c2a64e153f2d044bd30fa32814d6aad28c2a86d04c53bff305957a0af"
     },
     {
       "id": "repo:scripts/lib/core/segment.mjs",
       "path": "scripts/lib/core/segment.mjs",
       "type": "kernel",
-      "hash": "0800a71bc697f267af20b9e94876b2ce6669224cd32ebb4015a2e631338590d2"
+      "hash": "c393dd4d34ee0877586f29454a35c3a2d8fe5dbb6493f29841267b3da814da5b"
     },
     {
       "id": "repo:scripts/lib/core/shipped.mjs",
       "path": "scripts/lib/core/shipped.mjs",
       "type": "kernel",
-      "hash": "14b8f17da25e83bd08aaf40cab15e849c60a3eb7c5a67a1c6953d3f903f759ab"
+      "hash": "f45e600b7043b618179bc1596d3e9b1185a4a0113005c8a32271682deab68c7e"
     },
     {
       "id": "repo:scripts/lib/core/spine_review.mjs",
@@ -521,7 +521,7 @@
       "id": "repo:scripts/lib/core/spine.mjs",
       "path": "scripts/lib/core/spine.mjs",
       "type": "kernel",
-      "hash": "7e6bb8465c6013d0e8716fb72580a916056f3873f712a97c5ad9008be74405c3"
+      "hash": "4d3ce6207f9ffc833384271ee1f0bf2eba58e8ec6122a9813b34b57e9973652b"
     },
     {
       "id": "repo:scripts/lib/core/steering_intake.mjs",
@@ -1151,7 +1151,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "8d662552c9f7098cc666f65ffb61130159cbccf377d537c3f1e85baf37b251fc"
+      "hash": "93758d9548122abaf4f5ad50356f360a0381195419d1350ad40386f74df54807"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1788,6 +1788,12 @@
       "path": "tests/redteam-r4-confidence-k2.test.mjs",
       "type": "test",
       "hash": "cd9d7d67497f9e420cc8b51efd30c2ef962a7ad6a467af17b1f5ae6a6e82659e"
+    },
+    {
+      "id": "repo:tests/redteam-r4-control.test.mjs",
+      "path": "tests/redteam-r4-control.test.mjs",
+      "type": "test",
+      "hash": "6b1343f101bea84a41ca8068a62c6bc0f334811d16e22a6e6d0ef66facd34ae8"
     },
     {
       "id": "repo:tests/requirements.test.mjs",
@@ -3572,6 +3578,14 @@
         "status": "closed"
       },
       {
+        "id": "req.control.guide-count-one-matching",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.control.guide-count-practice-only",
         "phase": "P11",
         "tiers": [
@@ -3636,6 +3650,14 @@
         "status": "closed"
       },
       {
+        "id": "req.control.printed-by-frame",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.control.printed-by-parser",
         "phase": "P11",
         "tiers": [
@@ -3685,6 +3707,14 @@
       },
       {
         "id": "req.control.role-derived",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.control.spine-item-extent",
         "phase": "P11",
         "tiers": [
           "T1"
