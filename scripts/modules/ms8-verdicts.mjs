@@ -112,9 +112,12 @@ function run(s) {
     // the reviews its text carried in from a split, merge or retired unit (R4-K17). But the NEWEST review of the
     // unit's current text (contentHash) speaks for the unit: every older review is history, whether or not its quoted
     // words remain (red-team round 4, R4-K15: an error fixed at its cause, "an inert gas" → "hydrogen", left the words
-    // the reviewer quoted, and no clean fresh review could ever clear it)
+    // the reviewer quoted, and no clean fresh review could ever clear it). History means a review of OTHER text: a
+    // review of the unit's current text keeps speaking whatever a later review of the same text says — re-running the
+    // reviewer on unchanged text until it comes back clean clears nothing (round-4 integration); the instructor's
+    // answer, or a change to the text, does
     const newestFresh = fresh.length ? fresh[0].b.seq : -Infinity;
-    const speaking = list.filter((x) => x.b.seq >= newestFresh && (x.carried || x === own[0] || x.b.factHash === fh));
+    const speaking = list.filter((x) => (x.b.seq >= newestFresh || x.b.contentHash === u.contentHash) && (x.carried || x === own[0] || x.b.factHash === fh));
     // whose text it is, decided BEFORE whether a suggestion is in it (red-team round 4, R4-K16): on the instructor's
     // text a suggestion the agent wrote in unasked settles nothing — the question stays theirs (D35 (a), D31), and the
     // edit itself is raised (instructor-edit-unasked, below)

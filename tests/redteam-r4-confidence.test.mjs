@@ -176,6 +176,10 @@ test("[req.knowledge.settled-by-text] R4-K15: an error fixed at its cause with i
   // and the newest review of the current text speaks when it raises something
   await verifyKnowledge(c.root, c.r(), { only: [id], verifier: review([{ kind: "wrong", text: "Adding hydrogen at constant volume", problem: "test double: a later concern", suggestion: "" }]) });
   assert.deepEqual(concerns().map((f) => f.evidence.quote), ["Adding hydrogen at constant volume"]);
+  // history means a review of OTHER text: re-running the reviewer on the unchanged text until it comes back clean
+  // clears nothing (round-4 integration) — the instructor's answer, or a change to the text, does
+  await verifyKnowledge(c.root, c.r(), { only: [id], verifier: review([]) });
+  assert.deepEqual(concerns().map((f) => f.evidence.quote), ["Adding hydrogen at constant volume"], "a later clean review of the same text does not silence it");
 });
 
 // ================================================ K6: WHOSE TEXT, BEFORE "APPLIED" ================================

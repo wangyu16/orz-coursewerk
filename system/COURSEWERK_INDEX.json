@@ -899,7 +899,7 @@
       "id": "repo:scripts/modules/ms8-verdicts.mjs",
       "path": "scripts/modules/ms8-verdicts.mjs",
       "type": "executable",
-      "hash": "c1b8c0d20bf5a19b4132700f6d0f40159bdf8e778822bdb622ae042af39058ee"
+      "hash": "6c67683e95cf8389ba67b327a7ad8c5d677cc5e3aa376bb6aa6a10f78b9befdc"
     },
     {
       "id": "repo:scripts/modules/ms9-alignment.mjs",
@@ -1793,7 +1793,7 @@
       "id": "repo:tests/redteam-r4-confidence.test.mjs",
       "path": "tests/redteam-r4-confidence.test.mjs",
       "type": "test",
-      "hash": "85fe94f7a31ce4b94cff364a0006e57fb3259c7cad829d0fa7e948c19397872d"
+      "hash": "aadc8c51affa2d038b1f73d567bca61723f1b807623798804337dd891cf67933"
     },
     {
       "id": "repo:tests/redteam-r4-control.test.mjs",
