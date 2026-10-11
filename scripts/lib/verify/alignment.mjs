@@ -25,6 +25,7 @@ import { readDispatches, recordDispatch, reviewedPassage } from "./dispatch.mjs"
 import { meaningKey } from "../core/rendered.mjs";
 import { unitHash } from "../core/segment.mjs";
 import { dispatchLogEntry } from "./verdicts.mjs";
+import { standingOf } from "./standing.mjs";
 
 export { reviewable };
 
@@ -266,11 +267,59 @@ export async function reviewAlignment(root, reader, { verifier, only = null, onP
   return results;
 }
 
+// ---- which answer stands (red team R6, R6-C1-01: re-running the reviewer until it agrees) ------------------------
+// Every current review of the unit (its reader view, links and judged plan items unchanged: reviewIsCurrent) is read,
+// and item by item the most adverse answer stands (standing.mjs): a "no" outranks "passing", which outranks "yes";
+// off the plan outranks on it; a type or level that "differs" outranks "matches". An unreadable review, or an item a
+// review left unanswered, is no answer. So a "yes" re-run of unchanged text never overrides an honest "no" — only a
+// real change to the passage, its links or the plan items it judged (or the instructor) does.
+const VERDICT_RANK = { yes: 0, passing: 1, no: 2 };
+const FIDELITY_RANK = { matches: 0, differs: 1 };
 /**
- * What each unit's CURRENT link review says (D41; the same rule MS9 reads): of the logged alignment records whose basis
- * matches the unit as it is now, the newest readable one. Map(unit id → { verdicts: Map(node id → yes|passing|no|
+ * What the current link reviews of a unit say, as the standing rule reads them (null: no current review). Returns
+ * { latest, read, verdicts: Map(node id → yes|passing|no|unanswered), why: Map(node id → why), by: Map(item → dispatch),
+ *   offPlan: true|false|null, also: [ids], fidelity: [{ id, type, level, why, dispatch }], dispatch, standing } —
+ * `latest` is the newest current review (readable or not: MS9 says when it cannot be read), `read` reads a record.
+ */
+export function standingAlignment(recs, u, inp, plan, bases, baseline) {
+  const declared = inp.declared.map((n) => n.id), guides = inp.guides.map((g) => g.id), known = new Set(inp.chapterNodes.map((n) => n.id));
+  const read = (r) => readAlignment(r.answer?.raw, r.bundle?.nonce, declared, known, r.guides ? guides : guides.length ? true : []);
+  // a record from before round 1 names no guide entry: with one entry linked, its fidelity answer is that entry's
+  const gid = (id) => id ?? (guides.length === 1 ? guides[0] : null);
+  const st = standingOf(recs.map(({ r, seq }) => ({ r, seq })), {
+    current: ({ r }) => reviewIsCurrent(r, u, inp, plan, bases, baseline),
+    items: ({ r }) => {
+      const v = read(r); if (!v) return null;
+      return [...v.links.map((l) => [`link:${l.id}`, l]), ["offPlan", v.offPlan], ...v.also.map((id) => [`also:${id}`, id]),
+        ...v.fidelity.flatMap((f) => [[`type:${gid(f.id)}`, f], [`level:${gid(f.id)}`, f]])];
+    },
+    rank: (a, key) => key.startsWith("link:") ? (VERDICT_RANK[a.verdict] ?? null) : key === "offPlan" ? (a === true ? 1 : a === false ? 0 : null)
+      : key.startsWith("also:") ? 0 : FIDELITY_RANK[key.startsWith("type:") ? a.type : a.level] ?? null,
+  });
+  if (!st.current.length) return null;
+  const at = (k) => st.items.get(k);
+  const verdicts = new Map(declared.map((id) => [id, at(`link:${id}`)?.answer.verdict ?? "unanswered"]));
+  const fids = [...new Set([...st.items.keys()].filter((k) => k.startsWith("type:") || k.startsWith("level:")).map((k) => k.slice(k.indexOf(":") + 1)))];
+  const fidelity = fids.map((k) => {
+    const t = at(`type:${k}`), l = at(`level:${k}`), id = k === "null" ? null : k;
+    const worst = [t, l].filter(Boolean).sort((a, b) => b.rank - a.rank)[0];
+    return { id, type: t?.answer.type ?? "unanswered", level: l?.answer.level ?? "unanswered", why: worst?.answer.why ?? "", dispatch: worst?.review.r.dispatch ?? null, disagreed: t?.disagreed ? t : l?.disagreed ? l : null };
+  });
+  return {
+    latest: st.current[0].r, read, standing: st, verdicts,
+    why: new Map(declared.map((id) => [id, at(`link:${id}`)?.answer.why ?? ""])),
+    by: new Map([...st.items].map(([k, e]) => [k, e.review.r.dispatch])),
+    offPlan: at("offPlan")?.answer ?? null,
+    also: [...st.items.keys()].filter((k) => k.startsWith("also:")).map((k) => k.slice(5)),
+    fidelity, dispatch: st.readable[0]?.r.dispatch ?? null, readable: st.readable.length > 0,
+  };
+}
+
+/**
+ * What each unit's CURRENT link reviews say (D41; the same rule MS9 reads): the standing answer of every current,
+ * logged review of the unit (standingAlignment; red team R6). Map(unit id → { verdicts: Map(node id → yes|passing|no|
  * unanswered), offPlan: true|false|null (null: not answered), fidelity: [{ id, type, level }], dispatch }). A unit
- * absent from the map has no current review.
+ * absent from the map has no current readable review.
  */
 export function currentReviews(all, plan, records, log) {
   const out = new Map(), byUnit = new Map(), baseline = labelBaseline(log);
@@ -280,12 +329,9 @@ export function currentReviews(all, plan, records, log) {
   }
   for (const u of all) {
     const recs = byUnit.get(u.id); if (!recs || !(reviewable(u) || u.role === "framing")) continue;
-    const inp = reviewInputs(u, all, plan), bases = currentBases(u, inp, plan, baseline);
-    const declared = inp.declared.map((n) => n.id), guides = inp.guides.map((g) => g.id), known = new Set(inp.chapterNodes.map((n) => n.id));
-    for (const { r } of recs.filter(({ r }) => reviewIsCurrent(r, u, inp, plan, bases, baseline)).sort((a, b) => b.seq - a.seq)) {
-      const v = readAlignment(r.answer?.raw, r.bundle?.nonce, declared, known, r.guides ? guides : guides.length ? true : []);
-      if (v) { out.set(u.id, { verdicts: new Map(v.links.map((l) => [l.id, l.verdict])), offPlan: v.offPlan, fidelity: v.fidelity, dispatch: r.dispatch }); break; }
-    }
+    const inp = reviewInputs(u, all, plan);
+    const s = standingAlignment(recs, u, inp, plan, currentBases(u, inp, plan, baseline), baseline);
+    if (s?.readable) out.set(u.id, { verdicts: s.verdicts, offPlan: s.offPlan, fidelity: s.fidelity, dispatch: s.dispatch });
   }
   return out;
 }
