@@ -27,7 +27,9 @@ export function factTokens(text) {
   const names = t.match(/\b[A-Z][a-zA-Z]*(?:\s+[A-Z][a-zA-Z]*)*\b/g) || [];
   const symbols = t.match(/[A-Za-z]*[ΔΣ⇌→←°±≤≥≠×÷√∞∂∫]+[A-Za-z0-9°]*/g) || [];
   const neg = (t.match(NEGATION) || []).map((x) => x.toLowerCase());
-  const sentenceStarts = new Set((t.match(/(?:^|[.!?]\s+)([A-Z][a-z]+)/g) || []).map((x) => x.replace(/^[.!?\s]+/, "")));
+  // a capital after a colon opens a clause as one after a full stop does ("Note: The gas …"; red-team round 6, control
+  // C4 probe: it was read as a name, so recasing it was a fact change)
+  const sentenceStarts = new Set((t.match(/(?:^|[.!?:]\s+)([A-Z][a-z]+)/g) || []).map((x) => x.replace(/^[.!?:\s]+/, "")));
   const keep = (n) => !sentenceStarts.has(n);
   return [...nums.map((x) => x.replace(/\s+/g, "")), ...names.filter(keep), ...symbols, ...neg].sort();
 }

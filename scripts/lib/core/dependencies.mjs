@@ -20,14 +20,14 @@ import { canonicalJson, sha256 } from "../records/canonical.mjs";
 import { factTokens, legacyQuestionWording, questionWording, readerView } from "./change.mjs";
 import { lightKeyR4, printedChars, renderedParts } from "./rendered.mjs";
 import { nodeIndex } from "./spine.mjs";
-import { parseNumber, plainForQuantities, valueText, valuesIn } from "./values.mjs";
+import { parseNumber, plainForQuantities, readValues, valueProse, valuesIn } from "./values.mjs";
 
 // factHash is an EVIDENCE key (D17): what a semi-mechanical check admitted, and what an instructor confirmed, are bound
 // to the facts the source states. It is not what a dependent is bound to (unitTargetHash, below).
 export const factHash = (text) => sha256(canonicalJson(factTokens(text)));
 // The reader view with each formula as its TeX source (fact tokens read numbers, signs and symbols from the source,
 // where "-92" is one token; the typeset form spaces them).
-const factView = (raw) => renderedParts(raw).map((p) => (p.kind === "math" ? ` $${p.text}$ ` : p.kind === "mark" ? "" : p.kind === "prose" ? printedChars(p.seen) : p.text)).join("").replace(/[ \t]+/g, " ").replace(/ *\n+ */g, "\n").trim();
+const factView = (raw) => renderedParts(raw).map((p) => (p.kind === "math" ? ` $${p.text}$ ` : p.kind === "mark" || p.kind === "hint" ? "" : p.kind === "prose" ? printedChars(p.seen) : p.text)).join("").replace(/[ \t]+/g, " ").replace(/ *\n+ */g, "\n").trim();
 /**
  * What a unit's dependents are bound to (`unit:` target): READER-VIEW based (red team R5, cause 1). The fact tokens
  * (values, names, numbers, symbols, negations) of the text as a reader sees it — a struck negation ("does ~~not~~
@@ -47,7 +47,10 @@ const QUANTITY = /[−-]?\d+(?:[.,]\d+)?\s*(?:°C|K\b|kJ|J\b|mol|M\b|atm|bar|Pa|
 // packages write most values in LaTeX; a value written two ways is still one shared value.
 // (plainForQuantities lives in core/values.mjs, beside the one value parser that also reads bindings; re-exported)
 export { plainForQuantities };
-const quantities = (text) => [...new Set((plainForQuantities(text).match(QUANTITY) || []).map((q) => q.replace(/\s+/g, "")))];
+// …and every value the one value reader reads (core/values.mjs readValues — the claim extractor's own; red-team round 6,
+// cause A: "−92.2\\ \\textrm{kJ}" stated the guide's value to the claim reader but shared nothing here)
+const quantities = (text) => [...new Set([...(plainForQuantities(text).match(QUANTITY) || []).map((q) => q.replace(/\s+/g, "")),
+  ...readValues(text).filter((q) => q.unit !== "unread" && q.unit !== "1").map((q) => `v:${q.value}|${q.unit}`)])];
 export { quantities };
 
 // A unitless value bound to a symbol ("K = 50", "Q_r = 50", "pH = 7", "K_c = 4.0") is a shared value too: two units
@@ -71,7 +74,7 @@ export function bindings(text) {
     if (UNIT_AFTER.test(plain.slice(m.index + m[0].length))) continue; // a quantity with a unit: QUANTITY covers it
     for (const sym of m[1].split("=").map((x) => x.replace(/\s+/g, "")).filter(Boolean)) out.add(bindingKey(sym, m[2]));
   }
-  for (const v of valuesIn(valueText(text))) if (v.symbol && v.unit === "1") out.add(bindingKey(v.symbol, String(v.value)));
+  for (const v of valuesIn(valueProse(text))) if (v.symbol && v.unit === "1") out.add(bindingKey(v.symbol, String(v.value)));
   return [...out];
 }
 
@@ -92,7 +95,7 @@ export const isR4QuestionHash = (h) => typeof h === "string" && /^q2:[0-9a-f]{64
 const SAFE_PROSE = /^(?:[\p{L}\p{N}\s.,;:!?'"‘’“”«»()[\]{}…—·•<>=+≤≥≠]|(?<=\p{L})-(?=\p{L})|[-−](?=\s*\p{N}))*$/u;
 const SAFE_MATH = /^(?:[\p{L}\p{N}\s<>=+≤≥≠]|[-−](?=\s*\p{N}))*$/u;
 // the reader view as R4 read it (maths as its TeX source): what the pre-R4 key's migration was defined against
-const sourceView = (raw) => renderedParts(raw).map((p) => (p.kind === "math" ? ` $${p.text}$ ` : p.kind === "mark" ? "" : p.text)).join("").replace(/[ \t]+/g, " ").replace(/ *\n+ */g, "\n").trim();
+const sourceView = (raw) => renderedParts(raw).map((p) => (p.kind === "math" ? ` $${p.text}$ ` : p.kind === "mark" || p.kind === "hint" ? "" : p.text)).join("").replace(/[ \t]+/g, " ").replace(/ *\n+ */g, "\n").trim();
 /**
  * The one-time migration of a question binding written with the pre-R4 key (F5): such a stamp value is current only
  * when the text is unchanged under BOTH keys — its old-key hash still matches, and the text holds nothing the old key
@@ -105,7 +108,7 @@ export function legacyQuestionCurrent(stamped, text) {
   const raw = String(text ?? "");
   if (/~~|<\/?(?:del|s|strike)\b|<!--|\]\(|\]\[|<[a-z][^>]*(?:hidden|display\s*:|visibility)|\\/i.test(raw)) return false;
   const parts = renderedParts(raw);
-  if (parts.some((p) => p.kind === "mark" || p.kind === "code")) return false;
+  if (parts.some((p) => p.kind === "mark" || p.kind === "hint" || p.kind === "code")) return false;
   return parts.every((p) => (p.kind === "math" ? SAFE_MATH : SAFE_PROSE).test(p.text))
     && legacyQuestionWording(raw) === legacyQuestionWording(sourceView(raw).replace(/\$/g, " "))
     && r4ReadsAsR5(raw);
@@ -119,7 +122,8 @@ export function legacyQuestionCurrent(stamped, text) {
 const CASE_NAMED = /\\(?!(?:var)?(?:Gamma|Delta|Theta|Lambda|Xi|Pi|Sigma|Upsilon|Phi|Psi|Omega)(?![A-Za-z]))[A-Za-z]*[A-Z]/;
 function r4ReadsAsR5(raw) {
   if (/[­᠎​-‏⁠-⁤﻿]/.test(raw) || raw.normalize("NFC") !== raw) return false;
-  return renderedParts(raw).every((p) => (p.kind !== "prose" || p.seen === p.text) && (p.kind !== "math" || !CASE_NAMED.test(p.text)));
+  // round 6: an HTML sub/superscript and a style marker are read by R5+ keys only (rendered.mjs), so R4 read them differently
+  return renderedParts(raw).every((p) => p.kind !== "hint" && !p.html && (p.kind !== "prose" || p.seen === p.text) && (p.kind !== "math" || !CASE_NAMED.test(p.text)));
 }
 /**
  * A question binding written with the R4 key ("q2:") is current when the text is unchanged under BOTH keys: its R4

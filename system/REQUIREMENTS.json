@@ -1902,7 +1902,8 @@
           "tests/redteam-r1-confidence.test.mjs",
           "tests/redteam-r2-confidence.test.mjs",
           "tests/redteam-r3-confidence.test.mjs",
-          "tests/redteam-r4-confidence.test.mjs"
+          "tests/redteam-r4-confidence.test.mjs",
+          "tests/redteam-r6-readers.test.mjs"
         ]
       }
     },
@@ -2739,7 +2740,8 @@
       "evidence": {
         "T1": [
           "tests/redteam-r3-confidence.test.mjs",
-          "tests/redteam-r4-confidence.test.mjs"
+          "tests/redteam-r4-confidence.test.mjs",
+          "tests/redteam-r6-readers.test.mjs"
         ]
       }
     },
@@ -2770,7 +2772,8 @@
       "evidence": {
         "T1": [
           "tests/redteam-r3-confidence.test.mjs",
-          "tests/redteam-r4-confidence-k2.test.mjs"
+          "tests/redteam-r4-confidence-k2.test.mjs",
+          "tests/redteam-r6-readers.test.mjs"
         ]
       }
     },
@@ -2785,7 +2788,8 @@
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r4-confidence-k2.test.mjs"
+          "tests/redteam-r4-confidence-k2.test.mjs",
+          "tests/redteam-r6-readers.test.mjs"
         ]
       }
     },
@@ -2996,6 +3000,66 @@
       "evidence": {
         "T1": [
           "tests/redteam-r5-trust.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.values.one-reader",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "One reader decides whether a text states a value (R6-K06, D46 cause A): the classifier (statesValue), the claim extractor (quantitiesIn), MS7's value scan (consistency.scanValues) and the shared-value edges (dependencies.quantities) read values through one view (values.valueProse: every font macro, sizing command, tie and degree spelling folded as it prints) and one function (values.readValues). A sentence the claim reader finds a required quantity in is semi-mechanical and owes evidence; no reader can find a value another misses.",
+      "source": "3C red team round 6 (studies/p11/redteam-r6/{confidence,control-c45}, 2026-10-11), readers lane",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r6-readers.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.spine.detail-question",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The spine says what to teach, to what level and how to assess, and is not source-checked (D48, operator 2026-10-11; R6-K05): a spine line (course map, concept map, assessment guide; provenance, headings, structural fields and the credit line excluded) that carries a definition, an explanation, a value with a unit, an equation, an attribution or an absolute claim raises a non-blocking digest question (spine-detail) in which the agent suggests removing the detail from the spine and placing it in the study guide, naming the section that teaches the line's objective or concept. Detection uses the harness's own readers; ordinary objective, concept and assessment wording is not flagged (calibrated on the C2 fixture: 9 of 116 lines, listed).",
+      "source": "3C red team round 6 (studies/p11/redteam-r6/{confidence,control-c45}, 2026-10-11), readers lane",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r6-readers.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.spine.values-consistent",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The cross-deliverable value check reads the spine (D48; R6-K05): MS7 reads every content line of the course map, the concept maps and the assessment guides as claims in their chapter (a misconception asserts no value), so a spine value that disagrees with the value the deliverables teach under the same term is a value-disagreement, the same as anywhere else.",
+      "source": "3C red team round 6 (studies/p11/redteam-r6/{confidence,control-c45}, 2026-10-11), readers lane",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r6-readers.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.coherence.reader-view-r6",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The reader view keeps every script and symbol and fails closed on hiding styles (round-6 control C4 probe): HTML <sup>/<sub> are scripts (as 10^3^ and H~2~O); an ASCII prime after a lone letter, digit or degree sign is a prime; an em dash straight before a number is a minus; an inline style that certainly hides (opacity, font-size 0, transparent colour, zero size, clip, negative indent) drops its text, and one the view cannot vouch for is kept in every key as a marker around its text; a capital after a colon opens a clause and is no fact token.",
+      "source": "3C red team round 6 (studies/p11/redteam-r6/{confidence,control-c45}, 2026-10-11), readers lane",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r6-readers.test.mjs"
         ]
       }
     }

@@ -4,7 +4,7 @@
 // and nothing else: sentence-initial capitals, single letters, symbols and bare coefficients are not facts a source
 // can carry. An admitted quote must carry every required token (admission.mjs).
 import { classifyUnit } from "../core/segment.mjs";
-import { clean, parseNumber, unreadValues, valuesIn } from "../core/values.mjs";
+import { clean, parseNumber, readValues, valuesIn } from "../core/values.mjs";
 import { namesIn, proseOf } from "../core/names.mjs";
 // proper names and fact prose live in core/names.mjs so the classifier reads names with the same reader (round 3, R3-K01)
 export { namesIn, proseOf };
@@ -41,7 +41,8 @@ export const folded = (t) => fold(t).s;
 // A value candidate the reader does not read (core/values.mjs unreadValues; red-team round 5, R5-K01) is a required
 // token too — unit "unread", no value — so its sentence owes evidence: fail closed. A quote carries it when it carries
 // the same figure (or, with no figure, the same words); it never anchors a contradiction (admission.mjs).
-export const quantitiesIn = (text) => { const P = proseOf(text); return [...valuesIn(P), ...unreadValues(P).map((u) => ({ ...u, value: NaN, unit: "unread", decimals: 0, exp: 0 }))].sort((a, b) => a.at - b.at); };
+// (core/values.mjs readValues: the same function the classifier asks "does this state a value?" — round 6, cause A)
+export const quantitiesIn = (text) => readValues(text);
 /** The prose with its values blanked (a year is never read inside a value). */
 const withoutValues = (P) => valuesIn(P).reverse().reduce((t, q) => t.slice(0, q.at) + " ".repeat(q.end - q.at) + t.slice(q.end), P);
 export const yearsIn = (text) => [...new Set([...withoutValues(proseOf(text)).matchAll(YEAR)].map((m) => m[1]))];
@@ -115,7 +116,8 @@ export function exclusivityOf(sentence) {
 export function semiClaims(text) {
   const claims = [];
   for (const s of sentencesOf(text)) {
-    if (!classifyUnit({ form: "paragraph", text: clean(s) }).includes("semi-mechanical") && !exclusivityOf(s)) continue;
+    // the sentence as written: the classifier reads it through the same view as quantitiesIn below (round 6, cause A)
+    if (!classifyUnit({ form: "paragraph", text: s }).includes("semi-mechanical") && !exclusivityOf(s)) continue;
     claims.push(claimOf(s, claims.length + 1));
   }
   // a unit that trips the classifier only as a whole (a fact split across lines) is one claim

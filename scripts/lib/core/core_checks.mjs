@@ -8,6 +8,8 @@ import { currentSpineReview } from "./spine_review.mjs";
 import { manifestChapters } from "./package_reader.mjs";
 import { deliverablesOf, documentEntries } from "./units_index.mjs";
 import { DELIVERABLE_DIRS, learningObjectiveSections } from "./segment.mjs";
+import { spineDetailLines, spineDetailNote } from "./spine_detail.mjs";
+import { loadUnits } from "./obligations.mjs";
 
 export function spineCoreFindings(reader, basis) {
   const chapters = manifestChapters(reader);
@@ -93,4 +95,19 @@ export function spineReviewQuestions(root, reader, basis) {
         evidence: { type: "judgment", scope, file: c.file, line: c.lineNo, text: c.text, note: `Possibly wrong (${c.file}, line ${c.lineNo}): "${c.text}". ${c.problem}${c.suggestion ? ` Suggested: "${c.suggestion}".` : ""}`, dispatch: r.dispatch } }));
   }
   return out;
+}
+
+/**
+ * D48 (operator 2026-10-11): the spine says what to teach, to what level and how to assess — it is not source-checked.
+ * A spine line that carries more (a definition, an explanation, a value with a unit, an equation, an attribution, an
+ * absolute claim) is the instructor's question, in the digest: the agent suggests removing the detail from the spine and
+ * placing it in the study guide, at the section that teaches the line's objective or concept. Questions never block.
+ */
+export function spineDetailQuestions(root, reader, basis) {
+  let units = [];
+  try { units = loadUnits(root, reader); } catch { units = []; }
+  return spineDetailLines(reader, manifestChapters(reader), { units }).map((d) => makeFinding({ module: "skeleton", kind: "spine-detail", units: [], statusClass: "question", route: "digest", basis,
+    evidence: { type: "rule", rule: "the spine says what to teach, to what level and how to assess; detail belongs in the study guide (D48)", file: d.file, line: d.line, text: d.text,
+      detail: d.detail, target: d.target, note: spineDetailNote(d) },
+    recommendation: `Move the detail of ${d.file} line ${d.line} into ${d.target.section ? `${d.target.deliverable} ("${d.target.section}")` : d.target.deliverable}, and keep the spine line to what to teach — or keep it, as the instructor decides.` }));
 }

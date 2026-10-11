@@ -11,7 +11,7 @@ import { runCheckpoint } from "./runner.mjs";
 import { evaluateGate, logFindings } from "./gate.mjs";
 import { buildWiringReport } from "./wiring.mjs";
 import { liveReader } from "../core/package_reader.mjs";
-import { spineCoreFindings, restatedObjectiveFindings, approvalCoreProblems, spineReviewQuestions } from "../core/core_checks.mjs";
+import { spineCoreFindings, restatedObjectiveFindings, approvalCoreProblems, spineReviewQuestions, spineDetailQuestions } from "../core/core_checks.mjs";
 import { unindexedFindings } from "../core/units_index.mjs";
 import { coreObligations, loadUnits, loggedInstructorActs } from "../core/obligations.mjs";
 import { unitHash } from "../core/segment.mjs";
@@ -46,6 +46,8 @@ export function runGate(root, { checkpoint = "V8", profile = null, inputsDir = n
     if (checkpoint === "V8") approvalProblems.push(...approvalCoreProblems(root, reader));
     // the blind spine review's "wrong" concerns are the instructor's questions, not only the approval preview's (R3 C4-02)
     if (["V1", "V8"].includes(checkpoint)) core.push(...spineReviewQuestions(root, reader, run.snapshot.id));
+    // D48: the spine is not source-checked; detail in it is pointed out to the instructor, with a target in the study guide
+    if (["V1", "V8"].includes(checkpoint)) core.push(...spineDetailQuestions(root, reader, run.snapshot.id));
     if (["V2", "V8"].includes(checkpoint)) core.push(...unindexedFindings(root, reader, run.snapshot.id));
     // D42: what would ship unread — an undeclared document, an include of a file no check reads (round 2, C3-04/07)
     if (["V2", "V8"].includes(checkpoint)) core.push(...uncheckedShippedFindings(root, reader, run.snapshot.id));

@@ -151,6 +151,37 @@ const STRUCK_TAGS = new Set(["del", "s", "strike"]);
 const HIDES = /\bhidden\b|display\s*:\s*none|visibility\s*:\s*hidden/i;
 const OPEN_TAG = /^<([A-Za-z][A-Za-z0-9-]*)\b([^>]*?)(\/?)>$/, CLOSE_TAG = /^<\/([A-Za-z][A-Za-z0-9-]*)\s*>$/;
 
+// INLINE STYLES FAIL CLOSED (red-team round 6, control C4 probe: "opacity:0" and "font-size:0" hid text the view still
+// showed, so wrapping words in them was a light change). A style that hides for certain hides (the text is dropped, as
+// display:none is); a style the view cannot vouch for — any declaration outside a short list of ones that only colour or
+// weight visible text — is kept in every key as a marker around its text ("hint"), so putting text under it, taking
+// it out, or editing what it wraps always changes the key. Never: a style the view does not know, read as plain text.
+const SAFE_STYLE = new Set(["color", "background-color", "background", "font-weight", "font-style", "font-family", "font-variant", "text-decoration", "text-decoration-line", "text-decoration-color", "text-decoration-style", "text-transform", "vertical-align", "white-space", "cursor", "border", "border-bottom", "border-radius", "padding"]);
+const num = (v) => { const m = String(v).match(/^\s*(-?\d*\.?\d+)\s*([a-z%]*)/i); return m ? { n: Number(m[1]), u: m[2].toLowerCase() } : null; };
+/** How an inline style attribute string treats its text: "hides" (certainly invisible), "unsure", or null (visible). */
+export function styleEffect(attrs) {
+  const a = String(attrs || "");
+  if (HIDES.test(a)) return "hides";
+  const m = a.match(/\bstyle\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+  if (!m) return null;
+  let unsure = false;
+  for (const decl of (m[1] ?? m[2] ?? m[3]).split(";")) {
+    const i = decl.indexOf(":"); if (i < 0) { if (decl.trim()) unsure = true; continue; }
+    const prop = decl.slice(0, i).trim().toLowerCase(), val = decl.slice(i + 1).trim().toLowerCase().replace(/\s*!important$/, "");
+    const x = num(val);
+    if (prop === "opacity") { if (!x || x.n < (x.u === "%" ? 30 : 0.3)) return "hides"; continue; }
+    if (prop === "font-size") { if (x && (x.n <= 0 || (x.u === "px" && x.n < 6) || (x.u === "pt" && x.n < 5) || ((x.u === "em" || x.u === "rem") && x.n < 0.4) || (x.u === "%" && x.n < 40))) return "hides"; if (!x || !["px", "pt", "em", "rem", "%"].includes(x.u)) unsure = true; continue; }
+    if (prop === "color" && (/transparent/.test(val) || /rgba?\([^)]*,\s*0(?:\.0*)?\s*\)|hsla?\([^)]*,\s*0(?:\.0*)?\s*\)|#[0-9a-f]{6}00\b|#[0-9a-f]{3}0\b/.test(val))) return "hides";
+    if (["max-height", "height", "max-width", "width"].includes(prop) && x && x.n === 0) return "hides";
+    if (prop === "transform" && /scale[xy]?\(\s*0(?:\.0*)?\s*[,)]/.test(val)) return "hides";
+    if (prop === "clip" || prop === "clip-path") return "hides";
+    if (prop === "text-indent" && x && x.n < 0) return "hides";
+    if (!SAFE_STYLE.has(prop)) unsure = true;
+  }
+  return unsure ? "unsure" : null;
+}
+const styleHint = (attrs) => `⟦style ${String(attrs).replace(/\s+/g, " ").trim().toLowerCase()}⟧`;
+
 function inlineParts(children, out, push) {
   let hidden = 0; const htmlStack = [];
   for (const t of children || []) {
@@ -160,8 +191,18 @@ function inlineParts(children, out, push) {
       const s = t.content.trim();
       if (/^<!--/.test(s)) continue;
       const o = OPEN_TAG.exec(s), c = CLOSE_TAG.exec(s);
-      if (o && !o[3]) { const hides = STRUCK_TAGS.has(o[1].toLowerCase()) || HIDES.test(o[2]); htmlStack.push(hides); if (hides) hidden++; }
-      else if (c) { const hides = htmlStack.pop(); if (hides) hidden = Math.max(0, hidden - 1); }
+      if (o && !o[3]) {
+        const tag = o[1].toLowerCase(), effect = styleEffect(o[2]);
+        const hides = STRUCK_TAGS.has(tag) || effect === "hides";
+        // an HTML sub- or superscript is a script, as H~2~O and 10^3^ are (control C4 probe: "10<sup>3</sup>" read "103")
+        const mark = !hides && !hidden && (tag === "sup" || tag === "sub");
+        const hint = !hides && !hidden && effect === "unsure";
+        htmlStack.push({ hides, mark, hint });
+        if (hides) hidden++;
+        if (mark) push("mark", tag === "sup" ? "^(" : "_(", undefined, true);
+        if (hint) push("hint", `${styleHint(o[2])}(`);
+      }
+      else if (c) { const e = htmlStack.pop(); if (e?.hides) hidden = Math.max(0, hidden - 1); if (e?.mark) push("mark", ")", undefined, true); if (e?.hint) push("hint", ")"); }
       continue;
     }
     if (hidden) continue;
@@ -190,7 +231,8 @@ export function renderedParts(text) {
   const src = String(text ?? "");
   if (cache.has(src)) return cache.get(src);
   const out = [];
-  const push = (kind, s, seen = s) => { const last = out[out.length - 1]; if (last && last.kind === kind && kind === "prose") { last.text += s; last.seen += seen; } else out.push(kind === "prose" ? { kind, text: s, seen } : { kind, text: s }); };
+  // `html` marks an HTML sub/superscript (round 6): a script to every R5+ key, nothing to the frozen R4 key
+  const push = (kind, s, seen = s, html = false) => { const last = out[out.length - 1]; if (last && last.kind === kind && kind === "prose") { last.text += s; last.seen += seen; } else out.push(kind === "prose" ? { kind, text: s, seen } : html ? { kind, text: s, html: true } : { kind, text: s }); };
   let tokens = null;
   try { tokens = md.parse(src, {}); } catch { tokens = null; }
   if (!tokens) out.push({ kind: "prose", text: src, seen: src });
@@ -203,7 +245,15 @@ export function renderedParts(text) {
       let h = t.content.replace(/<!--[\s\S]*?(?:-->|$)/g, " ");
       h = h.replace(/<(del|s|strike)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, " ").replace(/<([a-z][a-z0-9-]*)\b[^>]*?(?:\bhidden\b|display\s*:\s*none|visibility\s*:\s*hidden)[^>]*>[\s\S]*?<\/\1\s*>/gi, " ");
       // R4's reading (a bare "<" taken for a tag) is kept in `text` for the frozen key; what prints keeps "Q < K"
-      const seen = decodeEntities(h.replace(/<\/?[A-Za-z][^>]*>|<![^>]*>/g, " ") + "\n");
+      // round 6: a style that hides is dropped, one the view cannot vouch for is a marker, and <sup>/<sub> are scripts —
+      // in what prints (`seen`) only, so the frozen key is unchanged
+      const seenSrc = h.replace(/<([a-z][a-z0-9-]*)\b([^>]*)>([\s\S]*?)<\/\1\s*>/gi, function styled(m, tag, attrs, inner) {
+        const e = styleEffect(attrs), body = inner.replace(/<([a-z][a-z0-9-]*)\b([^>]*)>([\s\S]*?)<\/\1\s*>/gi, styled);
+        if (e === "hides") return " ";
+        const t = tag.toLowerCase(), wrapped = t === "sup" ? ` ^(${body}) ` : t === "sub" ? ` _(${body}) ` : body;
+        return e === "unsure" ? ` ${styleHint(attrs)}(${wrapped}) ` : t === "sup" || t === "sub" ? wrapped : m.replace(inner, body);
+      });
+      const seen = decodeEntities(seenSrc.replace(/<\/?[A-Za-z][^>]*>|<![^>]*>/g, " ") + "\n");
       h = h.replace(/<[^>]*>/g, " ") + "\n";
       push("prose", h, seen);
     }
@@ -224,7 +274,7 @@ const viewCache = new Map();
 export function readerView(text) {
   const src = String(text ?? "");
   if (viewCache.has(src)) return viewCache.get(src);
-  const v = renderedParts(src).map((p) => (p.kind === "math" ? ` $${mathView(p.text)}$ ` : p.kind === "mark" ? "" : p.kind === "prose" ? printedChars(p.seen) : p.text)).join("")
+  const v = renderedParts(src).map((p) => (p.kind === "math" ? ` $${mathView(p.text)}$ ` : p.kind === "mark" || p.kind === "hint" ? "" : p.kind === "prose" ? printedChars(p.seen) : p.text)).join("")
     .replace(/[ \t]+/g, " ").replace(/ *\n+ */g, "\n").trim();
   if (viewCache.size > 20000) viewCache.delete(viewCache.keys().next().value);
   viewCache.set(src, v);
@@ -236,6 +286,12 @@ export function readerView(text) {
 // `/` and `*`, `^` and `_`, arrows in any spelling. A hyphen joining two letters ("gas-phase") is punctuation.
 const PROSE_PUNCT = /[.,;:!?'"‘’“”«»()[\]{}…—·•]/gu;
 const tokenize = (s) => s.match(/[\p{L}\p{N}]+|[^\s\p{L}\p{N}]/gu) || [];
+// Prose characters that look like punctuation but are symbols (red-team round 6, control C4 probe): an ASCII prime (which
+// markdown's typographer prints as ’) after
+// a lone letter, a digit or a degree sign ("K'", "ΔG°'") is the prime ′, not an apostrophe; an em dash straight before
+// a digit, not after a word or number, is a minus ("ΔH = —92 kJ"). Both are kept as symbols; the fail-safe direction is
+// a change that is not light.
+const proseSymbols = (s) => s.replace(/(?<=(?:^|[^\p{L}\p{N}])\p{L}|[°º˚\p{N}])['’](?!\p{L})/gu, "′").replace(/(?<![\p{L}\p{N}])—(?=\p{N})/gu, "−");
 // a capitalized word ("Which", "Argon"): a sentence start or a title, read as the word; a symbol or acronym ("K",
 // "pH", "NaCl", "ATP") keeps its case
 const CAPITALIZED = /^\p{Lu}\p{Ll}+$/u;
@@ -246,11 +302,11 @@ export const texCaseFolded = (tex) => String(tex).replace(/\\[A-Za-z]+|[^\\]+|\\
 function keyOf(src, foldCase) {
   const toks = [];
   for (const p of renderedParts(src)) {
-    if (p.kind === "mark") { toks.push(p.text); continue; }
+    if (p.kind === "mark" || p.kind === "hint") { toks.push(p.text); continue; }
     if (p.kind === "math") { toks.push(`$${mathView(foldCase ? texCaseFolded(p.text) : p.text)}$`); continue; }
     let s = printedChars(p.kind === "prose" ? p.seen : p.text);
     if (foldCase) s = s.toLowerCase();
-    if (p.kind === "prose") s = s.replace(/(?<=\p{L})-(?=\p{L})/gu, " ").replace(PROSE_PUNCT, " ");
+    if (p.kind === "prose") s = proseSymbols(s).replace(/(?<=\p{L})-(?=\p{L})/gu, " ").replace(PROSE_PUNCT, " ");
     const t = tokenize(s);
     toks.push(...(foldCase || p.kind !== "prose" ? t : t.map((w) => (CAPITALIZED.test(w) ? w.toLowerCase() : w))));
   }
@@ -293,6 +349,7 @@ export const lightKey = (text) => cachedKey(text, true);
 export function lightKeyR4(text) {
   const toks = [];
   for (const p of renderedParts(String(text ?? ""))) {
+    if (p.kind === "hint" || p.html) continue; // round-6 parts: not in the frozen key (r4ReadsAsR5 refuses such texts)
     if (p.kind === "mark") { toks.push(p.text); continue; }
     let s = p.text.toLowerCase();
     if (p.kind === "prose") s = s.replace(/(?<=\p{L})-(?=\p{L})/gu, " ").replace(PROSE_PUNCT, " ");

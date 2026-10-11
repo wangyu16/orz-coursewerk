@@ -128,7 +128,7 @@
 
 import { resolve, labelMatcher, findLabelOccurrences } from "./terms.mjs";
 import { dimensionProjection } from "./units.mjs";
-import { valueText, valuesIn } from "./core/values.mjs";
+import { valueProse, valuesIn } from "./core/values.mjs";
 
 /**
  * Claim types whose numbers are ASSERTIONS ABOUT THE TERM, and so can contradict each other.
@@ -210,7 +210,7 @@ const unitEntry = (form) => UNIT_VIEW.lookup(form);
  * (core/values.mjs: every minus, thousands separators, HTML entities, denominators) and dimensions them through the
  * shared table. A value with denominators the table has no row for is dimensioned only where the result is certain
  * (an energy per mole / per gram / per kilogram); anything else stays silence, never a guess.
- * @returns {Array<{entry: {id, dim, to}, value: number, raw: string, at: number}>} positions index valueText(text)
+ * @returns {Array<{entry: {id, dim, to}, value: number, raw: string, at: number}>} positions index valueProse(text)
  */
 function unitEntryOf(unit) {
   const direct = unitEntry(unit);
@@ -224,7 +224,8 @@ function unitEntryOf(unit) {
   return null;
 }
 export function scanValues(text) {
-  const P = valueText(text);
+  // the claim reader's value view (red-team round 6, cause A: "\\textrm{kJ}" was a value to the claim reader and none here)
+  const P = valueProse(text);
   return valuesIn(P).map((v) => ({ entry: unitEntryOf(v.unit), value: v.value, raw: P.slice(v.at, v.end).replace(/\s+/g, " ").trim(), at: v.at })).filter((x) => x.entry);
 }
 
@@ -395,7 +396,7 @@ function governedQuantities(text, terms, scope) {
   const bounds = [...t.matchAll(/(?<=[.!?])\s+(?=[A-Z$(\\])/g)].map((m) => m.index);
   for (const end of [...bounds, t.length]) {
     // the sentence as the value parser reads it: term mentions and values index the same folded text
-    const sentence = valueText(t.slice(start, end));
+    const sentence = valueProse(t.slice(start, end));
     start = end;
     const mentions = [];
     for (const term of terms?.terms ?? []) {
