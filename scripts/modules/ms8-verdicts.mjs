@@ -24,7 +24,9 @@ import { segmentDeliverable } from "../lib/core/segment.mjs";
 import { factHash } from "../lib/core/dependencies.mjs";
 import { checkableClaims, claimsHash } from "../lib/verify/claims.mjs";
 import { supports } from "../lib/verify/admission.mjs";
-import { boundRecord, quoteIn, readDispatches, readKnowledgeReview, reviewedPassage, settledBySuggestion } from "../lib/verify/dispatch.mjs";
+import { boundRecord, readDispatches, readKnowledgeReview, reviewedPassage, settledBySuggestion, suggestionAt } from "../lib/verify/dispatch.mjs";
+import { holdsInstructorText, originIndex, textIds } from "../lib/core/authorship.mjs";
+import { tokensOf } from "../lib/core/segment.mjs";
 import { pinnedTexts, snapshotInputReader } from "../lib/verify/references.mjs";
 import { absoluteReviewOf, absolutesHash } from "../lib/verify/absolutes.mjs";
 import { checksCurrentClaims, claimKey, correctionLogged, dispatchLogged, instructorAuthored, keptClaims, knowledgeConcerns, leadOf, logRecordsOf, recordClaimTexts, recordLeads, rederive } from "../lib/verify/verdicts.mjs";
@@ -39,21 +41,28 @@ import { base, recheckByRerun } from "./_shared.mjs";
 const EXERCISE_SECTION = /(?:^|-)(?:worked-examples?|examples?|exercises?|problems?|practice|questions?|check-your-understanding|try-it)(?:-|$)/;
 const exerciseLike = (u) => ["question", "answer"].includes(u.form) || String(u.locator?.deliverable || "").startsWith("practice/") || EXERCISE_SECTION.test(String(u.locator?.section || ""));
 
-function currentUnits(s) {
+function currentUnits(s, sides = []) {
   const out = new Map();
   for (const p of s.paths.filter((x) => x.startsWith("metadata/units/") && x.endsWith(".json")).sort()) {
     const side = s.json(p); if (!Array.isArray(side?.units) || typeof side.deliverable !== "string") continue; // malformed: the index reports it
+    sides.push(side);
     const seg = segmentDeliverable(s.text(side.deliverable) || "", side.deliverable).units;
     if (seg.length !== side.units.length) continue; // out of date: units-not-indexed covers it
     side.units.forEach((u, i) => out.set(u.id, { ...u, form: seg[i].form, text: seg[i].text, contentHash: u.locator?.contentHash }));
   }
   return out;
 }
+// a reworded concern's words mostly still in this piece (a carried review: which piece took them over)
+const held = (c, u) => { const q = tokensOf(c.text); if (q.length < 3) return false; const T = new Set(tokensOf(u.text)); return q.filter((x) => T.has(x)).length / q.length >= 0.6; };
+const verbatimIn = (text, passage) => { const n = (t) => String(t || "").replace(/[*_`]/g, "").replace(/\s+/g, " ").trim(); return !!n(text) && n(passage).includes(n(text)); };
 const sameQuotes = (a, b) => JSON.stringify((a || []).map((q) => [q.source, q.span?.[0], q.span?.[1]]).sort()) === JSON.stringify((b || []).map((q) => [q.source, q.span?.[0], q.span?.[1]]).sort());
 
 function run(s) {
   const out = [];
-  const units = currentUnits(s);
+  const sides = [], units = currentUnits(s, sides);
+  // whose text it is (red-team round 5, R5-K09/K10): one rule for every authorship question here — the unit's record,
+  // the records of every unit whose text it holds (live or retired), and the log's confirmations (authorship.mjs)
+  const ancestry = originIndex(sides);
   const records = readDispatches((p) => s.text(p), s.paths);
   const log = logRecordsOf(s.text("metadata/LOG.jsonl"));
   const pinned = pinnedTexts(snapshotInputReader(s));
@@ -71,9 +80,11 @@ function run(s) {
 
   const kept = keptClaims(log);
   // did the instructor accept this question's suggestion ("apply …")? keyed by the finding it was asked as
+  // asked of the unit, or of any unit whose text it holds: the instructor's answer follows their words through a split,
+  // a merge or a move (red-team round 5), as their credit does
   const acceptedBy = (u, kind, evidence) => {
-    const fid = findingId({ module: "ms8-verdicts", kind, units: [u.id], evidence });
-    return log.some((l) => l.type === "answer" && l.party?.role === "instructor" && (l.payload?.answers || []).some((a) => a.finding === fid && /^\s*apply/i.test(a.choice)));
+    const fids = new Set(textIds(u).map((id) => findingId({ module: "ms8-verdicts", kind, units: [id], evidence })));
+    return log.some((l) => l.type === "answer" && l.party?.role === "instructor" && (l.payload?.answers || []).some((a) => fids.has(a.finding) && /^\s*apply/i.test(a.choice)));
   };
   const askedExercise = new Set(); // one question per unit, however many records read it as exercise data
   // Every record is read through what the log binds (red-team round 3, R3-K05/K08): a record logged before round 1 has
@@ -121,8 +132,10 @@ function run(s) {
     // whose text it is, decided BEFORE whether a suggestion is in it (red-team round 4, R4-K16): on the instructor's
     // text a suggestion the agent wrote in unasked settles nothing — the question stays theirs (D35 (a), D31), and the
     // edit itself is raised (instructor-edit-unasked, below)
-    const instructors = instructorAuthored(u, log);
-    const agentEdited = (b) => instructors && b.contentHash !== u.contentHash && (u.origin?.revisedBy || []).length > 0;
+    const instructors = instructorAuthored(u, log, ancestry);
+    // …and who changed it since the review: the agent's revisions are on record (revisedBy), or the record calls the
+    // text the agent's own although it holds the instructor's words (a record written before round 5)
+    const agentEdited = (b) => instructors && b.contentHash !== u.contentHash && ((u.origin?.revisedBy || []).length > 0 || (u.origin?.kind === "agent-knowledge" && holdsInstructorText(u, log, ancestry)));
     for (const { r, b, carried } of speaking) {
       const k = readKnowledgeReview(r, u.text);
       if (!k.ok) continue;
@@ -132,22 +145,30 @@ function run(s) {
       // the unit's current text (contentHash) was made after it — a review that clears it — or its suggestion went in
       // place of its words and nothing else changed. A synonym swap ("raises" → "increases") is neither: it stays open.
       const clearedByFresh = fresh.some((x) => x.b.seq > b.seq);
-      // a carried review speaks only for the words this piece holds: its other concerns went with the other pieces
-      const openGone = clearedByFresh || carried ? [] : k.gone.filter((c) => unasked || (c.kind === "wrong" && !settledBySuggestion(c, passage, u.text)));
+      // a carried review speaks only for the words this piece holds: its other concerns went with the other pieces. A
+      // concern whose words are gone from the piece is this piece's when the piece now has the suggestion where they
+      // stood, or still holds most of their words reworded (red-team round 5, R5-K10: a split, then the instructor's
+      // sentence rewritten to the suggestion, settled the concern as the agent's own and raised nothing)
+      const settles = (c) => settledBySuggestion(c, passage, u.text, { piece: !!carried });
+      // (a piece that is a verbatim part of the passage reviewed never held words that are not in it)
+      const heldHere = (c) => !carried || suggestionAt(c, passage, u.text) || (held(c, u) && !verbatimIn(u.text, passage));
+      const openGone = clearedByFresh ? [] : k.gone.filter((c) => heldHere(c) && (unasked || (c.kind === "wrong" && !settles(c))));
       for (const c of [...k.concerns, ...openGone]) {
         const evidence = { type: "judgment", note: c.problem, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch };
         if (c.kind === "wrong") {
           // the error is still in the words the reviewer quoted, or was reworded: open — unless the suggestion itself
           // extends the quoted words and the unit now carries it as the only change (R1 F12, R3-K06) in the agent's
           // own text, or the instructor accepted it (R4-K16)
-          if (settledBySuggestion(c, passage, u.text) && (!unasked || acceptedBy(u, "knowledge-concern", evidence))) continue;
+          if (settles(c) && (!unasked || acceptedBy(u, "knowledge-concern", evidence))) continue;
           out.push({ kind: "knowledge-concern", units: [u.id], evidence }); continue;
         }
         // a clarification (the text is correct as meant): applied when the unit carries the suggestion and no longer
         // the quoted words, unless the suggestion extends them (P11; red-team round 1, F12) — read as written or rendered
         const proposed = { ...evidence, note: `Clarify: "${c.text}" → "${c.suggestion}". ${c.problem}` };
         const accepted = instructors && acceptedBy(u, "clarification-proposed", proposed);
-        const applied = c.suggestion.trim().length >= 8 && quoteIn(c.suggestion, u.text) && (!quoteIn(c.text, u.text) || quoteIn(c.text, c.suggestion));
+        // applied: the suggestion stands where the quoted words stood (red-team round 5, R5-K11: a length threshold
+        // decided this, and an accepted one-word clarification never settled)
+        const applied = suggestionAt(c, passage, u.text);
         if (applied && (!unasked || accepted)) continue;
         if (!c.suggestion.trim()) { out.push({ kind: "knowledge-concern", units: [u.id], evidence }); continue; }
         if (!instructors) { out.push({ kind: "clarification-owed", units: [u.id], evidence }); continue; }
@@ -160,18 +181,20 @@ function run(s) {
     // without their answer is an unasked edit of their words (D31, D35 (a)) — raised whatever later reviews say, until
     // they accept the suggestion, or answer this (keep the edit, or have it reverted)
     const flagged = new Set();
-    for (const { r, b } of own.filter((x) => agentEdited(x.b))) {
+    // …and from a review its text carried in from a split, merge or retired unit (red-team round 5, R5-K10): the
+    // instructor's words are theirs in whichever piece they went to
+    for (const { r, b, carried } of list.filter((x) => agentEdited(x.b))) {
       const k = readKnowledgeReview(r, u.text);
       if (!k.ok) continue;
       const passage = reviewedPassage(r.bundle?.prompt);
       for (const c of [...k.concerns, ...k.gone]) {
-        if (c.suggestion.trim().length < 8 || flagged.has(`${c.text}|${c.suggestion}`)) continue;
-        const carries = settledBySuggestion(c, passage, u.text) || (quoteIn(c.suggestion, u.text) && (!quoteIn(c.text, u.text) || quoteIn(c.text, c.suggestion)));
+        if (!c.suggestion.trim() || flagged.has(`${c.text}|${c.suggestion}`)) continue;
+        const carries = settledBySuggestion(c, passage, u.text, { piece: !!carried }) || suggestionAt(c, passage, u.text);
         if (!carries) continue;
         const evidence = { type: "judgment", note: c.problem, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch };
         // the instructor's "apply" to the same words → suggestion, asked from any review of the unit, is their answer
         const askedAs = (x) => { const e = { ...evidence, dispatch: x.r.dispatch }; return c.kind === "wrong" ? acceptedBy(u, "knowledge-concern", e) : acceptedBy(u, "clarification-proposed", { ...e, note: `Clarify: "${c.text}" → "${c.suggestion}". ${c.problem}` }); };
-        if (own.some(askedAs)) continue;
+        if (list.some(askedAs)) continue;
         flagged.add(`${c.text}|${c.suggestion}`);
         out.push({ kind: "instructor-edit-unasked", units: [u.id], evidence: { type: "judgment", note: `Your text was edited without your answer: the agent wrote the reviewer's suggestion "${c.suggestion}" in place of "${c.text}" (${c.kind === "wrong" ? "a concern that it is wrong" : "a clarification"}: ${c.problem}). Keep the edit, or have it reverted?`, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch, revisedBy: (u.origin?.revisedBy || []).at(-1) || null }, recommendation: "keep" });
       }
@@ -210,8 +233,9 @@ function run(s) {
         // fixes or keeps its draft — the instructor is not asked (P11, operator: catch much, annoy little)
         // the dispute as one claim (D40): keyed by its sentence and values, so an edit elsewhere in the unit keeps the answer
         const key = claimKey(u.id, recordClaimTexts(r)[c.claim - 1], c.conflicts || []);
-        if (kept.has(key)) continue; // the instructor kept this claim as written: settled
-        out.push({ kind: instructorAuthored(u, log) ? "fact-disputed" : "fact-check-own", units: [u.id], evidence: { claimKey: key, claimText: recordClaimTexts(r)[c.claim - 1], type: "conflict", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote })),
+        // the instructor kept this claim as written: settled — asked of this unit or of any unit whose text it holds
+        if (textIds(u).some((id) => kept.has(claimKey(id, recordClaimTexts(r)[c.claim - 1], c.conflicts || [])))) continue;
+        out.push({ kind: instructorAuthored(u, log, ancestry) ? "fact-disputed" : "fact-check-own", units: [u.id], evidence: { claimKey: key, claimText: recordClaimTexts(r)[c.claim - 1], type: "conflict", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote })),
           // the question the instructor reads (P11: the digest showed the bare kind)
           note: `The pinned sources disagree: the text says ${(c.conflicts || []).map((k) => `${k.claimed}, a source says ${k.source}${k.sentence ? ` ("${String(k.sentence).slice(0, 160)}")` : ""}`).join("; ")} — keep as written, or change it?` } });
       }

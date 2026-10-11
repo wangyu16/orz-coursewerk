@@ -78,8 +78,12 @@ test("[req.commands] every command refuses with a plain next step when its preco
   expect(cli("interrupt", "--root", p.root, "--reason", "i-am-unsure", "--question", "?", "--model", "m"), /allowed only for spine-scope-conflict, missing-input, rights-blocker, spine-change-request/);
   expect(cli("assemble", "--root", p.root, "--chapter", "le-chatelier", "--name", I.name, "--words", "assemble"), /re-assembled only after a structural change/);
   expect(cli("revert", "--root", p.root), /which correction\?/);
-  // a v0.12 package is told how to migrate
+  // a v2 package whose setting was lowered is told to restore it, never to migrate (red-team round 5, F2: the setting
+  // is bound to the log)…
   fs.writeFileSync(path.join(p.root, "metadata", "coursewerk.json"), JSON.stringify({ schemaVersion: 1, spine: 1 }));
+  expect(cli("status", "--root", p.root), /decision log shows spine v2 in force[\s\S]*next: restore it/);
+  // …and a v0.12 package (no v2 record in its log) is told how to migrate
+  fs.rmSync(path.join(p.root, "metadata", "LOG.jsonl"));
   expect(cli("status", "--root", p.root), /v0\.12 package[\s\S]*next: migrate the spine first/);
 });
 

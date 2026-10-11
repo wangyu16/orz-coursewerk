@@ -31,7 +31,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { makeFinding } from "../records/findings.mjs";
 import { validateRegistry } from "../records/registry.mjs";
-import { honouredDisables, honouredPromotions } from "./promotion.mjs";
+import { honouredDemotions, honouredDisables, honouredPromotions } from "./promotion.mjs";
 import { standardRegistry } from "../records/registry.mjs";
 import { validateManifest } from "./manifest.mjs";
 import { createSnapshot, treeId } from "./snapshot.mjs";
@@ -112,7 +112,9 @@ export function runCheckpoint({ root, checkpoint, profile, registry = { schemaVe
     findings.push(skeletonFinding(snapshot.id, "registry-invalid", "obligation", { type: "missing", what: `a valid module registry: ${registryProblems[0] || 'the name "skeleton" is reserved'}` }));
     return { snapshot, findings, wiring };
   }
-  const promoted = honouredPromotions(root);
+  const promoted = honouredPromotions(root), demoted = honouredDemotions(root);
+  const ownRegistry = moduleDir === DEFAULT_MODULE_DIR && !registry.standard && !registry.__noStandard;
+  const standardMaturity = new Map(ownRegistry ? standardRegistry().modules.map((x) => [x.name, x.maturity]) : []);
   // A package may not quietly drop a standard module: a standard module missing from the registry, or disabled, needs the
   // instructor's logged module-change "disable" decision; otherwise it is a skeleton defect and the module runs anyway.
   if (moduleDir === DEFAULT_MODULE_DIR && !registry.standard && !registry.__noStandard) {
@@ -164,6 +166,14 @@ export function runCheckpoint({ root, checkpoint, profile, registry = { schemaVe
       if (RANK[entry.maturity] > RANK[m.maturity] && !promoted.has(`${m.name}:${entry.maturity}`)) {
         findings.push(skeletonFinding(snapshot.id, "unlogged-promotion", "defect", { type: "rule", rule: "a module is promoted only by a verified module-change record made by the instructor and citing its bar", module: m.name, registry: entry.maturity, manifest: m.maturity }));
         maturity = m.maturity;
+      }
+      // a package's own registry may not quietly DEMOTE a standard module (red-team round 5, the audit of F2): a stable
+      // module listed as trial delivers its defects as questions, so nothing it finds blocks. Below the harness's
+      // standard maturity, only the instructor's logged demotion counts; otherwise it is a defect and runs at standard.
+      const std = ownRegistry ? standardMaturity.get(m.name) : null;
+      if (std && RANK[maturity] < RANK[std] && !demoted.has(`${m.name}:${entry.maturity}`)) {
+        findings.push(skeletonFinding(snapshot.id, "unlogged-demotion", "defect", { type: "rule", rule: "a standard module is demoted only by the instructor's logged module-change decision", module: m.name, registry: entry.maturity, standard: std }));
+        maturity = std;
       }
       if (!m.checkpoints.includes(checkpoint)) { wiring.skipped.push({ name: m.name, reason: "checkpoint" }); continue; }
       if (!m.profiles.includes(profile)) { wiring.skipped.push({ name: m.name, reason: "profile" }); continue; }

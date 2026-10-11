@@ -28,6 +28,7 @@
 //   - the instructor's confirmation (confirmUnits).
 // The agent cannot clear an obligation by saying so.
 import { GLANCE_KINDS } from "./change.mjs";
+import { textIds } from "./authorship.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { canonicalJson, sha256 } from "../records/canonical.mjs";
@@ -35,11 +36,11 @@ import { makeFinding } from "../records/findings.mjs";
 import { appendLogRecord, parseLog, verifyLog } from "../records/log.mjs";
 import { recordFile } from "../records/paths.mjs";
 import { validateUnitSidecar } from "../records/units.mjs";
-import { classifyUnit, derivedRole, segmentDeliverable, unitHash } from "./segment.mjs";
+import { DELIVERABLE_DIRS, classifyUnit, derivedRole, segmentDeliverable, unitHash } from "./segment.mjs";
 import { readLogText } from "../records/log.mjs";
 import { checkableClaims, claimsHash } from "../verify/claims.mjs";
 import { absoluteReviewOf, absoluteSentences, absolutesHash } from "../verify/absolutes.mjs";
-import { deliverablesOf, indexUnits, readSidecar } from "./units_index.mjs";
+import { deliverablesOf, documentEntries, indexUnits, readSidecar } from "./units_index.mjs";
 import { parseSpine, nodeIndex, termsOfMap, COURSE_MAP } from "./spine.mjs";
 import { liveReader, manifestChapters } from "./package_reader.mjs";
 import { openMajorVersion } from "./versions.mjs";
@@ -85,8 +86,10 @@ export function instructorActsOf(logRecords) {
 }
 /** The changes the instructor asked for that the unit's text does not yet carry: the claim still reads as it did. */
 export function owedChanges(u, acts) {
-  const asked = acts.changes?.get(u.id);
-  if (!asked?.size) return [];
+  // asked of the unit, or of any unit whose text it holds (red-team round 5: the instructor's answer follows the claim
+  // through a split, a merge or a move, as their credit does — authorship.mjs)
+  const asked = new Map(textIds(u).flatMap((id) => [...(acts.changes?.get(id) || [])]));
+  if (!asked.size) return [];
   const now = new Set(checkableClaims(u.text).map((c) => normClaim(c.text)));
   return [...asked].filter(([text]) => now.has(text)).map(([claimText, a]) => ({ claimText, ...a }));
 }
@@ -650,11 +653,23 @@ const owesKept = (b, a) => !b || (!!a && (a.since ?? 0) <= (b.since ?? 0) && (b.
  */
 export function unitRecordWriteProblems(root, before, after) {
   const B = recordIndex(before), A = recordIndex(after), problems = [], check = [];
+  let logRecs = null;
+  const recsNow = () => (logRecs ??= (() => { const t = readLogText(root); return verifyLog(t).length ? [] : parseLog(t); })());
   for (const [id, b] of B) {
     const a = A.get(id);
     if (!a) { if (b.rec.stamp || b.rec.owes || b.rec.carried) problems.push(`${id}: its record (what it owes) would be dropped`); continue; }
-    if (a.rec.carried) continue;
-    if (b.rec.carried || !owesKept(b.rec.owes, a.rec.owes) || canonicalJson(b.rec.stamp ?? null) !== canonicalJson(a.rec.stamp ?? null)) check.push([id, b, a]);
+    // whose text it is (red-team round 5, R5-K09): the instructor's credit, and the units whose text a unit holds, are
+    // never taken away by a write — only the index adds to them
+    if (b.rec.origin?.kind === "instructor-authored" && a.rec.origin?.kind !== "instructor-authored") problems.push(`${id}: the write would take the instructor's credit from their text`);
+    if (!(b.rec.lineage || []).every((x) => (a.rec.lineage || []).includes(x))) problems.push(`${id}: the write would drop the units whose text it holds (lineage)`);
+    // a carry counts only through a logged version (red-team round 5, F3: a `carried` mark set in the new record was
+    // trusted, and the write dropped the unit's owed re-check and stamp): a new or changed mark needs the instructor's
+    // logged `units-carried` record naming the unit, made after its record was last written — and a carry is never a
+    // way to clear what the unit owed (carryUnits keeps it in `owes`, so the re-check is shown what moved)
+    if (a.rec.carried && canonicalJson(a.rec.carried) !== canonicalJson(b.rec.carried ?? null) && !carryLogged(recsNow(), id, a.rec.carried, b.rel)) {
+      problems.push(`${id}: the write marks it carried into ${a.rec.carried.scope ?? "?"} version ${a.rec.carried.version ?? "?"}, but no logged version carry names it since its record was last written`); continue;
+    }
+    if ((b.rec.carried && !a.rec.carried) || !owesKept(b.rec.owes, a.rec.owes) || canonicalJson(b.rec.stamp ?? null) !== canonicalJson(a.rec.stamp ?? null)) check.push([id, b, a]);
   }
   if (!check.length) return problems;
   const reader = liveReader(root), ctx = context(root, reader);
@@ -667,14 +682,15 @@ export function unitRecordWriteProblems(root, before, after) {
       // write may change it only by adding to what it owes
       const newStamp = migratedStamp(root, ctx, a.rec.stamp, a.rel);
       const changed = Object.keys(oldStamp || {}).filter((k) => (newStamp || {})[k] !== oldStamp[k] && !(a.rec.owes?.targets || []).includes(k));
-      if (b.rec.carried || !owesKept(b.rec.owes, a.rec.owes) || changed.length) problems.push(`${id}: the write would clear what it owes (${[...(b.rec.carried ? ["its version carry"] : []), ...changed].join(", ") || "its owed re-verification"}) with no re-check of it`);
+      const carryGone = b.rec.carried && !a.rec.carried;
+      if (carryGone || !owesKept(b.rec.owes, a.rec.owes) || changed.length) problems.push(`${id}: the write would clear what it owes (${[...(carryGone ? ["its version carry"] : []), ...changed].join(", ") || "its owed re-verification"}) with no re-check of it`);
       continue;
     }
     const oldU = { ...cu, stamp: oldStamp, owes: b.rec.owes, carried: b.rec.carried };
     const newU = { ...cu, stamp: migratedStamp(root, ctx, a.rec.stamp, a.rel, id), owes: a.rec.owes, carried: a.rec.carried };
     const nowOwed = new Set([...owedTargets(newU, ctx), ...(a.rec.owes?.targets || [])]);
     const cleared = [...new Set([...owedTargets(oldU, ctx), ...(b.rec.owes?.targets || [])])].filter((t) => !nowOwed.has(t));
-    if (b.rec.carried) cleared.push("its version carry");
+    if (b.rec.carried && !a.rec.carried) cleared.push("its version carry");
     if (b.rec.owes && a.rec.owes && (a.rec.owes.since ?? 0) > (b.rec.owes.since ?? 0)) cleared.push("the age of its obligation");
     if (!cleared.length) continue;
     // the clearing is a re-verification or a confirmation: the unit stamped as it stands now, and the evidence there
@@ -707,11 +723,29 @@ export function migrateRecordSides(root, sides, before = {}) {
   });
 }
 
-/** Units carried into a new major version start as obligations: their evidence and stamps no longer count (D15). */
+/** The instructor's logged carry of this unit into this scope and version, made after its record was last written. */
+function carryLogged(recs, id, carried, rel) {
+  let lastWrite = 0;
+  for (const r of recs) if (r.type === "revision" && r.payload?.event === UNIT_RECORDS_EVENT && rel in (r.payload.digests || {})) lastWrite = r.seq;
+  return recs.some((r) => r.type === "revision" && r.payload?.event === "units-carried" && r.party?.role === "instructor" && r.seq > lastWrite &&
+    (r.payload.units || []).includes(id) && r.payload.scope === carried.scope && r.payload.version === carried.version);
+}
+
+/**
+ * Units carried into a new major version start as obligations: their evidence and stamps no longer count (D15). What a
+ * unit owed when it was carried is kept (red-team round 5, F3): its moved dependencies go into `owes`, so its re-check
+ * is shown what moved before the carry (movedForRecheck), and nothing a carry does clears anything. The carry is logged
+ * BEFORE the records are written: the write is checked against it (unitRecordWriteProblems).
+ */
 export function carryUnits(root, ids, { version, scope }, party) {
   if (party?.role !== "instructor") throw new Error("carrying units into a new version follows the instructor's version decision");
-  rewriteUnits(root, ids, (u) => { u.evidence = []; delete u.stamp; delete u.owes; u.carried = { scope, version }; });
+  const ctx = context(root, liveReader(root)), since = lastSeq(root);
   appendLogRecord(root, { type: "revision", party, payload: { event: "units-carried", scope, version, units: ids } });
+  rewriteUnits(root, ids, (u) => {
+    const cur = ctx.byId.get(u.id), owed = cur ? owedTargets(cur, ctx) : [];
+    if (owed.length || u.owes) u.owes = { since: u.owes?.since ?? since, targets: [...new Set([...(u.owes?.targets || []), ...owed])].sort() };
+    u.evidence = []; delete u.stamp; u.carried = { scope, version };
+  });
 }
 
 /**
@@ -722,18 +756,43 @@ export function carryUnits(root, ids, { version, scope }, party) {
 export function openVersionCarrying(root, reader, { scopes, reason, instructorWords }, party) {
   if (!String(instructorWords || "").trim()) throw new Error("opening a new major version quotes the instructor's words");
   // loadUnits skips a deliverable whose index is out of date, so a version opened over unindexed edits would carry
-  // none of its units (F12): every deliverable in scope must be indexed first
-  const inScopeRel = (rel) => scopes.some((sc) => sc === "course" || (sc.startsWith("chapter:") && rel.endsWith(`/${sc.slice("chapter:".length)}.md`)));
-  const stale = deliverablesOf(reader).filter(inScopeRel).filter((rel) => {
+  // none of its units (F12): every deliverable that may hold a unit of the scope must be indexed first — and since a
+  // chapter's units are found by what they serve (chapterScopeUnits), not by file name, that is every deliverable
+  const stale = deliverablesOf(reader).filter((rel) => {
     const side = readSidecar(root, rel), now = segmentDeliverable(reader.text(rel), rel).units.map((s) => unitHash(s.text));
     return !side || JSON.stringify(now) !== JSON.stringify(side.units.map((u) => u.locator.contentHash));
   });
   if (stale.length) throw new Error(`refusing to open a new version: ${stale.join(", ")} ${stale.length === 1 ? "has" : "have"} edits not yet indexed — run units.mjs index first, so every unit of the scope is carried`);
   const units = loadUnits(root, reader);
-  const inScope = (sc) => sc === "course" ? units : units.filter((u) => sc.startsWith("chapter:") && u.locator.deliverable.endsWith(`/${sc.slice("chapter:".length)}.md`));
+  const spine = parseSpine(reader, manifestChapters(reader));
+  const inScope = (sc) => sc === "course" ? units : sc.startsWith("chapter:") ? chapterScopeUnits(units, reader, spine, sc.slice("chapter:".length)) : [];
   const r = openMajorVersion(root, { scopes, reason, instructorWords, carried: [...new Set(scopes.flatMap((sc) => inScope(sc).map((u) => u.id)))] }, party);
   for (const sc of scopes) { const ids = inScope(sc).map((u) => u.id); if (ids.length) carryUnits(root, ids, { version: r.payload.to[sc], scope: sc }, party); }
   return r;
+}
+
+/**
+ * The units a chapter scope covers, decided by CONTENT, never by a file name (red-team round 5, F4: a version carried a
+ * deliverable only if its path ended in "/<chapter>.md", so a declared handout teaching the chapter was never carried):
+ *   - every unit of the chapter's own deliverables (the manifest's study-guide/, slides/ and practice/ <chapter>.md);
+ *   - every unit, in any deliverable, linked to one of the chapter's spine nodes (objective, concept, term, guide entry);
+ *   - every unit of a declared document that declares the chapter (DOCUMENTS.json `chapter` / `chapters`: a
+ *     declaration only ever ADDS to a scope);
+ *   - fail-safe: every unit of a declared document linked to no chapter's node at all — what it serves is unknown, so
+ *     it is carried by every chapter's new version rather than by none.
+ */
+export function chapterScopeUnits(units, reader, spine, chapter) {
+  const own = new Set(DELIVERABLE_DIRS.map((d) => `${d}/${chapter}.md`));
+  const nodesOf = (ch) => new Set([...(spine.chapters[ch]?.map.nodes || []), ...(spine.chapters[ch]?.guide.entries || [])].map((n) => n.id).filter(Boolean));
+  const mine = nodesOf(chapter), anyChapter = new Set(Object.keys(spine.chapters).flatMap((ch) => [...nodesOf(ch)]));
+  const docs = new Map(documentEntries(reader).map((d) => [d.source, d]));
+  return units.filter((u) => {
+    const rel = u.locator.deliverable, links = u.spineNodes || [];
+    if (own.has(rel) || links.some((n) => mine.has(n))) return true;
+    const d = docs.get(rel);
+    if (!d) return false;
+    return d.chapters.includes(chapter) || !links.some((n) => anyChapter.has(n));
+  });
 }
 
 /** All core obligations (and dangling-link defects) of a package. */

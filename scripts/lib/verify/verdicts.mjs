@@ -14,6 +14,8 @@ import { recordFile } from "../records/paths.mjs";
 import { appendLogRecord } from "../records/log.mjs";
 import { factHash, questionsOf, referencedUnits } from "../core/dependencies.mjs";
 import { unitHash } from "../core/segment.mjs";
+import { instructorAuthored, textIds } from "../core/authorship.mjs";
+import { packageAncestry } from "../core/units_index.mjs";
 import { recheckShown, admitEvidence, evidenceStands, hasAdmittedEvidence, indexAndStamp, leadOf, loadUnits, loggedInstructorActs, needsEvidence, recordLeads, recordedLeads, reviewedAbsolutes, unitDepsHashes } from "../core/obligations.mjs";
 import { absoluteBundle, absoluteSentences, absolutesHash, readAbsoluteReview } from "./absolutes.mjs";
 import { randomBytes } from "node:crypto";
@@ -61,10 +63,14 @@ export function keptClaims(logRecords) {
 /** A dispute the instructor already settled by keeping the claim is not open; if every other claim is supported, the
  *  unit is evidenced — the kept claim by the instructor's answer, the rest by their quotes. A changed sentence is a new
  *  claim and needs its own evidence. */
-export function settleKept(admission, unitId, claims, kept) {
+// `unitIds`: the unit's id, or every id whose text it holds (textIds) — the instructor's answer follows the claim's text
+// through a split, a merge or a move (red-team round 5), as it survives an edit elsewhere in the unit (D40)
+export function settleKept(admission, unitIds, claims, kept) {
   if (!admission || admission.status !== "disputed" || !kept.size) return admission;
-  const keyOf = (c) => claimKey(unitId, claims.find((x) => x.index === c.claim)?.text, c.conflicts || []);
-  const ok = admission.perClaim.every((c) => c.status === "supported" || (c.status === "disputed" && kept.has(keyOf(c))));
+  const ids = [unitIds].flat();
+  const keyOf = (c) => claimKey(ids[0], claims.find((x) => x.index === c.claim)?.text, c.conflicts || []);
+  const isKept = (c) => ids.some((id) => kept.has(claimKey(id, claims.find((x) => x.index === c.claim)?.text, c.conflicts || [])));
+  const ok = admission.perClaim.every((c) => c.status === "supported" || (c.status === "disputed" && isKept(c)));
   return ok ? { ...admission, status: "admitted", kept: admission.perClaim.filter((c) => c.status === "disputed").map((c) => ({ claim: c.claim, claimKey: keyOf(c) })) } : admission;
 }
 
@@ -92,7 +98,7 @@ export async function verifySemi(root, reader, { texts, verifier, only = null, o
     if (!passages.length) { results.push({ unit: u.id, status: "no-candidates" }); onProgress(results.at(-1)); continue; }
     const bundle = semiBundle(claims, passages);
     const answer = await verifier(bundle.prompt);
-    const admission = settleKept(admit({ claims, passages, texts: plain, raw: answer.raw, nonce: bundle.nonce }), u.id, claims, keptClaims(logRecordsOf(readLogText(root))));
+    const admission = settleKept(admit({ claims, passages, texts: plain, raw: answer.raw, nonce: bundle.nonce }), textIds(u), claims, keptClaims(logRecordsOf(readLogText(root))));
     const record = recordDispatch(root, { kind: "semi", unit: u.id, factHash: factHash(u.text), contentHash: u.locator.contentHash, bundle, passages, texts, answer, admission, claims, deps: deps.get(u.id) });
     if (admission.status === "admitted") admitEvidence(root, reader, u.id, evidenceFrom(record, admission, texts, u.text));
     results.push({ unit: u.id, dispatch: record.dispatch, status: admission.status, costUsd: answer.costUsd ?? null, perClaim: admission.perClaim.map((c) => ({ claim: c.claim, status: c.status, reason: c.reason })) });
@@ -110,7 +116,7 @@ export function readmitRecorded(root, reader, { texts }) {
     const all = loadUnits(root, reader), u = all.find((x) => x.id === r.unit);
     if (!u || r.kind !== "semi" || !needsEvidence(u) || hasAdmitted(root, u, all)) continue;
     if (!dispatchLogged(r, log) || !checksCurrentClaims(r, u.text, leadOf(u, loadUnits(root, reader)))) continue; // only genuine dispatches of the unit's current claims
-    const a = settleKept(rederive(r, plainT), u.id, semiClaimsOf(r), keptClaims(log));
+    const a = settleKept(rederive(r, plainT), textIds(u), semiClaimsOf(r), keptClaims(log));
     if (a?.status === "admitted") { admitEvidence(root, reader, u.id, { ...evidenceFrom(r, a, texts, u.text), readmitted: new Date().toISOString() }); out.push({ unit: u.id, dispatch: r.dispatch }); }
   }
   if (out.length) appendLogRecord(root, { type: "revision", party: { role: "harness", name: "verify" }, payload: { event: "evidence-readmitted", units: out.map((x) => x.unit), rule: "recorded answers re-derived under the current admission rules" } });
@@ -194,16 +200,13 @@ function semiClaimsOf(record) {
   return recordClaimTexts(record).map((t, i) => withLead(claimOf(t, i + 1), leads[i + 1]));
 }
 
-/** Was this unit written by the instructor? The sidecar OR the log says so — a sidecar edit cannot remove it (B16). */
-export function instructorAuthored(unit, logRecords) {
-  if (unit.origin?.kind === "instructor-authored") return true;
-  return logRecords.some((l) => l.type === "authorship-confirmation" && l.party?.role === "instructor" &&
-    ((Array.isArray(l.payload?.units) && l.payload.units.includes(unit.id) && (l.payload.as || "instructor") === "instructor") || (l.payload?.initial && l.payload?.origin?.kind === "instructor-authored")));
-}
+/** Was this unit's text written by the instructor? One rule for every consumer (core/authorship.mjs): the sidecar OR
+ *  the log says so — a sidecar edit cannot remove it (B16) — for the unit or any unit whose text it holds (R5-K09). */
+export { instructorAuthored, textIds } from "../core/authorship.mjs";
 const canonicalUrl = (u) => { try { const x = new URL(u); return `${x.hostname}${x.pathname}`.toLowerCase(); } catch { return String(u); } };
 
 /** Can the agent correct this unit without asking? Returns { ok, reason, plan }. */
-export function correctionGuard({ unit, lead = null, records, plainTexts, meta = new Map(), logRecords = [] }) {
+export function correctionGuard({ unit, lead = null, records, plainTexts, meta = new Map(), logRecords = [], ancestry = null }) {
   const fh = factHash(unit.text);
   if ((unit.evidence || []).some((e) => e.type === "authorized-divergence" && e.factHash === fh)) return { ok: false, reason: "the instructor kept this text as an authorized divergence" };
   if (hasAdmittedEvidence(unit, { confirmed: new Map(), diverged: new Map() }, { lead, recordedLead: (e) => Object.values(recordLeads(records.find((r) => r.dispatch === e.dispatch) || {}))[0] ?? null }) || (unit.evidence || []).some((e) => e.type === "instructor-confirmation" && e.factHash === fh)) return { ok: false, reason: "contested: evidence or a confirmation stands for the unit as it is" };
@@ -227,7 +230,7 @@ export function correctionGuard({ unit, lead = null, records, plainTexts, meta =
     const q = quantitiesIn(unit.text).find((x) => x.raw === claimed);
     if (q && supportedQuotes.some((t) => quantitiesIn(t).some((s) => sameAtPrecision(q, s)))) return { ok: false, reason: `contested: another verification supports ${claimed}` };
   }
-  if (instructorAuthored(unit, logRecords))
+  if (instructorAuthored(unit, logRecords, ancestry))
     for (const [claimed, t] of targets) { const n = Math.min(t.ids.size, t.urls.size); if (n < 2) return { ok: false, reason: `instructor text: ${claimed} needs two agreeing sources (has ${n})` }; }
   // the edit itself must be unambiguous: each claimed number occurs once in the unit
   const edits = [];
@@ -310,7 +313,7 @@ export function applyCorrection(root, reader, { unitId, plainTexts, meta = new M
   if (party?.role !== "agent") throw new Error("an auto-correction is the agent's, through the harness");
   const all = loadUnits(root, reader), unit = all.find((u) => u.id === unitId);
   if (!unit) throw new Error(`no such unit: ${unitId}`);
-  const g = correctionGuard({ unit, lead: leadOf(unit, all), records: packageDispatches(root), plainTexts, meta, logRecords: logRecordsOf(readLogText(root)) });
+  const g = correctionGuard({ unit, lead: leadOf(unit, all), records: packageDispatches(root), plainTexts, meta, logRecords: logRecordsOf(readLogText(root)), ancestry: packageAncestry(root, reader) });
   if (!g.ok) return { applied: false, question: { unit: unitId, reason: g.reason } };
   const after = editedText(unit.text, g.plan.edits);
   const group = supportingGroup(after, g.plan.quotes);
@@ -343,10 +346,17 @@ export function correctionLogged(c, logRecords) {
 }
 
 /** Corrections not yet shown, with the diff built from the record's texts at display time. */
+// A correction counts as shown only when the LOG says it was put before the instructor — a delivered checkpoint listing
+// it, or the logged mark of a showing (red-team round 5, the audit of F3/F4: the record's own `shown: true`, a field
+// anyone can write, hid an auto-correction of their text from the instructor for good)
+const shownInLog = (log) => new Set(log.flatMap((l) => (l.type === "checkpoint" ? l.payload?.corrections || [] : l.type === "revision" && l.payload?.event === "corrections-shown" ? l.payload.corrections || [] : [])));
 export function correctionsToShow(root, { mark = false } = {}) {
-  const log = logRecordsOf(readLogText(root));
-  const out = readCorrections(root).filter((c) => c.status === "applied" && !c.shown);
-  if (mark) for (const c of out) fs.writeFileSync(recordFile(root, `${CORRECTIONS_DIR}/${c.id}.json`), JSON.stringify({ ...c, shown: true, shownAt: new Date().toISOString() }, null, 2) + "\n");
+  const log = logRecordsOf(readLogText(root)), shown = shownInLog(log);
+  const out = readCorrections(root).filter((c) => c.status === "applied" && !shown.has(c.id));
+  if (mark && out.length) {
+    appendLogRecord(root, { type: "revision", party: { role: "harness", name: "corrections" }, payload: { event: "corrections-shown", corrections: out.map((c) => c.id) } });
+    for (const c of out) fs.writeFileSync(recordFile(root, `${CORRECTIONS_DIR}/${c.id}.json`), JSON.stringify({ ...c, shown: true, shownAt: new Date().toISOString() }, null, 2) + "\n");
+  }
   return out.map((c) => ({ id: c.id, unit: c.unit, deliverable: c.deliverable, diff: diffOf(c.before?.text ?? "", c.after?.text ?? ""), verified: correctionLogged(c, log), evidence: (c.evidence?.quotes || []).map((q) => ({ source: q.source, quote: q.quote })) }));
 }
 

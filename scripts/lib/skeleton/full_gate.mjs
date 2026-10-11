@@ -5,7 +5,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { readRegistry } from "../records/registry.mjs";
-import { readConfig } from "../records/config.mjs";
+import { boundConfig } from "../records/config.mjs";
+import { makeFinding } from "../records/findings.mjs";
 import { runCheckpoint } from "./runner.mjs";
 import { evaluateGate, logFindings } from "./gate.mjs";
 import { buildWiringReport } from "./wiring.mjs";
@@ -31,10 +32,14 @@ export function runGate(root, { checkpoint = "V8", profile = null, inputsDir = n
   try { registry = readRegistry(root); } catch (e) { registry = { schemaVersion: 1, modules: [], __readError: e.message }; }
   const run = runCheckpoint({ root, checkpoint, profile, registry, inputsDir });
   const modules = Object.values(run.wiring.manifests).map((manifest) => ({ manifest }));
-  const config = readConfig(root);
-  const core = [], approvalProblems = [];
+  // the settings that decide what is checked are bound to the log (red-team round 5, F2): a lowered or missing spine
+  // setting is itself a blocking defect, and the v2 core runs whenever the log shows v2 in force
+  const bound = boundConfig(root);
+  const core = bound.problems.map((detail) => makeFinding({ module: "skeleton", kind: "setting-lowered", units: [], statusClass: "defect", route: "agent", basis: run.snapshot.id,
+    evidence: { type: "rule", rule: "a setting that changes what the gate checks is lowered only through the decision log", file: "metadata/coursewerk.json", detail } }));
+  const approvalProblems = [];
   let mechanical = null;
-  if (config.spine === 2) {
+  if (bound.spine === 2) {
     const reader = liveReader(root);
     if (["V1", "V8"].includes(checkpoint)) core.push(...spineCoreFindings(reader, run.snapshot.id));
     if (["V2", "V8"].includes(checkpoint)) core.push(...restatedObjectiveFindings(reader, run.snapshot.id));

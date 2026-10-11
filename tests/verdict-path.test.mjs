@@ -16,7 +16,7 @@ import { semiClaims, namesIn, checkableClaims as checkableClaimsOf } from "../sc
 import { admit, locate } from "../scripts/lib/verify/admission.mjs";
 import { bundleLeaks, replayVerifier, selectPassages, semiBundle } from "../scripts/lib/verify/dispatch.mjs";
 import { fsInputReader, pinnedTexts, pinReference, readReferences, syncReferenceRecord } from "../scripts/lib/verify/references.mjs";
-import { allowed, fetchAndPin, queryFor, resolveLinks, searchWikipedia } from "../scripts/lib/verify/retrieval.mjs";
+import { allowed, declareRetrieval, fetchAndPin, recordLinkResolutions, queryFor, resolveLinks, searchWikipedia } from "../scripts/lib/verify/retrieval.mjs";
 import { applyCorrection, correctionsToShow, reviewAbsolutes, revertCorrection, verifyKnowledge, verifySemi } from "../scripts/lib/verify/verdicts.mjs";
 import { readConfig, writeConfig } from "../scripts/lib/records/config.mjs";
 
@@ -160,7 +160,10 @@ test("[req.retrieval.claim-only] retrieval sends only the claim, only to declare
   };
   const claim = semiClaims("The principle is named for Henry Louis Le Chatelier, who stated it in 1884.")[0];
   await assert.rejects(searchWikipedia(p.root, claim, { fetchImpl }), /retrieval is off/, "no declaration, no retrieval");
+  // the destinations are the instructor's logged declaration: a file edit alone declares nothing (red-team round 5)
   writeConfig(p.root, { ...readConfig(p.root), retrieval: { destinations: ["en.wikipedia.org", "openstax.org/books/chemistry-2e"], context: "chemistry" } });
+  await assert.rejects(searchWikipedia(p.root, claim, { fetchImpl }), /retrieval is off/, "an unlogged file edit declares no destination");
+  declareRetrieval(p.root, { retrieval: { destinations: ["en.wikipedia.org", "openstax.org/books/chemistry-2e"], context: "chemistry" }, words: "Use Wikipedia and OpenStax Chemistry 2e." }, I);
   const { query, titles } = await searchWikipedia(p.root, claim, { fetchImpl });
   assert.deepEqual(titles, ["Le Chatelier's principle"]);
   assert.equal(query, `${queryFor(claim)} chemistry`);
@@ -176,7 +179,7 @@ test("[req.retrieval.claim-only] retrieval sends only the claim, only to declare
   for (const url of ["https://openstax.org/books/biology-2e/pages/1-1", "https://example.org/x", "http://en.wikipedia.org/wiki/X", "https://en.wikipedia.org.evil.example/wiki/X"])
     await assert.rejects(fetchAndPin(p.root, p.inputs, url, { fetchImpl }), /not inside a declared destination/, url);
   assert.equal(allowed("https://openstax.org/books/chemistry-2e/pages/13-2-equilibrium-constants", ["openstax.org/books/chemistry-2e"]), "openstax.org/books/chemistry-2e");
-  writeConfig(p.root, { ...readConfig(p.root), retrieval: false });
+  declareRetrieval(p.root, { retrieval: false }, I);
   await assert.rejects(fetchAndPin(p.root, p.inputs, "https://en.wikipedia.org/wiki/X", { fetchImpl }), /retrieval is off/);
   assert.ok(calls.every((u) => /^https:\/\/(en\.wikipedia\.org|openstax\.org)\//.test(u)), "nothing else was contacted");
 });
@@ -305,7 +308,7 @@ test("[req.knowledge.no-autochange] a knowledge-based concern is a question with
 // ---- MS4 links (T1) ----------------------------------------------------------------------------------------------
 test("[req.ms4.links] external links inside declared destinations are resolved and recorded; MS4 reads the record offline", async (t) => {
   const p = copy(t);
-  writeConfig(p.root, { ...readConfig(p.root), retrieval: { destinations: ["en.wikipedia.org"] } });
+  declareRetrieval(p.root, { retrieval: { destinations: ["en.wikipedia.org"] }, words: "Links may be checked on Wikipedia." }, I);
   const calls = [];
   const fetchImpl = async (url) => { calls.push(url); return { status: url.includes("Missing") ? 404 : 200, url }; };
   const { resolved, skipped } = await resolveLinks(p.root, ["https://en.wikipedia.org/wiki/Chemical_equilibrium", "https://en.wikipedia.org/wiki/Missing_page", "https://example.org/elsewhere"], { fetchImpl });
@@ -316,7 +319,10 @@ test("[req.ms4.links] external links inside declared destinations are resolved a
   p.edit("study-guide/le-chatelier.md", (x) => x + "\n\nSee [the article](https://en.wikipedia.org/wiki/Chemical_equilibrium).\n");
   indexAndStamp(p.root, p.reader, { party: I, initialOrigin: null });
   assert.ok(kinds(run(p, "ms4-links"), "ms4-links").includes("external-link-unresolved:obligation"));
+  // the file alone, written by hand, resolves nothing (red-team round 5): the harness records what it resolved in the log
   fs.writeFileSync(path.join(p.root, "metadata", "LINK_RESOLUTIONS.json"), JSON.stringify({ schemaVersion: 1, links: resolved }));
+  assert.ok(kinds(run(p, "ms4-links"), "ms4-links").includes("external-link-unresolved:obligation"));
+  recordLinkResolutions(p.root, resolved);
   assert.ok(!kinds(run(p, "ms4-links"), "ms4-links").includes("external-link-unresolved:obligation"));
 });
 
