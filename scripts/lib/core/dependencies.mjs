@@ -215,8 +215,65 @@ export function referencedUnits(units, u, own = questionsOf(units, u)) {
   nums.delete(mine); for (const q of own) nums.delete(labelNumber(q.label));
   const byNumber = [...nums].flatMap((n) => numbered(units, u, n, ["question", "answer"]));
   const self = new Set([u.id, ...own.map((q) => q.id)]);
-  return [...byNumber, ...[u, ...own].flatMap((x) => anaphoraTargets(units, x, self))].filter((v, k, all) => v !== u && !self.has(v.id) && all.findIndex((w) => w.id === v.id) === k);
+  return [...byNumber, ...[u, ...own].flatMap((x) => anaphoraTargets(units, x, self)), ...figuresNamedBy(units, u)].filter((v, k, all) => v !== u && !self.has(v.id) && all.findIndex((w) => w.id === v.id) === k);
 }
+
+// A figure and the prose about it (red team R5 coherence F1): "The diagram sorts the five disturbances …" describes a
+// flowchart no edge reached, so redrawing a branch left its description wrong. A unit that names a figure — "the
+// figure", "this diagram", "the image", "Figure 2", a "Visual description" or alt text — is bound to the figures of its
+// section (the nearest before it when its section has none; "Figure N" also to the deliverable's Nth figure), both
+// ways. Failing toward an edge: one too many costs a cheap re-check, one missing a silent contradiction.
+const FIGURE_NOUN = "(?:figures?|diagrams?|images?|charts?|graphs?|plots?|flow\\s?charts?|pictures?|illustrations?|schematics?|sketch(?:es)?|drawings?|visuals?|graphics?|panels?)";
+const FIGURE_REF = new RegExp([
+  `(?<![\\p{L}])(?:the|this|that|these|those|each|every|our|its|above|below|following|preceding|previous|next|same|accompanying)\\s+(?:\\p{L}+\\s+)?${FIGURE_NOUN}(?![\\p{L}])`,
+  `(?<![\\p{L}])${FIGURE_NOUN}\\s+(?:above|below)(?![\\p{L}])`,
+  "(?<![\\p{L}])(?:fig(?:ure)?s?\\.?)\\s*#?\\s*\\d+",
+  "(?<![\\p{L}])(?:visual|image|figure|diagram)\\s+description(?![\\p{L}])",
+  "(?<![\\p{L}])alt(?:ernative)?[- ]text(?![\\p{L}])",
+].join("|"), "iu");
+const FIGURE_NUMBER = /(?<![\p{L}])fig(?:ure)?s?\.?\s*#?\s*(\d+)/giu;
+/** Does a text name a figure ("the diagram", "Figure 2", a visual description)? Read as a reader sees it. */
+export const namesFigure = (text) => { const raw = String(text || ""); return FIGURE_REF.test(raw) || FIGURE_REF.test(readerView(raw)); };
+/** The figures a unit names (see above): [unit]. */
+export function figuresNamedBy(units, u) {
+  if (!u?.locator || u.form === "figure" || !namesFigure(u.text)) return [];
+  const mine = units.filter((v) => v.form === "figure" && v.locator.deliverable === u.locator.deliverable).sort((a, b) => a.locator.ordinal - b.locator.ordinal);
+  const here = mine.filter((v) => v.locator.section === u.locator.section);
+  const out = here.length ? here : mine.filter((v) => v.locator.ordinal < u.locator.ordinal).slice(-1);
+  for (const m of String(readerView(u.text)).matchAll(FIGURE_NUMBER)) { const f = mine[Number(m[1]) - 1]; if (f) out.push(f); }
+  return [...new Set(out)];
+}
+
+// A key term used by its distinctive word alone (red team R5 coherence F6): "Q6 … is exothermic", "**Exothermic** —",
+// "the exothermic ammonia synthesis" each use "exothermic reaction" without the head noun. Within the chapter that
+// defines a multi-word term (or uses it by its full name), a modifier of its label or alias (every word but the last) that no other key term's label
+// or alias shares — so "reaction" and "equilibrium" never count, "exothermic", "inert", "Chatelier", "stoichiometric"
+// do — is read as a use of the term (a predicate or adjective: "is exothermic", "an exothermic step"). An extra edge
+// costs a cheap re-check when the term is redefined; a missing one, a unit left teaching the old definition.
+const FUNCTION_WORDS = new Set(["the", "and", "for", "from", "with", "into", "onto", "over", "under", "than", "that", "this", "their", "per", "of", "in", "on", "at", "to", "by", "an", "a", "or", "not", "its", "law"]);
+const wordsOf = (s) => (String(s || "").match(/[\p{L}\p{N}]+(?:['’][\p{L}]+)*/gu) || []).map((w) => w.replace(/['’]s$/iu, ""));
+/** The distinctive words of a key-term definition (`def` from termDefinitions; `defs`: all of them): [word]. */
+export function termHeadWords(def, defs) {
+  const forms = [def.term.label, ...(def.term.aliases || [])].map((f) => String(f || "").trim()).filter(Boolean);
+  const label = String(def.term.label || "").toLowerCase();
+  const others = new Set(defs.filter((d) => String(d.term.label || "").toLowerCase() !== label)
+    .flatMap((d) => [d.term.label, ...(d.term.aliases || [])].flatMap(wordsOf)).map((w) => w.toLowerCase()));
+  const out = new Set();
+  for (const f of forms) {
+    const ws = wordsOf(f);
+    if (ws.length < 2) continue;
+    for (const w of ws.slice(0, -1)) if (/^\p{L}{4,}$/u.test(w) && !FUNCTION_WORDS.has(w.toLowerCase()) && !others.has(w.toLowerCase())) out.add(w);
+  }
+  return [...out];
+}
+/** A matcher for a definition's distinctive words (null when it has none). */
+export function headWordMatcher(def, defs) {
+  const ws = termHeadWords(def, defs);
+  if (!ws.length) return null;
+  const re = new RegExp(`(?<![\\p{L}\\p{N}])(?:${ws.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})(?:['’]s)?(?![\\p{L}\\p{N}])`, "iu");
+  return (text) => { const raw = String(text || ""); return re.test(raw) || re.test(readerView(raw)); };
+}
+const chapterOfUnit = (u) => /\/([^/]+)\.md$/.exec(u?.locator?.deliverable || "")?.[1] ?? null;
 
 // A reference WITHOUT a number (red team R4 coherence F2): "for the same reaction", "the previous question", "the
 // reaction above", "this reaction". It names the nearest question before it in its set, or the reaction it means — the
@@ -255,12 +312,19 @@ export function dependencyEdges(units, spine, sources = {}) {
   for (const list of byQty.values()) if (list.length > 1) for (const a of list) for (const b of list) if (a !== b) add(a, `unit:${b.id}`, "shared-value");
   // an answer depends on the question it answers: the one its label names, else the nearest question before it (F13)
   for (const u of units) for (const v of questionsOf(units, u)) { add(u, `unit:${v.id}`, "derivation"); add(u, `question:${v.id}`, "derivation"); }
+  // a figure and the prose that names it, both ways (R5 F1)
+  for (const u of units) for (const f of figuresNamedBy(units, u)) { add(u, `ref:${f.id}`, "figure"); add(f, `ref:${u.id}`, "figure"); }
   // a question or answer named by number ("the answer to Q3"), bound to its full wording (F3)
   for (const u of units) for (const v of referencedUnits(units, u)) add(u, `ref:${v.id}`, "reference");
   // key terms used in the unit: every definition of the term, in each concept map that defines it (red team R4
   // coherence F6: keyed by label alone, a term defined in two chapters tracked only the last one's definition)
-  const patterns = termDefinitions(spine).map((d) => [d, termMatcher(d.term)]);
-  for (const u of units) for (const [d, uses] of patterns) if (uses(u.text)) add(u, d.key, "shared-term");
+  const defs = termDefinitions(spine), patterns = defs.map((d) => [d, termMatcher(d.term), headWordMatcher(d, defs)]);
+  const using = new Map(defs.map((d) => [d, new Set([d.scope])]));
+  for (const u of units) for (const [d, uses] of patterns) if (uses(u.text)) { add(u, d.key, "shared-term"); using.get(d).add(chapterOfUnit(u)); }
+  // its distinctive word alone, within the chapter that defines it — and any chapter that uses the term by its full
+  // name (R5 F6: a chemical-equilibrium slide's "**Exothermic** —" restates the le-chatelier term the chapter also
+  // writes out in full)
+  for (const u of units) for (const [d, uses, head] of patterns) if (head && (d.scope === "course" || using.get(d).has(chapterOfUnit(u))) && head(u.text)) add(u, d.key, "shared-term");
   // spine nodes the unit serves, and the prerequisites those nodes declare (D19-H)
   const nodes = nodeIndex(spine);
   for (const u of units) for (const n of u.spineNodes || []) {

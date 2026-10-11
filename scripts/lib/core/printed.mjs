@@ -18,13 +18,26 @@
 //     visibly (an unknown kind fails closed); a `{{attrs[…]}}` that sets anything but an id; a lone `::: tab`;
 //   - notes (slides): the speaker-notes lines (`<!-- @notes -->` to the next region or slide) — the presenter's, not the
 //     students': they print nothing on a slide, and are no unit (they never count toward coverage);
+//   - dropped (slides; red team round 5, CONTROL C1-01/C1-02): what orz-slides itself does not show — its parser and
+//     renderer are RUN (slideRegionsShown), not modelled: a region outside the layout, a repeated region name, a
+//     template slide's other regions or unrendered lines, an overwritten @footer; each such line prints nothing, with
+//     the frame's reason (a unit there is content-hidden). A table row's text beyond the cells markdown-it renders is
+//     hidden too (unrenderedText);
 //   - deck (slides): the deck config values orz-slides prints (`footer:` on every content slide, `title:` in the tab,
 //     `author:` in the document's metadata) — each is read (segment.mjs), so each counts as printed.
 // Deterministic and offline: parsing never reads an included file (that happens only when rendering).
+import path from "node:path";
 import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
 
 const require_ = createRequire(import.meta.url);
 const { md } = require_("orz-markdown");
+// orz-slides' own parser and renderer (the deck's frame): its package exports only the builder, so the two modules are
+// loaded from the installed package's dist folder
+const SLIDES_DIST = path.dirname(require_.resolve("orz-slides"));
+const { parseDeck } = await import(pathToFileURL(path.join(SLIDES_DIST, "slide-parser.js")).href);
+const { renderSlide } = await import(pathToFileURL(path.join(SLIDES_DIST, "render-slide.js")).href);
+export { SLIDES_DIST };
 
 export const INCLUDE_ALIASES = Object.freeze(["markdown", "md", "md-include"]);
 /** orz-paged {{nyml}} kinds that print nothing: the document settings and the head metadata. Every other kind (the
@@ -123,9 +136,9 @@ const cache = new Map();
 export function printedModel(text, { frame = "page" } = {}) {
   const src = String(text || ""), key = `${frame}\u0000${src}`;
   if (cache.has(key)) return cache.get(key);
-  const tokens = md.parse(src, {});
+  const tokens = md.parse(src, {}), srcLines = src.split("\n");
   const printed = new Set(), labels = new Map(), blocks = new Map(), headings = new Map(), includes = [], hidden = [], leaf = new Map();
-  const unprint = new Set(), notes = new Set(), stack = [];
+  const unprint = new Set(), notes = new Set(), stack = [], dropped = new Map();
   let deck = null, lastLine = 0;
   const mark = (a, b) => { for (let k = a; k <= b; k++) { printed.add(k); if (!leaf.has(k)) leaf.set(k, [a, b]); } };
   const hide = (line, whats) => { for (const what of whats) hidden.push({ line: line + 1, what }); };
@@ -147,12 +160,18 @@ export function printedModel(text, { frame = "page" } = {}) {
       if (inl && HIDDEN_TEX.test(inl.content)) hide(a, ["maths that typesets invisibly (\\phantom, \\color)"]);
       if (t.type === "math_block" && HIDDEN_TEX.test(t.content)) hide(a, ["maths that typesets invisibly (\\phantom, \\color)"]);
       if (t.type === "tr_open") {
+        const kept = [];
         for (let y = x + 1; y < tokens.length && tokens[y].type !== "tr_close"; y++) {
           const c = tokens[y];
           if (c.type !== "inline") continue;
+          kept.push(c.content);
           for (const ch of c.children || []) if (ch.type === "html_inline") hide(a, htmlHides(ch.content, { inline: true }));
           if (HIDDEN_TEX.test(c.content)) hide(a, ["maths that typesets invisibly (\\phantom, \\color)"]);
         }
+        // what the row's source holds that no rendered cell holds (red team round 5, CONTROL C1-01): markdown-it
+        // renders as many cells as the header has, and silently drops the rest of a longer row
+        const dropped = unrenderedText(srcLines[a], kept);
+        if (dropped) hide(a, [`a table row with more cells than its header: the frame drops "${dropped.slice(0, 60)}" (put it under a header column, or in a paragraph)`]);
       }
       continue;
     }
@@ -187,10 +206,10 @@ export function printedModel(text, { frame = "page" } = {}) {
       if (label) { labels.set(a, label); printed.add(a); if (!leaf.has(a)) leaf.set(a, [a, a]); }
     }
   }
-  if (frame === "slides") deck = slidesFrame(src, { printed, unprint, notes });
+  if (frame === "slides") deck = slidesFrame(src, { printed, unprint, notes, hide, dropped });
   for (const k of unprint) { printed.delete(k); labels.delete(k); }
   // a line the parser left in no token (a link reference definition, say) prints nothing
-  const model = { printed, labels, blocks, headings, includes, hidden, leaf, notes, deck, frame };
+  const model = { printed, labels, blocks, headings, includes, hidden, leaf, notes, deck, frame, dropped };
   if (cache.size > 64) cache.delete(cache.keys().next().value);
   cache.set(key, model);
   return model;
@@ -200,14 +219,115 @@ export function printedModel(text, { frame = "page" } = {}) {
 // regions at whole-line `<!-- @name … -->` markers
 const DECK_BLOCK = /^\s*<!--\s*deck\b([\s\S]*?)-->/;
 const SLIDE_AT = /<!--\s*slide\b/;
-const REGION_LINE = /^[ \t]*<!--\s*@([A-Za-z0-9_-]+)\b([^>]*?)-->[ \t]*$/;
+/** orz-slides' region marker, character for character (slide-parser.js REGION_MARKER; a test reads the installed
+ *  frame's source and fails if they ever differ). The ONE region-name pattern: the notation check uses it too. */
+export const SLIDE_REGION_MARKER = /^[ \t]*<!--\s*@([A-Za-z0-9_-]+)\b([^>]*?)-->[ \t]*$/;
+/** The names orz-slides routes to fields of their own rather than to the layout (compared lowercased, as it does). */
+export const SLIDE_RESERVED_REGIONS = Object.freeze(["notes", "footer", "float"]);
+
+/** The leaf region names of an orz-slides layout tree, in order. */
+const layoutLeaves = (n) => (!n ? [] : n.kind === "region" ? [n.name] : (n.children || []).flatMap(layoutLeaves));
+const lineKey = (l) => String(l).trim().replace(/^#{1,6}\s+/, "");
+/**
+ * Every region chunk of a deck as orz-slides parses it, located in the source, and whether its renderer shows it:
+ * [{ slide, name, lines: [0-based line], notes, shown, why }]. The parse is the frame's (parseDeck). What shows is what
+ * the frame's renderSlide hands to the markdown renderer, recorded by running it with a recording renderer (speaker
+ * notes left out: they go to the presenter's view) — so a region named outside the layout, a repeated region name
+ * (only the last one of a slide is kept), a second @footer, or anything but `body` on a template slide is found
+ * because the frame drops it, not because a rule here says so. A chunk that cannot be found in the source is reported
+ * (it fails loud, never silently printed).
+ */
+export function slideRegionsShown(text) {
+  const src = String(text || "").replace(/\r\n/g, "\n"), lines = src.split("\n"), out = [];
+  let deck; try { deck = parseDeck(src); } catch (e) { return [{ slide: 0, name: "", lines: [0], notes: false, shown: false, unlocated: true, why: `orz-slides cannot parse this deck (${e.message})` }]; }
+  let cursor = 0;
+  deck.slides.forEach((slide, si) => {
+    const at = src.indexOf(slide.raw, cursor);
+    if (at < 0) { out.push({ slide: si + 1, name: "", lines: [0], notes: false, shown: false, unlocated: true, why: `slide ${si + 1}: orz-slides' parse of it could not be found in the source` }); return; }
+    cursor = at + slide.raw.length;
+    const from = src.slice(0, at).split("\n").length - 1, to = from + slide.raw.split("\n").length - 1;
+    // what the frame renders on the slide: every source its renderer passes to the markdown renderer
+    const seen = [], rec = (s) => { seen.push(String(s ?? "")); return ""; };
+    renderSlide({ ...slide, notes: undefined }, { render: rec, renderInline: rec }, deck.config);
+    const seenLines = new Set(seen.flatMap((s) => s.split("\n")).map(lineKey).filter(Boolean));
+    const chunks = [
+      ...slide.regions.map((r, k) => ({ name: r.name, markdown: r.markdown, k })),
+      ...slide.floats.map((f) => ({ name: "float", markdown: f.markdown })),
+      ...(slide.footer !== undefined ? [{ name: "footer", markdown: slide.footer }] : []),
+      ...(slide.notes !== undefined ? [{ name: "notes", markdown: slide.notes, notes: true }] : []),
+    ];
+    // a region the parser overwrote (a second @notes or @footer) is in no field: find its lines from what is left
+    const claimed = new Set();
+    const locate = (md_) => {
+      const want = String(md_).split("\n"), n = want.length;
+      for (let s = from; s + n - 1 <= to; s++) {
+        let ok = true;
+        for (let j = 0; j < n && ok; j++) {
+          const have = lines[s + j], w = want[j].trim(), h = have.trim();
+          if (claimed.has(s + j) && w) ok = false;
+          else if (!w) ok = !h;
+          else ok = h === w || (j === 0 && h.endsWith(w)) || (j === n - 1 && h.startsWith(w)) || (n === 1 && h.includes(w));
+        }
+        if (ok) { const ls = []; for (let j = 0; j < n; j++) if (lines[s + j].trim()) { ls.push(s + j); claimed.add(s + j); } return ls; }
+      }
+      return null;
+    };
+    const leaves = slide.kind === "template" ? ["body"] : layoutLeaves(slide.layout);
+    for (const c of chunks) {
+      if (!String(c.markdown).trim()) continue;
+      const ls = locate(c.markdown);
+      if (!ls) { out.push({ slide: si + 1, name: c.name, lines: [from], notes: false, shown: false, unlocated: true, why: `slide ${si + 1}: orz-slides reads a region @${c.name} here whose lines could not be found in the source` }); continue; }
+      if (c.notes) { out.push({ slide: si + 1, name: c.name, lines: ls, notes: true, shown: false }); continue; }
+      // shown whole, or line by line (a template renders its body in pieces: the section template, for one, renders
+      // its `#` title and other text but not a `##` line)
+      const dark = seen.includes(c.markdown) ? [] : ls.filter((k) => !seenLines.has(lineKey(lines[k].slice(lines[k].indexOf(lines[k].trim()))))
+        && !String(c.markdown).split("\n").some((l) => l.trim() && lines[k].trim().endsWith(l.trim()) && seenLines.has(lineKey(l))));
+      const same = slide.regions.filter((r) => r.name === c.name).length;
+      const partly = dark.length && dark.length < ls.length;
+      const why = !dark.length ? "" : `slide ${si + 1}: ${partly ? `the ${slide.template || "slide"} template does not render this line of @${c.name}` : `the region @${c.name} is not shown by orz-slides — ${same > 1 ? `the slide names @${c.name} ${same} times and the frame keeps only the last` : slide.kind === "template" ? (c.name === "body" ? `the ${slide.template} template renders none of it` : "a template slide shows only its body") : `the slide's layout has no region "${c.name}" (it has: ${leaves.join(", ")})`}`}; its text reaches no student`;
+      if (dark.length && dark.length < ls.length) out.push({ slide: si + 1, name: c.name, lines: ls.filter((k) => !dark.includes(k)), notes: false, shown: true, why: "" });
+      out.push({ slide: si + 1, name: c.name, lines: dark.length ? dark : ls, notes: false, shown: !dark.length, why });
+    }
+    // lines of the slide the parser put in no chunk it kept (an overwritten @notes or @footer chunk): what is left of
+    // the slide once its chunks, its title and its markers are accounted for
+    const titleLine = slide.title !== undefined ? lines.findIndex((l, k) => k >= from && k <= to && /^##\s/.test(l.trim()) && l.trim().replace(/^##\s+/, "").trim() === slide.title) : -1;
+    const left = [], leftNotes = [];
+    let region = null;
+    for (let k = from; k <= to; k++) {
+      const t = lines[k].trim(), rm = SLIDE_REGION_MARKER.exec(lines[k]);
+      if (rm) { region = rm[1].toLowerCase(); continue; }
+      if (!t || claimed.has(k) || k === titleLine || (k === from && SLIDE_AT.test(t))) continue;
+      // an overwritten @notes chunk was the presenter's text all the same: notes, never a unit
+      (region === "notes" ? leftNotes : left).push(k);
+    }
+    if (leftNotes.length) out.push({ slide: si + 1, name: "notes", lines: leftNotes, notes: true, shown: false });
+    if (left.length) out.push({ slide: si + 1, name: "", lines: left, notes: false, shown: false, why: `slide ${si + 1}: text orz-slides keeps in no region it shows (a repeated @footer is overwritten by the last): "${lines[left[0]].trim().slice(0, 50)}"` });
+  });
+  return out;
+}
+
+/**
+ * What a source line holds that none of the rendered pieces holds: "" when everything but table syntax (pipes,
+ * blockquote markers, whitespace) is accounted for. Each piece is removed once, in order; an escaped pipe in the source
+ * is a plain pipe in the piece (markdown-it's escapedSplit).
+ */
+export function unrenderedText(line, pieces) {
+  let rest = String(line ?? "");
+  for (const p of pieces) {
+    if (!p) continue;
+    const re = new RegExp(String(p).replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\\\|/g, "\\\\?\\|"));
+    const m = re.exec(rest);
+    if (m) rest = rest.slice(0, m.index) + " ".repeat(m[0].length) + rest.slice(m.index + m[0].length);
+  }
+  return rest.replace(/[\s|>]+/g, " ").trim();
+}
 /**
  * What orz-slides shows of a deck, by its own grammar: the deck config values it prints are printed (and read as
  * units by the segmenter); everything before the first slide marker is dropped (it prints nothing); a `@notes`
  * region goes to the presenter's notes (it prints nothing on a slide). Returns the deck block:
  * { start, end, values: [{ key, line, value }] } (0-based lines), or null.
  */
-function slidesFrame(src, { printed, unprint, notes }) {
+function slidesFrame(src, { printed, unprint, notes, hide, dropped }) {
   const lines = src.split("\n");
   let deck = null, from = 0;
   const dm = DECK_BLOCK.exec(src);
@@ -223,12 +343,16 @@ function slidesFrame(src, { printed, unprint, notes }) {
   }
   const first = lines.findIndex((l, k) => k >= from && SLIDE_AT.test(l));
   for (let k = from; k < (first < 0 ? lines.length : first); k++) unprint.add(k);
-  let inNotes = false;
-  for (let k = Math.max(first, 0); first >= 0 && k < lines.length; k++) {
-    if (SLIDE_AT.test(lines[k])) { inNotes = false; continue; }
-    const r = REGION_LINE.exec(lines[k]);
-    if (r) { inNotes = r[1].toLowerCase() === "notes"; continue; }
-    if (inNotes) { notes.add(k); unprint.add(k); }
+  // which slide region each line falls in, and whether the frame shows that region, is orz-slides' OWN call: its parser
+  // (parseDeck) and its renderer (renderSlide) are run, not modelled (red team round 5, CONTROL C1-01/C1-02)
+  // A dropped region prints nothing: its lines are unprinted, and why is kept per line — a unit read there is text the
+  // review reads and no student sees (shipped.mjs hiddenInText reports it, with this reason); a label over nothing
+  // (a section slide's `##`, which the section template does not render) is simply not printed
+  for (const r of slideRegionsShown(src)) {
+    if (r.notes) { for (const k of r.lines) { notes.add(k); unprint.add(k); } continue; }
+    if (r.shown) continue;
+    for (const k of r.lines) { unprint.add(k); if (!dropped.has(k)) dropped.set(k, r.why); }
+    if (r.unlocated) hide(r.lines[0], [r.why]);
   }
   if (deck) for (const v of deck.values) printed.add(v.line);
   return deck;

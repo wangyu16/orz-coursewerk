@@ -21,7 +21,7 @@ import { coreObligations, indexAndStamp, linkUnits, loadUnits } from "../scripts
 import { beginSession, deliverablesOf } from "../scripts/lib/core/units_index.mjs";
 import { segmentDeliverable, unitHash } from "../scripts/lib/core/segment.mjs";
 import { htmlHides, printedModel } from "../scripts/lib/core/printed.mjs";
-import { hiddenContent, includesOf, uncheckedShipped, uncheckedShippedFindings } from "../scripts/lib/core/shipped.mjs";
+import { hiddenContent, hiddenInText, includesOf, uncheckedShipped, uncheckedShippedFindings } from "../scripts/lib/core/shipped.mjs";
 import { packPublished } from "../scripts/lib/core/pack_v2.mjs";
 import { publishContentHash } from "../scripts/lib/core/workflow.mjs";
 import { appendLogRecord } from "../scripts/lib/records/log.mjs";
@@ -86,10 +86,18 @@ test("[req.control.printed-by-parser] C3-03: a chain of one-sentence \"Sources: 
 });
 
 test("[req.control.printed-by-parser] C3-03 on slides: a section slide heads the slides up to the next section; a chain of section slides over nothing is read", () => {
-  const deck = "<!-- slide template=section -->\n## Electrons flow from anode to cathode\n\n<!-- slide template=section -->\n## The salt bridge keeps both half-cells neutral\n\n<!-- slide template=section -->\n## Catalysts\n\n<!-- slide -->\n## Why nothing shifts\nA catalyst speeds up both directions equally.\n";
+  // round 5: the section template renders its `#` title (and any other text) but NOT a `##` line — orz-slides' own
+  // renderer decides (printed.mjs slideRegionsShown) — so the section titles here are `#`, as the frame prints them
+  const deck = "<!-- slide template=section -->\n# Electrons flow from anode to cathode\n\n<!-- slide template=section -->\n# The salt bridge keeps both half-cells neutral\n\n<!-- slide template=section -->\n# Catalysts\n\n<!-- slide -->\n## Why nothing shifts\nA catalyst speeds up both directions equally.\n";
   const units = segmentDeliverable(deck, "slides/x.md").units;
-  assert.deepEqual(units.map((u) => u.text), ["## Electrons flow from anode to cathode", "## The salt bridge keeps both half-cells neutral", "A catalyst speeds up both directions equally."]);
+  assert.deepEqual(units.map((u) => u.text), ["# Electrons flow from anode to cathode", "# The salt bridge keeps both half-cells neutral", "A catalyst speeds up both directions equally."]);
   assert.ok(units.slice(0, 2).every((u) => u.role === "framing" && u.form === "heading"), "a section slide's heading is framing: read for off-plan content");
+  // a `##` on a section slide prints nothing: no unit when it is a label, content-hidden when it is more
+  const sub = "<!-- slide template=section -->\n# Part one\n## Electrons flow from anode to cathode\n\n<!-- slide -->\n## Why\nText.\n";
+  assert.ok(!segmentDeliverable(sub, "slides/x.md").units.some((u) => /Electrons/.test(u.text)));
+  assert.deepEqual(hiddenInText(sub, "slides/x.md"), []);
+  const long = sub.replace("## Electrons flow from anode to cathode", "## Electrons flow from the anode to the cathode. The salt bridge keeps the cell neutral.");
+  assert.match(hiddenInText(long, "slides/x.md").map((h) => h.what).join("\n"), /a heading that prints nothing \("## Electrons flow[^]*the section template does not render this line of @body/);
 });
 
 test("[req.control.printed-by-parser] C3-04: prose inside a `:::: tabs` group but outside every tab, and a `::: spoil` label that is no label, print — each is a unit", (t) => {

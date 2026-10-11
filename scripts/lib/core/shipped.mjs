@@ -86,8 +86,10 @@ export function hiddenInText(text, file) {
     // EVERY line of a unit must print (round 4): a link reference definition on a paragraph's first line, or a line
     // the frame drops, is text the review reads and no student sees, even when the unit's other lines print
     const dark = []; for (let k = u.startLine - 1; k < u.endLine; k++) if (lines[k]?.trim() && !m.printed.has(k)) dark.push(k);
-    if (dark.length && dark.length === lines.slice(u.startLine - 1, u.endLine).filter((l) => l.trim()).length) out.push({ file, line: u.startLine, what: `a ${u.form} that prints nothing ("${u.text.replace(/\s+/g, " ").slice(0, 60)}")` });
-    else if (dark.length) out.push({ file, line: dark[0] + 1, what: `a line of a ${u.form} that prints nothing ("${lines[dark[0]].trim().slice(0, 60)}")` });
+    // the frame's own reason, where it dropped the line (a slide region it does not show: round 5, CONTROL C1-01/02)
+    const why = dark.map((k) => m.dropped?.get(k)).find(Boolean), because = why ? ` — ${why}` : "";
+    if (dark.length && dark.length === lines.slice(u.startLine - 1, u.endLine).filter((l) => l.trim()).length) out.push({ file, line: u.startLine, what: `a ${u.form} that prints nothing ("${u.text.replace(/\s+/g, " ").slice(0, 60)}")${because}` });
+    else if (dark.length) out.push({ file, line: dark[0] + 1, what: `a line of a ${u.form} that prints nothing ("${lines[dark[0]].trim().slice(0, 60)}")${because}` });
   }
   return out;
 }

@@ -6,6 +6,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
+import { SLIDE_REGION_MARKER, SLIDE_RESERVED_REGIONS } from "./printed.mjs";
 
 const require = createRequire(import.meta.url);
 let defs = null;
@@ -28,7 +29,8 @@ export async function frameworkDefinitions() {
 const DECK_KEYS = new Set(["title", "theme", "ratio", "author", "footer", "transition"]);
 const TEMPLATES = { title: 6, section: 4, outline: 3, closing: 3 };
 const PRESETS = { "2col": ["left", "right"], "3col": ["left", "mid", "right"], "2row": ["top", "bottom"], "main-side": ["main", "side"], quad: ["tl", "tr", "bl", "br"] };
-const RESERVED = new Set(["notes", "footer"]);
+// routed to fields of their own by orz-slides (compared lowercased, as it does); `float` is positioned, not a layout leaf
+const RESERVED = new Set(SLIDE_RESERVED_REGIONS.filter((n) => n !== "float"));
 const TRACK = /^(?:auto|\d+(?:\.\d+)?(?:fr|%|px)?)(?:\/(?:auto|\d+(?:\.\d+)?(?:fr|%|px)?))*$/;
 
 /** Parse a raw split ("col 2/1 { a; row 1/1 { b; c } }") into its leaf region names, or throw. */
@@ -47,7 +49,8 @@ export function splitLeaves(src) {
       if (items !== tracks.split("/").length) throw new Error(`${w} ${tracks} has ${tracks.split("/").length} track(s) but ${items} item(s)`);
       return leaves;
     }
-    if (!/^[a-z][a-z0-9-]*$/.test(w)) throw new Error(`"${w}" is not a region name`);
+    // the frame's region-name grammar (slide-parser.js readName): letters, digits, "_" and "-"
+    if (!/^[A-Za-z0-9_-]+$/.test(w)) throw new Error(`"${w}" is not a region name`);
     return [w];
   };
   const leaves = item(); ws();
@@ -65,7 +68,11 @@ export function checkSlidesNotation(text, d) {
   let decks = 0, slide = null;
   const closeSlide = () => {
     if (!slide) return;
-    for (const r of slide.regions) if (!slide.leaves.includes(r.name) && !RESERVED.has(r.name)) add(r.line, `region @${r.name} is not a region of this slide's layout (${slide.leaves.join(", ") || "single region"})`);
+    for (const r of slide.regions.filter((x) => !x.float)) if (!slide.leaves.includes(r.name) && !RESERVED.has(r.name.toLowerCase())) add(r.line, `region @${r.name} is not a region of this slide's layout (${slide.leaves.join(", ") || "single region"}): orz-slides drops it`);
+    // orz-slides keeps the LAST chunk of a region name (round 5, CONTROL C1-01): an earlier one never shows
+    // content before the first marker fills the layout's first region (orz-slides parseRegions)
+    const seen = new Map(slide.leading ? [[slide.leaves[0], slide.leading]] : []);
+    for (const r of slide.regions.filter((x) => !x.float && x.name.toLowerCase() !== "notes")) { const k = RESERVED.has(r.name.toLowerCase()) ? r.name.toLowerCase() : r.name; if (seen.has(k)) add(seen.get(k), `region @${r.name} appears again on line ${r.line} of this slide: orz-slides shows only the last one, so this one is dropped`); seen.set(k, r.line); }
   };
   for (let n = 0; n < lines.length; n++) {
     const t = lines[n].trim();
@@ -108,11 +115,19 @@ export function checkSlidesNotation(text, d) {
           try { leaves = splitLeaves(rest); } catch (e) { add(n + 1, `layout: ${e.message}`); }
         } else vocab(n + 1, `layout or option "${first}" is not known to the installed orz-slides`);
       }
-      slide = { line: n + 1, leaves, regions: [] };
+      slide = { line: n + 1, leaves, regions: [], template: !!opts.template, leading: null, content: false };
       continue;
     }
-    const rm = /^<!--\s*@([a-z][a-z0-9-]*)\b/.exec(t);
-    if (rm && rm[1] !== "float") { if (!slide) add(n + 1, `region @${rm[1]} appears before any slide`); else slide.regions.push({ name: rm[1], line: n + 1 }); }
+    // ONE region-name pattern: the frame's own marker (round 5, CONTROL C1-02: `@Aside`, `@x_y`, `@1x` were never read)
+    const rm = SLIDE_REGION_MARKER.exec(lines[n]);
+    if (rm && rm[1].toLowerCase() !== "float") { if (!slide) add(n + 1, `region @${rm[1]} appears before any slide`); else slide.regions.push({ name: rm[1], line: n + 1 }); }
+    else if (rm) { if (slide) slide.regions.push({ name: "float", line: n + 1, float: true }); }
+    else if (slide && t && !slide.regions.length) {
+      // the leading content of a normal slide, less its title (its first content line, when an h2)
+      if (!slide.content && !slide.template && /^##\s/.test(t)) { slide.content = true; continue; }
+      slide.content = true;
+      if (slide.leading == null) slide.leading = n + 1;
+    }
   }
   closeSlide();
   return P;

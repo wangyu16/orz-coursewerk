@@ -2878,6 +2878,66 @@
           "tests/redteam-r5-reader-view.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.control.visible-by-frame-render",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "What a deck shows is orz-slides' own parse and render, not a parallel grammar (core/printed.mjs slideRegionsShown): parseDeck splits each slide's regions and renderSlide, run with a recording markdown renderer, decides which reach the slide — a region named outside the layout (any name the frame accepts), a repeated region name (the frame keeps the last), anything but `body` on a template slide, and an overwritten `@footer` print nothing, and a unit read there is content-hidden with the frame's reason; a repeated `@notes` stays notes. A table row is compared with the cells markdown-it renders: text beyond the header's column count is dropped by the frame, so the row is content-hidden. The notation check reads region markers with the frame's own pattern (asserted equal to the installed orz-slides') and reports a repeated region name.",
+      "source": "3C red team round 5 (studies/p11/redteam-r5/control and coherence, 2026-10-08) C1-01, C1-02",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r5-visible.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.labels-reviewed",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A label is exempt from being a unit only when the whole label set is label-sized: a table header ROW (all its cells together), not each cell. Every label that prints and is no unit — the deck title, the `#`/`##` label headings in force, a table header over its rows, a spoil or tab label over its body — is a unit's `headings`, shown in the link review prompt (judged with the passage) and the knowledge review prompt of the content it heads; a link review is bound to the labels it was shown, and one recorded before round 5 (shown none) stands only while the labels equal the label baseline the first round-5 agent session logs.",
+      "source": "3C red team round 5 (studies/p11/redteam-r5/control and coherence, 2026-10-08) C3-01",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r5-visible.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.coherence.figure-edges",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A figure (image, mermaid, chart, structure block) and the prose that names it — \"the figure\", \"this diagram\", \"the image\", \"Figure N\", a visual description or alt text — are linked both ways by `ref:` edges bound to the full wording: the figures of the prose's section, else the nearest figure before it; \"Figure N\" also the deliverable's Nth figure. A re-check owed through the edge is shown the figure as it is now.",
+      "source": "3C red team round 5 (studies/p11/redteam-r5/control and coherence, 2026-10-08) coherence F1",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r5-visible.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.coherence.term-head-word",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A multi-word key term is also used by its distinctive word alone: a modifier of its label or alias (every word but the head noun, four letters or more, not a function word) that no other key term's label or alias shares (\"exothermic\" for \"exothermic reaction\"; never \"reaction\" or \"equilibrium\"), within the chapter that defines it and any chapter that uses the term by its full name; such a unit carries the term edge, baselined like any key-term edge, and owes a re-check when the term is redefined.",
+      "source": "3C red team round 5 (studies/p11/redteam-r5/control and coherence, 2026-10-08) coherence F6",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r5-visible.test.mjs"
+        ]
+      }
     }
   ]
 }

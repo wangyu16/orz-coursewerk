@@ -10,8 +10,9 @@
 //   - a comment (deck header, slide marker, note) — but text after its "-->" on the same line prints, and is a unit;
 //   - a `#`/`##` heading that is a label (it names the section; a heading that reads as sentences is also a unit);
 //     `###`–`######` headings print as text and name nothing: each is a unit (form "heading");
-//   - a table's header row and separator when the table has data rows and the header cells are labels; a header-only
-//     table, or a header that reads as sentences, is a unit;
+//   - a table's header row and separator when the table has data rows and the header ROW as a whole is a label (round 5,
+//     C3-01: never cell by cell); a header-only table, or a header that reads as sentences, is a unit;
+//   - every printed label that stays structure is shown with what it heads (`headings`: labelsOver, round 5);
 //   - the credit line, only as a short single attribution line (every sentence of it a credit); a paragraph that opens
 //     "Adapted from …" and carries more is a unit;
 //   - an orz-paged settings or metadata block ({{nyml kind: document | meta}}); every other {{nyml}} block — abstract,
@@ -111,6 +112,7 @@ export function segmentDeliverable(text, deliverable) {
   const orz = printedModel(text, { frame: frameOf(deliverable, text) });
   // why each structure line is structure, and the section it stands in (read again once every unit is known)
   const why = new Map(), ctx = new Map();
+  const over = new Map(); // a unit's first line → the label line over it (a table header, a container label)
   const struct = (i, reason = "silent") => { covered.add(i); if (!why.has(i)) { why.set(i, reason); ctx.set(i, { section, role: roleFor(), slideTemplate }); } };
   const roleFor = () => (isSlides && FRAMING_TEMPLATES.has(slideTemplate)) || FRAMING_SECTION.test(sectionTitle) ? "framing" : "teaching";
   const push = (form, a, b, role = roleFor(), label = null, text = null) => {
@@ -194,7 +196,7 @@ export function segmentDeliverable(text, deliverable) {
           let k = j + 1; while (k < lines.length && !/^:::\s*$/.test(lines[k].trim())) k++;
           const label = tab[1].trim();
           const form = /^(answer|solution|worked answer)\b/i.test(label) ? "answer" : /^(q\b|q\s*\d|question|worked example|example|exercise|problem)/i.test(label) ? "question" : "callout";
-          if (k > j + 1) push(form, j + 1, k - 1, roleFor(), label); else struct(j + 1); // the tab's label ("Q 5", "Answer 5") is how the material refers to it
+          if (k > j + 1) { push(form, j + 1, k - 1, roleFor(), label); over.set(j + 1, j); } else struct(j + 1); // the tab's label ("Q 5", "Answer 5") is how the material refers to it
           if (k < lines.length) struct(k);
           j = k + 1; continue;
         }
@@ -209,7 +211,7 @@ export function segmentDeliverable(text, deliverable) {
     if (box) {
       struct(i, "label");
       let j = i + 1; while (j < lines.length && !/^:::\s*$/.test(lines[j].trim())) j++;
-      if (j > i + 1) push("callout", i + 1, j - 1);
+      if (j > i + 1) { push("callout", i + 1, j - 1); over.set(i + 1, i); }
       if (j < lines.length) struct(j);
       i = j + 1; continue;
     }
@@ -220,8 +222,10 @@ export function segmentDeliverable(text, deliverable) {
       const sep = i + 1 < j && /^\|?\s*:?-{2,}/.test(lines[i + 1].trim());
       const cells = t.replace(/^\||\|$/g, "").split("|");
       if (sep) struct(i + 1);
-      if (sep && j > i + 2 && cells.every(isLabel)) struct(i, "table-header"); else push("table-row", i, i);
-      for (let k = sep ? i + 2 : i + 1; k < j; k++) push("table-row", k, k);
+      // the header ROW is the label, not each cell (red team round 5, CONTROL C3-01: four 12-word "labels" carried a
+      // 37-word lesson): it is structure only when the whole row is label-sized; then it is shown with every row
+      if (sep && j > i + 2 && isLabel(cells.join(" "))) struct(i, "table-header"); else push("table-row", i, i);
+      for (let k = sep ? i + 2 : i + 1; k < j; k++) { push("table-row", k, k); over.set(k, i); }
       i = j; continue;
     }
     // lists: on slides a whole contiguous list is one bullet group; elsewhere each item (with continuations)
@@ -249,6 +253,7 @@ export function segmentDeliverable(text, deliverable) {
   }
   settlePrinted({ lines, units, covered, why, ctx, orz, isSlides });
   units.sort((a, b) => a.startLine - b.startLine);
+  labelsOver({ lines, units, why, orz, isSlides, over });
   return { units, covered, lineCount: lines.length };
 }
 
@@ -301,6 +306,49 @@ function settlePrinted({ lines, units, covered, why, ctx, orz, isSlides }) {
     }
     if (!heads) add("heading", k, k, lines[k], c);
   }
+}
+
+/**
+ * The printed labels over each unit (red team round 5, CONTROL C3-01): a label that prints and is no unit of its own —
+ * the deck title, the `#` and `##` label headings in force, the table header over a row, the spoil or tab label over a
+ * container's body — is read by nobody unless it is shown with the content it heads. Each unit gets `headings`: those
+ * labels, outermost first (absent when there are none). The reviews show them, and a link review is bound to them.
+ */
+function labelsOver({ lines, units, why, orz, isSlides, over }) {
+  const inUnit = new Set();
+  for (const u of units) for (let k = u.startLine - 1; k < u.endLine; k++) inUnit.add(k);
+  const label = (k) => why.has(k) && !inUnit.has(k) && orz.printed.has(k);
+  const deckTitle = (orz.deck?.values || []).find((v) => v.key === "title" && why.get(v.line) === "deck-label" && orz.printed.has(v.line));
+  const starts = new Map();
+  for (const u of units) { const k = u.startLine - 1; if (!starts.has(k)) starts.set(k, []); starts.get(k).push(u); }
+  let h1 = null, h2 = null;
+  for (let k = 0; k < lines.length; k++) {
+    const t = lines[k].trim();
+    if (isSlides && SLIDE_MARKER.test(t)) { h2 = null; if (FRAMING_TEMPLATES.has(slideTemplateOf(t))) h1 = null; }
+    for (const u of starts.get(k) || []) {
+      const l = over.get(k), heads = [];
+      if (deckTitle) heads.push(`deck title: ${deckTitle.value}`);
+      if (h1) heads.push(`# ${h1}`);
+      if (h2) heads.push(`## ${h2}`);
+      if (l != null && label(l)) heads.push(why.get(l) === "table-header" ? `table header: ${lines[l].trim()}` : orz.labels.has(l) ? `label: ${orz.labels.get(l)}` : null);
+      const list = heads.filter(Boolean);
+      if (list.length) u.headings = list;
+    }
+    const lvl = orz.headings.get(k);
+    if (lvl === 1 || lvl === 2) {
+      const text = label(k) && why.get(k) === "heading" ? t.replace(/^#{1,2}\s+/, "").replace(/\s+#+\s*$/, "").trim() : null;
+      if (lvl === 1) { h1 = text; h2 = null; } else h2 = text;
+    }
+  }
+}
+
+/** The hash of a unit's printed labels (null: none). */
+export const headingsKey = (u) => (u?.headings?.length ? sha256(JSON.stringify(u.headings)) : null);
+/** The label baseline of a package's log (records, oldest first): { [deliverable]: { [unit id]: headingsKey } }, or
+ *  null — logged by the first agent session under round 5 (units_index.mjs beginSession; read by alignment.mjs). */
+export function labelBaseline(log) {
+  for (const r of log || []) if (r?.type === "revision" && r.payload?.event === "agent-session-begin" && r.payload.labels && typeof r.payload.labels === "object") return r.payload.labels;
+  return null;
 }
 
 /** Non-blank lines that belong to no unit and no structure: must be empty (no prose is left out). */

@@ -18,6 +18,7 @@ import { loadUnits, reviewable, unitDepsHashes } from "../core/obligations.mjs";
 import { manifestChapters } from "../core/package_reader.mjs";
 import { parseSpine } from "../core/spine.mjs";
 import { questionsOf } from "../core/dependencies.mjs";
+import { headingsKey, labelBaseline } from "../core/segment.mjs";
 import { approvalStatus } from "../core/approvals.mjs";
 import { parseLog, verifyLog } from "../records/log.mjs";
 import { readDispatches, recordDispatch, reviewedPassage } from "./dispatch.mjs";
@@ -80,13 +81,34 @@ const asAccepted = (accepted) => (n) => { const a = accepted?.get(n.id); return 
  * The basis a review is recorded with (R5): the meaning key of the passage, its links, and each plan item it judges
  * (its meaning key, type and levels); an answer's review is bound to its question's meaning key too.
  */
-export const reviewBasis = (u, inp, accepted = null) => {
+export const reviewBasis = (u, inp, accepted = null) => withHeadings(u, unlabelledBasis(u, inp, accepted));
+/** The reader-view basis without the printed labels over the passage (what a review recorded before round 5 was shown). */
+export const unlabelledBasis = (u, inp, accepted = null) => {
   const b = sha256(canonicalJson(["reader", sha256(meaningKey(u.text)), [...(u.spineNodes || [])].sort(), judgedNodes(u, inp).map((n) => viewNodeKey(asAccepted(accepted)(n)))]));
   return u.form === "answer" ? sha256(canonicalJson([b, meaningKey(inp.before)])) : b;
 };
+// ---- the printed labels over a passage (red team round 5, CONTROL C3-01) ---------------------------------------------
+// A heading, table header, spoil or tab label prints over the passage it heads and is no unit of its own, so the link
+// review shows it with that passage (segment.mjs labelsOver → `u.headings`), and a review is bound to the labels it was
+// shown — read in the reader view, like the passage (cause 1). A review recorded before round 5 was shown none: it
+// stays current only while the labels are those of the package's label baseline — logged by the first agent session
+// under round 5 (`labels` in its agent-session-begin) — so a label written or changed since owes the review again; a
+// deliverable with no baseline yet keeps its reviews.
+export { headingsKey, labelBaseline };
+const withHeadings = (u, b) => (u.headings?.length ? sha256(canonicalJson(["headings", b, u.headings.map((h) => meaningKey(h))])) : b);
+/** Does a review recorded before round 5 (shown no labels) still stand for the unit as it is now? */
+export const unlabelledReviewStands = (u, baseline) => {
+  const side = baseline?.[u.locator?.deliverable];
+  return !side || (side[u.id] ?? null) === headingsKey(u);
+};
 /** Every basis under which a review recorded now is current for the unit as it is: its judged items as they are, or as
- *  the instructor last fully approved them when the change since was a confirmed light one. */
-export const currentBases = (u, inp, plan) => new Set([reviewBasis(u, inp), reviewBasis(u, inp, plan.accepted)]);
+ *  the instructor last fully approved them when the change since was a confirmed light one — with the labels shown;
+ *  and, while the labels are the baseline's, the same bases without them (reviews recorded before round 5). */
+export const currentBases = (u, inp, plan, baseline = null) => {
+  const bases = new Set([reviewBasis(u, inp), reviewBasis(u, inp, plan.accepted)]);
+  if (!u.headings?.length || unlabelledReviewStands(u, baseline)) for (const b of [unlabelledBasis(u, inp), unlabelledBasis(u, inp, plan.accepted)]) bases.add(b);
+  return bases;
+};
 
 // The keys records were written with before R5, FROZEN — read only to migrate them (reviewIsCurrent):
 // round 2–4 ("judged"): the passage's wording with whitespace, markup and ALL punctuation folded (struck text, link
@@ -116,8 +138,10 @@ export function shownBefore(prompt) {
  * has the unit's meaning key now — AND it was current under its own key for that text (its recorded basis, recomputed
  * from the passage it showed, the links and the plan items as they are now). Otherwise one cheap review is owed.
  */
-export function reviewIsCurrent(r, u, inp, plan, bases = currentBases(u, inp, plan)) {
+export function reviewIsCurrent(r, u, inp, plan, bases = currentBases(u, inp, plan), baseline = null) {
   if (bases.has(r.alignmentBasis)) return true;
+  // a record from before round 5 was shown no labels: it migrates only while the labels are the baseline's (C3-01)
+  if (u.headings?.length && !unlabelledReviewStands(u, baseline)) return false;
   const prompt = r.bundle?.prompt, shown = reviewedPassage(prompt);
   if (!shown || meaningKey(shown) !== meaningKey(u.text)) return false;
   let befores = [""];
@@ -133,7 +157,7 @@ export function reviewIsCurrent(r, u, inp, plan, bases = currentBases(u, inp, pl
 
 const guideAsk = (g) => `${g.type || "any type"} at the level "${g.levels || "unspecified"}" (${g.title})`;
 
-export function alignmentBundle({ unit, label, before, links, plan, guide, guides = null, framing = false }, nonce = randomBytes(8).toString("hex")) {
+export function alignmentBundle({ unit, label, before, links, plan, guide, guides = null, framing = false, headings = [] }, nonce = randomBytes(8).toString("hex")) {
   // one guide entry: the original wording and reply shape; several: one fidelity answer per entry, by id (C5-08)
   const many = Array.isArray(guides) && guides.length > 1;
   const one = many ? null : guide || (guides?.length === 1 ? guideAsk(guides[0]) : null);
@@ -144,6 +168,7 @@ export function alignmentBundle({ unit, label, before, links, plan, guide, guide
     ...(framing ? ["This passage is framing (an introduction, summary or closing): it is declared for nothing and needs no plan item. Say only whether it teaches subject matter that lies outside the plan (\"offPlan\": true); a short overview or recap of the plan's own topics is not off the plan."] : []),
     ...(one ? [`The passage is a practice question; its assessment guide entry asks for: ${one}. Say whether the question is that type of question, and whether it asks for that cognitive level.`] : []),
     ...(many ? ["The passage is a practice question linked to several assessment guide entries. For EACH entry, say whether the question is that type of question, and whether it asks for that cognitive level:", ...guides.map((g) => `- ${g.id}: ${guideAsk(g)}`)] : []),
+    ...(headings?.length ? ["The headings and labels printed over the passage are read by the student with it: judge them as part of the passage (a label that teaches something outside the plan makes the passage off the plan)."] : []),
     "Judge what the passage does for a student, not its wording or quality.",
     `Reply with JSON only, exactly this shape: {"nonce": "${nonce}", "links": [{"id": "...", "verdict": "yes" | "passing" | "no", "why": "..."}], "also": ["<id>"], "offPlan": false${one ? ', "fidelity": {"type": "matches" | "differs", "level": "matches" | "differs", "why": "..."}' : ""}${many ? ', "fidelity": [{"id": "...", "type": "matches" | "differs", "level": "matches" | "differs", "why": "..."}]' : ""}}`,
     "",
@@ -153,6 +178,7 @@ export function alignmentBundle({ unit, label, before, links, plan, guide, guide
     "DECLARED ITEMS",
     ...links.map((n) => `- ${n.id}`),
     ...(before ? ["", "TEXT BEFORE THE PASSAGE (context only)", String(before).trim()] : []),
+    ...(headings?.length ? ["", "HEADINGS AND LABELS PRINTED OVER THE PASSAGE (part of what the student reads with it)", ...headings.map((h) => `- ${String(h).replace(/\s+/g, " ").trim()}`)] : []),
     "",
     label ? `PASSAGE (${label})` : "PASSAGE",
     String(unit).trim(),
@@ -228,7 +254,7 @@ export async function reviewAlignment(root, reader, { verifier, only = null, onP
   for (const u of all.filter((x) => (reviewable(x) || x.role === "framing") && (!only || only.includes(x.id)))) {
     const inp = reviewInputs(u, all, plan), framing = u.role === "framing";
     if (!framing && !inp.declared.length && !inp.guides.length) continue; // links to nothing in the plan: unit-link-dangling says so
-    const bundle = alignmentBundle({ unit: u.text, label: u.label || null, before: inp.before, links: framing ? [] : inp.declared, plan: inp.chapterNodes, guides: framing ? [] : inp.guides, framing });
+    const bundle = alignmentBundle({ unit: u.text, label: u.label || null, before: inp.before, links: framing ? [] : inp.declared, plan: inp.chapterNodes, guides: framing ? [] : inp.guides, framing, headings: u.headings || [] });
     const answer = await verifier(bundle.prompt);
     const read = readAlignment(answer.raw, bundle.nonce, inp.declared.map((n) => n.id), new Set(inp.chapterNodes.map((n) => n.id)), inp.guides.map((g) => g.id));
     const basis = reviewBasis(u, inp);
@@ -247,16 +273,16 @@ export async function reviewAlignment(root, reader, { verifier, only = null, onP
  * absent from the map has no current review.
  */
 export function currentReviews(all, plan, records, log) {
-  const out = new Map(), byUnit = new Map();
+  const out = new Map(), byUnit = new Map(), baseline = labelBaseline(log);
   for (const r of records.filter((x) => x.kind === "alignment")) {
     const entry = dispatchLogEntry(r, log); if (!entry) continue;
     byUnit.set(r.unit, [...(byUnit.get(r.unit) || []), { r, seq: Number(entry.seq ?? 0) }]);
   }
   for (const u of all) {
     const recs = byUnit.get(u.id); if (!recs || !(reviewable(u) || u.role === "framing")) continue;
-    const inp = reviewInputs(u, all, plan), bases = currentBases(u, inp, plan);
+    const inp = reviewInputs(u, all, plan), bases = currentBases(u, inp, plan, baseline);
     const declared = inp.declared.map((n) => n.id), guides = inp.guides.map((g) => g.id), known = new Set(inp.chapterNodes.map((n) => n.id));
-    for (const { r } of recs.filter(({ r }) => reviewIsCurrent(r, u, inp, plan, bases)).sort((a, b) => b.seq - a.seq)) {
+    for (const { r } of recs.filter(({ r }) => reviewIsCurrent(r, u, inp, plan, bases, baseline)).sort((a, b) => b.seq - a.seq)) {
       const v = readAlignment(r.answer?.raw, r.bundle?.nonce, declared, known, r.guides ? guides : guides.length ? true : []);
       if (v) { out.set(u.id, { verdicts: new Map(v.links.map((l) => [l.id, l.verdict])), offPlan: v.offPlan, fidelity: v.fidelity, dispatch: r.dispatch }); break; }
     }
