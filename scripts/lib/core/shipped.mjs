@@ -1,11 +1,13 @@
 // What ships, and whether it was checked: ONE computation for the pack and the gate (D42; red team round 2, CONTROL
 // C3-04, C3-07). The pack ships every file of the package except carrier shells, the records a publish rewrites, and
-// the chapter files of chapters it does not publish. Every markdown file among them must be something the harness
-// reads: a deliverable (a chapter's study guide, slides or practice, or a document declared in DOCUMENTS.json — each
-// segmented, linked and reviewed), the spine (approved by the instructor), a document the instructor confirmed as
-// administrative, or a harness record under metadata/. And a `{{md …}}` include (orz-markdown's markdown-include,
-// aliases `markdown`, `md`, `md-include`) renders another file into the one that names it, so its target must itself
-// be a deliverable — read on its own — or the include is refused.
+// the chapter files of chapters it does not publish. Every file among them must be something the harness reads: a
+// deliverable (a chapter's study guide, slides or practice, or a document declared in DOCUMENTS.json — each segmented,
+// linked and reviewed), the spine (approved by the instructor), a document the instructor confirmed as administrative,
+// a harness record NAMED EXACTLY (round 6, C3-04: never "anything under metadata/"), or media that carries no text
+// (images, sound, video, fonts). Any other file — markdown or not (html, txt, svg, pdf …) — is refused. And a
+// `{{md …}}` include (orz-markdown's markdown-include, aliases `markdown`, `md`, `md-include`) renders another file
+// into the one that names it, so its target must itself be a deliverable — read on its own — and must print nothing
+// under the includer's frame that its own reading leaves out (round 6, C3-03), or the include is refused.
 import fs from "node:fs";
 import path from "node:path";
 import { isCarrierPath } from "../contract.mjs";
@@ -94,26 +96,94 @@ export function hiddenInText(text, file) {
   return out;
 }
 
+// ---- what ships equals what is read (red team round 6, CONTROL C3-04) ----------------------------------------------
+// A file is exempt from being read only as a HARNESS RECORD named exactly — a known record file, or a record path of a
+// known shape — never by its folder: `metadata/further-reading.md` is no record. The records and why each is exempt:
+/** Record files, by exact path: the harness's own JSON records, the generated attribution (assurance.mjs requires it to
+ *  equal what PROVENANCE.json generates), the package manifest and the root files the Alembic contract allows (LICENSE
+ *  is checked as the exact canonical licence text; CITATION.cff and .gitignore print nothing a student reads). */
+export const RECORD_FILES = Object.freeze(new Set([
+  "alembic.json", "LICENSE", "CITATION.cff", ".gitignore",
+  "metadata/ATTRIBUTION.md", "metadata/CLAIMS.json", "metadata/COMPONENT_INDEX.json", "metadata/DOCUMENTS.json", "metadata/FOUNDATION.json",
+  "metadata/KEY_FACT_REVIEW.json", "metadata/LINK_RESOLUTIONS.json", "metadata/LOG.jsonl", "metadata/MEDIA_PLAN.json", "metadata/OVERRIDES.json",
+  "metadata/PROVENANCE.json", "metadata/REFERENCE_RECORD.json", "metadata/REVIEW_QUEUE.json", "metadata/SOURCE_RECORD.json", "metadata/SPINE.json",
+  "metadata/STEERING.json", "metadata/TERMS.json", "metadata/VISUAL_REVIEW.json", "metadata/coursewerk.json", "metadata/modules.json",
+]));
+/** Record paths, by shape: unit sidecars, review dispatches, claim records, preflight receipts, spine origins and
+ *  reviews, auto-corrections — each a JSON record the harness writes and reads back. */
+export const RECORD_PATHS = Object.freeze([
+  /^metadata\/units\/(?:[^/]+\/)*[^/]+\.md\.json$/, /^metadata\/verification\/[^/]+\.json$/, /^metadata\/claims\/(?:[^/]+\/)*[^/]+\.json$/,
+  /^metadata\/preflight\/[^/]+\.json$/, /^metadata\/spine\/(?:[^/]+\/)*[^/]+\.origins\.json$/, /^metadata\/spine\/(?:review|critique)\/[^/]+\.json$/,
+  /^metadata\/corrections\/[^/]+\.json$/,
+]);
+/** Media whose content is pixels or sound, never text a student reads as prose (an image's words are the visual
+ *  review's: VISUAL_REVIEW.json). Every other file that ships can carry text, and is read or refused. */
+export const MEDIA_EXTENSIONS = Object.freeze(new Set(["png", "jpg", "jpeg", "gif", "webp", "avif", "bmp", "ico", "mp3", "ogg", "oga", "wav", "flac", "m4a", "mp4", "webm", "ogv", "mov", "woff", "woff2", "ttf", "otf"]));
+/** The rights-evidence snapshots a record names (`evidenceSnapshot` in FOUNDATION.json, SOURCE_RECORD.json,
+ *  MEDIA_PLAN.json or PROVENANCE.json; assurance.mjs binds each to its sha256): only those are records. */
+export function namedEvidence(reader) {
+  const out = new Set();
+  const walk = (v) => { if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) { if (k === "evidenceSnapshot" && typeof x === "string") out.add(path.posix.normalize(x.replace(/\\/g, "/"))); else walk(x); } };
+  for (const rel of ["metadata/FOUNDATION.json", "metadata/SOURCE_RECORD.json", "metadata/MEDIA_PLAN.json", "metadata/PROVENANCE.json"]) { try { walk(JSON.parse(reader.text(rel) || "null")); } catch { /* an unreadable record names nothing */ } }
+  return new Set([...out].filter((r) => /^metadata\/evidence\/[^/]+$/.test(r)));
+}
+const isMarkdown = (r) => /\.(?:md|markdown)$/i.test(r);
+/** Is a shipped file a harness record, named exactly? */
+export const isHarnessRecord = (rel, evidence = new Set()) => RECORD_FILES.has(rel) || RECORD_PATHS.some((re) => re.test(rel)) || evidence.has(rel);
+
+/** The frame a file's text renders in when another file includes it: orz-markdown renders it as page content wherever
+ *  it lands (in a page, in a slide region), and orz-paged prints its curated elements too. */
+const includedFrame = (includer, text) => (frameOf(includer, text) === "paged" ? "paged" : "page");
 /**
- * What would ship unchecked (opts as shippedFiles): { documents: [rel] — shipped markdown nobody reads; includes:
- * [{ file, line, target, resolved }] — an include whose target is not a deliverable }.
+ * What an include prints that its target's own reading does not (red team round 6, CONTROL C3-03): the target is read
+ * on its own under ITS frame (a deck under orz-slides, where speaker notes are the presenter's and no unit), but the
+ * include renders it under the INCLUDER's — where `<!-- @notes -->` is a comment and the notes are paragraphs, a
+ * dropped slide region prints, a deck's text before its first slide prints. Every line that prints there and not
+ * there is text no check read: [0-based line] (empty: the include prints nothing its target's reading left out).
+ */
+export function printedOnlyWhenIncluded(includer, includerText, target, targetText) {
+  const own = printedModel(targetText, { frame: frameOf(target, targetText) }).printed;
+  const there = printedModel(targetText, { frame: includedFrame(includer, includerText) }).printed;
+  const lines = String(targetText ?? "").split("\n");
+  return [...there].filter((k) => !own.has(k) && lines[k]?.trim()).sort((a, b) => a - b);
+}
+
+/**
+ * What would ship unchecked (opts as shippedFiles): { documents: [rel] — a shipped file nobody reads: markdown that is
+ * no deliverable, spine, administrative document or named record, and any other file that can carry text (html, txt,
+ * svg, pdf, json outside the named records …); includes: [{ file, line, target, resolved, why? }] — an include whose target is not a deliverable, or that
+ * prints, under the includer's frame, text the target's own reading leaves out }.
  */
 export function uncheckedShipped(root, reader, opts = {}) {
   const chapters = manifestChapters(reader);
   const deliverables = new Set(deliverablesOf(reader));
   const spine = new Set([COURSE_MAP, ...chapters.flatMap((c) => Object.values(spinePaths(c)))]);
   const admin = administrativeDocuments(reader);
-  const { files } = shippedFiles(root, opts);
-  const md = files.filter((r) => /\.(?:md|markdown)$/i.test(r));
-  const documents = md.filter((r) => !deliverables.has(r) && !spine.has(r) && !admin.has(r) && !r.startsWith("metadata/"));
+  const evidence = namedEvidence(reader);
+  const { files: shipped } = shippedFiles(root, opts);
+  const md = shipped.filter((r) => /\.(?:md|markdown)$/i.test(r));
+  // exempt by exact record name only (round 6, C3-04): a markdown file under metadata/ is read like any other
+  const documents = md.filter((r) => !deliverables.has(r) && !spine.has(r) && !admin.has(r) && !isHarnessRecord(r, evidence));
+  const ext = (r) => (/\.([^./]+)$/.exec(r)?.[1] || "").toLowerCase();
+  const files = shipped.filter((r) => !/\.(?:md|markdown)$/i.test(r) && !isHarnessRecord(r, evidence) && !MEDIA_EXTENSIONS.has(ext(r)));
   const includes = [];
   for (const file of md) {
-    for (const inc of includesOf(reader.text(file))) {
+    const text = reader.text(file);
+    for (const inc of includesOf(text)) {
       const resolved = /^[a-z]+:\/\//i.test(inc.target) || path.isAbsolute(inc.target) ? null : path.posix.normalize(path.posix.join(path.posix.dirname(file), inc.target));
-      if (!resolved || resolved.startsWith("..") || !deliverables.has(resolved)) includes.push({ file, line: inc.line, target: inc.target, resolved });
+      if (!resolved || resolved.startsWith("..") || !deliverables.has(resolved)) { includes.push({ file, line: inc.line, target: inc.target, resolved }); continue; }
+      // read under the includer's frame (round 6, C3-03): an include that prints what its target's own reading left
+      // out is refused — its text would be read by no unit and no review
+      const targetText = reader.text(resolved), extra = printedOnlyWhenIncluded(file, text, resolved, targetText);
+      if (extra.length) {
+        const tl = String(targetText).split("\n"), notes = printedModel(targetText, { frame: frameOf(resolved, targetText) }).notes;
+        // name the speaker notes first: they are the presenter's text, printed to students as page text
+        const first = extra.find((k) => notes.has(k)) ?? extra[0];
+        includes.push({ file, line: inc.line, target: inc.target, resolved, why: `${resolved} is read under its own frame (${frameOf(resolved, targetText)}), but included here it renders as ${includedFrame(file, text)} content, which prints ${extra.length} line(s) its own reading leaves out (line ${first + 1}: "${tl[first].trim().slice(0, 60)}"${notes.has(first) ? ", a speaker note" : ""}${frameOf(resolved, targetText) === "slides" ? " — speaker notes and text the deck does not show print as paragraphs" : ""})` });
+      }
     }
   }
-  return { documents, includes };
+  return { documents: [...documents, ...files].sort(), includes };
 }
 
 /** The gate's view: each unchecked document or include, and each hidden passage, is a blocking defect for the agent. */
@@ -122,9 +192,13 @@ export function uncheckedShippedFindings(root, reader, basis) {
   return [
     ...hiddenContent(root, reader).map((x) => makeFinding({ module: "skeleton", kind: "content-hidden", units: [], statusClass: "defect", route: "agent", basis,
       evidence: { type: "rule", rule: "what is checked is what the student sees: no text hidden from the reader counts (round 3, C1-05)", file: x.file, line: x.line, detail: `${x.file} line ${x.line}: ${x.what} — it can hide text from the student that the review reads. Write it in orz-markdown (\`::: spoil <label>\` for a reveal, a container for a box), or remove it` } })),
-    ...documents.map((rel) => makeFinding({ module: "skeleton", kind: "document-unchecked", units: [], statusClass: "defect", route: "agent", basis,
+    ...documents.filter(isMarkdown).map((rel) => makeFinding({ module: "skeleton", kind: "document-unchecked", units: [], statusClass: "defect", route: "agent", basis,
       evidence: { type: "rule", rule: "everything that ships is checked (D42)", file: rel, detail: `${rel} would ship, but nothing reads it: declare it in metadata/DOCUMENTS.json (it is then segmented, linked and reviewed like a study guide), or move it out of the package` } })),
+    ...documents.filter((r) => !isMarkdown(r)).map((rel) => makeFinding({ module: "skeleton", kind: "document-unchecked", units: [], statusClass: "defect", route: "agent", basis,
+      evidence: { type: "rule", rule: "what ships is what is read: a file that can carry text is read or refused, wherever it ships from (round 6, C3-04)", file: rel, detail: `${rel} would ship, and it can carry text a student reads, but nothing reads it (only markdown deliverables, the spine and named harness records are read): write it as a markdown document declared in metadata/DOCUMENTS.json, or move it out of the package` } })),
     ...includes.map((x) => makeFinding({ module: "skeleton", kind: "include-unchecked", units: [], statusClass: "defect", route: "agent", basis,
-      evidence: { type: "rule", rule: "an include renders another file into the deliverable: it must be a deliverable itself (D42)", file: x.file, line: x.line, detail: `${x.file} line ${x.line} includes "${x.target}"${x.resolved ? ` (${x.resolved})` : ""}, which is not a deliverable the harness reads: declare it in metadata/DOCUMENTS.json, or write its content into ${x.file}` } })),
+      evidence: x.why
+        ? { type: "rule", rule: "an included file is read under the includer's frame: an include that prints what its target's own reading leaves out is refused (round 6, C3-03)", file: x.file, line: x.line, detail: `${x.file} line ${x.line} includes "${x.target}": ${x.why}. Write the content you want shown into ${x.file}, or include a document read under the same frame` }
+        : { type: "rule", rule: "an include renders another file into the deliverable: it must be a deliverable itself (D42)", file: x.file, line: x.line, detail: `${x.file} line ${x.line} includes "${x.target}"${x.resolved ? ` (${x.resolved})` : ""}, which is not a deliverable the harness reads: declare it in metadata/DOCUMENTS.json, or write its content into ${x.file}` } })),
   ];
 }

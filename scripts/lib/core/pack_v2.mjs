@@ -34,7 +34,7 @@ export function packPublished(pkg, outDir) {
   // what ships is what the gate checked: one computation (shipped.mjs; red team round 2, C3-04, C3-07)
   const unchecked = uncheckedShipped(pkg, liveReader(pkg), { keep, course: !!pub.course });
   if (unchecked.documents.length || unchecked.includes.length)
-    return { ok: false, error: `refusing to pack what nothing checked: ${[...unchecked.documents.map((r) => `${r} (not a declared document)`), ...unchecked.includes.map((x) => `${x.file} includes ${x.target} (not a deliverable)`)].join("; ")} — declare each in metadata/DOCUMENTS.json, or remove it` };
+    return { ok: false, error: `refusing to pack what nothing checked: ${[...unchecked.documents.map((r) => `${r} (not a declared document)`), ...unchecked.includes.map((x) => `${x.file} includes ${x.target} (${x.why || "not a deliverable"})`)].join("; ")} — declare each in metadata/DOCUMENTS.json, or remove it` };
   const hidden = hiddenContent(pkg, liveReader(pkg), { keep });
   if (hidden.length) return { ok: false, error: `refusing to pack text hidden from the student: ${hidden.map((x) => `${x.file} line ${x.line} (${x.what})`).join("; ")}` };
   const work = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-pack-"));

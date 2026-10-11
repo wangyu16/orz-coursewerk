@@ -26,7 +26,7 @@ import { sha256 } from "../records/canonical.mjs";
 import { unitsPathFor, recordFile } from "../records/paths.mjs";
 import { JUDGMENT_KINDS, validateUnitSidecar } from "../records/units.mjs";
 import { makeFinding } from "../records/findings.mjs";
-import { DELIVERABLE_DIRS, classifyUnit, derivedRole, headingsKey, labelBaseline, segmentDeliverable, slugify, tokensOf, unitHash } from "./segment.mjs";
+import { DELIVERABLE_DIRS, classifyUnit, creditBaseline, creditKey, derivedRole, headingsKey, labelBaseline, segmentDeliverable, slugify, tokensOf, unitHash } from "./segment.mjs";
 import { manifestChapters } from "./package_reader.mjs";
 import { loadUnits, migrateUnitRecords, upgradeStamps } from "./obligations.mjs";
 import { assertUnaltered, upgradeUnitRecordDigests, writeUnitRecords } from "./unit_records.mjs";
@@ -209,8 +209,8 @@ export function beginSession(root, reader, party, { step = "authoring" } = {}) {
   try { upgradeUnitRecordDigests(root); } catch { /* a broken log: the gate reports it */ }
   try { migrateUnitRecords(root, reader); } catch { /* an altered record or a broken log: the gate reports it */ }
   try { upgradeStamps(root, reader); } catch { /* an unindexed or partial package: indexing reports it */ }
-  const baseline = {};
-  for (const rel of deliverablesOf(reader)) baseline[rel] = segmentDeliverable(reader.text(rel), rel).units.map((s) => unitHash(s.text));
+  const baseline = {}, credited = {};
+  for (const rel of deliverablesOf(reader)) { const seg = segmentDeliverable(reader.text(rel), rel).units; baseline[rel] = seg.map((s) => unitHash(s.text)); credited[rel] = creditKey(seg.find((s) => s.credit)?.credit); }
   // the label baseline (red team round 5, CONTROL C3-01): the first session under round 5 logs the printed labels over
   // every indexed unit — a link review recorded before then was shown none, and stands only while they are unchanged
   let labels;
@@ -223,7 +223,11 @@ export function beginSession(root, reader, party, { step = "authoring" } = {}) {
       for (const u of units) if (u.headings?.length) labels[u.locator.deliverable][u.id] = headingsKey(u);
     }
   } catch { labels = undefined; /* a broken log or index: the gate reports it */ }
-  return appendLogRecord(root, { type: "revision", party, payload: { event: "agent-session-begin", step, baseline, ...(labels ? { labels } : {}) } });
+  // the credit baseline (red team round 6, CONTROL C3-01): the first session under round 6 logs each deliverable's credit
+  // line — a review recorded before then was shown none, and stands only while it is unchanged
+  let credits;
+  try { if (!creditBaseline(parseLog(readLogText(root)))) credits = credited; } catch { credits = undefined; }
+  return appendLogRecord(root, { type: "revision", party, payload: { event: "agent-session-begin", step, baseline, ...(labels ? { labels } : {}), ...(credits ? { credits } : {}) } });
 }
 
 /**

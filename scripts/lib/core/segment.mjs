@@ -14,9 +14,12 @@
 //     C3-01: never cell by cell); a header-only table, or a header that reads as sentences, is a unit;
 //   - every printed label that stays structure is shown with what it heads (`headings`: labelsOver, round 5);
 //   - the credit line, only as a short single attribution line (every sentence of it a credit); a paragraph that opens
-//     "Adapted from …" and carries more is a unit;
-//   - an orz-paged settings or metadata block ({{nyml kind: document | meta}}); every other {{nyml}} block — abstract,
-//     question-open, exam-title … — is an element the frame prints, and is a unit;
+//     "Adapted from …" and carries more is a unit. It prints, so it is shown with every unit it credits (`credit`,
+//     round 6, C3-01) — read by every link and framing review of the deliverable, never by no one;
+//   - an orz-paged settings or metadata block ({{nyml kind: document | meta}}) — less the values its frame PRINTS (round 6,
+//     C3-02): an orz-paged running header or footer and the head metadata (title, author, description) are each a
+//     framing unit (a label-sized metadata title is a label, like the deck title); every other {{nyml}} block —
+//     abstract, question-open, exam-title … — is an element the frame prints, and is a unit;
 //   - the list items of the deliverable's restated "Learning objectives" (read in full by the restated-objective check).
 //
 // WHAT PRINTS IS THE PARSER'S CALL (red team round 3, CONTROL C3-03/04/06): the segmenter's line grammar decides where
@@ -135,7 +138,16 @@ export function segmentDeliverable(text, deliverable) {
     const nb = orz.blocks.get(i);
     if (/^\{\{nyml\b/.test(t) && nb?.name === "nyml") {
       const end = nb.end, kind = nymlKind(lines.slice(i, end + 1).map((l, k) => (k === end - i ? l.slice(0, l.indexOf("}}")) : l)));
-      if (NYML_NOTATION_KINDS.includes(kind) || !kind) { for (let k = i; k <= end; k++) struct(k); }
+      if (NYML_NOTATION_KINDS.includes(kind) || !kind) {
+        for (let k = i; k <= end; k++) struct(k);
+        // the settings values the frame PRINTS are read (round 6, C3-02): an orz-paged running header or footer (on every
+        // page) and the head metadata are each a framing unit, owing the off-plan read; a metadata title (the tab) is a
+        // label when it reads as one, shown with every unit like the deck title
+        for (const v of orz.settings.filter((x) => x.start >= i && x.end <= end)) {
+          if (v.kind === "meta" && v.key === "title" && isLabel(v.value)) { why.set(v.start, "meta-label"); continue; }
+          push("paragraph", v.start, v.end, "framing", null, v.value);
+        }
+      }
       else push(/^question-/.test(kind) ? "question" : "element", i, end, roleFor(), kind);
       i = end + 1; continue;
     }
@@ -276,7 +288,7 @@ function settlePrinted({ lines, units, covered, why, ctx, orz, isSlides }) {
   for (let n = 0; n < struck.length; n++) {
     const k = struck[n], reason = why.get(k);
     if (inUnit.has(k)) continue;
-    if (reason === "restated" || reason === "table-header" || reason === "deck-label") continue;
+    if (reason === "restated" || reason === "table-header" || reason === "deck-label" || reason === "meta-label") continue;
     if (reason === "heading" || reason === "credit" || reason === "label") { later.push(k); continue; }
     const [a, b] = orz.leaf.get(k) || [k, k];
     let e = k; while (e + 1 <= b && why.has(e + 1) && !inUnit.has(e + 1) && !["heading", "credit", "label", "restated", "table-header"].includes(why.get(e + 1))) e++;
@@ -319,6 +331,12 @@ function labelsOver({ lines, units, why, orz, isSlides, over }) {
   for (const u of units) for (let k = u.startLine - 1; k < u.endLine; k++) inUnit.add(k);
   const label = (k) => why.has(k) && !inUnit.has(k) && orz.printed.has(k);
   const deckTitle = (orz.deck?.values || []).find((v) => v.key === "title" && why.get(v.line) === "deck-label" && orz.printed.has(v.line));
+  const metaTitle = (orz.settings || []).find((v) => v.kind === "meta" && v.key === "title" && why.get(v.start) === "meta-label" && orz.printed.has(v.start));
+  // the credit line (round 6, C3-01): the one attribution that stays structure prints, and credits the whole deliverable,
+  // so it is shown with every unit of it (`credit`, kept apart from `headings`: a review is bound to it — see
+  // alignment.mjs — without moving the round-5 label baseline)
+  const creditLine = [...why.keys()].find((k) => why.get(k) === "credit" && !inUnit.has(k) && orz.printed.has(k));
+  const credit = creditLine === undefined ? null : lines[creditLine].trim();
   const starts = new Map();
   for (const u of units) { const k = u.startLine - 1; if (!starts.has(k)) starts.set(k, []); starts.get(k).push(u); }
   let h1 = null, h2 = null;
@@ -328,6 +346,8 @@ function labelsOver({ lines, units, why, orz, isSlides, over }) {
     for (const u of starts.get(k) || []) {
       const l = over.get(k), heads = [];
       if (deckTitle) heads.push(`deck title: ${deckTitle.value}`);
+      if (metaTitle) heads.push(`document title: ${metaTitle.value}`);
+      if (credit) u.credit = credit;
       if (h1) heads.push(`# ${h1}`);
       if (h2) heads.push(`## ${h2}`);
       if (l != null && label(l)) heads.push(why.get(l) === "table-header" ? `table header: ${lines[l].trim()}` : orz.labels.has(l) ? `label: ${orz.labels.get(l)}` : null);
@@ -342,6 +362,14 @@ function labelsOver({ lines, units, why, orz, isSlides, over }) {
   }
 }
 
+/** The key of a credit line as printed (null: none) — the exact line, so any change of it is a change. */
+export const creditKey = (credit) => (credit ? sha256(String(credit).trim()) : null);
+/** The credit baseline of a package's log: { [deliverable]: creditKey|null }, or null — logged by the first agent
+ *  session under round 6 (units_index.mjs beginSession; read by alignment.mjs). */
+export function creditBaseline(log) {
+  for (const r of log || []) if (r?.type === "revision" && r.payload?.event === "agent-session-begin" && r.payload.credits && typeof r.payload.credits === "object") return r.payload.credits;
+  return null;
+}
 /** The hash of a unit's printed labels (null: none). */
 export const headingsKey = (u) => (u?.headings?.length ? sha256(JSON.stringify(u.headings)) : null);
 /** The label baseline of a package's log (records, oldest first): { [deliverable]: { [unit id]: headingsKey } }, or

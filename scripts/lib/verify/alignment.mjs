@@ -18,7 +18,7 @@ import { loadUnits, reviewable, unitDepsHashes } from "../core/obligations.mjs";
 import { manifestChapters } from "../core/package_reader.mjs";
 import { parseSpine } from "../core/spine.mjs";
 import { questionsOf } from "../core/dependencies.mjs";
-import { headingsKey, labelBaseline } from "../core/segment.mjs";
+import { creditBaseline, creditKey, headingsKey, labelBaseline } from "../core/segment.mjs";
 import { approvalStatus } from "../core/approvals.mjs";
 import { parseLog, verifyLog } from "../records/log.mjs";
 import { readDispatches, recordDispatch, reviewedPassage } from "./dispatch.mjs";
@@ -81,7 +81,7 @@ const asAccepted = (accepted) => (n) => { const a = accepted?.get(n.id); return 
  * The basis a review is recorded with (R5): the meaning key of the passage, its links, and each plan item it judges
  * (its meaning key, type and levels); an answer's review is bound to its question's meaning key too.
  */
-export const reviewBasis = (u, inp, accepted = null) => withHeadings(u, unlabelledBasis(u, inp, accepted));
+export const reviewBasis = (u, inp, accepted = null) => withCredit(u, withHeadings(u, unlabelledBasis(u, inp, accepted)));
 /** The reader-view basis without the printed labels over the passage (what a review recorded before round 5 was shown). */
 export const unlabelledBasis = (u, inp, accepted = null) => {
   const b = sha256(canonicalJson(["reader", sha256(meaningKey(u.text)), [...(u.spineNodes || [])].sort(), judgedNodes(u, inp).map((n) => viewNodeKey(asAccepted(accepted)(n)))]));
@@ -96,16 +96,37 @@ export const unlabelledBasis = (u, inp, accepted = null) => {
 // deliverable with no baseline yet keeps its reviews.
 export { headingsKey, labelBaseline };
 const withHeadings = (u, b) => (u.headings?.length ? sha256(canonicalJson(["headings", b, u.headings.map((h) => meaningKey(h))])) : b);
+// The credit line (red team round 6, CONTROL C3-01) prints and credits the whole deliverable: every link and framing
+// review of it is shown the line (`credit: …` with the labels) and bound to it. A review recorded before round 6 was
+// shown none: it stands only while the deliverable's credit line is the one the credit baseline (logged by the first
+// round-6 agent session) recorded — and a package with no credit baseline yet keeps its reviews, as with the labels.
+const withCredit = (u, b) => (u.credit ? sha256(canonicalJson(["credit", b, meaningKey(u.credit)])) : b);
+/** The labels a review shows over a passage: its headings, then the credit line of its deliverable. */
+export const shownLabels = (u) => [...(u.headings || []), ...(u.credit ? [`credit line: ${u.credit}`] : [])];
+/** The baselines a review recorded before a round is read against: { labels (round 5), credits (round 6) }. */
+export const reviewBaselines = (log) => ({ labels: labelBaseline(log), credits: creditBaseline(log) });
+const labelsOf = (baseline) => (baseline && ("labels" in baseline || "credits" in baseline) ? baseline.labels : baseline);
 /** Does a review recorded before round 5 (shown no labels) still stand for the unit as it is now? */
 export const unlabelledReviewStands = (u, baseline) => {
-  const side = baseline?.[u.locator?.deliverable];
+  const side = labelsOf(baseline)?.[u.locator?.deliverable];
   return !side || (side[u.id] ?? null) === headingsKey(u);
 };
+/** Does a review recorded before round 6 (shown no credit line) still stand for the unit as it is now? */
+export const uncreditedReviewStands = (u, baseline) => {
+  if (!u.credit) return true;
+  const credits = baseline && "credits" in baseline ? baseline.credits : null;
+  if (!credits) return true;
+  const rel = u.locator?.deliverable;
+  return Object.hasOwn(credits, rel) && credits[rel] === creditKey(u.credit);
+};
 /** Every basis under which a review recorded now is current for the unit as it is: its judged items as they are, or as
- *  the instructor last fully approved them when the change since was a confirmed light one — with the labels shown;
- *  and, while the labels are the baseline's, the same bases without them (reviews recorded before round 5). */
+ *  the instructor last fully approved them when the change since was a confirmed light one — with the labels and the
+ *  credit line shown; while the credit line is the baseline's, the same without it (reviews recorded before round 6);
+ *  and, while the labels are the baseline's too, without either (reviews recorded before round 5). */
 export const currentBases = (u, inp, plan, baseline = null) => {
   const bases = new Set([reviewBasis(u, inp), reviewBasis(u, inp, plan.accepted)]);
+  if (!uncreditedReviewStands(u, baseline)) return bases;
+  for (const acc of [null, plan.accepted]) bases.add(withHeadings(u, unlabelledBasis(u, inp, acc)));
   if (!u.headings?.length || unlabelledReviewStands(u, baseline)) for (const b of [unlabelledBasis(u, inp), unlabelledBasis(u, inp, plan.accepted)]) bases.add(b);
   return bases;
 };
@@ -142,6 +163,7 @@ export function reviewIsCurrent(r, u, inp, plan, bases = currentBases(u, inp, pl
   if (bases.has(r.alignmentBasis)) return true;
   // a record from before round 5 was shown no labels: it migrates only while the labels are the baseline's (C3-01)
   if (u.headings?.length && !unlabelledReviewStands(u, baseline)) return false;
+  if (!uncreditedReviewStands(u, baseline)) return false;
   const prompt = r.bundle?.prompt, shown = reviewedPassage(prompt);
   if (!shown || meaningKey(shown) !== meaningKey(u.text)) return false;
   let befores = [""];
@@ -254,7 +276,7 @@ export async function reviewAlignment(root, reader, { verifier, only = null, onP
   for (const u of all.filter((x) => (reviewable(x) || x.role === "framing") && (!only || only.includes(x.id)))) {
     const inp = reviewInputs(u, all, plan), framing = u.role === "framing";
     if (!framing && !inp.declared.length && !inp.guides.length) continue; // links to nothing in the plan: unit-link-dangling says so
-    const bundle = alignmentBundle({ unit: u.text, label: u.label || null, before: inp.before, links: framing ? [] : inp.declared, plan: inp.chapterNodes, guides: framing ? [] : inp.guides, framing, headings: u.headings || [] });
+    const bundle = alignmentBundle({ unit: u.text, label: u.label || null, before: inp.before, links: framing ? [] : inp.declared, plan: inp.chapterNodes, guides: framing ? [] : inp.guides, framing, headings: shownLabels(u) });
     const answer = await verifier(bundle.prompt);
     const read = readAlignment(answer.raw, bundle.nonce, inp.declared.map((n) => n.id), new Set(inp.chapterNodes.map((n) => n.id)), inp.guides.map((g) => g.id));
     const basis = reviewBasis(u, inp);
@@ -273,7 +295,7 @@ export async function reviewAlignment(root, reader, { verifier, only = null, onP
  * absent from the map has no current review.
  */
 export function currentReviews(all, plan, records, log) {
-  const out = new Map(), byUnit = new Map(), baseline = labelBaseline(log);
+  const out = new Map(), byUnit = new Map(), baseline = reviewBaselines(log);
   for (const r of records.filter((x) => x.kind === "alignment")) {
     const entry = dispatchLogEntry(r, log); if (!entry) continue;
     byUnit.set(r.unit, [...(byUnit.get(r.unit) || []), { r, seq: Number(entry.seq ?? 0) }]);

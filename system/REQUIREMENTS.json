@@ -2910,6 +2910,81 @@
       }
     },
     {
+      "id": "req.control.visible-by-attribute",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Visibility is decided at the attribute level (core/printed.mjs): a container's argument that orz copies into a style or attribute (`::: left <w>`, `::: cols <tracks>`, a `::: tab` label with a quote, markup in a `::: spoil` label) is checked against values known to show (a width/track of at least a readable size, a positive fr share, auto) and otherwise is content-hidden with its body unprinted; an argument the renderer drops is content-hidden; a block plugin's argument counts as printed only if the frame renders it as text ({{toc}}, {{smiles}}, {{youtube}} take a value — a level range, one SMILES string, a video id — anything else prints nothing; a chart line under an ignored key and a mermaid comment print nothing; an [argument] these plugins never read prints nothing); a slide's attributes, read from orz-slides' own parse, are allowlisted — any class, a background colour and fit=off hide the slide; a layout track giving a region under 8% of the slide or one the harness cannot size hides that region; a float off the slide, too small, behind it (z<0) or unplaceable is hidden, and a float (opaque) painted over a filled region, the title band, the footer or an earlier float hides what lies under it.",
+      "source": "3C red team round 6, CONTROL C1–C3 conformance (studies/p11/redteam-r6/control-c13, 2026-10-11) C1-01, C1-02, C1-03",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r6-visible.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.include-read-under-includer",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "An included file is read under the includer's frame (core/shipped.mjs printedOnlyWhenIncluded): an include whose target, rendered as the includer's content, prints any line its own reading under its own frame leaves out (a deck's speaker notes or unrendered template lines printed as page text) is refused as include-unchecked, naming the first such line; an include of a document read under the same frame, or one that prints less there, is accepted.",
+      "source": "3C red team round 6, CONTROL C1–C3 conformance (studies/p11/redteam-r6/control-c13, 2026-10-11) C3-03",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r6-visible.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.printed-settings-read",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Printed settings values are read in every frame: orz-paged's running header and footer values (header_left/center/right, footer_left/center/right of the first {{nyml kind: document}} block, multi-line values included) and the head metadata of a {{nyml kind: meta}} block (author, description; a label-sized title is a label shown with every unit, otherwise a unit) are framing units owing the off-plan read; an orz-paged setting that can hide the body (custom_css, a page background, a font size, line height or margin outside the readable range) is content-hidden; a document block in a page-frame file prints nothing and is no unit.",
+      "source": "3C red team round 6, CONTROL C1–C3 conformance (studies/p11/redteam-r6/control-c13, 2026-10-11) C3-02",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r6-visible.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.credit-line-read",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The one credit line that stays structure prints and credits the whole deliverable, so every unit of the deliverable carries it (`credit`), every link/framing review prompt and knowledge review prompt shows it with the labels, and a link review is bound to it (alignment.mjs reviewBasis); a review recorded before round 6 (shown no credit line) stands only while the deliverable's credit line equals the credit baseline the first round-6 agent session logs (a package with no credit baseline yet keeps its reviews), so an edited credit line voids every review of that deliverable and owes them again. While no current review of the deliverable has read its credit line, the first reviewable unit of it owes a framing review (framing-review-owed), whatever coverage needs.",
+      "source": "3C red team round 6, CONTROL C1–C3 conformance (studies/p11/redteam-r6/control-c13, 2026-10-11) C3-01",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r6-visible.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.shipped-equals-read",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "What ships equals what is read (core/shipped.mjs): a shipped file is exempt only as a harness record named exactly — a list of known record files (the JSON records, metadata/ATTRIBUTION.md, alembic.json, LICENSE, CITATION.cff, .gitignore), record paths of known shapes (unit sidecars, verification dispatches, claim records, preflight receipts, spine origins and reviews, corrections) and the rights-evidence snapshots a record names — never by folder; every other markdown file must be a deliverable, the spine or a confirmed administrative document, and every other non-markdown file that can carry text (html, htm, txt, svg, json outside the records, any extension but image/audio/video/font media) is refused as document-unchecked wherever it ships from; the pack refuses both.",
+      "source": "3C red team round 6, CONTROL C1–C3 conformance (studies/p11/redteam-r6/control-c13, 2026-10-11) C3-04",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r6-visible.test.mjs"
+        ]
+      }
+    },
+    {
       "id": "req.coherence.figure-edges",
       "phase": "P11",
       "tiers": [

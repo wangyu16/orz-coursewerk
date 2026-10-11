@@ -171,7 +171,7 @@ export async function verifyKnowledge(root, reader, { verifier, only = null, onP
     for (const q of [...ownQs].reverse()) if (!near.includes(q) && !referenced.includes(q)) referenced.unshift(q);
     // what moved, for a unit that owes a re-check (R4 F4)
     const moved = (movedOf.get(u.id) || []).map((m) => `${m.what}:\n${m.text}`).join("\n\n");
-    const bundle = knowledgeBundle(u.text, undefined, { before: list.slice(Math.max(0, i - 2), i).map(shown).join("\n\n"), after: list[i + 1] ? shown(list[i + 1]) : "", referenced: referenced.map(shown).join("\n\n"), label: u.label || null, moved, headings: u.headings || [] });
+    const bundle = knowledgeBundle(u.text, undefined, { before: list.slice(Math.max(0, i - 2), i).map(shown).join("\n\n"), after: list[i + 1] ? shown(list[i + 1]) : "", referenced: referenced.map(shown).join("\n\n"), label: u.label || null, moved, headings: [...(u.headings || []), ...(u.credit ? [`credit line: ${u.credit}`] : [])] });
     const answer = await verifier(bundle.prompt);
     const record = recordDispatch(root, { kind: "knowledge", unit: u.id, factHash: factHash(u.text), contentHash: u.locator.contentHash, bundle, answer, deps: deps.get(u.id) });
     results.push({ unit: u.id, dispatch: record.dispatch, concerns: knowledgeConcerns(record, u.text).length, costUsd: answer.costUsd ?? null });

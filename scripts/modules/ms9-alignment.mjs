@@ -17,7 +17,7 @@
 import { classifyUnit, derivedRole, segmentDeliverable } from "../lib/core/segment.mjs";
 import { readDispatches } from "../lib/verify/dispatch.mjs";
 import { dispatchLogEntry, instructorAuthored, logRecordsOf } from "../lib/verify/verdicts.mjs";
-import { currentBases, labelBaseline, planOf, readAlignment, reviewInputs, reviewIsCurrent, reviewable } from "../lib/verify/alignment.mjs";
+import { currentBases, reviewBaselines, planOf, readAlignment, reviewInputs, reviewIsCurrent, reviewable } from "../lib/verify/alignment.mjs";
 import { base } from "./_shared.mjs";
 import { originIndex } from "../lib/core/authorship.mjs";
 
@@ -29,7 +29,7 @@ function currentUnits(s, sides = []) {
     const seg = segmentDeliverable(s.text(side.deliverable) || "", side.deliverable).units;
     if (seg.length !== side.units.length) continue;
     // the role is the segmenter's, never the sidecar's (C3-15)
-    side.units.forEach((u, i) => out.push({ ...u, form: seg[i].form, text: seg[i].text, role: derivedRole(seg[i].role, [...new Set([...classifyUnit(seg[i]), ...(u.judgmentAdded || [])])]), ...(seg[i].label ? { label: seg[i].label } : {}), headings: seg[i].headings }));
+    side.units.forEach((u, i) => out.push({ ...u, form: seg[i].form, text: seg[i].text, role: derivedRole(seg[i].role, [...new Set([...classifyUnit(seg[i]), ...(u.judgmentAdded || [])])]), ...(seg[i].label ? { label: seg[i].label } : {}), headings: seg[i].headings, ...(seg[i].credit ? { credit: seg[i].credit } : {}) }));
   }
   return out;
 }
@@ -39,7 +39,7 @@ function run(s) {
   const sides = [], all = currentUnits(s, sides), byId = new Map(all.map((u) => [u.id, u]));
   const ancestry = originIndex(sides); // whose text it is, by the one rule (authorship.mjs; red-team round 5)
   const log = logRecordsOf(s.text("metadata/LOG.jsonl"));
-  const plan = planOf(s), baseline = labelBaseline(log);
+  const plan = planOf(s), baseline = reviewBaselines(log);
   const byUnit = new Map();
   for (const r of readDispatches((p) => s.text(p), s.paths).filter((x) => x.kind === "alignment")) {
     const entry = dispatchLogEntry(r, log); if (!entry) continue; // MS8 reports a record the log does not vouch for

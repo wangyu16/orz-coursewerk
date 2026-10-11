@@ -151,7 +151,7 @@ export function loadUnits(root, reader) {
       const text = seg[i]?.text ?? "";
       const judgment = [...new Set([...classifyUnit({ form: seg[i].form, text }), ...(u.judgmentAdded || [])])];
       const locator = { ...u.locator, deliverable: rel, section: seg[i].section, ordinal: i, lines: [seg[i].startLine, seg[i].endLine] };
-      out.push({ ...u, locator, form: seg[i].form, ...(seg[i].label ? { label: seg[i].label } : {}), headings: seg[i].headings, judgment, role: derivedRole(seg[i].role, judgment), text });
+      out.push({ ...u, locator, form: seg[i].form, ...(seg[i].label ? { label: seg[i].label } : {}), headings: seg[i].headings, ...(seg[i].credit ? { credit: seg[i].credit } : {}), judgment, role: derivedRole(seg[i].role, judgment), text });
     });
   }
   return out;
@@ -884,6 +884,14 @@ export function coreObligations(root, reader, basis) {
   // off-plan content is the agent's to review (C3-07: a whole lesson under "## Introduction to …" went unread). Only an
   // explicit off-plan answer reads it (round 2, C2-13: a missing or unreadable answer left it read).
   const unreadFraming = units.filter((u) => u.role === "framing" && (!reviews.has(u.id) || reviews.get(u.id).offPlan === null));
+  // the credit line prints (red team round 6, CONTROL C3-01): every link and framing review of its deliverable is shown
+  // it and bound to it, and at least one current review must have read it — else the first reviewable unit of the
+  // deliverable owes its review (whatever coverage needs)
+  for (const rel of [...new Set(units.filter((u) => u.credit).map((u) => u.locator.deliverable))]) {
+    const own = units.filter((u) => u.locator.deliverable === rel && u.credit && (u.role === "framing" || (u.role === "teaching" && (u.spineNodes || []).length)));
+    if (own.length && !own.some((u) => reviews.has(u.id)) && !unreadFraming.some((u) => u.locator.deliverable === rel))
+      ob("framing-review-owed", [own[0].id], `a blind review that reads the credit line of ${rel} (it prints, and no current review has read it): node scripts/verify.mjs alignment --units ${own[0].id}`);
+  }
   if (unreadFraming.length) ob("framing-review-owed", unreadFraming.map((u) => u.id), `a blind review of ${unreadFraming.length} framing unit(s) for off-plan content (node scripts/verify.mjs alignment --units ${unreadFraming.map((u) => u.id).join(",")})`);
   // course-map objectives (redteam r1 C1-10; round 2 C1-10). The grammar links a chapter to the course map only through
   // [prereq: …]. A mention is not teaching: a course objective is covered only by what is TAUGHT (D41) — a chapter
