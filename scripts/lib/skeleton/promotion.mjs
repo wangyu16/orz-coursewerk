@@ -56,3 +56,22 @@ export function disableModule(root, { name, reason }, party) {
   if (!String(reason || "").trim()) throw new Error("disabling a standard module needs a reason");
   return appendLogRecord(root, { type: "module-change", party, payload: { change: "disable", module: name, reason } });
 }
+
+/**
+ * Demotions honoured (red-team round 5, the audit of F2): a package registry that lists a standard module at a LOWER
+ * maturity than the harness ships it turns its defects into questions — a setting that weakens what is checked. It
+ * counts only by the instructor's logged module-change "demote" decision, with a reason, in a verifying log.
+ */
+export function honouredDemotions(root) {
+  const text = readLogText(root);
+  if (verifyLog(text).length) return new Set();
+  return new Set(parseLog(text).filter((r) => r.type === "module-change" && r.payload?.change === "demote" && r.party?.role === "instructor" && String(r.payload?.reason || "").trim())
+    .map((r) => `${r.payload.module}:${r.payload.to}`));
+}
+
+export function demoteModule(root, { name, to, reason }, party) {
+  if (party?.role !== "instructor") throw new Error("demoting a standard module is the instructor's decision");
+  if (!["trial", "experimental"].includes(to)) throw new Error("a module is demoted to trial or experimental");
+  if (!String(reason || "").trim()) throw new Error("demoting a standard module needs a reason");
+  return appendLogRecord(root, { type: "module-change", party, payload: { change: "demote", module: name, to, reason } });
+}

@@ -2863,6 +2863,66 @@
           "tests/redteam-r4-control.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.authorship.follows-text",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Ownership follows the text, never the unit id (R5-K09, R5-K10): a unit holding words the instructor wrote — its own record, the record of any unit whose text it holds (lineage: a split, a merge, a piece or near return of a retired unit, a neighbour or new unit that took in a retired unit's words, in any form or deliverable; the retired-unit register), or the instructor's logged authorship confirmation of either — is the instructor's. Every authorship consumer asks this one rule (core/authorship.mjs): the correction guard's two-source rule, D35 acceptance, instructor-edit-unasked, claim keys and asked changes, assessment fidelity. The unit index mints the same credit into the new record (with the agent's revision on record), and no unit-record write may take the credit or drop the lineage.",
+      "source": "3C red team round 5 (studies/p11/redteam-r5/{confidence,coherence}, 2026-10-08), trust lane",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r5-trust.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.settings.bound",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A setting that changes what is checked is bound to the decision log (R5 F2): once the log shows spine v2 in force, a lowered, missing or unreadable spine setting in metadata/coursewerk.json is a blocking defect (setting-lowered) and the v2 core runs regardless; a package registry may demote a standard module only by the instructor's logged module-change decision (else unlogged-demotion, run at standard maturity); retrieval destinations and the digest size are read from the instructor's logged acts, never the file.",
+      "source": "3C red team round 5 (studies/p11/redteam-r5/{confidence,coherence}, 2026-10-08), trust lane",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r5-trust.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.carry-logged",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A self-written mark decides nothing (R5 F3): a unit record's new or changed version carry counts only through the instructor's logged units-carried record naming the unit after its record was last written, and a carry clears nothing a unit owed — what it owed is kept, so its re-check is shown what moved; a correction counts as shown only when the log shows it shown; a link counts as resolved only as the log records the resolution.",
+      "source": "3C red team round 5 (studies/p11/redteam-r5/{confidence,coherence}, 2026-10-08), trust lane",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r5-trust.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.version.scope-by-content",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A chapter scope is decided by content, never by a file name (R5 F4): a new major version carries the chapter's own deliverables, every unit linked to one of the chapter's spine nodes, every unit of a declared document that declares the chapter, and (fail-safe) every unit of a declared document linked to no chapter's node; the restated-objective check and MS7's value scope read a declared document's chapter from what it declares and links.",
+      "source": "3C red team round 5 (studies/p11/redteam-r5/{confidence,coherence}, 2026-10-08), trust lane",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r5-trust.test.mjs"
+        ]
+      }
     }
   ]
 }

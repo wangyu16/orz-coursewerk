@@ -25,7 +25,7 @@ import { spineCritique } from "./lib/core/critique.mjs";
 import { approvalPrecondition, changedSpineLines, currentSpineReview, reviewSpineChanges } from "./lib/core/spine_review.mjs";
 import { headlessVerifier } from "./lib/verify/dispatch.mjs";
 import { recordSteering } from "./lib/core/steering_intake.mjs";
-import { readConfig, writeConfig } from "./lib/records/config.mjs";
+import { boundConfig, readConfig, writeConfig } from "./lib/records/config.mjs";
 import { appendLogRecord, readLogText } from "./lib/records/log.mjs";
 import { spawnSync } from "node:child_process";
 
@@ -53,7 +53,7 @@ try {
     // leaves every chapter ASSEMBLING with no approval — nothing publishes until the instructor approves the result
     let party = null, words = null;
     if (cmd === "migrate") {
-      if (readConfig(root).spine === 2) fail("this package is already spine v2");
+      if (boundConfig(root).spine === 2) fail("this package is already spine v2 (the decision log shows it; if metadata/coursewerk.json says otherwise, restore it: git checkout -- metadata/coursewerk.json)");
       party = instructor(); words = opt("--words");
       if (!String(words || "").trim()) fail('--words "<the instructor\'s own words>" is required: a migration is the instructor\'s request');
       const st = spawnSync("git", ["-C", root, "status", "--porcelain"], { encoding: "utf8", maxBuffer: 1 << 30 });

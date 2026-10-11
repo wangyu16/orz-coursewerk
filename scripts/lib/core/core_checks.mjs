@@ -6,8 +6,8 @@ import { checkSpine, itemParts, parseSpine } from "./spine.mjs";
 import { approvalProblems, approvalStatus } from "./approvals.mjs";
 import { currentSpineReview } from "./spine_review.mjs";
 import { manifestChapters } from "./package_reader.mjs";
-import { deliverablesOf } from "./units_index.mjs";
-import { learningObjectiveSections } from "./segment.mjs";
+import { deliverablesOf, documentEntries } from "./units_index.mjs";
+import { DELIVERABLE_DIRS, learningObjectiveSections } from "./segment.mjs";
 
 export function spineCoreFindings(reader, basis) {
   const chapters = manifestChapters(reader);
@@ -47,9 +47,16 @@ export const restatedParts = (t) => { const p = itemParts(String(t)); return { k
 export function restatedObjectiveFindings(reader, basis) {
   const chapters = manifestChapters(reader), spine = parseSpine(reader, chapters), out = [];
   const defect = (kind, rel, line, detail) => out.push(makeFinding({ module: "skeleton", kind, units: [], statusClass: "defect", route: "agent", evidence: { type: "rule", rule: kind, file: rel, line, detail }, basis }));
+  const docs = new Map(documentEntries(reader).map((d) => [d.source, d]));
   for (const rel of deliverablesOf(reader)) {
-    const ch = chapters.find((c) => rel.endsWith(`/${c}.md`));
-    const objectives = (spine.chapters[ch]?.map.nodes || []).filter((n) => n.kind === "objective");
+    // the chapter is the manifest's (its own deliverables, by exact path), or what a declared document declares; a
+    // document that declares none restates SOME chapter's approved objectives (red-team round 5, the audit of F4: the
+    // chapter was taken from the file name, so a handout not named <chapter>.md was never checked at all)
+    const own = chapters.find((c) => DELIVERABLE_DIRS.some((d) => rel === `${d}/${c}.md`));
+    const doc = own ? null : docs.get(rel);
+    const chs = own ? [own] : doc ? (doc.chapters.filter((c) => chapters.includes(c)).length ? doc.chapters.filter((c) => chapters.includes(c)) : chapters) : [];
+    const ch = chs.join(", ");
+    const objectives = chs.flatMap((c) => (spine.chapters[c]?.map.nodes || []).filter((n) => n.kind === "objective"));
     const sections = learningObjectiveSections(reader.text(rel));
     if (!sections.length || !objectives.length) continue;
     const approved = new Map(objectives.map((n) => [objectiveKey(n.text), n])), restated = new Set();
@@ -58,9 +65,9 @@ export function restatedObjectiveFindings(reader, basis) {
       const p = restatedParts(it.text), n = approved.get(p.key), key = p.key;
       const groupsOk = n && !p.other && (!p.anchor || p.anchor === n.anchor) && (!p.prereqs.length || JSON.stringify(p.prereqs) === JSON.stringify([...(n.prereqs || [])].sort()));
       if (groupsOk) restated.add(key);
-      else defect("objective-restated-differently", rel, it.line + 1, `"${it.text.trim()}" is not an approved objective of ${ch}; restate the approved wording (concepts/${ch}.md)`);
+      else defect("objective-restated-differently", rel, it.line + 1, `"${it.text.trim()}" is not an approved objective of ${ch}; restate the approved wording (${chs.map((c) => `concepts/${c}.md`).join(" or ")})`);
     }
-    for (const [key, n] of approved) if (!restated.has(key))
+    if (own) for (const [key, n] of approved) if (!restated.has(key))
       defect("objective-not-restated", rel, sections[0].line + 1, `${n.id || n.text}: the Learning objectives section does not restate this approved objective of ${ch} ("${n.text}")`);
   }
   return out;

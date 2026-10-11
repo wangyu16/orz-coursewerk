@@ -30,6 +30,7 @@ import { DELIVERABLE_DIRS, classifyUnit, derivedRole, segmentDeliverable, slugif
 import { manifestChapters } from "./package_reader.mjs";
 import { migrateUnitRecords, upgradeStamps } from "./obligations.mjs";
 import { assertUnaltered, upgradeUnitRecordDigests, writeUnitRecords } from "./unit_records.mjs";
+import { confirmedAuthorship, inheritedOrigin, instructorCredit, originIndex } from "./authorship.mjs";
 
 export function deliverablesOf(reader) {
   const chapters = manifestChapters(reader).flatMap((ch) => DELIVERABLE_DIRS.map((d) => `${d}/${ch}.md`));
@@ -47,11 +48,11 @@ export function declaredDocuments(reader) {
   const admin = administrativeDocuments(reader);
   return documentEntries(reader).filter((d) => !admin.has(d.source)).map((d) => d.source);
 }
-/** The documents DOCUMENTS.json declares: { source, role } (markdown sources inside the package, private/ excluded). */
+/** The documents DOCUMENTS.json declares: { source, role, chapters } (markdown sources inside the package, private/ excluded). */
 export function documentEntries(reader) {
   let docs = null; try { docs = JSON.parse(reader.text("metadata/DOCUMENTS.json") || "null"); } catch { docs = null; }
   return (Array.isArray(docs?.documents) ? docs.documents : []).filter((d) => d && typeof d === "object")
-    .map((d) => ({ source: String(d.source || d.path || ""), role: d.role || null })).filter((d) => /\.md$/.test(d.source) && !d.source.startsWith("private/") && !d.source.includes(".."));
+    .map((d) => ({ source: String(d.source || d.path || ""), role: d.role || null, chapters: [...new Set([d.chapter, ...(Array.isArray(d.chapters) ? d.chapters : [])].filter((c) => typeof c === "string" && c))] })).filter((d) => /\.md$/.test(d.source) && !d.source.startsWith("private/") && !d.source.includes(".."));
 }
 const docHash = (text) => sha256(String(text ?? ""));
 /** Declared documents the instructor confirmed as administrative, at their current content (source paths). */
@@ -77,6 +78,11 @@ export function confirmAdministrative(root, reader, { source, instructorWords },
   return appendLogRecord(root, { type: "confirmation", party, payload: { what: "administrative-document", source, contentHash: docHash(text), instructorWords } });
 }
 
+/** id → origin of every unit the package's sidecars record, live or retired (authorship.mjs: whose text it is). */
+export function packageAncestry(root, reader) {
+  return originIndex(deliverablesOf(reader).map((rel) => readSidecar(root, rel)));
+}
+
 export function readSidecar(root, deliverable) {
   const f = recordFile(root, unitsPathFor(deliverable));
   return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, "utf8")) : null;
@@ -87,8 +93,11 @@ const sourcesOf = (prev, split, merge, old, inherit = []) => (prev ? [prev] : [.
 // the units a text took over (red-team round 4, R4-K17): the pieces of a split, a merge, and a piece of a retired unit
 // name every unit whose text they hold, for good — so what was said about that text (a review's open concerns, MS8)
 // follows it, as the register keeps what it owed
-function lineageOf(prev, sources) {
-  const ids = prev ? prev.lineage || [] : [...new Set(sources.flatMap((o) => [o.id, ...(o.lineage || [])]))].filter(Boolean).sort();
+// (red-team round 5: a unit that absorbed a retired unit's words — the agent deleted the instructor's paragraph and wrote
+// its sentences into its own neighbour — names that unit too: the text, and whose it is, follow the words)
+function lineageOf(prev, sources, absorbed = []) {
+  const from = prev ? absorbed : sources;
+  const ids = [...new Set([...(prev?.lineage || []), ...from.flatMap((o) => [o.id, ...(o.lineage || [])])])].filter(Boolean).sort();
   return ids.length ? { lineage: ids } : {};
 }
 function carriedOf(sources) { const c = sources.find((o) => o.carried)?.carried; return c ? { carried: c } : {}; }
@@ -226,6 +235,9 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
   const sidecars = new Map(rels.map((rel) => [rel, readSidecar(root, rel)]));
   const register = rels.flatMap((rel) => (sidecars.get(rel)?.retired || []).map((e) => ({ ...e, deliverable: e.deliverable || rel })));
   const taken = usedIds([...sidecars.values()], logText);
+  // whose text it is (authorship.mjs): every unit record's origin, live or retired, and the instructor's confirmations
+  const ancestry = originIndex([...sidecars.values()]);
+  const confirmed = verifyLog(logText).length ? new Map() : confirmedAuthorship(parseLog(logText));
   const reserved = new Set(register.map((e) => e.contentHash));
   // 1. live matching, deliverable by deliverable
   const plan = rels.map((rel) => {
@@ -270,30 +282,52 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
       if (from.length) p.inherit.set(i, from);
     }
   }
+  // a kept unit that took in the words of a unit retired now or before (red-team round 5: the instructor's paragraph
+  // deleted and its sentences written into the agent's neighbour, which keeps its id as a rewording): the words it GAINED
+  // hold most of the retired unit's, so it names that unit in its lineage, and whose text it is follows them
+  const inheritedIds = new Set([...plan.flatMap((p) => [...p.inherit.values()].flat().map((e) => e.id)), ...plan.flatMap((p) => p.m.consumed)]);
+  // Whatever its form: the words are the same words when a paragraph is written into a worked solution (an answer).
+  // A new unit that is no split, merge or piece by form takes the same reading.
+  for (const p of plan) {
+    p.absorbed = new Map();
+    p.seg.forEach((sg, i) => {
+      const o = p.m.assigned.get(i) || null;
+      if (o ? o.locator.contentHash === unitHash(sg.text) : p.back.has(i)) return;
+      const t = tokensOf(sg.text);
+      const took = pool.filter((e) => !back.has(e.id) && !inheritedIds.has(e.id) && e.id !== o?.id && (e.tokens || []).length >= 5 &&
+        contained(e.tokens, t) >= 0.6 && (!o || contained(e.tokens, o.tokens || []) < 0.6));
+      if (took.length) p.absorbed.set(i, took);
+    });
+  }
   const sides = [];
-  for (const { rel, seg, old, m, back: returned, inherit } of plan) {
+  for (const { rel, seg, old, m, back: returned, inherit, absorbed } of plan) {
     const sessionBaseline = new Set(session?.payload.baseline?.[rel] || []);
     const units = seg.map((s, i) => {
       const prev = m.assigned.get(i) || (returned.has(i) ? asOldUnit(returned.get(i)) : null);
       const hash = unitHash(s.text);
       const changed = !prev || prev.locator.contentHash !== hash;
+      const split = m.splits.find((x) => x.into.includes(i)), merge = m.merges.find((x) => x.into === i);
+      const pieceOf = !prev ? (inherit.get(i) || []).map(asOldUnit) : [];
+      const sources = sourcesOf(prev, split, merge, old, pieceOf);
+      const took = (absorbed.get(i) || []).filter((e) => !sources.some((x) => x.id === e.id));
       let origin = prev?.origin;
       if (changed) {
         const beforeSession = session && sessionBaseline.has(hash) && !old.some((u) => u.locator.contentHash === hash);
         if (as === "agent" && !beforeSession) {
           // the agent revising the instructor's text keeps the instructor's credit, with the revision on record
-          // (operator, 2026-10-02: "keep crediting me is fine")
-          if (!origins[hash] && prev?.origin?.kind === "instructor-authored")
-            origin = { ...prev.origin, revisedBy: [...(prev.origin.revisedBy || []), { model: party.model, step: session.payload.step, date }] };
-          else origin = origins[hash] || { kind: "agent-knowledge", model: party.model, step: session.payload.step, date };
+          // (operator, 2026-10-02: "keep crediting me is fine") — and so does a text that holds their words after a
+          // split, a merge, a move or a rewrite (red-team round 5, R5-K09/K10: ownership follows the text, never the id;
+          // an explicit origin handed in cannot take the credit away)
+          const revision = { model: party.model, step: session.payload.step, date };
+          const held = [...(prev ? [prev] : sources), ...took].map((o) => instructorCredit(o, ancestry, confirmed)).find(Boolean);
+          if (held && origins[hash]?.kind !== "instructor-authored")
+            origin = { ...held, ...(origins[hash]?.correction ? { correction: origins[hash].correction } : {}), revisedBy: [...(held.revisedBy || []), revision] };
+          else origin = origins[hash] || (!prev ? inheritedOrigin(sources, revision) : null) || { kind: "agent-knowledge", ...revision };
           summary.agent++;
         }
         else if (!old.length && !prev && initialOrigin) origin = initialOrigin;
         else { origin = origins[hash] || { kind: "unknown" }; if (origin.kind === "unknown") summary.unknown++; }
       }
-      const split = m.splits.find((x) => x.into.includes(i)), merge = m.merges.find((x) => x.into === i);
-      const pieceOf = !prev ? (inherit.get(i) || []).map(asOldUnit) : [];
-      const sources = sourcesOf(prev, split, merge, old, pieceOf);
       // the pieces of a split, and a merge, keep the spine links of what they came from
       const inherited = !prev ? [...new Set(sources.flatMap((o) => o.spineNodes || []))] : null;
       const id = prev?.id || mintId(rel, s.section, taken);
@@ -310,7 +344,7 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
         // evidence is bound to fact tokens (P5), so it survives a rephrase; obligations.mjs decides what still counts.
         // An owed re-verification, a version carry and the stamp itself (where staleness may live) survive every
         // re-index, and pass to the pieces of a split, to a merge and to a returning text (R1 F4/F5, R2 F1/F2/F14)
-        evidence: prev?.evidence || [], ...(prev ? (prev.stamp ? { stamp: prev.stamp } : {}) : stampOf(sources)), ...carriedOf(sources), ...owesOf(sources), ...lineageOf(prev, sources), tokens: tokensOf(s.text),
+        evidence: prev?.evidence || [], ...(prev ? (prev.stamp ? { stamp: prev.stamp } : {}) : stampOf(sources)), ...carriedOf(sources), ...owesOf(sources), ...lineageOf(prev, [...sources, ...(prev ? [] : took)], took), tokens: tokensOf(s.text),
         ...(split ? { splitFrom: split.from } : {}), ...(merge ? { mergedFrom: merge.from } : {}), ...(pieceOf.length ? { inheritedFrom: pieceOf.map((x) => x.id) } : {}),
       };
     });

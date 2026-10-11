@@ -13,13 +13,19 @@ import { decodeEntities } from "../lib/core/values.mjs";
 // disagreement in LaTeX went unseen; in Unicode it was caught)
 const plain = (t) => decodeEntities(String(t)).replace(/\\Delta\s*/g, "Δ").replace(/\\ce\{([^}]*)\}/g, " $1 ").replace(/\$\$/g, " ").replace(/[ \t]+/g, " ");
 
-function unitClaims(s) {
+export function unitClaims(s) {
   const claims = [];
   for (const p of s.paths.filter((x) => x.startsWith("metadata/units/") && x.endsWith(".json")).sort()) {
     const side = s.json(p); if (!side || typeof side.deliverable !== "string" || !Array.isArray(side.units)) continue; // a malformed sidecar is the index's to report
     const lines = (s.text(side.deliverable) || "").split("\n");
-    const scope = side.deliverable.split("/")[1]?.replace(/\.md$/, "") ?? null;
+    // the chapter a value is read in: a chapter deliverable's own (study-guide|slides|practice/<chapter>.md, by exact
+    // shape); anywhere else (a declared handout), the one chapter its links serve, or the whole package (red-team round
+    // 5, the audit of F4: the second path segment was taken as the chapter, so "current/fall-2026/x.md" was read in a
+    // chapter named "fall-2026" and its chapter's terms never resolved — its values were never compared)
+    const own = side.deliverable.match(/^(?:study-guide|slides|practice)\/([^/]+)\.md$/)?.[1] ?? null;
+    const linkedChapter = (u) => { const chs = [...new Set((u.spineNodes || []).map((n) => String(n).split(".")[1]).filter((c) => c && c !== "course"))]; return chs.length === 1 ? chs[0] : null; };
     for (const u of side.units || []) {
+      const scope = own ?? linkedChapter(u);
       const [a, b] = u.locator.lines || [0, 0];
       const text = plain(lines.slice(a - 1, b).join("\n"));
       const workedSolution = u.form === "answer" && !side.deliverable.startsWith("practice/");

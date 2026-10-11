@@ -25,14 +25,12 @@ import path from "node:path";
 import { liveReader } from "./lib/core/package_reader.mjs";
 import { hasAdmittedEvidence, loadUnits, loggedInstructorActs, needsEvidence as unitNeedsEvidence } from "./lib/core/obligations.mjs";
 import { factHash } from "./lib/core/dependencies.mjs";
-import { readConfig, writeConfig } from "./lib/records/config.mjs";
-import { appendLogRecord } from "./lib/records/log.mjs";
 import { recordFile } from "./lib/records/paths.mjs";
 import { checkableClaims, claimsHash, folded } from "./lib/verify/claims.mjs";
 import { admit } from "./lib/verify/admission.mjs";
 import { headlessVerifier, recordDispatch, selectPassages, semiBundle, readDispatches } from "./lib/verify/dispatch.mjs";
 import { fsInputReader, pinnedTexts, syncReferenceRecord } from "./lib/verify/references.mjs";
-import { fetchAndPin, onTopic, resolveLinks, searchWikipedia } from "./lib/verify/retrieval.mjs";
+import { declareRetrieval, recordLinkResolutions, fetchAndPin, onTopic, resolveLinks, searchWikipedia } from "./lib/verify/retrieval.mjs";
 import { applyCorrection, correctionsToShow, readmitRecorded, reviewAbsolutes, revertCorrection, verifyKnowledge, verifySemi } from "./lib/verify/verdicts.mjs";
 import { admitEvidence } from "./lib/core/obligations.mjs";
 import { createQaAudits } from "./lib/legacy/qa_audits.mjs";
@@ -54,17 +52,12 @@ const log = (r) => process.stderr.write(JSON.stringify(r) + "\n");
 try {
   if (cmd === "destinations") {
     const name = opt("--name") || fail("--name <instructor> is required: destinations are the instructor's declaration (I16)");
-    const c = readConfig(root);
-    if (flag("--off")) c.retrieval = false;
-    else {
-      const words = opt("--words") || fail('--words "<the instructor\'s own words>" is required');
-      const destinations = String(opt("--set") || "").split(",").map((x) => x.trim()).filter(Boolean);
-      if (!destinations.length) fail("--set <host[/path],…> is required");
-      c.retrieval = { destinations, ...(opt("--context") ? { context: opt("--context") } : {}) };
-      appendLogRecord(root, { type: "steering", party: { role: "instructor", name }, payload: { event: "retrieval-destinations", ...c.retrieval, words } });
-    }
-    if (flag("--off")) appendLogRecord(root, { type: "steering", party: { role: "instructor", name }, payload: { event: "retrieval-off" } });
-    writeConfig(root, c); out({ retrieval: c.retrieval }); process.exit(0);
+    const party = { role: "instructor", name };
+    if (flag("--off")) { declareRetrieval(root, { retrieval: false, words: opt("--words") }, party); out({ retrieval: false }); process.exit(0); }
+    const words = opt("--words") || fail('--words "<the instructor\'s own words>" is required');
+    const destinations = String(opt("--set") || "").split(",").map((x) => x.trim()).filter(Boolean);
+    if (!destinations.length) fail("--set <host[/path],…> is required");
+    out({ retrieval: declareRetrieval(root, { retrieval: { destinations, ...(opt("--context") ? { context: opt("--context") } : {}) }, words }, party) }); process.exit(0);
   }
   if (cmd === "fetch") { const r = await fetchAndPin(root, inputs(), opt("--url") || fail("--url is required")); out({ pinned: r.refId, url: r.url, sha256: r.sha256 }); process.exit(0); }
   if (cmd === "search") {
@@ -156,10 +149,7 @@ try {
     const urls = new Set();
     for (const f of q.mdFiles) for (const l of q.markdownLinks(q.read(f))) if (/^https?:/i.test(l.target)) urls.add(l.target);
     const { resolved, skipped } = await resolveLinks(root, [...urls].sort());
-    const file = recordFile(root, "metadata/LINK_RESOLUTIONS.json");
-    const prior = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")).links || [] : [];
-    const merged = new Map(prior.map((l) => [l.url, l])); for (const r of resolved) merged.set(r.url, r);
-    fs.writeFileSync(file, JSON.stringify({ schemaVersion: 1, links: [...merged.values()].sort((a, b) => a.url.localeCompare(b.url)) }, null, 2) + "\n");
+    recordLinkResolutions(root, resolved);
     out({ resolved: resolved.length, broken: resolved.filter((r) => !(r.status >= 200 && r.status < 400)).map((r) => r.url), skippedOutsideDestinations: skipped }); process.exit(0);
   }
   if (cmd === "status") {

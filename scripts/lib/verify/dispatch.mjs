@@ -187,11 +187,44 @@ export function readKnowledgeReview(record, unitText) {
  * now (whitespace and emphasis aside). A rewording of the words at issue ("raises" → "increases"), or any other edit
  * of the passage, is not — the concern stays open until a fresh review reads the new text.
  */
-export function settledBySuggestion(concern, passage, unitText) {
+// red-team round 5 (R5-K11): no length threshold decides whether a suggestion went in — a short one ("kelvin") is
+// tested exactly as a long one, by WHERE it stands. `piece`: the unit holds only part of the passage reviewed (a review
+// carried to a piece of a split, R4-K17): the passage with the swap must contain the unit, and the unit the suggestion.
+export function settledBySuggestion(concern, passage, unitText, { piece = false } = {}) {
   const norm = (t) => String(t || "").replace(/[*_`]/g, "").replace(/\s+/g, " ").trim();
-  const P = norm(passage), q = norm(concern.text), sug = norm(concern.suggestion);
-  if (!q || sug.length < 8 || P.split(q).length !== 2) return false;
-  return P.replace(q, () => sug) === norm(unitText);
+  const P = norm(passage), q = norm(concern.text), sug = norm(concern.suggestion), U = norm(unitText);
+  if (!q || !sug || P.split(q).length !== 2) return false;
+  const swapped = P.replace(q, () => sug);
+  return piece ? !!U && swapped.includes(U) && U.includes(sug) : swapped === U;
+}
+
+/**
+ * Does the unit carry the reviewer's suggestion IN PLACE of the words quoted (red-team round 5, R5-K11: a magic
+ * 8-character threshold decided "applied", so an accepted one-word clarification — "thermodynamic" → "kelvin" — could
+ * never settle)? Sound at any length: at a place where the reviewed passage had the quoted words, the unit now has the
+ * suggestion between the same neighbours — up to CONTEXT characters on each side, or up to the unit's own edge (a
+ * piece of a split begins or ends there). Read as written, then as a reader sees it (spacing and markup aside).
+ */
+const CONTEXT = 24;
+export function suggestionAt(concern, passage, unitText) {
+  const forms = [
+    (t) => String(t || "").replace(/[*_`]/g, "").replace(/\s+/g, " ").trim(),
+    (t) => folded(readerText(String(t || ""))).replace(/\s+/g, ""),
+  ];
+  for (const f of forms) {
+    const P = f(passage), q = f(concern.text), sug = f(concern.suggestion), U = f(unitText);
+    if (!q || !sug || !U) continue;
+    for (let i = P.indexOf(q); i >= 0; i = P.indexOf(q, i + 1)) {
+      const before = P.slice(Math.max(0, i - CONTEXT), i), after = P.slice(i + q.length, i + q.length + CONTEXT);
+      for (let j = U.indexOf(sug); j >= 0; j = U.indexOf(sug, j + 1)) {
+        const head = U.slice(0, j), tail = U.slice(j + sug.length);
+        let b = 0; while (b < before.length && b < head.length && before[before.length - 1 - b] === head[head.length - 1 - b]) b++;
+        let a = 0; while (a < after.length && a < tail.length && after[a] === tail[a]) a++;
+        if ((b === before.length || b === head.length) && (a === after.length || a === tail.length)) return true;
+      }
+    }
+  }
+  return false;
 }
 
 // ---- running a verifier -------------------------------------------------------------------------------------------

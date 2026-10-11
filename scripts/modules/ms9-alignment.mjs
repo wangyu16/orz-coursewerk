@@ -19,11 +19,13 @@ import { readDispatches } from "../lib/verify/dispatch.mjs";
 import { dispatchLogEntry, instructorAuthored, logRecordsOf } from "../lib/verify/verdicts.mjs";
 import { currentBases, planOf, readAlignment, reviewInputs, reviewable } from "../lib/verify/alignment.mjs";
 import { base } from "./_shared.mjs";
+import { originIndex } from "../lib/core/authorship.mjs";
 
-function currentUnits(s) {
+function currentUnits(s, sides = []) {
   const out = [];
   for (const p of s.paths.filter((x) => x.startsWith("metadata/units/") && x.endsWith(".json")).sort()) {
     const side = s.json(p); if (!Array.isArray(side?.units) || typeof side.deliverable !== "string") continue;
+    sides.push(side);
     const seg = segmentDeliverable(s.text(side.deliverable) || "", side.deliverable).units;
     if (seg.length !== side.units.length) continue;
     // the role is the segmenter's, never the sidecar's (C3-15)
@@ -34,7 +36,8 @@ function currentUnits(s) {
 
 function run(s) {
   const out = [];
-  const all = currentUnits(s), byId = new Map(all.map((u) => [u.id, u]));
+  const sides = [], all = currentUnits(s, sides), byId = new Map(all.map((u) => [u.id, u]));
+  const ancestry = originIndex(sides); // whose text it is, by the one rule (authorship.mjs; red-team round 5)
   const log = logRecordsOf(s.text("metadata/LOG.jsonl"));
   const plan = planOf(s);
   const byUnit = new Map();
@@ -63,7 +66,7 @@ function run(s) {
     for (const f of v.fidelity.filter((x) => x.type === "differs" || x.level === "differs")) {
       const g = (f.id && inp.guides.find((x) => x.id === f.id)) || inp.guides[0];
       const ask = g ? `${g.type || "any type"} at the level "${g.levels || "unspecified"}" (${g.title})` : "";
-      out.push({ kind: instructorAuthored(u, log) ? "assessment-fidelity-instructor" : "assessment-fidelity", units: [u.id], evidence: { type: "judgment", note: `${u.label || u.id} is not ${[f.type === "differs" ? "the type" : null, f.level === "differs" ? "the level" : null].filter(Boolean).join(" or ")} its guide entry asks for (${ask}): ${f.why}`, ...(g ? { guide: g.id } : {}), dispatch: r.dispatch } });
+      out.push({ kind: instructorAuthored(u, log, ancestry) ? "assessment-fidelity-instructor" : "assessment-fidelity", units: [u.id], evidence: { type: "judgment", note: `${u.label || u.id} is not ${[f.type === "differs" ? "the type" : null, f.level === "differs" ? "the level" : null].filter(Boolean).join(" or ")} its guide entry asks for (${ask}): ${f.why}`, ...(g ? { guide: g.id } : {}), dispatch: r.dispatch } });
     }
   }
   return out;

@@ -27,7 +27,7 @@ import { runGate } from "./lib/skeleton/full_gate.mjs";
 import { issueHistory, historyMarkdown } from "./lib/core/history.mjs";
 import { confirmAdministrative, deliverablesOf, readSidecar } from "./lib/core/units_index.mjs";
 import { correctionsToShow, revertCorrection } from "./lib/verify/verdicts.mjs";
-import { readConfig, writeConfig } from "./lib/records/config.mjs";
+import { boundConfig, loggedDigestCap, readConfig, writeConfig } from "./lib/records/config.mjs";
 import { appendLogRecord, readLogText } from "./lib/records/log.mjs";
 import { recordFile } from "./lib/records/paths.mjs";
 
@@ -40,7 +40,13 @@ const out = (x) => console.log(JSON.stringify(x, null, 2));
 const root = opt("--root");
 const USAGE = "usage: coursewerk.mjs <status|assemble|back-to-draft|approve|digest|digest-cap|recommend|answer|publish|revert|history|interrupt|administrative> --root <package> … (see the header of scripts/coursewerk.mjs)";
 if (!cmd || !root || !fs.existsSync(root)) { console.error(USAGE); process.exit(2); }
-try { if (readConfig(root).spine !== 2) refuse("this is a v0.12 package (no `\"spine\": 2` in metadata/coursewerk.json)", "migrate the spine first: node scripts/spine.mjs migrate --root <pkg>"); }
+try {
+  // the spine setting is bound to the log (red-team round 5, F2): a v2 package whose file says otherwise is not a v0.12
+  // package — the setting was lowered, and is restored, never migrated again
+  const b = boundConfig(root);
+  if (b.problems.length) refuse(b.problems[0], "restore it: git checkout -- metadata/coursewerk.json");
+  if (b.spine !== 2) refuse("this is a v0.12 package (no `\"spine\": 2` in metadata/coursewerk.json)", "migrate the spine first: node scripts/spine.mjs migrate --root <pkg>");
+}
 catch (e) { refuse(e.message); }
 const reader = liveReader(root);
 const instructor = () => {
@@ -120,7 +126,7 @@ try {
     if (args.includes("--cap")) refuse("the digest's size is the instructor's setting, not a flag", 'the instructor sets it: node scripts/coursewerk.mjs digest-cap --set <n> --name … --words "…"');
     const g = runGate(root, { inputsDir: opt("--inputs") || null });
     const info = unitInfoOf(root, reader);
-    const d = buildDigest(root, g.findings, info, { cap: Number(readConfig(root).digestCap || DEFAULT_CAP), corrections: correctionsToShow(root) });
+    const d = buildDigest(root, g.findings, info, { cap: Number(loggedDigestCap(readLogText(root)) || DEFAULT_CAP), /* the instructor's logged setting, never the file's (R5) */ corrections: correctionsToShow(root) });
     // the agent's own recommendations, attached before delivery, carry over to the same entries
     let prev = null; try { prev = JSON.parse(fs.readFileSync(recordFile(root, DIGEST_FILE), "utf8")); } catch { prev = null; }
     for (const e of d.entries) { const p = prev?.entries?.find((x) => x.key === e.key && String(x.recommendedBy || "").startsWith("agent")); if (p) { e.recommendation = p.recommendation; e.recommendedBy = p.recommendedBy; } }
