@@ -34,10 +34,10 @@ export function factTokens(text) {
 
 /**
  * The wording an answer is bound to its question by, and a spine change is light only when it is unchanged (R1 F2,
- * R2 F4): since red team R4 (coherence F5, F8; control C4-01) the LIGHT KEY of the rendered text (rendered.mjs) —
- * what a reader sees, with only whitespace, emphasis, list markers, letter case and prose punctuation folded. Struck
- * text is gone, and every sign, relation, arrow and operator is a word: "~~held at constant volume~~" changes the
- * question an answer answers, and "K ↓" → "K ↑" is not light.
+ * R2 F4, R4 F5/F8): THE LIGHT KEY of the reader view (rendered.mjs) — no private normalisation here (red team R5, cause
+ * 1). Struck text is gone, every sign, relation, arrow and operator is a word, and typesetting-only TeX is nothing:
+ * "~~held at constant volume~~" changes the question an answer answers, "K ↓" → "K ↑" is not light, and
+ * "\text{K}" → "{\text{K}}" changes nothing.
  */
 export function questionWording(text) {
   return lightKey(text);
@@ -71,19 +71,9 @@ const directions = (t) => (String(t || "").match(DIRECTION) || []).map((x) => x.
 // SEES: struck-through text (`~~…~~`, <del>, <s>, <strike>), comments and hidden elements are dropped before comparing
 // (they are not markup — "does ~~not~~ shift" renders as "does shift"); and every sign (−, -, +, ±, ∓) is a word and a
 // fact, so "ΔG° = −RT ln K" → "ΔG° = RT ln K" is never light. A hyphen inside a word ("gas-phase"), a list bullet and a
-// rule (---) are punctuation. questionWording (an answer's binding) is left as it is: changing it re-keys every stamp.
-const HIDDEN = [
-  /<!--[\s\S]*?(?:-->|$)/g,
-  /~~[\s\S]*?~~/g,
-  /<(del|s|strike)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,
-  /<([a-z][a-z0-9-]*)\b[^>]*?(?:\bhidden\b|display\s*:\s*none|visibility\s*:\s*hidden)[^>]*>[\s\S]*?<\/\1\s*>/gi,
-];
-/** A text as a reader sees it: struck-through, commented-out and hidden words dropped. */
-export function visibleText(text) {
-  let t = String(text || "");
-  for (const re of HIDDEN) t = t.replace(re, " ");
-  return t;
-}
+// rule (---) are punctuation. What a reader sees is the reader view (rendered.mjs), the one view every binding reads.
+/** A text as a reader sees it (struck-through, commented-out and hidden words dropped): the reader view. */
+export const visibleText = (text) => readerView(text);
 // a sign: −, ±, ∓ (and LaTeX \pm, \mp) anywhere; + anywhere; - unless it joins two letters (a hyphen), starts a list
 // item, or is part of a rule, an arrow or a run (---, ->, <-)
 const SIGN = /[−±∓+]|\\pm\b|\\mp\b|(?<![\p{L}\-<])-(?![\-\p{L}>])|(?<![\p{L}\-<])-(?=\p{L})|(?<=\p{L})-(?![\p{L}\->])/gu;

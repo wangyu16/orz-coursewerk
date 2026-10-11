@@ -12,6 +12,7 @@
 import { sha256, canonicalJson } from "../records/canonical.mjs";
 import { clean, exclusivityOf, folded, sentencesOf } from "./claims.mjs";
 import { recordHashOf } from "./dispatch.mjs";
+import { meaningKey } from "../core/rendered.mjs";
 
 // Red-team round 3 (R3-K04): the word list was closed, and "invariably", "any", "each", "without exception" carried the
 // same over-general claim as "always" and "every" without owing a review. The list now holds the universal quantifiers
@@ -46,7 +47,14 @@ export function absoluteSentences(text) {
   }
   return out;
 }
-export const absolutesHash = (text) => sha256(canonicalJson(absoluteSentences(text)));
+/**
+ * What an absolute review is bound to: READER-VIEW based (red team R5, cause 1). The review judged the sentences it was
+ * shown; it stays current exactly while each reads the same to a reader — the meaning key of each sentence
+ * (rendered.mjs). A reflow or an emphasis keeps it; a changed word, sign or symbol, or a struck one, does not. Computed
+ * the same way from a record's printed sentences (absoluteReviewOf), so records written before R5 need no migration.
+ */
+export const absolutesKey = (sentences) => sha256(canonicalJson(["reader", sentences.map((s) => meaningKey(s))]));
+export const absolutesHash = (text) => absolutesKey(absoluteSentences(text));
 
 export function absoluteBundle(sentences, context, nonce) {
   const prompt = [
@@ -111,5 +119,5 @@ export function absoluteReviewOf(record, logRecords) {
   if (!sentences.length || sentences.some((x) => x == null)) return null;
   const context = lines.slice(b + 1).join("\n");
   const nonce = prompt.match(/"nonce": "([0-9a-f]+)"/)?.[1] ?? null;
-  return { unit: log.payload.unit, absolutesHash: sha256(canonicalJson(sentences)), sentences, context, nonce, review: readAbsoluteReview(record.answer?.raw, nonce, sentences, context) };
+  return { unit: log.payload.unit, absolutesHash: absolutesKey(sentences), sentences, context, nonce, review: readAbsoluteReview(record.answer?.raw, nonce, sentences, context) };
 }

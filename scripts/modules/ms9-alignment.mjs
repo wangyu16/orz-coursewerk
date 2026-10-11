@@ -17,7 +17,7 @@
 import { classifyUnit, derivedRole, segmentDeliverable } from "../lib/core/segment.mjs";
 import { readDispatches } from "../lib/verify/dispatch.mjs";
 import { dispatchLogEntry, instructorAuthored, logRecordsOf } from "../lib/verify/verdicts.mjs";
-import { currentBases, planOf, readAlignment, reviewInputs, reviewable } from "../lib/verify/alignment.mjs";
+import { currentBases, planOf, readAlignment, reviewInputs, reviewIsCurrent, reviewable } from "../lib/verify/alignment.mjs";
 import { base } from "./_shared.mjs";
 
 function currentUnits(s) {
@@ -48,7 +48,7 @@ function run(s) {
     const inp = reviewInputs(u, all, plan), bases = currentBases(u, inp, plan);
     const declared = inp.declared.map((n) => n.id), guides = inp.guides.map((g) => g.id), known = new Set(inp.chapterNodes.map((n) => n.id));
     // the unit's current reviews, newest first (a review of something else is history)
-    const current = recs.filter(({ r }) => bases.has(r.alignmentBasis)).sort((a, b) => b.seq - a.seq).map(({ r }) => r);
+    const current = recs.filter(({ r }) => reviewIsCurrent(r, u, inp, plan, bases)).sort((a, b) => b.seq - a.seq).map(({ r }) => r);
     if (!current.length) continue;
     const read = (r) => readAlignment(r.answer?.raw, r.bundle?.nonce, declared, known, r.guides ? guides : guides.length ? true : []);
     const v0 = read(current[0]);

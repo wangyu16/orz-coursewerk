@@ -20,7 +20,9 @@ import { parseSpine } from "../core/spine.mjs";
 import { questionsOf } from "../core/dependencies.mjs";
 import { approvalStatus } from "../core/approvals.mjs";
 import { parseLog, verifyLog } from "../records/log.mjs";
-import { readDispatches, recordDispatch } from "./dispatch.mjs";
+import { readDispatches, recordDispatch, reviewedPassage } from "./dispatch.mjs";
+import { meaningKey } from "../core/rendered.mjs";
+import { unitHash } from "../core/segment.mjs";
 import { dispatchLogEntry } from "./verdicts.mjs";
 
 export { reviewable };
@@ -54,7 +56,13 @@ function lightAccepted(reader, chapters) {
   return out;
 }
 
+// ---- review currency: READER-VIEW based (red team R5, cause 1) ----------------------------------------------------
+// A review judged what the reviewer was SHOWN: the passage (an answer with its question) and the plan items it judged.
+// It stays current exactly while a reader is shown the same meaning-bearing words and symbols — the meaning key of the
+// reader view (rendered.mjs): striking the teaching (R5 C2-01) or moving a word into an empty link ("does [](not)
+// shift") voids it; a reflow, emphasis, a comma or a TeX regrouping that typesets the same (R5 F5, F7) does not.
 const nodeKey = (n) => [n.id, n.text, n.type ?? null, n.levels ?? null];
+const viewNodeKey = (n) => [n.id, meaningKey(n.text), n.type ?? null, n.levels ?? null];
 /** The legacy basis (before round 2): the unit's text, its links, and the text of EVERY node of its chapter's plan. */
 export const alignmentBasis = (u, nodes, chapterNodes) => sha256(canonicalJson([u.locator.contentHash, [...(u.spineNodes || [])].sort(), chapterNodes.map(nodeKey)]));
 /**
@@ -66,32 +74,62 @@ export const judgedNodes = (u, inp) => {
   const all = u.role === "framing" ? inp.chapterNodes : [...inp.links, ...inp.declared, ...inp.guides];
   return [...new Map(all.map((n) => [n.id, n])).values()].sort((a, b) => String(a.id).localeCompare(String(b.id)));
 };
-const withBefore = (u, inp, b) => (u.form === "answer" ? sha256(canonicalJson([b, String(inp.before || "")])) : b);
+const withBefore = (u, before, b) => (u.form === "answer" ? sha256(canonicalJson([b, String(before || "")])) : b);
+const asAccepted = (accepted) => (n) => { const a = accepted?.get(n.id); return a ? { ...n, text: a.text, type: a.type, levels: a.levels } : n; };
 /**
- * A passage's wording as a review reads it: whitespace, markup and punctuation folded (a reflow, emphasis or a comma is
- * no change to what it teaches — the rule the answer binding follows, R1 F2), and so is a capitalized word's first letter
- * (a sentence start); symbols, numbers and relation and sign symbols are kept ("ln K" is not "ln k"; "Q < K" is not
- * "Q > K").
+ * The basis a review is recorded with (R5): the meaning key of the passage, its links, and each plan item it judges
+ * (its meaning key, type and levels); an answer's review is bound to its question's meaning key too.
  */
-export const reviewWording = (text) => String(text || "")
+export const reviewBasis = (u, inp, accepted = null) => {
+  const b = sha256(canonicalJson(["reader", sha256(meaningKey(u.text)), [...(u.spineNodes || [])].sort(), judgedNodes(u, inp).map((n) => viewNodeKey(asAccepted(accepted)(n)))]));
+  return u.form === "answer" ? sha256(canonicalJson([b, meaningKey(inp.before)])) : b;
+};
+/** Every basis under which a review recorded now is current for the unit as it is: its judged items as they are, or as
+ *  the instructor last fully approved them when the change since was a confirmed light one. */
+export const currentBases = (u, inp, plan) => new Set([reviewBasis(u, inp), reviewBasis(u, inp, plan.accepted)]);
+
+// The keys records were written with before R5, FROZEN — read only to migrate them (reviewIsCurrent):
+// round 2–4 ("judged"): the passage's wording with whitespace, markup and ALL punctuation folded (struck text, link
+// destinations and "~~" read as words — the R5 C2-01 hole) and each judged item's raw text;
+const reviewWordingR4 = (text) => String(text || "")
   .replace(/≤|\\leq?\b/g, " le ").replace(/≥|\\geq?\b/g, " ge ").replace(/≠|\\neq?\b/g, " ne ")
   .replace(/<(?!-)/g, " lt ").replace(/(?<!-)>/g, " gt ").replace(/[−-](?=\s*\d)/g, " minus ").replace(/\+/g, " plus ").replace(/=/g, " eq ")
   .replace(/[^\p{L}\p{N}]+/gu, " ").trim()
-  .replace(/(?<![\p{L}\p{N}])\p{Lu}\p{Ll}+(?![\p{L}\p{N}])/gu, (w) => w.toLowerCase()); // a capitalized word (a sentence start), never a symbol
-/** The basis a review is recorded with: the unit's wording, its links, and the text of each plan item it judges; an
- *  answer's review is bound to its question's wording too. */
-export const reviewBasis = (u, inp, accepted = null) => {
-  const text = (n) => { const a = accepted?.get(n.id); return a ? { ...n, text: a.text, type: a.type, levels: a.levels } : n; };
-  const b = sha256(canonicalJson(["judged", sha256(reviewWording(u.text)), [...(u.spineNodes || [])].sort(), judgedNodes(u, inp).map((n) => nodeKey(text(n)))]));
-  return u.form === "answer" ? sha256(canonicalJson([b, reviewWording(inp.before)])) : b;
+  .replace(/(?<![\p{L}\p{N}])\p{Lu}\p{Ll}+(?![\p{L}\p{N}])/gu, (w) => w.toLowerCase());
+const judgedBasisR4 = (u, text, before, inp, accepted) => {
+  const b = sha256(canonicalJson(["judged", sha256(reviewWordingR4(text)), [...(u.spineNodes || [])].sort(), judgedNodes(u, inp).map((n) => nodeKey(asAccepted(accepted)(n)))]));
+  return u.form === "answer" ? sha256(canonicalJson([b, reviewWordingR4(before)])) : b;
 };
-/** Every basis under which a recorded review is current for the unit as it is now: its judged items as they are, or as
- *  the instructor last fully approved them when the change since was a confirmed light one; and the legacy basis of
- *  records made before round 2 (bound to the whole plan, so never more lenient). */
-export const currentBases = (u, inp, plan) => {
-  const legacy = (acc) => withBefore(u, inp, alignmentBasis(u, null, [...inp.chapterNodes, ...inp.links].map((n) => { const a = acc?.get(n.id); return a ? { ...n, text: a.text, type: a.type, levels: a.levels } : n; })));
-  return new Set([reviewBasis(u, inp), reviewBasis(u, inp, plan.accepted), legacy(null), legacy(plan.accepted)]);
-};
+// before round 2 (legacy): the exact passage (its contentHash), its links and every node of its chapter's plan
+const legacyBasisOf = (u, text, before, inp, accepted) =>
+  withBefore(u, before, alignmentBasis({ ...u, locator: { ...u.locator, contentHash: unitHash(text) } }, null, [...inp.chapterNodes, ...inp.links].map(asAccepted(accepted))));
+const BEFORE_HEAD = "\nTEXT BEFORE THE PASSAGE (context only)\n";
+/** The text a review prompt showed before the passage (an answer's question), or "". */
+export function shownBefore(prompt) {
+  const p = String(prompt || ""), i = p.indexOf(BEFORE_HEAD), m = /\n\nPASSAGE(?: \([^\n]*\))?\n/.exec(p.slice(i + 1));
+  return i < 0 || !m ? "" : p.slice(i + BEFORE_HEAD.length, i + 1 + m.index).trim();
+}
+/**
+ * Is a logged review current for the unit as it is now? A record written with the R5 basis: when its basis is one of
+ * the unit's current bases. A record written with an earlier key is MIGRATED the way an agent would read it: it is
+ * current when the reader is shown the same thing it judged — the passage its prompt showed (and an answer's question)
+ * has the unit's meaning key now — AND it was current under its own key for that text (its recorded basis, recomputed
+ * from the passage it showed, the links and the plan items as they are now). Otherwise one cheap review is owed.
+ */
+export function reviewIsCurrent(r, u, inp, plan, bases = currentBases(u, inp, plan)) {
+  if (bases.has(r.alignmentBasis)) return true;
+  const prompt = r.bundle?.prompt, shown = reviewedPassage(prompt);
+  if (!shown || meaningKey(shown) !== meaningKey(u.text)) return false;
+  let befores = [""];
+  if (u.form === "answer") {
+    const b = shownBefore(prompt);
+    if (meaningKey(b) !== meaningKey(inp.before)) return false;
+    befores = [...new Set([b, ...(String(inp.before || "").trim() === b ? [inp.before] : [])])];
+  }
+  for (const acc of [null, plan.accepted]) for (const before of befores)
+    if (r.alignmentBasis === judgedBasisR4(u, shown, before, inp, acc) || r.alignmentBasis === legacyBasisOf(u, shown, before, inp, acc)) return true;
+  return false;
+}
 
 const guideAsk = (g) => `${g.type || "any type"} at the level "${g.levels || "unspecified"}" (${g.title})`;
 
@@ -218,7 +256,7 @@ export function currentReviews(all, plan, records, log) {
     const recs = byUnit.get(u.id); if (!recs || !(reviewable(u) || u.role === "framing")) continue;
     const inp = reviewInputs(u, all, plan), bases = currentBases(u, inp, plan);
     const declared = inp.declared.map((n) => n.id), guides = inp.guides.map((g) => g.id), known = new Set(inp.chapterNodes.map((n) => n.id));
-    for (const { r } of recs.filter(({ r }) => bases.has(r.alignmentBasis)).sort((a, b) => b.seq - a.seq)) {
+    for (const { r } of recs.filter(({ r }) => reviewIsCurrent(r, u, inp, plan, bases)).sort((a, b) => b.seq - a.seq)) {
       const v = readAlignment(r.answer?.raw, r.bundle?.nonce, declared, known, r.guides ? guides : guides.length ? true : []);
       if (v) { out.set(u.id, { verdicts: new Map(v.links.map((l) => [l.id, l.verdict])), offPlan: v.offPlan, fidelity: v.fidelity, dispatch: r.dispatch }); break; }
     }

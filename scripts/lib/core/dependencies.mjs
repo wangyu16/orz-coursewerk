@@ -4,7 +4,9 @@
 // stamped with those hashes when it is written or re-verified, and is stale when any of them moves.
 //
 // Unit-to-unit dependencies hash the target's FACT TOKENS, not its wording (D17, D19-C): a rephrase of a neighbour
-// leaves dependents alone; a changed value, name, number or negation makes them stale. The one exception is an
+// leaves dependents alone; a changed value, name, number or negation makes them stale. Every binding of a dependent to
+// what another unit SAYS reads the reader view (rendered.mjs; red team R5): `unit:` the fact tokens a reader sees,
+// `question:`/`ref:` the reader view's light key. The one exception is an
 // answer's question: the answer is bound to the question's id AND its full normalized wording (`question:` target,
 // R1 coherence F2), since no fixed word list can tell a rephrase from a reversal ("halved" → "doubled"); a reworded
 // question costs its answer a cheap blind re-check, routed to the agent.
@@ -16,11 +18,30 @@
 // \mathrm{Q_r}) — folded as bindings() folds them (F12).
 import { canonicalJson, sha256 } from "../records/canonical.mjs";
 import { factTokens, legacyQuestionWording, questionWording, readerView } from "./change.mjs";
-import { renderedParts } from "./rendered.mjs";
+import { lightKeyR4, printedChars, renderedParts } from "./rendered.mjs";
 import { nodeIndex } from "./spine.mjs";
 import { parseNumber, plainForQuantities, valueText, valuesIn } from "./values.mjs";
 
+// factHash is an EVIDENCE key (D17): what a semi-mechanical check admitted, and what an instructor confirmed, are bound
+// to the facts the source states. It is not what a dependent is bound to (unitTargetHash, below).
 export const factHash = (text) => sha256(canonicalJson(factTokens(text)));
+// The reader view with each formula as its TeX source (fact tokens read numbers, signs and symbols from the source,
+// where "-92" is one token; the typeset form spaces them).
+const factView = (raw) => renderedParts(raw).map((p) => (p.kind === "math" ? ` $${p.text}$ ` : p.kind === "mark" ? "" : p.kind === "prose" ? printedChars(p.seen) : p.text)).join("").replace(/[ \t]+/g, " ").replace(/ *\n+ */g, "\n").trim();
+/**
+ * What a unit's dependents are bound to (`unit:` target): READER-VIEW based (red team R5, cause 1). The fact tokens
+ * (values, names, numbers, symbols, negations) of the text as a reader sees it — a struck negation ("does ~~not~~
+ * shift") or a value moved into a link destination moves it, a value in a comment does not. Prefixed "v:"; a stamp
+ * written with the source key (no prefix) migrates (unitStampCurrent).
+ */
+export const unitTargetHash = (text) => `v:${sha256(canonicalJson(factTokens(factView(text))))}`;
+/**
+ * A `unit:` stamp written with the source key (factHash) is current when the text is unchanged under BOTH keys: its
+ * source hash still matches, and the source states the same fact tokens a reader sees (nothing struck, hidden or in a
+ * link destination carries a fact; markup moves no sentence start). Otherwise its dependent owes one re-check.
+ */
+export const unitStampCurrent = (stamped, text) => typeof stamped === "string" && /^[0-9a-f]{64}$/.test(stamped) && stamped === factHash(text)
+  && canonicalJson(factTokens(text)) === canonicalJson(factTokens(factView(text)));
 const QUANTITY = /[−-]?\d+(?:[.,]\d+)?\s*(?:°C|K\b|kJ|J\b|mol|M\b|atm|bar|Pa|kPa|g\b|kg|mg|L\b|mL|%)/g;
 // Quantities are found after folding LaTeX spellings ("-92\\ \\text{kJ mol}^{-1}" → "-92 kJ mol"), since the
 // packages write most values in LaTeX; a value written two ways is still one shared value.
@@ -55,17 +76,23 @@ export function bindings(text) {
 }
 
 export { questionWording };
-// The binding hash of a question (and of a unit named by number). Red team R4 coherence F5: it reads the rendered,
-// visible text with every sign, relation, arrow and operator kept (questionWording = the light key), so striking a
-// question's condition reaches its answer. Hashes carry a "q2:" prefix: a stamp value without it was written with the
-// pre-R4 key (legacyQuestionHash) and is migrated once (legacyQuestionCurrent).
-export const questionHash = (text) => `q2:${sha256(questionWording(text))}`;
+// The binding hash of a question (and of a unit named by number): READER-VIEW based (red team R4 F5, R5 cause 1). It
+// is the light key of the reader view (rendered.mjs): what a student sees, struck/hidden/link-destination text gone,
+// every sign, relation, arrow and operator kept, maths as typeset — so striking a question's condition reaches its
+// answer, and a TeX regrouping that prints the same (R5 F5, "\text{K}" → "{\text{K}}") does not. Hashes carry a
+// prefix naming the key: "q3:" (R5); a stamp value written with an earlier key is migrated (questionStampCurrent).
+export const questionHash = (text) => `q3:${sha256(questionWording(text))}`;
+/** The R4 binding hash ("q2:"): FROZEN, only read to migrate stamps written with it. */
+export const questionHashR4 = (text) => `q2:${sha256(lightKeyR4(text))}`;
 export const legacyQuestionHash = (text) => sha256(legacyQuestionWording(text));
 export const isLegacyQuestionHash = (h) => typeof h === "string" && /^[0-9a-f]{64}$/.test(h);
+export const isR4QuestionHash = (h) => typeof h === "string" && /^q2:[0-9a-f]{64}$/.test(h);
 // what the pre-R4 key read exactly as the new key does: letters and digits; prose punctuation both fold; < > = + ≤ ≥ ≠
 // (both read them as words); a hyphen joining two letters; a minus before a digit
 const SAFE_PROSE = /^(?:[\p{L}\p{N}\s.,;:!?'"‘’“”«»()[\]{}…—·•<>=+≤≥≠]|(?<=\p{L})-(?=\p{L})|[-−](?=\s*\p{N}))*$/u;
 const SAFE_MATH = /^(?:[\p{L}\p{N}\s<>=+≤≥≠]|[-−](?=\s*\p{N}))*$/u;
+// the reader view as R4 read it (maths as its TeX source): what the pre-R4 key's migration was defined against
+const sourceView = (raw) => renderedParts(raw).map((p) => (p.kind === "math" ? ` $${p.text}$ ` : p.kind === "mark" ? "" : p.text)).join("").replace(/[ \t]+/g, " ").replace(/ *\n+ */g, "\n").trim();
 /**
  * The one-time migration of a question binding written with the pre-R4 key (F5): such a stamp value is current only
  * when the text is unchanged under BOTH keys — its old-key hash still matches, and the text holds nothing the old key
@@ -80,8 +107,30 @@ export function legacyQuestionCurrent(stamped, text) {
   const parts = renderedParts(raw);
   if (parts.some((p) => p.kind === "mark" || p.kind === "code")) return false;
   return parts.every((p) => (p.kind === "math" ? SAFE_MATH : SAFE_PROSE).test(p.text))
-    && legacyQuestionWording(raw) === legacyQuestionWording(readerView(raw).replace(/\$/g, " "));
+    && legacyQuestionWording(raw) === legacyQuestionWording(sourceView(raw).replace(/\$/g, " "))
+    && r4ReadsAsR5(raw);
 }
+// What the R4 key ("q2:") read differently from the R5 key, so that "unchanged under R4" would not imply "unchanged
+// under R5": an invisible format character (R4 read it as a token, R5 drops it), a text not in Unicode NFC, an entity
+// in raw HTML (R4 read "&lt;" as letters, R5 as "<"), and a TeX command whose case names another symbol (R4 folded
+// "\Rightarrow" into "\rightarrow"; R5 keeps them apart). Everywhere else the R5 light key is a function of the R4 key
+// (it folds what R4 folded — letter case, punctuation, markup — and more: typesetting-only TeX), so a text unchanged
+// under R4 is unchanged under R5.
+const CASE_NAMED = /\\(?!(?:var)?(?:Gamma|Delta|Theta|Lambda|Xi|Pi|Sigma|Upsilon|Phi|Psi|Omega)(?![A-Za-z]))[A-Za-z]*[A-Z]/;
+function r4ReadsAsR5(raw) {
+  if (/[­᠎​-‏⁠-⁤﻿]/.test(raw) || raw.normalize("NFC") !== raw) return false;
+  return renderedParts(raw).every((p) => (p.kind !== "prose" || p.seen === p.text) && (p.kind !== "math" || !CASE_NAMED.test(p.text)));
+}
+/**
+ * A question binding written with the R4 key ("q2:") is current when the text is unchanged under BOTH keys: its R4
+ * hash still matches, and the text holds nothing R4 read differently from R5 (r4ReadsAsR5). Then the R5 key is
+ * unchanged too, and the stamp is upgraded with no re-check; otherwise the dependent owes one re-check.
+ */
+export function r4QuestionCurrent(stamped, text) {
+  return isR4QuestionHash(stamped) && stamped === questionHashR4(text) && r4ReadsAsR5(String(text ?? ""));
+}
+/** Is a stamped question/reference binding, written with ANY earlier key, current for the text as it is now? */
+export const questionStampCurrent = (stamped, text) => r4QuestionCurrent(stamped, text) || legacyQuestionCurrent(stamped, text);
 
 /** Math spellings folded to plain words: "$Q_r$", "Q_{r}", "\\mathrm{Q_r}" → "Qr" (as bindings() reads symbols). */
 export const foldMath = (text) => plainForQuantities(text).replace(/\\[A-Za-z]+/g, " ").replace(/_\s*([A-Za-z0-9]+)/g, "$1");
@@ -230,7 +279,7 @@ export function dependencyEdges(units, spine, sources = {}) {
 /** The current hash of every dependency target. */
 export function targetHashes(units, spine, sources = {}) {
   const h = {};
-  for (const u of units) { h[`unit:${u.id}`] = factHash(u.text); h[`ref:${u.id}`] = questionHash(u.text); if (u.form === "question") h[`question:${u.id}`] = questionHash(u.text); }
+  for (const u of units) { h[`unit:${u.id}`] = unitTargetHash(u.text); h[`ref:${u.id}`] = questionHash(u.text); if (u.form === "question") h[`question:${u.id}`] = questionHash(u.text); }
   for (const [key, defs] of groupBy(termDefinitions(spine), (d) => d.key)) h[key] = groupTermHash(defs.map((d) => d.term));
   for (const [id, n] of nodeIndex(spine)) h[`spine:${id}`] = nodeHash(n);
   for (const [id, hash] of Object.entries(sources)) h[`source:${id}`] = hash;

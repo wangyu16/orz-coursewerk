@@ -44,7 +44,7 @@ import { parseSpine, nodeIndex, termsOfMap, COURSE_MAP } from "./spine.mjs";
 import { liveReader, manifestChapters } from "./package_reader.mjs";
 import { openMajorVersion } from "./versions.mjs";
 import { approvalStatus } from "./approvals.mjs";
-import { dependencyEdges, factHash, groupTermHash, isLegacyQuestionHash, legacyQuestionCurrent, legacyTermLabel, nodeHash, questionBindingProblems, questionHash, referenceBindingProblems, sourceHashes, stampFor, staleTargets, targetHashes, termDefinitions, termHash, termKey } from "./dependencies.mjs";
+import { dependencyEdges, factHash, groupTermHash, isLegacyQuestionHash, isR4QuestionHash, questionStampCurrent, unitStampCurrent, legacyTermLabel, nodeHash, questionBindingProblems, questionHash, referenceBindingProblems, sourceHashes, stampFor, staleTargets, targetHashes, termDefinitions, termHash, termKey } from "./dependencies.mjs";
 import { deliverableOfSidecar, UNIT_RECORDS_EVENT, writeUnitRecords } from "./unit_records.mjs";
 import { currentReviewsAt } from "../verify/alignment.mjs";
 import { boundRecord, readKnowledgeReview, recordHashOf } from "../verify/dispatch.mjs";
@@ -185,7 +185,8 @@ const termsByLabel = (terms) => { const m = new Map(); for (const t of terms) if
 // full approval BEFORE the unit's sidecar was last written (the stamp is no newer than that write) — so nothing is owed
 // when nothing changed, and a definition changed since is owed. A pre-R4 question binding (`question:`/`ref:` hashed
 // with the lossy key, F5) counts as current only when the text is unchanged under both keys (legacyQuestionCurrent);
-// otherwise it owes one re-check. Every harness write stores the migrated stamp (writeUnitRecords).
+// so does one written with the R4 key ("q2:", before the R5 reader view: r4QuestionCurrent), and a `unit:` binding
+// written with the source fact key (unitStampCurrent); otherwise it owes one re-check. Every harness write stores the migrated stamp (writeUnitRecords).
 function legacyInfo(root, ctx) {
   if (ctx.legacy) return ctx.legacy;
   const logText = readLogText(root), ok = !verifyLog(logText).length, recs = ok ? parseLog(logText) : [];
@@ -223,9 +224,13 @@ export function migratedStamp(root, ctx, stamp, rel, id = null) {
       for (const d of defs) if (!(d.key in stamp)) out[d.key] = d.key === last.key ? h : legacyTermBaseline(root, ctx, d, rel);
       continue;
     }
-    if ((k.startsWith("question:") || k.startsWith("ref:")) && isLegacyQuestionHash(h)) {
+    if ((k.startsWith("question:") || k.startsWith("ref:")) && (isLegacyQuestionHash(h) || isR4QuestionHash(h))) {
       const target = ctx.byId.get(k.slice(k.indexOf(":") + 1));
-      if (target && legacyQuestionCurrent(h, target.text)) { put(); out[k] = ctx.hashes[k] ?? h; }
+      if (target && questionStampCurrent(h, target.text)) { put(); out[k] = ctx.hashes[k] ?? h; }
+    }
+    if (k.startsWith("unit:") && isLegacyQuestionHash(h)) { // a source-key fact hash (before R5): same 64-hex shape
+      const target = ctx.byId.get(k.slice(5));
+      if (target && unitStampCurrent(h, target.text)) { put(); out[k] = ctx.hashes[k] ?? h; }
     }
   }
   // a key-term edge the stamp does not hold (a spelling the harness newly reads — "**Endothermic** reaction", R4 F1 —
@@ -364,13 +369,16 @@ export function upgradeStamps(root, reader, { except = [] } = {}) {
   return add.size;
 }
 
+// The stamp generation a unit record holds: 2 — R4 (term keys namespaced by map, question bindings on the visible-text
+// key); 3 — R5 (question bindings on the reader view's light key, "q3:"). A side below it is written migrated once.
+const STAMPS = 3;
 /**
- * Write every unit record not yet migrated to the R4 stamps (term keys namespaced by map, question bindings on the
- * visible-text key, key-term edges baselined: see migratedStamp). It changes no obligation — a stamp is read migrated
+ * Write every unit record not yet migrated to the current stamps (term keys namespaced by map, question bindings on the
+ * reader view's key, key-term edges baselined: see migratedStamp). It changes no obligation — a stamp is read migrated
  * either way — but fixes the baseline of a legacy stamp at the moment of migration. Run at every session begin.
  */
 export function migrateUnitRecords(root, reader) {
-  const sides = deliverablesOf(reader).map((rel) => [rel, readSidecar(root, rel)]).filter(([, side]) => side && side.stamps !== 2);
+  const sides = deliverablesOf(reader).map((rel) => [rel, readSidecar(root, rel)]).filter(([, side]) => side && side.stamps !== STAMPS);
   if (!sides.length) return 0;
   writeUnitRecords(root, sides.map(([rel, side]) => ({ ...side, deliverable: rel })));
   return sides.length;
@@ -683,17 +691,17 @@ export function unitRecordWriteProblems(root, before, after) {
 
 /**
  * The sides to write with every stamp migrated (pre-R4 term keys and question bindings, and key-term edges the stamp
- * never held: see migratedStamp), marked `stamps: 2`. A side already marked on disk was migrated when it was written;
+ * never held: see migratedStamp), marked `stamps: 3` (STAMPS). A side already marked on disk was migrated when it was written;
  * its stamps come from it, so it is only marked again. `before`: deliverable → sidecar on disk.
  */
 export function migrateRecordSides(root, sides, before = {}) {
-  const todo = sides.filter((side) => before[side.deliverable]?.stamps !== 2 && [...(side.units || []), ...(side.retired || [])].some((u) => u.stamp));
+  const todo = sides.filter((side) => before[side.deliverable]?.stamps !== STAMPS && [...(side.units || []), ...(side.retired || [])].some((u) => u.stamp));
   let ctx = null;
   if (todo.length) { try { ctx = context(root, liveReader(root)); } catch { ctx = null; } }
   return sides.map((side) => {
-    if (!ctx || !todo.includes(side)) return { ...side, stamps: 2 };
+    if (!ctx || !todo.includes(side)) return { ...side, stamps: STAMPS };
     const live = (u) => (ctx.byId.get(u.id)?.locator.deliverable === side.deliverable ? u.id : null);
-    return { ...side, stamps: 2,
+    return { ...side, stamps: STAMPS,
       units: (side.units || []).map((u) => (u.stamp ? { ...u, stamp: migratedStamp(root, ctx, u.stamp, side.deliverable, live(u)) } : u)),
       ...(side.retired ? { retired: side.retired.map((e) => (e.stamp ? { ...e, stamp: migratedStamp(root, ctx, e.stamp, side.deliverable) } : e)) } : {}) };
   });
