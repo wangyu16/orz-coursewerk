@@ -215,34 +215,25 @@ test("[req.coherence.reader-view-r6] a capital after a colon opens a clause: rec
 });
 
 // ================================================ CAUSE B: THE SPINE ================================================
-const C2_FLAGS = [ // the C2 spine's genuine detail (D48's list), file:line — TRUE positives, not tuned away
-  "concepts/course.md:7", // "the relation ΔG° = −RT ln K" (an equation, in the course summary)
-  "concepts/chemical-equilibrium.md:12", // "Chemical equilibrium is the state of …" (a definition, in the summary)
-  "concepts/chemical-equilibrium.md:29", // objective 5 "… using ΔG° = −RT ln K" (an equation)
-  "concepts/chemical-equilibrium.md:35", // concept 3 "αA + βB ⇌ σS + τT" (an equation)
-  "concepts/chemical-equilibrium.md:38", // concept 6 "… by ΔG° = −RT ln K" (an equation)
+// D49 (operator 2026-10-12) recalibrated D48: of the 9 lines first flagged here, the 5 equations NAMED in an objective,
+// concept, key-term gloss or guide item, and the 2 summary sentences (a definition, an "only"), say what to teach — the
+// operator agreed with each. The Guldberg–Waage attribution remains (tests/d49-decisions.test.mjs pins the rest).
+const C2_FLAGS = [ // the C2 spine's genuine detail (D49's list), file:line — TRUE positives, not tuned away
   "concepts/chemical-equilibrium.md:46", // key term "law of mass action — Guldberg and Waage's rule" (an attribution)
-  "concepts/chemical-equilibrium.md:49", // key term "standard Gibbs energy change — … by ΔG° = −RT ln K" (an equation)
-  "assessment-support/chemical-equilibrium.md:145", // "ask for ΔG° from $\Delta G^\ominus = -RT \ln K$" (an equation)
-  "concepts/le-chatelier.md:12", // "only a temperature change alters the value of the equilibrium constant" (an absolute claim)
 ];
 
-test("[req.spine.detail-question] calibration on the C2 spine: 9 of 116 lines carry detail, each listed; ordinary objective, concept and assessment wording is not flagged", () => {
+test("[req.spine.detail-question] calibration on the C2 spine: 1 of 116 lines carries detail (D49), listed; ordinary objective, concept and assessment wording is not flagged", () => {
   const r = liveReader(C2), chapters = manifestChapters(r);
   const files = ["concepts/course.md", ...chapters.flatMap((c) => [`concepts/${c}.md`, `assessment-support/${c}.md`])];
   assert.equal(files.reduce((n, f) => n + spineLines(r.text(f)).length, 0), 116);
   const flags = spineDetailLines(r, chapters, { units: loadUnits(C2, r) });
   assert.deepEqual(flags.map((d) => `${d.file}:${d.line}`).sort(), [...C2_FLAGS].sort());
   const kinds = Object.fromEntries(flags.map((d) => [`${d.file}:${d.line}`, d.detail.map((x) => x.kind)]));
-  assert.deepEqual(kinds["concepts/chemical-equilibrium.md:12"], ["a definition"]);
   assert.deepEqual(kinds["concepts/chemical-equilibrium.md:46"], ["an attribution", "an attribution"]);
-  assert.deepEqual(kinds["concepts/le-chatelier.md:12"], ["an absolute claim"]);
-  // every target is the study-guide section that teaches the line's node, or the closest one in wording
+  // the target is the study-guide section that teaches the line's node (here the key term's concept)
   const target = Object.fromEntries(flags.map((d) => [`${d.file}:${d.line}`, d.target]));
-  assert.equal(target["concepts/chemical-equilibrium.md:29"].section, "Equilibrium and Gibbs energy");
-  assert.match(target["concepts/chemical-equilibrium.md:29"].how, /teaches objective\.chemical-equilibrium\.relate-k-to-gibbs/);
-  assert.equal(target["concepts/chemical-equilibrium.md:35"].section, "The equilibrium constant");
-  assert.equal(target["concepts/course.md:7"].section, "Equilibrium and Gibbs energy");
+  assert.equal(target["concepts/chemical-equilibrium.md:46"].section, "The equilibrium constant");
+  assert.match(target["concepts/chemical-equilibrium.md:46"].how, /teaches concept\.chemical-equilibrium\.k-expression/);
   // ordinary wording, never flagged
   const ordinary = [
     ["Objectives", "Define chemical equilibrium as a dynamic state in which the forward and reverse reaction rates are equal and the concentrations no longer change."],
@@ -260,20 +251,21 @@ test("[req.spine.detail-question] calibration on the C2 spine: 9 of 116 lines ca
   for (const text of guide) assert.deepEqual(spineDetail({ text, section: "x" }, { guide: true }), [], text);
 });
 
-test("[req.spine.detail-question] the detail kinds of D48, each detected in a spine line (and its plain counterpart not)", () => {
+test("[req.spine.detail-question] the detail kinds of D48 as D49 calibrated them, each detected in a spine line (and its plain counterpart not)", () => {
   const d = (text, section = "Concept sequence", guide = false) => [...new Set(spineDetail({ text, section }, { guide }).map((x) => x.kind))];
   assert.deepEqual(d("The model answer uses $\\Delta H = -75.0\\ \\text{kJ}$ for the synthesis."), ["a value"]);
-  assert.deepEqual(d("Relate K to the Gibbs energy change through $\\Delta G^\\circ = -RT\\ln K$."), ["an equation"]);
   assert.deepEqual(d("Relate K to the Gibbs energy change."), []);
   assert.ok(d("The law was proposed by Guldberg and Waage in 1864.").includes("an attribution"));
-  assert.deepEqual(d("The reaction quotient is defined as the ratio of product to reactant activities."), ["a definition"]);
   assert.deepEqual(d("A catalyst does not shift the equilibrium because it speeds both directions equally."), ["an explanation"]);
-  assert.deepEqual(d("Only temperature changes the equilibrium constant."), ["an absolute claim"]);
-  assert.deepEqual(d("Ammonia has the highest yield at low temperature."), ["an absolute claim"]);
-  assert.deepEqual(d("Writing $\\ce{N2 + 3H2 <=> 2NH3}$ for the synthesis is expected."), ["an equation"]);
   // a key term's gloss is the vocabulary authority: not a definition — but a value in it is detail
   assert.deepEqual(d("**catalyst** — a substance that speeds up both reactions equally", "Key terms"), []);
   assert.deepEqual(d("**ammonia** — boils at −33 °C", "Key terms"), ["a value"]);
+  // D49: an equation, general form or reaction NAMED is what to teach; a definition and an "only"/"highest" are what a
+  // concept line states — none of them is detail now (tests/d49-decisions.test.mjs pins the calibration)
+  assert.deepEqual(d("Relate K to the Gibbs energy change through $\\Delta G^\\circ = -RT\\ln K$."), []);
+  assert.deepEqual(d("Writing $\\ce{N2 + 3H2 <=> 2NH3}$ for the synthesis is expected."), []);
+  assert.deepEqual(d("The reaction quotient is defined as the ratio of product to reactant activities."), []);
+  assert.deepEqual(d("Only temperature changes the equilibrium constant."), []);
 });
 
 function course(t) {
@@ -295,7 +287,7 @@ function course(t) {
   return { root, add, edit, session, units, gate: () => runGate(root, { inputsDir: inputs }) };
 }
 
-test("[req.spine.detail-question] [req.spine.values-consistent] [req.values.one-reader] the course through the gate: the only new findings are the 9 listed spine questions — non-blocking, routed to the digest — and the spine is never a unit", (t) => {
+test("[req.spine.detail-question] [req.spine.values-consistent] [req.values.one-reader] the course through the gate: the only new findings are the listed spine questions (9 under D48, 1 under D49) — non-blocking, routed to the digest — and the spine is never a unit", (t) => {
   const c = course(t);
   const g = c.gate();
   const sd = g.findings.filter((f) => f.kind === "detail-in-spine");
@@ -324,7 +316,8 @@ test("[req.spine.detail-question] [req.spine.values-consistent] R6-K05: a false 
   const g = c.gate();
   const q = g.findings.filter((f) => f.kind === "detail-in-spine" && f.evidence.file === "assessment-support/le-chatelier.md");
   assert.equal(q.length, 1);
-  assert.deepEqual([...new Set(q[0].evidence.detail.map((x) => x.kind))].sort(), ["a value", "an equation"]);
+  // D49: the reaction named beside the value is what to teach; the false value with its unit is still detail
+  assert.deepEqual([...new Set(q[0].evidence.detail.map((x) => x.kind))].sort(), ["a value"]);
   assert.ok(q[0].evidence.detail.some((x) => x.what === "-75.0kJ"));
   assert.equal(q[0].statusClass, "question"); assert.equal(q[0].route, "digest");
   assert.equal(q[0].evidence.target.deliverable, "study-guide/le-chatelier.md");

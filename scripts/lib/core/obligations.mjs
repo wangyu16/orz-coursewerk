@@ -1074,7 +1074,7 @@ export function coreObligations(root, reader, basis) {
       if (teachers.some((u) => reviews.get(u.id)?.verdicts.get(o.id) === "yes")) continue;
       const unreviewed = teachers.filter((u) => !reviews.get(u.id)?.verdicts.has(o.id));
       if (unreviewed.length) ob("link-review-owed", unreviewed.map((u) => u.id), `a blind link review of the units that would teach ${o.id} (node scripts/verify.mjs alignment --units ${unreviewed.map((u) => u.id).join(",")})`);
-      else ob("objective-uncovered", [], `a teaching unit that teaches ${o.id}: its links were reviewed, and none teaches it (only in passing, or not at all)`);
+      else ob("objective-uncovered", [], `a teaching unit that teaches ${o.id}: its links were reviewed, and none teaches it (only in passing, or not at all) — change the text, or bring the verdict to the instructor, who may overrule it (D49: node scripts/coursewerk.mjs answer --overrule-link ${teachers[0].id}:${o.id} …)`);
     }
   }
   // D41 for the guide (red team round 2, C5-08): a question fills an entry's Count only when its current blind

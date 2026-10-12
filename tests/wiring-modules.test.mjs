@@ -30,5 +30,5 @@ test("[req.modules.no-writes] [req.modules.wiring-report] [req.retire.old-checks
   assert.ok(r.wiring.kindsDeclaredNeverProduced.length >= 18, "every other declared kind is a gap on the clean package — produced only by planted faults (tests/stable-modules.test.mjs)");
   assert.ok(!r.findings.some((f) => RETIRED.some((k) => f.kind.includes(k))), "no retired check survives in the new gate");
   const kinds = r.findings.reduce((a, f) => ((a[f.kind] = (a[f.kind] || 0) + 1), a), {});
-  assert.deepEqual(kinds, { "absolute-unreviewed": 31, "evidence-missing": 24, "guide-entry-short": 1 }); // 24 since red-team round 1 (F1, F2)
+  assert.deepEqual(kinds, { "absolute-unreviewed": 31, "evidence-missing": 24, "guide-entry-short": 1, "detail-in-spine": 1 }); // 24 since red-team round 1 (F1, F2); + round 6 (D48 as D49 calibrated it): the one spine line carrying detail, the Guldberg–Waage key-term attribution, is a digest question (tests/d49-decisions.test.mjs)
 });

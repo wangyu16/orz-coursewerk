@@ -12,13 +12,14 @@
 // an edit of another plan item, or a light rewording the instructor glance-confirmed, leaves it current). The
 // reviews used are ALL of the unit's logged reviews that are current, so an older review that matches the unit as it is
 // now is not hidden by a newer one made stale by an edit and its revert (C2-02); item by item the most adverse answer
-// stands, so a re-run of unchanged text never overrides an earlier adverse one (red team R6, standing.mjs). What a
+// stands, so a re-run of unchanged text never overrides an earlier adverse one (red team R6, standing.mjs) — only a change
+// to the text or the instructor's overrule, bound to the text they saw, clears it (D49: alignment.mjs). What a
 // review declared is re-derived from the unit, never read from the record; the whole record is bound in the log (C2-03).
 // Trial: questions only, never blocking, until its own study promotes it (D13).
 import { classifyUnit, derivedRole, segmentDeliverable } from "../lib/core/segment.mjs";
 import { readDispatches } from "../lib/verify/dispatch.mjs";
 import { dispatchLogEntry, instructorAuthored, logRecordsOf } from "../lib/verify/verdicts.mjs";
-import { currentBases, reviewBaselines, planOf, reviewInputs, reviewable, standingAlignment } from "../lib/verify/alignment.mjs";
+import { currentBases, linkOverrules, reviewBaselines, planOf, reviewInputs, reviewable, standingAlignment } from "../lib/verify/alignment.mjs";
 import { disagreementNote } from "../lib/verify/standing.mjs";
 import { base } from "./_shared.mjs";
 import { originIndex } from "../lib/core/authorship.mjs";
@@ -41,7 +42,7 @@ function run(s) {
   const sides = [], all = currentUnits(s, sides), byId = new Map(all.map((u) => [u.id, u]));
   const ancestry = originIndex(sides); // whose text it is, by the one rule (authorship.mjs; red-team round 5)
   const log = logRecordsOf(s.text("metadata/LOG.jsonl"));
-  const plan = planOf(s), baseline = reviewBaselines(log);
+  const plan = planOf(s), baseline = reviewBaselines(log), overrules = linkOverrules(log);
   const byUnit = new Map();
   for (const r of readDispatches((p) => s.text(p), s.paths).filter((x) => x.kind === "alignment")) {
     const entry = dispatchLogEntry(r, log); if (!entry) continue; // MS8 reports a record the log does not vouch for
@@ -53,7 +54,8 @@ function run(s) {
     const inp = reviewInputs(u, all, plan);
     // which answer stands (red team R6, R6-C1-01): every current review of the unit, item by item the most adverse
     // answer — a "yes" re-run of unchanged text never overrides an honest "no" (standing.mjs, via alignment.mjs)
-    const s = standingAlignment(recs, u, inp, plan, currentBases(u, inp, plan, baseline), baseline);
+    // the instructor's overrule of a "no" (D49) stands while the text reads as they saw it: no link-doubtful then
+    const s = standingAlignment(recs, u, inp, plan, currentBases(u, inp, plan, baseline), baseline, overrules.get(u.id));
     if (!s) continue;
     const v0 = s.read(s.latest);
     if (!v0 || v0.unanswered.length)
@@ -62,7 +64,7 @@ function run(s) {
     if (!s.readable) continue;
     const item = (k) => s.standing.items.get(k);
     for (const [id, verdict] of s.verdicts) if (verdict === "no")
-      out.push({ kind: "link-doubtful", units: [u.id], evidence: { type: "judgment", note: `${u.id} is linked to ${id} but does not deal with it: ${s.why.get(id)}${s.also.length ? ` It teaches ${s.also.join(", ")}.` : ""}${disagreementNote(item(`link:${id}`))}`, link: id, suggested: s.also, dispatch: s.by.get(`link:${id}`) } });
+      out.push({ kind: "link-doubtful", units: [u.id], evidence: { type: "judgment", note: `${u.id} is linked to ${id} but does not deal with it: ${s.why.get(id)}${s.also.length ? ` It teaches ${s.also.join(", ")}.` : ""}${disagreementNote(item(`link:${id}`))} Relink or rewrite it, or bring it to the instructor, who may overrule the review (D49).`, link: id, suggested: s.also, dispatch: s.by.get(`link:${id}`) } });
     if (s.offPlan === true) out.push({ kind: "off-spine", units: [u.id], evidence: { type: "judgment", note: `${u.id} teaches nothing in the chapter's approved plan: keep it (the spine may need it) or drop it?${disagreementNote(item("offPlan"))}`, dispatch: s.by.get("offPlan") } });
     for (const f of s.fidelity.filter((x) => x.type === "differs" || x.level === "differs")) {
       const g = (f.id && inp.guides.find((x) => x.id === f.id)) || inp.guides[0];

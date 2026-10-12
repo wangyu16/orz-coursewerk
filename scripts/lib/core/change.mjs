@@ -68,6 +68,51 @@ export function meaningTokens(text) {
 const directions = (t) => (String(t || "").match(DIRECTION) || []).map((x) => x.toLowerCase());
 /** The direction words of a text, in order (read on the reader view by a caller that binds what a reader saw). */
 export const directionWords = directions;
+// THE AXES a direction word sits on, and its side (D49, operator 2026-10-12): "lowers" → "raises" turns a statement
+// round on the same axis. Each word maps to [axis, side]; a word with no opposite here (none: the list is DIRECTION's)
+// is never read as reversed.
+const AXIS = [
+  [/^(?:rais|increas|higher|more)/, "amount", 1], [/^(?:lower|decreas|less|fewer)/, "amount", -1],
+  [/^add/, "presence", 1], [/^remov/, "presence", -1],
+  [/^forward/, "course", 1], [/^(?:reverse|backward)/, "course", -1],
+  [/^right/, "side", 1], [/^left/, "side", -1],
+  [/^endothermic/, "heat-of-reaction", 1], [/^exothermic/, "heat-of-reaction", -1],
+  [/^absorb/, "heat-flow", 1], [/^releas/, "heat-flow", -1],
+  [/^heat/, "temperature", 1], [/^cool/, "temperature", -1],
+  [/^compress/, "volume", -1], [/^expand/, "volume", 1],
+  [/^product/, "species", 1], [/^reactant/, "species", -1],
+];
+const axisOf = (w) => { const a = AXIS.find(([re]) => re.test(w)); return a ? { axis: a[1], side: a[2] } : null; };
+/**
+ * A DIRECTION REVERSAL between two readings of one passage (D49): a direction word replaced by its opposite on the same
+ * axis ("lowers" → "raises", "increases" → "decreases", "endothermic" → "exothermic"), or two opposite direction words
+ * swapped in place ("fewer … more" → "more … fewer", C4-13). Read on the reader view. Returns { from: [words], to:
+ * [words] } or null. A direction word only added or only dropped (a rewording that says more or less) is no reversal.
+ */
+export function directionReversal(before, after) {
+  const A = directions(readerView(before)), B = directions(readerView(after));
+  if (JSON.stringify(A) === JSON.stringify(B)) return null;
+  const left = [...A], right = [...B];
+  for (const w of A) { const k = right.indexOf(w); if (k >= 0) { right.splice(k, 1); left.splice(left.indexOf(w), 1); } }
+  const from = [], to = [];
+  for (const w of left) {
+    const a = axisOf(w); if (!a) continue;
+    const opp = right.find((x) => { const b = axisOf(x); return b && b.axis === a.axis && b.side === -a.side; });
+    if (opp) { from.push(w); to.push(opp); }
+  }
+  if (from.length) return { from: [...new Set(from)], to: [...new Set(to)] };
+  // the same words, in another order: a swap of two opposites on one axis
+  if (!left.length && !right.length) {
+    const axes = (xs) => xs.map(axisOf).filter(Boolean);
+    const a = axes(A), b = axes(B);
+    for (let i = 0; i < Math.min(a.length, b.length); i++)
+      if (a[i].axis === b[i].axis && a[i].side === -b[i].side) {
+        const fa = A.filter((w) => axisOf(w)?.axis === a[i].axis), fb = B.filter((w) => axisOf(w)?.axis === a[i].axis);
+        return { from: [...new Set(fa)], to: [...new Set(fb)] };
+      }
+  }
+  return null;
+}
 // the same facts: the fact and direction tokens, and the direction words in order. A change that keeps them but not the
 // words is a rephrasing (D43); one that does not is substantive.
 //

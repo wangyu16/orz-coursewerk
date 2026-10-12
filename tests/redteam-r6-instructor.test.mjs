@@ -188,7 +188,8 @@ test("[req.instructor-text.protected] a meaning-free edit is allowed silently an
   assert.deepEqual(c.ms8(u.id), [UNASKED]);
   // property: the rule itself
   assert.equal(instructorTextChange(P, SAME), null);
-  assert.equal(instructorTextChange("Heating shifts it left.", "Heating shifts it right.").factChange, false);
+  // D49 (operator 2026-10-12): a direction reversal is a changed fact, like a value (tests/d49-decisions.test.mjs)
+  assert.equal(instructorTextChange("Heating shifts it left.", "Heating shifts it right.").factChange, true);
   assert.equal(instructorTextChange("Adding argon does shift it.", "Adding argon does not shift it.").factChange, true, "a negation is a fact");
   assert.equal(instructorTextChange("Adding argon does shift it.", "Adding argon does ~~not~~ shift it."), null, "struck text is not read");
   assert.equal(instructorTextChange("It shifts.", "It shifts.\n\nA new sentence of the agent.", { joined: true }), null, "words joined from another unit are not theirs");

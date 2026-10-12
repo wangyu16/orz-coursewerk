@@ -15,7 +15,7 @@
 
 import { sha256 as sha256Text } from "../records/canonical.mjs";
 import { meaningKey, meaningKeyTokens, printedChars, readerView, renderedParts } from "./rendered.mjs";
-import { directionWords, factTokens } from "./change.mjs";
+import { directionReversal, directionWords, factTokens } from "./change.mjs";
 
 /** Every id whose text the unit holds: its own, and every unit it took text over from (for good). */
 export const textIds = (u) => [...new Set([u?.id, ...(u?.lineage || [])].filter(Boolean))];
@@ -115,7 +115,9 @@ export function holdsInstructorText(unit, logRecords = [], ancestry = new Map())
 //     name, a symbol, a negation — what factHash reads) needs what the correction path needs: two independent agreeing
 //     sources and a logged correction with its diff shown. A hand edit has neither, so it is a blocking agent
 //     obligation (instructor-fact-changed): revert it, or route it through the correction path (applyCorrection), or
-//     the instructor keeps it;
+//     the instructor keeps it. A DIRECTION REVERSAL in a rewritten sentence of theirs ("lowers" → "raises",
+//     "endothermic" → "exothermic": change.mjs directionReversal) is a changed fact the same way (D49, operator
+//     2026-10-12); a sentence or paragraph of theirs only deleted stays their question;
 //   - what the instructor asked for is not unasked: a reviewer's suggestion they accepted (D35), a change they asked
 //     for on a disputed claim (D40, instructor-change-owed), a guarded correction (above).
 // An edit outside an agent session is not read here: it is an edit of unknown authorship, already the instructor's
@@ -189,6 +191,9 @@ export function instructorTextChange(before, after, { joined = false, asked = ()
     if (del.length && ins.length) {
       const f0 = seenFacts(del), f1 = seenFacts(ins);
       if (multiset(f0) !== multiset(f1)) { factChange = true; from.push(...f0.filter((x) => !f1.includes(x))); to.push(...f1.filter((x) => !f0.includes(x))); }
+      // a direction turned round is a changed fact too (D49): "raising the temperature lowers K" → "… raises K"
+      const rev = directionReversal(del.map(factView).join(" "), ins.map(factView).join(" "));
+      if (rev) { factChange = true; from.push(...rev.from); to.push(...rev.to); }
     }
   }
   if (!removed.length && !added.length) return null;

@@ -4,7 +4,9 @@
 // deliverable (a chapter's study guide, slides or practice, or a document declared in DOCUMENTS.json — each segmented,
 // linked and reviewed), the spine (approved by the instructor), a document the instructor confirmed as administrative,
 // a harness record NAMED EXACTLY (round 6, C3-04: never "anything under metadata/"), or media that carries no text
-// (images, sound, video, fonts). Any other file — markdown or not (html, txt, svg, pdf …) — is refused. And a
+// (images, sound, video, fonts) — and an SVG or PDF under assets/, which ships as media like an image (D49, operator
+// 2026-10-12): the visual review covers it as it covers an image. Any other file — markdown or not (html, txt, an svg or
+// pdf outside assets/, json outside the records …) — is refused. And a
 // `{{md …}}` include (orz-markdown's markdown-include, aliases `markdown`, `md`, `md-include`) renders another file
 // into the one that names it, so its target must itself be a deliverable — read on its own — and must print nothing
 // under the includer's frame that its own reading leaves out (round 6, C3-03), or the include is refused.
@@ -119,6 +121,14 @@ export const RECORD_PATHS = Object.freeze([
 /** Media whose content is pixels or sound, never text a student reads as prose (an image's words are the visual
  *  review's: VISUAL_REVIEW.json). Every other file that ships can carry text, and is read or refused. */
 export const MEDIA_EXTENSIONS = Object.freeze(new Set(["png", "jpg", "jpeg", "gif", "webp", "avif", "bmp", "ico", "mp3", "ogg", "oga", "wav", "flac", "m4a", "mp4", "webm", "ogv", "mov", "woff", "woff2", "ttf", "otf"]));
+/** Figures that are drawn documents — an SVG, a PDF — ship as media when they sit under assets/ (D49, operator
+ *  2026-10-12): an asset is a visual component (coherence.mjs: every assets/ file re-owes the visual review when it
+ *  changes, and a carrier that embeds one binds its digest into VISUAL_REVIEW.json, as for an image). Elsewhere an SVG
+ *  or PDF is a text-bearing file like any other, read or refused. */
+export const ASSET_MEDIA_EXTENSIONS = Object.freeze(new Set(["svg", "pdf"]));
+const fileExt = (r) => (/\.([^./]+)$/.exec(r)?.[1] || "").toLowerCase();
+/** Does a shipped file ship as media (pixels, sound, a font, or a drawn figure under assets/)? */
+export const isMedia = (rel) => MEDIA_EXTENSIONS.has(fileExt(rel)) || (/^assets\//.test(rel) && ASSET_MEDIA_EXTENSIONS.has(fileExt(rel)));
 /** The rights-evidence snapshots a record names (`evidenceSnapshot` in FOUNDATION.json, SOURCE_RECORD.json,
  *  MEDIA_PLAN.json or PROVENANCE.json; assurance.mjs binds each to its sha256): only those are records. */
 export function namedEvidence(reader) {
@@ -151,7 +161,7 @@ export function printedOnlyWhenIncluded(includer, includerText, target, targetTe
 /**
  * What would ship unchecked (opts as shippedFiles): { documents: [rel] — a shipped file nobody reads: markdown that is
  * no deliverable, spine, administrative document or named record, and any other file that can carry text (html, txt,
- * svg, pdf, json outside the named records …); includes: [{ file, line, target, resolved, why? }] — an include whose target is not a deliverable, or that
+ * svg or pdf outside assets/, json outside the named records …); includes: [{ file, line, target, resolved, why? }] — an include whose target is not a deliverable, or that
  * prints, under the includer's frame, text the target's own reading leaves out }.
  */
 export function uncheckedShipped(root, reader, opts = {}) {
@@ -164,8 +174,7 @@ export function uncheckedShipped(root, reader, opts = {}) {
   const md = shipped.filter((r) => /\.(?:md|markdown)$/i.test(r));
   // exempt by exact record name only (round 6, C3-04): a markdown file under metadata/ is read like any other
   const documents = md.filter((r) => !deliverables.has(r) && !spine.has(r) && !admin.has(r) && !isHarnessRecord(r, evidence));
-  const ext = (r) => (/\.([^./]+)$/.exec(r)?.[1] || "").toLowerCase();
-  const files = shipped.filter((r) => !/\.(?:md|markdown)$/i.test(r) && !isHarnessRecord(r, evidence) && !MEDIA_EXTENSIONS.has(ext(r)));
+  const files = shipped.filter((r) => !/\.(?:md|markdown)$/i.test(r) && !isHarnessRecord(r, evidence) && !isMedia(r));
   const includes = [];
   for (const file of md) {
     const text = reader.text(file);

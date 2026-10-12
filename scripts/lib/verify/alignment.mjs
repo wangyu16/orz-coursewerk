@@ -25,7 +25,7 @@ import { readDispatches, recordDispatch, reviewedPassage } from "./dispatch.mjs"
 import { meaningKey } from "../core/rendered.mjs";
 import { unitHash } from "../core/segment.mjs";
 import { dispatchLogEntry } from "./verdicts.mjs";
-import { standingOf } from "./standing.mjs";
+import { readerKey, standingOf } from "./standing.mjs";
 
 export { reviewable };
 
@@ -295,6 +295,45 @@ export async function reviewAlignment(root, reader, { verifier, only = null, onP
 // off the plan outranks on it; a type or level that "differs" outranks "matches". An unreadable review, or an item a
 // review left unanswered, is no answer. So a "yes" re-run of unchanged text never overrides an honest "no" — only a
 // real change to the passage, its links or the plan items it judged (or the instructor) does.
+//
+// THE INSTRUCTOR MAY OVERRULE A LINK VERDICT (D49, operator 2026-10-12). A standing "no" or "passing" for a node the
+// unit is linked to is overruled by the instructor's answer, quoting their words — the one way besides a change to the
+// text to clear it (standing.mjs rule 3). The answer is logged as an instructor act (an "answer" record whose item
+// carries `overrule: { unit, link, was, seenKey }`), bound to the unit's reader-view text (standing.readerKey): it holds
+// while a reader is shown the same passage and lapses when the text changes, so a fresh review of the new text speaks.
+// An overruled link reads "yes": MS9 raises no link-doubtful for it and coverage counts it as taught.
+const OVERRULABLE = new Set(["no", "passing"]);
+/** The instructor's link overrules in a log: Map(unit id → [{ link, was, seenKey, words, seq }]). */
+export function linkOverrules(log) {
+  const out = new Map();
+  for (const r of log || []) if (r?.type === "answer" && r.party?.role === "instructor") for (const a of r.payload?.answers || []) {
+    const o = a?.overrule;
+    if (!o || typeof o.unit !== "string" || typeof o.link !== "string" || typeof o.seenKey !== "string") continue;
+    out.set(o.unit, [...(out.get(o.unit) || []), { link: o.link, was: o.was ?? null, seenKey: o.seenKey, words: r.payload?.instructorWords || "", seq: Number(r.seq ?? 0) }]);
+  }
+  return out;
+}
+/** The overrule that stands for one link of a unit as its text reads now (null: none, or it lapsed with the text). */
+export const overruleOf = (overrules, u, link) => (overrules || []).filter((o) => o.link === link && o.seenKey === readerKey(u.text)).sort((a, b) => b.seq - a.seq)[0] || null;
+/**
+ * The instructor overrules the standing link verdicts of one unit (D49): [{ unit, link, was, seenKey }], the items an
+ * "answer" record carries (digest.answerDigest logs them with the instructor's words). Each link must be one the unit
+ * declares, and its standing verdict must be adverse ("no" or "passing") — there is nothing else to overrule.
+ */
+export function linkOverruleItems(root, reader, unitId, links) {
+  const all = loadUnits(root, reader), u = all.find((x) => x.id === unitId);
+  if (!u) throw new Error(`no such unit: ${unitId}`);
+  const reviews = currentReviewsAt(root, reader, all), r = reviews.get(unitId);
+  const want = [...new Set((links || []).map(String).filter(Boolean))];
+  if (!want.length) throw new Error("name the link to overrule (a node the unit is linked to)");
+  return want.map((link) => {
+    if (!(u.spineNodes || []).includes(link)) throw new Error(`${unitId} is not linked to ${link}: there is no link verdict to overrule`);
+    const v = r?.verdicts.get(link);
+    if (!OVERRULABLE.has(v)) throw new Error(`${unitId} → ${link}: ${v === "yes" ? "the standing verdict already says it teaches it" : "no current link review has judged it (run node scripts/verify.mjs alignment first)"}; only a "no" or "passing" can be overruled`);
+    return { unit: unitId, link, was: v, seenKey: readerKey(u.text) };
+  });
+}
+
 const VERDICT_RANK = { yes: 0, passing: 1, no: 2 };
 const FIDELITY_RANK = { matches: 0, differs: 1 };
 /**
@@ -303,7 +342,7 @@ const FIDELITY_RANK = { matches: 0, differs: 1 };
  *   offPlan: true|false|null, also: [ids], fidelity: [{ id, type, level, why, dispatch }], dispatch, standing } —
  * `latest` is the newest current review (readable or not: MS9 says when it cannot be read), `read` reads a record.
  */
-export function standingAlignment(recs, u, inp, plan, bases, baseline) {
+export function standingAlignment(recs, u, inp, plan, bases, baseline, overrules = []) {
   const declared = inp.declared.map((n) => n.id), guides = inp.guides.map((g) => g.id), known = new Set(inp.chapterNodes.map((n) => n.id));
   const read = (r) => readAlignment(r.answer?.raw, r.bundle?.nonce, declared, known, r.guides ? guides : guides.length ? true : []);
   // a record from before round 1 names no guide entry: with one entry linked, its fidelity answer is that entry's
@@ -321,6 +360,9 @@ export function standingAlignment(recs, u, inp, plan, bases, baseline) {
   if (!st.current.length) return null;
   const at = (k) => st.items.get(k);
   const verdicts = new Map(declared.map((id) => [id, at(`link:${id}`)?.answer.verdict ?? "unanswered"]));
+  // the instructor's overrule of an adverse verdict, while the text reads as they saw it (D49)
+  const overruled = new Map();
+  for (const [id, v] of verdicts) { const o = OVERRULABLE.has(v) && overruleOf(overrules, u, id); if (o) { overruled.set(id, { was: v, words: o.words, seq: o.seq }); verdicts.set(id, "yes"); } }
   const fids = [...new Set([...st.items.keys()].filter((k) => k.startsWith("type:") || k.startsWith("level:")).map((k) => k.slice(k.indexOf(":") + 1)))];
   const fidelity = fids.map((k) => {
     const t = at(`type:${k}`), l = at(`level:${k}`), id = k === "null" ? null : k;
@@ -328,7 +370,7 @@ export function standingAlignment(recs, u, inp, plan, bases, baseline) {
     return { id, type: t?.answer.type ?? "unanswered", level: l?.answer.level ?? "unanswered", why: worst?.answer.why ?? "", dispatch: worst?.review.r.dispatch ?? null, disagreed: t?.disagreed ? t : l?.disagreed ? l : null };
   });
   return {
-    latest: st.current[0].r, read, standing: st, verdicts,
+    latest: st.current[0].r, read, standing: st, verdicts, overruled,
     why: new Map(declared.map((id) => [id, at(`link:${id}`)?.answer.why ?? ""])),
     by: new Map([...st.items].map(([k, e]) => [k, e.review.r.dispatch])),
     offPlan: at("offPlan")?.answer ?? null,
@@ -344,7 +386,7 @@ export function standingAlignment(recs, u, inp, plan, bases, baseline) {
  * absent from the map has no current readable review.
  */
 export function currentReviews(all, plan, records, log) {
-  const out = new Map(), byUnit = new Map(), baseline = reviewBaselines(log);
+  const out = new Map(), byUnit = new Map(), baseline = reviewBaselines(log), overrules = linkOverrules(log);
   for (const r of records.filter((x) => x.kind === "alignment")) {
     const entry = dispatchLogEntry(r, log); if (!entry) continue;
     byUnit.set(r.unit, [...(byUnit.get(r.unit) || []), { r, seq: Number(entry.seq ?? 0) }]);
@@ -352,8 +394,8 @@ export function currentReviews(all, plan, records, log) {
   for (const u of all) {
     const recs = byUnit.get(u.id); if (!recs || !(reviewable(u) || u.role === "framing")) continue;
     const inp = reviewInputs(u, all, plan);
-    const s = standingAlignment(recs, u, inp, plan, currentBases(u, inp, plan, baseline), baseline);
-    if (s?.readable) out.set(u.id, { verdicts: s.verdicts, offPlan: s.offPlan, fidelity: s.fidelity, dispatch: s.dispatch });
+    const s = standingAlignment(recs, u, inp, plan, currentBases(u, inp, plan, baseline), baseline, overrules.get(u.id));
+    if (s?.readable) out.set(u.id, { verdicts: s.verdicts, offPlan: s.offPlan, fidelity: s.fidelity, dispatch: s.dispatch, overruled: s.overruled });
   }
   return out;
 }

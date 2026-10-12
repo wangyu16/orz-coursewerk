@@ -100,8 +100,8 @@ export function spineReviewQuestions(root, reader, basis) {
 
 /**
  * D48 (operator 2026-10-11): the spine says what to teach, to what level and how to assess — it is not source-checked.
- * A spine line that carries more (a definition, an explanation, a value with a unit, an equation, an attribution, an
- * absolute claim) is the instructor's question, in the digest: the agent suggests removing the detail from the spine and
+ * A spine line that carries more — numerical data, an explanation or derivation, an attribution or history (as D49
+ * calibrated it: a named equation and a chapter summary are what to teach; spine_detail.mjs) — is the instructor's question, in the digest: the agent suggests removing the detail from the spine and
  * placing it in the study guide, at the section that teaches the line's objective or concept. Questions never block.
  */
 export function spineDetailQuestions(root, reader, basis) {

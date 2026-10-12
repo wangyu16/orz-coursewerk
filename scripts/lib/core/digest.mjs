@@ -13,6 +13,7 @@ import { recordFile } from "../records/paths.mjs";
 import { chapterOfFinding } from "./workflow.mjs";
 import { confirmUnits } from "./obligations.mjs";
 import { adoptInstructorText, claimAuthorship } from "./units_index.mjs";
+import { linkOverruleItems } from "../verify/alignment.mjs";
 
 export const DEFAULT_CAP = 10;
 const STATE = "metadata/digest/state.json";
@@ -120,7 +121,13 @@ const CONFIRMS = { "exercise-data-confirm": { re: /^\s*confirm/i, what: "fact" }
 const ADOPTS = { "instructor-edit-unasked": /^\s*keep/i };
 const CLAIMS = { "unit-unknown-authorship": /^\s*accept as mine/i }; // an "accept as mine" answer records the instructor's authorship
 
-export function answerDigest(root, digest, { answers = {}, acceptAll = false, instructorWords, reader = null }, party) {
+/**
+ * `overrules`: [{ unit, links: [node id] }] — the instructor overrules a blind link review's standing "no" or "passing"
+ * for those links (D49, operator 2026-10-12): the agent brings the adverse verdict (MS9 link-doubtful, or the reviewed
+ * objective-uncovered) to the digest, and the instructor's answer, quoting their words, is logged in the same answer
+ * record, bound to each unit's reader-view text (alignment.mjs linkOverrules). It may be the whole answer.
+ */
+export function answerDigest(root, digest, { answers = {}, acceptAll = false, instructorWords, reader = null, overrules = [] }, party) {
   if (party?.role !== "instructor") throw new Error("only the instructor answers a question; the agent never answers one on the instructor's behalf");
   if (!String(instructorWords || "").trim()) throw new Error("an answer quotes the instructor's words");
   const unknown = Object.keys(answers).filter((k) => !digest.entries.some((e) => e.key === k));
@@ -130,7 +137,10 @@ export function answerDigest(root, digest, { answers = {}, acceptAll = false, in
     const choice = e.key in answers ? answers[e.key] : acceptAll && e.recommendation != null ? e.recommendation : undefined;
     if (choice !== undefined) for (const b of e.bases) recorded.push({ ...b, choice: String(choice), entry: e.key });
   }
-  if (!recorded.length) throw new Error("nothing to record: name an entry and a choice, or accept all recommendations");
+  if ((overrules || []).length && !reader) throw new Error("an overrule of a link verdict reads the unit's current text: pass the package reader");
+  for (const o of overrules || []) for (const item of linkOverruleItems(root, reader, o.unit, o.links ?? [o.link]))
+    recorded.push({ finding: `link-overrule:${item.unit}:${item.link}`, basis: item.seenKey, choice: `overrule: ${item.unit} teaches ${item.link} (the review said "${item.was}")`, overrule: item });
+  if (!recorded.length) throw new Error("nothing to record: name an entry and a choice, or accept all recommendations, or a link verdict to overrule");
   appendLogRecord(root, { type: "answer", party, payload: { answers: recorded, acceptAll, instructorWords } });
   for (const [kind, rule] of Object.entries(CONFIRMS)) {
     const ids = [...new Set(digest.entries.filter((e) => e.kind === kind && recorded.some((r) => r.entry === e.key && rule.re.test(r.choice))).flatMap((e) => e.units))];

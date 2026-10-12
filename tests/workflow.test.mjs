@@ -44,6 +44,15 @@ function clearLeChatelier(p) {
   p.commit();
 }
 
+/** The course's one spine-detail question (D48 as D49 calibrated it: the Guldberg–Waage attribution in a key-term
+ *  gloss) is a true question, raised before any publish like every open question: the instructor answers it at the
+ *  digest first, so the publish below meets only the questions each test is about. */
+function answerSpineDetail(p, g, info) {
+  const d = buildDigest(p.root, g.findings, info), e = d.entries.filter((x) => x.kind === "detail-in-spine");
+  assert.equal(e.length, 1, "the C2 spine carries one line of detail");
+  answerDigest(p.root, d, { answers: { [e[0].key]: "keep it in the spine" }, instructorWords: "Keep the attribution in the key term." }, I);
+}
+
 // ---- states (T1) --------------------------------------------------------------------------------------------------
 test("[req.states.machine] a chapter is in exactly one state and moves only by its triggers and preconditions", (t) => {
   const p = copy(t);
@@ -130,6 +139,7 @@ test("[req.publish.record] [req.publish.scope] [req.oldgate.retired] a publish r
   const info = unitInfoOf(p.root, p.reader);
   const el = eligibility(p.root, p.reader, g, new Map([...info].map(([k, v]) => [k, v.deliverable])));
   assert.equal(el.chapters["le-chatelier"].publishable, true, JSON.stringify(el.chapters["le-chatelier"].why));
+  answerSpineDetail(p, g, info);
   assert.equal(el.chapters["chemical-equilibrium"].publishable, false);
   assert.throws(() => publishDecision(p.root, p.reader, { gateResult: g, unitInfo: info, instructorWords: "go" }, AGENT), /instructor's decision/);
   const r = publishDecision(p.root, p.reader, { gateResult: g, unitInfo: info, instructorWords: "Publish what is ready." }, I);
@@ -169,6 +179,7 @@ test("[req.draft.private] [req.ms2.public-only] [req.profiles.one-gate] one gate
   const gPub = runGate(p.root, { profile: "public", inputsDir: p.inputs });
   assert.throws(() => publishDecision(p.root, p.reader, { gateResult: gPub, unitInfo: info, instructorWords: "go", includeDrafts: true }, I), /only in a private package/);
   const gPriv = runGate(p.root, { profile: "private", inputsDir: p.inputs });
+  answerSpineDetail(p, gPriv, info);
   const r = publishDecision(p.root, p.reader, { gateResult: gPriv, unitInfo: info, instructorWords: "Share it with my class, draft included.", includeDrafts: true }, I);
   assert.deepEqual(r.drafts.map((d) => d.chapter), ["chemical-equilibrium"]); assert.equal(r.profile, "private");
   p.commit();
@@ -378,6 +389,7 @@ test("[req.publish.questions-raised] open questions never block, but are raised 
   const g = runGate(p.root, { inputsDir: p.inputs });
   const info = unitInfoOf(p.root, p.reader);
   const u = [...info.keys()].find((k) => k.startsWith("u-study-guide-le-chatelier"));
+  answerSpineDetail(p, g, info);
   g.gate.questions.push({ id: "q-open-1", module: "ms8-verdicts", kind: "knowledge-concern", statusClass: "question", units: [u], evidence: { note: "Is the catalyst sentence too strong?" } });
   let raised;
   assert.throws(() => publishDecision(p.root, p.reader, { gateResult: g, unitInfo: info, instructorWords: "Publish what is ready." }, I), (e) => ((raised = e.openQuestions), /open question/.test(e.message)));

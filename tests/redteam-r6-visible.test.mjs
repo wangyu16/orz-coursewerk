@@ -326,9 +326,9 @@ test("[req.control.shipped-equals-read] C3-04: a teaching handout under metadata
   assert.deepEqual(docs, ["metadata/further-reading.md", "study-guide/galvanic-cells.html"]);
 });
 
-test("[req.control.shipped-equals-read] variants: named records, the named evidence snapshot, the licence and media ship unread; an unknown metadata record, an unnamed evidence file, a text, svg or json file anywhere are refused", async (t) => {
+test("[req.control.shipped-equals-read] variants: named records, the named evidence snapshot, the licence and media ship unread; an unknown metadata record, an unnamed evidence file, a text or json file anywhere, an svg or pdf outside assets/ (D49) are refused", async (t) => {
   const c = course(t);
-  const refused = ["assets/notes.txt", "assets/diagram.svg", "materials/handout.htm", "metadata/NOTES.json", "metadata/evidence/unnamed.html", "concepts/extra.json", "metadata/units/notes.md"];
+  const refused = ["assets/notes.txt", "materials/diagram.svg", "slides/figure.pdf", "materials/handout.htm", "metadata/NOTES.json", "metadata/evidence/unnamed.html", "concepts/extra.json", "metadata/units/notes.md"];
   for (const rel of refused) c.write(rel, LESSON);
   c.write("assets/photo.png", "\x89PNG");
   c.write("assets/clip.mp4", "binary");

@@ -9,7 +9,7 @@
 //   node scripts/coursewerk.mjs digest   --root <pkg> [--inputs <dir>] [--deliver --model <id>]               M4 (size: the instructor's digest-cap, default 10)
 //   node scripts/coursewerk.mjs digest-cap --root <pkg> --set <n> --name <instructor> --words "…"
 //   node scripts/coursewerk.mjs recommend --root <pkg> --entry <n> --text "<what you recommend>" --model <id>   your recommendation, before M4
-//   node scripts/coursewerk.mjs answer   --root <pkg> (--entry <n> --choice "<choice>" | --accept-all) --name <instructor> --words "…"
+//   node scripts/coursewerk.mjs answer   --root <pkg> (--entry <n> --choice "<choice>" | --accept-all | --overrule-link <unit>:<node>[,…]) --name <instructor> --words "…"
 //   node scripts/coursewerk.mjs publish  --root <pkg> [--inputs <dir>] [--chapters a,b] [--include-drafts] --name <instructor> --words "…"   M6
 //   node scripts/coursewerk.mjs revert   --root <pkg> --correction <id> --name <instructor> --note "<why the text stands>"
 //   node scripts/coursewerk.mjs history  --root <pkg> [--out <file.md>]   how every issue was found and settled, from the records
@@ -144,13 +144,15 @@ try {
   if (cmd === "answer") {
     let d; try { d = JSON.parse(fs.readFileSync(recordFile(root, DIGEST_FILE), "utf8")); } catch { refuse("there is no digest to answer", "node scripts/coursewerk.mjs digest --root <pkg> --deliver --model <id>"); }
     const answers = {};
-    if (!flag("--accept-all")) {
+    // D49: --overrule-link <unit>:<node>[,<unit>:<node>…] — the instructor overrules a link review's "no" or "passing"
+    const overrules = (opt("--overrule-link") || "").split(",").filter(Boolean).map((x) => { const k = x.indexOf(":"); if (k < 1) refuse("an overrule names a unit and a link", "--overrule-link <unit id>:<node id>"); return { unit: x.slice(0, k), links: [x.slice(k + 1)] }; });
+    if (!flag("--accept-all") && !(overrules.length && opt("--entry") == null)) {
       const n = Number(opt("--entry")), choice = opt("--choice");
-      if (!Number.isInteger(n) || !d.entries[n - 1] || !choice) refuse("which entry, and which choice?", `--entry <1…${d.entries.length}> --choice "<choice>", or --accept-all`);
+      if (!Number.isInteger(n) || !d.entries[n - 1] || !choice) refuse("which entry, and which choice?", `--entry <1…${d.entries.length}> --choice "<choice>", or --accept-all, or --overrule-link <unit>:<node>`);
       answers[d.entries[n - 1].key] = choice;
     }
     const { party, words } = instructor();
-    const r = answerDigest(root, d, { answers, acceptAll: flag("--accept-all"), instructorWords: words, reader }, party);
+    const r = answerDigest(root, d, { answers, acceptAll: flag("--accept-all"), instructorWords: words, reader, overrules }, party);
     out({ recorded: r.length }); process.exit(0);
   }
   if (cmd === "recommend") {

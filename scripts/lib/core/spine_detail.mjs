@@ -1,26 +1,29 @@
 // THE SPINE SAYS WHAT TO TEACH, NOT THE CONTENT (D48, operator 2026-10-11). The concept maps and assessment guides say
 // what to teach, to what level and how to assess. They are approved by the instructor byte for byte and reviewed blind
-// at each re-approval (D39); they are NOT source-checked. Detail that belongs in the teaching — a definition, an
-// explanation, a value with a unit, an equation, an attribution, an absolute claim — is pointed out instead: each spine
-// line that carries some is a non-blocking digest question, and the agent suggests moving the detail to the study guide,
+// at each re-approval (D39); they are NOT source-checked. Detail that belongs in the teaching is pointed out instead.
+// WHAT IS DETAIL (D49, operator 2026-10-12, refining D48): numerical data (a value with a unit, worked numbers),
+// explanations and derivations written into the spine, and attributions and history. NOT detail: an equation, general
+// form or relation NAMED in an objective, concept, key-term gloss or assessment item (naming it says what to teach and to
+// what level), and the summary sentences that describe what a chapter covers (a summary is read only for numerical data
+// and attributions). Definitions and absolute claims are no longer detail kinds (they are what concept lines state).
+// Each spine line that carries detail is a non-blocking digest question, and the agent suggests moving the detail to the study guide,
 // naming the section that teaches the line's objective or concept. A value in the spine is ALSO read by the cross-
 // deliverable value check (modules/ms7-consistency.mjs spineClaims), so one that disagrees with the deliverables is a
 // value-disagreement like any other.
 //
 // The detectors are the harness's own readers (red-team round 6, cause A: one reader per question), never a private
-// vocabulary: values are what the claim extractor requires (values.readValues), reactions what the balance check reads
-// (mechanical.reactionsIn), names, years and exclusivities what the claim extractor reads (names.mjs, claims.mjs).
-// Calibrated on the C2 fixture and the red-team base (tests/redteam-r6-readers.test.mjs): ordinary objective, concept
-// and assessment wording ("Define chemical equilibrium as …", "Ask whether …", "Q_r < K, Q_r > K and Q_r = K") is not
-// detail. What is never scanned: the provenance section (## Source and scope), the course's chapter list, headings, the
+// vocabulary: values are what the claim extractor requires (values.readValues), names and years what the claim
+// extractor reads (names.mjs, claims.mjs). Calibrated on the C2 fixture and the red-team base
+// (tests/redteam-r6-readers.test.mjs, tests/d49-decisions.test.mjs): ordinary objective, concept and assessment wording
+// ("Define chemical equilibrium as …", "Ask whether …", "Q_r < K, Q_r > K and Q_r = K", "using ΔG° = −RT ln K") is
+// not detail. What is never scanned: the provenance section (## Source and scope), the course's chapter list, headings, the
 // guide's structural fields (Type, Count, Level, Targets, Cognitive level) and the credit line. A key term's gloss is
-// the vocabulary authority the format requires (format-contracts/deliverables.md), so it is not read as a definition;
-// any other detail in it is. A misconception is a false statement by design, so it carries no "absolute claim".
+// the vocabulary authority the format requires (format-contracts/deliverables.md); any detail in it is still detail. A
+// misconception is a false statement by design, so its false reasons are not "an explanation".
 // PURE and DETERMINISTIC.
 import { readValues } from "./values.mjs";
 import { factNamesIn, namesIn } from "./names.mjs";
-import { exclusivityOf, superlativesIn, yearsIn, contentWords } from "../verify/claims.mjs";
-import { reactionsIn } from "../verify/mechanical.mjs";
+import { yearsIn, contentWords } from "../verify/claims.mjs";
 import { itemParts, COURSE_MAP, spinePaths } from "./spine.mjs";
 import { isCreditLine } from "./segment.mjs";
 
@@ -65,61 +68,65 @@ const OPERATED_RAW = /[+×*/^·]|(?<=[\p{L}\p{N})}]\s*)[-−]|\\(?:frac|dfrac|ln
 const SCI_NOTATION = /(?:\\times|×|\\cdot|·)\s*10\s*\^?\s*\{?\s*[-−]?\s*\d+\s*\}?/g;
 const OPERATED = { test: (x) => OPERATED_RAW.test(String(x).replace(SCI_NOTATION, " ").replace(/\^\s*\{?\s*[-−]?\s*1\s*\}?/g, " ")) };
 // a relation between two sides, at least one of them worked (an operator, a function or a number): "ΔG° = −RT ln K" is
-// an equation, "Q_r = K" (comparing two symbols, a case to set) is not
-function equationsIn(t) {
+// a relation, "Q_r = K" (comparing two symbols, a case to set) is not. A reaction is not a relation here: naming one
+// ("αA + βB ⇌ σS + τT", "N2 + 3H2 ⇌ 2NH3") says what to teach (D49). Each: { raw, sides } (sides = relation signs + 1).
+const REACTION_ARROW = /\\ce\{|<=>|<->|<-|->|\\(?:rightleftharpoons|leftrightharpoons|rightarrow|longrightarrow|leftarrow|to)(?![A-Za-z])|[⇌⇄→⟶←]/;
+function relationsIn(t) {
   const out = [];
+  t = t.replace(/<=>|<->|<-|->/g, " ⇌ ");
   const sides = (s) => s.split(/\\(?:approx|equiv|simeq)(?![A-Za-z])|[=≈≡]/);
   for (const m of t.matchAll(MATH)) {
     const body = m[1] ?? m[2], parts = sides(body);
-    if (parts.length > 1 && parts.some((x) => OPERATED.test(x.replace(/\\(?:Delta|ominus|circ|mathrm|text)\b/g, "")))) out.push(m[0].trim());
+    if (REACTION_ARROW.test(body)) continue; // a reaction, named
+    if (parts.length > 1 && parts.some((x) => OPERATED.test(x.replace(/\\(?:Delta|ominus|circ|mathrm|text)\b/g, "")))) out.push({ raw: m[0].trim(), sides: parts.length });
   }
   const prose = t.replace(MATH, " ¤ ");
   for (const m of prose.matchAll(/([^\s=≈,;:()]+(?:\s+[^\s=≈,;:()]+){0,2})\s*[=≈≡]\s*([^\s=≈,;:().]+(?:\s+(?!and\b|or\b|for\b|to\b)[^\s=≈,;:().]+){0,3})/g)) {
     if (/¤/.test(m[0])) continue;
-    // the equation itself, without the prose that leads into it ("… using ΔG° = −RT ln K" → "ΔG° = −RT ln K")
-    if ([m[1], m[2]].some((x) => OPERATED.test(x.replace(/[°']/g, "")))) out.push(`${m[1].replace(/^(?:\p{Ll}{2,}\s+)+/u, "")} ${m[0].slice(m[1].length).trim()}`.trim());
+    // the relation itself, without the prose that leads into it ("… using ΔG° = −RT ln K" → "ΔG° = −RT ln K")
+    if ([m[1], m[2]].some((x) => OPERATED.test(x.replace(/[°']/g, "")))) out.push({ raw: `${m[1].replace(/^(?:\p{Ll}{2,}\s+)+/u, "")} ${m[0].slice(m[1].length).trim()}`.trim().replace(/[,;:.]+$/, ""), sides: 2 });
   }
-  // a reaction: what the balance check reads as one, or an arrow with a "+" on a side ("αA + βB ⇌ σS + τT"); a bare
-  // arrow is the concept map's dependency notation, not an equation
-  for (const r of reactionsIn(t)) out.push(r.raw);
-  for (const m of prose.matchAll(/(\S+(?:\s*\+\s*\S+)+)\s*(?:⇌|⇄|→|⟶|<=>|->|\\rightleftharpoons|\\rightarrow|\\to)\s*(\S+(?:\s*\+\s*\S+)*)|(\S+)\s*(?:⇌|⇄|→|⟶|<=>|->)\s*(\S+(?:\s*\+\s*\S+)+)/g))
-    if (!out.some((x) => x.includes(m[0].trim()) || m[0].includes(x))) out.push(m[0].trim());
-  return [...new Set(out.map((x) => x.replace(/[,;:.]+$/, "")))];
+  return out.map((x) => ({ ...x, raw: x.raw.replace(/[,;:.]+$/, "") }));
 }
+// WORKED NUMBERS: a relation with a number in it that is not an index — subscripts, exponents and a formula's atom counts
+// ("H_2", "[NH_3]^2", "x^{-1}") are notation, "(0.20)^2 / (0.10) = 1.48" or "K = 2 × 3" is a worked calculation
+const WORKED = (raw) => /\d/.test(String(raw).replace(/\\[A-Za-z]+/g, " ").replace(/[_^]\s*\{[^}]*\}|[_^]\s*[-−]?\d+/g, " ").replace(/(?<=[A-Za-z)\]])\d+/g, " "));
+// a DERIVATION: a chain of relations (one side worked into the next, "a = b = c") or the prose that carries one
+const DERIVATION = /\b(?:it\s+follows\s+that|follows\s+from|(?:can\s+be|is|are)\s+derived\s+(?:from|by)|derives?\s+from|substituting|rearranging|we\s+(?:obtain|get|find)\s+that)\b/i;
+// a summary describes what the chapter or course covers (D49): read only for numerical data and attributions
+const SUMMARY = /^(?:summary|overview|organi[sz]ing question|introduction|about this (?:chapter|unit|course))\b/i;
 const ATTRIBUTION_VERB = /\b(?:discovered|proposed|formulated|named after|according to|introduced by|showed that|first described|invented|devised|credited|coined|patented|postulated|enunciated)\b/i;
-const DEFINITION = [
-  /^(?:\*\*)?(?:the\s+|an?\s+)?[\p{L}'’ -]{2,60}?(?:\*\*)?\s+(?:is|are)\s+(?:the|an?)\s+(?:\p{L}+\s+){0,6}?(?:in which|that|where|whose|for which|of)\b/iu,
-  /\b(?:is|are)\s+(?:defined\s+as|called|known\s+as|termed|referred\s+to\s+as)\b/i,
-  /(?<!\bby\s)\b(?:refers?\s+to|denotes?|stands\s+for)\b/i,
-];
 const EXPLANATION = /\b(?:because|due\s+to|owing\s+to|as\s+a\s+result\s+of|which\s+is\s+why|this\s+is\s+why|the\s+reason\s+(?:is|that|why))\b/i;
 // guide wording about the assessment itself (what to ask, what an answer earns): its "because" and "only" describe the
 // answer sought, not content the guide teaches
 const ASSESSMENT_FRAME = /\b(?:ask|asks|asked|require|requires|credit|rubric|answer|answers|student|students|item|items|probe|parameteri[sz]e|targets?|misconceptions?|present|give|prompt|question|questions|award|exam|assessment|objective|objectives)\b/i;
-const RECORD = new Set(["highest", "lowest", "largest", "smallest", "fastest", "strongest"]);
 
-/** The detail a spine line carries beyond what to teach, to what level and how to assess: [{ kind, what }]. `termNames`
- *  are the package's key-term labels and aliases (a name inside one is an eponymous term, not an attribution). */
+/** The detail a spine line carries beyond what to teach, to what level and how to assess (D49): [{ kind, what }], kind
+ *  one of "a value", "worked numbers", "an explanation", "a derivation", "an attribution". `termNames` are the package's
+ *  key-term labels and aliases (a name inside one is an eponymous term, not an attribution). */
 export function spineDetail(l, { termNames = [], guide = false } = {}) {
   const t = l.text, out = [];
   const add = (kind, what) => { if (!out.some((x) => x.kind === kind && x.what === what)) out.push({ kind, what }); };
-  const keyTerm = /^key terms\b/i.test(l.section), misconception = /^misconceptions?\b/i.test(l.section);
+  const misconception = /^misconceptions?\b/i.test(l.section), summary = SUMMARY.test(l.section || "");
+  // numerical data: a value the claim reader requires, and a relation worked with numbers
   for (const q of readValues(t)) add("a value", q.raw);
-  for (const e of equationsIn(t)) add("an equation", e);
+  const relations = relationsIn(t);
+  for (const r of relations) if (WORKED(r.raw)) add("worked numbers", r.raw);
+  // attributions and history
   const fold = (x) => String(x).toLowerCase().replace(/[\u2010-\u2015−]/g, "-");
   const lowerTerms = termNames.map(fold);
   const names = factNamesIn(t).filter((n) => !lowerTerms.some((x) => x.includes(fold(n))));
   for (const n of names) add("an attribution", n);
   for (const y of yearsIn(t)) add("an attribution", y);
   if (ATTRIBUTION_VERB.test(t) && namesIn(t).length) add("an attribution", t.match(ATTRIBUTION_VERB)[0]);
-  if (!keyTerm) for (const re of DEFINITION) { const m = t.match(re); if (m) { add("a definition", m[0].trim()); break; } }
-  // a misconception is a false statement by design, with its false reasons: neither its "because" nor its "only" is detail
+  if (summary) return out;
+  // explanations and derivations written into the spine — a misconception's false reasons and the guide's wording about
+  // the answer sought ("A correct answer says yes, because …") are neither
   const framed = guide && ASSESSMENT_FRAME.test(t);
   if (!misconception && !framed && EXPLANATION.test(t)) add("an explanation", t.match(EXPLANATION)[0]);
-  if (!misconception && !framed) {
-    const ex = exclusivityOf(t);
-    if (ex?.open) add("an absolute claim", `only ${String(ex.positive).replace(/^only\s+/i, "")}`.trim());
-    for (const w of superlativesIn(t).filter((x) => RECORD.has(x))) add("an absolute claim", w);
+  if (!misconception) {
+    for (const r of relations) if (r.sides > 2 && !WORKED(r.raw)) add("a derivation", r.raw);
+    if (!framed && DERIVATION.test(t)) add("a derivation", t.match(DERIVATION)[0]);
   }
   return out;
 }
