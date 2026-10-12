@@ -29,7 +29,7 @@ test("[req.core.coverage-obligation] [req.core.reverify-obligation] the real C2 
   let g = gateJson(root, "V8");
   assert.equal(g.status, 1);
   const kinds = g.findings.filter((f) => f.module === "skeleton").reduce((a, f) => ((a[f.kind] = (a[f.kind] || 0) + 1), a), {}); // the core's own findings
-  assert.deepEqual(kinds, { "absolute-unreviewed": 31, "evidence-missing": 24, "guide-entry-short": 1 }); // 24 since red-team round 1 (F1, F2): K = 50 in three practice questions and "4 moles of gas" are values that owe evidence
+  assert.deepEqual(kinds, { "absolute-unreviewed": 31, "evidence-missing": 24, "guide-entry-short": 1, "spine-detail": 9 }); // + round 6 (D48): the 9 spine lines carrying detail are digest questions (tests/redteam-r6-readers.test.mjs lists them), never blocking // 24 since red-team round 1 (F1, F2): K = 50 in three practice questions and "4 moles of gas" are values that owe evidence
   assert.match(g.findings.find((f) => f.kind === "guide-entry-short").evidence.what, /guide\.chemical-equilibrium\.evidence-design \(has 0 of 1\)/);
   assert.deepEqual(g.approvalProblems, []);
 

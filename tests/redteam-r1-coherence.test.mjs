@@ -280,7 +280,9 @@ test("[req.publish.pack-bound] F9: the pack ships only what the publish binds pl
   const x = path.join(c.dir, "x"); fs.mkdirSync(x); spawnSync("unzip", ["-q", p.zip, "-d", x]);
   assert.ok(!fs.existsSync(path.join(x, "metadata/FINDINGS.json")), "an unbound record is not shipped");
   const shipped = JSON.parse(fs.readFileSync(path.join(x, "metadata/publish", path.basename(rec)), "utf8"));
-  assert.equal(shipped.openQuestions.length, 1); assert.equal(shipped.instructorWords, "Publish it, over those questions.");
+  // the open questions as decided: the planted one, plus the course's own spine-detail questions (round 6, D48)
+  assert.equal(shipped.openQuestions.length, 1 + g.findings.filter((f) => f.kind === "spine-detail").length);
+  assert.ok(JSON.stringify(shipped.openQuestions).includes("q-open-1")); assert.equal(shipped.instructorWords, "Publish it, over those questions.");
   assert.ok(fs.existsSync(path.join(x, "metadata/LOG.jsonl")));
 });
 
