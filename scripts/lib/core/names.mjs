@@ -2,7 +2,7 @@
 // requires every name this file reads, and the semi-mechanical classifier (core/segment.mjs) fires on every name it
 // reads — one reader, so a sentence whose name is a required token can never be judged knowledge-only ("The law of mass
 // action is the work of Arrhenius."). PURE and DETERMINISTIC.
-import { valueText, valuesIn } from "./values.mjs";
+import { valueProse, valuesIn } from "./values.mjs";
 
 const PARTICLE = /^(?:van|von|de|du|der|le|la|'t|’t)$/i;
 // capitalized words that are never names when they appear mid-sentence in course prose
@@ -11,11 +11,9 @@ const NOT_NAMES = new Set(["The", "This", "That", "These", "Those", "A", "An", "
 
 /** Prose for fact extraction: LaTeX and \ce{} folded to plain (values through the one value parser, core/values.mjs:
  *  scientific notation kept exact as "9e-6", unit exponents kept), markdown links and markup removed. */
+// the one value view (core/values.mjs valueProse, red-team round 6 cause A): the classifier reads values through it too
 export function proseOf(text) {
-  return valueText(text)
-    .replace(/\\ce\s*/g, " ").replace(/\\[a-zA-Z]+/g, " ")
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/[*_`#>]/g, " ")
-    .replace(/\s+/g, " ").trim();
+  return valueProse(text);
 }
 
 // a verb that attributes a deed to its subject, and the capitalized words that open sentences without naming anyone

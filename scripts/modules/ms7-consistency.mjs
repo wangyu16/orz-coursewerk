@@ -4,8 +4,9 @@
 // (a reworded definition raises nothing — D17; a changed fact is caught by its own unit's evidence, D19-C).
 import { computeSemanticIndex } from "../lib/semantic_index.mjs";
 import { scanConsistency, rangeAudit } from "../lib/consistency.mjs";
-import { base, recheckByRerun } from "./_shared.mjs";
+import { base, chaptersOf, recheckByRerun } from "./_shared.mjs";
 import { decodeEntities } from "../lib/core/values.mjs";
+import { spineLines } from "../lib/core/spine_detail.mjs";
 
 // the package writes its quantities in LaTeX ($\Delta H = -92.2\ \text{kJ}$); the scanners read values through the one
 // value parser (core/values.mjs, which folds the rest of the notation itself: "^{-1}" stays a denominator, every
@@ -36,8 +37,30 @@ export function unitClaims(s) {
   return claims;
 }
 
+/**
+ * The spine's lines as claims (D48, operator 2026-10-11; red-team round 6, R6-K05): the spine is not source-checked, but
+ * the values it states must agree with the values the deliverables teach — a false "ΔH = −75.0 kJ" in an assessment
+ * guide's rubric is a value-disagreement with the study guide's −92.2 kJ, like any other. Every content line of the
+ * course map, each concept map and each assessment guide (core/spine_detail.mjs spineLines: provenance, headings,
+ * structural fields and the credit line excluded) is read in its chapter (the course map: the whole package). A
+ * misconception states what is false by design, so it asserts no value. Claim ids name the file and line.
+ */
+export function spineClaims(s) {
+  const files = [{ file: "concepts/course.md", scope: null }, ...chaptersOf(s).flatMap((c) => [{ file: `concepts/${c}.md`, scope: c }, { file: `assessment-support/${c}.md`, scope: c }])];
+  const claims = [];
+  for (const f of files) {
+    const text = s.text(f.file);
+    if (text == null) continue;
+    for (const l of spineLines(text)) {
+      const type = /^misconceptions?\b/i.test(l.section) ? "derived" : /^key terms\b/i.test(l.section) ? "definition" : "fact";
+      claims.push({ id: `spine:${f.file}#L${l.line}`, text: plain(l.text), type, scope: f.scope, status: "active", termRefs: [], spineRefs: [], locations: [{ file: f.file, anchor: l.section }] });
+    }
+  }
+  return claims;
+}
+
 function run(s) {
-  const claims = unitClaims(s);
+  const claims = [...unitClaims(s), ...spineClaims(s)];
   if (!claims.length) return [];
   const { terms } = computeSemanticIndex(s.materialize().package);
   const out = [];

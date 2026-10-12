@@ -36,7 +36,7 @@
 //   - a table header over data rows, the restated objectives (above).
 import { sha256 } from "../records/canonical.mjs";
 import { plainForQuantities } from "./dependencies.mjs";
-import { statesValue } from "./values.mjs";
+import { clean, statesValue, valueProse } from "./values.mjs";
 import { factNamesIn } from "./names.mjs";
 import { NYML_NOTATION_KINDS, frameOf, listItemsOf, nymlKindOf, printedModel } from "./printed.mjs";
 
@@ -408,7 +408,12 @@ export function classifyUnit({ form, text }) {
   // a name the claim extractor would require is a fact to check: the name trigger is the extractor's own reader
   // (red-team round 3, R3-K01: "the work of Arrhenius" named someone with no classifier verb, and owed nothing),
   // less a name used only as an eponymous term ("the Gibbs energy"), which asserts nothing about the person
-  if (statesValue(t) || SEMI.some((r) => r.test(t) || r.test(plainForQuantities(t))) || factNamesIn(t).length) kinds.add("semi-mechanical");
+  // ONE READER DECIDES (red-team round 6, cause A; R6-K06): a value is what the claim extractor requires (statesValue is
+  // values.readValues, the extractor's own quantitiesIn), and the year, month, superlative and attribution triggers are
+  // also tried on the extractor's view (valueProse) and on the cleaned text it reads names from — a sentence the
+  // extractor finds a required token in is never "knowledge-based" only
+  const views = [t, clean(t), plainForQuantities(t), valueProse(t)];
+  if (statesValue(t) || SEMI.some((r) => views.some((v) => r.test(v))) || factNamesIn(t).length) kinds.add("semi-mechanical");
   const proseWords = (t.replace(/\$[^$]*\$/g, " ").match(/[A-Za-z]{3,}/g) || []).length;
   if (proseWords >= 6 || form === "question" || form === "answer" || (!kinds.size)) kinds.add("knowledge-based");
   return ["mechanical", "semi-mechanical", "knowledge-based"].filter((k) => kinds.has(k));

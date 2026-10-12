@@ -346,8 +346,37 @@ function literal(t) {
 const hasOperator = (toks) => toks.some((x, i) => ["*", "/", "+", "fn", "^"].includes(x.t) || (x.t === "-" && i > 0) || (x.t === "(" && i > 0 && ["num", ")"].includes(toks[i - 1].t)));
 const GREEK = /\\(?:alpha|beta|gamma|delta|epsilon|varepsilon|zeta|eta|theta|vartheta|iota|kappa|lambda|mu|nu|xi|rho|sigma|tau|upsilon|phi|varphi|chi|psi|omega|Gamma|Delta|Theta|Lambda|Xi|Sigma|Upsilon|Phi|Psi|Omega|ce|ominus|circ|ddagger|dagger|prime|bar|hat|vec|dot|overline|mathit|mathbf|operatorname)(?![A-Za-z])/;
 
+// A number set in a font, a colour, a box or with an emphasis mark prints as the number (red-team round 6, R6-K08: the
+// emphasised final answer "= \mathbf{1.48}" was taken for a symbol, so a wrong result was neither compared nor counted).
+// The wrapper is read through when what it wraps is a number; a repeating decimal ("1.4\overline{8}", "0.\dot{3}") is
+// read as its value. What is left that only a formatting command makes non-numeric is UNREAD (counted), never a symbol.
+const NUMERIC_INSIDE = /^[\s\d.,{}()+\-−]*\d[\s\d.,{}()+\-−]*$/;
+const WRAPPERS = "mathbf|boldsymbol|bm|textbf|mathrm|text|textrm|mathsf|textsf|mathit|textit|mathnormal|textup|mathup|textnormal|mbox|hbox|boxed|fbox|framebox|underline|emph|operatorname|displaystyle|textstyle";
+const WRAPPED = new RegExp(`\\\\(?:${WRAPPERS})\\s*\\{([^{}]*)\\}`, "g");
+const SWITCHED = /\{\s*\\(?:bf|rm|it|sf|bfseries|mdseries|boldmath|displaystyle|textstyle)(?![A-Za-z])\s*([^{}]*)\}/g;
+const COLOURED = /\\(?:textcolor|colorbox)\s*\{[^{}]*\}\s*\{([^{}]*)\}|\\color\s*\{[^{}]*\}\s*(?:\{([^{}]*)\})?/g;
+const REPEATING = /(\d*)\.(\d*)\\(?:overline|bar|dot|wideparen)\s*(?:\{\s*(\d+)\s*\}|(\d))/g;
+function readThroughFormatting(body) {
+  let b = String(body), prev;
+  do {
+    prev = b;
+    b = b.replace(WRAPPED, (m, x) => (NUMERIC_INSIDE.test(x) ? ` ${x} ` : m))
+      .replace(SWITCHED, (m, x) => (NUMERIC_INSIDE.test(x) ? ` ${x} ` : m))
+      .replace(COLOURED, (m, a, c) => (a == null && c == null ? " " : NUMERIC_INSIDE.test(a ?? c) ? ` ${a ?? c} ` : m));
+  } while (b !== prev);
+  // a repeating block, written out to fifteen decimals (an exact value as far as any written comparison can tell)
+  return b.replace(REPEATING, (m, i, fixed, rep1, rep2) => {
+    const rep = rep1 ?? rep2; let dec = fixed;
+    while (dec.length < 15) dec += rep;
+    return `${i || "0"}.${dec.slice(0, Math.max(15, fixed.length + rep.length))}`;
+  }).replace(/(?<![\\A-Za-z}^_\]])\{\s*(\d[\d.,]*)\s*\}/g, " $1 ").replace(/\s+/g, " ").trim(); // a bare group, not an argument
+}
+// formatting commands: none of them makes a part a symbol on its own
+const FORMATTING = new RegExp(`\\\\(?:${WRAPPERS}|overline|underline|dot|ddot|bar|hat|widehat|tilde|widetilde|wideparen|color|textcolor|colorbox|bf|rm|it|sf)(?![A-Za-z])`, "g");
+
 /** One part of a chain: { kind: "num", … } | { kind: "sym" } (a symbol: nothing to compare) | { kind: "unread", reason }. */
-function partOf(raw) {
+function partOf(raw0) {
+  const raw = readThroughFormatting(raw0);
   const { body, unit } = splitUnit(raw);
   if (!/\d/.test(body)) return { kind: "sym" };
   const t = tokens(body);
@@ -361,6 +390,10 @@ function partOf(raw) {
   }
   // not evaluable: a symbol makes it symbolic; otherwise it is a numeric form the reader cannot read
   const bare = body.replace(/\\(?:text|mathrm|rm|textrm|mbox)\s*\{[^{}]*\}/g, "¤").replace(/(?<![A-Za-z\\])e(?=\s*\^)/g, "¤");
+  // a number under a formatting command the reader does not read through (a colour named in letters, a bar over part
+  // of a number) is a number nobody read — counted, never a symbol (R6-K08)
+  const unformatted = bare.replace(/\\(?:color|textcolor|colorbox)\s*\{[^{}]*\}/g, " ").replace(FORMATTING, " ");
+  if (unformatted !== bare && !/\\[A-Za-z]|[A-Za-z]/.test(unformatted.replace(/¤/g, ""))) return { kind: "unread", reason: "a number under formatting the reader does not read through", raw: body.trim() };
   if (GREEK.test(bare) || /(?<!\\)\b[A-Za-z]/.test(bare.replace(/\\[A-Za-z]+/g, " "))) return { kind: "sym" };
   return { kind: "unread", reason: /¤/.test(bare) ? "a unit or e^x inside the arithmetic" : "a form the reader does not evaluate", raw: body.trim() };
 }
@@ -526,7 +559,15 @@ function ceBlocks(text) {
 }
 const CE_ARROWS = ["<=>>", "<<=>", "<-->", "<=>", "<->", "->", "<-", "⇌", "⇄", "⇋", "→", "⟶", "↔", "⟷"];
 /** The sides of an mhchem reaction, arrows (and their conditions "->[MnO2]", "<=>[a][b]") removed: [side text]. */
-function ceSides(body) {
+// a LaTeX arrow written inside \ce{} prints as an arrow (red-team round 6, R6-K09: "\ce{C3H8 + 5O2 \longrightarrow …}" was
+// no reaction at all): read as the mhchem arrow it prints; the direction does not change a balance
+const ceLatexArrows = (body) => String(body)
+  .replace(/\\x(?:rightleftharpoons|leftrightharpoons|leftrightarrow|rightleftarrows)\s*(?:\[[^\]]*\])?\s*\{[^{}]*\}/g, " <=> ")
+  .replace(/\\x(?:rightarrow|longrightarrow|leftarrow|longleftarrow)\s*(?:\[[^\]]*\])?\s*\{[^{}]*\}/g, " -> ")
+  .replace(/\\(?:rightleftharpoons|leftrightharpoons|rightleftarrows|leftrightarrows|longleftrightarrow|leftrightarrow|Longleftrightarrow|Leftrightarrow)(?![A-Za-z])/g, " <=> ")
+  .replace(/\\(?:longrightarrow|rightarrow|Longrightarrow|Rightarrow|to|longleftarrow|leftarrow|Longleftarrow|Leftarrow|gets)(?![A-Za-z])/g, " -> ");
+function ceSides(body0) {
+  const body = ceLatexArrows(body0);
   const sides = [];
   let depth = 0, cur = "", i = 0;
   while (i < body.length) {
@@ -555,15 +596,22 @@ const unicodeScripts = (t) => t.replace(/[₀-₉]/g, (c) => String(SUB.indexOf(
 /** Text outside \ce{} as text a reaction can be read from: math unwrapped, sub/superscripts joined, arrows as arrows. */
 // the house notation (docs/authoring-guidelines.md, orz-markdown): "H~2~O" is H₂O and "Cu^2+^" is Cu²⁺ (R5-K04)
 const houseScripts = (t) => t.replace(/~\((g|l|s|aq|cr)\)~/g, "($1)").replace(/(?<=[A-Za-z)\]])~(\d+)~/g, "$1").replace(/(?<=[A-Za-z)\]\d])\^(\d*[+\-−]|[+\-−]\d*)\^/g, (_, c) => `^${c.replace(/−/g, "-")}`);
+// HTML sub- and superscripts print as scripts (red-team round 6, R6-K09: "H<sub>2</sub>O" was no species to this reader)
+const htmlScripts = (t) => t.replace(/<sub>\s*(\d+)\s*<\/sub>/gi, "$1").replace(/<sub>\s*\((g|l|s|aq|cr)\)\s*<\/sub>/gi, "($1)")
+  .replace(/<sup>\s*(\d*)\s*([+\-−])\s*<\/sup>/gi, (_, n, c) => `^${n}${c === "+" ? "+" : "-"}`).replace(/<sup>\s*([+\-−])\s*(\d*)\s*<\/sup>/gi, (_, c, n) => `^${n}${c === "+" ? "+" : "-"}`);
 function plainChem(text) {
-  let t = decodeEntities(String(text || ""));
-  for (const b of ceBlocks(t).reverse()) t = `${t.slice(0, b.at)} ¤ ${t.slice(b.end)}`;
+  let t = htmlScripts(decodeEntities(String(text || "")));
+  // a \ce{} with an arrow is read by the mhchem reader above; one WITHOUT an arrow is a species (or a side) written in
+  // mhchem, and prints as its formula — so "\ce{N2} + \ce{H2} \rightleftharpoons \ce{NH3}", each species in its own
+  // \ce{} and the arrow outside, is a reaction written outside \ce{} (red-team round 6, R6-K09)
+  for (const b of ceBlocks(t).reverse()) t = `${t.slice(0, b.at)}${ceSides(b.body) ? " ¤ " : ` ${b.body.trim()} `}${t.slice(b.end)}`;
   return unicodeScripts(houseScripts(t))
     .replace(/\\x(?:rightleftharpoons|leftrightharpoons|leftrightarrow)\s*(?:\[[^\]]*\])?\s*\{[^{}]*\}/g, " ⇌ ")
     .replace(/\\x(?:rightarrow|longrightarrow)\s*(?:\[[^\]]*\])?\s*\{[^{}]*\}/g, " → ")
     .replace(/\\(?:overset|stackrel)\s*\{[^{}]*\}\s*\{\s*(\\[A-Za-z]+)\s*\}/g, " $1 ")
     .replace(/\\(?:rightleftharpoons|leftrightharpoons|rightleftarrows|longleftrightarrow|leftrightarrow|Longleftrightarrow|rightleftarrow)(?![A-Za-z])/g, " ⇌ ")
-    .replace(/\\(?:longrightarrow|rightarrow|Rightarrow|Longrightarrow|to)(?![A-Za-z])/g, " → ")
+    .replace(/\\(?:longrightarrow|rightarrow|Rightarrow|Longrightarrow|to|longleftarrow|leftarrow|Longleftarrow|gets)(?![A-Za-z])/g, " → ")
+    .replace(/\\x(?:leftarrow|longleftarrow)\s*(?:\[[^\]]*\])?\s*\{[^{}]*\}/g, " → ")
     .replace(/\\(?:mathrm|text|textrm|rm|mbox|mathbf|mathsf)\s*\{/g, "{")
     .replace(/\\[dt]?frac\s*\{?\s*(\d+)\s*\}?\s*\{?\s*(\d+)\s*\}?/g, "$1/$2")
     .replace(/\\(?:[,;:! ]|q?quad)/g, " ")
@@ -579,7 +627,7 @@ const GRP = `(?:(?:${EL}|${PAR}|${BRK})\\d*)+`;
 const CHG = "(?:\\^(?:\\d*[+-]|[+-]\\d*)|[+-](?![\\w(\\[]))";
 const SP = `(?:(?:\\d+\\/\\d+|\\d+(?:\\.\\d+)?|[½⅓⅔¼¾])\\s*)?(?:${GRP}(?:[.·*•]\\d*${GRP})*${CHG}?(?:\\((?:g|l|s|aq|cr)\\))?${CHG}?|e\\^?-)`;
 const SIDE = `${SP}(?:\\s*\\+\\s*${SP})*`;
-const PLAIN_ARROW = "⇌|⇄|⇋|<=>|<->|↔|⟷|→|⟶|->";
+const PLAIN_ARROW = "⇌|⇄|⇋|<=>|<->|↔|⟷|→|⟶|->|←|⟵"; // a leftward arrow balances as a rightward one (R6-K09)
 const REACTION = new RegExp(`(?<![A-Za-z0-9_^\\])/.-])(${SIDE})\\s*(?<!-)(${PLAIN_ARROW})(?!>)\\s*(${SIDE})(?![A-Za-z0-9(\\[^_]|[·•*.][\\dA-Z])`, "g");
 const SP_STICKY = new RegExp(`(${SP})(?:\\s*\\+\\s*|\\s*$)`, "y");
 /** A plain side's terms: split at its "+" separators, never at an ion's own "+". */

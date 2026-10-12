@@ -21,8 +21,13 @@ import { valueProjection } from "../units.mjs";
 // Quantities are found after folding LaTeX spellings ("-92\\ \\text{kJ mol}^{-1}" → "-92 kJ mol"), since the packages
 // write most values in LaTeX; a value written two ways is still one shared value. (Moved here from core/dependencies.mjs,
 // which re-exports it, so the dependency edges can read bindings through this parser without an import cycle.)
+// Every font macro prints its argument as text (red-team round 6, R6-K06: "\\textrm{kJ}", "\\mathsf{kJ}", "{\\rm kJ}" and
+// "\\operatorname{kJ}" print "kJ" as "\\mathrm{kJ}" does, and were no unit here while the claim reader read them).
+const FONT_MACROS = "text|textrm|textsf|textit|textbf|textup|textnormal|texttt|textsl|emph|mathrm|mathsf|mathit|mathbf|mathnormal|mathtt|mathup|mathbfit|operatorname\\*?|mbox|hbox|boldsymbol|bm";
+const FONT_ARG = new RegExp(`\\\\(?:${FONT_MACROS})\\s*\\{([^}]*)\\}`, "g");
+const FONT_SWITCH = /\{\s*\\(?:rm|sf|it|bf|tt|sl|up|normalfont|mathrm)(?![A-Za-z])\s*([^{}]*)\}/g;
 export const plainForQuantities = (text) => String(text)
-  .replace(/\\text\{([^}]*)\}/g, " $1 ").replace(/\\mathrm\{([^}]*)\}/g, " $1 ").replace(/\\(?:,|;|!| |quad|qquad)/g, " ")
+  .replace(FONT_SWITCH, " $1 ").replace(FONT_ARG, " $1 ").replace(/\\(?:,|;|!| |quad|qquad)/g, " ")
   .replace(/\^\{[^}]*\}/g, "").replace(/[{}$]/g, " ").replace(/\\(?:approx|times)/g, " ").replace(/−/g, "-");
 
 // Cyrillic and Greek letters that render like Latin ones (a word spelled with them must not escape the checks)
@@ -63,7 +68,7 @@ function foldSci(t) {
 /** Text for value extraction: LaTeX folded to plain, scientific notation to an exact "<mantissa>e<exponent>", unit
  *  exponents kept ("g^{-1}" → "g^-1"). Markup is left to the caller (claims.proseOf). */
 export function valueText(text) {
-  let t = clean(supFold(decodeEntities(text || "")))
+  let t = clean(supFold(texSpellings(decodeEntities(text || ""))))
     // an HTML superscript is an exponent whatever its minus (red-team round 3, R3-K07: "10<sup>-5</sup>" read as 10)
     .replace(/<sup>\s*([-−‐-―+]?)\s*(\d+)\s*<\/sup>/gi, (_, s, d) => `^{${s && s !== "+" ? "-" : ""}${d}}`)
     .replace(/<sub>\s*([A-Za-z]{1,3})\s*<\/sub>/gi, "$1") // K<sub>p</sub> is Kp
@@ -89,7 +94,37 @@ export function valueText(text) {
   t = t.replace(/\\(?:approx|simeq)(?![A-Za-z])/g, "≈").replace(/\\sim(?![A-Za-z])/g, "~"); // "K \approx 50" binds K
   t = foldSci(t);
   t = t.replace(/\^\s*\{\s*([-−+]?)\s*(\d+)\s*\}/g, (_, s, d) => `^${s === "−" ? "-" : s}${d}`);
-  return plainForQuantities(t);
+  // a degree sign set apart from its scale ("° C", from "^{\circ}\mathrm{C}") is one unit
+  return plainForQuantities(t).replace(/([°º˚])\s+(?=[CF](?![A-Za-z]))/g, "$1");
+}
+
+// LaTeX spellings of a value that print as the plain value (red-team round 6, R6-K07, R6-K11): sizing commands around a
+// bracket ("\left(-75.0\right)" prints "(−75.0)"), a degree written with \circ ("-20\,^{\circ}\mathrm{C}" prints
+// "−20 °C"), a tie between a number and its unit ("-75.0~\text{kJ}" prints "−75.0 kJ"; the house subscript "H~2~O" is
+// not a tie), and a multiplication sign printed twice (OpenStax's extraction "6.00 × × 10 −2" is 6.00 × 10⁻²).
+const SIZING = /\\(?:left|right|bigl|bigr|Bigl|Bigr|biggl|biggr|Biggl|Biggr|bigm|Bigm|big|Big|bigg|Bigg)(?![A-Za-z])\s*(?:\.|\\([{}|])|([()[\]|/]))/g;
+const DEGREE = /(?:\{\s*\}\s*)?\^\s*(?:\{\s*\\circ\s*\}|\\circ(?![A-Za-z]))|\\(?:degree|textdegree)(?![A-Za-z])/g;
+const TIE = /(?<=\d)(?<![~^]\d*)(?<![~^]\d+[.,]\d*)\s*~(?=\s*(?:\\[A-Za-z]|\{|[°º˚µ%]|[A-Za-z]))/g;
+const TIMES_TWICE = /(×|\\times(?![A-Za-z]))(?:\s*(?:×|\\times(?![A-Za-z])))+/g;
+export const texSpellings = (t) => String(t).replace(SIZING, (_, esc, d) => esc ?? d ?? "").replace(DEGREE, "°").replace(TIE, " ").replace(TIMES_TWICE, "$1");
+
+/** The text the claim reader reads values from (THE value view, red-team round 6, cause A): valueText, then every
+ *  remaining LaTeX command, \ce, markdown link syntax and markup folded away. The classifier (statesValue), the claim
+ *  extractor (claims.quantitiesIn via names.proseOf), the cross-deliverable value check (consistency.mjs) and the
+ *  shared-value edges (dependencies.mjs) all read values through this one view, so no reader can find a value another
+ *  misses. */
+export function valueProse(text) {
+  return valueText(text)
+    .replace(/\\ce\s*/g, " ").replace(/\\[a-zA-Z]+/g, " ")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/[*_`#>]/g, " ")
+    .replace(/\s+/g, " ").trim();
+}
+/** Every value the claim reader requires in a text — read values and unread candidates alike, positions indexing
+ *  valueProse(text). The ONE answer to "does this text state a value?" (statesValue) and "which values must a source
+ *  carry?" (claims.quantitiesIn). */
+export function readValues(text) {
+  const P = valueProse(text);
+  return [...valuesIn(P), ...unreadValues(P).map((u) => ({ ...u, value: NaN, unit: "unread", decimals: 0, exp: 0 }))].sort((a, b) => a.at - b.at);
 }
 
 // ---- units ------------------------------------------------------------------------------------------------------
@@ -328,4 +363,7 @@ export function unitLike(tok) {
 }
 
 /** Does a text state a value (the classifier's question)? */
-export const statesValue = (text) => { const P = valueText(text); return valuesIn(P).length > 0 || unreadValues(P).length > 0; };
+// One reader decides (red-team round 6, R6-K06): a text states a value exactly when the claim reader finds a required
+// quantity in it — the same view, the same parser — so a sentence whose value the claim reader extracts is always
+// semi-mechanical and owes evidence.
+export const statesValue = (text) => readValues(text).length > 0;
