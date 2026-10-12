@@ -158,7 +158,15 @@ test("[req.control.review-fails-closed] C2-16: verdicts are read case-insensitiv
   // an unknown verdict and an unreadable fidelity
   r = await run("maybe / unclear", (pr) => ans(pr, (id) => (id === OBJ ? "maybe" : "yes"), { type: "unclear", level: "matches", why: "" }));
   assert.ok(r.has("alignment-unscorable", FALSE) && r.has("alignment-unscorable", Q1), `${r.label}: ${kinds(r.f)}`);
-  // a clean, readable re-review closes it
+  // a re-run of unchanged text never overturns the readable "no" and "differs" (red team R6): the agent revises both —
+  // the passage now teaches the objective, the question asks for the explanation its entry wants — and a clean,
+  // readable review of the new text closes it
+  const last = c.unit(FALSE).text.trim().split("\n").pop().slice(-40);
+  c.asAgent(() => {
+    c.edit(SG, last, last + " Two changes shift nothing: an inert gas added at constant volume changes no partial pressure, and a catalyst speeds the forward and reverse reactions equally.");
+    c.edit(PR, "What is wrong with that phrasing? *(Objective 1)*", "What is wrong with that phrasing? Explain why the word *partially* matters. *(Objective 1)*");
+  });
+  assert.ok(c.unit(FALSE) && c.unit(Q1), "the revised units keep their ids");
   r = await run("clean", (pr) => ans(pr, () => "yes", { type: "matches", level: "matches", why: "" }));
   assert.deepEqual(kinds(r.f), [], `${r.label}: nothing remains`);
 });

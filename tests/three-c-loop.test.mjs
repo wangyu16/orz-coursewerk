@@ -136,7 +136,13 @@ test("[req.3c.c5] assessment follows the guide: a guide entry left short blocks;
   closed(c, "C5 count");
   await reviewAlignment(c.root, c.r(), { verifier: alignAnswer((d) => ({ links: d.map((id) => ({ id, verdict: "yes", why: "" })), also: [], offPlan: false, fidelity: { type: "matches", level: "differs", why: "recall only" } })), only: [q.id] });
   assert.ok(added(c, c.gate().findings).some((x) => x.kind === "assessment-fidelity" && x.route === "agent"), `fidelity: ${JSON.stringify(added(c, c.gate().findings).map((x) => x.kind))}`);
-  await reviewAlignment(c.root, c.r(), { verifier: alignAnswer((d) => ({ links: d.map((id) => ({ id, verdict: "yes", why: "" })), also: [], offPlan: false, fidelity: { type: "matches", level: "matches", why: "" } })), only: [q.id] }); // revised and re-reviewed
+  // revised (the question now asks for the explanation its entry wants) and re-reviewed: a re-run of the unchanged
+  // question cannot clear the "differs" (red team R6), the revision does — and its answer is re-read with it
+  c.asAgent(() => c.edit("practice/le-chatelier.md", "What is wrong with that phrasing? *(Objective 1)*", "What is wrong with that phrasing? Explain why the word *partially* matters. *(Objective 1)*"));
+  const qa = c.units().filter((u) => u.id === q.id || (u.form === "answer" && u.locator.deliverable === q.locator.deliverable && u.locator.ordinal === q.locator.ordinal + 1)).map((u) => u.id);
+  await reviewAlignment(c.root, c.r(), { verifier: alignAnswer((d) => ({ links: d.map((id) => ({ id, verdict: "yes", why: "" })), also: [], offPlan: false, fidelity: { type: "matches", level: "matches", why: "" } })), only: qa });
+  const owed = [...new Set(c.gate().findings.filter((f) => f.kind === "reverify").flatMap((f) => f.units))];
+  if (owed.length) { await verifyKnowledge(c.root, c.r(), { verifier: replayVerifier((pr) => ({ nonce: nonceOf(pr), concerns: [] })), only: owed }); reverifyUnits(c.root, c.r(), owed, AGENT); }
   closed(c, "C5 fidelity");
 });
 

@@ -228,7 +228,8 @@ test("[req.control.guide-count-verified] C5-08 A: a never-reviewed question does
   const c = course(t);
   const Q2 = "u-practice-le-chatelier-questions-3"; // Q 2, the only question of guide.le-chatelier.statement-critique
   c.asAgent(() => c.write(PR, `${c.read(PR).trimEnd()}\n\n${tab("Q 16", "In a galvanic cell, at which electrode does reduction take place?", "Reduction takes place at the cathode.")}\n`));
-  const q = c.units().find((u) => u.form === "question" && /galvanic/.test(u.text)), a = c.units().find((u) => u.form === "answer" && /cathode/.test(u.text));
+  let q = c.units().find((u) => u.form === "question" && /galvanic/.test(u.text));
+  const a = c.units().find((u) => u.form === "answer" && /cathode/.test(u.text));
   c.link({ [Q2]: ["objective.le-chatelier.state-principle"], [q.id]: ["objective.le-chatelier.state-principle", "guide.le-chatelier.statement-critique"], [a.id]: ["objective.le-chatelier.state-principle"] });
   const owed = c.core().filter((f) => f.kind === "link-review-owed" && f.units.includes(q.id));
   assert.equal(owed.length, 1, kinds(c.core()).join(" ")); assert.equal(owed[0].statusClass, "obligation");
@@ -238,9 +239,18 @@ test("[req.control.guide-count-verified] C5-08 A: a never-reviewed question does
   const short = c.core().filter((f) => f.kind === "guide-entry-short" && /statement-critique/.test(f.evidence.what));
   assert.equal(short.length, 1, kinds(c.core()).join(" ")); assert.match(short[0].evidence.what, /has 0 of 1/);
   // D44 (operator 2026-10-07): a review that says it practises the objective but is not the entry's type fills the
-  // Count — the type is the instructor's assessment-fidelity question, which never blocks; an UNANSWERED type does not
+  // Count — the type is the instructor's assessment-fidelity question, which never blocks; an UNANSWERED type does not.
+  // (A re-run of the unchanged question cannot overturn the honest "no" — red team R6 — so the agent rewrites it to be
+  // about the principle, and the next review reads the new question.)
+  const revise = (from, to) => { // the rewritten question, linked as the agent links it
+    c.asAgent(() => c.edit(PR, from, to));
+    q = c.units().find((u) => u.form === "question" && u.text.includes(to));
+    c.link({ [q.id]: ["objective.le-chatelier.state-principle", "guide.le-chatelier.statement-critique"] });
+  };
+  revise("In a galvanic cell, at which electrode does reduction take place?", "State Le Chatelier's principle in one sentence.");
   await reviewAlignment(c.root, c.r(), { verifier: reviewer(() => ({ fidelity: { type: "differs", level: "matches" } })).verifier, only: [q.id] });
   assert.ok(!c.core().some((f) => f.kind === "guide-entry-short" && /statement-critique/.test(f.evidence.what)), kinds(c.core()).join(" "));
+  revise("State Le Chatelier's principle in one sentence.", "State Le Chatelier's principle in one short sentence.");
   await reviewAlignment(c.root, c.r(), { verifier: reviewer(() => ({ fidelity: { level: "not sure" } })).verifier, only: [q.id] });
   assert.ok(c.core().some((f) => f.kind === "link-review-owed" && f.units.includes(q.id)), "a level left unanswered: the review is owed again");
   // yes, and the entry's type and level: it fills
@@ -298,6 +308,9 @@ test("[req.control.course-objectives-covered] C1-10 (round 2): a [prereq: …] m
   assert.deepEqual(cov().map((x) => x.kind), ["link-review-owed"]);
   await reviewAlignment(c.root, c.r(), { verifier: reviewer(() => ({ verdicts: { [CONCEPT]: "passing" } })).verifier, only: [u.id] });
   assert.deepEqual(cov().map((x) => x.kind), ["course-objective-uncovered"], "only in passing: not taught");
+  // a re-run of the unchanged unit cannot overturn "in passing" (red team R6): the agent makes the unit teach it
+  c.asAgent(() => c.edit("study-guide/le-chatelier.md", "This is the same catalyst result met in Chapter 1, now seen from the Le Chatelier side.", "This is the same catalyst result met in Chapter 1, now seen from the Le Chatelier side. An industrial plant therefore picks its temperature and pressure by trading equilibrium yield against rate, and adds the catalyst to make the rate acceptable."));
+  assert.ok(c.unit(u.id), "the unit keeps its id");
   await reviewAlignment(c.root, c.r(), { verifier: reviewer().verifier, only: [u.id] });
   assert.deepEqual(cov(), [], "taught (reviewed yes) and naming it: covered");
 });
