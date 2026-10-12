@@ -17,6 +17,7 @@ import { coreObligations, loadUnits, loggedInstructorActs } from "../core/obliga
 import { unitHash } from "../core/segment.mjs";
 import { mechanicalCoverage, mechanicalFindings } from "../verify/mechanical.mjs";
 import { unitRecordFindings } from "../core/unit_records.mjs";
+import { logRecordFindings } from "../core/reconcile.mjs";
 import { uncheckedShippedFindings } from "../core/shipped.mjs";
 
 /** The package's use profile: the FOUNDATION's usageProfile ("public-oer" → public), unless given. */
@@ -60,6 +61,9 @@ export function runGate(root, { checkpoint = "V8", profile = null, inputsDir = n
     }
     // a unit record (stamps, owed re-verifications, carries, links) edited outside the harness (R1 coherence F6)
     if (["V2", "V4", "V6", "V8"].includes(checkpoint)) core.push(...unitRecordFindings(root, run.snapshot.id));
+    // a unit record that does not hold what the log says of it — a carry, a confirmation, a re-verification, a
+    // retirement (R6 G3: the log is the truth; obligations are read from the records, so a gap must block)
+    if (["V2", "V4", "V6", "V8"].includes(checkpoint)) core.push(...logRecordFindings(root, run.snapshot.id));
   }
   const findings = [...run.findings, ...core, ...logFindings(root, run.snapshot.id)];
   const maturityOf = (name) => run.wiring.ran.find((r) => r.name === name)?.maturity || "stable";

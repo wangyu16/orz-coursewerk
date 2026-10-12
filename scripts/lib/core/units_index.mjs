@@ -29,7 +29,8 @@ import { makeFinding } from "../records/findings.mjs";
 import { DELIVERABLE_DIRS, classifyUnit, derivedRole, headingsKey, labelBaseline, segmentDeliverable, slugify, tokensOf, unitHash } from "./segment.mjs";
 import { manifestChapters } from "./package_reader.mjs";
 import { loadUnits, migrateUnitRecords, upgradeStamps } from "./obligations.mjs";
-import { assertUnaltered, upgradeUnitRecordDigests, writeUnitRecords } from "./unit_records.mjs";
+import { allSidecars, assertUnaltered, upgradeUnitRecordDigests, writeUnitRecords } from "./unit_records.mjs";
+import { reconcileUnitRecords } from "./reconcile.mjs";
 import { confirmedAuthorship, inheritedOrigin, instructorCredit, originIndex } from "./authorship.mjs";
 
 export function deliverablesOf(reader) {
@@ -78,9 +79,16 @@ export function confirmAdministrative(root, reader, { source, instructorWords },
   return appendLogRecord(root, { type: "confirmation", party, payload: { what: "administrative-document", source, contentHash: docHash(text), instructorWords } });
 }
 
-/** id → origin of every unit the package's sidecars record, live or retired (authorship.mjs: whose text it is). */
+/** id → origin of every unit the package's sidecars record, live or retired (authorship.mjs: whose text it is) — every
+ *  sidecar on disk, a record left at a path no longer listed included (R6 G1: identity follows the text, not the path). */
 export function packageAncestry(root, reader) {
-  return originIndex(deliverablesOf(reader).map((rel) => readSidecar(root, rel)));
+  const listed = deliverablesOf(reader).map((rel) => readSidecar(root, rel)), disk = allSidecars(root);
+  return originIndex([...listed, ...Object.entries(disk).filter(([rel]) => !deliverablesOf(reader).includes(rel)).map(([, side]) => side)]);
+}
+/** Sidecars on disk whose deliverable is no longer listed (renamed, moved or removed): deliverable → side (R6 G1). */
+export function orphanSidecars(root, reader) {
+  const rels = new Set(deliverablesOf(reader));
+  return Object.fromEntries(Object.entries(allSidecars(root)).filter(([rel]) => !rels.has(rel)));
 }
 
 export function readSidecar(root, deliverable) {
@@ -120,7 +128,9 @@ function stampOf(sources) {
 }
 
 // the retired-unit register (R2 F1, F2, F14): what a retired unit was, kept with its deliverable's sidecar
-const REGISTER_FIELDS = ["form", "origin", "spineNodes", "evidence", "stamp", "carried", "owes", "judgmentAdded", "tokens", "lineage"];
+// (`text`: the unit as it last read — a re-check whose dependency retired is shown it, R6 G4; records written before R6
+// have none)
+const REGISTER_FIELDS = ["form", "origin", "spineNodes", "evidence", "stamp", "carried", "owes", "judgmentAdded", "tokens", "lineage", "text"];
 function registerEntry(u) {
   const e = { id: u.id, deliverable: u.locator?.deliverable ?? u.deliverable, section: u.locator?.section ?? u.section, contentHash: u.locator?.contentHash ?? u.contentHash };
   for (const k of REGISTER_FIELDS) if (u[k] !== undefined) e[k] = u[k];
@@ -209,6 +219,8 @@ export function beginSession(root, reader, party, { step = "authoring" } = {}) {
   try { upgradeUnitRecordDigests(root); } catch { /* a broken log: the gate reports it */ }
   try { migrateUnitRecords(root, reader); } catch { /* an altered record or a broken log: the gate reports it */ }
   try { upgradeStamps(root, reader); } catch { /* an unindexed or partial package: indexing reports it */ }
+  // a logged act whose record write died half-way is completed before anything else is written (R6 G3)
+  try { reconcileUnitRecords(root, reader); } catch { /* an altered record or a broken log: the gate reports it */ }
   const baseline = {};
   for (const rel of deliverablesOf(reader)) baseline[rel] = segmentDeliverable(reader.text(rel), rel).units.map((s) => unitHash(s.text));
   // the label baseline (red team round 5, CONTROL C3-01): the first session under round 5 logs the printed labels over
@@ -235,7 +247,9 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
   const session = as === "agent" ? openSession(logText) : null;
   if (as === "agent" && !session) throw new Error("index --as agent needs an open agent session: run `units begin` before writing");
   if (as === "agent" && party?.role !== "agent") throw new Error("--as agent needs the agent party (with its model)");
-  assertUnaltered(root, deliverablesOf(reader)); // a re-index must not launder a hand-edited (or deleted) unit record (F6)
+  // a sidecar left at a path no longer listed (a renamed or moved document) is read and reconciled, never ignored (R6 G1)
+  const rels = deliverablesOf(reader), orphanSides = new Map(Object.entries(orphanSidecars(root, reader)).sort(([a], [b]) => a.localeCompare(b)));
+  assertUnaltered(root, [...rels, ...orphanSides.keys()]); // a re-index must not launder a hand-edited (or deleted) unit record (F6)
   if (initialOrigin) {
     if (!party || !["instructor", "agent"].includes(party.role)) throw new Error("an initial origin is a statement by the instructor or the agent");
     if (party.role === "agent" && initialOrigin.kind !== "agent-knowledge") throw new Error("the agent can only state that pre-existing text was agent-written");
@@ -243,21 +257,23 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
   }
   const findings = [], summary = { deliverables: 0, units: 0, kept: 0, reworded: 0, new: 0, returned: 0, retired: 0, splits: 0, merges: 0, agent: 0, unknown: 0 };
   const retiredAll = [], changedIds = [];
-  const rels = deliverablesOf(reader);
   const sidecars = new Map(rels.map((rel) => [rel, readSidecar(root, rel)]));
-  const register = rels.flatMap((rel) => (sidecars.get(rel)?.retired || []).map((e) => ({ ...e, deliverable: e.deliverable || rel })));
-  const taken = usedIds([...sidecars.values()], logText);
+  // the registers of every sidecar, and the live units of an orphan sidecar — retired now unless their text is found
+  // again (byte for byte, or nearly, in any deliverable): a renamed document's units come back with their records
+  const register = [...sidecars, ...orphanSides].flatMap(([rel, side]) => (side?.retired || []).map((e) => ({ ...e, deliverable: e.deliverable || rel })));
+  const orphaned = [...orphanSides].flatMap(([rel, side]) => (side.units || []).map((u) => ({ ...registerEntry(u), deliverable: u.locator?.deliverable || rel })));
+  const taken = usedIds([...sidecars.values(), ...orphanSides.values()], logText);
   // whose text it is (authorship.mjs): every unit record's origin, live or retired, and the instructor's confirmations
-  const ancestry = originIndex([...sidecars.values()]);
+  const ancestry = originIndex([...sidecars.values(), ...orphanSides.values()]);
   const confirmed = verifyLog(logText).length ? new Map() : confirmedAuthorship(parseLog(logText));
-  const reserved = new Set(register.map((e) => e.contentHash));
+  const reserved = new Set([...register, ...orphaned].map((e) => e.contentHash));
   // 1. live matching, deliverable by deliverable
   const plan = rels.map((rel) => {
     const seg = segmentDeliverable(reader.text(rel), rel).units, old = sidecars.get(rel)?.units || [];
     return { rel, seg, old, m: matchUnits(old, seg, { reserved }) };
   });
   // 2. what is left is matched against every retired unit: the register, and the units retired by this index run
-  const pool = [...register, ...plan.flatMap((p) => [...p.m.retired, ...p.m.consumed].map((id) => registerEntry(p.old.find((o) => o.id === id))))];
+  const pool = [...register, ...orphaned, ...plan.flatMap((p) => [...p.m.retired, ...p.m.consumed].map((id) => registerEntry(p.old.find((o) => o.id === id))))];
   const back = new Set(); // pool ids taken back
   for (const p of plan) {
     p.back = new Map(); p.inherit = new Map();
@@ -357,6 +373,9 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
         // An owed re-verification, a version carry and the stamp itself (where staleness may live) survive every
         // re-index, and pass to the pieces of a split, to a merge and to a returning text (R1 F4/F5, R2 F1/F2/F14)
         evidence: prev?.evidence || [], ...(prev ? (prev.stamp ? { stamp: prev.stamp } : {}) : stampOf(sources)), ...carriedOf(sources), ...owesOf(sources), ...lineageOf(prev, [...sources, ...(prev ? [] : took)], took), tokens: tokensOf(s.text),
+        // the text as indexed: never read for a live unit (loadUnits reads the deliverable), kept so a retired unit's
+        // register can show how it last read (R6 G4)
+        text: s.text,
         ...(split ? { splitFrom: split.from } : {}), ...(merge ? { mergedFrom: merge.from } : {}), ...(pieceOf.length ? { inheritedFrom: pieceOf.map((x) => x.id) } : {}),
       };
     });
@@ -377,10 +396,18 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
         evidence: { type: "judgment", note: `${rel}: ${unknown.length} passage(s) changed outside an agent session — yours (accept as mine), someone else's (name them), or revert?`, hashes: unknown.map((u) => u.locator.contentHash) },
         recommendation: "accept as mine", basis: unknown.map((u) => u.locator.contentHash).join(",") }));
   }
-  for (const side of sides) { const problems = validateUnitSidecar(side); if (problems.length) throw new Error(`refusing an invalid unit sidecar for ${side.deliverable}: ${problems[0]}`); }
+  // an orphan sidecar: what came back went with its text; the rest retires into its register, with all it owed; a
+  // sidecar left with nothing is removed (its removal logged)
+  for (const [rel, side] of orphanSides) {
+    const gone = (side.units || []).filter((u) => !back.has(u.id));
+    const retired = [...(side.retired || []).filter((e) => !back.has(e.id)), ...gone.map((u) => ({ ...registerEntry(u), deliverable: u.locator?.deliverable || rel }))];
+    retiredAll.push(...gone.map((u) => u.id)); summary.retired += gone.length;
+    sides.push(retired.length ? { schemaVersion: 1, deliverable: rel, units: [], retired } : { deliverable: rel, remove: true });
+  }
+  for (const side of sides.filter((x) => !x.remove)) { const problems = validateUnitSidecar(side); if (problems.length) throw new Error(`refusing an invalid unit sidecar for ${side.deliverable}: ${problems[0]}`); }
   writeUnitRecords(root, sides);
   if (as === "agent") appendLogRecord(root, { type: "revision", party, payload: { event: "agent-session-end", summary } });
-  if (retiredAll.length) appendLogRecord(root, { type: "unit-retirement", party: party || { role: "harness", name: "units index" }, payload: { units: retiredAll } });
+  if (retiredAll.length) appendLogRecord(root, { type: "unit-retirement", party: party || { role: "harness", name: "units index" }, payload: { units: retiredAll, register: true } }); // each kept in a register (R6: the gate holds the records to it)
   return { findings, summary, changedIds };
 }
 
@@ -405,8 +432,8 @@ export function addJudgmentKinds(root, reader, kindsByUnit, party) {
   }
   if (want.size) throw new Error(`no such unit: ${[...want.keys()].join(", ")}`);
   for (const side of writes) { const problems = validateUnitSidecar(side); if (problems.length) throw new Error(`refusing an invalid unit sidecar for ${side.deliverable}: ${problems[0]}`); }
-  writeUnitRecords(root, writes);
-  appendLogRecord(root, { type: "revision", party, payload: { event: "judgment-added", units: kindsByUnit } });
+  // logged with the write, in one step (R6 G3)
+  writeUnitRecords(root, writes, undefined, { act: { type: "revision", party, payload: { event: "judgment-added", units: kindsByUnit } } });
   return writes.length;
 }
 
@@ -428,8 +455,8 @@ export function claimAuthorship(root, { units, as = "instructor", instructorWord
   const missing = units.filter((u) => !done.includes(u));
   if (missing.length) throw new Error(`no such unit: ${missing.join(", ")}`);
   for (const side of writes) { const problems = validateUnitSidecar(side); if (problems.length) throw new Error(`refusing an invalid unit sidecar for ${side.deliverable}: ${problems[0]}`); }
-  writeUnitRecords(root, writes);
-  appendLogRecord(root, { type: "authorship-confirmation", party, payload: { units: done, as, instructorWords } });
+  // logged with the write, in one step (R6 G3)
+  writeUnitRecords(root, writes, undefined, { act: { type: "authorship-confirmation", party, payload: { units: done, as, instructorWords } } });
   return done;
 }
 function walkSidecars(dir, out = []) {
@@ -443,6 +470,10 @@ function walkSidecars(dir, out = []) {
 /** Core check (V2): a deliverable whose units no longer match their sidecar has edits not yet indexed. */
 export function unindexedFindings(root, reader, basis) {
   const out = [];
+  // a sidecar left at a path no longer listed still holds live units: their records have not followed their text (R6 G1)
+  for (const [rel, side] of Object.entries(orphanSidecars(root, reader))) if ((side.units || []).length)
+    out.push(makeFinding({ module: "skeleton", kind: "units-not-indexed", units: [], statusClass: "obligation", route: "agent", basis,
+      evidence: { type: "missing", what: `an index of the ${side.units.length} unit record(s) in metadata/units/${rel}.json — ${rel} is no longer a deliverable (renamed, moved or removed): run units index, so the records follow their text to its new path or retire into the register with what they owed` } }));
   for (const rel of deliverablesOf(reader)) {
     const side = readSidecar(root, rel);
     const now = segmentDeliverable(reader.text(rel), rel).units.map((s) => unitHash(s.text));

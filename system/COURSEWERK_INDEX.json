@@ -479,7 +479,7 @@
       "id": "repo:scripts/lib/core/obligations.mjs",
       "path": "scripts/lib/core/obligations.mjs",
       "type": "kernel",
-      "hash": "d5b5a369e6971233f2c468480e94592011cc6d95d9da1eae349f1f9f5c40c6f2"
+      "hash": "e754a6489d3997e293e97ed65b83bc9a7b0d63cb3ae2a94269b23022cd43b347"
     },
     {
       "id": "repo:scripts/lib/core/pack_v2.mjs",
@@ -504,6 +504,12 @@
       "path": "scripts/lib/core/printed.mjs",
       "type": "kernel",
       "hash": "1b7311bf5b7914995676d3a50e0a4b6e5b175888e252cdffbd2e3dfcae492465"
+    },
+    {
+      "id": "repo:scripts/lib/core/reconcile.mjs",
+      "path": "scripts/lib/core/reconcile.mjs",
+      "type": "kernel",
+      "hash": "b0b1cdd5f604995f9bb6de81f64199197750aa09fb6fec55ea7c18f8945d6a29"
     },
     {
       "id": "repo:scripts/lib/core/rendered.mjs",
@@ -545,13 +551,13 @@
       "id": "repo:scripts/lib/core/unit_records.mjs",
       "path": "scripts/lib/core/unit_records.mjs",
       "type": "kernel",
-      "hash": "3dd1c7df4f9b3e0be0b450024f06e2ba7dcbcdb0a1efaff437c1517eb5aee924"
+      "hash": "5d09de256ac42f044727f508ce6244ab588e7bda12d250668f0f13fc463ff7d4"
     },
     {
       "id": "repo:scripts/lib/core/units_index.mjs",
       "path": "scripts/lib/core/units_index.mjs",
       "type": "kernel",
-      "hash": "50aa64a9b7c7ac24e9813e1a6f819d2aed33120875250ac732889da9cf0f05a6"
+      "hash": "e5d0e74d145340ef10d089ccc94e893c60dc59727da9414f8a5b22b36589d692"
     },
     {
       "id": "repo:scripts/lib/core/values.mjs",
@@ -713,7 +719,7 @@
       "id": "repo:scripts/lib/skeleton/full_gate.mjs",
       "path": "scripts/lib/skeleton/full_gate.mjs",
       "type": "kernel",
-      "hash": "dbc6c4fe8821449b680aaf1635b9a13daaf221b351b52b198eb55d12559a314e"
+      "hash": "6ea932919de9e62ae9c77133d47bbc3bc1d9fbcaa08c2f148bf877d5ceca0fff"
     },
     {
       "id": "repo:scripts/lib/skeleton/gate.mjs",
@@ -989,7 +995,7 @@
       "id": "repo:scripts/units.mjs",
       "path": "scripts/units.mjs",
       "type": "executable",
-      "hash": "8fbe71e3c21a86fd137e7feafb7caa5d74fe1ef612055b4d9ddd0346249be94f"
+      "hash": "71aef622afbaf7feaa7c9c1d64010e04c566df84413f7e89ccf51ab0012700ea"
     },
     {
       "id": "repo:scripts/verify_coursewerk.mjs",
@@ -1163,7 +1169,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "69c7a9c878f532a238c7341ee9f9be0a3e9a1dad41d5080031d8da0895c2dfe9"
+      "hash": "48e45fc251029c32fa7ba15feddc90cce88aabe015a19cc207abea2adc185d47"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1866,6 +1872,12 @@
       "path": "tests/redteam-r5-visible.test.mjs",
       "type": "test",
       "hash": "335a0c28708d88bdb3c6344cd0f3475fd28420bc089d2188ee3f10e036f69e81"
+    },
+    {
+      "id": "repo:tests/redteam-r6-records.test.mjs",
+      "path": "tests/redteam-r6-records.test.mjs",
+      "type": "test",
+      "hash": "aeb07919f6e8ac5a4efe26341c2ab97b0ede576dd1a3ba3f3c7adcb7f8042b3d"
     },
     {
       "id": "repo:tests/requirements.test.mjs",
@@ -3569,6 +3581,14 @@
         "status": "closed"
       },
       {
+        "id": "req.coherence.identity-across-paths",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.coherence.light-spine",
         "phase": "P11",
         "tiers": [
@@ -3594,6 +3614,14 @@
       },
       {
         "id": "req.coherence.recheck-shows-moved",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.coherence.recheck-shows-retired",
         "phase": "P11",
         "tiers": [
           "T1"
@@ -4417,6 +4445,14 @@
       {
         "id": "req.records.log-party",
         "phase": "P1",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.records.log-reconciled",
+        "phase": "P11",
         "tiers": [
           "T1"
         ],

@@ -2998,6 +2998,51 @@
           "tests/redteam-r5-trust.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.records.log-reconciled",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The log is the truth and the unit records must agree with it (R6 G3): every logged act that promises a record state (a version and its carry list, a carry, the instructor's confirmation, a blind re-verification, a retirement kept in a register, added judgment kinds) is checked against every record on disk at the gate, and a disagreement is a blocking defect naming the gap. Writers carry out an act in one step (checked as if logged, then logged, then written; a version checks every carry before it logs anything), and reconcile (run at every session begin) completes an act whose write died only as far as its own evidence still allows: a confirmation at the text and dependencies it confirmed, a re-verification while its counted review still counts.",
+      "source": "3C red team round 6 (studies/p11/redteam-r6/coherence, 2026-10-11), records lane",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r6-records.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.coherence.identity-across-paths",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A unit's identity follows its content, not its document's path (R6 G1): the index reads every sidecar on disk, so the units of a renamed or moved document take back their ids and whole records (carry, owes, stamp, evidence) by content, byte for byte or nearly; a sidecar left at a path no longer listed retires what did not come back into its register with everything it owed (or is removed, its removal logged), is never ignored, and holds the gate as units-not-indexed until indexed; no version is opened over a rename its records have not followed.",
+      "source": "3C red team round 6 (studies/p11/redteam-r6/coherence, 2026-10-11), records lane",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r6-records.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.coherence.recheck-shows-retired",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "What changed survives retirement (R6 G4): a re-check owed because a unit dependency moved is shown that target as it last read when it retired or split (records keep the indexed text), the units that took its words (split pieces, merges, pieces, absorbers), and the value where it now lives (units at its place, or at the place of a unit that took its words, stating a value of the same symbol or unit, whatever the number); a moved target none of this can show is never cleared by a re-check, only by the instructor's confirmation.",
+      "source": "3C red team round 6 (studies/p11/redteam-r6/coherence, 2026-10-11), records lane",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r6-records.test.mjs"
+        ]
+      }
     }
   ]
 }

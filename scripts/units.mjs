@@ -14,6 +14,9 @@
 //        refuses otherwise. Editing, relinking or re-indexing a unit never clears what it owes.
 //   node scripts/units.mjs judge  --root <pkg> --units <id,…> --add semi-mechanical|mechanical|knowledge-based --model <model id>
 //        add a judgment kind the classifier missed (add only; a unit record is never edited by hand)
+//   node scripts/units.mjs reconcile --root <pkg>                                         complete a logged act (a version carry,
+//        a confirmation, a re-verification) whose record write died half-way, as far as its evidence still allows;
+//        prints what was completed and what still disagrees with the log (the gate blocks on it). Run at every begin.
 //   node scripts/units.mjs restamp --root <pkg> --reason "<harness change>"                re-baseline every stamp after the
 //        harness's dependency rules changed (logged as a harness action; never a substitute for re-verification)
 import fs from "node:fs";
@@ -21,13 +24,14 @@ import { liveReader } from "./lib/core/package_reader.mjs";
 import { addJudgmentKinds, beginSession, claimAuthorship, deliverablesOf, readSidecar, unindexedFindings } from "./lib/core/units_index.mjs";
 import { confirmUnits, coreObligations, indexAndStamp, linkUnits, loadUnits, restamp, reverifyUnits } from "./lib/core/obligations.mjs";
 import { appendLogRecord } from "./lib/records/log.mjs";
+import { reconcileUnitRecords } from "./lib/core/reconcile.mjs";
 import { segmentDeliverable, uncoveredLines } from "./lib/core/segment.mjs";
 
 const [cmd, ...args] = process.argv.slice(2);
 const opt = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : undefined; };
 const fail = (m, c = 2) => { console.error(m); process.exit(c); };
 const root = opt("--root");
-if (!cmd || !root || !fs.existsSync(root)) fail("usage: units.mjs <begin|index|claim|status|link|confirm|reverify|judge|obligations|restamp> --root <package> … (see the header of scripts/units.mjs)");
+if (!cmd || !root || !fs.existsSync(root)) fail("usage: units.mjs <begin|index|claim|status|link|confirm|reverify|judge|obligations|reconcile|restamp> --root <package> … (see the header of scripts/units.mjs)");
 const reader = liveReader(root);
 const agent = () => { const model = opt("--model"); if (!model) fail("--model <model id> is required for the agent"); return { role: "agent", name: "executor", model }; };
 try {
@@ -82,6 +86,11 @@ try {
     if (!ids.length) fail("--units <id,…> is required");
     const n = addJudgmentKinds(root, reader, Object.fromEntries(ids.map((id) => [id, [kind]])), agent());
     console.log(JSON.stringify({ added: kind, units: ids.length, recordsWritten: n }, null, 2)); process.exit(0);
+  }
+  if (cmd === "reconcile") {
+    const r = reconcileUnitRecords(root, reader);
+    console.log(JSON.stringify({ completed: r.applied, stillDisagreeing: r.remaining.map((g) => ({ gap: g.gap, logSeq: g.act.seq, units: g.units })) }, null, 2));
+    process.exit(r.remaining.length ? 1 : 0);
   }
   if (cmd === "restamp") {
     const reason = opt("--reason") || fail("--reason is required: name the harness change that altered the dependency rules");
