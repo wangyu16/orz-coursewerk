@@ -243,7 +243,8 @@ const CAPITALIZED = /^\p{Lu}\p{Ll}+$/u;
 // (a letter's case), but a command whose case names another symbol keeps it ("\\Rightarrow" ⇒ is not "\\rightarrow" →).
 const GREEK = /^\\(?:var)?(?:Gamma|Delta|Theta|Lambda|Xi|Pi|Sigma|Upsilon|Phi|Psi|Omega)$/;
 export const texCaseFolded = (tex) => String(tex).replace(/\\[A-Za-z]+|[^\\]+|\\./g, (m) => (m[0] !== "\\" || GREEK.test(m) ? m.toLowerCase() : m));
-function keyOf(src, foldCase) {
+function keyOf(src, foldCase) { return keyTokens(src, foldCase).join(" "); }
+function keyTokens(src, foldCase) {
   const toks = [];
   for (const p of renderedParts(src)) {
     if (p.kind === "mark") { toks.push(p.text); continue; }
@@ -254,7 +255,7 @@ function keyOf(src, foldCase) {
     const t = tokenize(s);
     toks.push(...(foldCase || p.kind !== "prose" ? t : t.map((w) => (CAPITALIZED.test(w) ? w.toLowerCase() : w))));
   }
-  return toks.join(" ");
+  return toks;
 }
 const keyCache = [new Map(), new Map()];
 const cachedKey = (text, foldCase) => {
@@ -275,6 +276,8 @@ const cachedKey = (text, foldCase) => {
  * review stays current exactly while the reader is shown the same thing it judged.
  */
 export const meaningKey = (text) => cachedKey(text, false);
+/** The meaning key as its tokens (a formula is one token): what a key that must not depend on word order reads. */
+export const meaningKeyTokens = (text) => keyTokens(String(text ?? ""), false);
 /**
  * THE LIGHT KEY: the meaning key with letter case folded everywhere (in maths, in the TeX source before it is
  * typeset, as the R4 key did). D43 counts letter case as light, so a spine

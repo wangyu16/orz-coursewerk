@@ -13,8 +13,14 @@
 //                                  gives a few words that make it precise; the agent applies them (D35)
 //   clarification-proposed (question) the same for the instructor's text: a one-line diff to accept or not (D35 (a));
 //   clarification-accepted (obligation, agent) the instructor accepted it; the agent applies it, keeping their credit
-//   instructor-edit-unasked (question)  the agent wrote a reviewer's suggestion into the instructor's text without their
-//                                  answer (R4-K16): the concern's own question stays theirs too; keep the edit, or revert
+//   instructor-edit-unasked (question)  the agent changed the MEANING of the instructor's text without their answer —
+//                                  a reviewer's suggestion written in (R4-K16), or any other edit of their registered
+//                                  text, read in the reader view (R6-K02/K03, authorship.mjs): keep the edit, or revert;
+//   instructor-fact-changed (obligation, agent) that change also changed a fact of theirs (a value, a number, a name, a
+//                                  symbol, a negation) without what the correction path needs — two independent agreeing
+//                                  sources and a logged correction with its diff shown (R6-K02): revert it, route it
+//                                  through the correction path, or the instructor keeps it;
+//   instructor-revert-owed (obligation, agent) the instructor answered an unasked edit "revert": the agent reverts it
 //   evidence-unsupported (defect)  quote-verified evidence that does not re-derive: no dispatch record, a record that
 //                                  does not admit, or quotes that do not carry the unit's current facts.
 //   dispatch-unlogged / dispatch-record-missing (defect) a verification record the log does not vouch for, or a
@@ -25,7 +31,8 @@ import { factHash } from "../lib/core/dependencies.mjs";
 import { checkableClaims, claimsHash } from "../lib/verify/claims.mjs";
 import { supports } from "../lib/verify/admission.mjs";
 import { boundRecord, readDispatches, readKnowledgeReview, reviewedPassage, settledBySuggestion, suggestionAt } from "../lib/verify/dispatch.mjs";
-import { holdsInstructorText, originIndex, textIds } from "../lib/core/authorship.mjs";
+import { holdOtherText, holdersOf, holdsInstructorText, instructorTextChange, instructorTextRegister, originIndex, textIds } from "../lib/core/authorship.mjs";
+import { confirmationStands, instructorActsOf, shownBeforeOf } from "../lib/core/obligations.mjs";
 import { tokensOf } from "../lib/core/segment.mjs";
 import { pinnedTexts, snapshotInputReader } from "../lib/verify/references.mjs";
 import { absoluteReviewOf, absolutesHash } from "../lib/verify/absolutes.mjs";
@@ -79,6 +86,9 @@ function run(s) {
     out.push({ kind: "dispatch-record-missing", units: units.has(l.payload.unit) ? [l.payload.unit] : [], evidence: { type: "rule", rule: "every logged dispatch keeps its record in metadata/verification/", dispatch: l.payload.dispatch } });
 
   const kept = keptClaims(log);
+  // the instructor's confirmations, bound to the text they were given (R6-K04; obligations.mjs confirmationStands)
+  const acts = instructorActsOf(log, { shownBefore: shownBeforeOf(log, (d) => byDispatch.get(d) || null) });
+  const unaskedRaised = new Set(); // units the suggestion path already raised an unasked edit on
   // did the instructor accept this question's suggestion ("apply …")? keyed by the finding it was asked as
   // asked of the unit, or of any unit whose text it holds: the instructor's answer follows their words through a split,
   // a merge or a move (red-team round 5), as their credit does
@@ -196,6 +206,7 @@ function run(s) {
         const askedAs = (x) => { const e = { ...evidence, dispatch: x.r.dispatch }; return c.kind === "wrong" ? acceptedBy(u, "knowledge-concern", e) : acceptedBy(u, "clarification-proposed", { ...e, note: `Clarify: "${c.text}" → "${c.suggestion}". ${c.problem}` }); };
         if (list.some(askedAs)) continue;
         flagged.add(`${c.text}|${c.suggestion}`);
+        unaskedRaised.add(u.id);
         out.push({ kind: "instructor-edit-unasked", units: [u.id], evidence: { type: "judgment", note: `Your text was edited without your answer: the agent wrote the reviewer's suggestion "${c.suggestion}" in place of "${c.text}" (${c.kind === "wrong" ? "a concern that it is wrong" : "a clarification"}: ${c.problem}). Keep the edit, or have it reverted?`, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch, revisedBy: (u.origin?.revisedBy || []).at(-1) || null }, recommendation: "keep" });
       }
     }
@@ -220,7 +231,7 @@ function run(s) {
     const a = rederive(r, plain);
     if (!a || diverged(u)) continue;
     // exercise data no source can show: the instructor confirms it once, so it comes to the digest (P9 scenario)
-    const settled = (u.evidence || []).some((e) => e.factHash === factHash(u.text) && (e.type === "instructor-confirmation" || (e.type === "quote-verified" && e.claimsHash === claimsHash(u.text))));
+    const settled = (u.evidence || []).some((e) => e.factHash === factHash(u.text) && ((e.type === "instructor-confirmation" && confirmationStands(acts, u)) || (e.type === "quote-verified" && e.claimsHash === claimsHash(u.text))));
     // only an exercise-like unit can be invented data (red-team round 1, F14): elsewhere a "hypothetical" label is no
     // evidence and no question — the unit's evidence is still missing, and nothing recommends confirming it
     if (exerciseLike(u) && a.perClaim.length && a.perClaim.every((c) => c.status === "hypothetical") && !settled && !askedExercise.has(u.id) && askedExercise.add(u.id))
@@ -270,6 +281,63 @@ function run(s) {
       if (problem) out.push({ kind: "evidence-unsupported", units: [u.id], evidence: { type: "rule", rule: "quote-verified evidence re-derives from a logged dispatch (or a logged correction) of the unit's current claims", dispatch: e.dispatch ?? null, problem } });
     }
   }
+  out.push(...instructorTextFindings({ units, log, corrections, records, bound, reviewsOf, acceptedBy, acts, unaskedRaised, already: out }));
+  return out;
+}
+
+// ---- the instructor's text, whatever route changed it (red team R6, R6-K02/K03; the rule: core/authorship.mjs) -------
+const norm = (t) => String(t || "").replace(/\s+/g, " ").trim();
+function instructorTextFindings({ units, log, corrections, reviewsOf, acceptedBy, acts, unaskedRaised, already }) {
+  const out = [];
+  const register = instructorTextRegister(log, { corrections, correctionOk: (c) => correctionLogged(c, log) });
+  if (!register.size) return out;
+  const live = [...units.values()], holders = holdersOf(register, live);
+  const answers = log.filter((l) => l.type === "answer" && l.party?.role === "instructor").flatMap((l) => l.payload?.answers || []);
+  for (const [ref, entry] of register) {
+    const hs = holders.get(ref) || [];
+    // an edit outside an agent session awaits the instructor's own answer (D20: unit-unknown-authorship)
+    if (hs.some((u) => u.origin?.kind === "unknown")) continue;
+    if (!hs.length) {
+      // their text gone from the package, retired by an agent session after it was registered
+      const removedBy = log.find((l) => l.type === "unit-retirement" && l.party?.role === "agent" && (l.seq ?? 0) > entry.seq && (l.payload?.units || []).includes(ref));
+      if (!removedBy || !entry.text.trim() || units.has(ref)) continue;
+      out.push({ kind: "instructor-edit-unasked", units: [ref], evidence: { type: "judgment", note: `Your text was removed without your answer: "${norm(entry.text).slice(0, 400)}" (${ref}) is no longer in the package. Keep it removed, or have it restored?`, quote: norm(entry.text), now: "", instructorText: ref, before: entry.text, after: "" }, recommendation: "keep" });
+      continue;
+    }
+    // what the instructor asked for is not unasked: a reviewer's suggestion they accepted (D35) is read as already in
+    // their text; a change they asked for on a disputed claim (D40) exempts that sentence
+    // (accepted, not required: the text with or without their accepted suggestions is theirs)
+    let before = entry.text;
+    for (const u of hs) for (const { r } of reviewsOf.get(u.id) || []) {
+      const k = readKnowledgeReview(r, u.text);
+      if (!k.ok) continue;
+      for (const c of [...k.concerns, ...k.gone]) {
+        if (!c.suggestion?.trim() || !before.includes(c.text)) continue;
+        const evidence = { type: "judgment", note: c.problem, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch };
+        const accepted = c.kind === "wrong" ? acceptedBy(u, "knowledge-concern", evidence) : acceptedBy(u, "clarification-proposed", { ...evidence, note: `Clarify: "${c.text}" → "${c.suggestion}". ${c.problem}` });
+        if (accepted) before = before.replace(c.text, () => c.suggestion);
+      }
+    }
+    const askedClaims = hs.flatMap((u) => textIds(u).flatMap((id) => [...(acts.changes.get(id)?.keys() || [])]));
+    const asked = (del) => askedClaims.length > 0 && del.every((d) => askedClaims.some((ct) => norm(d).includes(norm(ct)) || norm(ct).includes(norm(d))));
+    const after = hs.map((u) => u.text).join("\n\n");
+    const opts = { joined: holdOtherText(ref, hs), asked };
+    const change = before === entry.text ? instructorTextChange(before, after, opts) : instructorTextChange(entry.text, after, opts) && instructorTextChange(before, after, opts);
+    if (!change) continue;
+    const ids = hs.map((u) => u.id), where = ids.join(", ");
+    const was = change.removed.length ? `"${norm(change.removed.join(" ")).slice(0, 300)}"` : "(nothing of yours removed)";
+    const now = change.added.length ? `"${norm(change.added.join(" ")).slice(0, 300)}"` : "(removed)";
+    const revisedBy = hs.map((u) => (u.origin?.revisedBy || []).at(-1)).filter(Boolean).at(-1) || null;
+    const question = { kind: "instructor-edit-unasked", units: ids, evidence: { type: "judgment", note: `Your text in ${where} was changed without your answer${change.factChange ? ` — a fact changed (${change.facts.from.join(", ") || "—"} → ${change.facts.to.join(", ") || "—"}), with no correction record and no second source` : ""}: ${was} now reads ${now}. Keep the edit, or have it reverted?`, quote: norm(change.removed.join(" ")), now: norm(change.added.join(" ")), instructorText: ref, before: entry.text, after, revisedBy }, recommendation: change.factChange ? "revert" : "keep" };
+    // one question per edit: the suggestion path (above) already asks about a suggestion written in
+    if (!ids.some((id) => unaskedRaised.has(id))) out.push(question);
+    if (change.factChange)
+      out.push({ kind: "instructor-fact-changed", units: ids, evidence: { type: "missing", what: `the instructor's ${change.facts.from.join(", ") || "fact"} changed to ${change.facts.to.join(", ") || "—"} in ${where} by an agent edit, without two independent agreeing sources and a logged correction with its diff shown: revert it to their text (and, if a source contradicts it, run node scripts/verify.mjs correct --unit <id>, the guarded correction path), or the instructor keeps it (their answer to the unasked-edit question)`, instructorText: ref, from: change.facts.from, to: change.facts.to } });
+    // the instructor answered "revert": the agent owes it while the text still differs
+    const asks = new Set([question, ...already.filter((f) => f.kind === "instructor-edit-unasked" && (f.units || []).some((id) => ids.includes(id)))].map((f) => findingId({ module: "ms8-verdicts", kind: f.kind, units: f.units, evidence: f.evidence })));
+    if (answers.some((a) => asks.has(a.finding) && /^\s*revert/i.test(a.choice)))
+      out.push({ kind: "instructor-revert-owed", units: ids, evidence: { type: "missing", what: `the revert the instructor asked for: ${where} back to their text ("${norm(entry.text).slice(0, 300)}")`, instructorText: ref } });
+  }
   return out;
 }
 
@@ -285,6 +353,8 @@ export default {
       { kind: "clarification-proposed", statusClass: "question", evidenceType: "judgment", route: "digest" },
       { kind: "clarification-accepted", statusClass: "obligation", evidenceType: "missing", route: "agent" },
       { kind: "instructor-edit-unasked", statusClass: "question", evidenceType: "judgment", route: "digest" },
+      { kind: "instructor-fact-changed", statusClass: "obligation", evidenceType: "missing", route: "agent" },
+      { kind: "instructor-revert-owed", statusClass: "obligation", evidenceType: "missing", route: "agent" },
       { kind: "exercise-data-confirm", statusClass: "question", evidenceType: "judgment", route: "digest" },
       { kind: "absolute-overgeneral", statusClass: "question", evidenceType: "judgment", route: "agent" },
       { kind: "evidence-unsupported", statusClass: "defect", evidenceType: "rule", route: "agent" },

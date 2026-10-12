@@ -64,6 +64,8 @@ export function meaningTokens(text) {
 // a swap of direction words reverses a statement without touching a fact token (C4-13): a spine change compares the
 // meaning tokens AND the order of the direction words ("fewer … more" → "more … fewer" keeps the sorted multiset)
 const directions = (t) => (String(t || "").match(DIRECTION) || []).map((x) => x.toLowerCase());
+/** The direction words of a text, in order (read on the reader view by a caller that binds what a reader saw). */
+export const directionWords = directions;
 // the same facts: the fact and direction tokens, and the direction words in order. A change that keeps them but not the
 // words is a rephrasing (D43); one that does not is substantive.
 //

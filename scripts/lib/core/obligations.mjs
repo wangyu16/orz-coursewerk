@@ -28,7 +28,7 @@
 //   - the instructor's confirmation (confirmUnits).
 // The agent cannot clear an obligation by saying so.
 import { GLANCE_KINDS } from "./change.mjs";
-import { textIds } from "./authorship.mjs";
+import { seenKey, textIds } from "./authorship.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { canonicalJson, sha256 } from "../records/canonical.mjs";
@@ -56,21 +56,72 @@ export const ADMITTED_EVIDENCE = Object.freeze(["quote-verified", "instructor-co
 
 /** Instructor acts recorded in the log, by kind: confirmations (unit → fact hashes) and divergences (unit → corrections). */
 export function loggedInstructorActs(root) {
-  return instructorActsOf(readLogText(root).split("\n").filter(Boolean).map((line) => { try { return JSON.parse(line); } catch { return null; } }).filter(Boolean));
+  const log = readLogText(root).split("\n").filter(Boolean).map((line) => { try { return JSON.parse(line); } catch { return null; } }).filter(Boolean);
+  const readRecord = (d) => { try { return JSON.parse(fs.readFileSync(recordFile(root, `metadata/verification/${d}.json`), "utf8")); } catch { return null; } };
+  return instructorActsOf(log, { shownBefore: shownBeforeOf(log, readRecord) });
+}
+
+// A CONFIRMATION IS BOUND TO WHAT THE INSTRUCTOR SAW (red team R6, R6-K04: it was bound to factHash only, and fact tokens
+// do not see "exothermic … lowers" become "endothermic … raises", so a confirmation carried to text never confirmed).
+// Like quote-verified evidence, which is bound to its sentences (claimsHash), a confirmation counts only for the text
+// it was given:
+//   - a confirmation logged since R6 records each unit's SEEN KEY (authorship.mjs seenKey: the words and symbols of the
+//     reader-view meaning key, and its direction words in order) beside its factHash: it stands while both are
+//     unchanged — a reflow, markup, a comma or a reordering rephrase keeps it (D17), any changed, added, removed or
+//     struck word, sign or symbol a reader sees does not;
+//   - one logged with the unit's contentHash (R4-K07 to R5) stands while the text is byte for byte what it was (both
+//     keys unchanged, so the meaning key is too);
+//   - one logged with neither (before R4) is migrated as an agent would read it: by what the log binds of the unit as
+//     it stood when the instructor answered — its latest logged review before the confirmation: the passage a blind
+//     review showed, or a record the log binds whole (contentHash); for a legacy fact check, the claims its prompt
+//     printed. It stands while the unit's text (or claims) are still those. One the log cannot bind at all, or whose text has moved, no longer
+//     counts: the unit owes evidence again, and the instructor is asked once to re-confirm (confirmation-stale).
+const printedClaimsKey = (text) => JSON.stringify(checkableClaims(text).map((c) => c.text.replace(/\s+/g, " ")));
+/** For a legacy confirmation: what the log binds of the unit as its last fact check before `seq` showed it. */
+export function shownBeforeOf(logRecords, readRecord) {
+  // the latest logged review of the unit before the confirmation that shows what the unit said: a blind knowledge review
+  // (the passage it showed) or a record the log binds whole (its contentHash); a legacy semi check, its printed claims
+  return (id, seq) => {
+    const entries = (logRecords || []).filter((l) => l.type === "dispatch" && l.party?.role === "harness" && l.payload?.unit === id && (l.seq ?? 0) < seq);
+    for (const entry of entries.reverse()) {
+      const r = readRecord(entry.payload.dispatch);
+      const b = r && boundRecord(r, logRecords);
+      if (!b || b.unit !== id) continue;
+      if (b.contentHash) return { content: b.contentHash };
+      if (b.kind !== "semi") continue;
+      const lines = String(r.bundle?.prompt || "").split("\n");
+      const printed = lines.slice(lines.indexOf("CLAIMS") + 1, lines.indexOf("PASSAGES")).map((l) => l.match(/^\d+\. (.*)$/)?.[1]).filter(Boolean);
+      if (printed.length) return { claims: JSON.stringify(printed) };
+    }
+    return null;
+  };
+}
+/** Does a logged confirmation of the unit's current facts stand for its current text (above)? */
+export function confirmationStands(acts, u, fh = factHash(u.text)) {
+  const binds = acts?.confirmed?.get(`${u.id}|${fh}`);
+  if (!Array.isArray(binds)) return false;
+  return binds.some((b) => (b.seen && b.seen === seenKey(u.text)) || (b.content && b.content === unitHash(u.text)) || (b.claims && b.claims === printedClaimsKey(u.text)));
 }
 /** An answer to a disputed claim that asks for a change ("change it to 1865"): anything but keep, confirm or later. */
 export const asksChange = (choice) => !/^\s*(?:keep|confirm|later|still correct|accept)\b/i.test(String(choice || ""));
 const normClaim = (t) => String(t || "").replace(/\s+/g, " ").trim();
 /** The same, from parsed log records. `changes`: unit → Map(claim text → the instructor's answer) — the changes the
  *  instructor asked for on disputed claims (red-team round 1, F15); a later "keep" on the same claim withdraws one. */
-export function instructorActsOf(logRecords) {
+export function instructorActsOf(logRecords, { shownBefore = () => null } = {}) {
   // confirmedText: "unit|contentHash" — the unit's whole text as the instructor confirmed it. What a confirmation
   // exempts from the mechanical check (an intended wrong worked answer) is bound to every word and operator: a factHash
   // does not see "Spot the error" turned into "This working is correct" (red-team round 4, R4-K07).
-  const acts = { confirmed: new Map(), confirmedText: new Set(), diverged: new Map(), changes: new Map() };
+  // confirmed: "unit|factHash" → what binds each confirmation of those facts to the text it was given (see above);
+  // confirmedAny: every "unit|factHash" the instructor confirmed, bound or not (a lapsed one is asked again)
+  const acts = { confirmed: new Map(), confirmedAny: new Set(), confirmedText: new Set(), diverged: new Map(), changes: new Map() };
   for (const r of logRecords) {
     if (r.party?.role !== "instructor") continue;
-    if (r.type === "confirmation" && r.payload?.what === "fact") for (const [id, fh] of Object.entries(r.payload.factHashes || {})) acts.confirmed.set(`${id}|${fh}`, true);
+    if (r.type === "confirmation" && r.payload?.what === "fact") for (const [id, fh] of Object.entries(r.payload.factHashes || {})) {
+      const mk = r.payload.seenKeys?.[id], ch = r.payload.contentHashes?.[id];
+      const bind = typeof mk === "string" ? { seen: mk } : typeof ch === "string" ? { content: ch } : shownBefore(id, r.seq ?? 0);
+      acts.confirmedAny.add(`${id}|${fh}`);
+      if (bind) acts.confirmed.set(`${id}|${fh}`, [...(acts.confirmed.get(`${id}|${fh}`) || []), bind]);
+    }
     if (r.type === "confirmation" && r.payload?.what === "fact") for (const [id, ch] of Object.entries(r.payload.contentHashes || {})) acts.confirmedText.add(`${id}|${ch}`);
     if (r.type === "divergence" && r.payload?.unit && r.payload?.correction) acts.diverged.set(`${r.payload.unit}|${r.payload.correction}`, true);
     if (r.type === "answer") for (const a of r.payload?.answers || []) {
@@ -127,7 +178,7 @@ export function hasAdmittedEvidence(u, acts, { lead, recordedLead = () => null }
   const changeOwed = owedChanges(u, acts).length > 0;
   return (u.evidence || []).some((e) => e.factHash === fh && (
     (e.type === "quote-verified" && e.claimsHash === claimsHash(u.text) && leadOk(e) && !changeOwed) ||
-    (e.type === "instructor-confirmation" && acts.confirmed.has(`${u.id}|${fh}`)) ||
+    (e.type === "instructor-confirmation" && confirmationStands(acts, u, fh)) ||
     (e.type === "authorized-divergence" && acts.diverged.has(`${u.id}|${e.correction}`))));
 }
 /** hasAdmittedEvidence with the unit's lead-in and the recorded leads of the package (the one rule every caller uses). */
@@ -423,9 +474,10 @@ export function confirmUnits(root, reader, ids, { what, instructorWords }, party
   }
   for (const id of ids) if (!text.has(id)) throw new Error(`no such unit: ${id}`);
   // the confirmation is logged first: it is the evidence the record write checks (writeUnitRecords, R4 F7)
-  const rec = appendLogRecord(root, { type: "confirmation", party, payload: { what, units: ids, weight: "single", instructorWords, ...(what === "fact" ? { factHashes: Object.fromEntries(ids.map((id) => [id, factHash(text.get(id) || "")])), contentHashes: Object.fromEntries(ids.map((id) => [id, unitHash(text.get(id) || "")])) } : {}) } });
+  // bound to what the instructor saw (R6-K04): the facts AND the seen key of the text as a reader sees it
+  const rec = appendLogRecord(root, { type: "confirmation", party, payload: { what, units: ids, weight: "single", instructorWords, ...(what === "fact" ? { factHashes: Object.fromEntries(ids.map((id) => [id, factHash(text.get(id) || "")])), contentHashes: Object.fromEntries(ids.map((id) => [id, unitHash(text.get(id) || "")])), seenKeys: Object.fromEntries(ids.map((id) => [id, seenKey(text.get(id) || "")])) } : {}) } });
   rewriteUnits(root, ids, (u) => {
-    if (what === "fact") u.evidence = [...(u.evidence || []), { type: "instructor-confirmation", by: party.name, at, factHash: factHash(text.get(u.id) || "") }];
+    if (what === "fact") u.evidence = [...(u.evidence || []), { type: "instructor-confirmation", by: party.name, at, factHash: factHash(text.get(u.id) || ""), seenKey: seenKey(text.get(u.id) || "") }];
     u.stamp = stampFor(u.id, edges, hashes); delete u.carried; delete u.owes;
   });
   return rec;
@@ -807,10 +859,15 @@ export function coreObligations(root, reader, basis) {
   for (const u of units) {
     const fh = factHash(u.text);
     // an absolute statement is reviewed by an agent that reads its context (D30; any unit, whatever its judgment kind)
-    if (!acts.confirmed.has(`${u.id}|${fh}`) && absoluteSentences(u.text).length && !reviewed.has(`${u.id}|${absolutesHash(u.text)}`))
+    if (!confirmationStands(acts, u, fh) && absoluteSentences(u.text).length && !reviewed.has(`${u.id}|${absolutesHash(u.text)}`))
       ob("absolute-unreviewed", [u.id], `a context review of the absolute statement(s) in ${u.id} (${u.locator.deliverable}): node scripts/verify.mjs absolutes`);
-    if (needsEvidence(u) && !evidenceStands(root, u, units, acts, leads))
+    if (needsEvidence(u) && !evidenceStands(root, u, units, acts, leads)) {
       ob("evidence-missing", [u.id], `admitted evidence for the facts stated in ${u.id} (${u.locator.deliverable})`);
+      // the instructor confirmed these facts, but not this text (R6-K04): one question, to confirm it as it reads now
+      if (acts.confirmedAny.has(`${u.id}|${fh}`) && (u.evidence || []).some((e) => e.type === "instructor-confirmation" && e.factHash === fh))
+        F.push(makeFinding({ module: "skeleton", kind: "confirmation-stale", units: [u.id], statusClass: "question", route: "digest", basis, recommendation: "confirm",
+          evidence: { type: "judgment", note: `You confirmed the facts in ${u.id} (${u.locator.deliverable}), but its text has changed since, or your confirmation does not say which text it was for. It now reads: "${u.text.replace(/\s+/g, " ").slice(0, 400)}" — confirm it as it reads now?`, quote: u.text.replace(/\s+/g, " ").slice(0, 400) } }));
+    }
     // the instructor answered a disputed claim with a change: the agent applies it (red-team round 1, F15); it stays
     // owed while the claim's sentence still reads as it did, and the old evidence no longer counts for it
     for (const c of owedChanges(u, acts))

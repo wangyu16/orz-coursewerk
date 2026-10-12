@@ -30,7 +30,7 @@ import { DELIVERABLE_DIRS, classifyUnit, derivedRole, headingsKey, labelBaseline
 import { manifestChapters } from "./package_reader.mjs";
 import { loadUnits, migrateUnitRecords, upgradeStamps } from "./obligations.mjs";
 import { assertUnaltered, upgradeUnitRecordDigests, writeUnitRecords } from "./unit_records.mjs";
-import { confirmedAuthorship, inheritedOrigin, instructorCredit, originIndex } from "./authorship.mjs";
+import { confirmedAuthorship, holdersOf, inheritedOrigin, instructorAuthored, instructorCredit, instructorTextRegister, originIndex, textIds } from "./authorship.mjs";
 
 export function deliverablesOf(reader) {
   const chapters = manifestChapters(reader).flatMap((ch) => DELIVERABLE_DIRS.map((d) => `${d}/${ch}.md`));
@@ -223,7 +223,62 @@ export function beginSession(root, reader, party, { step = "authoring" } = {}) {
       for (const u of units) if (u.headings?.length) labels[u.locator.deliverable][u.id] = headingsKey(u);
     }
   } catch { labels = undefined; /* a broken log or index: the gate reports it */ }
+  // the instructor's text, registered before the agent can change it (red team R6; authorship.mjs): every unit holding
+  // their words that the register does not yet hold, at its indexed text
+  try { registerInstructorBaseline(root, reader); } catch { /* a broken log or index: the gate reports it */ }
   return appendLogRecord(root, { type: "revision", party, payload: { event: "agent-session-begin", step, baseline, ...(labels ? { labels } : {}) } });
+}
+
+/** The instructor's register as the log and the correction records give it (authorship.mjs instructorTextRegister). */
+export function instructorRegister(root, logRecords = null) {
+  const log = logRecords || (() => { const t = readLogText(root); return verifyLog(t).length ? [] : parseLog(t); })();
+  const dir = recordFile(root, "metadata/corrections"), corrections = new Map();
+  if (fs.existsSync(dir)) for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json"))) { try { const c = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")); if (c?.id) corrections.set(c.id, c); } catch { /* unreadable: not counted */ } }
+  return instructorTextRegister(log, { corrections, correctionOk: (c, l) => correctionMatchesLog(c, log, l) });
+}
+/** A correction record matches its logged autocorrect record and its own texts (as verdicts.mjs correctionLogged). */
+export function correctionMatchesLog(c, logRecords, entry = null) {
+  if (!c?.before || !c?.after || unitHash(c.before.text ?? "") !== c.before.contentHash || unitHash(c.after.text ?? "") !== c.after.contentHash) return false;
+  const ok = (l) => l.type === "revision" && l.payload?.event === "autocorrect" && l.payload.correction === c.id && l.payload.unit === c.unit && l.payload.before === c.before.contentHash && l.payload.after === c.after.contentHash;
+  return entry ? ok(entry) : (logRecords || []).some(ok);
+}
+/**
+ * Register, as the harness, the indexed text of every unit holding the instructor's words that the register does not
+ * hold yet (no id whose text it holds is registered). A unit whose file text differs from its index (an edit not yet
+ * indexed: of unknown authorship, D20) is not registered: only text the index has seen as it is.
+ */
+export function registerInstructorBaseline(root, reader) {
+  const logText = readLogText(root);
+  if (verifyLog(logText).length) return null;
+  const log = parseLog(logText), reg = instructorRegister(root, log), ancestry = packageAncestry(root, reader), texts = {};
+  for (const rel of deliverablesOf(reader)) {
+    const side = readSidecar(root, rel);
+    const seg = segmentDeliverable(reader.text(rel) ?? "", rel).units;
+    if (!side || side.units.length !== seg.length) continue;
+    side.units.forEach((u, i) => {
+      if (unitHash(seg[i].text) !== u.locator?.contentHash || u.origin?.kind === "unknown") return;
+      if (textIds(u).some((id) => reg.has(id)) || !instructorAuthored(u, log, ancestry)) return;
+      texts[u.id] = seg[i].text;
+    });
+  }
+  if (!Object.keys(texts).length) return null;
+  return appendLogRecord(root, { type: "revision", party: { role: "harness", name: "units begin" }, payload: { event: "instructor-text-baseline", rule: "the instructor's text, registered before an agent session can change it (R6)", texts } });
+}
+/**
+ * The instructor adopts the text as it now stands (their "keep" on an unasked edit): the register takes the current text
+ * of every unit holding a registered text that any of `ids` holds (joined, for a split or a merge), and of each unit of
+ * `ids` that holds no registered text; a registered text no live unit holds any more (removed) is registered as gone.
+ */
+export function adoptInstructorText(root, reader, ids, { instructorWords }, party) {
+  if (party?.role !== "instructor") throw new Error("only the instructor adopts text as theirs");
+  if (!String(instructorWords || "").trim()) throw new Error("adopting text quotes the instructor's words");
+  const units = loadUnits(root, reader), reg = instructorRegister(root), holders = holdersOf(reg, units), texts = {};
+  const want = new Set(ids);
+  for (const [ref, hs] of holders) if (want.has(ref) || hs.some((u) => want.has(u.id))) texts[ref] = hs.map((u) => u.text).join("\n\n");
+  for (const u of units.filter((x) => want.has(x.id) && !textIds(x).some((id) => reg.has(id)))) texts[u.id] = u.text;
+  if (!Object.keys(texts).length) return null;
+  // an authorship act (not a confirmation of correctness: it clears no re-check a unit owes)
+  return appendLogRecord(root, { type: "authorship-confirmation", party, payload: { units: [...want], as: "instructor", kept: "edit", instructorWords, texts } });
 }
 
 /**
@@ -414,22 +469,26 @@ export function addJudgmentKinds(root, reader, kindsByUnit, party) {
 export function claimAuthorship(root, { units, as = "instructor", instructorWords }, party) {
   if (party?.role !== "instructor") throw new Error("authorship is confirmed by the instructor");
   if (!String(instructorWords || "").trim()) throw new Error("an authorship confirmation quotes the instructor's words");
-  const ids = new Set(units), date = new Date().toISOString().slice(0, 10), done = [], writes = [];
+  const ids = new Set(units), date = new Date().toISOString().slice(0, 10), done = [], writes = [], texts = {};
   for (const rel of fs.existsSync(recordFile(root, "metadata/units")) ? walkSidecars(recordFile(root, "metadata/units")) : []) {
     const side = JSON.parse(fs.readFileSync(rel, "utf8"));
     let touched = false;
-    for (const u of side.units) if (ids.has(u.id)) {
+    // the text they accept is registered as theirs (red team R6): read from the deliverable, where it matches its index
+    let seg = null; try { seg = segmentDeliverable(fs.readFileSync(path.join(root, side.deliverable), "utf8"), side.deliverable).units; } catch { seg = null; }
+    side.units.forEach((u, i) => {
+      if (!ids.has(u.id)) return;
       if (u.origin.kind !== "unknown") throw new Error(`${u.id} is not of unknown authorship`);
       u.origin = as === "instructor" ? { kind: "instructor-authored", instructor: party.name, date } : { kind: "unknown", namedAuthor: as };
+      if (as === "instructor" && seg && seg.length === side.units.length && unitHash(seg[i].text) === u.locator?.contentHash) texts[u.id] = seg[i].text;
       done.push(u.id); touched = true;
-    }
+    });
     if (touched) writes.push(side);
   }
   const missing = units.filter((u) => !done.includes(u));
   if (missing.length) throw new Error(`no such unit: ${missing.join(", ")}`);
   for (const side of writes) { const problems = validateUnitSidecar(side); if (problems.length) throw new Error(`refusing an invalid unit sidecar for ${side.deliverable}: ${problems[0]}`); }
   writeUnitRecords(root, writes);
-  appendLogRecord(root, { type: "authorship-confirmation", party, payload: { units: done, as, instructorWords } });
+  appendLogRecord(root, { type: "authorship-confirmation", party, payload: { units: done, as, instructorWords, ...(Object.keys(texts).length ? { texts } : {}) } });
   return done;
 }
 function walkSidecars(dir, out = []) {
