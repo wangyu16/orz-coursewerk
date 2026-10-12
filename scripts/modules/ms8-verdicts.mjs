@@ -32,6 +32,7 @@ import { absoluteReviewOf, absolutesHash } from "../lib/verify/absolutes.mjs";
 import { checksCurrentClaims, claimKey, correctionLogged, dispatchLogged, instructorAuthored, keptClaims, knowledgeConcerns, leadOf, logRecordsOf, recordClaimTexts, recordLeads, rederive } from "../lib/verify/verdicts.mjs";
 import { findingId } from "../lib/records/findings.mjs";
 import { base, recheckByRerun } from "./_shared.mjs";
+import { disagreementNote, readerKey, semiReviewCurrent, standingOf } from "../lib/verify/standing.mjs";
 
 /** A unit that can hold invented exercise data: by its form and role, never by a word in it — a question or answer,
  *  a unit of a practice deliverable, or a unit in a worked-example / exercise section. (Red-team round 2, R2-K09: a cue
@@ -110,7 +111,14 @@ function run(s) {
     const u = units.get(id), fh = factHash(u.text);
     list.sort((x, y) => y.b.seq - x.b.seq);
     const own = list.filter((x) => !x.carried);
-    const fresh = own.filter((x) => x.b.contentHash === u.contentHash);
+    // which reviews are of the unit's CURRENT text: judged on the reader view (red team R6, R6-K10 — a TeX regrouping
+    // that typesets the same made the text "changed", and one clean re-run then made a standing concern history). An
+    // edit a reader cannot see is no change; every review of the same reader-view text speaks (standing.mjs: an
+    // adverse answer outranks a clean one), so re-running the reviewer until it comes back clean clears nothing
+    const view = readerKey(u.text);
+    const sameView = (x) => readerKey(reviewedPassage(x.r.bundle?.prompt)) === view;
+    const standing = standingOf(own, { current: sameView, items: (x) => { const k = readKnowledgeReview(x.r, u.text); return k.ok ? [...k.concerns, ...k.gone].map((c) => [`${c.kind}|${c.text}`, c]) : null; }, rank: (c) => (c.kind === "wrong" ? 2 : 1) });
+    const fresh = standing.current;
     if (fresh.length) {
       // a review that cannot be scored is said so, never read as a clean review (red-team round 2, R2-K10): an answer
       // that does not parse, or a concern quoting words the passage does not contain (even read as rendered)
@@ -121,30 +129,32 @@ function run(s) {
     // which reviews speak for the unit: those of its current facts (factHash, derived for a legacy record), and always
     // its newest review — a rewrite that changes a fact token cannot silence the last review's concerns (R3-K06) — and
     // the reviews its text carried in from a split, merge or retired unit (R4-K17). But the NEWEST review of the
-    // unit's current text (contentHash) speaks for the unit: every older review is history, whether or not its quoted
+    // unit's current text (its reader view: red team R6) speaks for the unit: every older review is history, whether or not its quoted
     // words remain (red-team round 4, R4-K15: an error fixed at its cause, "an inert gas" → "hydrogen", left the words
     // the reviewer quoted, and no clean fresh review could ever clear it). History means a review of OTHER text: a
     // review of the unit's current text keeps speaking whatever a later review of the same text says — re-running the
     // reviewer on unchanged text until it comes back clean clears nothing (round-4 integration); the instructor's
     // answer, or a change to the text, does
     const newestFresh = fresh.length ? fresh[0].b.seq : -Infinity;
-    const speaking = list.filter((x) => (x.b.seq >= newestFresh || x.b.contentHash === u.contentHash) && (x.carried || x === own[0] || x.b.factHash === fh));
+    const speaking = list.filter((x) => (fresh.includes(x) || (x.b.seq >= newestFresh && (x.carried || x === own[0] || x.b.factHash === fh))));
     // whose text it is, decided BEFORE whether a suggestion is in it (red-team round 4, R4-K16): on the instructor's
     // text a suggestion the agent wrote in unasked settles nothing — the question stays theirs (D35 (a), D31), and the
     // edit itself is raised (instructor-edit-unasked, below)
     const instructors = instructorAuthored(u, log, ancestry);
     // …and who changed it since the review: the agent's revisions are on record (revisedBy), or the record calls the
     // text the agent's own although it holds the instructor's words (a record written before round 5)
-    const agentEdited = (b) => instructors && b.contentHash !== u.contentHash && ((u.origin?.revisedBy || []).length > 0 || (u.origin?.kind === "agent-knowledge" && holdsInstructorText(u, log, ancestry)));
-    for (const { r, b, carried } of speaking) {
+    const agentEdited = (x) => instructors && !fresh.includes(x) && ((u.origin?.revisedBy || []).length > 0 || (u.origin?.kind === "agent-knowledge" && holdsInstructorText(u, log, ancestry)));
+    for (const x of speaking) {
+      const { r, b, carried } = x;
       const k = readKnowledgeReview(r, u.text);
       if (!k.ok) continue;
       const passage = reviewedPassage(r.bundle?.prompt);
-      const unasked = agentEdited(b);
+      const unasked = agentEdited(x);
       // "settled by the text" (R3-K06): a "wrong" concern whose words are gone is settled only when a fresh review of
-      // the unit's current text (contentHash) was made after it — a review that clears it — or its suggestion went in
+      // the unit's current text (its reader view) was made after it — a review that clears it — or its suggestion went in
       // place of its words and nothing else changed. A synonym swap ("raises" → "increases") is neither: it stays open.
-      const clearedByFresh = fresh.some((x) => x.b.seq > b.seq);
+      // (a review of the same reader-view text is never cleared by a later one: red team R6)
+      const clearedByFresh = !fresh.includes(x) && fresh.some((y) => y.b.seq > b.seq);
       // a carried review speaks only for the words this piece holds: its other concerns went with the other pieces. A
       // concern whose words are gone from the piece is this piece's when the piece now has the suggestion where they
       // stood, or still holds most of their words reworded (red-team round 5, R5-K10: a split, then the instructor's
@@ -183,7 +193,7 @@ function run(s) {
     const flagged = new Set();
     // …and from a review its text carried in from a split, merge or retired unit (red-team round 5, R5-K10): the
     // instructor's words are theirs in whichever piece they went to
-    for (const { r, b, carried } of list.filter((x) => agentEdited(x.b))) {
+    for (const { r, b, carried } of list.filter((x) => agentEdited(x))) {
       const k = readKnowledgeReview(r, u.text);
       if (!k.ok) continue;
       const passage = reviewedPassage(r.bundle?.prompt);
@@ -201,43 +211,55 @@ function run(s) {
     }
   }
 
-  for (const r of [...records].sort((x, y) => String(y.at).localeCompare(String(x.at)))) {
-    const b = bound.get(r), u = b && units.get(b.unit);
-    if (!u || r.kind === "knowledge") continue;
-    // a record bound whole is current at its factHash; a legacy record by what its prompt printed (below)
-    if (b.hashed && b.factHash !== factHash(u.text)) continue;
+  // ---- context reviews of absolute statements (D30), and fact checks — one standing rule (red team R6) -------------
+  // A review is current while what it judged reads the same in the reader view (standing.mjs): an absolute review the
+  // sentences it classified (absolutesHash), a fact check the claims its prompt printed. Every current review speaks:
+  // an over-general sentence, a contradiction or a dispute that any of them found stands whatever a later review of the
+  // same text says — a clean re-run clears nothing; rewording the text (or the instructor's answer) does.
+  const absByUnit = new Map(), semiByUnit = new Map();
+  for (const r of records) {
+    const b = bound.get(r);
     if (r.kind === "absolute") {
-      // a context review (D30): an over-general scientific absolute is a question for the agent, with a rewording
       // read from what the log binds (the prompt and the answer), never from the record's editable fields (round 2)
       const a = absoluteReviewOf(r, log);
-      if (!a || a.unit !== u.id || a.absolutesHash !== absolutesHash(u.text)) continue;
-      const v = a.review;
-      if (v.ok) for (const x of v.results.filter((y) => y.class === "over-general"))
-        out.push({ kind: "absolute-overgeneral", units: [u.id], evidence: { type: "judgment", note: x.why, quote: x.sentence, suggestion: x.suggestion, dispatch: r.dispatch } });
-      continue;
-    }
-    if (!plain.size || !checksCurrentClaims(r, u.text, leadOf(u, [...units.values()]))) continue; // a record of other claims is history
-    const a = rederive(r, plain);
-    if (!a || diverged(u)) continue;
-    // exercise data no source can show: the instructor confirms it once, so it comes to the digest (P9 scenario)
-    const settled = (u.evidence || []).some((e) => e.factHash === factHash(u.text) && (e.type === "instructor-confirmation" || (e.type === "quote-verified" && e.claimsHash === claimsHash(u.text))));
-    // only an exercise-like unit can be invented data (red-team round 1, F14): elsewhere a "hypothetical" label is no
-    // evidence and no question — the unit's evidence is still missing, and nothing recommends confirming it
-    if (exerciseLike(u) && a.perClaim.length && a.perClaim.every((c) => c.status === "hypothetical") && !settled && !askedExercise.has(u.id) && askedExercise.add(u.id))
-      out.push({ kind: "exercise-data-confirm", units: [u.id], evidence: { type: "judgment", note: `${u.id}: the values here read as invented exercise data, which no source can show — confirm them as teaching hypotheticals?`, quote: r.claims?.map((c) => c.text).join(" | ") || "", dispatch: r.dispatch }, recommendation: "confirm" });
-    for (const c of a.perClaim) {
-      if (c.status === "contradicted")
-        out.push({ kind: "fact-contradicted", units: [u.id], evidence: { type: "quote", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote, span: q.span })) } });
-      else if (c.status === "disputed") {
-        // in the agent's own text a dispute is the agent's to settle: it re-checks the value against the quote and
-        // fixes or keeps its draft — the instructor is not asked (P11, operator: catch much, annoy little)
-        // the dispute as one claim (D40): keyed by its sentence and values, so an edit elsewhere in the unit keeps the answer
-        const key = claimKey(u.id, recordClaimTexts(r)[c.claim - 1], c.conflicts || []);
-        // the instructor kept this claim as written: settled — asked of this unit or of any unit whose text it holds
-        if (textIds(u).some((id) => kept.has(claimKey(id, recordClaimTexts(r)[c.claim - 1], c.conflicts || [])))) continue;
-        out.push({ kind: instructorAuthored(u, log, ancestry) ? "fact-disputed" : "fact-check-own", units: [u.id], evidence: { claimKey: key, claimText: recordClaimTexts(r)[c.claim - 1], type: "conflict", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote })),
-          // the question the instructor reads (P11: the digest showed the bare kind)
-          note: `The pinned sources disagree: the text says ${(c.conflicts || []).map((k) => `${k.claimed}, a source says ${k.source}${k.sentence ? ` ("${String(k.sentence).slice(0, 160)}")` : ""}`).join("; ")} — keep as written, or change it?` } });
+      if (a && units.has(a.unit)) absByUnit.set(a.unit, [...(absByUnit.get(a.unit) || []), { r, a, seq: Number(a.seq ?? b?.seq ?? 0) }]);
+    } else if (r.kind === "semi" && b && units.has(b.unit)) semiByUnit.set(b.unit, [...(semiByUnit.get(b.unit) || []), { r, b, seq: Number(b.seq ?? 0) }]);
+  }
+  for (const [id, list] of absByUnit) {
+    const u = units.get(id), h = absolutesHash(u.text);
+    const st = standingOf(list, { current: (x) => x.a.absolutesHash === h, items: (x) => (x.a.review.ok ? x.a.review.results.map((y) => [`sentence:${y.n}`, y]) : null), rank: (y) => (y.class === "over-general" ? 1 : 0) });
+    for (const [, e] of st.items) if (e.rank > 0)
+      out.push({ kind: "absolute-overgeneral", units: [u.id], evidence: { type: "judgment", note: e.answer.why + disagreementNote(e), quote: e.answer.sentence, suggestion: e.answer.suggestion, dispatch: e.review.r.dispatch } });
+  }
+  const SEMI_RANK = { supported: 0, hypothetical: 1, disputed: 2, contradicted: 3 };
+  for (const [id, list] of semiByUnit) {
+    const u = units.get(id), lead = leadOf(u, [...units.values()]);
+    if (!plain.size) continue;
+    const st = standingOf(list, { current: (x) => semiReviewCurrent(x.r, u.text, lead), items: (x) => { const a = rederive(x.r, plain); return a ? a.perClaim.map((c) => [`claim:${c.claim}`, c]) : null; }, rank: (c) => SEMI_RANK[c.status] ?? null });
+    // every current fact check speaks (a record of other claims is history)
+    for (const { r } of st.current) {
+      const a = rederive(r, plain);
+      if (!a || diverged(u)) continue;
+      // exercise data no source can show: the instructor confirms it once, so it comes to the digest (P9 scenario)
+      const settled = (u.evidence || []).some((e) => e.factHash === factHash(u.text) && (e.type === "instructor-confirmation" || (e.type === "quote-verified" && e.claimsHash === claimsHash(u.text))));
+      // only an exercise-like unit can be invented data (red-team round 1, F14): elsewhere a "hypothetical" label is no
+      // evidence and no question — the unit's evidence is still missing, and nothing recommends confirming it
+      if (exerciseLike(u) && a.perClaim.length && a.perClaim.every((c) => c.status === "hypothetical") && !settled && !askedExercise.has(u.id) && askedExercise.add(u.id))
+        out.push({ kind: "exercise-data-confirm", units: [u.id], evidence: { type: "judgment", note: `${u.id}: the values here read as invented exercise data, which no source can show — confirm them as teaching hypotheticals?`, quote: r.claims?.map((c) => c.text).join(" | ") || "", dispatch: r.dispatch }, recommendation: "confirm" });
+      for (const c of a.perClaim) {
+        if (c.status === "contradicted")
+          out.push({ kind: "fact-contradicted", units: [u.id], evidence: { type: "quote", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote, span: q.span })) } });
+        else if (c.status === "disputed") {
+          // in the agent's own text a dispute is the agent's to settle: it re-checks the value against the quote and
+          // fixes or keeps its draft — the instructor is not asked (P11, operator: catch much, annoy little)
+          // the dispute as one claim (D40): keyed by its sentence and values, so an edit elsewhere in the unit keeps the answer
+          const key = claimKey(u.id, recordClaimTexts(r)[c.claim - 1], c.conflicts || []);
+          // the instructor kept this claim as written: settled — asked of this unit or of any unit whose text it holds
+          if (textIds(u).some((id) => kept.has(claimKey(id, recordClaimTexts(r)[c.claim - 1], c.conflicts || [])))) continue;
+          out.push({ kind: instructorAuthored(u, log, ancestry) ? "fact-disputed" : "fact-check-own", units: [u.id], evidence: { claimKey: key, claimText: recordClaimTexts(r)[c.claim - 1], type: "conflict", dispatch: r.dispatch, claim: c.claim, conflicts: c.conflicts, quotes: c.quotes.map((q) => ({ source: q.source, quote: q.quote })),
+            // the question the instructor reads (P11: the digest showed the bare kind)
+            note: `The pinned sources disagree: the text says ${(c.conflicts || []).map((k) => `${k.claimed}, a source says ${k.source}${k.sentence ? ` ("${String(k.sentence).slice(0, 160)}")` : ""}`).join("; ")} — keep as written, or change it?` } });
+        }
       }
     }
   }

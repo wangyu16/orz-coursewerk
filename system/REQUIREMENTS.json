@@ -2880,6 +2880,21 @@
       }
     },
     {
+      "id": "req.reviews.standing",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Re-running a blind reviewer never changes an outcome on unchanged text. For every review kind that decides an outcome (knowledge, the D39 spine review and its D43 meaning answer, link and framing reviews with their assessment fidelity, absolute-statement reviews, the semi-mechanical fact check), ONE function (scripts/lib/verify/standing.mjs standingOf) decides which result stands: a review is current while the reader view (rendered.mjs meaningKey) of what it judged is unchanged, so an edit invisible to a reader never counts as a change; between current reviews the adverse answer (a concern, 'no', 'passing', 'differs', contradicted or disputed, a meaning 'changed', off the plan) outranks a clean one in either order; it is cleared only by a real change to the text (a fresh review of the new text then speaks) or by the instructor's answer. An unreadable review is no result. Disagreeing reviews raise no separate question: the adverse finding says the reviews disagreed.",
+      "source": "3C red team round 6, cause 'reviewer shopping' (D46): R6-C4-01, R6-C1-01, R6-K10",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r6-reviews.test.mjs"
+        ]
+      }
+    },
+    {
       "id": "req.control.visible-by-frame-render",
       "phase": "P11",
       "tiers": [

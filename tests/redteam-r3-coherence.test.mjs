@@ -115,7 +115,10 @@ test("[req.coherence.light-spine] [req.spine.meaning-covers-removed] F1 + C4-01:
   await reviewSpineChanges(d.root, d.r(), SCOPE, { verifier: rv.verifier });
   assert.ok(numbered(rv.seen[0]).some((l) => /^\(removed\) .*distinguish the \*\*rate\*\*/.test(l)), "the dropped requirement is asked about");
   assert.throws(() => d.glance(), /changed in meaning or did not say/);
-  // and a review that says "same" to the reworded line and to every removed line (the plan still says them) is a glance
+  // a re-run of the unchanged plan cannot overturn that "changed" (red team R6): the agent restores the requirement in
+  // its own words, and a review that says "same" to the reworded lines and to every removed line (the plan still says
+  // them) is a glance
+  d.edit(GUIDE, "present at equilibrium.\n", "present at equilibrium. The student must tell the **rate** of reaching equilibrium from\nthe **position** of it.\n");
   await reviewSpineChanges(d.root, d.r(), SCOPE, { verifier: spineReviewer(() => ({ meaning: "same" })).verifier });
   assert.equal(d.glance().type, "glance-confirmation");
   // nothing asked is never "same"

@@ -48,7 +48,8 @@ import { approvalStatus } from "./approvals.mjs";
 import { dependencyEdges, factHash, groupTermHash, isLegacyQuestionHash, isR4QuestionHash, questionStampCurrent, unitStampCurrent, legacyTermLabel, nodeHash, questionBindingProblems, questionHash, referenceBindingProblems, sourceHashes, stampFor, staleTargets, targetHashes, termDefinitions, termHash, termKey } from "./dependencies.mjs";
 import { deliverableOfSidecar, UNIT_RECORDS_EVENT, writeUnitRecords } from "./unit_records.mjs";
 import { currentReviewsAt } from "../verify/alignment.mjs";
-import { boundRecord, readKnowledgeReview, recordHashOf } from "../verify/dispatch.mjs";
+import { boundRecord, readKnowledgeReview, recordHashOf, reviewedPassage } from "../verify/dispatch.mjs";
+import { readerKey, semiReviewCurrent, standingOf } from "../verify/standing.mjs";
 
 // quote-verified: admitted by the verdict path (P7); instructor-confirmation: one confirmation (D19-D);
 // authorized-divergence: the instructor kept their text against evidence, after seeing it — the double confirmation (Q10).
@@ -481,7 +482,9 @@ export function reviewedAbsolutes(root) {
  */
 export function unreviewedKnowledge(root, reader) {
   const dir = recordFile(root, "metadata/verification"), seen = new Set();
-  const units = loadUnits(root, reader), textOf = new Map(units.map((u) => [`${u.id}|${u.locator.contentHash}`, u.text]));
+  // keyed by the unit and the reader view of the passage reviewed (red team R6): an edit a reader cannot see leaves the
+  // unit reviewed, and any change a reader can see makes it unreviewed
+  const units = loadUnits(root, reader), textOf = new Map(units.map((u) => [`${u.id}|${readerKey(u.text)}`, u.text]));
   const log = logDispatches(root);
   if (fs.existsSync(dir)) for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json"))) {
     let r; try { r = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")); } catch { continue; }
@@ -491,10 +494,15 @@ export function unreviewedKnowledge(root, reader) {
     if (!b?.contentHash) continue;
     // a review that cannot be scored (no readable answer, or a concern quoting words the passage does not have) is not
     // a review of the unit (red-team round 2, R2-K10)
-    const key = `${b.unit}|${b.contentHash}`, k = textOf.has(key) && readKnowledgeReview(r, textOf.get(key));
+    const key = `${b.unit}|${readerKey(reviewedPassage(r.bundle?.prompt))}`, k = textOf.has(key) && readKnowledgeReview(r, textOf.get(key));
     if (k && k.ok && !k.unlocated.length) seen.add(key);
   }
-  return units.filter((u) => u.judgment.includes("knowledge-based") && u.role === "teaching" && !seen.has(`${u.id}|${u.locator.contentHash}`)).map((u) => u.id);
+  return units.filter((u) => u.judgment.includes("knowledge-based") && u.role === "teaching" && !seen.has(`${u.id}|${readerKey(u.text)}`)).map((u) => u.id);
+}
+/** The record of a logged knowledge review, when it is the one the log binds whole (null otherwise). */
+function boundKnowledge(root, logged) {
+  let r; try { r = JSON.parse(fs.readFileSync(recordFile(root, `metadata/verification/${logged.payload.dispatch}.json`), "utf8")); } catch { return null; }
+  return r && logged.payload.recordHash && recordHashOf(r) === logged.payload.recordHash ? r : null;
 }
 /** The harness's dispatch log records. */
 function logDispatches(root) {
@@ -517,8 +525,9 @@ function liveContradictions(root, units) {
     if (!u || b.status !== "contradicted") continue;
     // a contradiction (a defect) must go through its correction or revert; a dispute between sources is the
     // instructor's to settle, and a confirmation is how they settle it (D12-F)
-    const current = b.hashed ? b.factHash === factHash(u.text) : sameClaims(r, u.text);
-    if (current) out.add(u.id);
+    // current while the claims it checked read the same in the reader view (standing.mjs, red team R6): a TeX
+    // regrouping inside a claim, then a clean re-check, does not make a contradiction history
+    if (semiReviewCurrent(r, u.text, leadOf(u, units)) || (b.hashed ? b.factHash === factHash(u.text) : sameClaims(r, u.text))) out.add(u.id);
   }
   return out;
 }
@@ -592,9 +601,26 @@ function countedReview(root, recs, u, ctx, verdicts = (d, text) => wrongConcerns
   const checked = candidates.map((r) => [r, reviewRecordProblem(root, r, u, ctx)]);
   const review = checked.filter(([, why]) => !why).at(-1)?.[0];
   if (!review) return checked.length ? { problem: `${id}: its blind review (${checked.at(-1)[0].payload.dispatch}) does not count — ${checked.at(-1)[1]}; run ${REVERIFY_ROUTE(root, [id])} again` } : { unreviewed: true };
-  if (review.payload.kind === "knowledge" && verdicts) {
-    const wrong = verdicts(review.payload.dispatch, u.text).filter((c) => c.kind === "wrong");
-    if (wrong.length) return { problem: `${id}: its blind review (${review.payload.dispatch}) found it wrong ("${wrong[0].text.slice(0, 80)}": ${wrong[0].problem.slice(0, 120)}) — revise it, then have it reviewed again` };
+  // which result stands (red team R6): EVERY knowledge review of the unit since its obligation arose, of the text a reader
+  // sees now (an edit invisible in the reader view is no change), speaks — a "wrong" concern any of them raised stands
+  // whatever a later review of the same text says; re-running the reviewer until it comes back clean clears nothing.
+  // Revise the text (a fresh review of the new text speaks), or the instructor confirms it (units.mjs confirm).
+  if (verdicts) {
+    const view = readerKey(u.text);
+    const reviews = recs.filter((r) => r.type === "dispatch" && r.party?.role === "harness" && r.seq > since && r.payload?.unit === id && r.payload?.kind === "knowledge" && r.payload?.recordHash).map((r) => ({ r, seq: r.seq }));
+    const st = standingOf(reviews, {
+      current: ({ r }) => r === review || readerKey(reviewedPassage(boundKnowledge(root, r)?.bundle?.prompt)) === view,
+      // the review that counts is read as it always was; every other one by what it raised — an unreadable one is no
+      // result (it neither clears nor raises)
+      items: ({ r }) => {
+        if (r === review) return verdicts(r.payload.dispatch, u.text).filter((c) => c.kind === "wrong").map((c) => [c.text, c]);
+        const k = readKnowledgeReview(boundKnowledge(root, r), u.text);
+        return k.ok && !k.unlocated.length ? [...k.concerns, ...k.gone].filter((c) => c.kind === "wrong").map((c) => [c.text, c]) : null;
+      },
+      rank: () => 1,
+    });
+    const wrong = [...st.items.values()][0];
+    if (wrong) return { problem: `${id}: its blind review (${wrong.review.r.payload.dispatch}) found it wrong ("${wrong.answer.text.slice(0, 80)}": ${wrong.answer.problem.slice(0, 120)}) — revise it, then have it reviewed again${wrong.review.r === review ? "" : " (a later review of the same text does not clear it)"}` };
   }
   return { review };
 }
