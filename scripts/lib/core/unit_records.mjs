@@ -85,9 +85,10 @@ export function assertUnaltered(root, rels = null) {
 /** The deliverable a sidecar file records (metadata/units/practice/x.md.json → practice/x.md). */
 export const deliverableOfSidecar = (root, file) => path.relative(recordFile(root, DIR), file).split(path.sep).join("/").replace(/\.json$/, "");
 // log the digests of these sidecars where they changed (no check: callers have checked before writing)
+// (a sidecar the write removed — an orphan whose every unit moved to its document's new path — is logged "absent")
 function logDigests(root, rels, party) {
   const logged = loggedDigests(root), now = currentDigests(root), want = new Set(rels);
-  const changed = Object.fromEntries(Object.entries(now).filter(([rel, d]) => want.has(rel) && logged[rel] !== d));
+  const changed = Object.fromEntries([...want].map((rel) => [rel, now[rel] ?? "absent"]).filter(([rel, d]) => logged[rel] !== d && !(d === "absent" && !(rel in logged))));
   if (!Object.keys(changed).length) return null;
   return appendLogRecord(root, { type: "revision", party, payload: { event: UNIT_RECORDS_EVENT, digests: changed } });
 }
@@ -103,25 +104,51 @@ export function logUnitRecords(root, rels, party = { role: "harness", name: "uni
 /**
  * The one way the harness writes unit records: refuse if any sidecar it writes was changed outside the harness, refuse
  * a write that clears an obligation without its evidence, write them (stamps migrated), and log their digests.
- * `sides`: sidecar objects ({ deliverable, units, … }), validated by the caller.
+ * `sides`: sidecar objects ({ deliverable, units, … }), validated by the caller; a side `{ deliverable, remove: true }`
+ * removes that sidecar (an orphan whose every record moved with its text: units_index.mjs).
  * Red team R4 coherence F7: this function is exported and its content is the caller's, so it trusts none of it: a write
  * that drops a unit's `owes` or carry, or refreshes a stale stamp, needs the same evidence `reverify` and `confirm`
  * need — a counted blind re-check, or the instructor's logged confirmation (obligations.mjs unitRecordWriteProblems).
+ *
+ * THE LOG IS THE TRUTH; THE RECORDS AGREE WITH IT (red team R6 coherence, G3). `act` is the log record of the act this
+ * write carries out (a version carry, a confirmation, a re-verification, an authorship claim, added judgment kinds). It
+ * is checked first — the write is judged as if the act were logged — and nothing is logged when the write is refused;
+ * then the act is logged, then the records written, in one step. A write that dies between the two leaves the log ahead
+ * of the records: the gate names the gap (reconcile.mjs logRecordFindings) and `units.mjs reconcile` (run at every
+ * session begin) completes the act. Returns the act's log record (or, with no act, the digest record).
  */
-export function writeUnitRecords(root, sides, party = { role: "harness", name: "unit records" }) {
+export function writeUnitRecords(root, sides, party = { role: "harness", name: "unit records" }, { act = null } = {}) {
   const rels = sides.map((s) => s.deliverable);
   assertUnaltered(root, rels);
   const before = currentSidecars(root), after = { ...before };
-  for (const side of sides) after[side.deliverable] = side;
-  const problems = unitRecordWriteProblems(root, before, after);
+  for (const side of sides) { if (side.remove) delete after[side.deliverable]; else after[side.deliverable] = side; }
+  const problems = unitRecordWriteProblems(root, before, after, { pending: act ? [act] : [] });
   if (problems.length) throw new Error(`refusing to write unit records: ${problems.join("; ")} — an obligation clears only through its evidence: a logged blind re-check (node scripts/verify.mjs knowledge, then units.mjs reverify) or the instructor's confirmation (units.mjs confirm)`);
-  sides = migrateRecordSides(root, sides, before);
-  for (const side of sides) {
+  // the act says its records follow it at once: a record written by no write after it never got the act (reconcile.mjs)
+  const logged = act ? appendLogRecord(root, { ...act, payload: { ...act.payload, recordsFollow: true } }) : null;
+  const removed = sides.filter((s) => s.remove);
+  const written = migrateRecordSides(root, sides.filter((s) => !s.remove), before);
+  for (const side of written) {
     const f = recordFile(root, unitsPathFor(side.deliverable));
     fs.mkdirSync(path.dirname(f), { recursive: true });
     fs.writeFileSync(f, JSON.stringify(side, null, 2) + "\n");
   }
-  return rels.length ? logDigests(root, rels, party) : null;
+  for (const side of removed) fs.rmSync(recordFile(root, unitsPathFor(side.deliverable)), { force: true });
+  const digests = rels.length ? logDigests(root, rels, party) : null;
+  return logged || digests;
+}
+/** Judge a write without making it (a version checks every carry before it logs anything): the problems, or []. */
+export function unitRecordWriteRefusal(root, sides, { pending = [] } = {}) {
+  try { assertUnaltered(root, sides.map((s) => s.deliverable)); } catch (e) { return [e.message]; }
+  const before = currentSidecars(root), after = { ...before };
+  for (const side of sides) { if (side.remove) delete after[side.deliverable]; else after[side.deliverable] = side; }
+  return unitRecordWriteProblems(root, before, after, { pending });
+}
+/** deliverable → every unit sidecar on disk (listed or not: a sidecar left behind by a rename is still a record). */
+export function allSidecars(root) {
+  const out = {};
+  for (const [rel, side] of Object.entries(currentSidecars(root))) if (side && Array.isArray(side.units) && !(side.units.length === 1 && side.units[0].id === "unparseable" && !side.deliverable)) out[rel] = side;
+  return out;
 }
 /** Log the full digest for every sidecar whose last logged digest is a legacy one it still matches (R2 F8). */
 export function upgradeUnitRecordDigests(root) {

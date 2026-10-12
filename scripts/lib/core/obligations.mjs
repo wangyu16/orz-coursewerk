@@ -37,16 +37,18 @@ import { appendLogRecord, parseLog, verifyLog } from "../records/log.mjs";
 import { recordFile } from "../records/paths.mjs";
 import { validateUnitSidecar } from "../records/units.mjs";
 import { DELIVERABLE_DIRS, classifyUnit, derivedRole, segmentDeliverable, unitHash } from "./segment.mjs";
+import { valueText, valuesIn } from "./values.mjs";
 import { readLogText } from "../records/log.mjs";
 import { checkableClaims, claimsHash } from "../verify/claims.mjs";
 import { absoluteReviewOf, absoluteSentences, absolutesHash } from "../verify/absolutes.mjs";
-import { deliverablesOf, documentEntries, indexUnits, readSidecar } from "./units_index.mjs";
+import { deliverablesOf, documentEntries, indexUnits, orphanSidecars, readSidecar } from "./units_index.mjs";
 import { parseSpine, nodeIndex, termsOfMap, COURSE_MAP } from "./spine.mjs";
 import { liveReader, manifestChapters } from "./package_reader.mjs";
-import { openMajorVersion } from "./versions.mjs";
+import { currentVersion, openMajorVersion } from "./versions.mjs";
 import { approvalStatus } from "./approvals.mjs";
-import { dependencyEdges, factHash, groupTermHash, isLegacyQuestionHash, isR4QuestionHash, questionStampCurrent, unitStampCurrent, legacyTermLabel, nodeHash, questionBindingProblems, questionHash, referenceBindingProblems, sourceHashes, stampFor, staleTargets, targetHashes, termDefinitions, termHash, termKey } from "./dependencies.mjs";
-import { deliverableOfSidecar, UNIT_RECORDS_EVENT, writeUnitRecords } from "./unit_records.mjs";
+import { dependencyEdges, symbolFamily, factHash, groupTermHash, isLegacyQuestionHash, isR4QuestionHash, questionStampCurrent, unitStampCurrent, legacyTermLabel, nodeHash, questionBindingProblems, questionHash, referenceBindingProblems, sourceHashes, stampFor, staleTargets, targetHashes, termDefinitions, termHash, termKey } from "./dependencies.mjs";
+import { allSidecars, deliverableOfSidecar, UNIT_RECORDS_EVENT, unitRecordWriteRefusal, writeUnitRecords } from "./unit_records.mjs";
+import { pendingCarry, pendingClear, recordsOnDisk } from "./reconcile.mjs";
 import { currentReviewsAt } from "../verify/alignment.mjs";
 import { boundRecord, readKnowledgeReview, recordHashOf, reviewedPassage } from "../verify/dispatch.mjs";
 import { readerKey, semiReviewCurrent, standingOf } from "../verify/standing.mjs";
@@ -308,6 +310,10 @@ function context(root, reader) {
   let accept = null; // computed only when a spine or term target moved (it reads the approval history)
   const acceptOf = () => (accept ??= lightAccept(reader, chapters, readLogText(root)));
   const ctx = { root, chapters, spine, units, edges, hashes, acceptOf, byId: new Map(units.map((u) => [u.id, u])), termDefs: termDefinitions(spine), scopes: new Set(["course", ...chapters]) };
+  // every record on disk, live or retired, listed or left at a path no longer listed (R6 G1, G4): what a retired unit
+  // was, and which units took its words, is read from here
+  let onDisk = null;
+  ctx.records = () => (onDisk ??= recordsOnDisk(allSidecars(root)));
   // stamps written by an earlier harness are read migrated (R4 F5, F6)
   ctx.units = units.map((u) => { const st = migratedStamp(root, ctx, u.stamp, u.locator.deliverable, u.id); return st === u.stamp ? u : { ...u, stamp: st }; });
   ctx.byId = new Map(ctx.units.map((u) => [u.id, u]));
@@ -328,24 +334,65 @@ export function owedTargets(u, ctx) {
  * target as it is now — the unit stating a shared value (its new value), a key term's definition, a spine node's text,
  * a question it answers or names. A re-check that never saw what moved cannot catch the incoherence it exists for, so
  * the knowledge review carries these (verifyKnowledge) and `reverify` counts only a review whose prompt did.
- * Returns [{ target, what, text }].
+ * WHAT CHANGED SURVIVES RETIREMENT (red team R6 coherence, G4: ΔH moved out of a display equation into a new sentence;
+ * the equation unit retired, so the owed re-checks were shown nothing and cleared). A moved unit target that retired or
+ * split is shown as it last read (its record keeps its last text) with the units that took its words (split pieces,
+ * merges, pieces and absorbers: their lineage names it); and a value that LEFT the target — retired, or kept but no
+ * longer stating any value of that kind — is shown where it now lives: every unit at the target's place (or at the
+ * place of a unit that took its words) stating a value of a kind the dependent states (the same symbol, or the same
+ * unit), whatever its number. A moved unit target none of this can show is listed in `unshowable`: a re-check that
+ * cannot be shown the change does not clear the obligation (reviewRecordProblem) — the instructor's confirmation does.
+ * Returns [{ target, what, text }] with `.unshowable` (targets).
  */
 export function movedForRecheck(u, ctx) {
   const moved = [...new Set([...owedTargets(u, ctx), ...(u.owes?.targets || [])])];
-  const out = [], nodes = nodeIndex(ctx.spine);
-  const push = (target, what, text) => { const t = String(text ?? "").trim(); if (t && !out.some((x) => x.text === t)) out.push({ target, what, text: t }); };
-  const unitAt = (target, v) => { if (v && v.id !== u.id) push(target, `${v.label ? `${v.label}, ` : ""}${v.locator.deliverable}${v.locator.section ? ` § ${v.locator.section}` : ""}`, v.text); };
+  const out = [], nodes = nodeIndex(ctx.spine), covered = new Set();
+  const push = (target, what, text) => { const t = String(text ?? "").trim(); if (!t) return; covered.add(target); if (!out.some((x) => x.text === t)) out.push({ target, what, text: t }); };
+  const place = (v) => `${v.label ? `${v.label}, ` : ""}${v.locator.deliverable}${v.locator.section ? ` § ${v.locator.section}` : ""}`;
+  const unitAt = (target, v, why = "") => { if (v && v.id !== u.id) push(target, `${why}${place(v)}`, v.text); };
   for (const t of moved) {
     const i = t.indexOf(":"), kind = t.slice(0, i), id = t.slice(i + 1);
-    if (["unit", "ref", "question"].includes(kind)) unitAt(t, ctx.byId.get(id));
-    else if (kind === "term") {
-      const label = legacyTermLabel(t, ctx.scopes);
-      for (const d of ctx.termDefs.filter((x) => (label != null ? x.label === label : x.key === t))) push(d.key, `key term "${d.term.label}" (${d.scope === "course" ? "the course map" : `the ${d.scope} concept map`})`, d.term.text);
-    } else if (kind === "spine") { const n = nodes.get(id); if (n) push(t, id, nodeShown(n)); }
+    if (["unit", "ref", "question"].includes(kind)) {
+      const v = ctx.byId.get(id);
+      if (v) { unitAt(t, v); for (const w of valueSuccessors(u, { id, text: v.text, deliverable: v.locator.deliverable, section: v.locator.section, live: true }, ctx)) unitAt(t, w, "where the value now lives: "); }
+      else goneTarget(t, id, u, ctx, push, unitAt);
+    } else if (kind === "term") {
+      const label = legacyTermLabel(t, ctx.scopes), defs = ctx.termDefs.filter((x) => (label != null ? x.label === label : x.key === t));
+      for (const d of defs) push(d.key, `key term "${d.term.label}" (${d.scope === "course" ? "the course map" : `the ${d.scope} concept map`})`, d.term.text);
+      if (!defs.length) push(t, "key term removed", `(removed) the key term ${label ?? t.split(":").slice(2).join(":")} is no longer defined in ${label != null ? "any concept map" : `the ${t.split(":")[1]} map`}`);
+    } else if (kind === "spine") { const n = nodes.get(id); push(t, id, n ? nodeShown(n) : `(removed) the spine node ${id} no longer exists`); }
     else if (kind === "question-binding" || kind === "reference-binding")
       for (const e of (ctx.edges.get(u.id) || []).filter((x) => x.target.startsWith(kind === "question-binding" ? "question:" : "ref:"))) unitAt(e.target, ctx.byId.get(e.target.slice(e.target.indexOf(":") + 1)));
   }
+  out.unshowable = moved.filter((t) => /^(unit|ref|question):/.test(t) && !covered.has(t));
   return out;
+}
+/** A moved unit target that is no longer a live unit: its last text, the units that took its words, and its values. */
+function goneTarget(t, id, u, ctx, push, unitAt) {
+  const found = ctx.records().get(id), e = found?.rec;
+  const deliverable = e?.locator?.deliverable ?? e?.deliverable ?? found?.rel, section = e?.locator?.section ?? e?.section;
+  if (e?.text) push(t, `rewritten or removed since it was last checked — as it last read (${deliverable}${section ? ` § ${section}` : ""})`, e.text);
+  const heirs = ctx.units.filter((w) => w.id !== u.id && [...(w.lineage || []), w.splitFrom, ...(w.mergedFrom || []), ...(w.inheritedFrom || [])].includes(id));
+  for (const w of heirs) unitAt(t, w, "took its words: ");
+  if (deliverable) for (const w of valueSuccessors(u, { id, text: e?.text ?? null, deliverable, section, live: false }, ctx, heirs)) unitAt(t, w, "where the value now lives: ");
+}
+/** The kinds of value a text states: the symbol's family with the unit, or the unit alone (values.mjs reads them). */
+const valueKinds = (text) => new Set(valuesIn(valueText(String(text || ""))).map((v) => (v.symbol ? `sym:${symbolFamily(v.symbol)}|${v.unit}` : `unit:${v.unit}`)));
+/**
+ * Where a value that left the target `x` now lives (R6 G4): units at x's place — its deliverable and section — or at the
+ * place of a unit that took its words (`heirs`), stating a value of a kind the dependent `u` states that x stated (x's
+ * last text; unknown: every kind u states) and, for a live x, no longer states.
+ */
+function valueSuccessors(u, x, ctx, heirs = []) {
+  // a live target that still states a value the dependent states: the value did not leave it
+  if (x.live && (ctx.edges.get(u.id) || []).some((e) => e.target === `unit:${x.id}` && e.kind === "shared-value")) return [];
+  const mine = valueKinds(u.text);
+  if (!mine.size) return [];
+  const xs = x.text != null ? valueKinds(x.text) : null;
+  const chase = [...mine].filter((k) => (x.live ? !xs.has(k) : !xs || xs.has(k)));
+  if (!chase.length) return [];
+  const places = new Set([`${x.deliverable}|${x.section}`, ...heirs.map((w) => `${w.locator.deliverable}|${w.locator.section}`)]);
+  return ctx.units.filter((w) => w.id !== u.id && w.id !== x.id && places.has(`${w.locator.deliverable}|${w.locator.section}`) && [...valueKinds(w.text)].some((k) => chase.includes(k)));
 }
 const nodeShown = (n) => [n.text ?? n.title, ...(n.type || n.count != null || n.levels || n.targets ? [`(type: ${n.type ?? "—"}; count: ${n.count ?? "—"}; level: ${n.levels ?? "—"}; targets: ${n.targets ?? "—"})`] : [])].join(" ");
 /** unit id → what its re-check must be shown (movedForRecheck), for every unit that owes one. */
@@ -365,27 +412,37 @@ export function unitDepsHashes(root, reader) {
 }
 const lastSeq = (root) => { const recs = parseLog(readLogText(root)); return recs.length ? recs[recs.length - 1].seq || recs.length : 0; };
 
-function rewriteUnits(root, ids, fn) {
-  const want = new Set(ids), done = new Set();
-  const dir = recordFile(root, "metadata/units");
-  const files = [];
-  const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const f = path.join(d, e.name); if (e.isDirectory()) walk(f); else if (e.name.endsWith(".json")) files.push(f); } };
-  if (fs.existsSync(dir)) walk(dir);
-  const writes = [];
-  for (const f of files) {
-    const side = JSON.parse(fs.readFileSync(f, "utf8"));
+/**
+ * The sidecars a change of these units' records touches (deliverable → side), from disk or from `base` (a plan in
+ * progress). `retired`: the retired-unit registers too (a logged carry is completed on a unit retired since, R6).
+ */
+function editSides(root, ids, fn, { base = null, retired = false } = {}) {
+  const want = new Set(ids), done = new Set(), out = new Map(base || []);
+  const sides = allSidecars(root);
+  for (const rel of new Set([...Object.keys(sides), ...out.keys()])) {
+    const side = out.has(rel) ? out.get(rel) : structuredClone(sides[rel]);
     let touched = false;
-    for (const u of side.units) if (want.has(u.id)) { fn(u); touched = true; done.add(u.id); }
+    for (const u of side.units || []) if (want.has(u.id)) { fn(u, true); touched = true; done.add(u.id); }
+    if (retired) for (const e of side.retired || []) if (want.has(e.id) && !done.has(e.id)) { fn(e, false); touched = true; done.add(e.id); }
     if (touched) {
-      const problems = validateUnitSidecar(side);
+      const problems = validateUnitSidecar({ ...side, deliverable: rel });
       if (problems.length) throw new Error(`refusing an invalid unit sidecar: ${problems[0]}`);
-      writes.push([f, side]);
+      out.set(rel, { ...side, deliverable: rel });
     }
   }
   const missing = [...want].filter((x) => !done.has(x));
   if (missing.length) throw new Error(`no such unit: ${missing.join(", ")}`);
-  // never write over (and so launder) a record edited outside the harness (F6); write and log in one step
-  if (writes.length) writeUnitRecords(root, writes.map(([f, side]) => ({ ...side, deliverable: deliverableOfSidecar(root, f) })));
+  return out;
+}
+/**
+ * Change these units' records and write them, with the act they carry out (writeUnitRecords: checked as if logged,
+ * then logged, then written — R6 G3). Returns the act's log record.
+ */
+function rewriteUnits(root, ids, fn, { act = null, retired = false } = {}) {
+  const sides = editSides(root, ids, fn, { retired });
+  // never write over (and so launder) a record edited outside the harness (F6); check, log the act and write in one step
+  if (sides.size) return writeUnitRecords(root, [...sides.values()], undefined, { act });
+  return act ? appendLogRecord(root, act) : null;
 }
 
 /**
@@ -465,7 +522,7 @@ export function confirmUnits(root, reader, ids, { what, instructorWords }, party
   if (party?.role !== "instructor") throw new Error("a confirmation is the instructor's");
   if (!String(instructorWords || "").trim()) throw new Error("a confirmation quotes the instructor's words");
   if (!["fact", "still-correct"].includes(what)) throw new Error('confirm what: "fact" or "still-correct"');
-  const { units, edges, hashes } = context(root, reader);
+  const ctx = context(root, reader), { units, edges, hashes } = ctx;
   const text = new Map(units.map((u) => [u.id, u.text]));
   const at = new Date().toISOString();
   if (what === "fact") {
@@ -474,15 +531,19 @@ export function confirmUnits(root, reader, ids, { what, instructorWords }, party
     if (blocked.length) throw new Error(`${blocked.join(", ")}: a verification contradicts the current text — answer it through the correction (or its revert), not a confirmation`);
   }
   for (const id of ids) if (!text.has(id)) throw new Error(`no such unit: ${id}`);
-  // the confirmation is logged first: it is the evidence the record write checks (writeUnitRecords, R4 F7)
-  // bound to what the instructor saw (R6-K04): the facts AND the seen key of the text as a reader sees it
-  const rec = appendLogRecord(root, { type: "confirmation", party, payload: { what, units: ids, weight: "single", instructorWords, ...(what === "fact" ? { factHashes: Object.fromEntries(ids.map((id) => [id, factHash(text.get(id) || "")])), contentHashes: Object.fromEntries(ids.map((id) => [id, unitHash(text.get(id) || "")])), seenKeys: Object.fromEntries(ids.map((id) => [id, seenKey(text.get(id) || "")])) } : {}) } });
-  rewriteUnits(root, ids, (u) => {
-    if (what === "fact") u.evidence = [...(u.evidence || []), { type: "instructor-confirmation", by: party.name, at, factHash: factHash(text.get(u.id) || ""), seenKey: seenKey(text.get(u.id) || "") }];
-    u.stamp = stampFor(u.id, edges, hashes); delete u.carried; delete u.owes;
-  });
-  return rec;
+  // the confirmation is the evidence the record write checks (writeUnitRecords, R4 F7): the write is judged with it,
+  // then it is logged, then the records are written (R6 G3). It names the text and the dependencies the instructor
+  // confirmed, so a write that dies half-way is completed only at them (reconcile.mjs); and it is bound to what the
+  // instructor saw (R6-K04): the facts AND the seen key of the text as a reader sees it
+  const act = { type: "confirmation", party, payload: { what, units: ids, weight: "single", instructorWords,
+    ...(what === "fact" ? { factHashes: Object.fromEntries(ids.map((id) => [id, factHash(text.get(id) || "")])), seenKeys: Object.fromEntries(ids.map((id) => [id, seenKey(text.get(id) || "")])) } : {}),
+    contentHashes: Object.fromEntries(ids.map((id) => [id, unitHash(text.get(id) || "")])), deps: Object.fromEntries(ids.map((id) => [id, depsOf(id, ctx)])) } };
+  return rewriteUnits(root, ids, confirmEdit(what, party, at, text, edges, hashes), { act });
 }
+const confirmEdit = (what, party, at, text, edges, hashes) => (u) => {
+  if (what === "fact") u.evidence = [...(u.evidence || []), { type: "instructor-confirmation", by: party.name, at, factHash: factHash(text.get(u.id) || ""), seenKey: seenKey(text.get(u.id) || "") }];
+  u.stamp = stampFor(u.id, edges, hashes); delete u.carried; delete u.owes;
+};
 
 /** The verdict path admits evidence for a unit's CURRENT facts (only the harness writes it; admission.mjs decided it). */
 export function admitEvidence(root, reader, unitId, evidence) {
@@ -629,8 +690,11 @@ export function reviewRecordProblem(root, logged, u, ctx) {
     const q = ctx.byId.get(e.target.slice("question:".length));
     if (q && !shown.includes(shownForm(q.text))) return `the reviewer was not shown the question it answers (${q.id})`;
   }
-  // what moved (R4 F4): the shared value, term, spine node or question whose change raised the obligation
-  for (const m of movedForRecheck(u, ctx)) if (!shown.includes(shownForm(m.text))) return `the reviewer was not shown what moved (${m.what}: "${shownForm(m.text).slice(0, 80)}")`;
+  // what moved (R4 F4): the shared value, term, spine node or question whose change raised the obligation — and when
+  // what moved can no longer be shown at all, no review clears it (R6 G4)
+  const moved = movedForRecheck(u, ctx);
+  if (moved.unshowable.length) return `the re-check cannot be shown what changed (${moved.unshowable.join(", ")}: retired before its text was recorded, and no unit took its words or values) — the instructor's confirmation clears it (units.mjs confirm)`;
+  for (const m of moved) if (!shown.includes(shownForm(m.text))) return `the reviewer was not shown what moved (${m.what}: "${shownForm(m.text).slice(0, 80)}")`;
   const m = String(r.answer?.raw || "").match(/\{[\s\S]*\}/);
   let v; try { v = JSON.parse(m?.[0] || ""); } catch { v = null; }
   if (v?.nonce !== r.bundle?.nonce || !Array.isArray(v?.concerns)) return "the reviewer's answer is unreadable (no answer to this bundle)";
@@ -703,8 +767,9 @@ export function reverifyUnits(root, reader, ids, party, { verdicts = (d, text) =
   }
   if (unreviewed.length) problems.push(`${unreviewed.join(", ")}: no logged blind correctness review of the current text (and its current question and dependencies) since the re-verification was owed — run ${REVERIFY_ROUTE(root, unreviewed)}, then reverify (a link review does not count)`);
   if (problems.length) throw new Error(`refusing to record a re-verification: ${problems.join("; ")}`);
-  rewriteUnits(root, ids, (u) => { u.stamp = stampFor(u.id, ctx.edges, ctx.hashes); delete u.owes; delete u.carried; });
-  return appendLogRecord(root, { type: "revision", party, payload: { event: "units-reverified", units: ids, reviews: used } });
+  // the re-verification is logged with the write, in one step (R6 G3)
+  return rewriteUnits(root, ids, (u) => { u.stamp = stampFor(u.id, ctx.edges, ctx.hashes); delete u.owes; delete u.carried; },
+    { act: { type: "revision", party, payload: { event: "units-reverified", units: ids, reviews: used } } });
 }
 
 // ---- the evidence check of every unit-record write (red team R4 coherence F7) --------------------------------------
@@ -729,10 +794,16 @@ const owesKept = (b, a) => !b || (!!a && (a.since ?? 0) <= (b.since ?? 0) && (b.
  * Why a write of unit records may not happen (empty: it may). `before`/`after`: deliverable → sidecar, as on disk and
  * as it would be after the write.
  */
-export function unitRecordWriteProblems(root, before, after) {
+export function unitRecordWriteProblems(root, before, after, { pending = [] } = {}) {
   const B = recordIndex(before), A = recordIndex(after), problems = [], check = [];
   let logRecs = null;
-  const recsNow = () => (logRecs ??= (() => { const t = readLogText(root); return verifyLog(t).length ? [] : parseLog(t); })());
+  // the log as it will be once the act this write carries out is logged (writeUnitRecords logs it only if the write
+  // may happen: R6 G3)
+  const recsNow = () => (logRecs ??= (() => {
+    const t = readLogText(root); if (verifyLog(t).length) return [];
+    const recs = parseLog(t), last = recs.length ? recs[recs.length - 1].seq || recs.length : 0;
+    return [...recs, ...pending.map((p, i) => ({ ...p, seq: last + 1 + i }))];
+  })());
   for (const [id, b] of B) {
     const a = A.get(id);
     if (!a) { if (b.rec.stamp || b.rec.owes || b.rec.carried) problems.push(`${id}: its record (what it owes) would be dropped`); continue; }
@@ -744,7 +815,7 @@ export function unitRecordWriteProblems(root, before, after) {
     // trusted, and the write dropped the unit's owed re-check and stamp): a new or changed mark needs the instructor's
     // logged `units-carried` record naming the unit, made after its record was last written — and a carry is never a
     // way to clear what the unit owed (carryUnits keeps it in `owes`, so the re-check is shown what moved)
-    if (a.rec.carried && canonicalJson(a.rec.carried) !== canonicalJson(b.rec.carried ?? null) && !carryLogged(recsNow(), id, a.rec.carried, b.rel)) {
+    if (a.rec.carried && canonicalJson(a.rec.carried) !== canonicalJson(b.rec.carried ?? null) && !carryLogged(recsNow(), id, a.rec.carried)) {
       problems.push(`${id}: the write marks it carried into ${a.rec.carried.scope ?? "?"} version ${a.rec.carried.version ?? "?"}, but no logged version carry names it since its record was last written`); continue;
     }
     if ((b.rec.carried && !a.rec.carried) || !owesKept(b.rec.owes, a.rec.owes) || canonicalJson(b.rec.stamp ?? null) !== canonicalJson(a.rec.stamp ?? null)) check.push([id, b, a]);
@@ -773,9 +844,10 @@ export function unitRecordWriteProblems(root, before, after) {
     if (!cleared.length) continue;
     // the clearing is a re-verification or a confirmation: the unit stamped as it stands now, and the evidence there
     if (canonicalJson(a.rec.stamp ?? null) !== canonicalJson(stampFor(id, ctx.edges, ctx.hashes)) || a.rec.owes) { problems.push(`${id}: the write would clear what it owes (${cleared.join(", ")}) without stamping it as it stands now`); continue; }
-    recs ??= parseLog(readLogText(root)); info ??= legacyInfo(root, ctx);
+    recs ??= recsNow(); info ??= legacyInfo(root, ctx);
     const writtenAt = info.lastWrite.get(b.rel) ?? 0;
-    const confirmed = recs.some((r) => r.type === "confirmation" && r.party?.role === "instructor" && r.seq > writtenAt && (r.payload?.units || []).includes(id) && String(r.payload?.instructorWords || "").trim());
+    const confirmed = recs.some((r) => r.type === "confirmation" && r.party?.role === "instructor" && r.seq > writtenAt && (r.payload?.units || []).includes(id) && String(r.payload?.instructorWords || "").trim())
+      || loggedConfirmationStands(recs, cu, ctx);
     if (confirmed) continue;
     const c = countedReview(root, recs, oldU, ctx);
     if (!c.review) problems.push(`${id}: the write would clear what it owes (${cleared.join(", ")}) with no logged blind re-check of it${c.problem ? ` (${c.problem})` : ""} and no instructor confirmation since its record was last written`);
@@ -801,12 +873,23 @@ export function migrateRecordSides(root, sides, before = {}) {
   });
 }
 
-/** The instructor's logged carry of this unit into this scope and version, made after its record was last written. */
-function carryLogged(recs, id, carried, rel) {
-  let lastWrite = 0;
-  for (const r of recs) if (r.type === "revision" && r.payload?.event === UNIT_RECORDS_EVENT && rel in (r.payload.digests || {})) lastWrite = r.seq;
-  return recs.some((r) => r.type === "revision" && r.payload?.event === "units-carried" && r.party?.role === "instructor" && r.seq > lastWrite &&
-    (r.payload.units || []).includes(id) && r.payload.scope === carried.scope && r.payload.version === carried.version);
+/**
+ * The log carries this unit into this scope and version NOW: its latest logged carry, which no later confirmation or
+ * re-verification cleared (reconcile.mjs). (Before R6: a carry logged after the record was last written — so a carry
+ * whose write died could never be completed once anything else rewrote the sidecar.)
+ */
+function carryLogged(recs, id, carried) {
+  const c = pendingCarry(recs, id);
+  return !!c && c.payload.scope === carried.scope && c.payload.version === carried.version;
+}
+/**
+ * A logged confirmation of the unit that the log says still stands (no carry since), made at the unit's current text
+ * and dependencies — the instructor's act for exactly what the record would say (a confirmation whose write died is
+ * completed by it, R6 G3). A confirmation logged without them (before R6) licenses nothing beyond its own write.
+ */
+function loggedConfirmationStands(recs, cu, ctx) {
+  const k = pendingClear(recs, cu.id);
+  return !!k && k.type === "confirmation" && k.payload?.contentHashes?.[cu.id] === cu.locator.contentHash && !!k.payload?.deps?.[cu.id] && k.payload.deps[cu.id] === depsOf(cu.id, ctx);
 }
 
 /**
@@ -815,15 +898,55 @@ function carryLogged(recs, id, carried, rel) {
  * is shown what moved before the carry (movedForRecheck), and nothing a carry does clears anything. The carry is logged
  * BEFORE the records are written: the write is checked against it (unitRecordWriteProblems).
  */
-export function carryUnits(root, ids, { version, scope }, party) {
-  if (party?.role !== "instructor") throw new Error("carrying units into a new version follows the instructor's version decision");
+export function carryUnits(root, ids, { version, scope, reconciles = null }, party) {
+  const act = carryActFor(ids, { version, scope, reconciles }, party);
+  return rewriteUnits(root, ids, carryEdit(root, { version, scope }), { act, retired: reconciles != null });
+}
+function carryActFor(ids, { version, scope, reconciles = null }, party) {
+  // the harness logs a carry only to complete a logged version's own carry list (reconcile.mjs)
+  if (party?.role !== "instructor" && !(party?.role === "harness" && Number.isInteger(reconciles))) throw new Error("carrying units into a new version follows the instructor's version decision");
+  return { type: "revision", party, payload: { event: "units-carried", scope, version, units: ids, ...(reconciles != null ? { reconciles } : {}) } };
+}
+// what a carry does to a record: owed targets kept in `owes`, evidence and stamp cleared, the carry set; a retired
+// unit's record (a carry completed after it retired) keeps its stamp — staleness cannot be read for it
+function carryEdit(root, { version, scope }) {
   const ctx = context(root, liveReader(root)), since = lastSeq(root);
-  appendLogRecord(root, { type: "revision", party, payload: { event: "units-carried", scope, version, units: ids } });
-  rewriteUnits(root, ids, (u) => {
-    const cur = ctx.byId.get(u.id), owed = cur ? owedTargets(cur, ctx) : [];
+  return (u, live) => {
+    const cur = live ? ctx.byId.get(u.id) : null, owed = cur ? owedTargets(cur, ctx) : [];
     if (owed.length || u.owes) u.owes = { since: u.owes?.since ?? since, targets: [...new Set([...(u.owes?.targets || []), ...owed])].sort() };
-    u.evidence = []; delete u.stamp; u.carried = { scope, version };
-  });
+    u.evidence = []; if (live) delete u.stamp; u.carried = { scope, version };
+  };
+}
+
+/**
+ * Complete a logged act its records do not hold (reconcile.mjs), only as far as its own evidence still allows: a carry
+ * is applied; a confirmation only to a unit at the text and dependencies it confirmed (its facts: at the facts it
+ * confirmed); a re-verification only while its counted blind review still counts. Returns the units completed.
+ */
+export function completeLoggedAct(root, reader, g, recs) {
+  const ctx = context(root, reader), act = g.act, ids = g.units;
+  if (g.gap === "carry") { rewriteUnits(root, ids, carryEdit(root, act.payload), { retired: true }); return ids; }
+  const live = ids.map((id) => ctx.byId.get(id)).filter(Boolean);
+  if (g.gap === "confirmation") {
+    const ok = live.filter((u) => act.payload.factHashes?.[u.id] === factHash(u.text));
+    if (ok.length) rewriteUnits(root, ok.map((u) => u.id), (u) => { u.evidence = [...(u.evidence || []), { type: "instructor-confirmation", by: act.party.name, at: act.at || new Date().toISOString(), factHash: act.payload.factHashes[u.id], reconciled: act.seq }]; });
+    return ok.map((u) => u.id);
+  }
+  if (g.gap !== "clear") return [];
+  const ok = act.type === "confirmation" ? live.filter((u) => loggedConfirmationStands(recs, u, ctx))
+    : live.filter((u) => countedReview(root, recs, u, ctx).review);
+  if (!ok.length) return [];
+  const text = new Map(ctx.units.map((u) => [u.id, u.text]));
+  if (act.type === "confirmation") rewriteUnits(root, ok.map((u) => u.id), confirmEdit(act.payload.what, act.party, act.at || new Date().toISOString(), text, ctx.edges, ctx.hashes));
+  else rewriteUnits(root, ok.map((u) => u.id), (u) => { u.stamp = stampFor(u.id, ctx.edges, ctx.hashes); delete u.owes; delete u.carried; });
+  return ok.map((u) => u.id);
+}
+/** Is the unit in this version scope now (a chapter's, by content: chapterScopeUnits; the course: every unit)? */
+export function unitInScope(root, reader, scope, id) {
+  const units = loadUnits(root, reader);
+  if (scope === "course") return units.some((u) => u.id === id);
+  if (!scope.startsWith("chapter:")) return false;
+  return chapterScopeUnits(units, reader, parseSpine(reader, manifestChapters(reader)), scope.slice("chapter:".length)).some((u) => u.id === id);
 }
 
 /**
@@ -840,11 +963,29 @@ export function openVersionCarrying(root, reader, { scopes, reason, instructorWo
     const side = readSidecar(root, rel), now = segmentDeliverable(reader.text(rel), rel).units.map((s) => unitHash(s.text));
     return !side || JSON.stringify(now) !== JSON.stringify(side.units.map((u) => u.locator.contentHash));
   });
+  // a sidecar left at a path no longer listed: a renamed document's units are carried only once they follow it (R6 G1)
+  for (const [rel, side] of Object.entries(orphanSidecars(root, reader))) if ((side.units || []).length) stale.push(rel);
   if (stale.length) throw new Error(`refusing to open a new version: ${stale.join(", ")} ${stale.length === 1 ? "has" : "have"} edits not yet indexed — run units.mjs index first, so every unit of the scope is carried`);
   const units = loadUnits(root, reader);
   const spine = parseSpine(reader, manifestChapters(reader));
   const inScope = (sc) => sc === "course" ? units : sc.startsWith("chapter:") ? chapterScopeUnits(units, reader, spine, sc.slice("chapter:".length)) : [];
-  const r = openMajorVersion(root, { scopes, reason, instructorWords, carried: [...new Set(scopes.flatMap((sc) => inScope(sc).map((u) => u.id)))] }, party);
+  const carried = [...new Set(scopes.flatMap((sc) => inScope(sc).map((u) => u.id)))];
+  // every carry is judged BEFORE the version is logged (R6 G3: a refused carry write left the version and its carry
+  // logged and nothing carried): the whole plan — the version, then each scope's carry — checked as if logged
+  if (party?.role === "instructor" && Array.isArray(scopes) && scopes.length) {
+    const logText = readLogText(root), to = Object.fromEntries(scopes.map((sc) => [sc, currentVersion(logText, sc) + 1]));
+    const pending = [{ type: "version", party, payload: { scopes, to, carried } }];
+    let plan = new Map();
+    for (const sc of scopes) {
+      const ids = inScope(sc).map((u) => u.id);
+      if (!ids.length) continue;
+      pending.push(carryActFor(ids, { version: to[sc], scope: sc }, party));
+      plan = editSides(root, ids, carryEdit(root, { version: to[sc], scope: sc }), { base: plan });
+    }
+    const refused = plan.size ? unitRecordWriteRefusal(root, [...plan.values()], { pending }) : [];
+    if (refused.length) throw new Error(`refusing to open a new version: its carry could not be written, so nothing was logged — ${refused.join("; ")}`);
+  }
+  const r = openMajorVersion(root, { scopes, reason, instructorWords, carried }, party);
   for (const sc of scopes) { const ids = inScope(sc).map((u) => u.id); if (ids.length) carryUnits(root, ids, { version: r.payload.to[sc], scope: sc }, party); }
   return r;
 }

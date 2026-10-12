@@ -479,7 +479,7 @@
       "id": "repo:scripts/lib/core/obligations.mjs",
       "path": "scripts/lib/core/obligations.mjs",
       "type": "kernel",
-      "hash": "4d6db720b385d79ad74318659535e19645c5eaf2eeacec2675480ae7f591848d"
+      "hash": "b3702807586c7ea1318ee1fbdb3e34502a5a9550d58e3dd49c3f239e8ff40b08"
     },
     {
       "id": "repo:scripts/lib/core/pack_v2.mjs",
@@ -504,6 +504,12 @@
       "path": "scripts/lib/core/printed.mjs",
       "type": "kernel",
       "hash": "05050e6b04286240a8a29ea7838170e4af81d3932ca77eef02b4e70454373db3"
+    },
+    {
+      "id": "repo:scripts/lib/core/reconcile.mjs",
+      "path": "scripts/lib/core/reconcile.mjs",
+      "type": "kernel",
+      "hash": "b0b1cdd5f604995f9bb6de81f64199197750aa09fb6fec55ea7c18f8945d6a29"
     },
     {
       "id": "repo:scripts/lib/core/rendered.mjs",
@@ -545,13 +551,13 @@
       "id": "repo:scripts/lib/core/unit_records.mjs",
       "path": "scripts/lib/core/unit_records.mjs",
       "type": "kernel",
-      "hash": "3dd1c7df4f9b3e0be0b450024f06e2ba7dcbcdb0a1efaff437c1517eb5aee924"
+      "hash": "5d09de256ac42f044727f508ce6244ab588e7bda12d250668f0f13fc463ff7d4"
     },
     {
       "id": "repo:scripts/lib/core/units_index.mjs",
       "path": "scripts/lib/core/units_index.mjs",
       "type": "kernel",
-      "hash": "4c9f38a15d39cdb3af08a4204946f0005a59ddf4252b2e3669408b55fcac085e"
+      "hash": "7a1e47dcd50cbc6cd9e4ceac9dc18657f5df402ea343b0a4e91ca05767125ee4"
     },
     {
       "id": "repo:scripts/lib/core/values.mjs",
@@ -713,7 +719,7 @@
       "id": "repo:scripts/lib/skeleton/full_gate.mjs",
       "path": "scripts/lib/skeleton/full_gate.mjs",
       "type": "kernel",
-      "hash": "dbc6c4fe8821449b680aaf1635b9a13daaf221b351b52b198eb55d12559a314e"
+      "hash": "6ea932919de9e62ae9c77133d47bbc3bc1d9fbcaa08c2f148bf877d5ceca0fff"
     },
     {
       "id": "repo:scripts/lib/skeleton/gate.mjs",
@@ -995,7 +1001,7 @@
       "id": "repo:scripts/units.mjs",
       "path": "scripts/units.mjs",
       "type": "executable",
-      "hash": "8fbe71e3c21a86fd137e7feafb7caa5d74fe1ef612055b4d9ddd0346249be94f"
+      "hash": "71aef622afbaf7feaa7c9c1d64010e04c566df84413f7e89ccf51ab0012700ea"
     },
     {
       "id": "repo:scripts/verify_coursewerk.mjs",
@@ -1169,7 +1175,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "257bfafd1652a4bfa66dcced1b6b483e5dfdf313d4b906fa7ceb9a01b0526e82"
+      "hash": "56037d0f783549ffff74e8a3a2aea38be2505d84b3554d2e44007b8ca94569bc"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1878,6 +1884,12 @@
       "path": "tests/redteam-r6-instructor.test.mjs",
       "type": "test",
       "hash": "7051c2b709075f921560d1a14898952ba26ca633f47fec221cc4b0683ba7ec2a"
+    },
+    {
+      "id": "repo:tests/redteam-r6-records.test.mjs",
+      "path": "tests/redteam-r6-records.test.mjs",
+      "type": "test",
+      "hash": "aeb07919f6e8ac5a4efe26341c2ab97b0ede576dd1a3ba3f3c7adcb7f8042b3d"
     },
     {
       "id": "repo:tests/redteam-r6-reviews.test.mjs",
@@ -3601,6 +3613,14 @@
         "status": "closed"
       },
       {
+        "id": "req.coherence.identity-across-paths",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.coherence.light-spine",
         "phase": "P11",
         "tiers": [
@@ -3626,6 +3646,14 @@
       },
       {
         "id": "req.coherence.recheck-shows-moved",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.coherence.recheck-shows-retired",
         "phase": "P11",
         "tiers": [
           "T1"
@@ -4505,6 +4533,14 @@
       {
         "id": "req.records.log-party",
         "phase": "P1",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.records.log-reconciled",
+        "phase": "P11",
         "tiers": [
           "T1"
         ],
