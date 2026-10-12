@@ -12,7 +12,7 @@ import { appendLogRecord, parseLog, readLogText, verifyLog } from "../records/lo
 import { recordFile } from "../records/paths.mjs";
 import { chapterOfFinding } from "./workflow.mjs";
 import { confirmUnits } from "./obligations.mjs";
-import { claimAuthorship } from "./units_index.mjs";
+import { adoptInstructorText, claimAuthorship } from "./units_index.mjs";
 
 export const DEFAULT_CAP = 10;
 const STATE = "metadata/digest/state.json";
@@ -115,7 +115,9 @@ export function recommendDigest(digest, n, text, party) {
 
 /** Answers that settle an obligation as well as a question record the instructor's confirmation too. */
 const CONFIRMS = { "exercise-data-confirm": { re: /^\s*confirm/i, what: "fact" }, "answer-still-correct": { re: /^\s*still correct/i, what: "still-correct" },
-  "fact-disputed": { re: /^\s*keep/i, what: "fact" } }; // sources disagree: "keep as written" is the instructor's confirmation
+  "fact-disputed": { re: /^\s*keep/i, what: "fact" }, // sources disagree: "keep as written" is the instructor's confirmation
+  "confirmation-stale": { re: /^\s*confirm/i, what: "fact" } }; // a confirmation of other text (R6-K04): confirmed again as it reads now
+const ADOPTS = { "instructor-edit-unasked": /^\s*keep/i };
 const CLAIMS = { "unit-unknown-authorship": /^\s*accept as mine/i }; // an "accept as mine" answer records the instructor's authorship
 
 export function answerDigest(root, digest, { answers = {}, acceptAll = false, instructorWords, reader = null }, party) {
@@ -140,6 +142,14 @@ export function answerDigest(root, digest, { answers = {}, acceptAll = false, in
   for (const [kind, re] of Object.entries(CLAIMS)) {
     const ids = [...new Set(digest.entries.filter((e) => e.kind === kind && recorded.some((r) => r.entry === e.key && re.test(r.choice))).flatMap((e) => e.units))];
     if (ids.length) claimAuthorship(root, { units: ids, instructorWords }, party);
+  }
+  // "keep" on an unasked edit of their text: the text as it now stands is theirs (red team R6: the register follows)
+  for (const [kind, re] of Object.entries(ADOPTS)) {
+    const ids = [...new Set(digest.entries.filter((e) => e.kind === kind && recorded.some((r) => r.entry === e.key && re.test(r.choice))).flatMap((e) => e.units))];
+    if (ids.length) {
+      if (!reader) throw new Error("this answer keeps an edit of the instructor's text: pass the package reader");
+      adoptInstructorText(root, reader, ids, { instructorWords }, party);
+    }
   }
   return recorded;
 }

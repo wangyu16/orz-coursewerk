@@ -1071,7 +1071,8 @@
       "evidence": {
         "T1": [
           "tests/verdict-path.test.mjs",
-          "tests/verdict-redteam.test.mjs"
+          "tests/verdict-redteam.test.mjs",
+          "tests/redteam-r6-instructor.test.mjs"
         ],
         "T4": [
           "system/rounds/P7-verdicts.md",
@@ -1519,7 +1520,8 @@
       "evidence": {
         "T1": [
           "tests/verdict-path.test.mjs",
-          "tests/redteam-r4-confidence.test.mjs"
+          "tests/redteam-r4-confidence.test.mjs",
+          "tests/redteam-r6-instructor.test.mjs"
         ]
       }
     },
@@ -3086,6 +3088,51 @@
       "evidence": {
         "T1": [
           "tests/redteam-r5-trust.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.instructor-text.protected",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The instructor's text is protected on the text, whatever route changes it (R6-K02, R6-K03). Their text is registered in the decision log (their authorship confirmation, their keep of an edit, a guarded correction or their revert of it, and the harness's baseline at an agent session's start for any text of theirs not yet registered). Every agent change to it is read against the register in the reader view (meaning key; authorship.mjs): an edit that changes no meaning is allowed silently and keeps their credit (D17, D33); a change of meaning (a changed, removed or inserted sentence of theirs) is their question, instructor-edit-unasked (digest, never blocking; D31); a change that also changes a fact (other fact tokens in a rewritten sentence: a value, number, name, symbol or negation) needs what the correction path needs (two independent agreeing sources and a logged correction with its diff shown), else it is a blocking agent obligation, instructor-fact-changed, until reverted, routed through the correction path, or kept by the instructor. Their 'revert' answer is an agent obligation (instructor-revert-owed). What they asked for (an accepted suggestion, an asked change on a disputed claim, a guarded correction) is not unasked; an edit outside an agent session stays the D20 question.",
+      "source": "3C red team round 6 (studies/p11/redteam-r6/confidence, 2026-10-11), instructor-text lane (D46)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r6-instructor.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.autocorrect.independent-sources",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Source independence for the two-source rule is by content, never by address (R6-K01): pinned sources are one source when they have the same bytes or the same normalized text, the same address (host and path, trailing slash and query ignored), or when the passage around the quote stands verbatim (normalized) in the other source (a mirror). The same page pinned twice, a print view, a re-encoded copy and a mirror inside other boilerplate count once.",
+      "source": "3C red team round 6 (studies/p11/redteam-r6/confidence, 2026-10-11), instructor-text lane (D46)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r6-instructor.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.confirmation.bound-text",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "An instructor's confirmation is bound to the text they were given, like quote-verified evidence (R6-K04): a confirmation logs each unit's factHash and seen key (the words and symbols of the reader-view meaning key as a multiset, a formula as one token, and the direction words in order) and stands only while both are unchanged (a reflow, markup or a reordering rephrase keeps it, D17; a changed, added, removed or struck word, sign, symbol or formula voids it). Confirmations logged before R6 stand while their logged contentHash is unchanged, or, for pre-R4 records, while the unit's text is what its latest logged review before the confirmation showed (or, for a legacy fact check, the claims it printed); a confirmation that no longer stands leaves the unit owing evidence and asks the instructor once to re-confirm (confirmation-stale; answering 'confirm' records a bound confirmation).",
+      "source": "3C red team round 6 (studies/p11/redteam-r6/confidence, 2026-10-11), instructor-text lane (D46)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r6-instructor.test.mjs"
         ]
       }
     }

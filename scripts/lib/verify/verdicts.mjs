@@ -203,7 +203,41 @@ function semiClaimsOf(record) {
 /** Was this unit's text written by the instructor? One rule for every consumer (core/authorship.mjs): the sidecar OR
  *  the log says so — a sidecar edit cannot remove it (B16) — for the unit or any unit whose text it holds (R5-K09). */
 export { instructorAuthored, textIds } from "../core/authorship.mjs";
-const canonicalUrl = (u) => { try { const x = new URL(u); return `${x.hostname}${x.pathname}`.toLowerCase(); } catch { return String(u); } };
+const canonicalUrl = (u) => { try { const x = new URL(u); return `${x.hostname}${x.pathname}`.toLowerCase().replace(/\/+$/, ""); } catch { return String(u); } };
+
+// SOURCE INDEPENDENCE IS BY CONTENT (red team R6, R6-K01: the two-source rule counted sources by URL, so one OpenStax page
+// pinned again under a trailing-slash URL — same text, same sha256 — was "two agreeing sources"). Sources are counted as
+// distinct TEXTS. Two pinned sources are ONE source when any of these holds:
+//   - the same bytes (sha256), or the same text once normalized (case, Unicode form, invisible characters, punctuation
+//     and whitespace folded): a re-fetch, a print view, a re-encoded copy;
+//   - the same address (host + path, trailing slash and query ignored): one page fetched twice is one page;
+//   - a MIRROR: the passage around the quote (MIRROR_WINDOW normalized characters each side, or the whole text when it
+//     is shorter) stands verbatim, once normalized, in the other source's text. A site that republishes a page inside
+//     its own header and footer is the same text; two independent books do not share hundreds of characters around a
+//     value.
+// The address is never enough to make two sources distinct, and never needed to make them one.
+const MIRROR_WINDOW = 300;
+export const normalizedSourceText = (t) => String(t ?? "").normalize("NFKC").replace(/[\u00AD\u180E\u200B-\u200F\u2060-\u2064\uFEFF]/g, "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+/** The number of independent texts among the sources of these quotes (union of the "one source" relations above). */
+export function independentSources(quotes, plainTexts, meta = new Map()) {
+  const srcs = [...new Set((quotes || []).map((q) => q.source))];
+  const norm = new Map(srcs.map((s) => [s, normalizedSourceText(plainTexts.get(s) ?? "")]));
+  const windows = new Map(srcs.map((s) => [s, (quotes || []).filter((q) => q.source === s).map((q) => {
+    const t = String(plainTexts.get(s) ?? ""), [a, b] = Array.isArray(q.span) ? q.span : [0, t.length];
+    return normalizedSourceText(t.slice(Math.max(0, a - MIRROR_WINDOW), b + MIRROR_WINDOW));
+  }).filter(Boolean)]));
+  const parent = new Map(srcs.map((s) => [s, s]));
+  const find = (s) => (parent.get(s) === s ? s : find(parent.get(s)));
+  const one = (x, y) => {
+    const mx = meta.get(x), my = meta.get(y);
+    if (mx?.sha256 && mx.sha256 === my?.sha256) return true;
+    if (norm.get(x) && norm.get(x) === norm.get(y)) return true;
+    if (mx?.url && my?.url && canonicalUrl(mx.url) === canonicalUrl(my.url)) return true;
+    return windows.get(x).some((w) => norm.get(y).includes(w)) || windows.get(y).some((w) => norm.get(x).includes(w));
+  };
+  for (let i = 0; i < srcs.length; i++) for (let j = i + 1; j < srcs.length; j++) if (one(srcs[i], srcs[j])) parent.set(find(srcs[i]), find(srcs[j]));
+  return new Set(srcs.map(find)).size;
+}
 
 /** Can the agent correct this unit without asking? Returns { ok, reason, plan }. */
 export function correctionGuard({ unit, lead = null, records, plainTexts, meta = new Map(), logRecords = [], ancestry = null }) {
@@ -218,20 +252,17 @@ export function correctionGuard({ unit, lead = null, records, plainTexts, meta =
   if (!hits.length) return { ok: false, reason: "no admitted contradiction for the unit's current facts" };
   // one target value per claimed quantity, agreed by every contradiction
   const targets = new Map();
-  const identity = (src) => { const m = meta.get(src); return m ? `${m.sha256}|${canonicalUrl(m.url)}` : `text:${sha256(plainTexts.get(src) || src)}`; };
   for (const { c } of hits) for (const k of c.conflicts.filter((x) => x.dimension === "quantity")) {
     const prev = targets.get(k.claimed);
     if (prev && prev.sourceValue !== k.sourceValue) return { ok: false, reason: `sources disagree on the value for ${k.claimed}` };
-    const ids = new Set([...(prev?.ids || []), ...c.quotes.map((q) => identity(q.source))]);
-    const urls = new Set([...(prev?.urls || []), ...c.quotes.map((q) => canonicalUrl(meta.get(q.source)?.url || q.source))]);
-    targets.set(k.claimed, { ...k, ids, urls, sources: new Set([...(prev?.sources || []), ...c.quotes.map((q) => q.source)]) });
+    targets.set(k.claimed, { ...k, quotes: [...(prev?.quotes || []), ...c.quotes], sources: new Set([...(prev?.sources || []), ...c.quotes.map((q) => q.source)]) });
   }
   for (const [claimed] of targets) {
     const q = quantitiesIn(unit.text).find((x) => x.raw === claimed);
     if (q && supportedQuotes.some((t) => quantitiesIn(t).some((s) => sameAtPrecision(q, s)))) return { ok: false, reason: `contested: another verification supports ${claimed}` };
   }
   if (instructorAuthored(unit, logRecords, ancestry))
-    for (const [claimed, t] of targets) { const n = Math.min(t.ids.size, t.urls.size); if (n < 2) return { ok: false, reason: `instructor text: ${claimed} needs two agreeing sources (has ${n})` }; }
+    for (const [claimed, t] of targets) { const n = independentSources(t.quotes, plainTexts, meta); if (n < 2) return { ok: false, reason: `instructor text: ${claimed} needs two agreeing sources (has ${n}) — sources are counted as distinct texts` }; }
   // the edit itself must be unambiguous: each claimed number occurs once in the unit
   const edits = [];
   for (const [claimed, t] of targets) {
