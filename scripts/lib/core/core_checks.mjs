@@ -107,7 +107,7 @@ export function spineReviewQuestions(root, reader, basis) {
 export function spineDetailQuestions(root, reader, basis) {
   let units = [];
   try { units = loadUnits(root, reader); } catch { units = []; }
-  return spineDetailLines(reader, manifestChapters(reader), { units }).map((d) => makeFinding({ module: "skeleton", kind: "spine-detail", units: [], statusClass: "question", route: "digest", basis,
+  return spineDetailLines(reader, manifestChapters(reader), { units }).map((d) => makeFinding({ module: "skeleton", kind: "detail-in-spine", units: [], statusClass: "question", route: "digest", basis,
     evidence: { type: "rule", rule: "the spine says what to teach, to what level and how to assess; detail belongs in the study guide (D48)", file: d.file, line: d.line, text: d.text,
       detail: d.detail, target: d.target, note: spineDetailNote(d) },
     recommendation: `Move the detail of ${d.file} line ${d.line} into ${d.target.section ? `${d.target.deliverable} ("${d.target.section}")` : d.target.deliverable}, and keep the spine line to what to teach — or keep it, as the instructor decides.` }));

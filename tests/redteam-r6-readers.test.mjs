@@ -298,7 +298,7 @@ function course(t) {
 test("[req.spine.detail-question] [req.spine.values-consistent] [req.values.one-reader] the course through the gate: the only new findings are the 9 listed spine questions — non-blocking, routed to the digest — and the spine is never a unit", (t) => {
   const c = course(t);
   const g = c.gate();
-  const sd = g.findings.filter((f) => f.kind === "spine-detail");
+  const sd = g.findings.filter((f) => f.kind === "detail-in-spine");
   assert.deepEqual(sd.map((f) => `${f.evidence.file}:${f.evidence.line}`).sort(), [...C2_FLAGS].sort());
   for (const f of sd) {
     assert.equal(f.statusClass, "question"); assert.equal(f.route, "digest");
@@ -309,7 +309,7 @@ test("[req.spine.detail-question] [req.spine.values-consistent] [req.values.one-
   // D48: the spine is not source-checked — no unit is minted for it, no evidence is owed on it
   assert.ok(!c.units().some((u) => /^(?:concepts|assessment-support)\//.test(u.locator.deliverable)));
   // the rest of the gate is what it was before round 6 (the frozen fixture's findings, by kind and class)
-  const kinds = g.findings.filter((f) => f.kind !== "spine-detail").map((f) => `${f.kind}/${f.statusClass}`);
+  const kinds = g.findings.filter((f) => f.kind !== "detail-in-spine").map((f) => `${f.kind}/${f.statusClass}`);
   const count = (k) => kinds.filter((x) => x === k).length;
   assert.equal(count("value-disagreement/defect"), 0);
   assert.equal(count("computation-mismatch/defect"), 0);
@@ -322,7 +322,7 @@ test("[req.spine.detail-question] [req.spine.values-consistent] R6-K05: a false 
   const c = course(t);
   c.session(() => c.edit("assessment-support/le-chatelier.md", "always favours products.", `always favours products. ${S}`));
   const g = c.gate();
-  const q = g.findings.filter((f) => f.kind === "spine-detail" && f.evidence.file === "assessment-support/le-chatelier.md");
+  const q = g.findings.filter((f) => f.kind === "detail-in-spine" && f.evidence.file === "assessment-support/le-chatelier.md");
   assert.equal(q.length, 1);
   assert.deepEqual([...new Set(q[0].evidence.detail.map((x) => x.kind))].sort(), ["a value", "an equation"]);
   assert.ok(q[0].evidence.detail.some((x) => x.what === "-75.0kJ"));
