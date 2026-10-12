@@ -369,7 +369,7 @@ function readThroughFormatting(body) {
     const rep = rep1 ?? rep2; let dec = fixed;
     while (dec.length < 15) dec += rep;
     return `${i || "0"}.${dec.slice(0, Math.max(15, fixed.length + rep.length))}`;
-  }).replace(/(?<![\\A-Za-z}^_\]])\{\s*([\d.,]+)\s*\}/g, " $1 ").replace(/\s+/g, " ").trim(); // a bare group, not an argument
+  }).replace(/(?<![\\A-Za-z}^_\]])\{\s*(\d[\d.,]*)\s*\}/g, " $1 ").replace(/\s+/g, " ").trim(); // a bare group, not an argument
 }
 // formatting commands: none of them makes a part a symbol on its own
 const FORMATTING = new RegExp(`\\\\(?:${WRAPPERS}|overline|underline|dot|ddot|bar|hat|widehat|tilde|widetilde|wideparen|color|textcolor|colorbox|bf|rm|it|sf)(?![A-Za-z])`, "g");
