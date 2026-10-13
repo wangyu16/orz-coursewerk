@@ -345,6 +345,88 @@ export const meaningKeyTokens = (text) => keyTokens(String(text ?? ""), false);
  */
 export const lightKey = (text) => cachedKey(text, true);
 
+// ---- THE READING: the reader view in order, with its sentence punctuation (red team R7, cause 1; D50) ---------------
+// Where the harness asks whether the INSTRUCTOR's text — their registered text, or a text they confirmed — still says
+// the same thing, it reads the text as a reader reads it, in reading order, with the punctuation that structures it
+// (operator, D50: "punctuation is meaningful in the instructor's text"). Moving a full stop re-attaches a condition to
+// another clause (R7-K10), so it is a change; swapping two values keeps every token but not the reading (R7-K02/K03).
+// What only typesets stays equal (R7-K07): a formula is read as the glyphs it prints, so "ΔH = -92.2 kJ" and
+// "$\Delta H = -92.2\ \text{kJ}$" read alike; a hyphen-minus, a true minus and the full-width minus are one sign;
+// Δ U+0394 and the increment sign ∆ U+2206, µ and μ, are one letter; quotation marks (straight or curly) and bullets are
+// typography; a line break inside a paragraph is a space, and a paragraph break after a finished sentence is nothing.
+// Kept: every word and symbol (case folded only on a capitalized word, as in the meaning key), every number as written
+// ("2,900" ≠ "2.900"), the sentence and clause punctuation . , ; : ! ? ( ) [ ] … —, a block break inside a sentence (a
+// table cell, a list item), every sign, relation, arrow, script and structure of a formula.
+// Elsewhere (a review's currency, a spine change's light test, a dependent's binding) punctuation and reflow stay light
+// (D17, D43): those read meaningKey and lightKey, never this.
+const READ_DROP = /['"‘’“”«»·•]/g;
+const READ_TOKEN = /\p{N}+(?:[.,]\p{N}+)*|[\p{L}\p{N}]+|\n|[^\s\p{L}\p{N}]/gu;
+const foldGlyphs = (s) => s.replace(/∆/g, "Δ").replace(/µ/g, "μ").replace(/[﹣－]/g, "−");
+// one minus sign: the hyphen-minus the source writes, the true minus KaTeX prints, the small and full-width minus
+const MINUS = new Set(["-", "−"]);
+// a typeset formula's canonical view (mathView) as the glyphs it prints: an upright run (\text{kJ mol}) is its words;
+// consecutive single letters ("\Delta H", "n R T") are one word, as a reader reads "ΔH", "nRT"; a structure (a script,
+// a fraction, a root, an accent, a font) stays one token
+function mathReading(view) {
+  const atoms = [];
+  let depth = 0, cur = "";
+  for (const ch of view) {
+    if (ch === "{") depth++;
+    if (ch === "}") depth = Math.max(0, depth - 1);
+    if (ch === " " && depth === 0) { if (cur) atoms.push(cur); cur = ""; continue; }
+    cur += ch;
+  }
+  if (cur) atoms.push(cur);
+  const words = [];
+  for (const a of atoms) {
+    const t = /^\\text\{(.*)\}$/.exec(a);
+    if (t) words.push(...(foldGlyphs(t[1]).match(READ_TOKEN) || []).filter((w) => w !== "\n"));
+    else words.push(foldGlyphs(a));
+  }
+  const out = [];
+  for (const w of words) {
+    const last = out.at(-1);
+    if (last && /^\p{L}+$/u.test(last.w) && last.single && /^\p{L}$/u.test(w)) { last.w += w; continue; }
+    out.push({ w: MINUS.has(w) ? "-" : w, single: /^\p{L}$/u.test(w) });
+  }
+  return out.map((x) => x.w);
+}
+const readingCache = new Map();
+/**
+ * The reading of a text: [{ k, f }] in reading order — `k` the token as compared (a capitalized word lower-cased), `f`
+ * the token as printed (its case kept, for the fact reader). A block break inside a sentence is "¶".
+ */
+export function readingTokens(text) {
+  const src = String(text ?? "");
+  if (readingCache.has(src)) return readingCache.get(src);
+  const toks = [];
+  for (const p of renderedParts(src)) {
+    if (p.kind === "mark" || p.kind === "hint") { toks.push({ k: p.text, f: p.text }); continue; }
+    if (p.kind === "math") { for (const w of mathReading(mathView(p.text))) toks.push({ k: w, f: w }); continue; }
+    let s = foldGlyphs(printedChars(p.kind === "prose" ? p.seen : p.text));
+    if (p.kind === "prose") s = proseSymbols(s).replace(/(?<=\p{L})-(?=\p{L})/gu, " ").replace(READ_DROP, " ").replace(/\.\.\./g, "…");
+    for (const w of s.match(READ_TOKEN) || []) {
+      if (w === "\n") { if (p.kind === "prose") toks.push({ k: "¶", f: "¶" }); continue; }
+      const f = MINUS.has(w) ? "-" : w;
+      toks.push({ k: p.kind === "prose" && CAPITALIZED.test(f) ? f.toLowerCase() : f, f });
+    }
+  }
+  // a block break is a boundary only inside a sentence: none at either end, one for a run, none after a finished one
+  const out = [];
+  for (const t of toks) {
+    if (t.k === "¶" && (!out.length || out.at(-1).k === "¶" || /^[.!?:…]$/.test(out.at(-1).k))) continue;
+    out.push(t);
+  }
+  while (out.at(-1)?.k === "¶") out.pop();
+  if (readingCache.size > 20000) readingCache.delete(readingCache.keys().next().value);
+  readingCache.set(src, out);
+  return out;
+}
+/** THE READING KEY (above): the reader view in order with its sentence punctuation, typesetting folded. */
+export const readingKey = (text) => readingTokens(text).map((t) => t.k).join(" ");
+/** The reading as printed text, for the fact reader: a sign joined to its number ("−92.2"), case kept. */
+export const readingText = (text) => readingTokens(text).map((t) => t.f).join(" ").replace(/(^|[\s(=<>≤≥≈])- (?=\p{N})/gu, "$1-").replace(/ ¶ /g, "\n");
+
 /**
  * The light key as round 4 computed it (maths as lower-cased TeX source tokens; entities in raw HTML and invisible
  * characters as written). FROZEN: only read to migrate `q2:` stamps (dependencies.mjs), never to bind.

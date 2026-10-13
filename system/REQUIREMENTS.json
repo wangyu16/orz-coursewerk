@@ -2483,7 +2483,8 @@
           "tests/redteam-r1-coherence.test.mjs",
           "tests/redteam-r2-coherence.test.mjs",
           "tests/redteam-r3-coherence.test.mjs",
-          "tests/redteam-r4-coherence.test.mjs"
+          "tests/redteam-r4-coherence.test.mjs",
+          "tests/redteam-r7-order.test.mjs"
         ]
       }
     },
@@ -3102,7 +3103,7 @@
       "tiers": [
         "T1"
       ],
-      "statement": "The instructor's text is protected on the text, whatever route changes it (R6-K02, R6-K03). Their text is registered in the decision log (their authorship confirmation, their keep of an edit, a guarded correction or their revert of it, and the harness's baseline at an agent session's start for any text of theirs not yet registered). Every agent change to it is read against the register in the reader view (meaning key; authorship.mjs): an edit that changes no meaning is allowed silently and keeps their credit (D17, D33); a change of meaning (a changed, removed or inserted sentence of theirs) is their question, instructor-edit-unasked (digest, never blocking; D31); a change that also changes a fact (other fact tokens in a rewritten sentence: a value, number, name, symbol or negation) needs what the correction path needs (two independent agreeing sources and a logged correction with its diff shown), else it is a blocking agent obligation, instructor-fact-changed, until reverted, routed through the correction path, or kept by the instructor. Their 'revert' answer is an agent obligation (instructor-revert-owed). What they asked for (an accepted suggestion, an asked change on a disputed claim, a guarded correction) is not unasked; an edit outside an agent session stays the D20 question.",
+      "statement": "The instructor's text is protected on the text, whatever route changes it (R6-K02, R6-K03). Their text is registered in the decision log (their authorship confirmation, their keep of an edit, a guarded correction or their revert of it, and the harness's baseline at an agent session's start for any text of theirs not yet registered). Every agent change to it is read against the register in the reader view, as a whole and in reading order with its sentence punctuation (the reading key since round 7, req.instructor-text.order; authorship.mjs): an edit that changes no meaning is allowed silently and keeps their credit (D17, D33); a change of meaning (a changed, removed or inserted sentence of theirs) is their question, instructor-edit-unasked (digest, never blocking; D31); a change that also changes a fact (a value, number, name, symbol or negation changed in a sentence of theirs, in place or moved; or a value re-attached to another clause, req.instructor-text.order) needs what the correction path needs (two independent agreeing sources and a logged correction with its diff shown), else it is a blocking agent obligation, instructor-fact-changed, until reverted, routed through the correction path, or kept by the instructor. Their 'revert' answer is an agent obligation (instructor-revert-owed). What they asked for (an accepted suggestion, an asked change on a disputed claim, a guarded correction) is not unasked; an edit outside an agent session stays the D20 question.",
       "source": "3C red team round 6 (studies/p11/redteam-r6/confidence, 2026-10-11), instructor-text lane (D46)",
       "status": "closed",
       "evidence": {
@@ -3133,12 +3134,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "An instructor's confirmation is bound to the text they were given, like quote-verified evidence (R6-K04): a confirmation logs each unit's factHash and seen key (the words and symbols of the reader-view meaning key as a multiset, a formula as one token, and the direction words in order) and stands only while both are unchanged (a reflow, markup or a reordering rephrase keeps it, D17; a changed, added, removed or struck word, sign, symbol or formula voids it). Confirmations logged before R6 stand while their logged contentHash is unchanged, or, for pre-R4 records, while the unit's text is what its latest logged review before the confirmation showed (or, for a legacy fact check, the claims it printed); a confirmation that no longer stands leaves the unit owing evidence and asks the instructor once to re-confirm (confirmation-stale; answering 'confirm' records a bound confirmation).",
+      "statement": "An instructor's confirmation is bound to the text they were given, like quote-verified evidence (R6-K04): a confirmation logs each unit's factHash and seen key — since round 7 (R7-K03, D50) the ordered reading, \"o:…\" (the reader view in reading order with its sentence punctuation, typesetting folded: rendered.mjs readingKey) — and stands only while both are unchanged (a reflow, markup or typesetting keeps it; a changed, added, removed, struck or moved word, value, sign, symbol or formula, two values swapped, or a moved full stop voids it). A confirmation logged in R6 with the order-free seen key stands only while the text is the text it was logged for (its logged contentHash, whitespace and emphasis aside: unchanged under both keys), and is asked again otherwise. Confirmations logged before R6 stand while their logged contentHash is unchanged, or, for pre-R4 records, while the unit's text is what its latest logged review before the confirmation showed (or, for a legacy fact check, the claims it printed); a confirmation that no longer stands leaves the unit owing evidence and asks the instructor once to re-confirm (confirmation-stale; answering 'confirm' records a bound confirmation).",
       "source": "3C red team round 6 (studies/p11/redteam-r6/confidence, 2026-10-11), instructor-text lane (D46)",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r6-instructor.test.mjs"
+          "tests/redteam-r6-instructor.test.mjs",
+          "tests/redteam-r7-order.test.mjs"
         ]
       }
     },
@@ -3245,6 +3247,21 @@
       "evidence": {
         "T1": [
           "tests/d49-decisions.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.instructor-text.order",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Facts in the instructor's text are compared in order (red team R7 cause 1; D46, D50 'punctuation is meaningful in the instructor's text'). The instructor's registered text and the current text of the units holding it are compared as a whole, in reading order, on the reader view with sentence punctuation kept (rendered.mjs readingKey: every word and symbol in order; . , ; : ! ? ( ) [ ] … — and a block break inside a sentence kept; a formula read as the glyphs it prints; -/−, Δ/∆ and µ/μ one glyph; quotation marks, reflow and a paragraph break after a finished sentence nothing). Any change of the reading is a change of meaning and their question (instructor-edit-unasked): a changed, moved or reordered sentence, a moved full stop or comma that re-attaches a condition (R7-K10). A changed fact blocks (instructor-fact-changed): a value, name, symbol or negation changed in a sentence of theirs, in place or moved anywhere in their text (R7-K01), or a value re-attached to another clause of theirs — two or more values swapped or permuted between the quantities they describe, or subjects swapped (R7-K02; authorship.mjs factPairingChange, failing closed to the order of facts of one kind where the words cannot tell), or a direction reversal (D49). Typesetting-identical forms are equal (R7-K07: 'ΔH = -92.2 kJ' and '$\\Delta H = -92.2\\ \\text{kJ}$'). Outside the instructor's text punctuation and reflow stay light (D17, D43: the meaning key, the light key and the spine's light test are unchanged).",
+      "source": "3C red team round 7 (studies/p11/redteam-r7/confidence, 2026-10-13), facts-in-order lane (D46, D50)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r7-order.test.mjs"
         ]
       }
     },

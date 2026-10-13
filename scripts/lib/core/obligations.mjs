@@ -68,10 +68,14 @@ export function loggedInstructorActs(root) {
 // do not see "exothermic … lowers" become "endothermic … raises", so a confirmation carried to text never confirmed).
 // Like quote-verified evidence, which is bound to its sentences (claimsHash), a confirmation counts only for the text
 // it was given:
-//   - a confirmation logged since R6 records each unit's SEEN KEY (authorship.mjs seenKey: the words and symbols of the
-//     reader-view meaning key, and its direction words in order) beside its factHash: it stands while both are
-//     unchanged — a reflow, markup, a comma or a reordering rephrase keeps it (D17), any changed, added, removed or
-//     struck word, sign or symbol a reader sees does not;
+//   - a confirmation logged since R7 records each unit's SEEN KEY (authorship.mjs seenKey, "o:…": the reading key — the
+//     words and symbols a reader sees IN ORDER, with their sentence punctuation; red team R7-K03, D50) beside its
+//     factHash: it stands while both are unchanged — a reflow, markup or typesetting keeps it, any changed, added,
+//     removed, struck or MOVED word, value, sign or symbol, or a moved full stop, does not;
+//   - one logged in R6 with the order-free seen key (64 hex digits) is migrated as an agent would read it: that key
+//     cannot see two values swapped, so it stands only while the text is the text it was logged for (its contentHash,
+//     logged with it: every character but whitespace and emphasis) — unchanged under both keys; otherwise the
+//     instructor is asked once to re-confirm;
 //   - one logged with the unit's contentHash (R4-K07 to R5) stands while the text is byte for byte what it was (both
 //     keys unchanged, so the meaning key is too);
 //   - one logged with neither (before R4) is migrated as an agent would read it: by what the log binds of the unit as
@@ -121,7 +125,9 @@ export function instructorActsOf(logRecords, { shownBefore = () => null } = {}) 
     if (r.party?.role !== "instructor") continue;
     if (r.type === "confirmation" && r.payload?.what === "fact") for (const [id, fh] of Object.entries(r.payload.factHashes || {})) {
       const mk = r.payload.seenKeys?.[id], ch = r.payload.contentHashes?.[id];
-      const bind = typeof mk === "string" ? { seen: mk } : typeof ch === "string" ? { content: ch } : shownBefore(id, r.seq ?? 0);
+      // since R7 the seen key is the ordered reading ("o:"); an R6 seen key (order-free) is migrated as an agent would:
+      // it stands only while the text is the very text it was logged for (its contentHash), so unchanged under both keys
+      const bind = typeof mk === "string" && mk.startsWith("o:") ? { seen: mk } : typeof ch === "string" ? { content: ch } : typeof mk === "string" ? null : shownBefore(id, r.seq ?? 0);
       acts.confirmedAny.add(`${id}|${fh}`);
       if (bind) acts.confirmed.set(`${id}|${fh}`, [...(acts.confirmed.get(`${id}|${fh}`) || []), bind]);
     }

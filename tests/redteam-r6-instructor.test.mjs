@@ -129,7 +129,7 @@ test("[req.instructor-text.protected] R6-K02: a hand edit of the instructor's va
   assert.deepEqual(c.ms8(now.id), [UNASKED, FACT]);
   const q = c.ms8f().find((f) => f.kind === "instructor-edit-unasked");
   assert.equal(q.route, "digest"); assert.equal(q.recommendation, "revert", "a changed fact with no correction: revert is recommended");
-  assert.match(q.evidence.note, /-75\.0 → -92\.2/); assert.equal(q.evidence.before, P); assert.equal(q.evidence.after, NEW);
+  assert.match(q.evidence.note, /-75\.0kJ → -92\.2kJ/); assert.equal(q.evidence.before, P); assert.equal(q.evidence.after, NEW);
   const ob = c.ms8f().find((f) => f.kind === "instructor-fact-changed");
   assert.equal(ob.route, "agent"); assert.match(ob.evidence.what, /two independent agreeing sources/);
   // revert: nothing is left
@@ -239,7 +239,8 @@ test("[req.instructor-text.protected] variants: an edit across two sessions, a s
   assert.equal(T.id, rows[0].id, "the row keeps its id");
   assert.deepEqual(tb.ms8(T.id), [UNASKED, FACT]);
   assert.deepEqual(tb.ms8(rows[1].id), [], "the other row is untouched");
-  assert.deepEqual(tb.ms8f().find((f) => f.kind === "instructor-fact-changed").evidence.from, ["-75.0"]);
+  // read on the reader view since round 7 (R7-K07): the typeset value with its unit
+  assert.deepEqual(tb.ms8f().find((f) => f.kind === "instructor-fact-changed").evidence.from, ["-75.0kJ"]);
   // their paragraph removed by an agent session
   const d = course(t);
   const [D] = instructorWrites(d, [P]);
@@ -321,8 +322,9 @@ test("[req.confirmation.bound-text] R6-K04: a confirmation does not carry to rew
   assert.ok(stands(S));
   const rec = c.log().filter((l) => l.type === "confirmation").at(-1);
   assert.equal(rec.payload.seenKeys[id], seenKey(S), "what the instructor saw is logged with the confirmation");
-  // the key: a reordering rephrase keeps it (D17); a reversal, another subject, a struck negation do not
-  assert.equal(seenKey("At 1 atm, ice melts at 0 °C."), seenKey("Ice melts at 0 °C at 1 atm."));
+  // the key: a reversal, another subject, a struck negation change it; since round 7 (R7-K03, D50) it is the ordered
+  // reading, so a reordering rephrase of a confirmed text is confirmed again (tests/redteam-r7-order.test.mjs)
+  assert.notEqual(seenKey("At 1 atm, ice melts at 0 °C."), seenKey("Ice melts at 0 °C at 1 atm."));
   assert.notEqual(seenKey(W), seenKey(S));
   assert.notEqual(seenKey(S.replace("ammonia synthesis", "sulfur trioxide synthesis")), seenKey(S));
   assert.notEqual(seenKey("It has fewer moles, so more product."), seenKey("It has more moles, so fewer product."), "direction words in order");

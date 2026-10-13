@@ -33,6 +33,24 @@ export function factTokens(text) {
   const keep = (n) => !sentenceStarts.has(n);
   return [...nums.map((x) => x.replace(/\s+/g, "")), ...names.filter(keep), ...symbols, ...neg].sort();
 }
+/**
+ * The same fact tokens IN READING ORDER (red team R7, cause 1: facts compared without order), each with its kind (a
+ * value's unit, "num" for a bare number, "name", "symbol", "neg") and its offset in the text. factTokens is this list's
+ * tokens, sorted; factHash (dependencies.mjs) stays on factTokens, so no evidence key moves.
+ */
+export function factSequence(text) {
+  const t = String(text || "");
+  const sentenceStarts = new Set((t.match(/(?:^|[.!?:]\s+)([A-Z][a-z]+)/g) || []).map((x) => x.replace(/^[.!?:\s]+/, "")));
+  const out = [];
+  for (const m of t.matchAll(/[−-]?\d+(?:[.,]\d+)?(?:\s*(?:°C|K|kJ|J|mol|M|atm|bar|Pa|kPa|g|kg|mg|L|mL|%|s|min|h))?/g)) {
+    const tok = m[0].replace(/\s+/g, "");
+    out.push({ tok, kind: tok.replace(/^[−-]?\d+(?:[.,]\d+)?/, "") || "num", at: m.index });
+  }
+  for (const m of t.matchAll(/\b[A-Z][a-zA-Z]*(?:\s+[A-Z][a-zA-Z]*)*\b/g)) if (!sentenceStarts.has(m[0])) out.push({ tok: m[0], kind: "name", at: m.index });
+  for (const m of t.matchAll(/[A-Za-z]*[ΔΣ⇌→←°±≤≥≠×÷√∞∂∫]+[A-Za-z0-9°]*/g)) out.push({ tok: m[0], kind: "symbol", at: m.index });
+  for (const m of t.matchAll(NEGATION)) out.push({ tok: m[0].toLowerCase(), kind: "neg", at: m.index });
+  return out.sort((a, b) => a.at - b.at);
+}
 
 /**
  * The wording an answer is bound to its question by, and a spine change is light only when it is unchanged (R1 F2,
@@ -141,7 +159,11 @@ export function spineWording(text) {
 // \ce{A -> B} → \ce{A <- B}, "a/b" → "a*b", "K_c" → "K^c") — so it is substantive, never a rephrasing to glance
 const OPERATOR = /->|<-|<=>|<->|[<>=≤≥≠≈≪≫⩽⩾⇌⇋⇄→←↔⇒⇐⇔⟶⟵⟷↑↓↗↘⇑⇓/×÷*^_±∓+−–‒－﹣⁻⁺₋₊]|\\(?:pm|mp|times|div|cdot|to|gets|rightarrow|leftarrow|leftrightarrow|rightleftharpoons|leftrightharpoons|Rightarrow|Leftarrow|uparrow|downarrow|ll|gg|leq?|geq?|neq?|approx|ominus|oplus)(?![A-Za-z])/g;
 const operatorsOf = (t) => String(t || "").match(OPERATOR) || [];
-const sameFacts = (a, b) => { const A = readerView(a), B = readerView(b);
+// A capital "A" opening a clause (after a full stop or a colon) is the article, recased: "principle: a system" →
+// "principle: A system" is light (round 7, control C4.17). Folded for the spine's light test only (factTokens, and so
+// factHash, are unchanged).
+const clauseArticle = (t) => t.replace(/(^|[.!?:]\s+)A(?=\s+\p{Ll})/gu, "$1a");
+const sameFacts = (a, b) => { const A = clauseArticle(readerView(a)), B = clauseArticle(readerView(b));
   return JSON.stringify(meaningTokens(A)) === JSON.stringify(meaningTokens(B)) && JSON.stringify(directions(A)) === JSON.stringify(directions(B)) && JSON.stringify(signsOf(A)) === JSON.stringify(signsOf(B))
     && JSON.stringify(operatorsOf(A)) === JSON.stringify(operatorsOf(B)) && JSON.stringify(scriptsOf(a)) === JSON.stringify(scriptsOf(b)); };
 // markdown sub- and superscripts (H~2~O, 10^3^), in order: a subscript turned superscript is an operator change
