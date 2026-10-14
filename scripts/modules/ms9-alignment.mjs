@@ -16,6 +16,7 @@
 // to the text or the instructor's overrule, bound to the text they saw, clears it (D49: alignment.mjs). What a
 // review declared is re-derived from the unit, never read from the record; the whole record is bound in the log (C2-03).
 // Trial: questions only, never blocking, until its own study promotes it (D13).
+import { trustedSidecarPath } from "../lib/core/unit_records.mjs"; // only records the log wrote are read (R7 H-04)
 import { classifyUnit, derivedRole, segmentDeliverable } from "../lib/core/segment.mjs";
 import { readDispatches } from "../lib/verify/dispatch.mjs";
 import { dispatchLogEntry, instructorAuthored, logRecordsOf } from "../lib/verify/verdicts.mjs";
@@ -26,7 +27,7 @@ import { originIndex } from "../lib/core/authorship.mjs";
 
 function currentUnits(s, sides = []) {
   const out = [];
-  for (const p of s.paths.filter((x) => x.startsWith("metadata/units/") && x.endsWith(".json")).sort()) {
+  for (const p of s.paths.filter((x) => x.startsWith("metadata/units/") && x.endsWith(".json")).filter(trustedSidecarPath(s.text("metadata/LOG.jsonl"))).sort()) {
     const side = s.json(p); if (!Array.isArray(side?.units) || typeof side.deliverable !== "string") continue;
     sides.push(side);
     const seg = segmentDeliverable(s.text(side.deliverable) || "", side.deliverable).units;

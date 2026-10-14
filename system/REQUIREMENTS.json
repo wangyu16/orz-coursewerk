@@ -3175,6 +3175,36 @@
       }
     },
     {
+      "id": "req.records.only-logged-trusted",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Only what the log wrote is trusted (R7 H-04): in a package whose log holds unit-record digests, a unit sidecar on disk with no logged digest (or one the log records the harness removed) is a blocking defect (unit-record-altered) and is never read — not into identity matching, reserved ids, the retired-unit registers, ancestry, obligations, reconciliation, authorship acts or the gate's modules — never written over and never deleted by the harness (the index refuses to write a deliverable whose record it did not write, and leaves an untrusted orphan where it is); every harness write and removal of a record logs its digest. A package whose log holds no digest yet (written before the rule) logs every sidecar on disk at its first harness write or session begin.",
+      "source": "3C red team round 7 (studies/p11/redteam-r7/coherence H-04, 2026-10-13), D50 cause 4 (logged lane)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r7-logged.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.instructor-text.removal-asked",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Every loss of the instructor's text is asked about (R7 K05): a registered instructor text that no live unit holds raises their question (instructor-edit-unasked, digest) however it disappeared — removed in an agent session, deleted and re-indexed outside any session, by a git checkout or by a merge — until they answer (keep it removed registers it as gone; restore it). An edit of their text outside a session is never indexed as someone else's text; it holds the gate as units-not-indexed until it is answered or reverted.",
+      "source": "3C red team round 7 (studies/p11/redteam-r7/confidence K05, 2026-10-13), D50 cause 4 (logged lane)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r7-logged.test.mjs"
+        ]
+      }
+    },
+    {
       "id": "req.coherence.identity-across-paths",
       "phase": "P11",
       "tiers": [

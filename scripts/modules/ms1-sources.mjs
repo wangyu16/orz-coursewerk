@@ -3,6 +3,7 @@
 // is a defect; the package's compact SOURCE_RECORD.json must mirror the corpus; a unit may cite only declared sources
 // and retrieved references (P7). Every quote a unit's evidence carries must resolve at its span in its pinned text, and
 // that text must still match the pin it was quoted from (req.ms1.span); a reference without its pin is an obligation.
+import { trustedSidecarPath } from "../lib/core/unit_records.mjs"; // only records the log wrote are read (R7 H-04)
 import { sha256 } from "../lib/records/canonical.mjs";
 import { makeSourceRecord } from "../lib/source_record.mjs";
 import { canonicalJson } from "../lib/records/canonical.mjs";
@@ -47,7 +48,7 @@ function evidenceSpans(s, declared) {
     out.push({ kind: "reference-record-mismatch", units: [], evidence: { type: "rule", rule: "REFERENCE_RECORD.json mirrors the inputs' REFERENCES.json exactly" } });
   const known = new Set([...declared, ...refIds]);
   const pins = loggedPins(s.text("metadata/LOG.jsonl"));
-  for (const p of s.paths.filter((x) => x.startsWith("metadata/units/") && x.endsWith(".json")).sort()) {
+  for (const p of s.paths.filter((x) => x.startsWith("metadata/units/") && x.endsWith(".json")).filter(trustedSidecarPath(s.text("metadata/LOG.jsonl"))).sort()) {
     for (const u of s.json(p)?.units || []) {
       const cited = [...(u.origin?.kind === "source-derived" ? [u.origin.source] : []), ...(u.evidence || []).flatMap((e) => [e.source, ...(e.quotes || []).map((q) => q.source)]).filter(Boolean)];
       for (const c of [...new Set(cited)]) if (!known.has(c)) out.push({ kind: "evidence-source-undeclared", units: [u.id], evidence: { type: "rule", rule: "a unit cites only declared sources and pinned references", source: c } });

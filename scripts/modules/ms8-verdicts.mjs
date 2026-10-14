@@ -26,6 +26,7 @@
 //   dispatch-unlogged / dispatch-record-missing (defect) a verification record the log does not vouch for, or a
 //                                  logged dispatch whose record is gone (round P7-1).
 // Verdicts concern the unit's CURRENT claims only: a record of other claims is history.
+import { trustedSidecarPath } from "../lib/core/unit_records.mjs"; // only records the log wrote are read (R7 H-04)
 import { segmentDeliverable } from "../lib/core/segment.mjs";
 import { factHash } from "../lib/core/dependencies.mjs";
 import { checkableClaims, claimsHash } from "../lib/verify/claims.mjs";
@@ -51,7 +52,7 @@ const exerciseLike = (u) => ["question", "answer"].includes(u.form) || String(u.
 
 function currentUnits(s, sides = []) {
   const out = new Map();
-  for (const p of s.paths.filter((x) => x.startsWith("metadata/units/") && x.endsWith(".json")).sort()) {
+  for (const p of s.paths.filter((x) => x.startsWith("metadata/units/") && x.endsWith(".json")).filter(trustedSidecarPath(s.text("metadata/LOG.jsonl"))).sort()) {
     const side = s.json(p); if (!Array.isArray(side?.units) || typeof side.deliverable !== "string") continue; // malformed: the index reports it
     sides.push(side);
     const seg = segmentDeliverable(s.text(side.deliverable) || "", side.deliverable).units;
@@ -337,9 +338,11 @@ function instructorTextFindings({ units, log, corrections, reviewsOf, acceptedBy
     // an edit outside an agent session awaits the instructor's own answer (D20: unit-unknown-authorship)
     if (hs.some((u) => u.origin?.kind === "unknown")) continue;
     if (!hs.length) {
-      // their text gone from the package, retired by an agent session after it was registered
-      const removedBy = log.find((l) => l.type === "unit-retirement" && l.party?.role === "agent" && (l.seq ?? 0) > entry.seq && (l.payload?.units || []).includes(ref));
-      if (!removedBy || !entry.text.trim() || units.has(ref)) continue;
+      // their text gone from the package, however it went (red team R7, K05): an agent session's retirement, a deletion
+      // and a re-index outside any session, a git checkout or a merge — a registered text no live unit holds is asked
+      // about, until they answer (keep it removed: the register takes it as gone; restore it). Only the instructor's own
+      // logged answer settles it; who ran the index decides nothing.
+      if (!entry.text.trim() || units.has(ref)) continue;
       out.push({ kind: "instructor-edit-unasked", units: [ref], evidence: { type: "judgment", note: `Your text was removed without your answer: "${norm(entry.text).slice(0, 400)}" (${ref}) is no longer in the package. Keep it removed, or have it restored?`, quote: norm(entry.text), now: "", instructorText: ref, before: entry.text, after: "" }, recommendation: "keep" });
       continue;
     }

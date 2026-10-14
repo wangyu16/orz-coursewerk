@@ -61,6 +61,41 @@ function currentSidecars(root) {
   }
   return out;
 }
+// ONLY WHAT THE LOG WROTE IS TRUSTED (red team R7, H-04). In a package whose log holds unit-record digests, a sidecar
+// on disk with no logged digest (or one the log says the harness removed) was never written by the harness: a planted
+// file. It is a blocking defect (unit-record-altered), and it is never read — not into matching, reserved ids, the
+// retired-unit registers, ancestry or obligations (allSidecars and units_index.mjs readSidecar read only trusted
+// sidecars; the gate's modules filter their snapshot with trustedSidecarPath) — never written over and never deleted by
+// the harness (assertUnaltered refuses; the index leaves an untrusted orphan where it is). A package whose log holds no
+// digest at all was written before the rule: everything on disk is its starting state, and the first harness write (or
+// the session begin) logs the digest of EVERY sidecar on disk (logDigests), so from then on the rule holds.
+const trustOf = (logged) => {
+  const governed = Object.keys(logged).length > 0;
+  return (rel) => !governed || (rel in logged && logged[rel] !== "absent");
+};
+/** Is a sidecar (by its deliverable) one the log wrote? A pure reading of the log text (the gate's snapshot uses it). */
+export function sidecarTrust(logText) { return trustOf(loggedDigests(null, logText)); }
+/** A snapshot path filter: metadata/units/<deliverable>.json is read only if the log wrote it (other paths pass). */
+export function trustedSidecarPath(logText) {
+  const trusted = sidecarTrust(logText), pre = `${DIR}/`;
+  return (p) => !(p.startsWith(pre) && p.endsWith(".json")) || trusted(p.slice(pre.length).replace(/\.json$/, ""));
+}
+// memo of the trust predicate, keyed on the log file's size and mtime (readers ask per deliverable)
+let trustMemo = { key: null, fn: null };
+function trustedHere(root) {
+  let key = null;
+  try { const st = fs.statSync(recordFile(root, "metadata/LOG.jsonl")); key = `${root}|${st.size}|${st.mtimeMs}|${st.ino}`; } catch { key = `${root}|none`; }
+  if (trustMemo.key !== key) trustMemo = { key, fn: trustOf(loggedDigests(root)) };
+  return trustMemo.fn;
+}
+/** Is the sidecar of this deliverable one the log wrote (or is the package pre-rule)? */
+export function sidecarTrusted(root, rel) { return trustedHere(root)(rel); }
+/** Sidecars on disk the log never wrote (a governed package only): deliverables, sorted. */
+export function unloggedSidecars(root) {
+  const logged = loggedDigests(root);
+  if (!Object.keys(logged).length) return [];
+  return Object.keys(currentSidecars(root)).filter((rel) => !(rel in logged)).sort();
+}
 /** deliverable → digest of its sidecar as it is on disk now. */
 export function currentDigests(root) {
   return Object.fromEntries(Object.entries(currentSidecars(root)).map(([rel, side]) => [rel, sidecarDigest(side)]));
@@ -75,20 +110,29 @@ export function loggedDigests(root, logText = readLogText(root)) {
 /** Sidecars that differ from their last logged digest (a hand edit, a deletion, or an unlogged write). */
 export function alteredSidecars(root) {
   const logged = loggedDigests(root), now = currentSidecars(root);
-  return Object.keys(logged).filter((rel) => !matchesLogged(now[rel] ?? null, rel, logged[rel])).sort();
+  // …and a sidecar the log never wrote (R7 H-04: unloggedSidecars)
+  return [...new Set([...Object.keys(logged).filter((rel) => !matchesLogged(now[rel] ?? null, rel, logged[rel])), ...unloggedSidecars(root)])].sort();
 }
 /** Refuse to write over a sidecar that was changed outside the harness. */
 export function assertUnaltered(root, rels = null) {
-  const bad = alteredSidecars(root).filter((r) => !rels || rels.includes(r));
+  const unlogged = new Set(unloggedSidecars(root));
+  const bad = alteredSidecars(root).filter((r) => !unlogged.has(r) && (!rels || rels.includes(r)));
   if (bad.length) throw new Error(`refusing to write unit records: ${bad.join(", ")} changed outside the harness since its last logged digest — restore it from git (git checkout -- metadata/units/…); the harness never writes over an edited record`);
+  // a sidecar the log never wrote is never written over (nor deleted) by the harness (R7 H-04)
+  const planted = [...unlogged].filter((r) => !rels || rels.includes(r));
+  if (planted.length) throw new Error(`refusing to write unit records: metadata/units/${planted.join(".json, metadata/units/")}.json ${planted.length === 1 ? "was" : "were"} never written by the harness (no logged digest) — remove ${planted.length === 1 ? "it" : "them"} (git rm, or git checkout the records the harness wrote); the harness never writes over a record it did not write`);
 }
 /** The deliverable a sidecar file records (metadata/units/practice/x.md.json → practice/x.md). */
 export const deliverableOfSidecar = (root, file) => path.relative(recordFile(root, DIR), file).split(path.sep).join("/").replace(/\.json$/, "");
 // log the digests of these sidecars where they changed (no check: callers have checked before writing)
 // (a sidecar the write removed — an orphan whose every unit moved to its document's new path — is logged "absent")
+// (a package whose log holds no digest yet — written before the rule — logs EVERY sidecar on disk at its first write, so
+// no sidecar is left without a logged digest to be read as planted, nor a planted one later blessed: R7 H-04 migration)
 function logDigests(root, rels, party) {
-  const logged = loggedDigests(root), now = currentDigests(root), want = new Set(rels);
-  const changed = Object.fromEntries([...want].map((rel) => [rel, now[rel] ?? "absent"]).filter(([rel, d]) => logged[rel] !== d && !(d === "absent" && !(rel in logged))));
+  const logged = loggedDigests(root), now = currentDigests(root), want = new Set(rels), named = new Set(rels);
+  if (!Object.keys(logged).length) for (const rel of Object.keys(now)) want.add(rel);
+  // (a removal this write made is logged even where the sidecar was never logged: every record removal is logged)
+  const changed = Object.fromEntries([...want].map((rel) => [rel, now[rel] ?? "absent"]).filter(([rel, d]) => logged[rel] !== d && !(d === "absent" && !(rel in logged) && !named.has(rel))));
   if (!Object.keys(changed).length) return null;
   return appendLogRecord(root, { type: "revision", party, payload: { event: UNIT_RECORDS_EVENT, digests: changed } });
 }
@@ -146,20 +190,27 @@ export function unitRecordWriteRefusal(root, sides, { pending = [] } = {}) {
 }
 /** deliverable → every unit sidecar on disk (listed or not: a sidecar left behind by a rename is still a record). */
 export function allSidecars(root) {
-  const out = {};
-  for (const [rel, side] of Object.entries(currentSidecars(root))) if (side && Array.isArray(side.units) && !(side.units.length === 1 && side.units[0].id === "unparseable" && !side.deliverable)) out[rel] = side;
+  const out = {}, trusted = trustedHere(root);
+  for (const [rel, side] of Object.entries(currentSidecars(root))) if (trusted(rel) && side && Array.isArray(side.units) && !(side.units.length === 1 && side.units[0].id === "unparseable" && !side.deliverable)) out[rel] = side;
   return out;
 }
-/** Log the full digest for every sidecar whose last logged digest is a legacy one it still matches (R2 F8). */
+/** Log the full digest for every sidecar whose last logged digest is a legacy one it still matches (R2 F8); in a package
+ *  whose log holds no digest yet (written before the rule), log every sidecar on disk — its starting state (R7). */
 export function upgradeUnitRecordDigests(root) {
   const logged = loggedDigests(root), now = currentSidecars(root);
+  if (!Object.keys(logged).length) return Object.keys(now).length && !verifyLog(readLogText(root)).length ? logDigests(root, Object.keys(now), { role: "harness", name: "unit records" }) : null;
   const legacy = Object.keys(logged).filter((rel) => !String(logged[rel]).startsWith("v2:") && logged[rel] !== "absent" && matchesLogged(now[rel] ?? null, rel, logged[rel]));
   return legacy.length ? logDigests(root, legacy, { role: "harness", name: "unit records" }) : null;
 }
 
 /** Gate check: an altered unit record is a defect (the harness cannot vouch for what it no longer wrote). */
 export function unitRecordFindings(root, basis) {
-  return alteredSidecars(root).map((rel) => makeFinding({ module: "skeleton", kind: "unit-record-altered", units: [], statusClass: "defect", route: "agent", basis,
+  const unlogged = new Set(unloggedSidecars(root));
+  return [...alteredSidecars(root).filter((rel) => !unlogged.has(rel)).map((rel) => makeFinding({ module: "skeleton", kind: "unit-record-altered", units: [], statusClass: "defect", route: "agent", basis,
     evidence: { type: "rule", rule: "a unit record changes only through the harness (its digest is logged at every write)", file: `${DIR}/${rel}.json`,
-      detail: `metadata/units/${rel}.json differs from its last logged digest: restore it from git; re-verification, links and confirmations go through units.mjs` } }));
+      detail: `metadata/units/${rel}.json differs from its last logged digest: restore it from git; re-verification, links and confirmations go through units.mjs` } })),
+  // a record the log never wrote (R7 H-04): untrusted, unread, and blocking until it is removed
+  ...[...unlogged].map((rel) => makeFinding({ module: "skeleton", kind: "unit-record-altered", units: [], statusClass: "defect", route: "agent", basis,
+    evidence: { type: "rule", rule: "only a unit record the log wrote is trusted (every harness write logs its digest)", file: `${DIR}/${rel}.json`,
+      detail: `metadata/units/${rel}.json was never written by the harness (no logged digest): it is not read; remove it (git rm), or restore the records the harness wrote from git` } }))];
 }
