@@ -29,7 +29,7 @@ import { makeFinding } from "../records/findings.mjs";
 import { DELIVERABLE_DIRS, classifyUnit, creditBaseline, creditKey, derivedRole, headingsKey, labelBaseline, segmentDeliverable, slugify, tokensOf, unitHash } from "./segment.mjs";
 import { manifestChapters } from "./package_reader.mjs";
 import { loadUnits, migrateUnitRecords, upgradeStamps } from "./obligations.mjs";
-import { allSidecars, assertUnaltered, upgradeUnitRecordDigests, writeUnitRecords } from "./unit_records.mjs";
+import { allSidecars, assertUnaltered, deliverableOfSidecar, sidecarTrusted, upgradeUnitRecordDigests, writeUnitRecords } from "./unit_records.mjs";
 import { reconcileUnitRecords } from "./reconcile.mjs";
 import { confirmedAuthorship, holdersOf, inheritedOrigin, instructorAuthored, instructorCredit, instructorTextRegister, originIndex, textIds } from "./authorship.mjs";
 
@@ -91,9 +91,10 @@ export function orphanSidecars(root, reader) {
   return Object.fromEntries(Object.entries(allSidecars(root)).filter(([rel]) => !rels.has(rel)));
 }
 
+/** A deliverable's sidecar — only one the log wrote (R7 H-04: a planted record is never read; the gate names it). */
 export function readSidecar(root, deliverable) {
   const f = recordFile(root, unitsPathFor(deliverable));
-  return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, "utf8")) : null;
+  return fs.existsSync(f) && sidecarTrusted(root, deliverable) ? JSON.parse(fs.readFileSync(f, "utf8")) : null;
 }
 // what a unit inherits: its own record's, or (a new unit from a split or a merge, or a piece of a retired unit) its
 // sources'
@@ -502,6 +503,7 @@ export function claimAuthorship(root, { units, as = "instructor", instructorWord
   if (!String(instructorWords || "").trim()) throw new Error("an authorship confirmation quotes the instructor's words");
   const ids = new Set(units), date = new Date().toISOString().slice(0, 10), done = [], writes = [], texts = {};
   for (const rel of fs.existsSync(recordFile(root, "metadata/units")) ? walkSidecars(recordFile(root, "metadata/units")) : []) {
+    if (!sidecarTrusted(root, deliverableOfSidecar(root, rel))) continue; // a record the log never wrote is not read (R7)
     const side = JSON.parse(fs.readFileSync(rel, "utf8"));
     let touched = false;
     // the text they accept is registered as theirs (red team R6): read from the deliverable, where it matches its index
