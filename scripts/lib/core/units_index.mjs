@@ -32,6 +32,7 @@ import { loadUnits, migrateUnitRecords, upgradeStamps } from "./obligations.mjs"
 import { allSidecars, assertUnaltered, upgradeUnitRecordDigests, writeUnitRecords } from "./unit_records.mjs";
 import { reconcileUnitRecords } from "./reconcile.mjs";
 import { confirmedAuthorship, holdersOf, inheritedOrigin, instructorAuthored, instructorCredit, instructorTextRegister, originIndex, textIds } from "./authorship.mjs";
+import { hasVisibleWords } from "../records/words.mjs";
 
 export function deliverablesOf(reader) {
   const chapters = manifestChapters(reader).flatMap((ch) => DELIVERABLE_DIRS.map((d) => `${d}/${ch}.md`));
@@ -70,7 +71,7 @@ export function administrativeDocuments(reader) {
  *  format and rights checks while its content stays as confirmed (an edit makes it a deliverable again). */
 export function confirmAdministrative(root, reader, { source, instructorWords }, party) {
   if (party?.role !== "instructor") throw new Error("marking a document administrative is the instructor's act");
-  if (!String(instructorWords || "").trim()) throw new Error("the confirmation quotes the instructor's words");
+  if (!hasVisibleWords(instructorWords)) throw new Error("the confirmation quotes the instructor's words");
   const d = documentEntries(reader).find((x) => x.source === source);
   if (!d) throw new Error(`${source} is not a document declared in metadata/DOCUMENTS.json`);
   if (d.role !== "administrative") throw new Error(`${source} is not marked role: administrative in metadata/DOCUMENTS.json`);
@@ -287,7 +288,7 @@ export function registerInstructorBaseline(root, reader) {
  */
 export function adoptInstructorText(root, reader, ids, { instructorWords }, party) {
   if (party?.role !== "instructor") throw new Error("only the instructor adopts text as theirs");
-  if (!String(instructorWords || "").trim()) throw new Error("adopting text quotes the instructor's words");
+  if (!hasVisibleWords(instructorWords)) throw new Error("adopting text quotes the instructor's words");
   const units = loadUnits(root, reader), reg = instructorRegister(root), holders = holdersOf(reg, units), texts = {};
   const want = new Set(ids);
   for (const [ref, hs] of holders) if (want.has(ref) || hs.some((u) => want.has(u.id))) texts[ref] = hs.map((u) => u.text).join("\n\n");
@@ -499,7 +500,7 @@ export function addJudgmentKinds(root, reader, kindsByUnit, party) {
 /** The instructor claims authorship of units of unknown authorship (accept as mine) — D20. */
 export function claimAuthorship(root, { units, as = "instructor", instructorWords }, party) {
   if (party?.role !== "instructor") throw new Error("authorship is confirmed by the instructor");
-  if (!String(instructorWords || "").trim()) throw new Error("an authorship confirmation quotes the instructor's words");
+  if (!hasVisibleWords(instructorWords)) throw new Error("an authorship confirmation quotes the instructor's words");
   const ids = new Set(units), date = new Date().toISOString().slice(0, 10), done = [], writes = [], texts = {};
   for (const rel of fs.existsSync(recordFile(root, "metadata/units")) ? walkSidecars(recordFile(root, "metadata/units")) : []) {
     const side = JSON.parse(fs.readFileSync(rel, "utf8"));

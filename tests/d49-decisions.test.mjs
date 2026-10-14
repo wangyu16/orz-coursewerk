@@ -150,7 +150,7 @@ test("[req.control.link-overrule] [req.reviews.standing] the instructor overrule
   overrule(c, u.id, OBJ);
   const act = c.log().filter((l) => l.type === "answer").at(-1);
   assert.equal(act.party.role, "instructor"); assert.equal(act.payload.instructorWords, "That paragraph teaches it: I wrote it to.");
-  assert.deepEqual(Object.keys(act.payload.answers[0].overrule).sort(), ["link", "seenKey", "unit", "was"]);
+  assert.deepEqual(Object.keys(act.payload.answers[0].overrule).sort(), ["link", "linkKey", "seenKey", "unit", "was"]); // linkKey: the item's text it judged (R7 C2-L2)
   assert.equal(act.payload.answers[0].overrule.was, "no");
   assert.equal(linkOverrules(c.log()).get(u.id).length, 1);
   assert.equal(currentReviewsAt(c.root, c.r(), c.units()).get(u.id).verdicts.get(OBJ), "yes");

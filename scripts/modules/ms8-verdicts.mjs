@@ -35,11 +35,11 @@ import { holdOtherText, holdersOf, holdsInstructorText, instructorTextChange, in
 import { confirmationStands, instructorActsOf, shownBeforeOf } from "../lib/core/obligations.mjs";
 import { tokensOf } from "../lib/core/segment.mjs";
 import { pinnedTexts, snapshotInputReader } from "../lib/verify/references.mjs";
-import { absoluteReviewOf, absolutesHash } from "../lib/verify/absolutes.mjs";
+import { absoluteReviewOf, absoluteSentences } from "../lib/verify/absolutes.mjs";
 import { checksCurrentClaims, claimKey, correctionLogged, dispatchLogged, instructorAuthored, keptClaims, knowledgeConcerns, leadOf, logRecordsOf, recordClaimTexts, recordLeads, rederive } from "../lib/verify/verdicts.mjs";
 import { findingId } from "../lib/records/findings.mjs";
 import { base, recheckByRerun } from "./_shared.mjs";
-import { disagreementNote, readerKey, semiReviewCurrent, standingOf } from "../lib/verify/standing.mjs";
+import { concernStands, disagreementNote, readerKey, semiClaimCurrent, semiReviewCurrent, standingOf } from "../lib/verify/standing.mjs";
 
 /** A unit that can hold invented exercise data: by its form and role, never by a word in it — a question or answer,
  *  a unit of a practice deliverable, or a unit in a worked-example / exercise section. (Red-team round 2, R2-K09: a cue
@@ -147,6 +147,12 @@ function run(s) {
     // answer, or a change to the text, does
     const newestFresh = fresh.length ? fresh[0].b.seq : -Infinity;
     const speaking = list.filter((x) => (fresh.includes(x) || (x.b.seq >= newestFresh && (x.carried || x === own[0] || x.b.factHash === fh))));
+    // …and a concern is bound to what it judged (red team R7, R7-K04; standing.mjs concernStands): the words it quoted,
+    // in their sentence, as a reader sees them. A review that is history for the unit as a whole still speaks for each
+    // concern whose words stand in an unchanged sentence — one word edited in ANOTHER sentence, a split or a merge, and a
+    // clean re-run, clear nothing; a change to the sentence it quoted (then a fresh review speaks), or the instructor's
+    // answer, does
+    const standsOn = (x) => { const passage = reviewedPassage(x.r.bundle?.prompt); return (c) => concernStands(c.text, passage, u.text); };
     // whose text it is, decided BEFORE whether a suggestion is in it (red-team round 4, R4-K16): on the instructor's
     // text a suggestion the agent wrote in unasked settles nothing — the question stays theirs (D35 (a), D31), and the
     // edit itself is raised (instructor-edit-unasked, below)
@@ -154,10 +160,13 @@ function run(s) {
     // …and who changed it since the review: the agent's revisions are on record (revisedBy), or the record calls the
     // text the agent's own although it holds the instructor's words (a record written before round 5)
     const agentEdited = (x) => instructors && !fresh.includes(x) && ((u.origin?.revisedBy || []).length > 0 || (u.origin?.kind === "agent-knowledge" && holdsInstructorText(u, log, ancestry)));
-    for (const x of speaking) {
+    for (const x of list) {
       const { r, b, carried } = x;
-      const k = readKnowledgeReview(r, u.text);
-      if (!k.ok) continue;
+      const k0 = readKnowledgeReview(r, u.text);
+      if (!k0.ok) continue;
+      // history for the unit: it speaks only for the concerns still bound to what they judged (none of its gone ones)
+      const k = speaking.includes(x) ? k0 : { ...k0, concerns: k0.concerns.filter(standsOn(x)), gone: [] };
+      if (!k.concerns.length && !speaking.includes(x)) continue;
       const passage = reviewedPassage(r.bundle?.prompt);
       const unasked = agentEdited(x);
       // "settled by the text" (R3-K06): a "wrong" concern whose words are gone is settled only when a fresh review of
@@ -237,8 +246,11 @@ function run(s) {
     } else if (r.kind === "semi" && b && units.has(b.unit)) semiByUnit.set(b.unit, [...(semiByUnit.get(b.unit) || []), { r, b, seq: Number(b.seq ?? 0) }]);
   }
   for (const [id, list] of absByUnit) {
-    const u = units.get(id), h = absolutesHash(u.text);
-    const st = standingOf(list, { current: (x) => x.a.absolutesHash === h, items: (x) => (x.a.review.ok ? x.a.review.results.map((y) => [`sentence:${y.n}`, y]) : null), rank: (y) => (y.class === "over-general" ? 1 : 0) });
+    // each answer is bound to the sentence it classified, as a reader sees it (red team R7, cause 2): an over-general
+    // sentence stands while it reads the same, whatever else of the unit changed — editing or adding another absolute
+    // sentence, then a clean re-run, clears nothing; rewording the sentence (or the instructor's answer) does
+    const u = units.get(id), now = new Set(absoluteSentences(u.text).map((x) => readerKey(x)));
+    const st = standingOf(list, { current: () => true, itemCurrent: (x, key) => now.has(key.slice("sentence:".length)), items: (x) => (x.a.review.ok ? x.a.review.results.map((y) => [`sentence:${readerKey(y.sentence)}`, y]) : null), rank: (y) => (y.class === "over-general" ? 1 : 0) });
     for (const [, e] of st.items) if (e.rank > 0)
       out.push({ kind: "absolute-overgeneral", units: [u.id], evidence: { type: "judgment", note: e.answer.why + disagreementNote(e), quote: e.answer.sentence, suggestion: e.answer.suggestion, dispatch: e.review.r.dispatch } });
   }
@@ -246,16 +258,21 @@ function run(s) {
   for (const [id, list] of semiByUnit) {
     const u = units.get(id), lead = leadOf(u, [...units.values()]);
     if (!plain.size) continue;
-    const st = standingOf(list, { current: (x) => semiReviewCurrent(x.r, u.text, lead), items: (x) => { const a = rederive(x.r, plain); return a ? a.perClaim.map((c) => [`claim:${c.claim}`, c]) : null; }, rank: (c) => SEMI_RANK[c.status] ?? null });
-    // every current fact check speaks (a record of other claims is history)
+    // every fact check speaks for each claim it judged that the unit still states, as a reader sees it (red team R7,
+    // cause 2: an answer is bound to what it judged — a contradiction is not made history by a change to ANOTHER claim
+    // of the unit and a re-check); a record of other claims is history
+    const st = standingOf(list, { current: (x) => recordClaimTexts(x.r).some((_, i) => semiClaimCurrent(x.r, i + 1, u.text, lead)), itemCurrent: (x, key) => semiClaimCurrent(x.r, Number(key.slice("claim:".length)), u.text, lead), items: (x) => { const a = rederive(x.r, plain); return a ? a.perClaim.map((c) => [`claim:${c.claim}`, c]) : null; }, rank: (c) => SEMI_RANK[c.status] ?? null });
     for (const { r } of st.current) {
-      const a = rederive(r, plain);
-      if (!a || diverged(u)) continue;
+      const a0 = rederive(r, plain);
+      if (!a0 || diverged(u)) continue;
+      const whole = semiReviewCurrent(r, u.text, lead);
+      const a = whole ? a0 : { ...a0, perClaim: a0.perClaim.filter((c) => semiClaimCurrent(r, c.claim, u.text, lead)) };
+      if (!a.perClaim.length) continue;
       // exercise data no source can show: the instructor confirms it once, so it comes to the digest (P9 scenario)
       const settled = (u.evidence || []).some((e) => e.factHash === factHash(u.text) && ((e.type === "instructor-confirmation" && confirmationStands(acts, u)) || (e.type === "quote-verified" && e.claimsHash === claimsHash(u.text))));
       // only an exercise-like unit can be invented data (red-team round 1, F14): elsewhere a "hypothetical" label is no
       // evidence and no question — the unit's evidence is still missing, and nothing recommends confirming it
-      if (exerciseLike(u) && a.perClaim.length && a.perClaim.every((c) => c.status === "hypothetical") && !settled && !askedExercise.has(u.id) && askedExercise.add(u.id))
+      if (whole && exerciseLike(u) && a.perClaim.length && a.perClaim.every((c) => c.status === "hypothetical") && !settled && !askedExercise.has(u.id) && askedExercise.add(u.id))
         out.push({ kind: "exercise-data-confirm", units: [u.id], evidence: { type: "judgment", note: `${u.id}: the values here read as invented exercise data, which no source can show — confirm them as teaching hypotheticals?`, quote: r.claims?.map((c) => c.text).join(" | ") || "", dispatch: r.dispatch }, recommendation: "confirm" });
       for (const c of a.perClaim) {
         if (c.status === "contradicted")

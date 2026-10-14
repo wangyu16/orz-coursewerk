@@ -3,6 +3,7 @@
 // STEERING.json and the decision to the log.
 import { STEERING_FIELDS, validateSteering, writeSteering } from "../records/steering.mjs";
 import { appendLogRecord } from "../records/log.mjs";
+import { hasVisibleWords } from "../records/words.mjs";
 
 export const STEERING_QUESTIONS = Object.freeze([
   { field: "level", ask: "Who are the students — what level is this course taught at?" },
@@ -24,7 +25,7 @@ export const STEERING_QUESTIONS = Object.freeze([
  */
 export function recordSteering(root, { defaults, answers = {}, acceptAll = false, overrides = {}, instructorWords }, party) {
   if (party?.role !== "instructor") throw new Error("steering is the instructor's answer");
-  if (!String(instructorWords || "").trim()) throw new Error("steering quotes the instructor's words");
+  if (!hasVisibleWords(instructorWords)) throw new Error("steering quotes the instructor's words");
   for (const f of STEERING_FIELDS) if (!(f in (defaults || {}))) throw new Error(`a default must be proposed for every question (missing ${f})`);
   if (!acceptAll) for (const f of STEERING_FIELDS) if (!(f in answers)) throw new Error(`no answer for ${f}: answer it, or accept all defaults`);
   const merged = Object.fromEntries(STEERING_FIELDS.map((f) => [f, f in answers ? answers[f] : defaults[f]]));

@@ -17,6 +17,7 @@ import { checkSpine, parseSpine, spinePaths } from "./spine.mjs";
 import { currentVersion, versionOpenedAt } from "./versions.mjs";
 import { answeredBases, basisOf, isAnswered } from "./digest.mjs";
 import { deliverablesOf, readSidecar } from "./units_index.mjs";
+import { hasVisibleWords } from "../records/words.mjs";
 
 /** Unit id → { deliverable, contentHash }, from the unit sidecars. */
 export function unitInfoOf(root, reader) {
@@ -79,7 +80,7 @@ export function transitionProblems(root, reader, ch, to) {
 /** The instructor moves a chapter (assemble, back to draft). */
 export function transition(root, reader, { chapter, to, instructorWords }, party) {
   if (party?.role !== "instructor") throw new Error("a chapter changes mode by the instructor's word (assemble / back to draft)");
-  if (!String(instructorWords || "").trim()) throw new Error("a transition quotes the instructor's words");
+  if (!hasVisibleWords(instructorWords)) throw new Error("a transition quotes the instructor's words");
   const p = transitionProblems(root, reader, chapter, to);
   if (p.length) throw new Error(p.join("; "));
   const from = chapterStates(root, reader)[chapter].state;
@@ -153,7 +154,7 @@ export function publishContentHash(root) {
 export function publishDecision(root, reader, { gateResult, unitInfo, instructorWords, chapters: wanted = null, includeDrafts = false, overQuestions = false, withoutReview = false }, party) {
   const unitDeliverable = new Map([...unitInfo].map(([k, v]) => [k, v.deliverable])), unitHash = new Map([...unitInfo].map(([k, v]) => [k, v.contentHash]));
   if (party?.role !== "instructor") throw new Error("publishing is the instructor's decision (M6)");
-  if (!String(instructorWords || "").trim()) throw new Error("a publish decision quotes the instructor's words");
+  if (!hasVisibleWords(instructorWords)) throw new Error("a publish decision quotes the instructor's words");
   const el = eligibility(root, reader, gateResult, unitDeliverable, { withoutReview });
   // what a publish without the owed reviews set aside, recorded in the decision (D41: offline, the agent's choice)
   const skippedReviews = withoutReview ? gateResult.gate.blocking.filter((f) => REVIEW_OWED.includes(f.kind)).map((f) => ({ kind: f.kind, units: f.units })) : [];

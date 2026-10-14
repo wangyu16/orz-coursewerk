@@ -14,6 +14,7 @@ import { chapterOfFinding } from "./workflow.mjs";
 import { confirmUnits } from "./obligations.mjs";
 import { adoptInstructorText, claimAuthorship } from "./units_index.mjs";
 import { linkOverruleItems } from "../verify/alignment.mjs";
+import { hasVisibleWords } from "../records/words.mjs";
 
 export const DEFAULT_CAP = 10;
 const STATE = "metadata/digest/state.json";
@@ -129,7 +130,7 @@ const CLAIMS = { "unit-unknown-authorship": /^\s*accept as mine/i }; // an "acce
  */
 export function answerDigest(root, digest, { answers = {}, acceptAll = false, instructorWords, reader = null, overrules = [] }, party) {
   if (party?.role !== "instructor") throw new Error("only the instructor answers a question; the agent never answers one on the instructor's behalf");
-  if (!String(instructorWords || "").trim()) throw new Error("an answer quotes the instructor's words");
+  if (!hasVisibleWords(instructorWords)) throw new Error("an answer quotes the instructor's words");
   const unknown = Object.keys(answers).filter((k) => !digest.entries.some((e) => e.key === k));
   if (unknown.length) throw new Error(`not in this digest: ${unknown.join(", ")}`);
   const recorded = [];

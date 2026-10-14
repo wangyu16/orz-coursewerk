@@ -8,6 +8,7 @@ import { chapterCoverage, courseCoverage, parseSpine, spinePaths, COURSE_MAP } f
 import { classifyChapterChange, classifyCourseChange } from "./change.mjs";
 import { currentSpineReview } from "./spine_review.mjs";
 import { currentVersion, versionOpenedAt } from "./versions.mjs";
+import { hasVisibleWords } from "../records/words.mjs";
 
 const scopeOf = (chapter) => (chapter ? `chapter:${chapter}` : "course");
 
@@ -98,7 +99,7 @@ export function glanceProblem(root, reader, s, scope) {
 /** Record an approval (full) or a glance confirmation (light, or a rephrasing that keeps its meaning) by the instructor. */
 export function recordApproval(root, reader, chapters, { chapter = null, glance = false, instructorWords, note = "" }, party) {
   if (party?.role !== "instructor") throw new Error("only the instructor approves the spine");
-  if (!String(instructorWords || "").trim()) throw new Error("an approval quotes the instructor's words");
+  if (!hasVisibleWords(instructorWords)) throw new Error("an approval quotes the instructor's words");
   const logText = readLogText(root);
   const status = approvalStatus(reader, chapters, logText);
   const scope = scopeOf(chapter);
