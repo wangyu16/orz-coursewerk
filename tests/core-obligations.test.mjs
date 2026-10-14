@@ -118,10 +118,16 @@ test("[req.core.evidence-obligation] a semi-mechanical fact without admitted evi
   assert.throws(() => confirmUnits(p.root, p.r(), [ice], { what: "fact", instructorWords: "I confirm these." }, AGENT), /instructor's/);
   confirmUnits(p.root, p.r(), [ice], { what: "fact", instructorWords: "I confirm these." }, I);
   assert.ok(!evid().includes(ice));
-  // a rephrase keeps the evidence (same facts); a changed value loses it
+  // a meaning-free edit (a reflow) keeps the evidence; a changed value loses it
+  p.w("study-guide/melting.md", SG.replace("Ice melts at 0 °C at 1 atm.", "Ice melts at 0 °C\nat 1 atm."));
+  beginSession(p.root, p.r(), AGENT); indexAndStamp(p.root, p.r(), { as: "agent", party: AGENT });
+  assert.ok(!evid().includes(ice), "a reflow: still evidenced");
+  // a reordering rephrase changes what the instructor read (R7-K03, D50: the seen key is the ordered reading): the
+  // confirmation no longer counts, and they are asked once to confirm it as it reads now
   p.w("study-guide/melting.md", SG.replace("Ice melts at 0 °C at 1 atm.", "At 1 atm, ice melts at 0 °C."));
   beginSession(p.root, p.r(), AGENT); indexAndStamp(p.root, p.r(), { as: "agent", party: AGENT });
-  assert.ok(!evid().includes(ice), "rephrase: still evidenced");
+  assert.ok(evid().includes(ice), "reordered: asked again");
+  assert.ok(p.obligations().some((f) => f.kind === "confirmation-stale" && f.units[0] === ice));
   p.w("study-guide/melting.md", SG.replace("Ice melts at 0 °C at 1 atm.", "At 1 atm, ice melts at 4 °C."));
   beginSession(p.root, p.r(), AGENT); indexAndStamp(p.root, p.r(), { as: "agent", party: AGENT });
   assert.ok(evid().includes(ice), "changed value: evidence no longer counts");
@@ -167,7 +173,9 @@ test("[req.core.null-edit] a meaning-preserving edit raises nothing beyond its o
   const p = pkg(t); linkAll(p);
   confirmUnits(p.root, p.r(), [p.ids()["Ice melts at 0 °C "], p.ids()["At 0 °C."]], { what: "fact", instructorWords: "I confirm these." }, I);
   const before = p.kinds();
-  p.w("study-guide/melting.md", SG.replace("Ice melts at 0 °C at 1 atm.", "At 1 atm, ice melts at 0 °C.").replace("sharp and repeatable", "sharp, and repeatable"));
+  // (a reflow of a confirmed text; a comma in an unconfirmed one: a reordering rephrase of a confirmed
+  // text is asked again since R7-K03, D50 — see req.core.evidence-obligation above)
+  p.w("study-guide/melting.md", SG.replace("Ice melts at 0 °C at 1 atm.", "Ice melts at 0 °C\nat 1 atm.").replace("sharp and repeatable", "sharp, and repeatable"));
   beginSession(p.root, p.r(), AGENT); indexAndStamp(p.root, p.r(), { as: "agent", party: AGENT });
   assert.deepEqual(p.kinds(), before, "no new obligation anywhere");
   // the same edit with a negation added is not meaning-preserving: its own fact evidence lapses
