@@ -191,7 +191,7 @@
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "743eae1aa15e871c1295badd09dec50f7fff5d68292f60fbf8d366b6ab0fd130"
+      "hash": "385cdba48a5b43aa3c7eaa2a9a6db09fd89021a27cf77c6e2a5da7af18c3f602"
     },
     {
       "id": "repo:README.md",
@@ -407,7 +407,7 @@
       "id": "repo:scripts/lib/core/approvals.mjs",
       "path": "scripts/lib/core/approvals.mjs",
       "type": "kernel",
-      "hash": "daabf1bf55ddfeab840c728fa1a3319b1bfc66bb274fd2485ac7cb3e9ec1e0ba"
+      "hash": "537cd699e1e5c306a3d63027578b6c17162fd6527c5c80afcadd8c9074bad59a"
     },
     {
       "id": "repo:scripts/lib/core/authorship.mjs",
@@ -479,7 +479,7 @@
       "id": "repo:scripts/lib/core/obligations.mjs",
       "path": "scripts/lib/core/obligations.mjs",
       "type": "kernel",
-      "hash": "3a3c22611639ca37d63f54d96f98ed3db7644147f7ea20fb43bb6fe4ad255c45"
+      "hash": "2e8f8868ac2258e9b30e152ef3b0517d6926de1713bfdf6b49013852cc613fe8"
     },
     {
       "id": "repo:scripts/lib/core/pack_v2.mjs",
@@ -509,7 +509,7 @@
       "id": "repo:scripts/lib/core/reconcile.mjs",
       "path": "scripts/lib/core/reconcile.mjs",
       "type": "kernel",
-      "hash": "b0b1cdd5f604995f9bb6de81f64199197750aa09fb6fec55ea7c18f8945d6a29"
+      "hash": "0331e3978fe180ff926f5fcb29868eb69395965978f6294650c54e57a46916c9"
     },
     {
       "id": "repo:scripts/lib/core/rendered.mjs",
@@ -539,7 +539,7 @@
       "id": "repo:scripts/lib/core/spine_review.mjs",
       "path": "scripts/lib/core/spine_review.mjs",
       "type": "kernel",
-      "hash": "5b1d1c379e0080c8b8a5b58276e43929cc8ec16c4f2662affa24557bf2b12fb5"
+      "hash": "fe4636c3d923507ead25ee4010accdf8b5ab148d0f86e171d029c4b5fcc8ea4d"
     },
     {
       "id": "repo:scripts/lib/core/spine.mjs",
@@ -563,7 +563,7 @@
       "id": "repo:scripts/lib/core/units_index.mjs",
       "path": "scripts/lib/core/units_index.mjs",
       "type": "kernel",
-      "hash": "7a1e47dcd50cbc6cd9e4ceac9dc18657f5df402ea343b0a4e91ca05767125ee4"
+      "hash": "58a8d09a99c6cb2fb026ab5ce8b3fe9bc42755c89fcf1ea178430b823e4802be"
     },
     {
       "id": "repo:scripts/lib/core/values.mjs",
@@ -572,10 +572,16 @@
       "hash": "10f45e11b40d01db9cff6d8512c4e74f5c7e28853b8a6d65e95ea6758849660a"
     },
     {
+      "id": "repo:scripts/lib/core/version_scope.mjs",
+      "path": "scripts/lib/core/version_scope.mjs",
+      "type": "kernel",
+      "hash": "f50c82dc3d066bda8a7f33589e7f1f597128e4f68bf0cca58b0d998897b15a5a"
+    },
+    {
       "id": "repo:scripts/lib/core/versions.mjs",
       "path": "scripts/lib/core/versions.mjs",
       "type": "kernel",
-      "hash": "4690297c37679be92918d12cbd6fdee4466fd0d168f1c22388146b4d47072887"
+      "hash": "a690b99a2a23548e2b6ccb38094820704af3574310128604e56aa42f97b01de8"
     },
     {
       "id": "repo:scripts/lib/core/workflow.mjs",
@@ -1007,7 +1013,7 @@
       "id": "repo:scripts/units.mjs",
       "path": "scripts/units.mjs",
       "type": "executable",
-      "hash": "71aef622afbaf7feaa7c9c1d64010e04c566df84413f7e89ccf51ab0012700ea"
+      "hash": "28b1967b657ecd827e6d55c5283c4f484607217f509b9d80a1b0b0f16a524d50"
     },
     {
       "id": "repo:scripts/verify_coursewerk.mjs",
@@ -1181,7 +1187,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "842b343406e32e3e80468b796ecaca4f4bc37c3034126e920803d2315070716c"
+      "hash": "856f529f5e9140865814d419c32db21410070e8da242bbd4b7a912fa4f33ebe5"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1926,6 +1932,12 @@
       "path": "tests/redteam-r6-visible.test.mjs",
       "type": "test",
       "hash": "2c7a6ac067134d0ca9b01f900ea55decfb41ec700ae2c855b6c96507b77cc864"
+    },
+    {
+      "id": "repo:tests/redteam-r7-follow.test.mjs",
+      "path": "tests/redteam-r7-follow.test.mjs",
+      "type": "test",
+      "hash": "5f2f703248e0f581ae805fcce00a22f9157d0fc9f25c51ba11b0ca1e073f7903"
     },
     {
       "id": "repo:tests/requirements.test.mjs",
@@ -3621,6 +3633,14 @@
         "status": "closed"
       },
       {
+        "id": "req.coherence.absorbed-inherits",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.coherence.edges-complete",
         "phase": "P11",
         "tiers": [
@@ -3726,6 +3746,22 @@
       },
       {
         "id": "req.coherence.term-head-word",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.coherence.value-successors-wide",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.coherence.version-scope-continuous",
         "phase": "P11",
         "tiers": [
           "T1"
