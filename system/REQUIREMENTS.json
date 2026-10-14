@@ -2616,12 +2616,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "`role: administrative` in DOCUMENTS.json exempts a document from the deliverable checks only while a logged instructor confirmation (coursewerk.mjs administrative, quoting their words) names it at its current content; the field alone, or an edit after the confirmation, leaves it a deliverable.",
+      "statement": "`role: administrative` in DOCUMENTS.json exempts a document from the deliverable checks only while a logged instructor confirmation (coursewerk.mjs administrative, quoting their words) names it at its current content; the field alone, or an edit after the confirmation, leaves it a deliverable. A confirmed document's unit records rest while it is exempt: they are not \"renamed, moved or removed\", so no index is owed (round 7, C3.16).",
       "source": "3C red team round 2, CONTROL (studies/p11/redteam-r2/control, 2026-10-06) C3-06",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r2-control.test.mjs"
+          "tests/redteam-r2-control.test.mjs",
+          "tests/redteam-r7-exact.test.mjs"
         ]
       }
     },
@@ -2982,12 +2983,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Printed settings values are read in every frame: orz-paged's running header and footer values (header_left/center/right, footer_left/center/right of the first {{nyml kind: document}} block, multi-line values included) and the head metadata of a {{nyml kind: meta}} block (author, description; a label-sized title is a label shown with every unit, otherwise a unit) are framing units owing the off-plan read; an orz-paged setting that can hide the body (custom_css, a page background, a font size, line height or margin outside the readable range) is content-hidden; a document block in a page-frame file prints nothing and is no unit.",
+      "statement": "Printed settings values are read in every frame: orz-paged's running header and footer values (header_left/center/right, footer_left/center/right of the {{nyml kind: document}} block orz-paged itself takes; a value that spans several lines is read and fails closed, since orz-paged's CSS string drops it — round 7) and the head metadata of a {{nyml kind: meta}} block (author, description; a label-sized title is a label shown with every unit, otherwise a unit) are framing units owing the off-plan read; an orz-paged setting that can hide the body (custom_css, a page background, a font size, line height or margin outside the readable range) is content-hidden; a document block in a page-frame file prints nothing and is no unit.",
       "source": "3C red team round 6, CONTROL C1–C3 conformance (studies/p11/redteam-r6/control-c13, 2026-10-11) C3-02",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r6-visible.test.mjs"
+          "tests/redteam-r6-visible.test.mjs",
+          "tests/redteam-r7-exact.test.mjs"
         ]
       }
     },
@@ -3134,12 +3136,13 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Source independence for the two-source rule is by content, never by address (R6-K01): pinned sources are one source when they have the same bytes or the same normalized text, the same address (host and path, trailing slash and query ignored), or when the passage around the quote stands verbatim (normalized) in the other source (a mirror). The same page pinned twice, a print view, a re-encoded copy and a mirror inside other boilerplate count once.",
+      "statement": "Source independence for the two-source rule is by content, never by address (R6-K01): pinned sources are one source when they have the same bytes or the same normalized text, the same address (host and path, trailing slash and query ignored), or when the passage around the quote is a near-duplicate of the other source (round 7, R7-K06: a word 3-shingle measure robust to extraction differences — verbatim containment included; see req.autocorrect.near-duplicate-sources). The same page pinned twice, a print view, a re-encoded copy and a mirror inside other boilerplate count once.",
       "source": "3C red team round 6 (studies/p11/redteam-r6/confidence, 2026-10-11), instructor-text lane (D46)",
       "status": "closed",
       "evidence": {
         "T1": [
-          "tests/redteam-r6-instructor.test.mjs"
+          "tests/redteam-r6-instructor.test.mjs",
+          "tests/redteam-r7-exact.test.mjs"
         ]
       }
     },
@@ -3397,6 +3400,126 @@
       "evidence": {
         "T1": [
           "tests/redteam-r6-readers.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.paged-settings-allowlist",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Every orz-paged document setting is read the way orz-paged reads it (its own settings parser: the first {{nyml}} anywhere whose body has a `kind: document` line) and held to an ALLOWLIST: every key orz-paged reads has a strict value grammar (page sizes; margins, font sizes and line height in range; colours, the accent readable on the page; a font-family list; names from orz-paged's own catalogues of font presets, themes, templates and page-number styles; booleans), and custom_css, an unknown key, a key given twice, a value off its grammar, or a settings block the markdown reading does not see (inside a code block, a comment, or under a second kind line) is content-hidden and fails closed. R7-C3-01: CSS written through font_family (or decoration_color, page_size, header_rule_color, footer_rule_color) cannot print an unread lesson or hide body text.",
+      "source": "3C red team round 7 (studies/p11/redteam-r7, 2026-10-13), cause 5 of D50: membership by allowlist and by near-duplicate, not by exact match",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r7-exact.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.paged-running-text-shown",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "An orz-paged running header or footer counts as printed only where it reaches every page: one in the margin box the page number takes (footer_center under orz-paged's default page number), one that spans several lines (a line break ends orz-paged's CSS string; measured in a headless browser), or one hidden on the first page is content-hidden.",
+      "source": "3C red team round 7 (studies/p11/redteam-r7, 2026-10-13), cause 5 of D50: membership by allowlist and by near-duplicate, not by exact match",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r7-exact.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.paged-elements-allowlist",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "An orz-paged element prints only the fields its kind renders (render-paged.js ELEMENT_KINDS, elements.js): those lines are read as printed and their markdown is checked like a paragraph's; a kind orz-paged does not render, a field it does not print, a form field off its grammar (`space` and `signature_space`, which go raw into a style, must be a plain length) is content-hidden; a question's model answer prints only when dynamic_choices sets answer-key: show.",
+      "source": "3C red team round 7 (studies/p11/redteam-r7, 2026-10-13), cause 5 of D50: membership by allowlist and by near-duplicate, not by exact match",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r7-exact.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.control.slide-ratio",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The deck ratio orz-slides scales every slide to is held to a slide shape known to show text (w:h, both positive, between 1:4 and 4:1); anything else is content-hidden.",
+      "source": "3C red team round 7 (studies/p11/redteam-r7, 2026-10-13), cause 5 of D50: membership by allowlist and by near-duplicate, not by exact match",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r7-exact.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.autocorrect.near-duplicate-sources",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Source identity for the two-source rule is by near-duplicate (R7-K06): two pins are one source when the passage around a quote (300 characters each side) is near-identical to the other source, normalized (case, Unicode form, invisible characters, punctuation, line-break hyphenation) — word 3-shingle containment either way, or window Jaccard, at least NEAR_DUPLICATE (0.6). Calibrated on the pinned inputs: different real pages stating the same value score at most 0.37; the same page through extraction differences (a formula printed once instead of twice, hyphenation, page headers, ligatures, site chrome) at least 0.94. OpenStax 13.3 re-pinned as its PDF extraction is one source; a genuinely different text is a second.",
+      "source": "3C red team round 7 (studies/p11/redteam-r7, 2026-10-13), cause 5 of D50: membership by allowlist and by near-duplicate, not by exact match",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r7-exact.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.retrieval.declared-destination-only",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A retrieved reference is evidence only when its URL lies inside a destination the instructor declares (their latest logged retrieval declaration), never by the pin's own `destination` claim (I16): an off-destination pin, a pin with retrieval off or never declared, and a pin on a destination the instructor dropped is not shown to a verifier, is no source for a correction, does not count in MS8, and evidence quoting it is unresolved in MS1.",
+      "source": "3C red team round 7 (studies/p11/redteam-r7, 2026-10-13), cause 5 of D50: membership by allowlist and by near-duplicate, not by exact match",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r7-exact.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.mechanical.result-outside-math",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A worked result is compared wherever a reader sees the relation (R7-K08): written after the formula outside the maths (\"$Q = …$ = 1.48\"), after \\doteq / ≐ / ≅ / ≃ (in maths or prose); a result after an arrow (\\to, \\rightarrow, →) between numeric parts is counted as not checked, never compared and never silent.",
+      "source": "3C red team round 7 (studies/p11/redteam-r7, 2026-10-13), cause 5 of D50: membership by allowlist and by near-duplicate, not by exact match",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r7-exact.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.values.reader-forms",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A value is read as the reader sees it (R7-K09, R7-K11): a unit typeset in pieces (\\mathrm{k}\\mathrm{J}, \\text{k}\\text{J}, \\mathrm{~kJ}) is one unit, a markdown escape inside a number (−75\\.0) and an inline element inside a value (k<span>J</span>) print the value whole; and wherever markup or TeX stands between source and page, a value the reader view shows that the source view did not read is read too. Such a sentence states a value and owes evidence.",
+      "source": "3C red team round 7 (studies/p11/redteam-r7, 2026-10-13), cause 5 of D50: membership by allowlist and by near-duplicate, not by exact match",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r7-exact.test.mjs"
         ]
       }
     }

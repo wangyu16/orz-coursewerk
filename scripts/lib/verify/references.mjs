@@ -51,11 +51,48 @@ export function pinReference(root, inputsDir, { url, title, text, retrievedAt = 
   return ref;
 }
 const pinLogged = (root, ref) => readLogText(root).split("\n").some((l) => l.includes('"reference-pinned"') && l.includes(`"refId":"${ref.refId}"`) && l.includes(`"sha256":"${ref.sha256}"`));
-/** The pins the log vouches for: refId → sha256. */
-export function loggedPins(logText) {
+
+/** Is this URL inside one of these destinations? A destination is a host, optionally followed by a path prefix; only
+ *  https, no credentials, no port. The destination it falls in, or null. */
+export function allowed(url, destinations) {
+  let u; try { u = new URL(url); } catch { return null; }
+  if (u.protocol !== "https:" || u.username || u.password || u.port) return null;
+  for (const d of destinations || []) {
+    const [host, ...rest] = String(d).split("/");
+    const prefix = rest.length ? "/" + rest.join("/") : "";
+    if (u.hostname.toLowerCase() === host.toLowerCase() && (!prefix || u.pathname === prefix || u.pathname.startsWith(prefix.replace(/\/$/, "") + "/"))) return d;
+  }
+  return null;
+}
+
+// DESTINATIONS ARE DECIDED BY THE DECLARED LIST, NEVER BY THE PIN'S OWN CLAIM (red team round 7, I16): a pin's record
+// names a `destination`, but that is the pinner's word — a URL outside every declared destination (the book's PDF on
+// another host, say) was accepted "under" a destination it is not in. A pin counts only when its URL lies inside a
+// destination the INSTRUCTOR declares: their latest logged retrieval declaration (the one retrieval.mjs fetches under).
+// With retrieval off or never declared, no retrieved text is evidence; a destination the instructor drops stops
+// vouching for what was pinned there.
+/** Every logged pin, read against the instructor's declared destinations: Map(refId → { sha256, url, destination }) —
+ *  `destination` is the declared destination its URL falls in, or null. Takes the log text or its parsed records. */
+export function pinLedger(log) {
+  const records = Array.isArray(log) ? log : String(log || "").split("\n").filter((l) => l.trim()).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+  const decl = records.filter((r) => r?.type === "steering" && r.party?.role === "instructor" && ["retrieval-destinations", "retrieval-off"].includes(r.payload?.event)).at(-1);
+  const declared = decl?.payload?.event === "retrieval-destinations" ? (decl.payload.destinations || []).map(String) : [];
   const out = new Map();
-  for (const l of String(logText || "").split("\n")) { if (!l.includes('"reference-pinned"')) continue; try { const r = JSON.parse(l); if (r.party?.role === "harness" && r.payload?.event === "reference-pinned") out.set(r.payload.refId, r.payload.sha256); } catch { /* the log module reports a broken log */ } }
+  for (const r of records) if (r?.party?.role === "harness" && r.payload?.event === "reference-pinned") out.set(r.payload.refId, { sha256: r.payload.sha256, url: r.payload.url ?? null, destination: r.payload.url ? allowed(r.payload.url, declared) : null });
   return out;
+}
+/** The pins the log vouches for: refId → sha256 — logged by the retrieval service AND inside a destination the
+ *  instructor declared (pinLedger). */
+export function loggedPins(log) {
+  return new Map([...pinLedger(log)].filter(([, p]) => p.destination).map(([id, p]) => [id, p.sha256]));
+}
+/** May this pinned text be evidence? A declared source (the corpus) always; a retrieved reference only when the log
+ *  vouches for it at its hash and its URL (pinLedger: inside a declared destination). */
+export function admissiblePin(id, entry, ledger) {
+  const isRef = entry ? entry.kind === "reference" : String(id).startsWith("ref-");
+  if (!isRef) return true;
+  const p = ledger.get(id);
+  return !!p && !!p.destination && (!entry?.sha256 || p.sha256 === entry.sha256) && (!entry?.url || !p.url || entry.url === p.url);
 }
 
 /** The references the package's unit evidence cites. */

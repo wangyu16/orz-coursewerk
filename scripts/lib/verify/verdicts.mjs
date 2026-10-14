@@ -22,6 +22,7 @@ import { randomBytes } from "node:crypto";
 import { readLogText } from "../records/log.mjs";
 import { checkableClaims, claimsHash, claimOf, quantitiesIn, withLead } from "./claims.mjs";
 import { admit, sameAtPrecision, supports } from "./admission.mjs";
+import { admissiblePin, pinLedger } from "./references.mjs";
 import { boundRecord, dispatchLogEntry, knowledgeBundle, readDispatches, readKnowledgeReview, recordDispatch, recordHashOf, selectPassages, semiBundle } from "./dispatch.mjs";
 
 export const CORRECTIONS_DIR = "metadata/corrections";
@@ -86,7 +87,11 @@ function evidenceFrom(record, admission, texts, unitText) {
  * @param verifier  async (prompt) → { mode, raw, model, costUsd }
  * @param only      optional list of unit ids
  */
-export async function verifySemi(root, reader, { texts, verifier, only = null, onProgress = () => {} }) {
+/** The pinned texts that may be evidence (round 7, I16): declared sources, and retrieved references inside a destination
+ *  the instructor declares — by the declared list, never by the pin's own claim. */
+export const admissibleTexts = (root, texts) => { const ledger = pinLedger(readLogText(root)); return new Map([...(texts || new Map())].filter(([k, v]) => admissiblePin(k, v, ledger))); };
+export async function verifySemi(root, reader, { texts: given, verifier, only = null, onProgress = () => {} }) {
+  const texts = admissibleTexts(root, given);
   const all = loadUnits(root, reader), deps = unitDepsHashes(root, reader);
   const units = all.filter((u) => needsEvidence(u) && !hasAdmitted(root, u, all) && (!only || only.includes(u.id)));
   const plain = new Map([...texts].map(([k, v]) => [k, v.text]));
@@ -108,7 +113,8 @@ export async function verifySemi(root, reader, { texts, verifier, only = null, o
 }
 
 /** Re-admit recorded answers under the current admission rules (admission is deterministic: no new dispatch). */
-export function readmitRecorded(root, reader, { texts }) {
+export function readmitRecorded(root, reader, { texts: given }) {
+  const texts = admissibleTexts(root, given);
   const plainT = new Map([...texts].filter(([, v]) => v.ok).map(([k, v]) => [k, v.text]));
   const log = logRecordsOf(readLogText(root));
   const out = [];
@@ -211,13 +217,34 @@ const canonicalUrl = (u) => { try { const x = new URL(u); return `${x.hostname}$
 //   - the same bytes (sha256), or the same text once normalized (case, Unicode form, invisible characters, punctuation
 //     and whitespace folded): a re-fetch, a print view, a re-encoded copy;
 //   - the same address (host + path, trailing slash and query ignored): one page fetched twice is one page;
-//   - a MIRROR: the passage around the quote (MIRROR_WINDOW normalized characters each side, or the whole text when it
-//     is shorter) stands verbatim, once normalized, in the other source's text. A site that republishes a page inside
-//     its own header and footer is the same text; two independent books do not share hundreds of characters around a
-//     value.
+//   - a NEAR-DUPLICATE (red team R7, R7-K06: the exact-substring window let OpenStax 13.3 re-pinned as its PDF
+//     extraction — the equation printed once instead of twice — count as a second source): the passage around a quote
+//     (MIRROR_WINDOW characters each side) and the other source are near-identical once normalized — a word 3-shingle
+//     measure robust to what extraction changes (a formula printed once or twice, line-break hyphenation, ligatures,
+//     page headers and footers, site chrome): the share of the window's shingles found in the other source's text
+//     (either way round), or the Jaccard similarity of the two quotes' windows, is at least NEAR_DUPLICATE.
+//     Calibrated on the pinned inputs (77 real texts: the red-team references and the C2 corpus; 3,151 window pairs of
+//     DIFFERENT pages that state the same value): the highest is 0.37 (two Wikipedia articles that share passages,
+//     "Temperature" and "Thermodynamic temperature"); the same page re-pinned through those extraction differences
+//     scores 0.94 at the lowest. NEAR_DUPLICATE sits between, with margin both ways.
 // The address is never enough to make two sources distinct, and never needed to make them one.
 const MIRROR_WINDOW = 300;
-export const normalizedSourceText = (t) => String(t ?? "").normalize("NFKC").replace(/[\u00AD\u180E\u200B-\u200F\u2060-\u2064\uFEFF]/g, "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+export const NEAR_DUPLICATE = 0.6;
+export const normalizedSourceText = (t) => String(t ?? "").replace(/(\p{L})-[ \t]*\r?\n[ \t]*(\p{L})/gu, "$1$2").normalize("NFKC").replace(/[\u00AD\u180E\u200B-\u200F\u2060-\u2064\uFEFF]/g, "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+const SHINGLE = 3;
+/** The word 3-shingles of a normalized text (a text of fewer words is one shingle). */
+export const shingles = (norm) => { const ws = String(norm || "").split(" ").filter(Boolean), out = new Set(); for (let i = 0; i + SHINGLE <= ws.length; i++) out.add(ws.slice(i, i + SHINGLE).join(" ")); if (!out.size && ws.length) out.add(ws.join(" ")); return out; };
+const containment = (a, b) => { if (!a.size) return 0; let n = 0; for (const x of a) if (b.has(x)) n++; return n / a.size; };
+const jaccard = (a, b) => { let n = 0; for (const x of a) if (b.has(x)) n++; return n / (a.size + b.size - n || 1); };
+/** How near-identical two sources are around their quotes (0–1): the best of window-in-text containment either way and
+ *  window-to-window Jaccard. */
+export function sourceSimilarity(winsX, winsY, textX, textY) {
+  let best = 0;
+  for (const w of winsX) best = Math.max(best, containment(w, textY));
+  for (const w of winsY) best = Math.max(best, containment(w, textX));
+  for (const a of winsX) for (const b of winsY) best = Math.max(best, jaccard(a, b));
+  return best;
+}
 /** The number of independent texts among the sources of these quotes (union of the "one source" relations above). */
 export function independentSources(quotes, plainTexts, meta = new Map()) {
   const srcs = [...new Set((quotes || []).map((q) => q.source))];
@@ -226,6 +253,8 @@ export function independentSources(quotes, plainTexts, meta = new Map()) {
     const t = String(plainTexts.get(s) ?? ""), [a, b] = Array.isArray(q.span) ? q.span : [0, t.length];
     return normalizedSourceText(t.slice(Math.max(0, a - MIRROR_WINDOW), b + MIRROR_WINDOW));
   }).filter(Boolean)]));
+  const full = new Map(srcs.map((s) => [s, shingles(norm.get(s))]));
+  const winSh = new Map(srcs.map((s) => [s, windows.get(s).map(shingles)]));
   const parent = new Map(srcs.map((s) => [s, s]));
   const find = (s) => (parent.get(s) === s ? s : find(parent.get(s)));
   const one = (x, y) => {
@@ -233,14 +262,19 @@ export function independentSources(quotes, plainTexts, meta = new Map()) {
     if (mx?.sha256 && mx.sha256 === my?.sha256) return true;
     if (norm.get(x) && norm.get(x) === norm.get(y)) return true;
     if (mx?.url && my?.url && canonicalUrl(mx.url) === canonicalUrl(my.url)) return true;
-    return windows.get(x).some((w) => norm.get(y).includes(w)) || windows.get(y).some((w) => norm.get(x).includes(w));
+    if (windows.get(x).some((w) => norm.get(y).includes(w)) || windows.get(y).some((w) => norm.get(x).includes(w))) return true;
+    return sourceSimilarity(winSh.get(x), winSh.get(y), full.get(x), full.get(y)) >= NEAR_DUPLICATE;
   };
   for (let i = 0; i < srcs.length; i++) for (let j = i + 1; j < srcs.length; j++) if (one(srcs[i], srcs[j])) parent.set(find(srcs[i]), find(srcs[j]));
   return new Set(srcs.map(find)).size;
 }
 
 /** Can the agent correct this unit without asking? Returns { ok, reason, plan }. */
-export function correctionGuard({ unit, lead = null, records, plainTexts, meta = new Map(), logRecords = [], ancestry = null }) {
+export function correctionGuard({ unit, lead = null, records, plainTexts: allTexts, meta = new Map(), logRecords = [], ancestry = null }) {
+  // only a text that may be evidence can move a value: a retrieved reference counts only inside a destination the
+  // instructor declares, by the declared list, never by the pin's own claim (red team round 7, I16)
+  const ledger = pinLedger(logRecords);
+  const plainTexts = new Map([...(allTexts || new Map())].filter(([id]) => admissiblePin(id, meta.get(id), ledger)));
   const fh = factHash(unit.text);
   if ((unit.evidence || []).some((e) => e.type === "authorized-divergence" && e.factHash === fh)) return { ok: false, reason: "the instructor kept this text as an authorized divergence" };
   if (hasAdmittedEvidence(unit, { confirmed: new Map(), diverged: new Map() }, { lead, recordedLead: (e) => Object.values(recordLeads(records.find((r) => r.dispatch === e.dispatch) || {}))[0] ?? null }) || (unit.evidence || []).some((e) => e.type === "instructor-confirmation" && e.factHash === fh)) return { ok: false, reason: "contested: evidence or a confirmation stands for the unit as it is" };

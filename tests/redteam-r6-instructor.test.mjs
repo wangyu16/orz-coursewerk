@@ -32,7 +32,8 @@ import { runCheckpoint } from "../scripts/lib/skeleton/runner.mjs";
 import { parseLog, readLogText } from "../scripts/lib/records/log.mjs";
 import { replayVerifier } from "../scripts/lib/verify/dispatch.mjs";
 import { applyCorrection, independentSources, revertCorrection, verifyKnowledge, verifySemi } from "../scripts/lib/verify/verdicts.mjs";
-import { fsInputReader, pinReference, pinnedTexts, syncReferenceRecord } from "../scripts/lib/verify/references.mjs";
+import { fsInputReader, pinnedTexts, syncReferenceRecord } from "../scripts/lib/verify/references.mjs";
+import { pinDeclared as pinReference } from "./helpers/destinations.mjs";
 import { factHash } from "../scripts/lib/core/dependencies.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));

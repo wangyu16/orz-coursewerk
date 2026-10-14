@@ -35,8 +35,8 @@ import { boundRecord, readDispatches, readKnowledgeReview, reviewedPassage, sett
 import { holdOtherText, holdersOf, holdsInstructorText, instructorTextChange, instructorTextRegister, originIndex, textIds } from "../lib/core/authorship.mjs";
 import { confirmationStands, instructorActsOf, shownBeforeOf } from "../lib/core/obligations.mjs";
 import { tokensOf } from "../lib/core/segment.mjs";
-import { pinnedTexts, snapshotInputReader } from "../lib/verify/references.mjs";
-import { absoluteReviewOf, absoluteSentences } from "../lib/verify/absolutes.mjs";
+import { admissiblePin, pinLedger, pinnedTexts, snapshotInputReader } from "../lib/verify/references.mjs";
+import { absoluteReviewOf, absoluteSentences, absolutesHash } from "../lib/verify/absolutes.mjs";
 import { checksCurrentClaims, claimKey, correctionLogged, dispatchLogged, instructorAuthored, keptClaims, knowledgeConcerns, leadOf, logRecordsOf, recordClaimTexts, recordLeads, rederive } from "../lib/verify/verdicts.mjs";
 import { findingId } from "../lib/records/findings.mjs";
 import { base, recheckByRerun } from "./_shared.mjs";
@@ -75,7 +75,9 @@ function run(s) {
   const records = readDispatches((p) => s.text(p), s.paths);
   const log = logRecordsOf(s.text("metadata/LOG.jsonl"));
   const pinned = pinnedTexts(snapshotInputReader(s));
-  const plain = new Map([...pinned].filter(([, v]) => v.ok).map(([k, v]) => [k, v.text]));
+  // what may be evidence (round 7, I16): a retrieved reference only inside a destination the instructor declares
+  const ledger = pinLedger(log);
+  const plain = new Map([...pinned].filter(([k, v]) => v.ok && admissiblePin(k, v, ledger)).map(([k, v]) => [k, v.text]));
   const byDispatch = new Map(records.map((r) => [r.dispatch, r]));
   const corrections = new Map(s.paths.filter((p) => p.startsWith("metadata/corrections/") && p.endsWith(".json")).map((p) => s.json(p)).filter(Boolean).map((c) => [c.id, c]));
   const divergedLogged = (u, e) => log.some((l) => l.type === "divergence" && l.party?.role === "instructor" && l.payload?.unit === u.id && l.payload?.correction === e.correction);

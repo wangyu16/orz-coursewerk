@@ -269,7 +269,11 @@ test("[req.control.printed-settings-read] variants: a multi-line footer is one f
   assert.ok(mu.find((x) => x.text === "Body text.").headings.includes("document title: Le Chatelier"));
   for (const [k, v] of [["custom_css", ".lesson { display: none }"], ["font_size", "1"], ["page_background", "#000"], ["margin_top", "400"], ["line_height", "0.1"]])
     assert.ok(printedModel(`{{nyml\nkind: document\n${k}: ${v}\n}}\n\n# P\n\nBody.\n`, { frame: "paged" }).hidden.length === 1, k);
-  assert.deepEqual(printedModel(paged, { frame: "paged" }).hidden, []);
+  // round 7 (C3-01, measured in a headless browser): orz-paged writes the footer into a CSS string, where a line break
+  // ends the declaration — a multi-line footer prints nothing, so it is read AND fails closed; on one line (in a box
+  // the page number does not take) it prints and hides nothing
+  assert.ok(printedModel(paged, { frame: "paged" }).hidden.some((h) => /more than one line/.test(h.what)));
+  assert.deepEqual(printedModel(paged.replace(`footer_center: |\n  Chemistry 101\n  ${LESSON}`, `footer_left: Chemistry 101. ${LESSON}`), { frame: "paged" }).hidden, []);
   // in a study guide (page frame) a document block is a <script>: its header prints nothing and is no unit
   const sg = `{{nyml\nkind: document\nheader_left: ${LESSON}\n}}\n\n## Inert\n\n${INERT}\n`;
   assert.ok(!segmentDeliverable(sg, "study-guide/x.md").units.some((x) => ELECTRO.test(x.text)));

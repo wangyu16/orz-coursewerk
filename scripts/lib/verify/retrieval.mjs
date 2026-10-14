@@ -12,7 +12,7 @@ import { readConfig, writeConfig } from "../records/config.mjs";
 import { recordFile } from "../records/paths.mjs";
 import { appendLogRecord, parseLog, readLogText, verifyLog } from "../records/log.mjs";
 import { contentWords, folded, nameKey, namesIn, quantitiesIn, yearsIn } from "./claims.mjs";
-import { pinReference } from "./references.mjs";
+import { allowed, pinReference } from "./references.mjs";
 
 export const USER_AGENT = "Coursewerk-verifier/1 (https://github.com/wangyu16/orz-coursewerk)";
 
@@ -50,17 +50,8 @@ export function retrievalConfig(root) {
   return { enabled: true, destinations: declared.destinations, context };
 }
 
-/** Is this URL inside a declared destination? A destination is a host, optionally followed by a path prefix. */
-export function allowed(url, destinations) {
-  let u; try { u = new URL(url); } catch { return null; }
-  if (u.protocol !== "https:" || u.username || u.password || u.port) return null;
-  for (const d of destinations) {
-    const [host, ...rest] = d.split("/");
-    const prefix = rest.length ? "/" + rest.join("/") : "";
-    if (u.hostname.toLowerCase() === host.toLowerCase() && (!prefix || u.pathname === prefix || u.pathname.startsWith(prefix.replace(/\/$/, "") + "/"))) return d;
-  }
-  return null;
-}
+/** Is this URL inside a declared destination? (references.mjs: the one rule, which also decides which pins count.) */
+export { allowed };
 
 /** The search query for a claim: its names, years, quantities and longest content words — nothing else. */
 export function queryFor(claim) {

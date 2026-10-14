@@ -16,7 +16,8 @@ import { checkableClaims, checkableClaims as semiClaimsOf, quantitiesIn, yearsIn
 import { classifyUnit } from "../scripts/lib/core/segment.mjs";
 import { replayVerifier } from "../scripts/lib/verify/dispatch.mjs";
 import { admit } from "../scripts/lib/verify/admission.mjs";
-import { fsInputReader, pinnedTexts, pinReference, syncReferenceRecord } from "../scripts/lib/verify/references.mjs";
+import { fsInputReader, pinnedTexts, syncReferenceRecord } from "../scripts/lib/verify/references.mjs";
+import { pinDeclared as pinReference } from "./helpers/destinations.mjs";
 import { applyCorrection, readmitRecorded, revertCorrection, verifySemi } from "../scripts/lib/verify/verdicts.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -155,7 +156,11 @@ test("[req.verdict.semi-mechanical] round P7-1 B12 B13 B17 B21: hand-written evi
   fs.writeFileSync(path.join(r.inputs, "REFERENCES.json"), JSON.stringify(reg2));
   await verifySemi(r.root, r.reader, { texts: texts(r), verifier: saying("supported", "named after French chemist Henry Louis Le Chatelier, who enunciated it in 1884 by extending the reasoning from the van 't Hoff relation of temperature to pressure and chemical potential", "Karl Ferdinand Braun, who discovered it independently in 1887, so it is also called the Le Chatelier–Braun principle"), only: [T] });
   syncReferenceRecord(r.root, r.inputs);
-  assert.ok(gate(r, T).findings.includes("evidence-span-unresolved:defect"), "a quote from an unlogged pin is a defect");
+  // round 7 (I16): an unlogged pin is not even shown to the verifier, so nothing is admitted from it; had evidence quoting
+  // it been written by hand, MS1 refuses it (tests/redteam-r7-exact.test.mjs)
+  assert.ok(!(unit(r, T).evidence || []).some((e) => [e, ...(e.quotes || [])].some((x) => x.source === "ref-hand")), "nothing is admitted from an unlogged pin");
+  const g = gate(r, T);
+  assert.ok(g.findings.includes("evidence-span-unresolved:defect") || g.open, `a quote from an unlogged pin counts for nothing: the unit still owes evidence (${g.findings})`);
 });
 
 test("[req.autocorrect.guard] round P7-1 B14 B16 p22: no correction from an unanchored or foreign quote, a sidecar flip, a duplicated page, or a deleted record", async (t) => {

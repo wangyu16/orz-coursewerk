@@ -45,6 +45,7 @@ import { dimensionProjection } from "../units.mjs";
 const MATH = /\$\$([\s\S]+?)\$\$|\$((?:[^$\n]|\n(?![ \t]*\n))+?)\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)/g;
 const ENVS = "aligned|alignedat|align\\*?|alignat\\*?|gather\\*?|gathered|split|multline\\*?|eqnarray\\*?|equation\\*?";
 const BREAK = "\u0001"; // an inequality or an implication: the chain ends there
+const ARROW = "\u2192"; // →: a link the reader counts and does not compare
 
 /** A math string as relation text: environments and tags out, approximate relations as "≈", inequalities as breaks. */
 function prepMath(m) {
@@ -52,7 +53,10 @@ function prepMath(m) {
     .replace(/\\%/g, "%")
     .replace(new RegExp(`\\\\(?:begin|end)\\s*\\{(?:${ENVS})\\}(?:\\s*\\{\\d+\\})?`, "g"), " \\\\ ")
     .replace(/\\(?:nonumber|notag)(?![A-Za-z])|\\tag\*?\s*\{[^{}]*\}/g, " ")
-    .replace(/\\(?:approx|simeq|sim|thickapprox|thicksim|cong)(?![A-Za-z])|[≈≃∼≅]/g, "≈")
+    .replace(/\\(?:approx|simeq|sim|thickapprox|thicksim|cong|doteq|doteqdot|fallingdotseq|risingdotseq|eqsim|approxeq)(?![A-Za-z])|[≈≃∼≅≐≑≒≓≊]/g, "≈")
+    // an arrow between parts ("\frac{0.040}{0.0027} \to 1.48") may state a result or a change; it is read as a link
+    // that is COUNTED, never compared and never passed in silence (red-team round 7, R7-K08)
+    .replace(/\\(?:to|rightarrow|longrightarrow|Longrightarrow|mapsto|longmapsto)(?![A-Za-z])|[→⟶↦]/g, ARROW)
     .replace(/\\(?:leq?|geq?|leqslant|geqslant|ll|gg|neq?|lt|gt|lesssim|gtrsim|propto|Rightarrow|implies|Longrightarrow|iff)(?![A-Za-z])|[≤≥≠≪≫∝⇒]|(?<![<\\])<(?![=-])|(?<![-=])>/g, BREAK);
 }
 const opensWithRelation = (s) => /^\s*(?:=|≈)/.test(s);
@@ -64,6 +68,7 @@ const endsWithRelation = (s) => /(?:=|≈)\s*$/.test(s);
 const CONNECTIVE = /^[\s,;:]*(?:(?:and|so|then|thus|hence|therefore|which|that is|is|are|was|equals|i\.e\.|viz\.|namely|giving|gives|to give|yielding|or|=|≈)[\s,;:]*){0,4}$/i;
 const subjectKey = (s) => String(s || "").replace(/\\(?:left|right|,|;|!| )/g, "").replace(/[\s{}]/g, "");
 
+const TRAILING_RESULT = /^[ \t]*(=|≈|≅|≃|≐)[ \t]*([-−]?\d[\d,]*(?:\.\d+)?(?:\s*[×x]\s*10\^?\{?[-−]?\d+\}?)?)(?![\d.]*\s*\$)([ \t]*[A-Za-zµ°%][A-Za-z°/·^0-9-]{0,12})?/;
 /** The chains of a text: [{ text }] — one per line of a derivation, continued across lines and adjacent spans. */
 function chainsOf(text) {
   const T = String(text || ""), chains = [];
@@ -84,6 +89,10 @@ function chainsOf(text) {
         if (j < pieces.length - 1) open = null;
       }
     }
+    // the result written AFTER the formula, outside it ("$Q = \frac{…}{…}$ = 1.48", red-team round 7, R7-K08): the
+    // relation and the value continue the span's chain — a reader sees one "Q = … = 1.48"
+    const after = TRAILING_RESULT.exec(T.slice(lastEnd));
+    if (after && open) { open.text += ` ${after[1].replace(/[≅≃≐]/, "≈")} ${after[2]}${after[3] && knownUnit(after[3].trim()) ? ` ${after[3].trim()}` : ""}`; lastEnd += after[0].length; }
   }
   return carried(chains);
 }
@@ -125,7 +134,7 @@ function maskProse(text) {
   return decodeEntities(String(text || ""))
     .replace(MATH, (m) => ` ¶ ${" ".repeat(Math.max(0, m.length - 3))}`)
     .replace(/`[^`]*`/g, " ¶ ").replace(/\{\{[\s\S]*?\}\}/g, " ¶ ").replace(/<[^>]*>/g, " ¶ ").replace(/https?:\/\/\S+/g, " ¶ ").replace(/\]\([^)]*\)/g, "] ¶ ")
-    .replace(/={2,}|<=|>=|=>|!=|[<>≤≥≠]/g, " ¶ ");
+    .replace(/={2,}|<=|>=|=>|!=|[<>≤≥≠]/g, " ¶ ").replace(/[≅≃≐]/g, "≈");
 }
 const PROSE_CLAUSE = /[¶\n]|(?<=[.;!?:])\s+|,\s+(?=\D)/;
 /** One part of a prose chain: { kind: "read", x } | { kind: "sym" } | { kind: "unread" }. */
@@ -171,7 +180,7 @@ function relationParts(s) {
     const c = s[i];
     if ("{([".includes(c)) depth++;
     else if ("})]".includes(c)) depth = Math.max(0, depth - 1);
-    if (depth === 0 && (c === "=" || c === "≈") && s[i - 1] !== "<" && s[i + 1] !== ">" && s[i - 1] !== "\\") { parts.push(cur); rels.push(c); cur = ""; continue; }
+    if (depth === 0 && (c === "=" || c === "≈" || c === ARROW) && s[i - 1] !== "<" && s[i + 1] !== ">" && s[i - 1] !== "\\") { parts.push(cur); rels.push(c); cur = ""; continue; }
     cur += c;
   }
   parts.push(cur);
@@ -421,6 +430,7 @@ export function workedLinks(text) {
       const a = P[i], b = P[i + 1];
       if (a.kind === "sym" || b.kind === "sym") continue;
       const link = `${parts[i].trim()} ${rels[i]} ${parts[i + 1].trim()}`;
+      if (rels[i] === ARROW) { skipped.push({ link, reason: "an arrow between numeric parts: it may state a result or a change, so it is not compared" }); continue; }
       if (a.kind === "unread" || b.kind === "unread") { skipped.push({ link, reason: (a.kind === "unread" ? a : b).reason }); continue; }
       if (!a.op && !b.op && (inProse || !(a.lit && b.lit))) { skipped.push({ link, reason: inProse ? "two written values in prose, no arithmetic" : "a form the reader does not evaluate" }); continue; }
       const rel = unitRelation(a.unit, b.unit);

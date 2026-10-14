@@ -17,6 +17,7 @@
 //
 // PURE and DETERMINISTIC.
 import { valueProjection } from "../units.mjs";
+import { readerView } from "./rendered.mjs";
 
 // Quantities are found after folding LaTeX spellings ("-92\\ \\text{kJ mol}^{-1}" → "-92 kJ mol"), since the packages
 // write most values in LaTeX; a value written two ways is still one shared value. (Moved here from core/dependencies.mjs,
@@ -65,6 +66,9 @@ function foldSci(t) {
     .replace(ENOT, (_, sign, mant, s, e) => `${neg(sign)}${mant}e${neg(s)}${e}`);
 }
 
+// phrasing elements print their text inline, joined to what is beside it ("k<span>J</span>" reads "kJ"); any other tag
+// is a break
+const INLINE_TAG = /<\/?(?:span|b|i|em|strong|mark|small|u|a|abbr|code|kbd|var|cite|q|ins|bdi|bdo|data|dfn|samp|time)(?:\s[^>]*)?>/gi;
 /** Text for value extraction: LaTeX folded to plain, scientific notation to an exact "<mantissa>e<exponent>", unit
  *  exponents kept ("g^{-1}" → "g^-1"). Markup is left to the caller (claims.proseOf). */
 export function valueText(text) {
@@ -72,7 +76,7 @@ export function valueText(text) {
     // an HTML superscript is an exponent whatever its minus (red-team round 3, R3-K07: "10<sup>-5</sup>" read as 10)
     .replace(/<sup>\s*([-−‐-―+]?)\s*(\d+)\s*<\/sup>/gi, (_, s, d) => `^{${s && s !== "+" ? "-" : ""}${d}}`)
     .replace(/<sub>\s*([A-Za-z]{1,3})\s*<\/sub>/gi, "$1") // K<sub>p</sub> is Kp
-    .replace(/<br\s*\/?>/gi, ". ").replace(/<\/?[a-zA-Z][^>]*>/g, " ").replace(/[‐-―](?=\s*\d)/g, "-");
+    .replace(/<br\s*\/?>/gi, ". ").replace(INLINE_TAG, "").replace(/<\/?[a-zA-Z][^>]*>/g, " ").replace(/[‐-―](?=\s*\d)/g, "-");
   t = t.replace(/\{\s*([-−])\s*\}/g, "$1"); // {-}92
   // a symbol's subscript in any LaTeX spelling is the symbol (R3-K01: "K_{p}", "K_\mathrm{p}", "K_{\text{eq}}")
   t = t.replace(/(?<![A-Za-z\\])(K|pK)\s*_\s*(?:\{\s*)?(?:\\(?:mathrm|text|textrm|rm|mathit)\s*\{?\s*)?([A-Za-z]{1,3})\s*\}?\s*\}?/g, "$1$2");
@@ -106,7 +110,19 @@ const SIZING = /\\(?:left|right|bigl|bigr|Bigl|Bigr|biggl|biggr|Biggl|Biggr|bigm
 const DEGREE = /(?:\{\s*\}\s*)?\^\s*(?:\{\s*\\circ\s*\}|\\circ(?![A-Za-z]))|\\(?:degree|textdegree)(?![A-Za-z])/g;
 const TIE = /(?<=\d)(?<![~^]\d*)(?<![~^]\d+[.,]\d*)\s*~(?=\s*(?:\\[A-Za-z]|\{|[°º˚µ%]|[A-Za-z]))/g;
 const TIMES_TWICE = /(×|\\times(?![A-Za-z]))(?:\s*(?:×|\\times(?![A-Za-z])))+/g;
-export const texSpellings = (t) => String(t).replace(SIZING, (_, esc, d) => esc ?? d ?? "").replace(DEGREE, "°").replace(TIE, " ").replace(TIMES_TWICE, "$1");
+// A unit typeset in pieces prints as one word (red-team round 7, R7-K09): "\mathrm{k}\mathrm{J}" and "\text{k}\text{J}"
+// print "kJ" (in maths the space between two font groups is not printed), and "\mathrm{~kJ}" prints " kJ" — a tie or
+// a spacing command inside the group is space before the unit. Adjacent font groups are read as one group unless the
+// second carries a script ("\text{kJ} \text{mol}^{-1}" stays two units), as the reader view typesets them.
+const FONT_GROUP = `\\\\(?:${FONT_MACROS})\\s*\\{`;
+const GROUP_LEAD_SPACE = new RegExp(`(${FONT_GROUP})\\s*(?:~|\\\\[,;:! ]|\\\\(?:quad|qquad)(?![A-Za-z]))+\\s*`, "g");
+const ADJACENT_GROUPS = new RegExp(`(${FONT_GROUP})([^{}]*)\\}\\s*${FONT_GROUP}([^{}]*)\\}(?!\\s*[\\^_])`, "g");
+const joinFontGroups = (t) => { let s = String(t).replace(GROUP_LEAD_SPACE, " $1"), prev; do { prev = s; s = s.replace(ADJACENT_GROUPS, (_, open, a, b) => `${open}${a}${b}}`); } while (s !== prev); return s; };
+// what a markdown reader never sees between a value's characters (red-team round 7, R7-K11): a backslash escape inside
+// a number ("−75\.0", as converters write it) prints the character; an inline element around part of a word
+// ("k<span>J</span>") prints the word whole
+const MD_ESCAPE_IN_NUMBER = /(?<=\d)\\\.(?=\d)/g;
+export const texSpellings = (t) => joinFontGroups(String(t).replace(MD_ESCAPE_IN_NUMBER, ".")).replace(SIZING, (_, esc, d) => esc ?? d ?? "").replace(DEGREE, "°").replace(TIE, " ").replace(TIMES_TWICE, "$1");
 
 /** The text the claim reader reads values from (THE value view, red-team round 6, cause A): valueText, then every
  *  remaining LaTeX command, \ce, markdown link syntax and markup folded away. The classifier (statesValue), the claim
@@ -124,7 +140,18 @@ export function valueProse(text) {
  *  carry?" (claims.quantitiesIn). */
 export function readValues(text) {
   const P = valueProse(text);
-  return [...valuesIn(P), ...unreadValues(P).map((u) => ({ ...u, value: NaN, unit: "unread", decimals: 0, exp: 0 }))].sort((a, b) => a.at - b.at);
+  const out = [...valuesIn(P), ...unreadValues(P).map((u) => ({ ...u, value: NaN, unit: "unread", decimals: 0, exp: 0 }))];
+  // THE READER VIEW NET (red-team round 7, R7-K09/K11): a value is what a reader SEES. Where markup or TeX stands
+  // between the source and the page (a backslash, a tag), the text is also read as rendered (core/rendered.mjs
+  // readerView), and a value the reader sees that the source view did not read is a value too — read, never silent.
+  // Its position is the end of the source view (it has no place there).
+  if (/[\\<]/.test(String(text ?? ""))) {
+    const R = valueProse(readerView(text));
+    // only a figure the source view did not read at all (by magnitude and unit): the reader view of TeX written outside
+    // $…$ can drop a sign the source view reads correctly ("-\,92.2" renders "-,92.2"), and is no second value then
+    if (R !== P) for (const q of valuesIn(R)) if (!out.some((x) => x.unit === q.unit && Math.abs(x.value) === Math.abs(q.value))) out.push({ ...q, at: P.length, end: P.length, view: "reader" });
+  }
+  return out.sort((a, b) => a.at - b.at);
 }
 
 // ---- units ------------------------------------------------------------------------------------------------------
