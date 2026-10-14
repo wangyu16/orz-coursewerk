@@ -51,7 +51,8 @@ import { allSidecars, deliverableOfSidecar, UNIT_RECORDS_EVENT, unitRecordWriteR
 import { pendingCarry, pendingClear, recordsOnDisk } from "./reconcile.mjs";
 import { currentReviewsAt } from "../verify/alignment.mjs";
 import { boundRecord, readKnowledgeReview, recordHashOf, reviewedPassage } from "../verify/dispatch.mjs";
-import { readerKey, semiReviewCurrent, standingOf } from "../verify/standing.mjs";
+import { concernStands, readerKey, semiClaimCurrent, semiReviewCurrent, standingOf } from "../verify/standing.mjs";
+import { hasVisibleWords } from "../records/words.mjs";
 
 // quote-verified: admitted by the verdict path (P7); instructor-confirmation: one confirmation (D19-D);
 // authorized-divergence: the instructor kept their text against evidence, after seeing it — the double confirmation (Q10).
@@ -526,7 +527,7 @@ export function linkUnits(root, reader, links, party) {
 /** The instructor confirms units: "fact" clears an evidence obligation for the current facts; "still-correct" re-stamps. */
 export function confirmUnits(root, reader, ids, { what, instructorWords }, party) {
   if (party?.role !== "instructor") throw new Error("a confirmation is the instructor's");
-  if (!String(instructorWords || "").trim()) throw new Error("a confirmation quotes the instructor's words");
+  if (!hasVisibleWords(instructorWords)) throw new Error("a confirmation quotes the instructor's words");
   if (!["fact", "still-correct"].includes(what)) throw new Error('confirm what: "fact" or "still-correct"');
   const ctx = context(root, reader), { units, edges, hashes } = ctx;
   const text = new Map(units.map((u) => [u.id, u.text]));
@@ -647,6 +648,9 @@ function liveContradictions(root, units) {
     // current while the claims it checked read the same in the reader view (standing.mjs, red team R6): a TeX
     // regrouping inside a claim, then a clean re-check, does not make a contradiction history
     if (semiReviewCurrent(r, u.text, leadOf(u, units)) || (b.hashed ? b.factHash === factHash(u.text) : sameClaims(r, u.text))) out.add(u.id);
+    // …and bound to the claim it contradicted (red team R7, cause 2): a change to ANOTHER claim of the unit does not make
+    // it history. Which claim is read from the record's admission only when the log binds the whole record.
+    else if (b.hashed && (r.admission?.perClaim || []).some((c) => c?.status === "contradicted" && semiClaimCurrent(r, Number(c.claim), u.text, leadOf(u, units)))) out.add(u.id);
   }
   return out;
 }
@@ -730,8 +734,13 @@ function countedReview(root, recs, u, ctx, verdicts = (d, text) => wrongConcerns
   if (verdicts) {
     const view = readerKey(u.text);
     const reviews = recs.filter((r) => r.type === "dispatch" && r.party?.role === "harness" && r.seq > since && r.payload?.unit === id && r.payload?.kind === "knowledge" && r.payload?.recordHash).map((r) => ({ r, seq: r.seq }));
+    // a concern is bound to the words it quoted, in their sentence (red team R7, R7-K04): a review of other text still
+    // speaks for each "wrong" concern whose words stand in a sentence a reader reads unchanged
+    const passageOf = ({ r }) => reviewedPassage(boundKnowledge(root, r)?.bundle?.prompt);
+    const sameView = (x) => x.r === review || readerKey(passageOf(x)) === view;
     const st = standingOf(reviews, {
-      current: ({ r }) => r === review || readerKey(reviewedPassage(boundKnowledge(root, r)?.bundle?.prompt)) === view,
+      current: () => true,
+      itemCurrent: (x, key, c) => sameView(x) || concernStands(c.text, passageOf(x), u.text),
       // the review that counts is read as it always was; every other one by what it raised — an unreadable one is no
       // result (it neither clears nor raises)
       items: ({ r }) => {
@@ -961,7 +970,7 @@ export function unitInScope(root, reader, scope, id) {
  * (P11 wiring sweep: the version was logged with carried: [] and nothing was ever carried.)
  */
 export function openVersionCarrying(root, reader, { scopes, reason, instructorWords }, party) {
-  if (!String(instructorWords || "").trim()) throw new Error("opening a new major version quotes the instructor's words");
+  if (!hasVisibleWords(instructorWords)) throw new Error("opening a new major version quotes the instructor's words");
   // loadUnits skips a deliverable whose index is out of date, so a version opened over unindexed edits would carry
   // none of its units (F12): every deliverable that may hold a unit of the scope must be indexed first — and since a
   // chapter's units are found by what they serve (chapterScopeUnits), not by file name, that is every deliverable

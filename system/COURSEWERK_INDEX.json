@@ -407,7 +407,7 @@
       "id": "repo:scripts/lib/core/approvals.mjs",
       "path": "scripts/lib/core/approvals.mjs",
       "type": "kernel",
-      "hash": "daabf1bf55ddfeab840c728fa1a3319b1bfc66bb274fd2485ac7cb3e9ec1e0ba"
+      "hash": "042511acc5fb8db487f5e77dfdc9f91165a571b00039f25d58759015c6c833a0"
     },
     {
       "id": "repo:scripts/lib/core/authorship.mjs",
@@ -443,7 +443,7 @@
       "id": "repo:scripts/lib/core/digest.mjs",
       "path": "scripts/lib/core/digest.mjs",
       "type": "kernel",
-      "hash": "6976fc15b2243172ec877c395409a30eb4dd4663ced41f631c85932ae9a62482"
+      "hash": "d04721f676711295acf28f7465ec92b00f65b13e0a631532d64cff0df150efca"
     },
     {
       "id": "repo:scripts/lib/core/history.mjs",
@@ -479,7 +479,7 @@
       "id": "repo:scripts/lib/core/obligations.mjs",
       "path": "scripts/lib/core/obligations.mjs",
       "type": "kernel",
-      "hash": "df7e65385c0f3c714f174de30b6d04fd4caf9894c36f6f6b9e5e227929a07abf"
+      "hash": "cc55078f16d248f3274297da7f06673e31337c426e4b2ce87d12d7fdc654a929"
     },
     {
       "id": "repo:scripts/lib/core/pack_v2.mjs",
@@ -539,7 +539,7 @@
       "id": "repo:scripts/lib/core/spine_review.mjs",
       "path": "scripts/lib/core/spine_review.mjs",
       "type": "kernel",
-      "hash": "5b1d1c379e0080c8b8a5b58276e43929cc8ec16c4f2662affa24557bf2b12fb5"
+      "hash": "549a3a1d08501282a75c9f3c1cd5ce86626b5ee7375e8c79fba09bbc36148549"
     },
     {
       "id": "repo:scripts/lib/core/spine.mjs",
@@ -551,7 +551,7 @@
       "id": "repo:scripts/lib/core/steering_intake.mjs",
       "path": "scripts/lib/core/steering_intake.mjs",
       "type": "kernel",
-      "hash": "e0678610c0eb680807253222170f73950afeee8038dd76006efb1e5e9c9acc1a"
+      "hash": "7f2e64623d3f82ffc0c22996ad19d76e8686bc7127002d7d1f5cf0dcb3706f25"
     },
     {
       "id": "repo:scripts/lib/core/unit_records.mjs",
@@ -563,7 +563,7 @@
       "id": "repo:scripts/lib/core/units_index.mjs",
       "path": "scripts/lib/core/units_index.mjs",
       "type": "kernel",
-      "hash": "7a1e47dcd50cbc6cd9e4ceac9dc18657f5df402ea343b0a4e91ca05767125ee4"
+      "hash": "b83ceb9c13b86b69597a4c6bcabc19644af9bea9c82ccd9fe936015fa64d63ef"
     },
     {
       "id": "repo:scripts/lib/core/values.mjs",
@@ -581,7 +581,7 @@
       "id": "repo:scripts/lib/core/workflow.mjs",
       "path": "scripts/lib/core/workflow.mjs",
       "type": "kernel",
-      "hash": "ad1831fe2f9f320bb3ed049be0610abbcb5ddc2734880db854749081cfdd339e"
+      "hash": "ee38a30834877d65c0713ecb2585f46e779fe85a42dfcf21ade3663176ef0ed9"
     },
     {
       "id": "repo:scripts/lib/escalation.mjs",
@@ -710,6 +710,12 @@
       "hash": "02f2cb0842352215943eab6ab5c17f82ad72efac382263badd65dc0e0f63ba14"
     },
     {
+      "id": "repo:scripts/lib/records/words.mjs",
+      "path": "scripts/lib/records/words.mjs",
+      "type": "kernel",
+      "hash": "6bf656a9acc1265f7a64ffe74c154a900d9aaee57bb0ac9f8d2f152573888fab"
+    },
+    {
       "id": "repo:scripts/lib/rights_preflight.mjs",
       "path": "scripts/lib/rights_preflight.mjs",
       "type": "kernel",
@@ -827,7 +833,7 @@
       "id": "repo:scripts/lib/verify/alignment.mjs",
       "path": "scripts/lib/verify/alignment.mjs",
       "type": "kernel",
-      "hash": "12da15fec6822cb680105c6644347d037e46aedead1303733ca6b84c1d43db49"
+      "hash": "f0ae4500a4d4a9b0daad939b16e02c76d33a527fe6836788c0989e99fb1f8e1f"
     },
     {
       "id": "repo:scripts/lib/verify/claims.mjs",
@@ -863,7 +869,7 @@
       "id": "repo:scripts/lib/verify/standing.mjs",
       "path": "scripts/lib/verify/standing.mjs",
       "type": "kernel",
-      "hash": "5536110f84875937684fc5a98086d5789764132b64ddbe818e5340c5691b8da5"
+      "hash": "55bae7bf08a8f27157672a931de0b18f9ad570b4c4f51dd5f23665e01d569819"
     },
     {
       "id": "repo:scripts/lib/verify/verdicts.mjs",
@@ -929,7 +935,7 @@
       "id": "repo:scripts/modules/ms8-verdicts.mjs",
       "path": "scripts/modules/ms8-verdicts.mjs",
       "type": "executable",
-      "hash": "65f63fdd9c438c65e104c79056cb929c7b30b01b5dd8e41a36dffe713ca3b509"
+      "hash": "8704d8dfbed0ef8e9210f3e287af95af8491dea7caa9030655140dae3f467c8f"
     },
     {
       "id": "repo:scripts/modules/ms9-alignment.mjs",
@@ -1181,7 +1187,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "36ff42975f1442461c4757eb37953dfb3b15d8407ed05fd77e2fa17f55814a5e"
+      "hash": "169c5094568abedd7be66def7b595c9660f7d15e2fa90bb96e3a65a14a012a5c"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1499,7 +1505,7 @@
       "id": "repo:tests/d49-decisions.test.mjs",
       "path": "tests/d49-decisions.test.mjs",
       "type": "test",
-      "hash": "7ed7be1de1d0fd0d3e97cf64773e20b1a004482487a8dbe186d72c3f85bfbcdd"
+      "hash": "83679c7a55b24d032ded6dc1e3b43afd39659c0e23e58afeb819d252a33362e8"
     },
     {
       "id": "repo:tests/escalation.test.mjs",
@@ -1865,7 +1871,7 @@
       "id": "repo:tests/redteam-r4-confidence.test.mjs",
       "path": "tests/redteam-r4-confidence.test.mjs",
       "type": "test",
-      "hash": "aadc8c51affa2d038b1f73d567bca61723f1b807623798804337dd891cf67933"
+      "hash": "fada9ff999e15b35cdf29bdab58496040a364bb6562e680aede69562c9fe0f1f"
     },
     {
       "id": "repo:tests/redteam-r4-control.test.mjs",
@@ -1926,6 +1932,12 @@
       "path": "tests/redteam-r6-visible.test.mjs",
       "type": "test",
       "hash": "2c7a6ac067134d0ca9b01f900ea55decfb41ec700ae2c855b6c96507b77cc864"
+    },
+    {
+      "id": "repo:tests/redteam-r7-judged.test.mjs",
+      "path": "tests/redteam-r7-judged.test.mjs",
+      "type": "test",
+      "hash": "541118ea79b89d9ed74daf3be86bb597562b54dc212a78a8bf034787dbcdc772"
     },
     {
       "id": "repo:tests/redteam-r7-order.test.mjs",
@@ -4685,6 +4697,14 @@
       {
         "id": "req.revert.double-confirm",
         "phase": "P7",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.reviews.judged",
+        "phase": "P11",
         "tiers": [
           "T1"
         ],

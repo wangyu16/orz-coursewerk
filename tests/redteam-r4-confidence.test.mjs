@@ -244,9 +244,16 @@ test("[req.knowledge.travels] R4-K17: a reviewed unit split or merged hands its 
   assert.ok((b.lineage || []).includes(A), "the piece names the unit whose text it holds");
   assert.deepEqual(concernsOn(c, b.id).map((f) => f.evidence.quote), [W], "the concern travels with its words");
   assert.equal(concernsOn(c, a.id).length, 0, "the other piece does not hold them");
-  // a clean fresh review of the piece holding the words clears it (R4-K15)
+  // a split changes nothing a reader reads of the sentence the concern quoted: a clean fresh review of the piece does
+  // NOT clear it (red team R7, R7-K04: a concern is bound to its words in their sentence); a change to that sentence,
+  // then a fresh review of the new text, does (R4-K15)
   await verifyKnowledge(c.root, c.r(), { only: [b.id], verifier: review([]) });
-  assert.equal(concernsOn(c, b.id).length, 0);
+  assert.deepEqual(concernsOn(c, b.id).map((f) => f.evidence.quote), [W], "the split and a clean re-run clear nothing");
+  c.asAgent(() => c.edit(SG, W, W.replace("An inert gas added", "An inert gas that is added")));
+  const b2 = c.units().find((u) => u.text === W.replace("An inert gas added", "An inert gas that is added"));
+  assert.ok(b2, "the piece's sentence changed");
+  await verifyKnowledge(c.root, c.r(), { only: [b2.id], verifier: review([]) });
+  assert.equal(concernsOn(c, b2.id).length, 0);
   // the merge: the reviewed paragraph joined with its neighbour
   const m = course(t);
   const [X] = addParagraphs(m, [W, T]);

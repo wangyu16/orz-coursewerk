@@ -2902,6 +2902,21 @@
       }
     },
     {
+      "id": "req.reviews.judged",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Every review answer, and every instructor overrule of one, is bound to exactly what it judged (scripts/lib/verify/standing.mjs itemCurrent, concernStands). A link verdict for objective O is bound to the passage's reader view and O's own text: adding or removing other links never makes it history. An instructor's link overrule is bound to the passage's reader view, the overruled item's text and the verdict it overruled, and lapses when any of them changes. A knowledge, absolute or spine concern stands while the words it quoted stand in their sentence (or line) as a reader sees them, unless the instructor answers it: an edit elsewhere in the unit or the plan, then a clean re-run, clears nothing; a fresh review clears it only after its sentence or line changed. A fact-check answer is bound to the claim it judged.",
+      "source": "3C red team round 7, cause 'bound to the wrong thing' (D46, D50 cause 2): R7 C2-L1, C2-L2, R7-K04",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r7-judged.test.mjs"
+        ]
+      }
+    },
+    {
       "id": "req.control.visible-by-frame-render",
       "phase": "P11",
       "tiers": [

@@ -180,6 +180,107 @@ export function reviewIsCurrent(r, u, inp, plan, bases = currentBases(u, inp, pl
 
 const guideAsk = (g) => `${g.type || "any type"} at the level "${g.levels || "unspecified"}" (${g.title})`;
 
+// ---- BOUND TO WHAT IT JUDGED (red team R7, cause 2; D50) ---------------------------------------------------------
+// A review's basis bound the passage, the unit's whole LINK SET and every judged item together, so adding a second link
+// to a unit (its text unchanged) made an honest "no" for objective O history, and a re-run "yes" for O then stood (R7
+// C2-L1: reviewer shopping by link churn). Each answer is now bound to exactly what it judged, read back from what the
+// reviewer was SHOWN (its prompt, bound in the log by its bundleHash), item by item:
+//   the passage (every answer)   the passage, the labels printed over it and, for an answer, its question, in the
+//                                reader view (passageCurrent);
+//   link:O                       + O's own text as it was printed in the plan (its meaning key): adding or removing
+//                                OTHER links never touches it; a change of O's text makes it history;
+//   type:G, level:G              + guide entry G's type, level and title as the reviewer was asked them;
+//   offPlan, also:*              + the whole plan shown (they judge the passage against all of it).
+// A plan item glance-confirmed as light or a confirmed rephrasing reads as last fully approved (planOf `accepted`, D43).
+// What a prompt did not print (a declared item of another chapter) is read from the record's `judged` keys; a record
+// with neither keeps the whole-basis rule it was written under (reviewIsCurrent).
+const collapse = (t) => String(t ?? "").replace(/\s+/g, " ").trim();
+const lineKey = (line) => sha256(meaningKey(collapse(line)));
+/** A plan item as a review prints it: its text, or for a guide entry the entry's ask. */
+export function nodeLine(inp, plan, id) {
+  const shown = inp.chapterNodes.find((n) => n.id === id);
+  if (shown) return collapse(shown.text);
+  const n = plan.nodes.get(id);
+  return n ? collapse(n.kind === "guide" ? `assessment guide entry: ${guideAsk(n)}` : n.text) : null;
+}
+/** The same item as the instructor last fully approved it, when the change since is a confirmed light one (else null). */
+function acceptedLine(plan, id) {
+  const a = plan.accepted?.get(id), n = plan.nodes.get(id);
+  if (!a || !n) return null;
+  return collapse(n.kind === "guide" ? `assessment guide entry: ${guideAsk({ ...n, title: a.title ?? a.text, type: a.type, levels: a.levels })}` : a.text);
+}
+/** The keys under which a plan item reads as it did: as it is now, or as last fully approved (a confirmed light change). */
+const itemKeys = (inp, plan, id) => new Set([nodeLine(inp, plan, id), acceptedLine(plan, id)].filter((x) => x != null).map(lineKey));
+const guideKeys = (plan, g) => {
+  const n = plan.nodes.get(g), a = plan.accepted?.get(g);
+  return new Set([n && guideAsk(n), n && a && guideAsk({ ...n, title: a.title ?? a.text, type: a.type, levels: a.levels })].filter(Boolean).map(lineKey));
+};
+const sectionLines = (prompt, head) => {
+  const ls = String(prompt || "").split("\n"), i = ls.indexOf(head);
+  if (i < 0) return null;
+  const out = [];
+  for (const l of ls.slice(i + 1)) { if (!l.trim()) break; out.push(l); }
+  return out;
+};
+const LABELS_HEAD = "HEADINGS AND LABELS PRINTED OVER THE PASSAGE (part of what the student reads with it)";
+/** What a link review was shown, read from its prompt: { plan: Map(id → line) | null, declared: [id], labels: [line],
+ *  asks: Map(guide id | null → ask) }. */
+export function shownToReview(r) {
+  const prompt = String(r?.bundle?.prompt || "");
+  const planLines = sectionLines(prompt, "THE CHAPTER'S PLAN");
+  const plan = planLines ? new Map(planLines.map((l) => /^- ([^\s:]+): (.*)$/.exec(l)).filter(Boolean).map((m) => [m[1], m[2]])) : null;
+  const declared = (sectionLines(prompt, "DECLARED ITEMS") || []).map((l) => /^- ([^\s:]+)(?::.*)?$/.exec(l)?.[1]).filter(Boolean);
+  const labels = (sectionLines(prompt, LABELS_HEAD) || []).map((l) => l.replace(/^- /, ""));
+  const asks = new Map();
+  const one = /its assessment guide entry asks for: (.*)\. Say whether the question is that type of question/.exec(prompt);
+  if (one) asks.set(Array.isArray(r.guides) && r.guides.length === 1 ? r.guides[0] : null, one[1]);
+  const ls = prompt.split("\n"), m = ls.findIndex((l) => l.startsWith("The passage is a practice question linked to several assessment guide entries."));
+  if (m >= 0) for (const l of ls.slice(m + 1)) { const x = /^- (guide\.\S+): (.*)$/.exec(l); if (!x) break; asks.set(x[1], x[2]); }
+  return { plan, declared, labels, asks };
+}
+const sameLabels = (a, b) => a.length === b.length && a.every((x, i) => meaningKey(collapse(x)) === meaningKey(collapse(b[i])));
+/**
+ * Is a logged review a review of the passage a reader is shown now — the passage, the labels over it, and an answer's
+ * question, in the reader view? (What it said about each plan item is then current only while that item reads as it was
+ * shown: itemJudgedNow.) A review shown no labels (before round 5), or no credit line (before round 6), is read as the
+ * label and credit baselines say (C3-01), as before.
+ */
+export function passageCurrent(r, u, inp, baseline = null) {
+  const prompt = r?.bundle?.prompt, shown = reviewedPassage(prompt);
+  if (!shown || meaningKey(shown) !== meaningKey(u.text)) return false;
+  // (the labels, printed between the question and the passage since round 5, are not part of the question)
+  if (u.form === "answer" && meaningKey(shownBefore(String(prompt || "").replace(/\n\nHEADINGS AND LABELS PRINTED OVER THE PASSAGE[^\n]*\n(?:[^\n]+\n)*/, "\n"))) !== meaningKey(inp.before)) return false;
+  const L = shownToReview(r).labels, now = shownLabels(u), heads = (u.headings || []).map(collapse);
+  if (sameLabels(L, now)) return true;
+  if (!u.credit || L.some((x) => x.startsWith("credit line: ")) || !uncreditedReviewStands(u, baseline)) return false;
+  if (sameLabels(L, heads)) return true; // shown the labels but no credit line (round 5)
+  return !L.length && unlabelledReviewStands(u, baseline); // shown neither (before round 5)
+}
+/**
+ * Is one answer of a passage-current review still about what it judged now (the item key it is stored under)?
+ *   `fallback` — the whole-basis rule, for a record that shows nothing of what it judged.
+ */
+export function itemJudgedNow(r, key, u, inp, plan, fallback) {
+  const shown = shownToReview(r);
+  const nodeNow = (id) => {
+    const keys = itemKeys(inp, plan, id);
+    if (shown.plan?.has(id)) return keys.has(lineKey(shown.plan.get(id)));
+    if (r.judged && Object.hasOwn(r.judged, id)) return keys.has(r.judged[id]);
+    return fallback();
+  };
+  if (key.startsWith("link:")) return nodeNow(key.slice(5));
+  if (key.startsWith("type:") || key.startsWith("level:")) {
+    const g = key.slice(key.indexOf(":") + 1), gid = g === "null" ? null : g;
+    const ask = shown.asks.get(gid) ?? (shown.asks.size === 1 ? [...shown.asks.values()][0] : null);
+    if (ask == null) return fallback();
+    return gid != null && guideKeys(plan, gid).has(lineKey(ask));
+  }
+  // offPlan and also:* judged the passage against the whole plan it was shown
+  if (!shown.plan) return fallback();
+  const ids = inp.chapterNodes.map((n) => n.id);
+  return shown.plan.size === ids.length && ids.every((id) => shown.plan.has(id) && itemKeys(inp, plan, id).has(lineKey(shown.plan.get(id))));
+}
+
 export function alignmentBundle({ unit, label, before, links, plan, guide, guides = null, framing = false, headings = [] }, nonce = randomBytes(8).toString("hex")) {
   // one guide entry: the original wording and reply shape; several: one fidelity answer per entry, by id (C5-08)
   const many = Array.isArray(guides) && guides.length > 1;
@@ -282,7 +383,9 @@ export async function reviewAlignment(root, reader, { verifier, only = null, onP
     const read = readAlignment(answer.raw, bundle.nonce, inp.declared.map((n) => n.id), new Set(inp.chapterNodes.map((n) => n.id)), inp.guides.map((g) => g.id));
     const basis = reviewBasis(u, inp);
     const status = !read ? "unscorable" : read.unanswered.length ? "incomplete" : "reviewed";
-    const record = recordDispatch(root, { kind: "alignment", unit: u.id, factHash: basis, contentHash: u.locator.contentHash, bundle, answer, admission: { status }, deps: deps.get(u.id), extra: { alignmentBasis: basis, declared: inp.declared.map((n) => n.id), guides: inp.guides.map((g) => g.id) } });
+    // what it judged, item by item (red team R7, cause 2): each declared item's text as the reviewer was shown it
+    const judged = Object.fromEntries(inp.declared.map((n) => [n.id, lineKey(nodeLine(inp, plan, n.id))]));
+    const record = recordDispatch(root, { kind: "alignment", unit: u.id, factHash: basis, contentHash: u.locator.contentHash, bundle, answer, admission: { status }, deps: deps.get(u.id), extra: { alignmentBasis: basis, declared: inp.declared.map((n) => n.id), guides: inp.guides.map((g) => g.id), judged } });
     results.push({ unit: u.id, dispatch: record.dispatch, status, doubtful: read ? read.links.filter((l) => l.verdict === "no").map((l) => l.id) : [], unanswered: read?.unanswered || [], offPlan: read?.offPlan ?? null, fidelity: read?.fidelity || [], costUsd: answer.costUsd ?? null });
     onProgress(results.at(-1));
   }
@@ -299,8 +402,12 @@ export async function reviewAlignment(root, reader, { verifier, only = null, onP
 // THE INSTRUCTOR MAY OVERRULE A LINK VERDICT (D49, operator 2026-10-12). A standing "no" or "passing" for a node the
 // unit is linked to is overruled by the instructor's answer, quoting their words — the one way besides a change to the
 // text to clear it (standing.mjs rule 3). The answer is logged as an instructor act (an "answer" record whose item
-// carries `overrule: { unit, link, was, seenKey }`), bound to the unit's reader-view text (standing.readerKey): it holds
-// while a reader is shown the same passage and lapses when the text changes, so a fresh review of the new text speaks.
+// carries `overrule: { unit, link, was, seenKey, linkKey }`), bound to exactly what it judged (red team R7, C2-L2): the
+// unit's reader-view text (standing.readerKey), the overruled item's own text (linkKey: its meaning key, as last fully
+// approved when the change since is a confirmed light one), and the verdict it overruled (`was`). It holds while all three
+// read the same and lapses when any changes — a substantive change of the objective, even one the instructor approved
+// in full, is a new question, and a fresh review of it speaks. An overrule recorded before R7 has no linkKey: it is
+// bound to the item's text as the link review it answered was shown it (the newest review of the unit before it).
 // An overruled link reads "yes": MS9 raises no link-doubtful for it and coverage counts it as taught.
 const OVERRULABLE = new Set(["no", "passing"]);
 /** The instructor's link overrules in a log: Map(unit id → [{ link, was, seenKey, words, seq }]). */
@@ -309,12 +416,18 @@ export function linkOverrules(log) {
   for (const r of log || []) if (r?.type === "answer" && r.party?.role === "instructor") for (const a of r.payload?.answers || []) {
     const o = a?.overrule;
     if (!o || typeof o.unit !== "string" || typeof o.link !== "string" || typeof o.seenKey !== "string") continue;
-    out.set(o.unit, [...(out.get(o.unit) || []), { link: o.link, was: o.was ?? null, seenKey: o.seenKey, words: r.payload?.instructorWords || "", seq: Number(r.seq ?? 0) }]);
+    out.set(o.unit, [...(out.get(o.unit) || []), { link: o.link, was: o.was ?? null, seenKey: o.seenKey, linkKey: typeof o.linkKey === "string" ? o.linkKey : null, words: r.payload?.instructorWords || "", seq: Number(r.seq ?? 0) }]);
   }
   return out;
 }
-/** The overrule that stands for one link of a unit as its text reads now (null: none, or it lapsed with the text). */
-export const overruleOf = (overrules, u, link) => (overrules || []).filter((o) => o.link === link && o.seenKey === readerKey(u.text)).sort((a, b) => b.seq - a.seq)[0] || null;
+/**
+ * The overrule that stands for one link of a unit as it reads now (null: none, or it lapsed): the unit's text as the
+ * instructor saw it, the verdict they overruled (`verdict`, the one standing now), and the item's text (`keys`: the keys
+ * under which it reads as it did; `linkKeyOf(o)` gives a pre-R7 overrule's key, or null).
+ */
+export const overruleOf = (overrules, u, link, { verdict = null, keys = null, linkKeyOf = (o) => o.linkKey } = {}) => (overrules || [])
+  .filter((o) => o.link === link && o.seenKey === readerKey(u.text) && (verdict == null || o.was == null || o.was === verdict) && (!keys || keys.has(linkKeyOf(o))))
+  .sort((a, b) => b.seq - a.seq)[0] || null;
 /**
  * The instructor overrules the standing link verdicts of one unit (D49): [{ unit, link, was, seenKey }], the items an
  * "answer" record carries (digest.answerDigest logs them with the instructor's words). Each link must be one the unit
@@ -323,14 +436,14 @@ export const overruleOf = (overrules, u, link) => (overrules || []).filter((o) =
 export function linkOverruleItems(root, reader, unitId, links) {
   const all = loadUnits(root, reader), u = all.find((x) => x.id === unitId);
   if (!u) throw new Error(`no such unit: ${unitId}`);
-  const reviews = currentReviewsAt(root, reader, all), r = reviews.get(unitId);
+  const reviews = currentReviewsAt(root, reader, all), r = reviews.get(unitId), plan = planOf(reader), inp = reviewInputs(u, all, plan);
   const want = [...new Set((links || []).map(String).filter(Boolean))];
   if (!want.length) throw new Error("name the link to overrule (a node the unit is linked to)");
   return want.map((link) => {
     if (!(u.spineNodes || []).includes(link)) throw new Error(`${unitId} is not linked to ${link}: there is no link verdict to overrule`);
     const v = r?.verdicts.get(link);
     if (!OVERRULABLE.has(v)) throw new Error(`${unitId} → ${link}: ${v === "yes" ? "the standing verdict already says it teaches it" : "no current link review has judged it (run node scripts/verify.mjs alignment first)"}; only a "no" or "passing" can be overruled`);
-    return { unit: unitId, link, was: v, seenKey: readerKey(u.text) };
+    return { unit: unitId, link, was: v, seenKey: readerKey(u.text), linkKey: lineKey(nodeLine(inp, plan, link)) };
   });
 }
 
@@ -343,12 +456,15 @@ const FIDELITY_RANK = { matches: 0, differs: 1 };
  * `latest` is the newest current review (readable or not: MS9 says when it cannot be read), `read` reads a record.
  */
 export function standingAlignment(recs, u, inp, plan, bases, baseline, overrules = []) {
-  const declared = inp.declared.map((n) => n.id), guides = inp.guides.map((g) => g.id), known = new Set(inp.chapterNodes.map((n) => n.id));
-  const read = (r) => readAlignment(r.answer?.raw, r.bundle?.nonce, declared, known, r.guides ? guides : guides.length ? true : []);
+  const declared = inp.declared.map((n) => n.id), guides = inp.guides.map((g) => g.id);
+  // a review is read as what it was ASKED (its own declared items and guide entries, its own plan), never re-read
+  // against today's links: a link added since is not an item it left unanswered, it is one no review has judged yet
+  const read = (r) => { const sh = shownToReview(r); return readAlignment(r.answer?.raw, r.bundle?.nonce, sh.declared, new Set(sh.plan ? sh.plan.keys() : inp.chapterNodes.map((n) => n.id)), Array.isArray(r.guides) ? r.guides : guides.length ? true : []); };
   // a record from before round 1 names no guide entry: with one entry linked, its fidelity answer is that entry's
   const gid = (id) => id ?? (guides.length === 1 ? guides[0] : null);
   const st = standingOf(recs.map(({ r, seq }) => ({ r, seq })), {
-    current: ({ r }) => reviewIsCurrent(r, u, inp, plan, bases, baseline),
+    current: ({ r }) => passageCurrent(r, u, inp, baseline),
+    itemCurrent: ({ r }, key) => (key.startsWith("link:") && !declared.includes(key.slice(5)) ? false : itemJudgedNow(r, key, u, inp, plan, () => reviewIsCurrent(r, u, inp, plan, bases, baseline))),
     items: ({ r }) => {
       const v = read(r); if (!v) return null;
       return [...v.links.map((l) => [`link:${l.id}`, l]), ["offPlan", v.offPlan], ...v.also.map((id) => [`also:${id}`, id]),
@@ -359,10 +475,20 @@ export function standingAlignment(recs, u, inp, plan, bases, baseline, overrules
   });
   if (!st.current.length) return null;
   const at = (k) => st.items.get(k);
-  const verdicts = new Map(declared.map((id) => [id, at(`link:${id}`)?.answer.verdict ?? "unanswered"]));
-  // the instructor's overrule of an adverse verdict, while the text reads as they saw it (D49)
+  // a declared item no current answer judged as it reads now is absent (its review is owed); one a current review was
+  // asked and left unanswered is "unanswered"
+  const verdicts = new Map(declared.filter((id) => st.judged.has(`link:${id}`)).map((id) => [id, at(`link:${id}`)?.answer.verdict ?? "unanswered"]));
+  // the instructor's overrule of an adverse verdict, while the unit's text, the item's text and the verdict read as
+  // they saw them (D49; red team R7, C2-L2)
   const overruled = new Map();
-  for (const [id, v] of verdicts) { const o = OVERRULABLE.has(v) && overruleOf(overrules, u, id); if (o) { overruled.set(id, { was: v, words: o.words, seq: o.seq }); verdicts.set(id, "yes"); } }
+  const legacyKey = (o) => {
+    const before = recs.filter(({ r, seq }) => seq < o.seq && shownToReview(r).plan?.has(o.link)).sort((a, b) => b.seq - a.seq)[0];
+    return before ? lineKey(shownToReview(before.r).plan.get(o.link)) : null;
+  };
+  for (const [id, v] of verdicts) {
+    const o = OVERRULABLE.has(v) && overruleOf(overrules, u, id, { verdict: v, keys: itemKeys(inp, plan, id), linkKeyOf: (x) => x.linkKey ?? legacyKey(x) });
+    if (o) { overruled.set(id, { was: v, words: o.words, seq: o.seq }); verdicts.set(id, "yes"); }
+  }
   const fids = [...new Set([...st.items.keys()].filter((k) => k.startsWith("type:") || k.startsWith("level:")).map((k) => k.slice(k.indexOf(":") + 1)))];
   const fidelity = fids.map((k) => {
     const t = at(`type:${k}`), l = at(`level:${k}`), id = k === "null" ? null : k;

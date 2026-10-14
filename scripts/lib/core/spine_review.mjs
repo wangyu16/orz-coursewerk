@@ -19,6 +19,7 @@ import { recordDispatch } from "../verify/dispatch.mjs";
 import { dispatchLogEntry } from "../verify/verdicts.mjs";
 import { COURSE_MAP, checkSpine, parseSpine, spinePaths } from "./spine.mjs";
 import { meaningKey } from "./rendered.mjs";
+import { listItemsOf } from "./printed.mjs";
 import { standingOf } from "../verify/standing.mjs";
 
 /** The files an approval of the scope covers (and binds): a chapter's concept map and assessment guide; the course map. */
@@ -34,15 +35,17 @@ function lastApproval(root, scope) {
 }
 
 /** Each non-blank line keyed by the headings it stands under and its text (a list item's number folded: renumbering
- *  is not a change, a move is). */
+ *  is not a change, a move is). Only a REAL list item's number is folded — a line orz-markdown reads as the start of
+ *  an ordered list item (printed.mjs listItemsOf). A wrapped prose line that only begins like one ("1000. Such large
+ *  values …", a paragraph's continuation) keeps its number: changing it to "10." is a changed line (red team R7, C4.11). */
 function keyedLines(text) {
-  const path_ = [], out = [];
+  const path_ = [], out = [], items = new Set(listItemsOf(String(text || "")).map((it) => it.start));
   String(text || "").split("\n").forEach((l, i) => {
     const t = l.trim(); if (!t) return;
     const h = /^(#{1,6})\s+(.*)$/.exec(t);
-    const norm = t.replace(/^\d+[.)]\s+/, "#. ").replace(/\s+/g, " ");
+    const norm = (items.has(i) ? t.replace(/^\d+[.)]\s+/, "#. ") : t).replace(/\s+/g, " ");
     if (h) path_.length = h[1].length - 1;
-    out.push({ n: i + 1, text: t, key: `${path_.join("\u0001")}\u0000${norm}` });
+    out.push({ n: i + 1, text: t, under: path_.join(" > "), key: `${path_.join("\u0001")}\u0000${norm}` });
     if (h) path_[h[1].length - 1] = h[2].trim();
   });
   return out;
@@ -80,8 +83,8 @@ export function changedSpineLines(root, reader, scope) {
   for (const file of filesOf(scope)) {
     const now = reader.text(file) || "", was = typeof before === "string" ? (file === COURSE_MAP || scope === "course" ? before : "") : before[file] || "";
     const d = lineDiff(was, now);
-    for (const l of d.added) out.push({ file, n: l.n, text: l.text });
-    for (const l of d.removed) removed.push({ file, n: l.n, text: l.text, removed: true });
+    for (const l of d.added) out.push({ file, n: l.n, text: l.text, under: l.under });
+    for (const l of d.removed) removed.push({ file, n: l.n, text: l.text, under: l.under, removed: true });
     context += `${file}\n${now}\n`;
   }
   const lines = out, asked = [...lines, ...removed];
@@ -173,36 +176,29 @@ export function approvalPrecondition(root, reader, chapters, { chapter = null, w
   const problems = checkSpine(parseSpine(reader, chapters), chapters).filter((p) => chapter ? p.file.endsWith(`/${chapter}.md`) : p.file === COURSE_MAP);
   if (problems.length) return { problem: `the spine is not well-formed yet (${problems.length} problem(s), e.g. ${problems[0].detail}); fix them before approval`, hint: "node scripts/spine.mjs check --root <pkg>" };
   const scope = chapter ? `chapter:${chapter}` : "course", changed = changedSpineLines(root, reader, scope);
-  const unreviewed = changed.reapproval && changed.lines.length > 0 && !currentSpineReview(root, reader, scope);
+  const cur = changed.reapproval && changed.lines.length > 0 ? currentSpineReview(root, reader, scope) : null;
+  const unreviewed = changed.reapproval && changed.lines.length > 0 && (!cur || cur.unreviewed?.length > 0);
   if (unreviewed && !withoutReview)
     return { problem: `${changed.lines.length} line(s) changed since the last approval and have not had their blind review`, hint: `node scripts/spine.mjs review --root <pkg> ${chapter ? `--chapter ${chapter}` : "--course"} (offline: --without-review, which is recorded)` };
   return { note: [note || "", unreviewed ? "approved without the blind review of the changed lines" : ""].filter(Boolean).join("; ") };
 }
 
 // ---- which review stands (red team R6, R6-C4-01: a clean re-run of unchanged text erased a "wrong" concern) -------
-// Currency is judged on the READER VIEW (standing.mjs): a review is current while the baseline it diffed against is the
-// current one, and what a reader is shown of the files it read — every line in order, headings with their level, each
-// as rendered.mjs reads it — and of the lines it was asked about is unchanged. A reflow, a TeX regrouping or emphasis
-// is no change; a changed word or symbol, a moved line or a new baseline is.
-const fileView = (text) => String(text || "").split("\n").map((l) => l.trim()).filter(Boolean).map((t) => [/^(#{1,6})\s/.exec(t)?.[1].length ?? 0, meaningKey(t)]);
-const askedView = (asked) => sha256(canonicalJson(asked.map((l) => [l.removed ? "removed" : "now", l.file, meaningKey(l.text)])));
-/** The files a spine review was shown, read back from its prompt's context (bound by its logged bundleHash). */
-function shownFiles(prompt, files) {
-  const head = "\nTHE WHOLE MAP AND GUIDE (context only)\n", p = String(prompt || ""), i = p.indexOf(head);
-  if (i < 0) return null;
-  const ctx = p.slice(i + head.length) + "\n", out = {};
-  let at = 0;
-  for (let k = 0; k < files.length; k++) {
-    if (!ctx.startsWith(`${files[k]}\n`, at)) return null;
-    const from = at + files[k].length + 1;
-    const next = k + 1 < files.length ? ctx.indexOf(`\n${files[k + 1]}\n`, from - 1) : ctx.length;
-    if (next < 0) return null;
-    out[files[k]] = ctx.slice(from, next);
-    at = next + 1;
-  }
-  return out;
+// Currency is judged on the READER VIEW (standing.mjs), and LINE BY LINE (red team R7, cause 2): a review is of this
+// re-approval while the baseline it diffed against is the current one, and what it said of a line — a concern, a meaning
+// answer — stands while that line is still asked, under the same headings, reading the same as rendered.mjs reads it.
+// A reflow, a TeX regrouping or emphasis of the line is no change; a changed word or symbol, a moved line or a new
+// baseline is. A change to ANOTHER line leaves it standing, and that other line owes its own review (`unreviewed`).
+/** Each asked line's key: changed or removed, its file, the headings it stands under (a record written before R7 did
+ *  not keep them: "*") and its text in the reader view — and which occurrence of that it is. */
+function lineKeys(asked, { wild = false } = {}) {
+  const seen = new Map();
+  return asked.map((l) => {
+    const under = wild || typeof l.under !== "string" ? "*" : l.under;
+    const k = [l.removed ? "removed" : "now", l.file, under, meaningKey(String(l.text || ""))].join("\u0001"), n = seen.get(k) || 0;
+    seen.set(k, n + 1); return `${k}\u0001${n}`;
+  });
 }
-const spineView = (files, textOf) => sha256(canonicalJson(files.map((f) => [f, fileView(textOf(f))])));
 
 /**
  * The review of a scope's CURRENT changed lines (null: none was run, or the plan changed since). Read from the logged
@@ -219,39 +215,45 @@ export function currentSpineReview(root, reader, scope) {
   const ch = changedSpineLines(root, reader, scope);
   if (!ch.reapproval) return null;
   if (!ch.asked.length) return { scope, textHash: ch.textHash, lines: 0, asked: 0, dispatch: null, concerns: [], meaning: { same: false, byLine: [] } };
-  const log = parseLog(readLogText(root)), files = filesOf(scope);
-  const nowView = spineView(files, (f) => reader.text(f) || ""), nowAsked = askedView(ch.asked);
+  const log = parseLog(readLogText(root));
   const recs = [];
   for (const e of log.filter((r) => r.type === "dispatch" && r.party?.role === "harness" && r.payload?.kind === "spine-review" && r.payload?.unit === `spine:${scope}`)) {
     let rec = null; try { rec = JSON.parse(fs.readFileSync(path.join(recordFile(root, "metadata/verification"), `${e.payload.dispatch}.json`), "utf8")); } catch { continue; }
     if (!dispatchLogEntry(rec, log) || rec.kind !== "spine-review") continue;
     recs.push({ rec, seq: Number(e.seq ?? 0), asked: [...(rec.lines || []), ...(rec.removed || []).map((l) => ({ ...l, removed: true }))] });
   }
-  const current = ({ rec, asked }) => {
-    if (rec.baseSeq !== ch.baseSeq || (rec.baseHash != null && rec.baseHash !== ch.baseHash)) return false;
-    if (rec.factHash === ch.textHash && rec.linesHash === ch.linesHash && rec.askedHash === ch.askedHash) return true; // the very text
-    const shown = shownFiles(rec.bundle?.prompt, files);
-    return !!shown && spineView(files, (f) => shown[f] ?? "") === nowView && asked.length === ch.asked.length && askedView(asked) === nowAsked;
-  };
+  // the review is of this re-approval when it diffed against the current baseline (R3 F2); what it said about each line
+  // is current while THAT line is still asked, reading the same (red team R7, cause 2: an answer is bound to what it
+  // judged — a concern or a meaning answer on one line stands whatever other line of the plan is changed, added or
+  // reverted since, so a clean re-run after an edit elsewhere clears nothing; a change to the line itself, or the
+  // instructor's full approval (a new baseline), does)
+  const current = ({ rec }) => rec.baseSeq === ch.baseSeq && (rec.baseHash == null || rec.baseHash === ch.baseHash);
+  // each line a review was asked is matched to the line asked NOW that reads the same (none: it judged a line that
+  // has changed, moved or gone since, and what it said of it is history)
+  const askedNow = new Map(lineKeys(ch.asked).map((k, i) => [k, i])), askedWild = new Map(lineKeys(ch.asked, { wild: true }).map((k, i) => [k, i]));
+  const nowIndex = (asked) => lineKeys(asked).map((k, j) => (k.includes("\u0001*\u0001") ? askedWild.get(k) : askedNow.get(k)) ?? `-1.${j}`);
   const MEANING_RANK = { same: 0, changed: 1 };
   const st = standingOf(recs, {
     current,
+    itemCurrent: (_, key) => !/^(?:meaning|concern):-1\./.test(key),
     items: ({ rec, asked }) => {
       const concerns = readSpineConcerns(rec.answer?.raw, rec.bundle?.nonce, asked);
       if (!concerns) return null;
-      const meaning = readSpineMeaning(rec.answer?.raw, rec.bundle?.nonce, asked).byLine;
-      return [...concerns.map((c) => [`concern:${asked.findIndex((l) => l.file === c.file && l.n === c.lineNo)}:${c.kind}:${c.text}`, c]), ...meaning.map((m, i) => [`meaning:${i}`, m])];
+      const meaning = readSpineMeaning(rec.answer?.raw, rec.bundle?.nonce, asked).byLine, at = nowIndex(asked);
+      return [...concerns.map((c) => [`concern:${at[asked.findIndex((l) => l.file === c.file && l.n === c.lineNo && !l.removed)]}\u0002${c.kind}\u0002${c.text}`, c]), ...meaning.map((m, i) => [`meaning:${at[i]}`, m])];
     },
     rank: (a, key) => key.startsWith("concern:") ? (a.kind === "wrong" ? 2 : 1) : MEANING_RANK[a] ?? null,
   });
   if (!st.readable.length) return null;
   // a concern is shown on the line as it is now (the same line in the reader view)
   const concerns = [...st.items].filter(([k]) => k.startsWith("concern:")).map(([k, e]) => {
-    const i = Number(k.split(":")[1]), l = ch.asked[i] || {};
+    const l = ch.asked[Number(k.slice("concern:".length).split("\u0002")[0])] || {};
     return { ...e.answer, file: l.file ?? e.answer.file, lineNo: l.n ?? e.answer.lineNo, line: l.text ?? e.answer.line, dispatch: e.review.rec.dispatch };
   });
   const byLine = ch.asked.map((_, i) => st.items.get(`meaning:${i}`)?.answer ?? "unanswered");
+  // every line asked now must have been asked of a current review: a line changed, moved or added since is unreviewed
+  const unreviewed = ch.asked.filter((_, i) => !st.judged.has(`meaning:${i}`));
   const newest = st.readable[0].rec;
-  return { scope, textHash: ch.textHash, baseSeq: ch.baseSeq, lines: ch.lines.length, asked: ch.asked.length, dispatch: newest.dispatch, concerns,
+  return { scope, textHash: ch.textHash, baseSeq: ch.baseSeq, lines: ch.lines.length, asked: ch.asked.length, dispatch: newest.dispatch, concerns, unreviewed,
     meaning: { same: byLine.length > 0 && byLine.every((x) => x === "same"), byLine, disagreed: st.disagreed.filter((k) => k.startsWith("meaning:")).length } };
 }
