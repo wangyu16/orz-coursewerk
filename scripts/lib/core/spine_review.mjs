@@ -61,7 +61,11 @@ function lineDiff(was, now) {
   for (let i = 0, j = 0; i < m && j < n;) {
     if (a[i].key === b[j].key) { keptA.add(i); keptB.add(j); i++; j++; } else if (L[i + 1][j] >= L[i][j + 1]) i++; else j++;
   }
-  return { added: b.filter((_, j) => !keptB.has(j)), removed: a.filter((_, i) => !keptA.has(i)) };
+  // each changed line's hunk: the approved line kept just before it (both sides share it), so a removed line and the
+  // lines added where it stood are found together, whatever changed elsewhere
+  const gaps = (xs, kept) => { let g = "^"; return xs.map((x, i) => { if (kept.has(i)) { g = x.key; return null; } return g; }); };
+  const ga = gaps(a, keptA), gb = gaps(b, keptB);
+  return { added: b.map((x, j) => ({ ...x, gap: gb[j] })).filter((_, j) => !keptB.has(j)), removed: a.map((x, i) => ({ ...x, gap: ga[i] })).filter((_, i) => !keptA.has(i)) };
 }
 /** The lines of `now` that a longest-common-subsequence diff against `was` does not match: inserted, changed or moved. */
 export const diffLines = (was, now) => lineDiff(was, now).added;
@@ -84,8 +88,8 @@ export function changedSpineLines(root, reader, scope) {
   for (const file of filesOf(scope)) {
     const now = reader.text(file) || "", was = typeof before === "string" ? (file === COURSE_MAP || scope === "course" ? before : "") : before[file] || "";
     const d = lineDiff(was, now);
-    for (const l of d.added) out.push({ file, n: l.n, text: l.text, under: l.under });
-    for (const l of d.removed) removed.push({ file, n: l.n, text: l.text, under: l.under, removed: true });
+    for (const l of d.added) out.push({ file, n: l.n, text: l.text, under: l.under, gap: l.gap });
+    for (const l of d.removed) removed.push({ file, n: l.n, text: l.text, under: l.under, gap: l.gap, removed: true });
     context += `${file}\n${now}\n`;
   }
   const lines = out, asked = [...lines, ...removed];
@@ -239,13 +243,17 @@ export function currentSpineReview(root, reader, scope) {
   const MEANING_RANK = { same: 0, changed: 1 };
   const st = standingOf(recs, {
     current,
-    // a meaning answer on a REMOVED line judged "does the plan still say it elsewhere?" — the whole plan as shown, so it
-    // is current only while the plan reads as it was then (the requirement restored in other words is a new question)
+    // a meaning answer on a REMOVED line judged "does the plan still say it?" against what now stands where it stood:
+    // it is current while the lines added in its hunk (after the same kept line) read as they did — the requirement
+    // restored there in other words is a new question; a change anywhere else leaves it standing. A record that kept
+    // no hunks (before the R7 integration) is bound to the whole plan as shown.
     itemCurrent: ({ rec }, key) => {
       if (/^(?:meaning|concern):-1\./.test(key)) return false;
-      const m = /^meaning:(\d+)$/.exec(key);
-      if (m && ch.asked[Number(m[1])]?.removed) return (rec.factHash ?? rec.contentHash) === ch.textHash;
-      return true;
+      const m = /^meaning:(\d+)$/.exec(key), l = m && ch.asked[Number(m[1])];
+      if (!l?.removed) return true;
+      if ([...(rec.lines || []), ...(rec.removed || [])].some((x) => typeof x.gap !== "string")) return (rec.factHash ?? rec.contentHash) === ch.textHash;
+      const beside = (lines) => lines.filter((x) => x.file === l.file && x.gap === l.gap).map((x) => meaningKey(String(x.text || ""))).join("\u0001");
+      return beside(rec.lines || []) === beside(ch.lines);
     },
     items: ({ rec, asked }) => {
       const concerns = readSpineConcerns(rec.answer?.raw, rec.bundle?.nonce, asked);
