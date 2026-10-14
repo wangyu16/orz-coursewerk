@@ -149,7 +149,9 @@ export function readValues(text) {
     const R = valueProse(readerView(text));
     // only a figure the source view did not read at all (by magnitude and unit): the reader view of TeX written outside
     // $…$ can drop a sign the source view reads correctly ("-\,92.2" renders "-,92.2"), and is no second value then
-    if (R !== P) for (const q of valuesIn(R)) if (!out.some((x) => x.unit === q.unit && Math.abs(x.value) === Math.abs(q.value))) out.push({ ...q, at: P.length, end: P.length, view: "reader" });
+    // and only a value WITH a unit: the reader view flattens scripts ("10<sup>-5</sup>" renders "10-5"), so a bare number
+    // read there may be a mantissa or a base, not a value the reader sees — the net is for unit spellings (R7-K09/K11)
+    if (R !== P) for (const q of valuesIn(R)) if (q.unit && q.unit !== "1" && !out.some((x) => x.unit === q.unit && Math.abs(x.value) === Math.abs(q.value))) out.push({ ...q, at: P.length, end: P.length, view: "reader" });
   }
   return out.sort((a, b) => a.at - b.at);
 }

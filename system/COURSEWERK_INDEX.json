@@ -539,7 +539,7 @@
       "id": "repo:scripts/lib/core/spine_review.mjs",
       "path": "scripts/lib/core/spine_review.mjs",
       "type": "kernel",
-      "hash": "a2e2bcffcb281b96f0f412a378dc002d8fb3c55612cd85a0c96934b6b4b490cf"
+      "hash": "8df80068edb6908b870127425419e3da9d261bce00d482df5949f20d81bbef5b"
     },
     {
       "id": "repo:scripts/lib/core/spine.mjs",
@@ -569,7 +569,7 @@
       "id": "repo:scripts/lib/core/values.mjs",
       "path": "scripts/lib/core/values.mjs",
       "type": "kernel",
-      "hash": "6cf403ff5bce658b63ca39920524b5c101fac33f8a20fabc20c07afe65d994a2"
+      "hash": "a2070c7ece1976b1a45b32f29707e95c2a4e534e1a08ae423dbf3b9d4e0e6ddd"
     },
     {
       "id": "repo:scripts/lib/core/version_scope.mjs",
@@ -941,7 +941,7 @@
       "id": "repo:scripts/modules/ms8-verdicts.mjs",
       "path": "scripts/modules/ms8-verdicts.mjs",
       "type": "executable",
-      "hash": "6cc25d1d4674626bbb62b272c848dfd4ec0073938603daacc192a58f56ba534e"
+      "hash": "a8b70d3fc64fa8e1ee4091648290ab6074e415ee7d64adba919c1034ff751dc6"
     },
     {
       "id": "repo:scripts/modules/ms9-alignment.mjs",
@@ -1847,7 +1847,7 @@
       "id": "repo:tests/redteam-r2-control.test.mjs",
       "path": "tests/redteam-r2-control.test.mjs",
       "type": "test",
-      "hash": "b54f73c7ec36e01d067fa6a7e3846695016cad9647b076bdf73e19779d7066c5"
+      "hash": "aca162d3e1480fc1c5d43c16a395bb6e7a52749695228fb55dcb182cab0f99ad"
     },
     {
       "id": "repo:tests/redteam-r3-coherence.test.mjs",
@@ -1889,7 +1889,7 @@
       "id": "repo:tests/redteam-r4-control.test.mjs",
       "path": "tests/redteam-r4-control.test.mjs",
       "type": "test",
-      "hash": "6b1343f101bea84a41ca8068a62c6bc0f334811d16e22a6e6d0ef66facd34ae8"
+      "hash": "80ee02b84062f35bc7b24d9ee95332561c65755bd94acc30822e096f14ac2e62"
     },
     {
       "id": "repo:tests/redteam-r5-reader-view.test.mjs",
@@ -2105,7 +2105,7 @@
       "id": "repo:tests/workflow.test.mjs",
       "path": "tests/workflow.test.mjs",
       "type": "test",
-      "hash": "065e5b9875df01695c0b4967ae99630fd802c97ccb7cefb82d89570e87bf96b0"
+      "hash": "71874dbe603b7a5bcf88eb41af809ce4a4d5be283466972bfcf9bddfb0fc3991"
     },
     {
       "id": "repo:VERSION",

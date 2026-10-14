@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import { liveReader } from "../scripts/lib/core/package_reader.mjs";
 import { confirmUnits, coreObligations } from "../scripts/lib/core/obligations.mjs";
 import { openMajorVersion } from "../scripts/lib/core/versions.mjs";
+import { openVersionCarrying } from "../scripts/lib/core/obligations.mjs";
 import { recordSteering } from "../scripts/lib/core/steering_intake.mjs";
 import { STEERING_FIELDS } from "../scripts/lib/records/steering.mjs";
 import { recordApproval } from "../scripts/lib/core/approvals.mjs";
@@ -62,7 +63,9 @@ test("[req.states.machine] a chapter is in exactly one state and moves only by i
   assert.match(transitionProblems(p.root, p.reader, "le-chatelier", "PACKAGE").join(), /by the instructor's approval/);
   assert.throws(() => transition(p.root, p.reader, { chapter: "le-chatelier", to: "DRAFT", instructorWords: "x" }, AGENT), /instructor's word/);
   // a structural change opens v2: the approval no longer counts, and the chapter may go back to draft
-  openMajorVersion(p.root, { scopes: ["chapter:le-chatelier"], reason: "objectives split" }, I);
+  // opened the way the harness opens one (D15): carrying every unit of the chapter — a version opened bare, with no
+  // carry, cannot be approved (red team R7 H-01: the version's scope is continuous)
+  openVersionCarrying(p.root, p.reader, { scopes: ["chapter:le-chatelier"], reason: "objectives split", instructorWords: "Open version 2: the objectives split." }, I);
   assert.equal(chapterStates(p.root, p.reader)["le-chatelier"].approved, false, "v1's approval does not cover v2");
   transition(p.root, p.reader, { chapter: "le-chatelier", to: "DRAFT", instructorWords: "back to draft" }, I);
   assert.equal(chapterStates(p.root, p.reader)["le-chatelier"].state, "DRAFT");

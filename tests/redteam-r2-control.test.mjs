@@ -423,7 +423,10 @@ test("[req.control.review-basis-judged] F11: a review is bound to the plan items
   d.edit(MAP, was, `${was.replace(/\.$/, "")}, but never at constant pressure.`); // a negation: a substantive change
   recordApproval(d.root, d.r(), manifestChapters(d.r()), { chapter: "le-chatelier", instructorWords: "Approved." }, I);
   const now = currentReviewsAt(d.root, d.r(), d.units());
-  assert.ok(judging.every((u) => !now.has(u.id)), "judged the changed item: review again");
+  // per judged item since round 7 (the verdict for ID is void; a verdict the unit gives another item it links stands)
+  assert.ok(judging.every((u) => !now.get(u.id)?.verdicts?.has(ID)), "judged the changed item: review again");
   assert.ok(other.every((u) => now.has(u.id)), "never judged it: still current");
-  assert.ok(framing.every((u) => !now.has(u.id)), "framing judges the whole plan");
+  // per judged item since round 7: the framing review's off-plan answer judged the whole plan, so it is void (its
+  // review is owed again: framing-review-owed reads offPlan === null)
+  assert.ok(framing.every((u) => (now.get(u.id)?.offPlan ?? null) === null), "framing judges the whole plan");
 });

@@ -163,6 +163,9 @@ function run(s) {
     // …and who changed it since the review: the agent's revisions are on record (revisedBy), or the record calls the
     // text the agent's own although it holds the instructor's words (a record written before round 5)
     const agentEdited = (x) => instructors && !fresh.includes(x) && ((u.origin?.revisedBy || []).length > 0 || (u.origin?.kind === "agent-knowledge" && holdsInstructorText(u, log, ancestry)));
+    // one concern, one finding (red team R7, integration): reviews that speak for the unit may raise the SAME concern —
+    // the same words, the same kind, the same suggestion — and it is one question, asked as the newest review raised it
+    const said = new Set();
     for (const x of list) {
       const { r, b, carried } = x;
       const k0 = readKnowledgeReview(r, u.text);
@@ -186,6 +189,9 @@ function run(s) {
       const heldHere = (c) => !carried || suggestionAt(c, passage, u.text) || (held(c, u) && !verbatimIn(u.text, passage));
       const openGone = clearedByFresh ? [] : k.gone.filter((c) => heldHere(c) && (unasked || (c.kind === "wrong" && !settles(c))));
       for (const c of [...k.concerns, ...openGone]) {
+        const said1 = `${c.kind}\u0000${c.text}\u0000${c.suggestion}`;
+        if (said.has(said1)) continue;
+        said.add(said1);
         const evidence = { type: "judgment", note: c.problem, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch };
         if (c.kind === "wrong") {
           // the error is still in the words the reviewer quoted, or was reworded: open — unless the suggestion itself

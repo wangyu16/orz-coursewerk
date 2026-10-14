@@ -239,7 +239,14 @@ export function currentSpineReview(root, reader, scope) {
   const MEANING_RANK = { same: 0, changed: 1 };
   const st = standingOf(recs, {
     current,
-    itemCurrent: (_, key) => !/^(?:meaning|concern):-1\./.test(key),
+    // a meaning answer on a REMOVED line judged "does the plan still say it elsewhere?" — the whole plan as shown, so it
+    // is current only while the plan reads as it was then (the requirement restored in other words is a new question)
+    itemCurrent: ({ rec }, key) => {
+      if (/^(?:meaning|concern):-1\./.test(key)) return false;
+      const m = /^meaning:(\d+)$/.exec(key);
+      if (m && ch.asked[Number(m[1])]?.removed) return (rec.factHash ?? rec.contentHash) === ch.textHash;
+      return true;
+    },
     items: ({ rec, asked }) => {
       const concerns = readSpineConcerns(rec.answer?.raw, rec.bundle?.nonce, asked);
       if (!concerns) return null;

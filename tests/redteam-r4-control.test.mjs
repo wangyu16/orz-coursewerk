@@ -211,7 +211,8 @@ test("[req.control.spine-item-extent] C2-01: an objective's continuation line is
   assert.ok([...planOf(c.r()).nodes.values()].find((n) => n.id === O).text.endsWith(ADD), "the review prompt's plan shows it");
   recordApproval(c.root, c.r(), manifestChapters(c.r()), { chapter: "le-chatelier", instructorWords: "Yes, add the constant-pressure case." }, I);
   const now = currentReviewsAt(c.root, c.r(), c.units());
-  assert.ok(judging.every((id) => !now.has(id)), "every review that judged the objective is owed again");
+  // per judged item since round 7: every verdict on the changed objective is void (and so owed again)
+  assert.ok(judging.every((id) => !now.get(id)?.verdicts?.has(O)), "every review that judged the objective is owed again");
   // the deliverables restate the old objective: the restated-objective check reads the whole item too
   const restated = restatedObjectiveFindings(c.r(), "rt4").filter((f) => /le-chatelier/.test(f.evidence.file));
   assert.ok(restated.some((f) => f.kind === "objective-not-restated" && /constant pressure/.test(f.evidence.detail)), kinds(restated).join(" "));
