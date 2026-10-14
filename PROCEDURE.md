@@ -146,7 +146,9 @@ A substantial rewrite of a unit makes it a new unit: link it again after you rew
 **Re-verification is a re-check, not a stamp.** A unit owes re-verification (`reverify`, `carried-unverified`) when
 something it depends on changed: its question (any rewording), a shared value, a key term, a spine node, or a new
 major version. Editing, relinking or re-indexing the unit never clears it, nor does deleting it and writing it back,
-or splitting it. To clear it, have the unit's current text reviewed blind, then record the re-check:
+or splitting it, or writing its words into a neighbour (the neighbour inherits what it owed). A unit that enters an
+open version's scope after the version opened (moved, relinked, or a document's `chapters` changed) is carried into it
+when the index sees it; if the gate says `version-carry-owed`, run `units.mjs reconcile`. To clear it, have the unit's current text reviewed blind, then record the re-check:
 `verify.mjs knowledge --units <ids>`, then `units.mjs reverify --units <ids> --model <id>`. An answer is reviewed
 with its question. A link review (`verify.mjs alignment`) does not count. A review that finds the text wrong does not
 count: revise it, and review it again. The instructor

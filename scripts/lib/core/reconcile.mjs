@@ -18,6 +18,7 @@ import { parseLog, readLogText, verifyLog } from "../records/log.mjs";
 import { allSidecars } from "./unit_records.mjs";
 // a cycle (obligations.mjs reads the ledger): both sides only call each other at run time
 import { carryUnits, completeLoggedAct, unitInScope } from "./obligations.mjs";
+import { carryLateEntrants } from "./version_scope.mjs";
 
 // ---- the log's acts on unit records, per unit -----------------------------------------------------------------------
 const isVersion = (r) => r.type === "version" && r.party?.role === "instructor" && Array.isArray(r.payload?.scopes);
@@ -27,8 +28,10 @@ function carryAct(r, versions) {
   if (r.party?.role === "instructor") return true;
   if (r.party?.role !== "harness" || !Number.isInteger(r.payload.reconciles)) return false;
   const v = versions.get(r.payload.reconciles);
+  // (a unit that entered the version's scope after it opened is carried by the harness too — version_scope.mjs, R7
+  // H-01: a carry only adds an obligation, so the units it names need not be the version's own list)
   return !!v && r.seq > v.seq && v.payload.scopes.includes(r.payload.scope) && v.payload.to?.[r.payload.scope] === r.payload.version &&
-    r.payload.units.every((id) => (v.payload.carried || []).includes(id));
+    (r.payload.entered === true || r.payload.units.every((id) => (v.payload.carried || []).includes(id)));
 }
 const confirmAct = (r) => r.type === "confirmation" && r.party?.role === "instructor" && ["fact", "still-correct"].includes(r.payload?.what) &&
   Array.isArray(r.payload.units) && !!String(r.payload.instructorWords || "").trim();
@@ -167,6 +170,8 @@ export function reconcileUnitRecords(root, reader) {
     const done = applyGap(root, reader, g, recs);
     if (done.length) applied.push({ gap: g.gap, seq: g.act.seq, units: done });
   }
+  // 3. a unit that entered an open version's scope since it opened (a hand edit of DOCUMENTS.json, …) is carried (R7 H-01)
+  for (const c of carryLateEntrants(root, reader)) applied.push({ gap: "entered", scope: c.scope, version: c.version, units: c.units });
   return { applied, remaining: logRecordGaps(root) };
 }
 

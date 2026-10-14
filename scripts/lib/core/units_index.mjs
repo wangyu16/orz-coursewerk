@@ -18,7 +18,9 @@
 // any deliverable, or nearly (same form, token overlap ≥ 0.5, in any deliverable — its own first: red team R3 F4),
 // takes back its old id and its whole record. A new text in any deliverable that is a piece of a retired unit, or that
 // covers one, inherits its stamp, owes and carry, as the pieces of a split and a merge do. A retired id is never minted again for other text. So a placeholder round trip, a
-// blank-and-restore, or a split leaves every obligation where it was.
+// blank-and-restore, or a split leaves every obligation where it was. And a unit — kept or new — that ABSORBS a retired
+// unit's words, values or equations (measured on the reader view, numbers and symbols as tokens: absorptionTokens)
+// inherits its stamp and what it owed, its carry owed through the log (red team R7 coherence, H-03).
 import fs from "node:fs";
 import path from "node:path";
 import { appendLogRecord, parseLog, readLogText, verifyLog } from "../records/log.mjs";
@@ -33,6 +35,8 @@ import { allSidecars, assertUnaltered, upgradeUnitRecordDigests, writeUnitRecord
 import { reconcileUnitRecords } from "./reconcile.mjs";
 import { confirmedAuthorship, holdersOf, inheritedOrigin, instructorAuthored, instructorCredit, instructorTextRegister, originIndex, textIds } from "./authorship.mjs";
 import { hasVisibleWords } from "../records/words.mjs";
+import { readerView } from "./rendered.mjs";
+import { unitTargetHash } from "./dependencies.mjs";
 
 export function deliverablesOf(reader) {
   const chapters = manifestChapters(reader).flatMap((ch) => DELIVERABLE_DIRS.map((d) => `${d}/${ch}.md`));
@@ -109,12 +113,28 @@ function lineageOf(prev, sources, absorbed = []) {
   const ids = [...new Set([...(prev?.lineage || []), ...from.flatMap((o) => [o.id, ...(o.lineage || [])])])].filter(Boolean).sort();
   return ids.length ? { lineage: ids } : {};
 }
+// how a kept unit read before its last changes (the latest first, at most PRIOR_KEPT): { v: its `unit:` target hash
+// then, text }
+const PRIOR_KEPT = 3;
+function priorOf(prev, text) {
+  const list = prev?.prior || [];
+  if (!prev || prev.text == null || prev.text === text) return list.length ? { prior: list } : {};
+  const v = unitTargetHash(prev.text);
+  if (v === unitTargetHash(text)) return list.length ? { prior: list } : {};
+  return { prior: [{ v, text: prev.text }, ...list.filter((p) => p.v !== v)].slice(0, PRIOR_KEPT) };
+}
 function carriedOf(sources) { const c = sources.find((o) => o.carried)?.carried; return c ? { carried: c } : {}; }
-function owesOf(sources) {
-  const o = sources.filter((x) => x.owes).map((x) => x.owes);
+function owesOf(sources, absorbed = [], now = 0) {
+  // what an ABSORBED unit owed is owed from the moment its words were taken (R7 H-03): a re-check of the absorbing text
+  // made before then never saw them. Its version carry is owed too (`carry:<scope>@<version>`): the harness carries the
+  // absorbing unit into that version (version_scope.mjs), through the log, as every carry is
+  const took = absorbed.filter((x) => x.owes || x.carried).map((x) => ({ since: now, targets: [...(x.owes?.targets || []), ...(x.carried ? [carryTarget(x.carried)] : [])] }));
+  const o = [...sources.filter((x) => x.owes).map((x) => x.owes), ...took];
   if (!o.length) return {};
   return { owes: { since: Math.min(...o.map((x) => x.since || 0)), targets: [...new Set(o.flatMap((x) => x.targets || []))].sort() } };
 }
+/** The owed target that stands for a version carry a unit inherited by absorbing a carried unit's words (R7 H-03). */
+export const carryTarget = (carried) => `carry:${carried.scope}@${carried.version}`;
 /**
  * The stamp a new unit inherits from the units it came from (R2 F14): their stamps merged, so a dependency that moved
  * while they were stamped is still seen as moved — the next restamp records it as owed. A target the sources were
@@ -131,7 +151,7 @@ function stampOf(sources) {
 // the retired-unit register (R2 F1, F2, F14): what a retired unit was, kept with its deliverable's sidecar
 // (`text`: the unit as it last read — a re-check whose dependency retired is shown it, R6 G4; records written before R6
 // have none)
-const REGISTER_FIELDS = ["form", "origin", "spineNodes", "evidence", "stamp", "carried", "owes", "judgmentAdded", "tokens", "lineage", "text"];
+const REGISTER_FIELDS = ["form", "origin", "spineNodes", "evidence", "stamp", "carried", "owes", "judgmentAdded", "tokens", "lineage", "text", "prior"];
 function registerEntry(u) {
   const e = { id: u.id, deliverable: u.locator?.deliverable ?? u.deliverable, section: u.locator?.section ?? u.section, contentHash: u.locator?.contentHash ?? u.contentHash };
   for (const k of REGISTER_FIELDS) if (u[k] !== undefined) e[k] = u[k];
@@ -146,6 +166,26 @@ function usedIds(sidecars, logText) {
   if (!verifyLog(logText).length) for (const r of parseLog(logText)) if (r.type === "unit-retirement") for (const id of r.payload?.units || []) ids.add(id);
   return ids;
 }
+
+/**
+ * The tokens absorption is measured on (red team R7 coherence, H-03: an equation inlined into the sentence before it
+ * was invisible — lineage counted only words of three letters or more, and a number was no token). Read on the READER
+ * VIEW: prose words (three letters or more, case folded) and numbers with their sign, and inside a formula every
+ * letter run, number and relation or operator symbol — so a value and an equation count as what they state.
+ */
+export function absorptionTokens(text) {
+  const out = new Set(), norm = (s) => s.replace(/[\u2212\u2013]/g, "-");
+  const NUM = /-?\s*\d+(?:[.,]\d+)?/gu;
+  String(readerView(text)).split(/(\$[^$]*\$)/).forEach((part, i) => {
+    const math = i % 2 === 1, s = norm(math ? part.slice(1, -1).replace(/\\[A-Za-z]+/g, " ") : part);
+    for (const m of s.matchAll(NUM)) out.add(`#${m[0].replace(/\s+/g, "").replace(",", ".")}`);
+    const rest = s.replace(NUM, " ");
+    for (const w of rest.match(/\p{L}+/gu) || []) if (math || w.length > 2) out.add((math ? "$" : "") + w.toLowerCase());
+    if (math) for (const c of rest.match(/[=<>≤≥≠≈⇌⇋→⟶←+×·\/^-]/gu) || []) out.add(`$${c}`);
+  });
+  return [...out].sort();
+}
+const absorbTokensOf = (x) => (x?.text != null ? absorptionTokens(x.text) : x?.tokens || []);
 
 const jaccard = (a, b) => { const A = new Set(a), B = new Set(b); let n = 0; for (const x of A) if (B.has(x)) n++; return n / Math.max(1, A.size + B.size - n); };
 const contained = (inner, outer) => { const O = new Set(outer); return inner.filter((x) => O.has(x)).length / Math.max(1, inner.length); };
@@ -315,6 +355,8 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
     if (party.role === "agent" && initialOrigin.kind !== "agent-knowledge") throw new Error("the agent can only state that pre-existing text was agent-written");
     appendLogRecord(root, { type: "authorship-confirmation", party, payload: { initial: true, origin: initialOrigin } });
   }
+  // the log seq an absorption happens at (what an absorbed unit owed is owed from then: owesOf)
+  const seqNow = (() => { if (verifyLog(logText).length) return 0; const recs = parseLog(logText); return recs.length ? recs[recs.length - 1].seq || recs.length : 0; })();
   const findings = [], summary = { deliverables: 0, units: 0, kept: 0, reworded: 0, new: 0, returned: 0, retired: 0, splits: 0, merges: 0, agent: 0, unknown: 0 };
   const retiredAll = [], changedIds = [];
   const sidecars = new Map(rels.map((rel) => [rel, readSidecar(root, rel)]));
@@ -381,9 +423,13 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
     p.seg.forEach((sg, i) => {
       const o = p.m.assigned.get(i) || null;
       if (o ? o.locator.contentHash === unitHash(sg.text) : p.back.has(i)) return;
-      const t = tokensOf(sg.text);
-      const took = pool.filter((e) => !back.has(e.id) && !inheritedIds.has(e.id) && e.id !== o?.id && (e.tokens || []).length >= 5 &&
-        contained(e.tokens, t) >= 0.6 && (!o || contained(e.tokens, o.tokens || []) < 0.6));
+      // measured on the reader view, values and equations included (R7 H-03; absorptionTokens)
+      const t = absorptionTokens(sg.text), ot = o ? absorbTokensOf(o) : null;
+      const took = pool.filter((e) => {
+        if (back.has(e.id) || inheritedIds.has(e.id) || e.id === o?.id) return false;
+        const et = absorbTokensOf(e);
+        return et.length >= 5 && contained(et, t) >= 0.6 && (!o || contained(et, ot) < 0.6);
+      });
       if (took.length) p.absorbed.set(i, took);
     });
   }
@@ -398,6 +444,12 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
       const pieceOf = !prev ? (inherit.get(i) || []).map(asOldUnit) : [];
       const sources = sourcesOf(prev, split, merge, old, pieceOf);
       const took = (absorbed.get(i) || []).filter((e) => !sources.some((x) => x.id === e.id));
+      // WHAT A RETIRED UNIT OWED FOLLOWS ITS WORDS (red team R7 coherence, H-03): a unit — kept or new — that absorbed a
+      // retired unit's words, values or equations inherits what it owed, its version carry and its stale stamp, as the
+      // pieces of a split do (the next restamp records a moved dependency of the stamp as owed)
+      const heirOf = [...sources, ...took];
+      // (the carry itself is never copied onto the absorbing unit's record: a carry mark counts only through a logged
+      // carry — unitRecordWriteProblems — so it is owed as `carry:…` and logged by the harness right after the index)
       let origin = prev?.origin;
       if (changed) {
         const beforeSession = session && sessionBaseline.has(hash) && !old.some((u) => u.locator.contentHash === hash);
@@ -432,7 +484,10 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
         // evidence is bound to fact tokens (P5), so it survives a rephrase; obligations.mjs decides what still counts.
         // An owed re-verification, a version carry and the stamp itself (where staleness may live) survive every
         // re-index, and pass to the pieces of a split, to a merge and to a returning text (R1 F4/F5, R2 F1/F2/F14)
-        evidence: prev?.evidence || [], ...(prev ? (prev.stamp ? { stamp: prev.stamp } : {}) : stampOf(sources)), ...carriedOf(sources), ...owesOf(sources), ...lineageOf(prev, [...sources, ...(prev ? [] : took)], took), tokens: tokensOf(s.text),
+        evidence: prev?.evidence || [], ...(prev && !took.length ? (prev.stamp ? { stamp: prev.stamp } : {}) : stampOf(heirOf)), ...carriedOf(sources), ...owesOf(sources, took, seqNow), ...lineageOf(prev, [...sources, ...(prev ? [] : took)], took), tokens: tokensOf(s.text),
+        // a kept unit whose text changed remembers how it read before (R7 H-02): a dependent stamped at that text is
+        // shown it, and which of its values left is read from it — never guessed from the dependent
+        ...priorOf(prev, s.text),
         // the text as indexed: never read for a live unit (loadUnits reads the deliverable), kept so a retired unit's
         // register can show how it last read (R6 G4)
         text: s.text,

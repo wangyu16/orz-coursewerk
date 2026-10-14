@@ -7,6 +7,8 @@
 //   guide-entry-short    a guide entry has fewer linked questions than its Count (Control C5);
 //   reverify             a unit's dependencies moved since it was written or last re-verified (Coherence H2);
 //   carried-unverified   a unit carried into a new major version has not been re-verified (D15);
+//   version-carry-owed   a unit entered an open version's scope after it opened and was never carried into it (R7
+//                        H-01: the scope is continuous — version_scope.mjs; reconcile carries it);
 //   instructor-change-owed  the instructor answered a disputed claim with a change the unit does not yet carry
 //                        (red-team round 1, F15).
 // Quote evidence counts for the unit's current facts and claims, the lead-in an equation was verified with (F13), and
@@ -46,9 +48,10 @@ import { parseSpine, nodeIndex, termsOfMap, COURSE_MAP } from "./spine.mjs";
 import { liveReader, manifestChapters } from "./package_reader.mjs";
 import { currentVersion, openMajorVersion } from "./versions.mjs";
 import { approvalStatus } from "./approvals.mjs";
-import { dependencyEdges, symbolFamily, factHash, groupTermHash, isLegacyQuestionHash, isR4QuestionHash, questionStampCurrent, unitStampCurrent, legacyTermLabel, nodeHash, questionBindingProblems, questionHash, referenceBindingProblems, sourceHashes, stampFor, staleTargets, targetHashes, termDefinitions, termHash, termKey } from "./dependencies.mjs";
+import { dependencyEdges, symbolFamily, unitTargetHash, factHash, groupTermHash, isLegacyQuestionHash, isR4QuestionHash, questionStampCurrent, unitStampCurrent, legacyTermLabel, nodeHash, questionBindingProblems, questionHash, referenceBindingProblems, sourceHashes, stampFor, staleTargets, targetHashes, termDefinitions, termHash, termKey } from "./dependencies.mjs";
 import { allSidecars, deliverableOfSidecar, UNIT_RECORDS_EVENT, unitRecordWriteRefusal, writeUnitRecords } from "./unit_records.mjs";
 import { pendingCarry, pendingClear, recordsOnDisk } from "./reconcile.mjs";
+import { carryLateEntrants, knownUnitKeys, versionScopeGaps } from "./version_scope.mjs";
 import { currentReviewsAt } from "../verify/alignment.mjs";
 import { boundRecord, readKnowledgeReview, recordHashOf, reviewedPassage } from "../verify/dispatch.mjs";
 import { concernStands, readerKey, semiClaimCurrent, semiReviewCurrent, standingOf } from "../verify/standing.mjs";
@@ -353,7 +356,7 @@ export function owedTargets(u, ctx) {
  */
 export function movedForRecheck(u, ctx) {
   const moved = [...new Set([...owedTargets(u, ctx), ...(u.owes?.targets || [])])];
-  const out = [], nodes = nodeIndex(ctx.spine), covered = new Set();
+  const out = [], nodes = nodeIndex(ctx.spine), covered = new Set(), lost = new Set();
   const push = (target, what, text) => { const t = String(text ?? "").trim(); if (!t) return; covered.add(target); if (!out.some((x) => x.text === t)) out.push({ target, what, text: t }); };
   const place = (v) => `${v.label ? `${v.label}, ` : ""}${v.locator.deliverable}${v.locator.section ? ` § ${v.locator.section}` : ""}`;
   const unitAt = (target, v, why = "") => { if (v && v.id !== u.id) push(target, `${why}${place(v)}`, v.text); };
@@ -361,8 +364,16 @@ export function movedForRecheck(u, ctx) {
     const i = t.indexOf(":"), kind = t.slice(0, i), id = t.slice(i + 1);
     if (["unit", "ref", "question"].includes(kind)) {
       const v = ctx.byId.get(id);
-      if (v) { unitAt(t, v); for (const w of valueSuccessors(u, { id, text: v.text, deliverable: v.locator.deliverable, section: v.locator.section, live: true }, ctx)) unitAt(t, w, "where the value now lives: "); }
-      else goneTarget(t, id, u, ctx, push, unitAt);
+      if (v) {
+        unitAt(t, v);
+        // the value the dependent shares with it LEFT it (R7 H-02): shown how it read when the dependent was last
+        // checked, and where the value now lives — anywhere in the package, the nearest first; nowhere: unshowable
+        const value = valueDependency(u, t, id), was = value ? stampedText(v, u.stamp?.[t]) : null;
+        const s = valueSuccessors(u, { id, text: was, now: v.text, deliverable: v.locator.deliverable, section: v.locator.section, ordinal: v.locator.ordinal, live: true }, ctx, [], { wide: value });
+        if (s.left && was != null && was !== v.text) push(t, `as it read when last checked (${place(v)})`, was);
+        for (const w of s.found) unitAt(t, w, "where the value now lives: ");
+        if (value && s.left && !s.found.length) lost.add(t);
+      } else goneTarget(t, id, u, ctx, push, unitAt, lost);
     } else if (kind === "term") {
       const label = legacyTermLabel(t, ctx.scopes), defs = ctx.termDefs.filter((x) => (label != null ? x.label === label : x.key === t));
       for (const d of defs) push(d.key, `key term "${d.term.label}" (${d.scope === "course" ? "the course map" : `the ${d.scope} concept map`})`, d.term.text);
@@ -371,35 +382,82 @@ export function movedForRecheck(u, ctx) {
     else if (kind === "question-binding" || kind === "reference-binding")
       for (const e of (ctx.edges.get(u.id) || []).filter((x) => x.target.startsWith(kind === "question-binding" ? "question:" : "ref:"))) unitAt(e.target, ctx.byId.get(e.target.slice(e.target.indexOf(":") + 1)));
   }
-  out.unshowable = moved.filter((t) => /^(unit|ref|question):/.test(t) && !covered.has(t));
+  out.unshowable = moved.filter((t) => /^(unit|ref|question):/.test(t) && (!covered.has(t) || lost.has(t)));
   return out;
 }
 /** A moved unit target that is no longer a live unit: its last text, the units that took its words, and its values. */
-function goneTarget(t, id, u, ctx, push, unitAt) {
+function goneTarget(t, id, u, ctx, push, unitAt, lost) {
   const found = ctx.records().get(id), e = found?.rec;
   const deliverable = e?.locator?.deliverable ?? e?.deliverable ?? found?.rel, section = e?.locator?.section ?? e?.section;
-  if (e?.text) push(t, `rewritten or removed since it was last checked — as it last read (${deliverable}${section ? ` § ${section}` : ""})`, e.text);
+  const where = `${deliverable}${section ? ` § ${section}` : ""}`;
+  if (e?.text) push(t, `rewritten or removed since it was last checked — as it last read (${where})`, e.text);
+  const value = valueDependency(u, t, id), was = (e && stampedText(e, u.stamp?.[t])) ?? e?.text ?? null;
+  if (value && was != null && was !== e?.text) push(t, `as it read when last checked (${where})`, was);
   const heirs = ctx.units.filter((w) => w.id !== u.id && [...(w.lineage || []), w.splitFrom, ...(w.mergedFrom || []), ...(w.inheritedFrom || [])].includes(id));
   for (const w of heirs) unitAt(t, w, "took its words: ");
-  if (deliverable) for (const w of valueSuccessors(u, { id, text: e?.text ?? null, deliverable, section, live: false }, ctx, heirs)) unitAt(t, w, "where the value now lives: ");
+  if (!deliverable) { if (value && e) lost.add(t); return; }
+  const s = valueSuccessors(u, { id, text: was, deliverable, section, live: false }, ctx, heirs, { wide: value });
+  for (const w of s.found) unitAt(t, w, "where the value now lives: ");
+  // its value left with it: shown only if some unit states it now (a unit that took its words and states it counts)
+  if (value && s.left && !s.found.length && !heirs.some((w) => s.kinds.some((k) => valueKinds(w.text).has(k)))) lost.add(t);
 }
 /** The kinds of value a text states: the symbol's family with the unit, or the unit alone (values.mjs reads them). */
-const valueKinds = (text) => new Set(valuesIn(valueText(String(text || ""))).map((v) => (v.symbol ? `sym:${symbolFamily(v.symbol)}|${v.unit}` : `unit:${v.unit}`)));
+// (R7 H-02) a value with a unit is bound to the symbol its equation names — "ΔH = −92 kJ/mol", "ΔG° = −RT ln K = … ≈
+// −3.4 kJ/mol" (the head of the chain) — so a successor is found by symbol family AND unit, never by the unit alone;
+// a value stated with no symbol is matched only by a value stated with none
+export const valueKinds = (text) => { const P = valueText(String(text || "")); return new Set(valuesIn(P).map((v) => { const sym = v.symbol || boundSymbol(P, v.at); return sym ? `sym:${familyOf(sym)}|${v.unit}` : `unit:${v.unit}`; })); };
+const familyOf = (sym) => (sym.startsWith("Δ") ? `Δ${symbolFamily(sym.slice(1))}` : symbolFamily(sym));
+const SYMBOL_HEAD = /(?:\\Delta\s*|Δ\s*)?(?<![A-Za-z\\])[A-Za-z](?![A-Za-z])(?:\s*(?:[°′'⦵*]|[_^]\s*(?:\{[^}]*\}|\\?[A-Za-z0-9,]+)))*\s*(?:=|≈|≃|\\approx)/;
+/** The symbol a value is the right-hand side of: the head of the equation (or chain) the value ends, if any. */
+function boundSymbol(P, at) {
+  const before = P.slice(Math.max(0, at - 120), at);
+  // the maths run that ends at the value: back to the last prose word (four letters or more, not a TeX command)
+  let start = 0;
+  for (const m of before.matchAll(/(?<![\\A-Za-z])[A-Za-z]{4,}/g)) start = m.index + m[0].length;
+  const m = SYMBOL_HEAD.exec(before.slice(start));
+  // the symbol and its subscript (a superscript — ΔG°, ΔH^⦵ — names the same quantity under standard conditions)
+  return m ? m[0].replace(/\s*(?:=|≈|≃|\\approx)$/, "").replace(/\s*\^\s*(?:\{[^}]*\}|\\?[A-Za-z0-9,]+)/g, "").replace(/[°′'⦵*]/g, "").replace(/\\Delta\s*/, "Δ").replace(/\s+/g, "") : null;
+}
+/** Is the moved target `unit:<id>` a value the dependent shared with it (no question it answers: that is a derivation)? */
+const valueDependency = (u, t, id) => t.startsWith("unit:") && !(u.stamp && `question:${id}` in u.stamp);
+/** The text a record read as when a dependent was stamped at `hash` (its text, or one it remembers: units_index priorOf). */
+function stampedText(rec, hash) {
+  if (!rec || typeof hash !== "string") return null;
+  if (rec.text != null && unitTargetHash(rec.text) === hash) return rec.text;
+  return (rec.prior || []).find((p) => p.v === hash)?.text ?? null;
+}
+// how many places a re-check is shown for one value that moved (the nearest first): prompts stay lean
+export const MAX_SUCCESSORS = 3;
 /**
- * Where a value that left the target `x` now lives (R6 G4): units at x's place — its deliverable and section — or at the
- * place of a unit that took its words (`heirs`), stating a value of a kind the dependent `u` states that x stated (x's
- * last text; unknown: every kind u states) and, for a live x, no longer states.
+ * Where a value that left the target `x` now lives (R6 G4; R7 H-02: found PACKAGE-WIDE, not only at x's place). A
+ * successor states a value of a kind — symbol family and unit — the dependent `u` states that x stated (x.text: how x
+ * read when u was checked; unknown: every kind u states) and, for a live x, no longer states (x.now). Units u already
+ * depended on at their current text are no successor (the value was there before). Ranked by nearness — x's place or
+ * the place of a unit that took its words, then x's deliverable (by distance), then x's chapter, then anywhere — and
+ * capped at MAX_SUCCESSORS. `wide: false` keeps the search at x's place (a target that is no shared value, e.g. a
+ * question). Returns { left, kinds, found }: `left` — a value u shares left x (x stated it, and states none of u's
+ * kinds now, when how x read before is unknown).
  */
-function valueSuccessors(u, x, ctx, heirs = []) {
+function valueSuccessors(u, x, ctx, heirs = [], { wide = true } = {}) {
+  const none = { left: false, kinds: [], found: [] };
   // a live target that still states a value the dependent states: the value did not leave it
-  if (x.live && (ctx.edges.get(u.id) || []).some((e) => e.target === `unit:${x.id}` && e.kind === "shared-value")) return [];
+  if (x.live && (ctx.edges.get(u.id) || []).some((e) => e.target === `unit:${x.id}` && e.kind === "shared-value")) return none;
   const mine = valueKinds(u.text);
-  if (!mine.size) return [];
-  const xs = x.text != null ? valueKinds(x.text) : null;
-  const chase = [...mine].filter((k) => (x.live ? !xs.has(k) : !xs || xs.has(k)));
-  if (!chase.length) return [];
-  const places = new Set([`${x.deliverable}|${x.section}`, ...heirs.map((w) => `${w.locator.deliverable}|${w.locator.section}`)]);
-  return ctx.units.filter((w) => w.id !== u.id && w.id !== x.id && places.has(`${w.locator.deliverable}|${w.locator.section}`) && [...valueKinds(w.text)].some((k) => chase.includes(k)));
+  if (!mine.size) return none;
+  const was = x.text != null ? valueKinds(x.text) : null, now = x.live ? valueKinds(x.now) : new Set();
+  const chase = [...mine].filter((k) => (!was || was.has(k)) && !now.has(k));
+  if (!chase.length) return none;
+  const left = !!was || ![...mine].some((k) => now.has(k));
+  const near = new Set([`${x.deliverable}|${x.section}`, ...heirs.map((w) => `${w.locator.deliverable}|${w.locator.section}`)]);
+  const chapterOf = (rel) => /([^/]+)\.md$/.exec(rel || "")?.[1] ?? null;
+  const tier = (w) => (near.has(`${w.locator.deliverable}|${w.locator.section}`) ? 0 : w.locator.deliverable === x.deliverable ? 1 : chapterOf(w.locator.deliverable) === chapterOf(x.deliverable) ? 2 : 3);
+  const known = (w) => !!u.stamp && u.stamp[`unit:${w.id}`] != null && u.stamp[`unit:${w.id}`] === ctx.hashes[`unit:${w.id}`];
+  const at = Number.isInteger(x.ordinal) ? x.ordinal : (heirs[0]?.locator.ordinal ?? 0);
+  const found = ctx.units.filter((w) => w.id !== u.id && w.id !== x.id && (wide || tier(w) === 0) && !known(w) && [...valueKinds(w.text)].some((k) => chase.includes(k)))
+    .map((w) => [w, tier(w), w.locator.deliverable === x.deliverable ? Math.abs(w.locator.ordinal - at) : 0])
+    .sort((a, b) => a[1] - b[1] || a[2] - b[2] || a[0].locator.deliverable.localeCompare(b[0].locator.deliverable) || a[0].locator.ordinal - b[0].locator.ordinal)
+    .slice(0, wide ? MAX_SUCCESSORS : Infinity).map(([w]) => w);
+  return { left, kinds: chase, found };
 }
 const nodeShown = (n) => [n.text ?? n.title, ...(n.type || n.count != null || n.levels || n.targets ? [`(type: ${n.type ?? "—"}; count: ${n.count ?? "—"}; level: ${n.levels ?? "—"}; targets: ${n.targets ?? "—"})`] : [])].join(" ");
 /** unit id → what its re-check must be shown (movedForRecheck), for every unit that owes one. */
@@ -508,6 +566,8 @@ export function indexAndStamp(root, reader, opts) {
   const r = indexUnits(root, reader, opts);
   restamp(root, reader, r.changedIds);
   upgradeStamps(root, reader, { except: r.changedIds.flatMap((id) => [`unit:${id}`, `question:${id}`]) });
+  // a unit the edit moved into an open version's scope is carried into it now (R7 H-01: version_scope.mjs)
+  r.carried = carryLateEntrants(root, reader);
   return r;
 }
 
@@ -522,6 +582,8 @@ export function linkUnits(root, reader, links, party) {
   rewriteUnits(root, Object.keys(links), (u) => { const next = [...new Set(links[u.id])]; if (JSON.stringify([...(u.spineNodes || [])].sort()) !== JSON.stringify([...next].sort())) changed.push(u.id); u.spineNodes = next; });
   restamp(root, reader, changed);
   appendLogRecord(root, { type: "revision", party, payload: { event: "units-linked", count: Object.keys(links).length } });
+  // a relink can bring a unit into an open version's scope: it is carried into it now (R7 H-01)
+  carryLateEntrants(root, reader);
 }
 
 /** The instructor confirms units: "fact" clears an evidence obligation for the current facts; "still-correct" re-stamps. */
@@ -703,7 +765,7 @@ export function reviewRecordProblem(root, logged, u, ctx) {
   // what moved (R4 F4): the shared value, term, spine node or question whose change raised the obligation — and when
   // what moved can no longer be shown at all, no review clears it (R6 G4)
   const moved = movedForRecheck(u, ctx);
-  if (moved.unshowable.length) return `the re-check cannot be shown what changed (${moved.unshowable.join(", ")}: retired before its text was recorded, and no unit took its words or values) — the instructor's confirmation clears it (units.mjs confirm)`;
+  if (moved.unshowable.length) return `the re-check cannot be shown what changed (${moved.unshowable.join(", ")}: retired before its text was recorded with no unit taking its words or values, or the value it shared left it and no unit in the package states it now) — the instructor's confirmation clears it (units.mjs confirm)`;
   for (const m of moved) if (!shown.includes(shownForm(m.text))) return `the reviewer was not shown what moved (${m.what}: "${shownForm(m.text).slice(0, 80)}")`;
   const m = String(r.answer?.raw || "").match(/\{[\s\S]*\}/);
   let v; try { v = JSON.parse(m?.[0] || ""); } catch { v = null; }
@@ -913,14 +975,15 @@ function loggedConfirmationStands(recs, cu, ctx) {
  * is shown what moved before the carry (movedForRecheck), and nothing a carry does clears anything. The carry is logged
  * BEFORE the records are written: the write is checked against it (unitRecordWriteProblems).
  */
-export function carryUnits(root, ids, { version, scope, reconciles = null }, party) {
-  const act = carryActFor(ids, { version, scope, reconciles }, party);
+export function carryUnits(root, ids, { version, scope, reconciles = null, entered = false }, party) {
+  const act = carryActFor(ids, { version, scope, reconciles, entered }, party);
   return rewriteUnits(root, ids, carryEdit(root, { version, scope }), { act, retired: reconciles != null });
 }
-function carryActFor(ids, { version, scope, reconciles = null }, party) {
-  // the harness logs a carry only to complete a logged version's own carry list (reconcile.mjs)
+function carryActFor(ids, { version, scope, reconciles = null, entered = false }, party) {
+  // the harness logs a carry only to complete a logged version's own carry list (reconcile.mjs), or to carry a unit that
+  // entered the version's scope after it opened (version_scope.mjs, R7 H-01)
   if (party?.role !== "instructor" && !(party?.role === "harness" && Number.isInteger(reconciles))) throw new Error("carrying units into a new version follows the instructor's version decision");
-  return { type: "revision", party, payload: { event: "units-carried", scope, version, units: ids, ...(reconciles != null ? { reconciles } : {}) } };
+  return { type: "revision", party, payload: { event: "units-carried", scope, version, units: ids, ...(reconciles != null ? { reconciles } : {}), ...(entered ? { entered: true } : {}) } };
 }
 // what a carry does to a record: owed targets kept in `owes`, evidence and stamp cleared, the carry set; a retired
 // unit's record (a carry completed after it retired) keeps its stamp — staleness cannot be read for it
@@ -1000,7 +1063,9 @@ export function openVersionCarrying(root, reader, { scopes, reason, instructorWo
     const refused = plan.size ? unitRecordWriteRefusal(root, [...plan.values()], { pending }) : [];
     if (refused.length) throw new Error(`refusing to open a new version: its carry could not be written, so nothing was logged — ${refused.join("; ")}`);
   }
-  const r = openMajorVersion(root, { scopes, reason, instructorWords, carried }, party);
+  // the ids the package has used when the version opens: a unit that enters the scope later is carried then, unless it
+  // was first written in this version (R7 H-01, version_scope.mjs)
+  const r = openMajorVersion(root, { scopes, reason, instructorWords, carried, known: knownUnitKeys(root) }, party);
   for (const sc of scopes) { const ids = inScope(sc).map((u) => u.id); if (ids.length) carryUnits(root, ids, { version: r.payload.to[sc], scope: sc }, party); }
   return r;
 }
@@ -1065,7 +1130,7 @@ export function coreObligations(root, reader, basis) {
     else {
       const moved = [...new Set([...owedTargets(u, ctx), ...(u.owes?.targets || [])])];
       if (moved.length || u.owes) {
-        const why = moved.map((t) => t.replace("question-binding:legacy", "its question binding predates the harness's (a re-check once)").replace("question-binding:re-paired", "it now follows another question").replace("reference-binding:re-targeted", "a question it names by number is now another one (renumbered)"));
+        const why = moved.map((t) => t.replace(/^carry:(.+)@(\d+)$/, "it took the words of a unit carried into $1 version $2").replace("question-binding:legacy", "its question binding predates the harness's (a re-check once)").replace("question-binding:re-paired", "it now follows another question").replace("reference-binding:re-targeted", "a question it names by number is now another one (renumbered)"));
         ob("reverify", [u.id], `re-verification of ${u.id}: ${why.join(", ") || "an earlier change"} since it was last verified — a blind re-check of its current text (${REVERIFY_ROUTE("<pkg>", [u.id])}, then units.mjs reverify), or the instructor's confirmation`);
         // an answer whose question changed (or was re-paired): the agent re-reads it with its question — a cheap blind
         // re-review, never a question for the instructor (F7). Bound to the question's wording, so a second change of
@@ -1078,6 +1143,11 @@ export function coreObligations(root, reader, basis) {
       }
     }
   }
+  // a version's scope is continuous (R7 H-01): a unit that entered an open version's scope after it opened, and was
+  // neither carried into it nor re-verified since, is owed its carry (units.mjs reconcile carries it; then re-verify)
+  for (const g of versionScopeGaps(root, reader, { units }))
+    ob("version-carry-owed", g.units, g.why === "absorbed" ? `the carry of ${g.units.length} unit(s) into ${g.scope} version ${g.version}: each took the words of a unit carried into it — node scripts/units.mjs reconcile carries them, then each is re-verified`
+      : `the carry of ${g.units.length} unit(s) that entered ${g.scope} version ${g.version} after it opened (moved, relinked, or a document's chapters changed): node scripts/units.mjs reconcile carries them, then each is re-verified`);
   for (const ch of chapters) {
     const s = spine.chapters[ch];
     // D41: coverage counts VERIFIED links — a unit whose current blind link review says it teaches the objective. An
