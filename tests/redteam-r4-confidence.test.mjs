@@ -29,7 +29,8 @@ import { unitInfoOf } from "../scripts/lib/core/workflow.mjs";
 import { replayVerifier } from "../scripts/lib/verify/dispatch.mjs";
 import { applyCorrection, verifyKnowledge, verifySemi } from "../scripts/lib/verify/verdicts.mjs";
 import { checkableClaims, quantitiesIn } from "../scripts/lib/verify/claims.mjs";
-import { fsInputReader, pinReference, pinnedTexts, syncReferenceRecord } from "../scripts/lib/verify/references.mjs";
+import { fsInputReader, pinnedTexts, syncReferenceRecord } from "../scripts/lib/verify/references.mjs";
+import { pinDeclared as pinReference } from "./helpers/destinations.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const C2 = path.join(HERE, "fixtures", "c2-chemistry-v2", "package");

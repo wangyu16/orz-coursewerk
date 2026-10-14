@@ -46,7 +46,8 @@ import { appendLogRecord, parseLog, readLogText } from "../scripts/lib/records/l
 import { replayVerifier, settledBySuggestion, suggestionAt } from "../scripts/lib/verify/dispatch.mjs";
 import { retrievalConfig } from "../scripts/lib/verify/retrieval.mjs";
 import { applyCorrection, claimKey, correctionsToShow, settleKept, verifyKnowledge, verifySemi } from "../scripts/lib/verify/verdicts.mjs";
-import { fsInputReader, pinReference, pinnedTexts, syncReferenceRecord } from "../scripts/lib/verify/references.mjs";
+import { fsInputReader, pinnedTexts, syncReferenceRecord } from "../scripts/lib/verify/references.mjs";
+import { pinDeclared as pinReference } from "./helpers/destinations.mjs";
 import { unitClaims } from "../scripts/modules/ms7-consistency.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));

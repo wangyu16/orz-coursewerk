@@ -7,7 +7,7 @@ import { sha256 } from "../lib/records/canonical.mjs";
 import { makeSourceRecord } from "../lib/source_record.mjs";
 import { canonicalJson } from "../lib/records/canonical.mjs";
 import { base, recheckByRerun } from "./_shared.mjs";
-import { loggedPins, pinnedTexts, snapshotInputReader, makeReferenceRecord, REFERENCE_RECORD } from "../lib/verify/references.mjs";
+import { pinLedger, pinnedTexts, snapshotInputReader, makeReferenceRecord, REFERENCE_RECORD } from "../lib/verify/references.mjs";
 import { recheckQuote } from "../lib/verify/admission.mjs";
 
 const IN = "@inputs/";
@@ -46,7 +46,7 @@ function evidenceSpans(s, declared) {
   if (record && refs && canonicalJson(record) !== canonicalJson(makeReferenceRecord(refs, (record.references || []).map((r) => r.refId))))
     out.push({ kind: "reference-record-mismatch", units: [], evidence: { type: "rule", rule: "REFERENCE_RECORD.json mirrors the inputs' REFERENCES.json exactly" } });
   const known = new Set([...declared, ...refIds]);
-  const pins = loggedPins(s.text("metadata/LOG.jsonl"));
+  const ledger = pinLedger(s.text("metadata/LOG.jsonl"));
   for (const p of s.paths.filter((x) => x.startsWith("metadata/units/") && x.endsWith(".json")).sort()) {
     for (const u of s.json(p)?.units || []) {
       const cited = [...(u.origin?.kind === "source-derived" ? [u.origin.source] : []), ...(u.evidence || []).flatMap((e) => [e.source, ...(e.quotes || []).map((q) => q.source)]).filter(Boolean)];
@@ -56,7 +56,11 @@ function evidenceSpans(s, declared) {
         if (!pinned) { out.push({ kind: "reference-unpinned", units: [u.id], evidence: { type: "missing", what: `the pinned text of ${q.source} (run the gate with --inputs)` } }); continue; }
         const t = pinned.get(q.source);
         if (!t) { out.push({ kind: "reference-unpinned", units: [u.id], evidence: { type: "missing", what: `a pinned text for ${q.source}` } }); continue; }
-        if (t.kind === "reference" && pins.get(q.source) !== t.sha256) { out.push({ kind: "evidence-span-unresolved", units: [u.id], evidence: { type: "rule", rule: "a quoted reference was pinned by the retrieval service (a logged pin)", source: q.source, problem: "no logged pin for this text" } }); continue; }
+        if (t.kind === "reference" && ledger.get(q.source)?.sha256 !== t.sha256) { out.push({ kind: "evidence-span-unresolved", units: [u.id], evidence: { type: "rule", rule: "a quoted reference was pinned by the retrieval service (a logged pin)", source: q.source, problem: "no logged pin for this text" } }); continue; }
+        // the declared list decides, never the pin's own claim (red team round 7, I16): a pin whose URL lies outside
+        // every destination the instructor had declared when it was pinned is no evidence
+        const pin = ledger.get(q.source);
+        if (t.kind === "reference" && (!pin.destination || (pin.url && t.url && pin.url !== t.url))) { out.push({ kind: "evidence-span-unresolved", units: [u.id], evidence: { type: "rule", rule: "a quoted reference lies inside a destination the instructor declared (I16: declared destinations only)", source: q.source, url: pin.url ?? t.url, problem: pin.destination ? "the reference's URL is not the URL that was pinned" : "its URL is outside every destination the instructor declares (retrieval destinations)" } }); continue; }
         const problem = !t.ok ? "its pinned text no longer matches its hash" : q.textSha256 && q.textSha256 !== t.sha256 ? "it was quoted from another version of the text" : recheckQuote(q, t.text);
         if (problem) out.push({ kind: "evidence-span-unresolved", units: [u.id], evidence: { type: "rule", rule: "an evidence quote resolves at its span in its pinned text", source: q.source, span: q.span, problem } });
       }

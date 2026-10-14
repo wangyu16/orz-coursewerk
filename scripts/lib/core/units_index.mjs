@@ -86,8 +86,11 @@ export function packageAncestry(root, reader) {
   return originIndex([...listed, ...Object.entries(disk).filter(([rel]) => !deliverablesOf(reader).includes(rel)).map(([, side]) => side)]);
 }
 /** Sidecars on disk whose deliverable is no longer listed (renamed, moved or removed): deliverable → side (R6 G1). */
+// A document the instructor confirmed as administrative is not "renamed, moved or removed": it is exempt while its
+// content stays as confirmed (D42, C3-06), so its sidecar rests where it is — read again the moment an edit makes it a
+// deliverable again. Exact list membership ("not a deliverable") is not removal (red team round 7, C3.16).
 export function orphanSidecars(root, reader) {
-  const rels = new Set(deliverablesOf(reader));
+  const rels = new Set([...deliverablesOf(reader), ...administrativeDocuments(reader)]);
   return Object.fromEntries(Object.entries(allSidecars(root)).filter(([rel]) => !rels.has(rel)));
 }
 

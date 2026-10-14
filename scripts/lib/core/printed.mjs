@@ -31,12 +31,13 @@
 //   - deck (slides): the deck config values orz-slides prints (`footer:` on every content slide, `title:` in the tab,
 //     `author:` in the document's metadata) — each is read (segment.mjs), so each counts as printed.
 // Deterministic and offline: parsing never reads an included file (that happens only when rendering).
+import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 
 const require_ = createRequire(import.meta.url);
-const { md } = require_("orz-markdown");
+const { md, scanNymlBlocks } = require_("orz-markdown");
 // orz-slides' own parser and renderer (the deck's frame): its package exports only the builder, so the two modules are
 // loaded from the installed package's dist folder
 const SLIDES_DIST = path.dirname(require_.resolve("orz-slides"));
@@ -49,7 +50,9 @@ export const INCLUDE_ALIASES = Object.freeze(["markdown", "md", "md-include"]);
  *  curated elements — abstract, question-open, exam-title …; or a kind the harness does not know) is content. */
 export const NYML_NOTATION_KINDS = Object.freeze(["document", "meta"]);
 /** A {{nyml}} block's kind ("" when it names none). */
-export const nymlKindOf = (body) => { for (const l of String(body || "").split("\n")) { const m = /^\s*kind\s*:\s*(.*?)\s*$/.exec(l.replace(/^\{\{nyml\b/, "")); if (m) return m[1].replace(/^["']|["']$/g, "").toLowerCase(); } return ""; };
+// read as the frames read it (orz-markdown scanNymlBlocks, which orz-paged and the head metadata use): the LAST `kind:`
+// line wins, case kept (round 7: a block that names two kinds is what the frame says, not what its first line says)
+export const nymlKindOf = (body) => { let b = String(body || "").replace(/^\s*\{\{nyml\b/, ""); if (b.includes("}}")) b = b.slice(0, b.indexOf("}}")); const [x] = scanNymlBlocks(`{{nyml\n${b}\n}}`); return String(x?.kind ?? "").trim(); };
 /** orz plugin blocks that print nothing of the author's text (spacing only). */
 const SILENT_PLUGINS = new Set(["space"]);
 /** Containers whose opening line prints its label (orz-markdown's own renderers): spoil → <summary>, tab → the tab button. */
@@ -167,18 +170,193 @@ export function nymlValues(srcLines, a, b) {
   }
   return out;
 }
-/** Does an orz-paged setting hide the body (it fails closed: custom CSS, a page background, a size that shows no
- *  text, margins that leave no page)? The reason, or null. */
+// ---- orz-paged: every setting and element field the frame reads, by ALLOWLIST (red team round 7, CONTROL C3-01) ----
+// orz-paged interpolates its document settings RAW into the page CSS (page-css.js: `size: ${pageSize}`, `--font-body:
+// ${fontFamily}`, `--accent: ${decorationColor}`, `border-bottom: 0.5pt solid ${headerRuleColor}` …) and two element
+// fields raw into a style (`style="height:${space}"`). A value that closes the declaration writes CSS of its own:
+// `font_family: serif; } .orz-doc::before { content: "<lesson>" } x {` prints a lesson no unit reads, and the same
+// trick hides body text. A five-key denylist let every other key through. So the frame's OWN settings reader decides
+// which block is the document's settings and what each value is (settings.js parseDocSettings: the first `{{nyml}}`
+// anywhere in the source — a code block or a comment included — whose body has a `kind: document` line), and EVERY key
+// it reads is held to a strict grammar of values known to show text: lengths and sizes in range, a colour, a font-family
+// list, a page size, a name from the frame's own catalogue (fonts, themes, templates, page-number styles). A key the
+// frame does not read prints nothing; a value off its grammar may hide the page. Both are content-hidden and fail
+// closed. The running header and footer text (printed, read as units) must also reach the page: one line (a newline
+// breaks the CSS string and the declaration is dropped — measured in a headless browser), in a margin box the page
+// number does not take over, on every page.
+const PAGED_DOC = path.join(path.dirname(require_.resolve("orz-paged")), "doc");
+const pagedFrame = async (f) => import(pathToFileURL(path.join(PAGED_DOC, f)).href);
+const { parseDocSettings, normalizeRawToLayer, mergeSettings, DEFAULTS: PAGED_DEFAULTS } = await pagedFrame("settings.js");
+const { FONT_PRESETS } = await pagedFrame("fonts.js");
+const { canonicalTemplate, resolveTemplate } = await pagedFrame("templates.js");
+const PAGED_THEMES = (() => { try { return new Set(fs.readdirSync(path.join(PAGED_DOC, "..", "..", "assets", "themes")).filter((f) => f.endsWith(".css") && f !== "base.css").map((f) => f.slice(0, -4))); } catch { return new Set(); } })();
+const PAGE_NUMBER_POSITIONS = new Set(["header-left", "header-center", "header-right", "footer-left", "footer-center", "footer-right", "none"]);
+const PAGE_NUMBER_STYLES = new Set(["simple", "page-n", "page-n-of-N", "n-of-N", "n-slash-N", "dash-n-dash", "brackets", "parentheses"]);
+const BOOL = /^(?:true|false|yes|no|on|off|1|0)$/i;
+const truthy = (v) => /^(?:true|yes|1|on)$/i.test(String(v ?? "").trim());
+const NUMBER = (unit) => new RegExp(`^(\\d+(?:\\.\\d+)?)\\s*(?:${unit})?$`);
+/** A number in [lo, hi], optionally with its unit: the value, or null. */
+const inRange = (v, unit, lo, hi) => { const m = NUMBER(unit).exec(String(v ?? "").trim()); const n = m ? Number(m[1]) : NaN; return n >= lo && n <= hi ? n : null; };
+const MM = { mm: 1, cm: 10, in: 25.4, pt: 25.4 / 72, px: 25.4 / 96 };
+const PAGE_NAMES = /^(?:(?:A3|A4|A5|A6|B4|B5|letter|legal|ledger)(?:\s+(?:portrait|landscape))?|portrait|landscape)$/i;
+function pageSizeOk(v) {
+  if (PAGE_NAMES.test(v)) return true;
+  const m = /^(\d+(?:\.\d+)?)(mm|cm|in|pt|px)\s+(\d+(?:\.\d+)?)(mm|cm|in|pt|px)$/.exec(v);
+  return !!m && [[m[1], m[2]], [m[3], m[4]]].every(([n, u]) => Number(n) * MM[u] >= 50 && Number(n) * MM[u] <= 2000);
+}
+// a font-family list: family names (quoted, or bare words) and generic families, comma-separated — nothing else
+const FAMILY = String.raw`(?:"[A-Za-z0-9 _-]{1,60}"|'[A-Za-z0-9 _-]{1,60}'|[A-Za-z][A-Za-z0-9 _-]{0,59})`;
+const FONT_FAMILY = new RegExp(`^${FAMILY}(?:\\s*,\\s*${FAMILY}){0,9}$`);
+// colours: hex, rgb()/rgba(), hsl()/hsla() with plain numbers, or a CSS colour name; the accent colour (headings,
+// links and rules are drawn in it) must also be opaque and readable on the white page
+const NAMED_COLOURS = Object.freeze({ black: "000000", navy: "000080", darkblue: "00008b", mediumblue: "0000cd", blue: "0000ff", midnightblue: "191970", royalblue: "4169e1", steelblue: "4682b4", darkslateblue: "483d8b", indigo: "4b0082", darkgreen: "006400", green: "008000", forestgreen: "228b22", seagreen: "2e8b57", darkolivegreen: "556b2f", olive: "808000", teal: "008080", darkcyan: "008b8b", darkslategray: "2f4f4f", darkslategrey: "2f4f4f", dimgray: "696969", dimgrey: "696969", gray: "808080", grey: "808080", slategray: "708090", slategrey: "708090", maroon: "800000", darkred: "8b0000", firebrick: "b22222", brown: "a52a2a", sienna: "a0522d", saddlebrown: "8b4513", chocolate: "d2691e", crimson: "dc143c", red: "ff0000", purple: "800080", darkmagenta: "8b008b", darkorchid: "9932cc", rebeccapurple: "663399", darkorange: "ff8c00", orangered: "ff4500",
+  white: "ffffff", snow: "fffafa", ivory: "fffff0", whitesmoke: "f5f5f5", silver: "c0c0c0", lightgray: "d3d3d3", lightgrey: "d3d3d3", gainsboro: "dcdcdc", yellow: "ffff00", gold: "ffd700", orange: "ffa500", pink: "ffc0cb", beige: "f5f5dc", transparent: "ffffff00" });
+const CSS_NUM = String.raw`\s*\d+(?:\.\d+)?%?\s*`;
+const COLOUR_FN = new RegExp(`^(rgb|rgba|hsl|hsla)\\((${CSS_NUM})[,\\s]\\s*(${CSS_NUM})[,\\s]\\s*(${CSS_NUM})(?:[,/]\\s*(${CSS_NUM}))?\\)$`, "i");
+/** A colour as [r, g, b, alpha] (0–255, alpha 0–1), or null when the value is not a colour of the grammar. */
+export function pagedColour(v) {
+  const s = String(v ?? "").trim().toLowerCase();
+  let hex = NAMED_COLOURS[s] ?? (/^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/.test(s) ? s.slice(1) : null);
+  if (hex) {
+    if (hex.length <= 4) hex = [...hex].map((c) => c + c).join("");
+    const n = (k) => parseInt(hex.slice(k, k + 2), 16);
+    return [n(0), n(2), n(4), hex.length === 8 ? n(6) / 255 : 1];
+  }
+  const m = COLOUR_FN.exec(s);
+  if (!m) return null;
+  const num = (x, scale) => { const t = x.trim(); return t.endsWith("%") ? (Number(t.slice(0, -1)) / 100) * scale : Number(t); };
+  const alpha = m[5] == null ? 1 : num(m[5], 1);
+  if (m[1].startsWith("rgb")) return [num(m[2], 255), num(m[3], 255), num(m[4], 255), alpha].map((x, k) => (k < 3 ? Math.min(255, x) : Math.min(1, x)));
+  const h = Number(m[2].replace("%", "")) / 360, sat = num(m[3], 1), l = num(m[4], 1);
+  const q = l < 0.5 ? l * (1 + sat) : l + sat - l * sat, p = 2 * l - q;
+  const ch = (t) => { t = (t + 1) % 1; return 255 * (t < 1 / 6 ? p + (q - p) * 6 * t : t < 1 / 2 ? q : t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 : p); };
+  return [ch(h + 1 / 3), ch(h), ch(h - 1 / 3), Math.min(1, alpha)];
+}
+/** WCAG contrast of a colour against the white page (1–21). */
+const contrastOnWhite = ([r, g, b]) => { const L = [r, g, b].map((c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; }); return 1.05 / (0.2126 * L[0] + 0.7152 * L[1] + 0.0722 * L[2] + 0.05); };
+const ACCENT_CONTRAST = 3;
+const show = (v) => JSON.stringify(String(v).slice(0, 40));
+/** The ALLOWLIST: every key orz-paged's settings reader takes (settings.js normalizeRawToLayer), each with the values
+ *  known to show the page — (value, raw) → null, or the reason it may hide text. */
+export const PAGED_SETTINGS = Object.freeze({
+  page_size: (v) => (pageSizeOk(v) ? null : `\`page_size: ${show(v)}\` is not a page size (A3–A6, B4, B5, letter, legal, ledger, optionally portrait/landscape, or two lengths of 50–2000 mm): orz-paged writes it raw into the page's CSS`),
+  ...Object.fromEntries(["margin_top", "margin_bottom", "margin_left", "margin_right"].map((k) => [k, (v) => (inRange(v, "mm", 0, 60) != null ? null : `\`${k}: ${show(v)}\` is not a margin that leaves room for the page (0–60 mm)`)])),
+  page_background: (v) => (/^(?:#fff(?:fff)?|white|transparent|none)$/i.test(v) ? null : `\`page_background: ${show(v)}\`: a background can make the text unreadable — leave the page white`),
+  font_preset: (v) => (Object.hasOwn(FONT_PRESETS, v) ? null : `\`font_preset: ${show(v)}\` is not one of orz-paged's font presets (${Object.keys(FONT_PRESETS).join(", ")})`),
+  font_heading_preset: (v) => (Object.hasOwn(FONT_PRESETS, v) ? null : `\`font_heading_preset: ${show(v)}\` is not one of orz-paged's font presets`),
+  font_margin_box_preset: (v) => (Object.hasOwn(FONT_PRESETS, v) ? null : `\`font_margin_box_preset: ${show(v)}\` is not one of orz-paged's font presets`),
+  font_family: (v) => (FONT_FAMILY.test(v) ? null : `\`font_family: ${show(v)}\` is not a font-family list (family names and generic families, comma-separated): orz-paged writes it raw into the page's CSS, where anything else can write rules of its own`),
+  font_size: (v) => (inRange(v, "pt", 8, 30) != null ? null : `\`font_size: ${show(v)}\` is not a size known to show text (8–30 pt)`),
+  line_height: (v) => (inRange(v, "", 1, 3) != null ? null : `\`line_height: ${show(v)}\`: lines that overlap or vanish (1–3)`),
+  decoration_color: (v) => { const c = pagedColour(v); return !c ? `\`decoration_color: ${show(v)}\` is not a colour (#hex, rgb(), hsl() or a colour name): orz-paged writes it raw into the page's CSS` : c[3] < 1 || contrastOnWhite(c) < ACCENT_CONTRAST ? `\`decoration_color: ${show(v)}\`: headings and links are drawn in the accent colour, and this one is not readable on the white page (contrast below ${ACCENT_CONTRAST}:1)` : null; },
+  page_number_position: (v) => (PAGE_NUMBER_POSITIONS.has(v) ? null : `\`page_number_position: ${show(v)}\` is not a position orz-paged knows (${[...PAGE_NUMBER_POSITIONS].join(", ")})`),
+  page_number_style: (v) => (PAGE_NUMBER_STYLES.has(v) ? null : `\`page_number_style: ${show(v)}\` is not a style orz-paged knows (${[...PAGE_NUMBER_STYLES].join(", ")})`),
+  page_number_start_page: (v) => (inRange(v, "", 0, 100000) != null ? null : `\`page_number_start_page: ${show(v)}\` is not a page number`),
+  ...Object.fromEntries(["header_left", "header_center", "header_right", "footer_left", "footer_center", "footer_right"].map((k) => [k, () => null])), // printed text: read as units (headerFooterIssues)
+  header_rule_color: (v) => (pagedColour(v) ? null : `\`header_rule_color: ${show(v)}\` is not a colour: orz-paged writes it raw into the page's CSS`),
+  footer_rule_color: (v) => (pagedColour(v) ? null : `\`footer_rule_color: ${show(v)}\` is not a colour: orz-paged writes it raw into the page's CSS`),
+  header_font_size: (v) => (inRange(v, "pt", 6, 30) != null ? null : `\`header_font_size: ${show(v)}\` is not a size known to show the running header (6–30 pt)`),
+  footer_font_size: (v) => (inRange(v, "pt", 6, 30) != null ? null : `\`footer_font_size: ${show(v)}\` is not a size known to show the running footer (6–30 pt)`),
+  ...Object.fromEntries(["header_rule", "footer_rule", "first_page_skip_number", "first_page_hide_header", "first_page_hide_footer", "limit_image_to_page", "keep_image_together", "repeat_table_header", "avoid_table_row_breaks"].map((k) => [k, (v) => (BOOL.test(v) ? null : `\`${k}: ${show(v)}\` is not true or false`)])),
+  front_matter: (v) => (BOOL.test(v) || /^(?:clean|plain)$/i.test(v) ? null : `\`front_matter: ${show(v)}\` is not clean, plain, true or false`),
+  front_matter_clean: (v) => (BOOL.test(v) || /^(?:clean|plain)$/i.test(v) ? null : `\`front_matter_clean: ${show(v)}\` is not clean, plain, true or false`),
+  theme: (v) => (PAGED_THEMES.has(v) ? null : `\`theme: ${show(v)}\` is not one of orz-paged's themes (${[...PAGED_THEMES].join(", ")})`),
+  template: (v) => (canonicalTemplate(v) ? null : `\`template: ${show(v)}\` is not one of orz-paged's templates`),
+  custom_css: () => "an orz-paged `custom_css` setting: CSS can hide anything on the page, and the harness cannot read what it hides — style through a theme or template instead",
+  dynamic_choices: (v) => (String(v).split("\n").every((l) => !l.trim() || /^\s*[A-Za-z0-9_-]+\s*:\s*[A-Za-z0-9_-]+\s*$/.test(l)) ? null : `\`dynamic_choices\` holds a line that is not \`key: value\` (words, digits, - and _)`),
+});
+/** Does an orz-paged setting hide text? The reason, or null (an unknown key prints nothing and fails closed too). */
 export function pagedSettingHides(key, value) {
-  const v = String(value ?? "").trim(), n = Number.parseFloat(v);
-  if (!v) return null;
-  if (key === "custom_css") return "an orz-paged `custom_css` setting: CSS can hide anything on the page, and the harness cannot read what it hides — style through a theme or template instead";
-  if (key === "page_background" && !/^(?:#fff(?:fff)?|white|transparent|none)$/i.test(v)) return `an orz-paged \`page_background: ${v.slice(0, 30)}\`: a background can make the text unreadable — leave the page white`;
-  if (key === "font_size" && !(n >= 8 && n <= 30)) return `an orz-paged \`font_size: ${v.slice(0, 20)}\`: not a size known to show text (8–30 pt)`;
-  if (key === "line_height" && !(n >= 1 && n <= 3)) return `an orz-paged \`line_height: ${v.slice(0, 20)}\`: lines that overlap or vanish (1–3)`;
-  if (/^margin_(?:top|bottom|left|right)$/.test(key) && !(n >= 0 && n <= 60)) return `an orz-paged \`${key}: ${v.slice(0, 20)}\`: a margin that leaves no room for the page (0–60 mm)`;
+  const v = String(value ?? "").trim();
+  if (!Object.hasOwn(PAGED_SETTINGS, key)) return `an orz-paged setting \`${key}\` the frame does not read: its text prints nowhere (the settings it reads: see orz-paged's document model)`;
+  if (!v && key !== "custom_css") return null;
+  return PAGED_SETTINGS[key](v);
+}
+const HEADER_BOX = { header_left: "header-left", header_center: "header-center", header_right: "header-right", footer_left: "footer-left", footer_center: "footer-center", footer_right: "footer-right" };
+/** Does a running header or footer reach every page as the harness reads it? The reason it does not, or null. */
+function headerFooterIssue(key, value, settings) {
+  const v = String(value ?? "");
+  if (!v.trim()) return null;
+  if (/[\r\n]/.test(v)) return `\`${key}\` spans more than one line: orz-paged writes it into a CSS string, where a line break ends the declaration — the ${key.startsWith("header") ? "header" : "footer"} prints nothing (write it on one line)`;
+  if (settings.pageNumberPosition === HEADER_BOX[key]) return `\`${key}\`: the page number takes this margin box (page_number_position: ${settings.pageNumberPosition}${settings.pageNumberPosition === PAGED_DEFAULTS.pageNumberPosition ? ", orz-paged's default" : ""}), so the text never prints — put it in another box, or move the page number`;
+  const first = key.startsWith("header") ? settings.firstPageHideHeader : settings.firstPageHideFooter || settings.firstPageSkipNumber;
+  if (first) return `\`${key}\`: the ${key.startsWith("header") ? "header" : "footer"} is hidden on the first page (${key.startsWith("header") ? "first_page_hide_header" : settings.firstPageHideFooter ? "first_page_hide_footer" : "first_page_skip_number"}), so a one-page document never shows it, and the harness cannot tell how many pages print`;
   return null;
 }
+/** orz-paged's document settings as the FRAME reads them: { raw, settings, start, keys: Map(key → [0-based line]),
+ *  issues: [{ line, what }] } — `start` the 0-based line of the block it takes (null: none). */
+export function pagedDocument(src) {
+  const text = String(src ?? "");
+  const { raw } = parseDocSettings(text);
+  const settings = mergeSettings(PAGED_DEFAULTS, resolveTemplate(String(raw.template ?? "")), normalizeRawToLayer(raw));
+  // where the frame's block is: its own search (settings.js: the first `{{nyml` … first `}}` whose body has a
+  // `kind: document` line), repeated to place it
+  let at = -1, inner = "";
+  for (let from = 0; ;) {
+    const open = text.indexOf("{{nyml", from); if (open < 0) break;
+    const close = text.indexOf("}}", open + 6); if (close < 0) break;
+    const body = text.slice(open + 6, close);
+    if (/(^|\n)\s*kind\s*:\s*document\s*(\n|$)/.test(body)) { at = open; inner = body; break; }
+    from = close + 2;
+  }
+  if (at < 0) return { raw, settings, start: null, keys: new Map(), issues: [] };
+  const start = text.slice(0, at).split("\n").length - 1, keys = new Map(), issues = [];
+  inner.split("\n").forEach((l, k) => { const m = /^(\s*)([A-Za-z0-9_]+)\s*:/.exec(k === 0 ? l.replace(/^\s*/, "") : l); if (m && m[2] !== "kind") keys.set(m[2], [...(keys.get(m[2]) || []), start + k]); });
+  for (const [key, lines] of keys) {
+    if (lines.length > 1) issues.push({ line: lines[0], what: `the orz-paged setting \`${key}\` is given ${lines.length} times: the frame keeps only the last, so the others print nothing` });
+    const why = pagedSettingHides(key, raw[key]) || (HEADER_BOX[key] ? headerFooterIssue(key, raw[key], settings) : null);
+    if (why) issues.push({ line: lines.at(-1), what: why });
+  }
+  return { raw, settings, start, keys, issues };
+}
+// the curated elements orz-paged renders (render-paged.js ELEMENT_KINDS), each with the fields it PRINTS and the fields
+// that set its form (elements.js); any other kind renders nothing (the block is left to markdown: a <script>), and any
+// other field prints nothing
+const TITLE_FIELDS = ["title", "subtitle", "authors", "author", "affiliations", "notes", "date", "doi"];
+const QUESTION_HEAD = ["n", "pts"];
+export const PAGED_ELEMENTS = Object.freeze({
+  "article-title": { prints: TITLE_FIELDS, form: {} },
+  "report-title": { prints: TITLE_FIELDS, form: {} },
+  "exam-title": { prints: [...TITLE_FIELDS, "course", "instructor", "duration", "total_points", "student_fields", "instructions"], form: {} },
+  abstract: { prints: ["text", "keywords"], form: {} },
+  letterhead: { prints: ["organization", "tagline", "address", "phone", "email", "website"], form: { border: "bool" } },
+  "letter-inside-address": { prints: ["to", "title", "organization", "address"], form: { align: /^(?:left|right)$/i } },
+  "letter-signature": { prints: ["closing", "from", "title", "organization"], form: { signature_space: "length" } },
+  toc: { prints: ["title"], form: { max_level: /^[1-6]$/ } },
+  "cv-header": { prints: ["full_name", "title", "photo", "contacts", "summary"], form: { border: "bool" } },
+  "question-mc": { prints: [...QUESTION_HEAD, "body", "options"], form: { answer: /^[A-Za-z]{1,26}$|^[A-Za-z](?:\s*[,;/\s]\s*[A-Za-z])*$/ } },
+  "question-open": { prints: [...QUESTION_HEAD, "body"], form: { space: "length", answer: "answer-key" } },
+  timestamp: { prints: ["label", "date"], form: {} },
+});
+// a writing space or signature space goes raw into style="height:…": a plain length, never another declaration
+const SPACE_LENGTH = /^\d+(?:\.\d+)?(?:cm|mm|in|pt|px|em|rem)$/;
+/** What one paged element block hides: { issues: [{ line, what }], printed: [0-based line], fields: [{ key, value, start, end }] }. */
+function pagedElementIssues(blockSrc, a, srcLines, b, docSettings) {
+  const [scan] = scanNymlBlocks(blockSrc);
+  const kind = String(scan?.kind ?? "").trim(), el = PAGED_ELEMENTS[kind], out = [], printedLines = [];
+  if (!el) { out.push({ line: a, what: `a {{nyml kind: ${kind || "(none)"}}} block: orz-paged renders no such element (it renders ${Object.keys(PAGED_ELEMENTS).join(", ")}), so none of its text prints` }); return { issues: out, printed: printedLines }; }
+  const vals = nymlValues(srcLines, a, b), seen = new Map();
+  for (const v of vals) seen.set(v.key, (seen.get(v.key) || 0) + 1);
+  const answerKey = String(docSettings?.dynamicChoices?.answer_key ?? "") === "show";
+  for (const v of vals) {
+    const value = scan.fields[v.key] ?? v.value;
+    if (seen.get(v.key) > 1) out.push({ line: v.start, what: `the field \`${v.key}\` of {{nyml kind: ${kind}}} is given ${seen.get(v.key)} times: orz-paged keeps only the last` });
+    if (v.key === "placement") { if (value.trim() && !/^(?:page|section)$/i.test(value.trim())) out.push({ line: v.start, what: `\`placement: ${show(value)}\` is not page or section` }); continue; }
+    const form = el.form[v.key];
+    if (form === "answer-key") { if (answerKey) printedLines.push(...range(v.start, v.end)); continue; } // the model answer prints only on the instructor's key
+    if (form) {
+      const ok = form === "bool" ? BOOL.test(value.trim()) : form === "length" ? SPACE_LENGTH.test(value.trim()) : form.test(value.trim());
+      if (!ok && value.trim()) out.push({ line: v.start, what: `\`${v.key}: ${show(value)}\` of {{nyml kind: ${kind}}} is not a value the element takes${form === "length" ? " (a plain length: orz-paged writes it raw into a style)" : ""}, so its text prints nothing` });
+      continue;
+    }
+    if (!el.prints.includes(v.key)) { out.push({ line: v.start, what: `the field \`${v.key}\` of {{nyml kind: ${kind}}}: orz-paged prints no such field (it prints ${el.prints.join(", ")}), so its text never shows` }); continue; }
+    printedLines.push(...range(v.start, v.end));
+    // the field is rendered as markdown: what hides in a paragraph hides here
+    for (const h of printedModel(value, { frame: "page" }).hidden) out.push({ line: v.start, what: `in the field \`${v.key}\` of {{nyml kind: ${kind}}}: ${h.what}` });
+  }
+  return { issues: out, printed: printedLines };
+}
+const range = (a, b) => Array.from({ length: b - a + 1 }, (_, k) => a + k);
 /** `{{sp[<class>] …}}` classes the themes style as visible colours and badges. */
 export const VISIBLE_SPAN_CLASSES = Object.freeze(new Set(["red", "yellow", "green", "blue", "success", "info", "warning", "danger"]));
 /** `{{attrs[…]}}` may set an id (`#x`, `id="x"`) and the slides' step-reveal class; nothing that can hide the element. */
@@ -261,9 +439,13 @@ export function printedModel(text, { frame = "page" } = {}) {
   const tokens = md.parse(src, {}), srcLines = src.split("\n");
   const printed = new Set(), labels = new Map(), blocks = new Map(), headings = new Map(), includes = [], hidden = [], leaf = new Map();
   const unprint = new Set(), notes = new Set(), stack = [], dropped = new Map(), settings = [];
-  let deck = null, lastLine = 0;
+  let deck = null, lastLine = 0, frameDocSeen = false;
+  // a print document's settings, as orz-paged reads them (round 7, C3-01): every key on the allowlist, every value on
+  // its grammar
+  const paged = frame === "paged" ? pagedDocument(src) : { start: null, settings: PAGED_DEFAULTS, issues: [] };
   const mark = (a, b) => { for (let k = a; k <= b; k++) { printed.add(k); if (!leaf.has(k)) leaf.set(k, [a, b]); } };
   const hide = (line, whats) => { for (const what of whats) hidden.push({ line: line + 1, what }); };
+  for (const x of paged.issues) hide(x.line, [x.what]);
   for (let x = 0; x < tokens.length; x++) {
     const t = tokens[x], map = t.map;
     // every inline source is read for the inline plugins that hide (a table cell's has no map: its row's line)
@@ -310,18 +492,22 @@ export function printedModel(text, { frame = "page" } = {}) {
       if (t.info === "nyml") {
         // orz-paged prints an element kind; orz-mdhtml and orz-slides render every {{nyml}} as a <script> (round 4)
         const kind = nymlKindOf(t.content), notation = NYML_NOTATION_KINDS.includes(kind) || !kind;
-        if (!notation && frame === "paged") mark(a, b);
-        else if (!notation) hide(a, [`a {{nyml kind: ${kind}}} element: only orz-paged prints it — this ${frame === "slides" ? "deck" : "page"} renders it as a <script>, so none of its text shows`]);
+        // orz-paged takes the FIRST block whose body has a `kind: document` line as the settings, whatever kind the
+        // block names first (round 7): that block is settings, never an element
+        const isFrameDoc = frame === "paged" && paged.start === a;
+        if (isFrameDoc) frameDocSeen = true;
+        if (!notation && frame === "paged" && !isFrameDoc) {
+          // an element prints only the fields orz-paged renders for its kind (round 7: by allowlist, as the frame reads it)
+          const el = pagedElementIssues(srcLines.slice(a, b + 1).join("\n"), a, srcLines, b, paged.settings);
+          for (const k of el.printed) mark(k, k);
+          for (const x of el.issues) hide(x.line, [x.what]);
+        }
+        else if (!notation && !isFrameDoc) hide(a, [`a {{nyml kind: ${kind}}} element: only orz-paged prints it — this ${frame === "slides" ? "deck" : "page"} renders it as a <script>, so none of its text shows`]);
         // the settings values a frame PRINTS are read (round 6, C3-02): orz-paged's running headers and footers (on
-        // every page; only the first document block counts, as orz-paged reads it) and the head metadata every frame
-        // emits; a paged setting that can hide the body fails closed
-        else if (kind === "document" && frame === "paged" && !settings.some((v) => v.kind === "document")) {
-          const vals = nymlValues(srcLines, a, b);
-          for (const v of vals) {
-            if (PRINTED_PAGED_KEYS.includes(v.key) && v.value.trim()) { settings.push({ kind, ...v }); for (let k = v.start; k <= v.end; k++) mark(k, k); }
-            const why = pagedSettingHides(v.key, v.value);
-            if (why) hide(v.start, [why]);
-          }
+        // every page; only the frame's own settings block counts) and the head metadata every frame emits; every
+        // paged setting is held to the frame's allowlist (pagedDocument: round 7) and fails closed
+        else if (isFrameDoc) {
+          for (const v of nymlValues(srcLines, a, b)) if (PRINTED_PAGED_KEYS.includes(v.key) && v.value.trim()) { settings.push({ kind: "document", ...v }); for (let k = v.start; k <= v.end; k++) mark(k, k); }
         } else if (kind === "meta" && !settings.some((v) => v.kind === "meta")) {
           for (const v of nymlValues(srcLines, a, b)) if (PRINTED_META_KEYS.includes(v.key) && v.value.trim()) { settings.push({ kind, ...v }); for (let k = v.start; k <= v.end; k++) mark(k, k); }
         }
@@ -355,6 +541,9 @@ export function printedModel(text, { frame = "page" } = {}) {
       if (label) { labels.set(a, label); printed.add(a); if (!leaf.has(a)) leaf.set(a, [a, a]); }
     }
   }
+  // the frame takes its settings from a block the markdown reading does not see as one (inside a code block, a
+  // comment, a list …): settings no check here would read
+  if (paged.start != null && !frameDocSeen) hide(paged.start, ["orz-paged reads its document settings from here, where the markdown reading sees no settings block (inside a code block, a comment or another block): write the {{nyml kind: document}} block on its own at the top of the document"]);
   if (frame === "slides") deck = slidesFrame(src, { printed, unprint, notes, hide, dropped });
   for (const k of unprint) { printed.delete(k); labels.delete(k); }
   // a line the parser left in no token (a link reference definition, say) prints nothing
@@ -386,6 +575,8 @@ const lineKey = (l) => String(l).trim().replace(/^#{1,6}\s+/, "");
 /** The slide size orz-slides lays out (browser-entry.js: 960 wide, height from the ratio). */
 const SLIDE_W = 960;
 const slideH = (ratio) => { const [w, h] = String(ratio || "16:9").split(":").map(Number); return Math.round((SLIDE_W * (h || 9)) / (w || 16)); };
+/** Is a deck ratio a slide shape known to show text: "w:h", both positive, between 1:4 and 4:1? */
+const deckRatioOk = (r) => { const m = /^\s*(\d+(?:\.\d+)?)\s*:\s*(\d+(?:\.\d+)?)\s*$/.exec(String(r)); return !!m && Number(m[1]) > 0 && Number(m[2]) > 0 && Number(m[2]) / Number(m[1]) >= 0.25 && Number(m[2]) / Number(m[1]) <= 4; };
 /** Classes a slide may carry: none is known to show (reveal.js hides `fragment`; no theme styles another visibly). */
 export const VISIBLE_SLIDE_CLASSES = Object.freeze(new Set());
 /** The least share of the slide a layout region or a float needs to show text (about 77 px of 960). */
@@ -597,6 +788,9 @@ function slidesFrame(src, { printed, unprint, notes, hide, dropped }) {
     dm[1].split("\n").forEach((seg, k) => {
       const kv = /^\s*([A-Za-z_][\w-]*)\s*:\s*(.*?)\s*$/.exec(seg);
       if (kv && kv[2] !== "" && PRINTED_DECK_KEYS.includes(kv[1].toLowerCase())) values.push({ key: kv[1].toLowerCase(), line: start + k, value: kv[2] });
+      // the deck's ratio sets the slide's height (browser-entry.js: 960 × h/w), and the frame scales the slide to fit:
+      // a ratio off the grammar or far from a screen's shape shrinks every slide's text out of sight (round 7 audit)
+      if (kv && kv[1].toLowerCase() === "ratio" && kv[2] !== "" && !deckRatioOk(kv[2])) hide(start + k, [`the deck's \`ratio: ${kv[2].slice(0, 20)}\` is not a slide shape known to show text (w:h, each a positive number, between 1:4 and 4:1 — 16:9, 4:3, 16:10 …): the frame scales every slide to it`]);
     });
     deck = { start, end, values };
     from = end + 1;

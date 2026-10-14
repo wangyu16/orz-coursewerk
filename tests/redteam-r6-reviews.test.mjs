@@ -34,7 +34,8 @@ import { absoluteBundle, absoluteSentences, absolutesHash } from "../scripts/lib
 import { reviewAbsolutes, verifyKnowledge, verifySemi } from "../scripts/lib/verify/verdicts.mjs";
 import { sectionContext } from "../scripts/lib/verify/verdicts.mjs";
 import { factHash } from "../scripts/lib/core/dependencies.mjs";
-import { fsInputReader, pinReference, pinnedTexts, syncReferenceRecord } from "../scripts/lib/verify/references.mjs";
+import { fsInputReader, pinnedTexts, syncReferenceRecord } from "../scripts/lib/verify/references.mjs";
+import { pinDeclared as pinReference } from "./helpers/destinations.mjs";
 import { createSnapshot } from "../scripts/lib/skeleton/snapshot.mjs";
 import { readerKey, standingOf } from "../scripts/lib/verify/standing.mjs";
 import ms8 from "../scripts/modules/ms8-verdicts.mjs";
