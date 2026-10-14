@@ -147,7 +147,9 @@ export function readValues(text) {
   // Its position is the end of the source view (it has no place there).
   if (/[\\<]/.test(String(text ?? ""))) {
     const R = valueProse(readerView(text));
-    if (R !== P) for (const q of valuesIn(R)) if (!out.some((x) => x.unit === q.unit && x.value === q.value)) out.push({ ...q, at: P.length, end: P.length, view: "reader" });
+    // only a figure the source view did not read at all (by magnitude and unit): the reader view of TeX written outside
+    // $…$ can drop a sign the source view reads correctly ("-\,92.2" renders "-,92.2"), and is no second value then
+    if (R !== P) for (const q of valuesIn(R)) if (!out.some((x) => x.unit === q.unit && Math.abs(x.value) === Math.abs(q.value))) out.push({ ...q, at: P.length, end: P.length, view: "reader" });
   }
   return out.sort((a, b) => a.at - b.at);
 }
