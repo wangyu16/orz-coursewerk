@@ -3188,6 +3188,51 @@
       }
     },
     {
+      "id": "req.coherence.version-scope-continuous",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A version's scope is continuous (R7 H-01): at the gate and at approval, every unit now in an open version's scope was carried into it or re-verified since it opened. A unit that enters later — moved from another chapter, relinked to one of its nodes, or brought in by a chapters entry added to DOCUMENTS.json — is carried the moment the index, a relink or reconcile sees it (a logged harness carry naming the version), and until then is a blocking version-carry-owed obligation that also refuses the approval. A unit first written in the version (its id unknown when the version opened) carries nothing from before it and is no entrant.",
+      "source": "3C red team round 7 (studies/p11/redteam-r7/coherence, 2026-10-13), obligations-follow-the-text lane (D50 cause 3)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r7-follow.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.coherence.value-successors-wide",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A value's successors are found package-wide (R7 H-02): a re-check owed because a shared value left its target is shown where the value now lives — any unit in the package stating a value of the same symbol family and unit (a unit value bound to the symbol its equation names), the nearest to the old place first, capped at three — and how the target read when the dependent was last checked. A value that left its target with no successor anywhere makes the target unshowable: no re-check clears it, only the instructor's confirmation (D49).",
+      "source": "3C red team round 7 (studies/p11/redteam-r7/coherence, 2026-10-13), obligations-follow-the-text lane (D50 cause 3)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r7-follow.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.coherence.absorbed-inherits",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Inheritance includes kept units (R7 H-03): a unit, kept or new, that absorbs a retired unit's words, values or equations — measured on the reader view with numbers and symbols as tokens — inherits what it owed (owed from the moment of absorption), its stale stamp, and its version carry (owed as carry:<scope>@<version> and carried by the harness through the log), and its lineage records the absorption.",
+      "source": "3C red team round 7 (studies/p11/redteam-r7/coherence, 2026-10-13), obligations-follow-the-text lane (D50 cause 3)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/redteam-r7-follow.test.mjs"
+        ]
+      }
+    },
+    {
       "id": "req.values.one-reader",
       "phase": "P11",
       "tiers": [

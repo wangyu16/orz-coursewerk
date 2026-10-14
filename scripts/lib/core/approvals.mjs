@@ -8,6 +8,7 @@ import { chapterCoverage, courseCoverage, parseSpine, spinePaths, COURSE_MAP } f
 import { classifyChapterChange, classifyCourseChange } from "./change.mjs";
 import { currentSpineReview } from "./spine_review.mjs";
 import { currentVersion, versionOpenedAt } from "./versions.mjs";
+import { versionScopeGaps } from "./version_scope.mjs";
 
 const scopeOf = (chapter) => (chapter ? `chapter:${chapter}` : "course");
 
@@ -107,6 +108,9 @@ export function recordApproval(root, reader, chapters, { chapter = null, glance 
   if (!s) throw new Error(`unknown chapter ${chapter}`);
   if (s.valid) throw new Error(`${scope} is already approved at its current content`);
   if (glance) { const p = glanceProblem(root, reader, s, scope); if (p) throw new Error(p); }
+  // the version's scope is continuous (R7 H-01): no unit entered it after it opened without being carried into it
+  const late = versionScopeGaps(root, reader, { scope });
+  if (late.length) throw new Error(`${late.map((g) => g.units.length).reduce((a, b) => a + b, 0)} unit(s) in ${scope} version ${late[0].version} were never carried into it (${late[0].units.slice(0, 4).join(", ")}) — run units.mjs reconcile, which carries them, before approving`);
   if (!glance && s.change?.kind === "structural" && !(versionOpenedAt(logText, scope) > (s.record?.seq || 0)))
     throw new Error(`this is a structural change (${s.change.reasons[0].why}); it opens a new major version first`);
   const texts = Object.fromEntries(s.covers.map((rel) => [rel, reader.text(rel)]));

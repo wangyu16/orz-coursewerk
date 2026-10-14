@@ -94,7 +94,7 @@ try {
   }
   if (cmd === "restamp") {
     const reason = opt("--reason") || fail("--reason is required: name the harness change that altered the dependency rules");
-    const stale = coreObligations(root, reader, "restamp").filter((f) => f.kind === "reverify" || f.kind === "carried-unverified");
+    const stale = coreObligations(root, reader, "restamp").filter((f) => ["reverify", "carried-unverified", "version-carry-owed"].includes(f.kind));
     if (stale.length) fail(`refusing: ${stale.length} unit(s) are stale or carried — re-verify them first; restamp only follows a harness rule change`, 1);
     const ids = loadUnits(root, reader).map((u) => u.id);
     restamp(root, reader, ids);

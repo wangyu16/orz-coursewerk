@@ -20,6 +20,7 @@ import { dispatchLogEntry } from "../verify/verdicts.mjs";
 import { COURSE_MAP, checkSpine, parseSpine, spinePaths } from "./spine.mjs";
 import { meaningKey } from "./rendered.mjs";
 import { standingOf } from "../verify/standing.mjs";
+import { versionScopeGaps } from "./version_scope.mjs";
 
 /** The files an approval of the scope covers (and binds): a chapter's concept map and assessment guide; the course map. */
 const filesOf = (scope) => (scope === "course" ? [COURSE_MAP] : Object.values(spinePaths(scope.slice("chapter:".length))));
@@ -173,6 +174,9 @@ export function approvalPrecondition(root, reader, chapters, { chapter = null, w
   const problems = checkSpine(parseSpine(reader, chapters), chapters).filter((p) => chapter ? p.file.endsWith(`/${chapter}.md`) : p.file === COURSE_MAP);
   if (problems.length) return { problem: `the spine is not well-formed yet (${problems.length} problem(s), e.g. ${problems[0].detail}); fix them before approval`, hint: "node scripts/spine.mjs check --root <pkg>" };
   const scope = chapter ? `chapter:${chapter}` : "course", changed = changedSpineLines(root, reader, scope);
+  // the version's scope is continuous (R7 H-01): a unit that entered it after it opened was carried, or re-verified since
+  const late = versionScopeGaps(root, reader, { scope });
+  if (late.length) return { problem: `${late[0].units.length} unit(s) entered ${scope} version ${late[0].version} after it opened and were never carried into it (${late[0].units.slice(0, 4).join(", ")}${late[0].units.length > 4 ? ", …" : ""})`, hint: "node scripts/units.mjs reconcile --root <pkg> (carries them), then re-verify them" };
   const unreviewed = changed.reapproval && changed.lines.length > 0 && !currentSpineReview(root, reader, scope);
   if (unreviewed && !withoutReview)
     return { problem: `${changed.lines.length} line(s) changed since the last approval and have not had their blind review`, hint: `node scripts/spine.mjs review --root <pkg> ${chapter ? `--chapter ${chapter}` : "--course"} (offline: --without-review, which is recorded)` };
