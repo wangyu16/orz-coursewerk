@@ -1244,6 +1244,12 @@
       "hash": "481124cc031588f6c71e7122558d26d804084d279298be8c2188d5d8e4ec8a97"
     },
     {
+      "id": "repo:system/rounds/P11-3c-redteam-r7.md",
+      "path": "system/rounds/P11-3c-redteam-r7.md",
+      "type": "system-governance",
+      "hash": "ebe05db59367a42c1afc7e4ce62f15a28a8e3fd8171b183845aee3781773f4ba"
+    },
+    {
       "id": "repo:system/rounds/P11-autocorrect-T3.md",
       "path": "system/rounds/P11-autocorrect-T3.md",
       "type": "system-governance",
