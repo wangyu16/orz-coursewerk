@@ -28,7 +28,7 @@ export function listSkills({ latest = npmLatest } = {}) {
 
 /** Install the newest skill of each package into `into`. Offline: the harness's installed packages' skills, said so. */
 export function installSkills(into, { harnessRoot = HARNESS, latest = npmLatest, install, cache = frameCache() } = {}) {
-  const frames = resolveFrames(harnessRoot, { latest, cache, ...(install ? { install } : {}) });
+  const frames = resolveFrames(harnessRoot, { mode: "latest", latest, cache, ...(install ? { install } : {}) }); // skills: always the newest
   const newestKnown = !/registry unreachable/.test(frames.source);
   const fresh = frames.source === "newest" || frames.source === "installed (already the newest)";
   const results = [];

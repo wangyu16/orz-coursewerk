@@ -119,6 +119,9 @@ test("[req.ms7.consistency] [req.ms7.no-drift] MS7: a value disagreement and an 
 
 test("[req.ms5.offline] carriers are not a deliverable: MS5 is an optional preview that can only ask, and assembly is documented", (t) => {
   const p = copy(t);
+  // offline and deterministic: the harness's installed frames, never the registry (the test runs with or without npm test)
+  const was = process.env.COURSEWERK_FRAMES; process.env.COURSEWERK_FRAMES = "installed";
+  t.after(() => { if (was === undefined) delete process.env.COURSEWERK_FRAMES; else process.env.COURSEWERK_FRAMES = was; });
   const r = runCheckpoint({ root: p.root, checkpoint: "V8", profile: "public", registry: { schemaVersion: 1, __noStandard: true, modules: [{ name: "ms5-carriers", version: "1.0.0", maturity: "experimental", enabled: true }] }, inputsDir: p.inputs });
   assert.deepEqual(found(r, "ms5-carriers"), [], "the C2 carriers build");
   const std = JSON.parse(fs.readFileSync(path.join(HERE, "..", "scripts", "modules", "standard.json"), "utf8"));

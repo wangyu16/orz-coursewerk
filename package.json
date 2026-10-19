@@ -35,8 +35,8 @@
     "build:carriers": "node scripts/build_carriers.mjs --package package --out preview",
     "skills": "node scripts/skills.mjs",
     "pack": "node scripts/pack.mjs --package package --out dist",
-    "test": "node --test tests/*.test.mjs",
-    "test:usage": "node --test tests/usage-e2e.test.mjs",
+    "test": "COURSEWERK_FRAMES=installed node --test tests/*.test.mjs",
+    "test:usage": "COURSEWERK_FRAMES=installed node --test tests/usage-e2e.test.mjs",
     "gate": "node scripts/gate.mjs --root package"
   },
   "dependencies": {

@@ -9,6 +9,9 @@ import { fileURLToPath } from "node:url";
 import { FRAMES, resolveFrames } from "../scripts/lib/frames.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
+// these tests are about the default, the newest (their registry and installer are fakes): `npm test` asks the
+// harness's installed frames for every other test (COURSEWERK_FRAMES=installed), so this file clears it
+const TEST_MODE = process.env.COURSEWERK_FRAMES; delete process.env.COURSEWERK_FRAMES;
 const tmp = (t) => { const d = fs.mkdtempSync(path.join(os.tmpdir(), "cw-frames-")); t.after(() => fs.rmSync(d, { recursive: true, force: true })); return d; };
 const fakeHarness = (dir, versions) => { for (const [n, v] of Object.entries(versions)) { fs.mkdirSync(path.join(dir, "node_modules", n), { recursive: true }); fs.writeFileSync(path.join(dir, "node_modules", n, "package.json"), JSON.stringify({ name: n, version: v })); } return dir; };
 const OLD = { "orz-mdhtml": "0.9.0", "orz-slides": "0.8.2", "orz-paged": "0.7.0", "orz-markdown": "1.6.0" };
@@ -73,4 +76,16 @@ test("[req.alembic.newest] the package is checked by Alembic's own validator at 
   assert.equal(off.checked, "unreachable"); assert.match(off.note, /local mirror/);
   const noFetch = checkNewestContract(root, { newest: () => SHA, fetch: () => null });
   assert.equal(noFetch.checked, "unreachable"); assert.match(noFetch.note, /bbbbbbb/);
+});
+
+test("[req.frames.newest] COURSEWERK_FRAMES=installed asks for the harness's own frames (tests stay offline); anything else is the newest", (t) => {
+  const h = fakeHarness(tmp(t), OLD);
+  let asked = 0;
+  process.env.COURSEWERK_FRAMES = "installed";
+  t.after(() => { delete process.env.COURSEWERK_FRAMES; });
+  const r = resolveFrames(h, { latest: () => { asked++; return null; }, cache: tmp(t) });
+  assert.equal(r.source, "installed"); assert.equal(asked, 0, "the registry is never asked");
+  process.env.COURSEWERK_FRAMES = "newest-please";
+  assert.notEqual(resolveFrames(h, { latest: () => { asked++; return null; }, cache: tmp(t) }).source, "installed"); assert.ok(asked > 0);
+  void TEST_MODE;
 });

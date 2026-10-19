@@ -185,7 +185,7 @@
       "id": "repo:package.json",
       "path": "package.json",
       "type": "release-metadata",
-      "hash": "7c7c98c0a95b3c1c64925667e0df5880a44b6480b4fc688d93cbf6d2bab53b14"
+      "hash": "e55008ddc26cc9d6c4565630939472bf39bc463e90406ef12797eb73379a0fed"
     },
     {
       "id": "repo:PROCEDURE.md",
@@ -233,7 +233,7 @@
       "id": "repo:scripts/build_carriers.mjs",
       "path": "scripts/build_carriers.mjs",
       "type": "executable",
-      "hash": "dcfee7b4b3d93be2ea57739b9a9d75b8a9b85ee2b7e8f07dde914eab045eb944"
+      "hash": "e669aa1dc1db41fad4e539ee9049365ce9cefb501887f3d34aa34f4105ba156e"
     },
     {
       "id": "repo:scripts/capture_media_evidence.mjs",
@@ -605,7 +605,7 @@
       "id": "repo:scripts/lib/frames.mjs",
       "path": "scripts/lib/frames.mjs",
       "type": "kernel",
-      "hash": "a714f01dff3b51101ba41244475ad302a8f07f6b5b3a722634e1f9f748b102d2"
+      "hash": "50faf834b1d9e900ab5ccfc0298d9e47202dd9249b0fe9afc36936585ccd96e1"
     },
     {
       "id": "repo:scripts/lib/identity.mjs",
@@ -1007,7 +1007,7 @@
       "id": "repo:scripts/skills.mjs",
       "path": "scripts/skills.mjs",
       "type": "executable",
-      "hash": "ea2dca5052576a71db2481e99bbd9d7a5e8a1feaf4a2156a2ec7b644055f2452"
+      "hash": "a6938f6f21f889eaf845a3a9c10df06c8a4eaa84903c50a237fea67f0c8659aa"
     },
     {
       "id": "repo:scripts/spine.mjs",
@@ -1703,7 +1703,7 @@
       "id": "repo:tests/frames.test.mjs",
       "path": "tests/frames.test.mjs",
       "type": "test",
-      "hash": "de6c0f25caa2bbda49192487debc8112d96ce9082b6d1d69a9fff3f1ab4cf9a4"
+      "hash": "2c2e88c58deb8ed950a301c79136023491b4e70a9a758c548c65c2cf6d659fd1"
     },
     {
       "id": "repo:tests/gate-cli.test.mjs",
@@ -2003,7 +2003,7 @@
       "id": "repo:tests/stable-modules.test.mjs",
       "path": "tests/stable-modules.test.mjs",
       "type": "test",
-      "hash": "8ce6db6bca72cf8a9d8aafe5cbd9d0d8b0af072e793980f0208a51f4d3de1214"
+      "hash": "b1ac0b1fb4eca329004d8a6ba482847f80402d0f573cf90cacd363e26133c24b"
     },
     {
       "id": "repo:tests/system-index.test.mjs",

@@ -35,7 +35,11 @@ function npmInstall(dir, specs) {
  * @returns { binDir, nodeModules, frames: { name: { version, newest, installed } }, harnessBehind, source, note }
  *   harnessBehind: the frames the harness itself has installed older than the newest (null when the newest is unknown)
  */
-export function resolveFrames(harnessRoot, { mode = "latest", latest = npmLatest, install = npmInstall, cache = frameCache() } = {}) {
+/** The frames mode when none is asked: `COURSEWERK_FRAMES` (latest | installed), else the newest. Tests set "installed"
+ *  so they never reach the registry (tests stay offline and deterministic); a build for the instructor uses the newest. */
+export const framesMode = () => (process.env.COURSEWERK_FRAMES === "installed" ? "installed" : "latest");
+
+export function resolveFrames(harnessRoot, { mode = framesMode(), latest = npmLatest, install = npmInstall, cache = frameCache() } = {}) {
   const local = path.join(harnessRoot, "node_modules");
   const at = (nodeModules, frames, source, note, harnessBehind = null) => ({ binDir: path.join(nodeModules, ".bin"), nodeModules, frames, harnessBehind, source, note });
   const localFrames = Object.fromEntries(FRAMES.map((n) => [n, { version: installedVersion(harnessRoot, n), newest: null, installed: installedVersion(harnessRoot, n) }]));

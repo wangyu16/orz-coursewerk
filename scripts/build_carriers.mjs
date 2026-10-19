@@ -14,14 +14,15 @@
 // --theme: the look (title, theme, ratio, page settings) is the text's {{nyml}} header, never a build option.
 //
 // Usage: node build_carriers.mjs --root <dir> --out <dir> [--receipt <json>] [--require-single-file]
-//        [--frames latest|installed]   latest (default): the newest orz frames, from the frame cache (D36)
+//        [--frames latest|installed]   latest (default): the newest orz frames, from the frame cache (D36);
+//                                      COURSEWERK_FRAMES=installed (tests) uses the harness's own
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import crypto from "node:crypto";
 import { LEAN_SOURCE } from "./lib/contract.mjs";
-import { loadFrameLib, resolveFrames } from "./lib/frames.mjs";
+import { framesMode, loadFrameLib, resolveFrames } from "./lib/frames.mjs";
 
 const args = process.argv.slice(2);
 const opt = (n, d = null) => {
@@ -44,7 +45,7 @@ if (!fs.existsSync(pkg)) {
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, "..");
 // the frames dress the lean files; the newest are used, and recorded in the receipt, never in the package (D36)
-const framesUsed = resolveFrames(repoRoot, { mode: opt("--frames") || "latest" });
+const framesUsed = resolveFrames(repoRoot, { mode: opt("--frames") || framesMode() });
 const binDir = framesUsed.binDir;
 if (framesUsed.note) console.error(`build_carriers: ${framesUsed.note}`);
 
