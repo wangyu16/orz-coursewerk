@@ -43,7 +43,7 @@ import { valueText, valuesIn } from "./values.mjs";
 import { readLogText } from "../records/log.mjs";
 import { checkableClaims, claimsHash } from "../verify/claims.mjs";
 import { absoluteReviewOf, absoluteSentences, absolutesHash } from "../verify/absolutes.mjs";
-import { deliverablesOf, documentEntries, indexUnits, orphanSidecars, readSidecar } from "./units_index.mjs";
+import { deliverablesOf, documentEntries, indexUnits, orphanSidecars, readSidecar, segmentOptions } from "./units_index.mjs";
 import { parseSpine, nodeIndex, termsOfMap, COURSE_MAP } from "./spine.mjs";
 import { liveReader, manifestChapters } from "./package_reader.mjs";
 import { currentVersion, openMajorVersion } from "./versions.mjs";
@@ -206,7 +206,7 @@ export function loadUnits(root, reader) {
   const out = [];
   for (const rel of deliverablesOf(reader)) {
     const side = readSidecar(root, rel);
-    const seg = segmentDeliverable(reader.text(rel), rel).units;
+    const seg = segmentDeliverable(reader.text(rel), rel, segmentOptions(reader, rel)).units;
     if (!side || side.units.length !== seg.length) continue; // out of date: the units-not-indexed obligation covers it
     // the judgment, the role and where the unit is (its deliverable, section, place and lines) are recomputed from the
     // text and its structure, never trusted from the sidecar (round P7-1, B17; redteam r1 C3-15: a sidecar role set to
@@ -1038,7 +1038,7 @@ export function openVersionCarrying(root, reader, { scopes, reason, instructorWo
   // none of its units (F12): every deliverable that may hold a unit of the scope must be indexed first — and since a
   // chapter's units are found by what they serve (chapterScopeUnits), not by file name, that is every deliverable
   const stale = deliverablesOf(reader).filter((rel) => {
-    const side = readSidecar(root, rel), now = segmentDeliverable(reader.text(rel), rel).units.map((s) => unitHash(s.text));
+    const side = readSidecar(root, rel), now = segmentDeliverable(reader.text(rel), rel, segmentOptions(reader, rel)).units.map((s) => unitHash(s.text));
     return !side || JSON.stringify(now) !== JSON.stringify(side.units.map((u) => u.locator.contentHash));
   });
   // a sidecar left at a path no longer listed: a renamed document's units are carried only once they follow it (R6 G1)

@@ -3,8 +3,8 @@
 // 2026-10-13). Each finding is a test case of the cause; each also gets variants built here.
 //   1. Every setting or argument a frame interpolates RAW is held to an allowlist (core/printed.mjs): orz-paged reads its
 //      document settings by its own parser, and every key it reads has a strict value grammar (lengths, colours, a
-//      font-family list, page sizes, names from the frame's own catalogues); an unknown key, a value off its grammar,
-//      a settings block the markdown reading does not see, an element kind or field orz-paged does not render, a raw
+//      font-family list, page sizes, names from the frame's own catalogues); a value off its grammar (D52: a key the
+//      frame does not read is inert), an element kind or field orz-paged does not render, a raw
 //      `space` style, a running header the page never shows and a deck ratio far from a screen are content-hidden.
 //   2. Source identity by near-duplicate (verify/verdicts.mjs independentSources): a word 3-shingle containment /
 //      Jaccard measure over the passage around the quote, calibrated on the pinned inputs.
@@ -21,6 +21,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
+import { checkSlidesNotation } from "../scripts/lib/core/notations.mjs";
 import { liveReader } from "../scripts/lib/core/package_reader.mjs";
 import { coreObligations, indexAndStamp, linkUnits, loadUnits } from "../scripts/lib/core/obligations.mjs";
 import { administrativeDocuments, beginSession, claimAuthorship, confirmAdministrative, deliverablesOf, orphanSidecars } from "../scripts/lib/core/units_index.mjs";
@@ -40,7 +42,10 @@ import { readLogText } from "../scripts/lib/records/log.mjs";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const C2 = path.join(HERE, "fixtures", "c2-chemistry-v2", "package");
 const INPUTS = path.join(HERE, "fixtures", "c2-chemistry", "inputs");
-const { assemble } = await import(path.join(HERE, "..", "node_modules", "orz-paged", "dist", "render-paged.js"));
+// orz-paged 1.0 exports its settings reader (D52: Coursewerk and its tests read the frames through their public entry
+// points); what it does with a value is read from its resolved settings, as page-css.js writes them into the page
+const { readSettings, resolveSettings, readDocument: readPaged } = await import("orz-paged");
+const { KIND_HEADER_KEYS } = createRequire(import.meta.url)("orz-markdown/carrier");
 const AGENT = { role: "agent", name: "executor", model: "claude-opus-5-5" };
 const I = { role: "instructor", name: "Yu Wang (wangyu16)" };
 const ELECTRO = /galvanic|salt bridge|anode|cathode/i;
@@ -74,50 +79,67 @@ function course(t, { declare = true } = {}) {
   return c;
 }
 const hiddenOf = (text, frame = "paged") => printedModel(text, { frame }).hidden;
-const paged = (settings, body = "# Print summary\n\n## Summary\n\nIn short, the chapter's disturbances sort into those that move the position and those that move nothing.\n") => `{{nyml\nkind: document\n${settings}}}\n\n${body}`;
+// a print document: its settings are its format-1 header, with `carrier: paged` (D52)
+const paged = (settings, body = "# Print summary\n\n## Summary\n\nIn short, the chapter's disturbances sort into those that move the position and those that move nothing.\n") => `{{nyml\nkind: document\ncarrier: paged\n${settings}}}\n\n${body}`;
 
 // ============================================ 1. RAW INTERPOLATIONS, BY ALLOWLIST ==================================
 test("[req.control.paged-settings-allowlist] R7-C3-01: CSS written through font_family — and through every other key orz-paged interpolates raw — is content-hidden, never a lesson printed unread", () => {
   const inject = (tail) => `serif; } .orz-doc::before { content: "${LESSON}"; } x { color: inherit${tail}`;
-  // the frame itself prints the injected rule (orz-paged's own assembler)
+  // the frame itself takes the injected rule as the value it writes raw into its page CSS (`--font-body: ${…}`)
   const attack = paged(`font_family: ${inject("")}\n`);
-  assert.match(assemble(attack).css, /\}\s*\.orz-doc::before \{ content: "A galvanic cell/);
+  assert.equal(resolveSettings(attack).fontFamily, inject(""));
   const h = hiddenOf(attack);
-  assert.equal(h.length, 1); assert.match(h[0].what, /font_family/); assert.equal(h[0].line, 3);
+  assert.equal(h.length, 1); assert.match(h[0].what, /font_family/); assert.equal(h[0].line, 4);
   // every key orz-paged writes raw into its page CSS
   for (const key of ["font_family", "decoration_color", "page_size", "header_rule_color", "footer_rule_color", "page_background"]) {
     const doc = paged(`${key}: #333; } .orz-doc::before { content: "${LESSON}" } x { color: red\n`);
-    assert.ok(assemble(doc).css.includes(".orz-doc::before") || key === "header_rule_color" || key === "footer_rule_color" || key === "page_background", key);
+    assert.ok(JSON.stringify(resolveSettings(doc)).includes(".orz-doc::before"), `${key}: the frame takes it as written`);
     assert.ok(hiddenOf(doc).some((x) => x.what.includes(key)), key);
   }
   // the same channel hides body text
   assert.ok(hiddenOf(paged("decoration_color: #1a4f8b; } .orz-doc p { display: none } x { color: red\n")).some((x) => /decoration_color/.test(x.what)));
-  // numeric keys stay in range; a key the frame does not read, a key given twice, custom CSS: all fail closed
-  for (const [k, v] of [["header_font_size", "0"], ["footer_font_size", "1"], ["font_size", "1"], ["line_height", "0.1"], ["margin_top", "400"], ["page_size", "1mm 1mm"], ["decoration_color", "white"], ["decoration_color", "#ffffff"], ["decoration_color", "rgba(0, 0, 0, 0.1)"], ["page_number_position", "middle"], ["theme", "my-theme"], ["font_preset", "comic"], ["custom_css", ".x { color: red }"], ["lesson_text", LESSON], ["header_rule", "maybe"]])
+  // numeric keys stay in range; a key given twice, custom CSS, a name off the frame's catalogue: all fail closed
+  for (const [k, v] of [["header_font_size", "0"], ["footer_font_size", "1"], ["font_size", "1"], ["line_height", "0.1"], ["margin_top", "400"], ["page_size", "1mm 1mm"], ["page_size", "B5"], ["decoration_color", "white"], ["decoration_color", "#ffffff"], ["decoration_color", "rgba(0, 0, 0, 0.1)"], ["page_number_position", "middle"], ["theme", "my-theme"], ["font_preset", "comic"], ["template", "brochure"], ["custom_css", ".x { color: red }"], ["header_rule", "maybe"]])
     assert.equal(hiddenOf(paged(`${k}: ${v}\n`)).length, 1, `${k}: ${v}`);
+  // D52: a key orz-paged does not read (the 0.x attack `lesson_text: <a lesson>`) prints nothing and is no unit — inert,
+  // never read as text the student sees; the kit's lint names it, a note to the agent
+  const unknown = paged(`lesson_text: ${LESSON}\n`);
+  assert.deepEqual(hiddenOf(unknown), []);
+  assert.ok(!segmentDeliverable(unknown, "handouts/p.md", { declared: "paged" }).units.some((u) => ELECTRO.test(u.text)));
+  assert.equal(JSON.stringify(resolveSettings(unknown)).includes("galvanic"), false, "the frame reads it for nothing");
+  assert.ok(readPaged(unknown, { kind: "paged" }).lint.some((l) => l.code === "unknown-key" && l.key === "lesson_text"));
   assert.match(hiddenOf(paged("font_size: 11\nfont_size: 12\n"))[0].what, /given 2 times/);
   // values known to show pass, and every key orz-paged reads is on the allowlist (none unchecked)
   const ok = paged(`page_size: A4 landscape\nmargin_top: 20\nmargin_left: 25mm\nfont_family: "Source Serif 4", Georgia, serif\nfont_preset: lora\nfont_size: 11pt\nline_height: 1.4\ndecoration_color: #1a4f8b\nheader_rule_color: rgb(200, 200, 200)\nfooter_rule_color: lightgray\npage_background: white\nheader_left: Chemistry 101\npage_number_position: footer-right\npage_number_style: page-n-of-N\nheader_rule: true\ntheme: light-academic-1\ntemplate: note\ndynamic_choices: |\n  answer-key: hide\n`);
   assert.deepEqual(hiddenOf(ok), []);
-  const settingsSrc = fs.readFileSync(path.join(HERE, "..", "node_modules", "orz-paged", "dist", "doc", "settings.js"), "utf8");
-  const read = [...settingsSrc.matchAll(/case '([a-z_]+)':/g)].map((m) => m[1]);
+  // every key the format-1 registry gives orz-paged (orz-markdown/carrier KIND_HEADER_KEYS), and its theme, has a grammar
+  const read = [...KIND_HEADER_KEYS.paged, "theme"];
   assert.ok(read.length > 30);
   assert.deepEqual(read.filter((k) => !Object.hasOwn(PAGED_SETTINGS, k)), [], "every key orz-paged reads has a grammar");
   assert.ok(pagedColour("#1a4f8b") && !pagedColour("red; }") && !pagedColour("var(--x)"));
 });
 
-test("[req.control.paged-settings-allowlist] the settings block is the one orz-paged reads: inside a code block, a comment, or under a second kind line, it fails closed", () => {
+test("[req.control.paged-settings-allowlist] the settings block is the one orz-paged reads (D52: the leading format-1 header only): one inside a code block, a comment or further down sets nothing for the frame and is read for nothing by the harness; one under a second kind line is read as the frame reads it", () => {
+  // 0.x orz-paged applied a settings block wherever it stood (a code block, a comment); 1.0 reads only the header —
+  // so the frame and the harness agree that these set nothing, and the frame's lint names a stray block
   const fence = "# Print\n\n```\n{{nyml\nkind: document\ncustom_css: .orz-doc p { display: none }\n}}\n```\n\nBody.\n";
-  assert.ok(assemble(fence).css.includes("display: none"), "orz-paged applies a settings block inside a code block");
-  assert.ok(hiddenOf(fence).some((x) => /markdown reading sees no settings block/.test(x.what)));
-  assert.ok(hiddenOf(fence).some((x) => /custom_css/.test(x.what)));
+  assert.equal(readSettings(fence).header, null); assert.equal(resolveSettings(fence).customCss, undefined, "orz-paged applies no settings block inside a code block");
+  assert.equal(pagedDocument(fence).start, null);
+  assert.ok(!hiddenOf(fence).some((x) => /custom_css/.test(x.what)));
   const comment = "# Print\n\n<!-- {{nyml\nkind: document\nfont_family: serif; } p { display: none } x {\n}} -->\n\nBody.\n";
-  assert.ok(hiddenOf(comment).length >= 1);
-  // a block whose FIRST kind line names an element and a later one `document`: orz-paged takes it as the settings
+  assert.equal(readSettings(comment).header, null); assert.equal(resolveSettings(comment).fontFamily, undefined);
+  assert.equal(pagedDocument(comment).start, null);
+  const below = "# Print\n\n{{nyml\nkind: document\ncustom_css: .orz-doc p { display: none }\nheader_left: A lesson no page shows\n}}\n\nBody.\n";
+  assert.equal(resolveSettings(below).customCss, undefined);
+  assert.ok(readPaged(below, { kind: "paged" }).lint.some((l) => l.code === "stray-document-block"), "the frame names the stray block");
+  assert.ok(!segmentDeliverable(below, "handouts/p.md", { declared: "paged" }).units.some((u) => /no page shows/.test(u.text)), "and its text is no unit");
+  // a block whose FIRST kind line names an element and a later one `document`: the frame's reader takes the last kind
+  // line, so it is the header — settings, never an element
   const twoKinds = "{{nyml\nkind: abstract\nkind: document\nheader_left: x; } p { display:none } y {\n}}\n\n# P\n\nBody.\n";
   assert.equal(pagedDocument(twoKinds).start, 0);
-  assert.equal(segmentDeliverable(twoKinds, "handouts/p.md").units.filter((u) => /abstract/.test(u.text)).length, 0);
-  // control: the ordinary block at the top is read, its header printed and read
+  assert.equal(readSettings(twoKinds).raw.header_left, "x; } p { display:none } y {");
+  assert.equal(segmentDeliverable(twoKinds, "handouts/p.md", { declared: "paged" }).units.filter((u) => /abstract/.test(u.text)).length, 0);
+  // control: the ordinary header at the top is read, its running header printed and read
   const plain = paged("header_left: Chemistry 101\n");
   assert.deepEqual(hiddenOf(plain), []);
   assert.ok(segmentDeliverable(plain, "handouts/p.md").units.some((u) => u.text === "Chemistry 101"));
@@ -126,7 +148,8 @@ test("[req.control.paged-settings-allowlist] the settings block is the one orz-p
 test("[req.control.paged-running-text-shown] [req.control.printed-settings-read] a running header or footer is read only where it prints: one the page number takes over, one on several lines, or one hidden on the first page fails closed", () => {
   // orz-paged's default page number sits in the footer centre and takes that box (measured in a headless browser)
   const under = paged(`footer_center: ${LESSON}\n`);
-  assert.ok(!assemble(under).css.includes(`content: "${LESSON}"`) || /@bottom-center \{\n\s*content: counter\(page\)/.test(assemble(under).css));
+  // the frame's resolved settings: the page number sits in that box, and page-css.js gives it the box's content
+  assert.equal(resolveSettings(under).pageNumberPosition, "footer-center"); assert.equal(resolveSettings(under).footerCenter, LESSON);
   assert.match(hiddenOf(under)[0].what, /page number takes this margin box/);
   assert.deepEqual(hiddenOf(paged(`page_number_position: none\nfooter_center: ${LESSON}\n`)), []);
   assert.match(hiddenOf(paged(`page_number_position: header-left\nheader_left: ${LESSON}\n`))[0].what, /page number takes/);
@@ -136,7 +159,7 @@ test("[req.control.paged-running-text-shown] [req.control.printed-settings-read]
 });
 
 test("[req.control.paged-elements-allowlist] an orz-paged element prints only the fields its kind renders: an unknown kind or field, a raw `space` style, or a field whose markup hides is content-hidden; the model answer prints only on the key", () => {
-  const doc = (el, choices = "") => `{{nyml\nkind: document\n${choices}}}\n\n# Quiz\n\n{{nyml\n${el}\n}}\n`;
+  const doc = (el, choices = "") => `{{nyml\nkind: document\ncarrier: paged\n${choices}}}\n\n# Quiz\n\n{{nyml\n${el}\n}}\n`;
   const at = (el, choices) => hiddenOf(doc(el, choices));
   assert.deepEqual(at("kind: question-open\nn: 1\npts: 2\nbody: In a galvanic cell, where does reduction take place?\nspace: 3cm\nanswer: At the cathode."), []);
   assert.match(at(`kind: lesson\ntext: ${LESSON}`)[0].what, /renders no such element/);
@@ -144,9 +167,10 @@ test("[req.control.paged-elements-allowlist] an orz-paged element prints only th
   assert.match(at("kind: question-open\nn: 1\nbody: Where?\nspace: 3cm; position: fixed; inset: 0; background: #fff")[0].what, /plain length/);
   assert.match(at("kind: letter-signature\nfrom: Yu Wang\nsignature_space: 1in; position: fixed; inset: 0; background: #fff")[0].what, /plain length/);
   assert.match(at(`kind: abstract\ntext: Short. <span style="display:none">${LESSON}</span>`)[0].what, /in the field `text`/);
-  // the frame really renders the fields it prints, and nothing of an unknown kind
-  const shown = assemble(doc("kind: abstract\ntext: Equilibrium shifts.\nkeywords: equilibrium")).bodyHtml;
-  assert.match(shown, /Equilibrium shifts/); assert.match(shown, /Keywords/);
+  // the frame really renders the fields it prints (an oracle on its source text: orz-paged 1.0 exports no element
+  // renderer, and Coursewerk imports none of its internals — D52)
+  const elements = fs.readFileSync(path.join(path.dirname(createRequire(import.meta.url).resolve("orz-paged")), "doc", "elements.js"), "utf8");
+  assert.match(elements, /function renderAbstract\(spec, ctx\) \{[\s\S]*?'text'[\s\S]*?'keywords'/);
   // the model answer: not printed for students (no unit reads it as page text), printed on the instructor's key
   const key = (choices) => printedModel(doc("kind: question-open\nn: 1\nbody: Where?\nanswer: At the cathode.", choices), { frame: "paged" }).printed;
   const answerLine = doc("kind: question-open\nn: 1\nbody: Where?\nanswer: At the cathode.").split("\n").findIndex((l) => l.startsWith("answer:"));
@@ -156,9 +180,14 @@ test("[req.control.paged-elements-allowlist] an orz-paged element prints only th
 });
 
 test("[req.control.slide-ratio] the deck ratio orz-slides scales every slide to is held to a slide shape known to show text", () => {
-  const deck = (ratio) => `<!-- deck\ntitle: Le Chatelier\nratio: ${ratio}\n-->\n\n<!-- slide -->\n## Shifts\n\nAdding a reactant shifts the position toward products.\n`;
+  // D52: the ratio is a key of the format-1 header; orz-slides 1.0 lays a ratio it does not take out at 16:9, so the
+  // written one is held to the shape too, and a shape that is none is a blocking notation defect as well
+  const deck = (ratio) => `{{nyml\nkind: document\ncarrier: slides\ntitle: Le Chatelier\nratio: ${ratio}\n}}\n\n<!-- slide -->\n## Shifts\n\nAdding a reactant shifts the position toward products.\n`;
   for (const r of ["16:9", "4:3", "16:10", "1:1"]) assert.deepEqual(hiddenOf(deck(r), "slides"), [], r);
   for (const r of ["16:900", "1:0", "wide", "16:9; x"]) assert.equal(hiddenOf(deck(r), "slides").length, 1, r);
+  for (const r of ["16:900", "1:0", "wide", "16:9; x"]) assert.ok(checkSlidesNotation(deck(r)).some((p) => !p.aspect && /ratio/.test(p.issue)), `${r}: a defect`);
+  for (const r of ["16:10", "1:1"]) assert.ok(checkSlidesNotation(deck(r)).every((p) => p.aspect), `${r}: a note at most (a newer frame may take it)`);
+  assert.deepEqual(checkSlidesNotation(deck("4:3")), []);
 });
 
 test("[req.control.paged-settings-allowlist] R7-C3-01 end to end: the gate refuses a declared paged handout whose font_family prints an unread lesson", (t) => {

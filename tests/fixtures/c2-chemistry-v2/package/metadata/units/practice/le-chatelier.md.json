@@ -38,7 +38,8 @@
         "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
         "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
         "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
-        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6"
+        "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
+        "term:le-chatelier:le chatelier's principle": "243f9e0ccefd378d28ed3a489ae880d11e4da7a29c9da1b210d11457757eec7b"
       },
       "tokens": [
         "all",
@@ -71,7 +72,8 @@
         "the",
         "two",
         "worked"
-      ]
+      ],
+      "text": "Fifteen questions instantiated from `assessment-support/le-chatelier.md`, covering all five\nobjectives of `concepts/le-chatelier.md`. Each question is followed by a worked answer. Because\nevery prediction here is one of two directions, each answer gives the reasoning, not just the\ndirection."
     },
     {
       "id": "u-practice-le-chatelier-practice-le-chatelier-s-principle-2",
@@ -110,36 +112,36 @@
         "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
         "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
         "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
-        "ref:u-practice-le-chatelier-questions-1": "q2:7c23b470cc002cfe6fe82e282addadf7eaf378ec0fa9fc5ccb61fe772e67830e",
-        "ref:u-practice-le-chatelier-questions-2": "q2:cdca7303b15545880b591c715c712ebf7b326758005a71a311d746cc6317f738",
-        "ref:u-practice-le-chatelier-questions-3": "q2:e6e4cc00a23cfbb5b029d2fc12b275c6ba802cdba7dd427c37670ed22014a21f",
-        "ref:u-practice-le-chatelier-questions-4": "q2:ab0fc0a927ec0a36409d87625396519318cb7ebb614b661948bbbc8f948f5146",
-        "ref:u-practice-le-chatelier-questions-5": "q2:5b97b91c4231597e2c192db57d15a7f3aea82d3f9123d126c9b10ec6f4d3ae5e",
-        "ref:u-practice-le-chatelier-questions-6": "q2:019da2df8b13605dc7f2c9071f1baf1fe76c44ecef815a8d8078ba4987416174",
-        "ref:u-practice-le-chatelier-questions-7": "q2:4a9fc897eeefc5a423b855ed6dbc245f2defee4ce7b2dc75fe48332b817cae3c",
-        "ref:u-practice-le-chatelier-questions-8": "q2:35a345898e375d2a027a20bee5541f71f33ade2392054545f976b0175458f4df",
-        "ref:u-practice-le-chatelier-questions-9": "q2:0088eaea400ff0b41a6fdc35d57a3a7e6e3c96c05623637f472114c04c1e167c",
-        "ref:u-practice-le-chatelier-questions-10": "q2:06ef40b9a355c0df5cb725851b10f8d3caa351985ca8fc4d433738e9e0c55c77",
-        "ref:u-practice-le-chatelier-questions-11": "q2:acc1d623dd8c6c36ccc12fac13c2815c3b70f183ea16bec22337ccc266925236",
-        "ref:u-practice-le-chatelier-questions-12": "q2:edf249e2e78a51c1497ea61a2ea996d012630f3dda4301d3434a95f504c071e0",
-        "ref:u-practice-le-chatelier-questions-13": "q2:4ae44532f37396e8137f212632b6e5c2beac320a173e24b30c2c48a88e95c9b8",
-        "ref:u-practice-le-chatelier-questions-14": "q2:b1dd82b360cb885329367ce68c8b80a8ee63ec3dde700e727042e2350e3bae30",
-        "ref:u-practice-le-chatelier-questions-15": "q2:599f09da5c8f112957638a131b7f578373df9b10aea75e022ce061aeb59997d3",
-        "ref:u-practice-le-chatelier-questions-16": "q2:b21a9352593e23ccd96e4870a493e05e84cb0311be6dacbf20ba3823f5d0120e",
-        "ref:u-practice-le-chatelier-questions-17": "q2:e5ed51e0721fb1631900162dc92860aaac93aa1595f5a5ace47c6d3cb1e994c6",
-        "ref:u-practice-le-chatelier-questions-18": "q2:2f86ad251639db6655e936b950fd58a909c5afe40f9748fec0967c66d0260030",
-        "ref:u-practice-le-chatelier-questions-19": "q2:fede2dce5caedc990e50147f63ffbcfa798c2c56a0bbdd9ae0abcfdb9fae4b00",
-        "ref:u-practice-le-chatelier-questions-20": "q2:b816fde51b20f9a0992ce6b4407b5e59853ea26e725035799dd9d09a65ecb25f",
-        "ref:u-practice-le-chatelier-questions-21": "q2:4aa8113832a3ab7070df71f0d0f641f3358b5d5778915a7e9801f96e0601f15c",
-        "ref:u-practice-le-chatelier-questions-22": "q2:84d5563b789f1010b3cd4eb09a58f819d5a1d3403ac228c9f408936df8368381",
-        "ref:u-practice-le-chatelier-questions-23": "q2:1d59f02a64ebef8afc179b25d5b9cab086f2d446d88c15843a9de1846f0cec1d",
-        "ref:u-practice-le-chatelier-questions-24": "q2:2763431784991b2765e3872070cceacebba40d7259446833e46c8e2fe723b53c",
-        "ref:u-practice-le-chatelier-questions-25": "q2:2006ace6a1d1b03616808a31779b5cf2183e03fd17239bdb94e930b4db2b85f6",
-        "ref:u-practice-le-chatelier-questions-26": "q2:a10c94ef1a9366c82855526590d9c67dfedcde81616c5f6372a33d044c102dbb",
-        "ref:u-practice-le-chatelier-questions-27": "q2:f821364a03565c2a7e3f8cb9445e65a4660935a700c19264c2b02d08c8b06c64",
-        "ref:u-practice-le-chatelier-questions-28": "q2:075f5043bc4de878f15162be99f8e296300ae5d8b89f4067226171e1c2bb7ce2",
-        "ref:u-practice-le-chatelier-questions-29": "q2:b783016eceb35575caabd8029ffc382f9e6de5b7756d07f082965aa645b3be2a",
-        "ref:u-practice-le-chatelier-questions-30": "q2:2c7865d04720109cff5f4ba691b93ac53318ce75fe632d6ee7569eec48e15772"
+        "ref:u-practice-le-chatelier-questions-1": "q3:7c23b470cc002cfe6fe82e282addadf7eaf378ec0fa9fc5ccb61fe772e67830e",
+        "ref:u-practice-le-chatelier-questions-2": "q3:cdca7303b15545880b591c715c712ebf7b326758005a71a311d746cc6317f738",
+        "ref:u-practice-le-chatelier-questions-3": "q3:e6e4cc00a23cfbb5b029d2fc12b275c6ba802cdba7dd427c37670ed22014a21f",
+        "ref:u-practice-le-chatelier-questions-4": "q3:ab0fc0a927ec0a36409d87625396519318cb7ebb614b661948bbbc8f948f5146",
+        "ref:u-practice-le-chatelier-questions-5": "q3:cf00e334b1130546c412aefe6396e599b01449f5a6cac26027a7679fec261693",
+        "ref:u-practice-le-chatelier-questions-6": "q3:d17e1d4e83e206e869e52f7a1631f05c83314b67e574706d51f0ab9ff193392c",
+        "ref:u-practice-le-chatelier-questions-7": "q3:4a9fc897eeefc5a423b855ed6dbc245f2defee4ce7b2dc75fe48332b817cae3c",
+        "ref:u-practice-le-chatelier-questions-8": "q3:35a345898e375d2a027a20bee5541f71f33ade2392054545f976b0175458f4df",
+        "ref:u-practice-le-chatelier-questions-9": "q3:8371c5fe28f97cbebdd567229919c6048e2a41e956d916fc44e1683c65662481",
+        "ref:u-practice-le-chatelier-questions-10": "q3:8397644d7381920d68e8020eee358b8ad84228270614ec4b6b9b9e230d7e14b1",
+        "ref:u-practice-le-chatelier-questions-11": "q3:7459e42027d3bf8fd2b50c2aa4e4faace572e10a8d045fd0c8b97b9eaa498054",
+        "ref:u-practice-le-chatelier-questions-12": "q3:edf249e2e78a51c1497ea61a2ea996d012630f3dda4301d3434a95f504c071e0",
+        "ref:u-practice-le-chatelier-questions-13": "q3:4ae44532f37396e8137f212632b6e5c2beac320a173e24b30c2c48a88e95c9b8",
+        "ref:u-practice-le-chatelier-questions-14": "q3:b1dd82b360cb885329367ce68c8b80a8ee63ec3dde700e727042e2350e3bae30",
+        "ref:u-practice-le-chatelier-questions-15": "q3:599f09da5c8f112957638a131b7f578373df9b10aea75e022ce061aeb59997d3",
+        "ref:u-practice-le-chatelier-questions-16": "q3:f5c73ba64d22dc7aaa5b67d1414f46a9bb13e97e337912a592abc3aae345b0d7",
+        "ref:u-practice-le-chatelier-questions-17": "q3:d8180d033097a66193380b0840cde248d7132e9b21fee4de5178aa48cdc918a6",
+        "ref:u-practice-le-chatelier-questions-18": "q3:2f86ad251639db6655e936b950fd58a909c5afe40f9748fec0967c66d0260030",
+        "ref:u-practice-le-chatelier-questions-19": "q3:49af8164823a5c20be650def8b396a178fc18299cc7953febe2c72da9ed6a872",
+        "ref:u-practice-le-chatelier-questions-20": "q3:b816fde51b20f9a0992ce6b4407b5e59853ea26e725035799dd9d09a65ecb25f",
+        "ref:u-practice-le-chatelier-questions-21": "q3:39f56f4b3cf2fbca12d9f1ef93056175445a4f523ad6f1e07b52128ebb1b2198",
+        "ref:u-practice-le-chatelier-questions-22": "q3:84d5563b789f1010b3cd4eb09a58f819d5a1d3403ac228c9f408936df8368381",
+        "ref:u-practice-le-chatelier-questions-23": "q3:1d59f02a64ebef8afc179b25d5b9cab086f2d446d88c15843a9de1846f0cec1d",
+        "ref:u-practice-le-chatelier-questions-24": "q3:0c6b5766d438ca390f3e70c1c839de530a2dfa07f59596931073f3401f1dbfe6",
+        "ref:u-practice-le-chatelier-questions-25": "q3:2006ace6a1d1b03616808a31779b5cf2183e03fd17239bdb94e930b4db2b85f6",
+        "ref:u-practice-le-chatelier-questions-26": "q3:a10c94ef1a9366c82855526590d9c67dfedcde81616c5f6372a33d044c102dbb",
+        "ref:u-practice-le-chatelier-questions-27": "q3:f821364a03565c2a7e3f8cb9445e65a4660935a700c19264c2b02d08c8b06c64",
+        "ref:u-practice-le-chatelier-questions-28": "q3:075f5043bc4de878f15162be99f8e296300ae5d8b89f4067226171e1c2bb7ce2",
+        "ref:u-practice-le-chatelier-questions-29": "q3:fd856a92bde53e443a343f2bb2c15c54a2efd30c6dba2d6b0b831a382c1f3f29",
+        "ref:u-practice-le-chatelier-questions-30": "q3:04fc1cd9e6deb97ac999d04960e85732f999b20e358ad2d38bd8bcde347cee2b"
       },
       "tokens": [
         "coverage",
@@ -147,7 +149,8 @@
         "q11",
         "q12",
         "q15"
-      ]
+      ],
+      "text": "**Objective coverage:** Q1–Q2 objective 1 · Q3–Q5 objective 2 · Q6–Q8 objective 3 · Q9–Q11 objective 4 · Q12–Q15 objective 5."
     },
     {
       "id": "u-practice-le-chatelier-questions-1",
@@ -202,7 +205,8 @@
         "with",
         "wrong",
         "you"
-      ]
+      ],
+      "text": "State Le Chatelier's principle. A student says it means \"the system undoes the change you made.\"\nWhat is wrong with that phrasing? *(Objective 1)*"
     },
     {
       "id": "u-practice-le-chatelier-questions-2",
@@ -234,10 +238,11 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-le-chatelier-questions-1": "cb4a57f8db0fd311e1179ffced45859406e5991eb23c8ab50039b4ad460bf22a",
-        "question:u-practice-le-chatelier-questions-1": "q2:7c23b470cc002cfe6fe82e282addadf7eaf378ec0fa9fc5ccb61fe772e67830e",
+        "unit:u-practice-le-chatelier-questions-1": "v:cb4a57f8db0fd311e1179ffced45859406e5991eb23c8ab50039b4ad460bf22a",
+        "question:u-practice-le-chatelier-questions-1": "q3:7c23b470cc002cfe6fe82e282addadf7eaf378ec0fa9fc5ccb61fe772e67830e",
         "spine:objective.le-chatelier.state-principle": "5324ba0a821c95fd2cbc3ddb3ac4b939890d620dbf4818316c0c016e52c9c95d",
-        "spine:guide.le-chatelier.word-partially": "4e87c6f3a49185bafbde5b65e6a076f122d444181e585b2448322c5e6e09e0f6"
+        "spine:guide.le-chatelier.word-partially": "4e87c6f3a49185bafbde5b65e6a076f122d444181e585b2448322c5e6e09e0f6",
+        "term:le-chatelier:partial pressure": "1911d9c4cb6332589c0c654fabfa7dd7bfd78d9bfceb7146973dee1784dcec0d"
       },
       "tokens": [
         "adjusts",
@@ -269,7 +274,8 @@
         "two",
         "ways",
         "wrong"
-      ]
+      ],
+      "text": "The principle states that a system at equilibrium, disturbed by a change in a determining factor,\nadjusts to a **new** equilibrium that **partially counteracts** the change. The student's phrasing\nis wrong in two ways: the counteraction is only partial, and the system settles at a new\nequilibrium rather than returning to the original one."
     },
     {
       "id": "u-practice-le-chatelier-questions-3",
@@ -316,7 +322,8 @@
         "same",
         "system",
         "the"
-      ]
+      ],
+      "text": "After a disturbance, a system reaches a new equilibrium. Are the concentrations the same as before\nthe disturbance? *(Objective 1)*"
     },
     {
       "id": "u-practice-le-chatelier-questions-4",
@@ -347,8 +354,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-le-chatelier-questions-3": "9c572b56b8760fb5ddbe0a225a6ed83615bdb3489891eea3b8a3b55b7d691f73",
-        "question:u-practice-le-chatelier-questions-3": "q2:e6e4cc00a23cfbb5b029d2fc12b275c6ba802cdba7dd427c37670ed22014a21f",
+        "unit:u-practice-le-chatelier-questions-3": "v:9c572b56b8760fb5ddbe0a225a6ed83615bdb3489891eea3b8a3b55b7d691f73",
+        "question:u-practice-le-chatelier-questions-3": "q3:e6e4cc00a23cfbb5b029d2fc12b275c6ba802cdba7dd427c37670ed22014a21f",
         "spine:objective.le-chatelier.state-principle": "5324ba0a821c95fd2cbc3ddb3ac4b939890d620dbf4818316c0c016e52c9c95d",
         "spine:guide.le-chatelier.statement-critique": "db3cc502d5681b12fa15cb966098f88b5c5a46be0c8fb5134b2c2994d0e783ad"
       },
@@ -380,7 +387,8 @@
         "which",
         "word",
         "would"
-      ]
+      ],
+      "text": "No. The system moves to partially oppose the change, so the new concentrations lie between the\noriginal values and the values immediately after the disturbance. Complete restoration would mean\nthe disturbance had no effect at all, which the word *partially* rules out."
     },
     {
       "id": "u-practice-le-chatelier-questions-5",
@@ -428,7 +436,8 @@
         "the",
         "way",
         "which"
-      ]
+      ],
+      "text": "For $\\ce{N2(g) + 3 H2(g) <=> 2 NH3(g)}$ at equilibrium, extra $\\ce{H2}$ is injected. Which way does\nthe equilibrium shift? *(Objective 2)*"
     },
     {
       "id": "u-practice-le-chatelier-questions-6",
@@ -460,8 +469,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-le-chatelier-questions-5": "de267694afcd730952dc75b0fa0d035ed8d8ddbb5e7f2370ae692fac7bc0595f",
-        "question:u-practice-le-chatelier-questions-5": "q2:5b97b91c4231597e2c192db57d15a7f3aea82d3f9123d126c9b10ec6f4d3ae5e",
+        "unit:u-practice-le-chatelier-questions-5": "v:de267694afcd730952dc75b0fa0d035ed8d8ddbb5e7f2370ae692fac7bc0595f",
+        "question:u-practice-le-chatelier-questions-5": "q3:cf00e334b1130546c412aefe6396e599b01449f5a6cac26027a7679fec261693",
         "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
         "spine:guide.le-chatelier.add-remove": "d4c7c4ea3012c8968555e0cd5f7bc02362af99fa929c9f186579a65c155bff78"
       },
@@ -484,7 +493,8 @@
         "some",
         "the",
         "toward"
-      ]
+      ],
+      "text": "Toward the products, to the right. Increasing the concentration of a reactant shifts the\nequilibrium toward the opposite side, consuming some of the added $\\ce{H2}$ and forming more\n$\\ce{NH3}$."
     },
     {
       "id": "u-practice-le-chatelier-questions-7",
@@ -518,7 +528,7 @@
         "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
         "spine:guide.le-chatelier.add-remove": "d4c7c4ea3012c8968555e0cd5f7bc02362af99fa929c9f186579a65c155bff78",
         "term:le-chatelier:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
-        "ref:u-practice-le-chatelier-questions-5": "q2:5b97b91c4231597e2c192db57d15a7f3aea82d3f9123d126c9b10ec6f4d3ae5e"
+        "ref:u-practice-le-chatelier-questions-5": "q3:cf00e334b1130546c412aefe6396e599b01449f5a6cac26027a7679fec261693"
       },
       "tokens": [
         "ammonia",
@@ -541,7 +551,8 @@
         "way",
         "which",
         "why"
-      ]
+      ],
+      "text": "For the same reaction, ammonia is continuously removed from the vessel. Which way does the\nequilibrium shift, and why is this useful industrially? *(Objective 2)*"
     },
     {
       "id": "u-practice-le-chatelier-questions-8",
@@ -572,11 +583,11 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-le-chatelier-questions-7": "14ff2ae3f34370f4783b2843c73904db70a9d30e284efbab94afd08baec1b34f",
-        "question:u-practice-le-chatelier-questions-7": "q2:4a9fc897eeefc5a423b855ed6dbc245f2defee4ce7b2dc75fe48332b817cae3c",
+        "unit:u-practice-le-chatelier-questions-7": "v:14ff2ae3f34370f4783b2843c73904db70a9d30e284efbab94afd08baec1b34f",
+        "question:u-practice-le-chatelier-questions-7": "q3:4a9fc897eeefc5a423b855ed6dbc245f2defee4ce7b2dc75fe48332b817cae3c",
         "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
         "spine:guide.le-chatelier.add-remove": "d4c7c4ea3012c8968555e0cd5f7bc02362af99fa929c9f186579a65c155bff78",
-        "ref:u-practice-le-chatelier-questions-5": "q2:5b97b91c4231597e2c192db57d15a7f3aea82d3f9123d126c9b10ec6f4d3ae5e"
+        "ref:u-practice-le-chatelier-questions-5": "q3:cf00e334b1130546c412aefe6396e599b01449f5a6cac26027a7679fec261693"
       },
       "tokens": [
         "ammonia",
@@ -607,7 +618,8 @@
         "what",
         "which",
         "why"
-      ]
+      ],
+      "text": "Toward the products. Decreasing the concentration of a product shifts the equilibrium toward that\nside to replace what was removed. Removing ammonia as it forms therefore keeps driving the reaction\nforward, which is why industrial processes remove product continuously."
     },
     {
       "id": "u-practice-le-chatelier-questions-9",
@@ -644,8 +656,8 @@
         "term:le-chatelier:le chatelier's principle": "243f9e0ccefd378d28ed3a489ae880d11e4da7a29c9da1b210d11457757eec7b",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
         "term:chemical-equilibrium:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f",
-        "ref:u-practice-le-chatelier-questions-5": "q2:5b97b91c4231597e2c192db57d15a7f3aea82d3f9123d126c9b10ec6f4d3ae5e",
-        "ref:u-practice-le-chatelier-questions-6": "q2:019da2df8b13605dc7f2c9071f1baf1fe76c44ecef815a8d8078ba4987416174"
+        "ref:u-practice-le-chatelier-questions-5": "q3:cf00e334b1130546c412aefe6396e599b01449f5a6cac26027a7679fec261693",
+        "ref:u-practice-le-chatelier-questions-6": "q3:d17e1d4e83e206e869e52f7a1631f05c83314b67e574706d51f0ab9ff193392c"
       },
       "tokens": [
         "and",
@@ -657,7 +669,8 @@
         "principle",
         "the",
         "using"
-      ]
+      ],
+      "text": "Justify the answer to Q3 using $Q_r$ and $K$ instead of Le Chatelier's principle. *(Objective 2)*"
     },
     {
       "id": "u-practice-le-chatelier-questions-10",
@@ -690,10 +703,10 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-le-chatelier-questions-9": "7d495c5582a221d1b285dcac48236e466c9642f779a3676bd8220dfb38edfdd3",
-        "question:u-practice-le-chatelier-questions-9": "q2:0088eaea400ff0b41a6fdc35d57a3a7e6e3c96c05623637f472114c04c1e167c",
-        "ref:u-practice-le-chatelier-questions-5": "q2:5b97b91c4231597e2c192db57d15a7f3aea82d3f9123d126c9b10ec6f4d3ae5e",
-        "ref:u-practice-le-chatelier-questions-6": "q2:019da2df8b13605dc7f2c9071f1baf1fe76c44ecef815a8d8078ba4987416174",
+        "unit:u-practice-le-chatelier-questions-9": "v:7d495c5582a221d1b285dcac48236e466c9642f779a3676bd8220dfb38edfdd3",
+        "question:u-practice-le-chatelier-questions-9": "q3:8371c5fe28f97cbebdd567229919c6048e2a41e956d916fc44e1683c65662481",
+        "ref:u-practice-le-chatelier-questions-5": "q3:cf00e334b1130546c412aefe6396e599b01449f5a6cac26027a7679fec261693",
+        "ref:u-practice-le-chatelier-questions-6": "q3:d17e1d4e83e206e869e52f7a1631f05c83314b67e574706d51f0ab9ff193392c",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
         "term:chemical-equilibrium:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f",
         "spine:objective.le-chatelier.predict-concentration-shift": "5db05e43b543ce5d3bdf9163618cf335a671e884d498f1936cfeed6bd140c97c",
@@ -721,7 +734,8 @@
         "the",
         "unchanged",
         "until"
-      ]
+      ],
+      "text": "Adding $\\ce{H2}$ increases the denominator of the quotient, so $Q_r$ falls below $K$. Since\n$Q_r < K$, the reaction shifts forward until $Q_r$ rises back to $K$. Note that $K$ itself is\nunchanged: only the composition moved."
     },
     {
       "id": "u-practice-le-chatelier-questions-11",
@@ -755,7 +769,8 @@
       "stamp": {
         "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
         "spine:guide.le-chatelier.heat-species": "f26d6c825060fa7e83a4614b997271eed5e2389afd8a326359ef69b4ae2b3a36",
-        "term:le-chatelier:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb"
+        "term:le-chatelier:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
+        "term:le-chatelier:exothermic reaction": "c20452115a1d09ee264abeb11c57548d06c6d732dbb57bd21fcd6673c570eb27"
       },
       "tokens": [
         "does",
@@ -770,7 +785,8 @@
         "the",
         "way",
         "which"
-      ]
+      ],
+      "text": "The reaction $\\ce{N2(g) + 3 H2(g) <=> 2 NH3(g)}$ is exothermic. The temperature is raised. Which way\ndoes the equilibrium shift? *(Objective 3)*"
     },
     {
       "id": "u-practice-le-chatelier-questions-12",
@@ -801,8 +817,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-le-chatelier-questions-11": "57db15f8bd97db2b2a2b9411b8212c741bd2f1237ba8e11e504242c87c5af910",
-        "question:u-practice-le-chatelier-questions-11": "q2:acc1d623dd8c6c36ccc12fac13c2815c3b70f183ea16bec22337ccc266925236",
+        "unit:u-practice-le-chatelier-questions-11": "v:57db15f8bd97db2b2a2b9411b8212c741bd2f1237ba8e11e504242c87c5af910",
+        "question:u-practice-le-chatelier-questions-11": "q3:7459e42027d3bf8fd2b50c2aa4e4faace572e10a8d045fd0c8b97b9eaa498054",
         "term:le-chatelier:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
         "term:le-chatelier:exothermic reaction": "c20452115a1d09ee264abeb11c57548d06c6d732dbb57bd21fcd6673c570eb27",
         "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
@@ -831,7 +847,8 @@
         "the",
         "toward",
         "yield"
-      ]
+      ],
+      "text": "Toward the reactants, to the left. For an exothermic reaction heat behaves as a **product**, so\nadding heat is like adding a product, and the equilibrium shifts away from it. The yield of ammonia\nfalls at higher temperature."
     },
     {
       "id": "u-practice-le-chatelier-questions-13",
@@ -880,7 +897,8 @@
         "the",
         "way",
         "which"
-      ]
+      ],
+      "text": "An endothermic reaction is at equilibrium and the mixture is cooled. Which way does the equilibrium\nshift? *(Objective 3)*"
     },
     {
       "id": "u-practice-le-chatelier-questions-14",
@@ -911,8 +929,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-le-chatelier-questions-13": "fcf757e326dc23adc9de13c00bcec64686623f99af9ee10621ebdbb38ebba937",
-        "question:u-practice-le-chatelier-questions-13": "q2:4ae44532f37396e8137f212632b6e5c2beac320a173e24b30c2c48a88e95c9b8",
+        "unit:u-practice-le-chatelier-questions-13": "v:fcf757e326dc23adc9de13c00bcec64686623f99af9ee10621ebdbb38ebba937",
+        "question:u-practice-le-chatelier-questions-13": "q3:4ae44532f37396e8137f212632b6e5c2beac320a173e24b30c2c48a88e95c9b8",
         "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
         "spine:guide.le-chatelier.heat-species": "f26d6c825060fa7e83a4614b997271eed5e2389afd8a326359ef69b4ae2b3a36",
         "term:le-chatelier:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
@@ -934,7 +952,8 @@
         "side",
         "the",
         "toward"
-      ]
+      ],
+      "text": "Toward the reactants. For an endothermic reaction heat behaves as a **reactant**; removing heat is\nlike removing a reactant, so the equilibrium shifts toward the reactant side to replace it."
     },
     {
       "id": "u-practice-le-chatelier-questions-15",
@@ -981,7 +1000,8 @@
         "the",
         "this",
         "yield"
-      ]
+      ],
+      "text": "\"Raising the temperature always increases the yield of product.\" Evaluate this claim.\n*(Objective 3)*"
     },
     {
       "id": "u-practice-le-chatelier-questions-16",
@@ -1013,8 +1033,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-le-chatelier-questions-15": "76f86106fc022f3374d56916731d1ef21746a1dbaec50b26ebd4eb955bf60f26",
-        "question:u-practice-le-chatelier-questions-15": "q2:599f09da5c8f112957638a131b7f578373df9b10aea75e022ce061aeb59997d3",
+        "unit:u-practice-le-chatelier-questions-15": "v:76f86106fc022f3374d56916731d1ef21746a1dbaec50b26ebd4eb955bf60f26",
+        "question:u-practice-le-chatelier-questions-15": "q3:599f09da5c8f112957638a131b7f578373df9b10aea75e022ce061aeb59997d3",
         "spine:objective.le-chatelier.predict-temperature-shift": "3638873bbf19a5cb09ecbff75654526492176f3eae76c0ee0742a42f3bab9cb0",
         "spine:guide.le-chatelier.yield-probe": "a76c6adb4782a6d3dda62d70a32dc0c371dc4c3e484a028bbb58a095a63b4dd6",
         "term:le-chatelier:exothermic reaction": "c20452115a1d09ee264abeb11c57548d06c6d732dbb57bd21fcd6673c570eb27",
@@ -1051,7 +1071,8 @@
         "these",
         "value",
         "yield"
-      ]
+      ],
+      "text": "False. The effect depends on the sign of the reaction enthalpy. Raising the temperature increases\nthe yield for an endothermic reaction, because heat acts as a reactant, but decreases it for an\nexothermic reaction, because heat acts as a product. Temperature is also the only one of these\ndisturbances that changes the value of $K$."
     },
     {
       "id": "u-practice-le-chatelier-questions-17",
@@ -1100,7 +1121,8 @@
         "volume",
         "way",
         "which"
-      ]
+      ],
+      "text": "For $\\ce{N2(g) + 3 H2(g) <=> 2 NH3(g)}$, the volume of the vessel is halved. Which way does the\nequilibrium shift? *(Objective 4)*"
     },
     {
       "id": "u-practice-le-chatelier-questions-18",
@@ -1131,8 +1153,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-le-chatelier-questions-17": "09dd92bdf381dc2194220b0e87f2cfa92cf53ee600f7268caa53c42da0fe9bfc",
-        "question:u-practice-le-chatelier-questions-17": "q2:e5ed51e0721fb1631900162dc92860aaac93aa1595f5a5ace47c6d3cb1e994c6",
+        "unit:u-practice-le-chatelier-questions-17": "v:09dd92bdf381dc2194220b0e87f2cfa92cf53ee600f7268caa53c42da0fe9bfc",
+        "question:u-practice-le-chatelier-questions-17": "q3:d8180d033097a66193380b0840cde248d7132e9b21fee4de5178aa48cdc918a6",
         "term:le-chatelier:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
         "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
         "spine:guide.le-chatelier.count-moles": "f10d7a0235af9a7dfddf00b760bb6bacd9ab7f98e3dd87281667306aa1e2441c"
@@ -1161,7 +1183,8 @@
         "volume",
         "which",
         "with"
-      ]
+      ],
+      "text": "Toward the products. There are four moles of gas on the left and two on the right. Decreasing the\nvolume raises the pressure, and the equilibrium shifts toward the side with **fewer** moles of gas,\nwhich is the product side."
     },
     {
       "id": "u-practice-le-chatelier-questions-19",
@@ -1208,7 +1231,8 @@
         "volume",
         "way",
         "which"
-      ]
+      ],
+      "text": "For $\\ce{H2(g) + I2(g) <=> 2 HI(g)}$, the volume is halved. Which way does the equilibrium shift?\n*(Objective 4)*"
     },
     {
       "id": "u-practice-le-chatelier-questions-20",
@@ -1239,8 +1263,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-le-chatelier-questions-19": "c09ec4d2bcacff3af1f0e66ee0b1cd9437db912681042e89421541661a2cdccd",
-        "question:u-practice-le-chatelier-questions-19": "q2:fede2dce5caedc990e50147f63ffbcfa798c2c56a0bbdd9ae0abcfdb9fae4b00",
+        "unit:u-practice-le-chatelier-questions-19": "v:c09ec4d2bcacff3af1f0e66ee0b1cd9437db912681042e89421541661a2cdccd",
+        "question:u-practice-le-chatelier-questions-19": "q3:49af8164823a5c20be650def8b396a178fc18299cc7953febe2c72da9ed6a872",
         "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
         "spine:guide.le-chatelier.count-moles": "f10d7a0235af9a7dfddf00b760bb6bacd9ab7f98e3dd87281667306aa1e2441c"
       },
@@ -1269,7 +1293,8 @@
         "this",
         "two",
         "volume"
-      ]
+      ],
+      "text": "It does not shift. There are two moles of gas on each side, so neither side is favoured by a\nvolume change. This is the case that shows a pressure change does not move every gas-phase\nequilibrium."
     },
     {
       "id": "u-practice-le-chatelier-questions-21",
@@ -1319,7 +1344,8 @@
         "volume",
         "way",
         "which"
-      ]
+      ],
+      "text": "For $\\ce{2 SO3(g) <=> 2 SO2(g) + O2(g)}$, the volume of the vessel is doubled. Which way does the\nequilibrium shift? *(Objective 4)*"
     },
     {
       "id": "u-practice-le-chatelier-questions-22",
@@ -1350,8 +1376,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-le-chatelier-questions-21": "dd30b64aeecd3768faf5fc2282e7a002cc39ffda6b89cea2aa25732ef1ac804f",
-        "question:u-practice-le-chatelier-questions-21": "q2:4aa8113832a3ab7070df71f0d0f641f3358b5d5778915a7e9801f96e0601f15c",
+        "unit:u-practice-le-chatelier-questions-21": "v:dd30b64aeecd3768faf5fc2282e7a002cc39ffda6b89cea2aa25732ef1ac804f",
+        "question:u-practice-le-chatelier-questions-21": "q3:39f56f4b3cf2fbca12d9f1ef93056175445a4f523ad6f1e07b52128ebb1b2198",
         "term:le-chatelier:equilibrium shift": "13ef995ae3df8b63aa60893c54ab581cdfdc5c9a7c5f5fa38efc5bbb929bf3bb",
         "spine:objective.le-chatelier.predict-pressure-shift": "8c3982d51c981a186a9f4c81d87e23af366e46cbaf66db1b484f0212bea7beee",
         "spine:guide.le-chatelier.equal-moles-case": "021d3171b51210c48efa95d120eab4582b432db473e545f4c42d88d765ac3b44"
@@ -1378,7 +1404,8 @@
         "two",
         "volume",
         "with"
-      ]
+      ],
+      "text": "Toward the products. There are two moles of gas on the left and three on the right. Increasing the\nvolume lowers the pressure, and the equilibrium shifts toward the side with **more** moles of gas."
     },
     {
       "id": "u-practice-le-chatelier-questions-23",
@@ -1429,7 +1456,8 @@
         "volume",
         "way",
         "which"
-      ]
+      ],
+      "text": "Argon is added to a gas-phase equilibrium mixture held at constant volume. Which way does the\nequilibrium shift? *(Objective 5)*"
     },
     {
       "id": "u-practice-le-chatelier-questions-24",
@@ -1460,13 +1488,14 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-le-chatelier-questions-23": "7ccfaf3a132df67ce8b8a4fec3cbc570364c90c0bb5e84831af251af1d12320b",
-        "question:u-practice-le-chatelier-questions-23": "q2:1d59f02a64ebef8afc179b25d5b9cab086f2d446d88c15843a9de1846f0cec1d",
+        "unit:u-practice-le-chatelier-questions-23": "v:7ccfaf3a132df67ce8b8a4fec3cbc570364c90c0bb5e84831af251af1d12320b",
+        "question:u-practice-le-chatelier-questions-23": "q3:1d59f02a64ebef8afc179b25d5b9cab086f2d446d88c15843a9de1846f0cec1d",
         "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
         "spine:guide.le-chatelier.inert-gas-probe": "af8095ab96dbad02f8bd975703431cc73ec5afaa15571a042565f43b044b8043",
         "term:le-chatelier:partial pressure": "1911d9c4cb6332589c0c654fabfa7dd7bfd78d9bfceb7146973dee1784dcec0d",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
-        "term:chemical-equilibrium:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f"
+        "term:chemical-equilibrium:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f",
+        "term:le-chatelier:inert gas": "91b328404fe9488574e97dda03a06991fc165308d1553889049deb255cba0d1a"
       },
       "tokens": [
         "addition",
@@ -1496,7 +1525,8 @@
         "unchanged",
         "volume",
         "which"
-      ]
+      ],
+      "text": "It does not shift. Argon is inert and, at constant volume, its addition changes no partial pressure\nof the reacting species. The total pressure rises, but the quotient depends on the partial\npressures, which are unchanged, so $Q_r$ still equals $K$."
     },
     {
       "id": "u-practice-le-chatelier-questions-25",
@@ -1553,7 +1583,8 @@
         "total",
         "went",
         "where"
-      ]
+      ],
+      "text": "A student argues that adding argon must shift the equilibrium \"because the total pressure went up,\nand pressure changes shift equilibria.\" Where does the argument fail? *(Objective 5)*"
     },
     {
       "id": "u-practice-le-chatelier-questions-26",
@@ -1584,8 +1615,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-le-chatelier-questions-25": "9708137cc5a033d798cb13ca3fb0b9392754505f4744820d995204a4d83cc41f",
-        "question:u-practice-le-chatelier-questions-25": "q2:2006ace6a1d1b03616808a31779b5cf2183e03fd17239bdb94e930b4db2b85f6",
+        "unit:u-practice-le-chatelier-questions-25": "v:9708137cc5a033d798cb13ca3fb0b9392754505f4744820d995204a4d83cc41f",
+        "question:u-practice-le-chatelier-questions-25": "q3:2006ace6a1d1b03616808a31779b5cf2183e03fd17239bdb94e930b4db2b85f6",
         "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
         "spine:guide.le-chatelier.inert-gas-probe": "af8095ab96dbad02f8bd975703431cc73ec5afaa15571a042565f43b044b8043",
         "term:le-chatelier:partial pressure": "1911d9c4cb6332589c0c654fabfa7dd7bfd78d9bfceb7146973dee1784dcec0d",
@@ -1619,7 +1650,8 @@
         "what",
         "which",
         "while"
-      ]
+      ],
+      "text": "It fails by treating total pressure as the driver. What moves a gas-phase equilibrium is a change\nin the **partial pressures** of the reacting species, which is what a volume change produces. An\ninert gas added at constant volume raises the total pressure while leaving every partial pressure\nuntouched."
     },
     {
       "id": "u-practice-le-chatelier-questions-27",
@@ -1667,7 +1699,8 @@
         "reaction",
         "the",
         "what"
-      ]
+      ],
+      "text": "A catalyst is added to a reaction at equilibrium. What happens to the amount of product present?\n*(Objective 5)*"
     },
     {
       "id": "u-practice-le-chatelier-questions-28",
@@ -1698,8 +1731,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-le-chatelier-questions-27": "1d8bfe69b5e6c554327cd9fc3245001a0c6cdc6c54ecb7622b496696550b3ff1",
-        "question:u-practice-le-chatelier-questions-27": "q2:f821364a03565c2a7e3f8cb9445e65a4660935a700c19264c2b02d08c8b06c64",
+        "unit:u-practice-le-chatelier-questions-27": "v:1d8bfe69b5e6c554327cd9fc3245001a0c6cdc6c54ecb7622b496696550b3ff1",
+        "question:u-practice-le-chatelier-questions-27": "q3:f821364a03565c2a7e3f8cb9445e65a4660935a700c19264c2b02d08c8b06c64",
         "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
         "spine:guide.le-chatelier.catalyst-probe": "45de34efefa01dea2ff69e11aa0530f6b8d7d968608951f31344c470b040665e",
         "term:chemical-equilibrium:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
@@ -1734,7 +1767,8 @@
         "valuable",
         "which",
         "yield"
-      ]
+      ],
+      "text": "Nothing. A catalyst speeds up the forward and reverse reactions by the same factor, so it changes\nneither the position nor the composition of the equilibrium. It shortens the time needed to reach\nequilibrium, which is valuable industrially, but it does not raise the yield."
     },
     {
       "id": "u-practice-le-chatelier-questions-29",
@@ -1797,7 +1831,8 @@
         "value",
         "volume",
         "which"
-      ]
+      ],
+      "text": "Four changes are applied separately to a gas-phase equilibrium: adding a reactant, raising the\ntemperature, adding an inert gas at constant volume, and adding a catalyst. Which shift the\nposition of the equilibrium, and which change the value of $K$? *(Objective 5)*"
     },
     {
       "id": "u-practice-le-chatelier-questions-30",
@@ -1829,8 +1864,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-le-chatelier-questions-29": "db9df4f07c775a9ceb320df28e8aa3f7fb7f05ce0cd46cf4a3c61a4975f6c219",
-        "question:u-practice-le-chatelier-questions-29": "q2:b783016eceb35575caabd8029ffc382f9e6de5b7756d07f082965aa645b3be2a",
+        "unit:u-practice-le-chatelier-questions-29": "v:db9df4f07c775a9ceb320df28e8aa3f7fb7f05ce0cd46cf4a3c61a4975f6c219",
+        "question:u-practice-le-chatelier-questions-29": "q3:fd856a92bde53e443a343f2bb2c15c54a2efd30c6dba2d6b0b831a382c1f3f29",
         "spine:objective.le-chatelier.explain-inert-and-catalyst": "44967e75cdd4273135134c7a3f48c29a5306d4f63e01301c65c87ee2898fb8f6",
         "spine:guide.le-chatelier.contrast-item": "b8a0215812206b95ef16309bf568441e53049171c8ac02affbcc2a484c6e15e8",
         "term:chemical-equilibrium:catalyst": "b7e1774480582df914ca9f248eb4c403d46527ad1197034e0ed45783b1494f22",
@@ -1870,8 +1905,9 @@
         "that",
         "the",
         "volume"
-      ]
+      ],
+      "text": "Adding a reactant shifts the position but does not change $K$. Raising the temperature shifts the\nposition **and** changes $K$; it is the only one of the four that does. Adding an inert gas at\nconstant volume does neither, because no partial pressure changes. Adding a catalyst does neither,\nbecause it accelerates both directions equally."
     }
   ],
-  "stamps": 2
+  "stamps": 3
 }

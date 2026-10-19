@@ -870,8 +870,8 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Manifest, file layout, orz syntax (with nesting), each deliverable's framework notation (orz-slides deck grammar for slides, orz-paged settings for print documents — checked against the frameworks' own theme and template ids), placeholders and the accessibility floor are checked as defects; no word-presence test stands in for coverage.",
-      "source": "MS3; D25",
+      "statement": "Manifest, file layout, orz syntax (with nesting), each deliverable's framework notation (D52: read by each carrier's own public readDocument — orz-slides for slides, orz-paged for print documents, orz-mdhtml for pages — its errors defects, its warnings notes), placeholders and the accessibility floor are checked as defects; no word-presence test stands in for coverage.",
+      "source": "MS3; D25; D52 (text format 1)",
       "status": "closed",
       "evidence": {
         "T1": [
@@ -2833,8 +2833,8 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Whether text shows is the FRAME's call (orz-mdhtml, orz-slides, orz-paged with their stylesheets), not orz-markdown's alone (core/printed.mjs): a `::: tab` outside a `:::: tabs` group, a container class off the allowlist (success, info, warning, danger, left, right, center, spoil, tabs, tab, cols, col), a plugin block off the allowlist of kinds known to print (yaml/yml, test-block, {{nyml}} elements outside orz-paged, any unknown kind), an inline plugin that drops its text ({{attrs …text}}, {{space text}}, test-inline) or sets a class that may hide ({{sp[class]}} off the colour/badge set), a {{attrs[…]}} setting anything but an id or the step-reveal class, and a unit line that prints nothing (a link reference definition) are content-hidden, a blocking defect for the agent; speaker notes (`<!-- @notes -->` to the next region or slide) print nothing on a slide and are no unit, so they never count toward coverage; text before the first slide marker prints nothing; the deck config values orz-slides prints are read — `footer:` and `author:` as framing units, `title:` as a unit unless it is a label.",
-      "source": "3C red team round 4, CONTROL (studies/p11/redteam-r4/control and control-c245, 2026-10-07) C1-01, C1-02, C3-01 and the items seen but not developed",
+      "statement": "Whether text shows is the FRAME's call (orz-mdhtml, orz-slides, orz-paged with their stylesheets), not orz-markdown's alone (core/printed.mjs): a `::: tab` outside a `:::: tabs` group, a container class off the allowlist (success, info, warning, danger, left, right, center, spoil, tabs, tab, cols, col), a plugin block off the allowlist of kinds known to print (yaml/yml, test-block, {{nyml}} elements outside orz-paged, any unknown kind), an inline plugin that drops its text ({{attrs …text}}, {{space text}}, test-inline) or sets a class that may hide ({{sp[class]}} off the colour/badge set), a {{attrs[…]}} setting anything but an id or the step-reveal class, and a unit line that prints nothing (a link reference definition) are content-hidden, a blocking defect for the agent; speaker notes (`<!-- @notes -->` to the next region or slide) print nothing on a slide and are no unit, so they never count toward coverage; text before the first slide marker prints nothing; the header values orz-slides prints are read — `footer:` and `author:` as framing units, `title:` as a unit unless it is a label (D52: the deck config is the format-1 header).",
+      "source": "3C red team round 4, CONTROL (studies/p11/redteam-r4/control and control-c245, 2026-10-07) C1-01, C1-02, C3-01 and the items seen but not developed; D52 (text format 1)",
       "status": "closed",
       "evidence": {
         "T1": [
@@ -2923,8 +2923,8 @@
       "tiers": [
         "T1"
       ],
-      "statement": "What a deck shows is orz-slides' own parse and render, not a parallel grammar (core/printed.mjs slideRegionsShown): parseDeck splits each slide's regions and renderSlide, run with a recording markdown renderer, decides which reach the slide — a region named outside the layout (any name the frame accepts), a repeated region name (the frame keeps the last), anything but `body` on a template slide, and an overwritten `@footer` print nothing, and a unit read there is content-hidden with the frame's reason; a repeated `@notes` stays notes. A table row is compared with the cells markdown-it renders: text beyond the header's column count is dropped by the frame, so the row is content-hidden. The notation check reads region markers with the frame's own pattern (asserted equal to the installed orz-slides') and reports a repeated region name.",
-      "source": "3C red team round 5 (studies/p11/redteam-r5/control and coherence, 2026-10-08) C1-01, C1-02",
+      "statement": "What a deck shows is orz-slides' own parse, not a parallel grammar (core/printed.mjs slideRegionsShown): its public parseDeck and scanMarkers locate each slide's regions, floats, @footer and @notes by the frame's own spans, and they are routed as its renderer routes them (render-slide.js: only the layout's leaves on a normal slide, only `body` on a template slide, the @footer in the chrome, the notes to the presenter) — a region named outside the layout or anything but `body` on a template slide prints nothing, text in no region the frame shows prints nothing, and a unit read there is content-hidden with the frame's reason; a repeated region name is joined by orz-slides 1.0 and is its lint error (an MS3 defect). A table row is compared with the cells markdown-it renders: text beyond the header's column count is dropped by the frame, so the row is content-hidden. The notation check reads region markers with the frame's own parser (its lints: unknown-region, duplicate-region, region-twice).",
+      "source": "3C red team round 5 (studies/p11/redteam-r5/control and coherence, 2026-10-08) C1-01, C1-02; D52 (text format 1)",
       "status": "closed",
       "evidence": {
         "T1": [
@@ -2983,8 +2983,8 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Printed settings values are read in every frame: orz-paged's running header and footer values (header_left/center/right, footer_left/center/right of the {{nyml kind: document}} block orz-paged itself takes; a value that spans several lines is read and fails closed, since orz-paged's CSS string drops it — round 7) and the head metadata of a {{nyml kind: meta}} block (author, description; a label-sized title is a label shown with every unit, otherwise a unit) are framing units owing the off-plan read; an orz-paged setting that can hide the body (custom_css, a page background, a font size, line height or margin outside the readable range) is content-hidden; a document block in a page-frame file prints nothing and is no unit.",
-      "source": "3C red team round 6, CONTROL C1–C3 conformance (studies/p11/redteam-r6/control-c13, 2026-10-11) C3-02",
+      "statement": "Printed header values are read in every frame (D52: the format-1 header): orz-paged's running header and footer values (header_left/center/right, footer_left/center/right; a value that spans several lines is read and fails closed, since orz-paged's CSS string drops it — round 7) and the head metadata every carrier emits (author, description; a label-sized title is a label shown with every unit, otherwise a unit) are framing units owing the off-plan read; an orz-paged setting that can hide the body (custom_css, a page background, a font size, line height or margin outside the readable range) is content-hidden; a header in a page-frame file prints only the head metadata.",
+      "source": "3C red team round 6, CONTROL C1–C3 conformance (studies/p11/redteam-r6/control-c13, 2026-10-11) C3-02; D52 (text format 1)",
       "status": "closed",
       "evidence": {
         "T1": [
@@ -3409,8 +3409,8 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Every orz-paged document setting is read the way orz-paged reads it (its own settings parser: the first {{nyml}} anywhere whose body has a `kind: document` line) and held to an ALLOWLIST: every key orz-paged reads has a strict value grammar (page sizes; margins, font sizes and line height in range; colours, the accent readable on the page; a font-family list; names from orz-paged's own catalogues of font presets, themes, templates and page-number styles; booleans), and custom_css, an unknown key, a key given twice, a value off its grammar, or a settings block the markdown reading does not see (inside a code block, a comment, or under a second kind line) is content-hidden and fails closed. R7-C3-01: CSS written through font_family (or decoration_color, page_size, header_rule_color, footer_rule_color) cannot print an unread lesson or hide body text.",
-      "source": "3C red team round 7 (studies/p11/redteam-r7, 2026-10-13), cause 5 of D50: membership by allowlist and by near-duplicate, not by exact match",
+      "statement": "Every orz-paged document setting is read the way orz-paged reads it (its own public readSettings / resolveSettings: the format-1 header, and only it) and held to an ALLOWLIST: every key orz-paged reads has a strict value grammar (page sizes; margins, font sizes and line height in range; colours, the accent readable on the page; a font-family list; names from orz-paged's own catalogues of font presets, themes, templates and page-number styles, checked by its own value lint; booleans), and custom_css, a key given twice, a value off its grammar, or a header the markdown reading does not see as a block is content-hidden and fails closed; a key orz-paged does not read prints nothing and is inert (D52). R7-C3-01: CSS written through font_family (or decoration_color, page_size, header_rule_color, footer_rule_color) cannot print an unread lesson or hide body text.",
+      "source": "3C red team round 7 (studies/p11/redteam-r7, 2026-10-13), cause 5 of D50: membership by allowlist and by near-duplicate, not by exact match; D52 (text format 1)",
       "status": "closed",
       "evidence": {
         "T1": [
@@ -3454,8 +3454,8 @@
       "tiers": [
         "T1"
       ],
-      "statement": "The deck ratio orz-slides scales every slide to is held to a slide shape known to show text (w:h, both positive, between 1:4 and 4:1); anything else is content-hidden.",
-      "source": "3C red team round 7 (studies/p11/redteam-r7, 2026-10-13), cause 5 of D50: membership by allowlist and by near-duplicate, not by exact match",
+      "statement": "The deck ratio orz-slides scales every slide to (its public deckConfig) and the ratio the header writes are held to a slide shape known to show text (w:h, both positive, between 1:4 and 4:1); anything else is content-hidden and a blocking MS3 notation defect (orz-slides 1.0 lays a ratio it does not take out at its default, so the deck would print at another shape than written); a slide shape the installed frame merely does not take (16:10) is a note.",
+      "source": "3C red team round 7 (studies/p11/redteam-r7, 2026-10-13), cause 5 of D50: membership by allowlist and by near-duplicate, not by exact match; D52 (text format 1)",
       "status": "closed",
       "evidence": {
         "T1": [
@@ -3520,6 +3520,81 @@
       "evidence": {
         "T1": [
           "tests/redteam-r7-exact.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.format1.kind",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A text's kind (md, slides, paged) is read as the carriers read it: its format-1 header's `carrier:` key (orz-markdown/carrier readHeader), else its place — `slides/` is a deck, a document DOCUMENTS.json declares with `carrier: paged` is an orz-paged print document — else a page (orz-mdhtml). A header on a study guide does not make it a print document, and a `{{nyml kind: document}}` block that does not lead the text is no header.",
+      "source": "D52 (operator, 2026-10-19): the orz family text format 1 (orz-markdown FC-18); the plain text is the course, the assembled frames are clothes",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/format1.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.format1.header-structure",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The format-1 header renders nothing and is never a unit; what a carrier PRINTS from it is a framing unit, read and reviewed as the 0.x deck footer, title, author and paged running text were: in every kind the envelope's title (a label-sized title is the deck or document title shown with every unit, else a unit), author and description; on slides the footer, where a slide shows it (every slide but a title page, unless its own @footer replaces it); on a print document header_left … footer_right. Every orz-paged key the frame reads is held to its allowlist (fail closed: a value off its grammar, or one orz-paged's own value lint refuses, is content-hidden; a printed key given twice hides all but the last); a key no carrier reads — the document's metadata, an `x_` host key, an unknown key — prints nothing and is inert.",
+      "source": "D52 (operator, 2026-10-19): the orz family text format 1 (orz-markdown FC-18); the plain text is the course, the assembled frames are clothes",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/format1.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.format1.deck-block",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A slides text with a `<!-- deck … -->` block, or without a format-1 header carrying `carrier: slides`, is a blocking MS3 notation defect naming the fix (`orz-slides upgrade` / write the header); a declared print document without `carrier: paged` likewise; a page whose header names another carrier is a defect. Each text is read by its carrier's own public readDocument (orz-slides, orz-paged, orz-mdhtml): its lint errors are MS3 defects (a slides `ratio` the frame does not take too: printed geometry), its warnings notes to the agent. The v0.12 audit requires the header too.",
+      "source": "D52 (operator, 2026-10-19): the orz family text format 1 (orz-markdown FC-18); the plain text is the course, the assembled frames are clothes",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/format1.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.format1.public-readers",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Coursewerk imports the orz packages only through their exported entry points (`orz-markdown`, `orz-markdown/carrier`, `orz-slides`, `orz-paged`, `orz-mdhtml` …): no script imports or resolves a path inside an orz package (`orz-*/dist/…`, `node_modules/orz-*/…`), and every subpath it names is one the package exports.",
+      "source": "D52 (operator, 2026-10-19): the orz family text format 1 (orz-markdown FC-18); the plain text is the course, the assembled frames are clothes",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/format1.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.format1.clothes",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "What the frames dress a text in never changes the content: changing a header's theme (or any look key that prints no text: measure, transition, slide_numbers, progress, section_numbers, a paged template's look) leaves the unit index, the units' evidence and what is owed unchanged, for a deck and for a study guide; a ratio change is printed geometry and is held to req.control.slide-ratio.",
+      "source": "D52 (operator, 2026-10-19): the orz family text format 1 (orz-markdown FC-18); the plain text is the course, the assembled frames are clothes",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/format1.test.mjs"
         ]
       }
     }

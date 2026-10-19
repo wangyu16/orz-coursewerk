@@ -7,7 +7,7 @@
 //
 // STRUCTURE IS ONLY WHAT THE FRAME DOES NOT PRINT (red team round 2, CONTROL C3-01/02/03/05). A line is structure only
 // when no reader of the rendered deliverable sees it as content:
-//   - a comment (deck header, slide marker, note) — but text after its "-->" on the same line prints, and is a unit;
+//   - a comment (a slide or region marker, a note) — but text after its "-->" on the same line prints, and is a unit;
 //   - a `#`/`##` heading that is a label (it names the section; a heading that reads as sentences is also a unit);
 //     `###`–`######` headings print as text and name nothing: each is a unit (form "heading");
 //   - a table's header row and separator when the table has data rows and the header ROW as a whole is a label (round 5,
@@ -16,9 +16,10 @@
 //   - the credit line, only as a short single attribution line (every sentence of it a credit); a paragraph that opens
 //     "Adapted from …" and carries more is a unit. It prints, so it is shown with every unit it credits (`credit`,
 //     round 6, C3-01) — read by every link and framing review of the deliverable, never by no one;
-//   - an orz-paged settings or metadata block ({{nyml kind: document | meta}}) — less the values its frame PRINTS (round 6,
-//     C3-02): an orz-paged running header or footer and the head metadata (title, author, description) are each a
-//     framing unit (a label-sized metadata title is a label, like the deck title); every other {{nyml}} block —
+//   - the format-1 header and any other document or metadata block ({{nyml kind: document | meta}}) — less the values
+//     its frame PRINTS from the header (round 6, C3-02; D52): the head metadata (title, author, description), a deck's
+//     footer, an orz-paged running header or footer are each a framing unit (a label-sized title is a label, the deck
+//     title or the document title, shown with every unit); every other {{nyml}} block —
 //     abstract, question-open, exam-title … — is an element the frame prints, and is a unit;
 //   - the list items of the deliverable's restated "Learning objectives" (read in full by the restated-objective check).
 //
@@ -106,13 +107,13 @@ export const tokensOf = (t) => [...new Set(normalizeUnit(t).toLowerCase().match(
  * Segment one deliverable. Returns [{ form, role, section, text, startLine, endLine }] in document order, plus
  * `covered` — the set of line numbers that belong to a unit or to structure (every other non-blank line is a gap).
  */
-export function segmentDeliverable(text, deliverable) {
+export function segmentDeliverable(text, deliverable, { declared = null } = {}) {
   const lines = String(text || "").split("\n");
   const units = [], covered = new Set();
-  const isSlides = deliverable.startsWith("slides/");
+  const orz = printedModel(text, { frame: frameOf(deliverable, text, declared) });
+  const isSlides = orz.frame === "slides";
   let section = "top", sectionTitle = "", slideNo = 0, slideTemplate = null;
   const restated = new Set(learningObjectiveSections(text).flatMap((s) => [...s.listLines])); // read by the restated-objective check
-  const orz = printedModel(text, { frame: frameOf(deliverable, text) });
   // why each structure line is structure, and the section it stands in (read again once every unit is known)
   const why = new Map(), ctx = new Map();
   const over = new Map(); // a unit's first line → the label line over it (a table header, a container label)
@@ -143,27 +144,23 @@ export function segmentDeliverable(text, deliverable) {
         // the settings values the frame PRINTS are read (round 6, C3-02): an orz-paged running header or footer (on every
         // page) and the head metadata are each a framing unit, owing the off-plan read; a metadata title (the tab) is a
         // label when it reads as one, shown with every unit like the deck title
+        // (D52: the values come from the format-1 header — a deck's title is the deck title, as the 0.x deck block's was)
         for (const v of orz.settings.filter((x) => x.start >= i && x.end <= end)) {
-          if (v.kind === "meta" && v.key === "title" && isLabel(v.value)) { why.set(v.start, "meta-label"); continue; }
+          if (v.key === "title" && isLabel(v.value)) { why.set(v.start, orz.frame === "slides" ? "deck-label" : "meta-label"); continue; }
           push("paragraph", v.start, v.end, "framing", null, v.value);
         }
       }
       else push(/^question-/.test(kind) ? "question" : "element", i, end, roleFor(), kind);
       i = end + 1; continue;
     }
-    // HTML comments: deck header, slide markers, notes. What follows the comment's "-->" on its last line is not a
-    // comment: the renderer prints it, so it is a unit (round 2, C3-02)
+    // HTML comments: slide and region markers, notes (a 0.x `<!-- deck … -->` block renders nothing: a format defect).
+    // What follows the comment's "-->" on its last line is not a comment: the renderer prints it, so it is a unit (round
+    // 2, C3-02)
     if (t.startsWith("<!--")) {
       const m = /<!--\s*slide\b([^>]*)-->/.exec(t);
       if (m) { slideNo++; slideTemplate = /template=([a-z-]+)/.exec(m[1])?.[1] || null; section = `slide-${slideNo}`; sectionTitle = ""; }
       let j = i; while (j < lines.length && !lines[j].includes("-->")) j++;
       for (let k = i; k <= j; k++) struct(k);
-      // the deck config values orz-slides prints are read (round 4, C3-01): `footer:` (on every content slide) and
-      // `author:` are each a framing unit; `title:` (the tab) is a label when it reads as one, else a unit too
-      if (orz.deck && orz.deck.start === i) for (const v of orz.deck.values) {
-        if (v.key === "title" && isLabel(v.value)) why.set(v.line, "deck-label");
-        else push("paragraph", v.line, v.line, "framing", null, v.value);
-      }
       const rest = j < lines.length ? lines[j].slice(lines[j].indexOf("-->") + 3).replace(/<!--[\s\S]*?-->/g, " ").trim() : "";
       if (rest) push("paragraph", j, j, roleFor(), null, rest);
       i = j + 1; continue;
@@ -330,8 +327,8 @@ function labelsOver({ lines, units, why, orz, isSlides, over }) {
   const inUnit = new Set();
   for (const u of units) for (let k = u.startLine - 1; k < u.endLine; k++) inUnit.add(k);
   const label = (k) => why.has(k) && !inUnit.has(k) && orz.printed.has(k);
-  const deckTitle = (orz.deck?.values || []).find((v) => v.key === "title" && why.get(v.line) === "deck-label" && orz.printed.has(v.line));
-  const metaTitle = (orz.settings || []).find((v) => v.kind === "meta" && v.key === "title" && why.get(v.start) === "meta-label" && orz.printed.has(v.start));
+  const deckTitle = (orz.settings || []).find((v) => v.key === "title" && why.get(v.start) === "deck-label" && orz.printed.has(v.start));
+  const metaTitle = (orz.settings || []).find((v) => v.key === "title" && why.get(v.start) === "meta-label" && orz.printed.has(v.start));
   // the credit line (round 6, C3-01): the one attribution that stays structure prints, and credits the whole deliverable,
   // so it is shown with every unit of it (`credit`, kept apart from `headings`: a review is bound to it — see
   // alignment.mjs — without moving the round-5 label baseline)

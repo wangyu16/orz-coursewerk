@@ -38,6 +38,8 @@ const { md } = require_("orz-markdown");
 // KaTeX as orz-markdown typesets with it: the instance markdown-it-katex loads, with mhchem registered by orz-markdown
 const fromOrz = createRequire(require_.resolve("orz-markdown"));
 const katex = createRequire(fromOrz.resolve("@traptitech/markdown-it-katex"))("katex");
+// orz-markdown pins one KaTeX and renders with it (2.x: KATEX_VERSION); a different copy here would read other maths
+if (katex.version !== require_("orz-markdown").KATEX_VERSION) throw new Error(`rendered.mjs: KaTeX ${katex.version} is not the ${require_("orz-markdown").KATEX_VERSION} orz-markdown renders with`);
 
 // what prints nothing: soft hyphen, Mongolian vowel separator, zero-width space/joiners, direction marks, word joiner,
 // invisible operators (function application, times, separator, plus), BOM
@@ -131,6 +133,10 @@ function structure(c) {
   }
 }
 const mathCache = new Map();
+// orz-markdown 2.x renders a formula over 10,000 characters, or one that defines macros, as its source (dist/index.js:
+// MAX_TEX, TEX_DEFINES — not exported): the reader sees the source, so the view is the source
+const ORZ_MAX_TEX = 10000;
+const ORZ_TEX_DEFINES = /\\(def|gdef|edef|xdef|let|futurelet|newcommand|renewcommand|providecommand|DeclareMathOperator|newenvironment)(?![A-Za-z])/;
 /**
  * A formula as the reader sees it typeset: KaTeX's MathML (the typesetter orz-markdown uses) written back in a
  * canonical linear form. "T = 298\ \text{K}" and "T = 298\ {\text{K}}" are one view; "K_c" and "K^c" are not.
@@ -139,7 +145,7 @@ export function mathView(src) {
   const tex = String(src ?? "");
   if (mathCache.has(tex)) return mathCache.get(tex);
   let v;
-  try { v = serial(parseMathml(katex.renderToString(tex, { output: "mathml", throwOnError: true, strict: "ignore", displayMode: false })).children); }
+  try { if (tex.length > ORZ_MAX_TEX || ORZ_TEX_DEFINES.test(tex)) throw new Error("shown as its source"); v = serial(parseMathml(katex.renderToString(tex, { output: "mathml", throwOnError: true, strict: "ignore", displayMode: false })).children); }
   catch { v = `\\error{${printedChars(tex).replace(/\s+/g, " ").trim()}}`; } // the reader sees the source
   if (mathCache.size > 20000) mathCache.delete(mathCache.keys().next().value);
   mathCache.set(tex, v);

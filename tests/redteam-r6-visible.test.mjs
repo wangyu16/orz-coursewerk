@@ -26,6 +26,8 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
+import { resolveSettings } from "orz-paged";
+import { checkSlidesNotation } from "../scripts/lib/core/notations.mjs";
 import { liveReader } from "../scripts/lib/core/package_reader.mjs";
 import { coreObligations, indexAndStamp, linkUnits, loadUnits } from "../scripts/lib/core/obligations.mjs";
 import { beginSession } from "../scripts/lib/core/units_index.mjs";
@@ -181,8 +183,13 @@ test("[req.control.visible-by-attribute] variants: a slide shows under fit=scrol
   const shows = (marker, extra = []) => shownOf(deckOf(marker, "## Title", T, ...extra), "Teaching text").every((x) => x.shown);
   for (const ok of ["<!-- slide fit=scroll -->", "<!-- slide step -->", "<!-- slide id=inert -->", "<!-- slide t=fade -->", "<!-- slide 2col 3/2 -->", "<!-- slide 2col 30%/1fr -->", "<!-- slide main-side -->", "<!-- slide 2col auto/1fr -->"])
     assert.ok(shows(ok), ok);
-  for (const bad of ["<!-- slide bg=#000000 -->", "<!-- slide fit=off -->", "<!-- slide class=center -->", "<!-- slide 2col 1/20 -->", "<!-- slide 2col 50px/1fr -->", "<!-- slide 2col minmax(0,1fr)/1fr -->", "<!-- slide col 0px/1 { left; right } -->"])
+  for (const bad of ["<!-- slide bg=#000000 -->", "<!-- slide fit=off -->", "<!-- slide class=center -->", "<!-- slide 2col 1/20 -->", "<!-- slide 2col 50px/1fr -->", "<!-- slide col 0px/1 { left; right } -->"])
     assert.ok(!shows(bad), bad);
+  // D52: a track orz-slides 1.0 cannot size (`minmax(0,1fr)`) is no longer passed to the page — the frame lays the
+  // split out 1/1 and calls the track its own error, so the slide shows and the notation check blocks it instead
+  const minmax = deckOf("<!-- slide 2col minmax(0,1fr)/1fr -->", "## Title", T);
+  assert.ok(shownOf(minmax, "Teaching text").every((x) => x.shown));
+  assert.ok(checkSlidesNotation(minmax).some((p) => !p.aspect && /\[layout-tracks\]/.test(p.issue)), "the frame's own error: a blocking defect");
   // a nested split: the 0px row hides only its own region
   const nested = deckOf("<!-- slide col 1/1 { a; row 0px/1fr { b; c } } -->", "## T", "<!-- @a -->", "Region a.", "<!-- @b -->", "Region b.", "<!-- @c -->", "Region c.");
   assert.ok(shownOf(nested, "Region a").every((x) => x.shown) && shownOf(nested, "Region c").every((x) => x.shown));
@@ -220,15 +227,18 @@ test("[req.control.include-read-under-includer] C3-03: the study guide includes 
   assert.match(inc[0].evidence.detail, /Aside for the presenter/);
 });
 
-test("[req.control.include-read-under-includer] variants: an include of a document read under the same frame is accepted; a deck with no notes still prints its unrendered section subtitles as page text, and is refused; a paged document prints less as page content, and is accepted", async (t) => {
+test("[req.control.include-read-under-includer] variants: an include of a document read under the same frame is accepted; a deck with no notes still prints, as page text, what the deck does not show (D52: its text before the first slide — orz-slides 1.0 renders the section subtitles 0.x dropped), and is refused; a paged document prints less as page content, and is accepted", async (t) => {
   const c = course(t);
   const docs = (list) => c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: list }, null, 2) + "\n");
   c.asAgent(() => {
     c.write("handouts/inert.md", `# Inert gases\n\n${INERT}\n`);
-    c.write("handouts/print.md", `{{nyml\nkind: document\nheader_left: Le Chatelier\n}}\n\n# Print\n\n${INERT}\n`);
+    c.write("handouts/print.md", `{{nyml\nkind: document\ncarrier: paged\nheader_left: Le Chatelier\n}}\n\n# Print\n\n${INERT}\n`);
     docs([{ source: "handouts/inert.md", chapter: "le-chatelier" }, { source: "handouts/print.md", chapter: "le-chatelier" }]);
     c.edit(SG2, "\n## Common misconceptions\n", "\n## More\n\n{{md ../handouts/inert.md}}\n\n{{md ../handouts/print.md}}\n\n{{md ../slides/le-chatelier.md}}\n\n## Common misconceptions\n");
   });
+  // the deck as the fixture has it prints nothing as page content that the deck does not show: accepted
+  assert.deepEqual(uncheckedShipped(c.root, c.r()).includes, []);
+  c.asAgent(() => c.edit(SL2, "\n\n<!-- slide template=title -->", "\n\nPrepared for the fall term: an inert gas at constant volume changes no partial pressure.\n\n<!-- slide template=title -->"));
   const { includes } = uncheckedShipped(c.root, c.r());
   assert.deepEqual(includes.map((x) => x.target), ["../slides/le-chatelier.md"]);
   assert.match(includes[0].why, /renders as page content/);
@@ -242,10 +252,12 @@ test("[req.control.include-read-under-includer] variants: an include of a docume
 test("[req.control.printed-settings-read] C3-02: orz-paged prints a document's running header on every page — the header value is a framing unit owing the off-plan read, and the honest read calls the lesson off the plan", async (t) => {
   const c = course(t), DOC = "handouts/print.md";
   const HEADER = "A galvanic cell turns a spontaneous redox reaction into electrical work, oxidising at the anode and reducing at the cathode";
-  const text = `{{nyml\nkind: document\nheader_left: ${HEADER}\n}}\n\n# Print summary\n\n## Summary\n\nIn short, the chapter's disturbances sort into those that move the position and those that move nothing.\n`;
-  // the frame prints it: orz-paged's own assembler puts it in @top-left of every page
-  const { assemble } = await import(path.join(HERE, "..", "node_modules", "orz-paged", "dist", "render-paged.js"));
-  assert.match(assemble(text).css, /@top-left\s*\{[^}]*galvanic cell turns a spontaneous redox reaction/);
+  // (D52: a print document's settings are its format-1 header, with `carrier: paged`)
+  const text = `{{nyml\nkind: document\ncarrier: paged\nheader_left: ${HEADER}\n}}\n\n# Print summary\n\n## Summary\n\nIn short, the chapter's disturbances sort into those that move the position and those that move nothing.\n`;
+  // the frame prints it: orz-paged's own settings reader (public resolveSettings) takes it as the running header its page
+  // CSS writes into @top-left of every page (page-css.js addStatic), the page number being in another box
+  const frame = resolveSettings(text);
+  assert.equal(frame.headerLeft, HEADER); assert.notEqual(frame.pageNumberPosition, "header-left");
   c.asAgent(() => { c.write(DOC, text); c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ source: DOC, chapter: "le-chatelier" }] }, null, 2) + "\n"); });
   const head = c.units().find((u) => u.locator.deliverable === DOC && ELECTRO.test(u.text));
   assert.ok(head, "the header is a unit");
@@ -259,7 +271,7 @@ test("[req.control.printed-settings-read] C3-02: orz-paged prints a document's r
 });
 
 test("[req.control.printed-settings-read] variants: a multi-line footer is one framing unit; the head metadata's author and description are framing units and a label-sized title is shown with every unit; a paged setting that can hide the body fails closed; a document block in a page-frame file prints nothing", () => {
-  const paged = `{{nyml\nkind: document\nfooter_center: |\n  Chemistry 101\n  ${LESSON}\nfont_size: 11\n}}\n\n# P\n\nBody text.\n`;
+  const paged = `{{nyml\nkind: document\ncarrier: paged\nfooter_center: |\n  Chemistry 101\n  ${LESSON}\nfont_size: 11\n}}\n\n# P\n\nBody text.\n`;
   const u = segmentDeliverable(paged, "handouts/p.md").units;
   assert.equal(u.filter((x) => x.role === "framing" && ELECTRO.test(x.text)).length, 1);
   assert.equal(u.find((x) => ELECTRO.test(x.text)).text, `Chemistry 101\n${LESSON}`);

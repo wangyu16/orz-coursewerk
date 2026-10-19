@@ -16,7 +16,7 @@ import { isCarrierPath } from "../contract.mjs";
 import { makeFinding } from "../records/findings.mjs";
 import { COURSE_MAP, spinePaths } from "./spine.mjs";
 import { manifestChapters } from "./package_reader.mjs";
-import { administrativeDocuments, deliverablesOf } from "./units_index.mjs";
+import { administrativeDocuments, declaredKind, deliverablesOf } from "./units_index.mjs";
 import { frameOf, printedModel } from "./printed.mjs";
 import { segmentDeliverable } from "./segment.mjs";
 
@@ -77,16 +77,17 @@ export function hiddenContent(root, reader, { keep = () => true } = {}) {
     if (ch && !keep(ch)) continue;
     const text = reader.text(file);
     if (text == null) continue;
-    out.push(...hiddenInText(text, file));
+    out.push(...hiddenInText(text, file, declaredKind(reader, file)));
   }
   return out;
 }
 
-/** What one deliverable's text hides from its reader, read through its frame: [{ file, line, what }]. */
-export function hiddenInText(text, file) {
-  const out = [], m = printedModel(text, { frame: frameOf(file, text) }), lines = String(text).split("\n");
+/** What one deliverable's text hides from its reader, read through its frame: [{ file, line, what }]. `declared`: the
+ *  kind DOCUMENTS.json declares for it (units_index.mjs declaredKind). */
+export function hiddenInText(text, file, declared = null) {
+  const out = [], m = printedModel(text, { frame: frameOf(file, text, declared) }), lines = String(text).split("\n");
   for (const h of m.hidden) out.push({ file, line: h.line, what: h.what });
-  for (const u of segmentDeliverable(text, file).units) {
+  for (const u of segmentDeliverable(text, file, { declared }).units) {
     // EVERY line of a unit must print (round 4): a link reference definition on a paragraph's first line, or a line
     // the frame drops, is text the review reads and no student sees, even when the unit's other lines print
     const dark = []; for (let k = u.startLine - 1; k < u.endLine; k++) if (lines[k]?.trim() && !m.printed.has(k)) dark.push(k);
@@ -143,7 +144,7 @@ export const isHarnessRecord = (rel, evidence = new Set()) => RECORD_FILES.has(r
 
 /** The frame a file's text renders in when another file includes it: orz-markdown renders it as page content wherever
  *  it lands (in a page, in a slide region), and orz-paged prints its curated elements too. */
-const includedFrame = (includer, text) => (frameOf(includer, text) === "paged" ? "paged" : "page");
+const includedFrame = (includer, text, declared = null) => (frameOf(includer, text, declared) === "paged" ? "paged" : "page");
 /**
  * What an include prints that its target's own reading does not (red team round 6, CONTROL C3-03): the target is read
  * on its own under ITS frame (a deck under orz-slides, where speaker notes are the presenter's and no unit), but the
@@ -151,9 +152,9 @@ const includedFrame = (includer, text) => (frameOf(includer, text) === "paged" ?
  * dropped slide region prints, a deck's text before its first slide prints. Every line that prints there and not
  * there is text no check read: [0-based line] (empty: the include prints nothing its target's reading left out).
  */
-export function printedOnlyWhenIncluded(includer, includerText, target, targetText) {
-  const own = printedModel(targetText, { frame: frameOf(target, targetText) }).printed;
-  const there = printedModel(targetText, { frame: includedFrame(includer, includerText) }).printed;
+export function printedOnlyWhenIncluded(includer, includerText, target, targetText, { includerKind = null, targetKind = null } = {}) {
+  const own = printedModel(targetText, { frame: frameOf(target, targetText, targetKind) }).printed;
+  const there = printedModel(targetText, { frame: includedFrame(includer, includerText, includerKind) }).printed;
   const lines = String(targetText ?? "").split("\n");
   return [...there].filter((k) => !own.has(k) && lines[k]?.trim()).sort((a, b) => a - b);
 }
@@ -183,12 +184,13 @@ export function uncheckedShipped(root, reader, opts = {}) {
       if (!resolved || resolved.startsWith("..") || !deliverables.has(resolved)) { includes.push({ file, line: inc.line, target: inc.target, resolved }); continue; }
       // read under the includer's frame (round 6, C3-03): an include that prints what its target's own reading left
       // out is refused — its text would be read by no unit and no review
-      const targetText = reader.text(resolved), extra = printedOnlyWhenIncluded(file, text, resolved, targetText);
+      const kinds = { includerKind: declaredKind(reader, file), targetKind: declaredKind(reader, resolved) };
+      const targetText = reader.text(resolved), extra = printedOnlyWhenIncluded(file, text, resolved, targetText, kinds);
       if (extra.length) {
-        const tl = String(targetText).split("\n"), notes = printedModel(targetText, { frame: frameOf(resolved, targetText) }).notes;
+        const ownFrame = frameOf(resolved, targetText, kinds.targetKind), tl = String(targetText).split("\n"), notes = printedModel(targetText, { frame: ownFrame }).notes;
         // name the speaker notes first: they are the presenter's text, printed to students as page text
         const first = extra.find((k) => notes.has(k)) ?? extra[0];
-        includes.push({ file, line: inc.line, target: inc.target, resolved, why: `${resolved} is read under its own frame (${frameOf(resolved, targetText)}), but included here it renders as ${includedFrame(file, text)} content, which prints ${extra.length} line(s) its own reading leaves out (line ${first + 1}: "${tl[first].trim().slice(0, 60)}"${notes.has(first) ? ", a speaker note" : ""}${frameOf(resolved, targetText) === "slides" ? " — speaker notes and text the deck does not show print as paragraphs" : ""})` });
+        includes.push({ file, line: inc.line, target: inc.target, resolved, why: `${resolved} is read under its own frame (${ownFrame}), but included here it renders as ${includedFrame(file, text, kinds.includerKind)} content, which prints ${extra.length} line(s) its own reading leaves out (line ${first + 1}: "${tl[first].trim().slice(0, 60)}"${notes.has(first) ? ", a speaker note" : ""}${ownFrame === "slides" ? " — speaker notes and text the deck does not show print as paragraphs" : ""})` });
       }
     }
   }

@@ -22,7 +22,10 @@ import { parseSections, labelMatcher } from "../terms.mjs";
 import { spineCycles } from "../spine.mjs";
 import { isAuthorizedDivergence, OVERRIDES_PATH } from "../overrides.mjs";
 import { commitOutput, outputGitState } from "../output_git.mjs";
+import { createRequire } from "node:module";
 import { md as orzMarkdown } from "orz-markdown";
+import { scanMarkers } from "orz-slides";
+const { readHeader } = createRequire(import.meta.url)("orz-markdown/carrier");
 
 export function createQaAudits(pkg, { forDiscovery = false } = {}) {
   const manifestRef = { current: null };
@@ -479,7 +482,10 @@ export function createQaAudits(pkg, { forDiscovery = false } = {}) {
       // slides must be orz-slides deck grammar
       if (t === "slides") {
         if (!/<!--\s*slide\b/i.test(text)) fail.push({ file: name, issue: "slides source has no <!-- slide --> markers (orz-slides deck grammar)" });
-        if (!/<!--\s*deck\b/i.test(text)) fail.push({ file: name, issue: "slides source has no <!-- deck ... --> frontmatter block" });
+        // text format 1 (D52): the deck config is the format-1 header with `carrier: slides`; a `<!-- deck … -->`
+        // block is no longer read (orz-slides 1.0 lint `deck-block`)
+        if (readHeader(text)?.fields?.carrier?.trim() !== "slides") fail.push({ file: name, issue: "slides source does not open with the format-1 header carrying `carrier: slides` (`{{nyml` / `kind: document` / `carrier: slides` … `}}`; a 0.x deck: `orz-slides upgrade`)" });
+        if (scanMarkers(text).some((m) => m.type === "deck")) fail.push({ file: name, issue: "slides source has a 0.x `<!-- deck … -->` block: in text format 1 it renders nothing and is not read — move its keys into the header (`orz-slides upgrade`)" });
         if (!/^##\s+/m.test(text)) fail.push({ file: name, issue: "slides source has no ## content-slide titles" });
         if (!/template=title/i.test(text)) fail.push({ file: name, issue: "slides source is missing template=title" });
         if (!/template=outline/i.test(text)) fail.push({ file: name, issue: "slides source is missing template=outline" });

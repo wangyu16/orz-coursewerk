@@ -10,8 +10,8 @@
         "ordinal": 0,
         "contentHash": "0727a3f74c22a31ff6120aa9e18343b9b9f8206b039d9fb1a163b686b5ec9f40",
         "lines": [
-          8,
-          8
+          11,
+          11
         ]
       },
       "form": "paragraph",
@@ -39,7 +39,8 @@
         "quantitative",
         "temperature",
         "the"
-      ]
+      ],
+      "text": "The quantitative foundation: dynamic equilibrium, K, Q, and temperature"
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-3-what-we-will-cover-1",
@@ -49,8 +50,8 @@
         "ordinal": 1,
         "contentHash": "c8e21f36fa6d3c72829c71f0eea80680190283612729184ac1dc79dcb1ed0f30",
         "lines": [
-          21,
-          26
+          24,
+          29
         ]
       },
       "form": "slide-group",
@@ -82,7 +83,9 @@
         "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
         "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
-        "term:chemical-equilibrium:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f"
+        "term:chemical-equilibrium:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f",
+        "term:chemical-equilibrium:chemical equilibrium": "a26e86a7360c03ec8fe04897e6fec2e0af396e866f38de8515fd15770f9dd962",
+        "term:chemical-equilibrium:standard gibbs energy change": "d552936944bea24ed9c4e3352ddbde4042404a1cee16a2a630952f89afbf1fdc"
       },
       "tokens": [
         "and",
@@ -113,7 +116,8 @@
         "temperature",
         "the",
         "why"
-      ]
+      ],
+      "text": "- Equilibrium as a *dynamic* state, not a stopped one\n- The equilibrium constant from a balanced equation\n- The reaction quotient and the direction of change\n- Why pure solids and liquids drop out\n- The link to Gibbs energy\n- Why only temperature changes $K$"
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-5-equal-rates-not-zero-rates-1",
@@ -123,8 +127,8 @@
         "ordinal": 2,
         "contentHash": "8a0f5df8dcdb544d86185775422c01ae57f0f34e36ebe604129ac284ba6172d2",
         "lines": [
-          33,
-          34
+          36,
+          37
         ]
       },
       "form": "paragraph",
@@ -167,7 +171,8 @@
         "the",
         "time",
         "with"
-      ]
+      ],
+      "text": "At chemical equilibrium the forward and reverse reactions proceed at **equal, nonzero** rates,\nso the reactant and product concentrations no longer change with time."
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-5-equal-rates-not-zero-rates-2",
@@ -177,8 +182,8 @@
         "ordinal": 3,
         "contentHash": "8cd8c9669e4b412e44ebc3c3116ecd738cd684f01a47ec345fdae9bb9c36e6b6",
         "lines": [
-          36,
-          37
+          39,
+          40
         ]
       },
       "form": "paragraph",
@@ -215,7 +220,8 @@
         "stopped",
         "the",
         "two"
-      ]
+      ],
+      "text": "Nothing has stopped. The macroscopic composition is constant because two ceaseless processes\nexactly balance."
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-6-equilibrium-is-dynamic-1",
@@ -225,8 +231,8 @@
         "ordinal": 4,
         "contentHash": "8af7e342f653ba5d25d9e4e5ce15b297fc48d5836e8b0def37f5a011e8c63d7a",
         "lines": [
-          41,
-          42
+          44,
+          45
         ]
       },
       "form": "paragraph",
@@ -264,7 +270,8 @@
         "stay",
         "the",
         "though"
-      ]
+      ],
+      "text": "Individual molecules keep reacting in both directions even though the measured concentrations\nstay constant."
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-6-equilibrium-is-dynamic-2",
@@ -274,8 +281,8 @@
         "ordinal": 5,
         "contentHash": "3e2120536e7134c0e34b81ad457b9788948f6bfa53487faeedb8342030998a5d",
         "lines": [
-          44,
-          45
+          47,
+          48
         ]
       },
       "form": "paragraph",
@@ -319,7 +326,8 @@
         "then",
         "unchanged",
         "water"
-      ]
+      ],
+      "text": "*Acetic acid in water:* a proton hops from an acetic acid molecule onto water and then onto an\nacetate anion, remaking acetic acid. The count is unchanged; the reaction never stops."
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-8-building-k-from-a-balanced-equat-1",
@@ -329,8 +337,8 @@
         "ordinal": 6,
         "contentHash": "b4b84a487ada49986d48e5df3cc7eb9dc930f9bd6c541307e894ca5f040a46c3",
         "lines": [
-          52,
-          52
+          55,
+          55
         ]
       },
       "form": "paragraph",
@@ -360,7 +368,8 @@
         "for",
         "sigma",
         "tau"
-      ]
+      ],
+      "text": "For $\\ce{\\alpha A + \\beta B <=> \\sigma S + \\tau T}$:"
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-8-building-k-from-a-balanced-equat-2",
@@ -370,8 +379,8 @@
         "ordinal": 7,
         "contentHash": "7462ab7013ddcd51b90be7a28195bbcb7f242ac4128f371c70b1a5919cd92aa2",
         "lines": [
-          54,
-          54
+          57,
+          57
         ]
       },
       "form": "equation",
@@ -402,7 +411,8 @@
         "frac",
         "sigma",
         "tau"
-      ]
+      ],
+      "text": "$$K = \\frac{[\\ce{S}]^{\\sigma}\\,[\\ce{T}]^{\\tau}}{[\\ce{A}]^{\\alpha}\\,[\\ce{B}]^{\\beta}}$$"
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-8-building-k-from-a-balanced-equat-3",
@@ -412,8 +422,8 @@
         "ordinal": 8,
         "contentHash": "a46d2f4d4f8bf910a4b645ec2938da5d415c6550b2735fd312bd877d1eeef5c9",
         "lines": [
-          56,
-          56
+          59,
+          59
         ]
       },
       "form": "paragraph",
@@ -448,7 +458,8 @@
         "raised",
         "stoichiometric",
         "the"
-      ]
+      ],
+      "text": "Products in the numerator. Each concentration raised to its **stoichiometric coefficient**."
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-9-where-the-form-comes-from-1",
@@ -458,8 +469,8 @@
         "ordinal": 9,
         "contentHash": "22e43464bbaa385e8a18460068c06709cd6ac3bd928d03bb3e2f4712e22afdbb",
         "lines": [
-          60,
-          61
+          63,
+          64
         ]
       },
       "form": "paragraph",
@@ -498,7 +509,8 @@
         "sigma",
         "tau",
         "waage"
-      ]
+      ],
+      "text": "Guldberg and Waage's **law of mass action**: forward rate $k_{+}[\\ce{A}]^{\\alpha}[\\ce{B}]^{\\beta}$,\nreverse rate $k_{-}[\\ce{S}]^{\\sigma}[\\ce{T}]^{\\tau}$."
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-9-where-the-form-comes-from-2",
@@ -508,8 +520,8 @@
         "ordinal": 10,
         "contentHash": "73042ee70608854afd3da5e9c5651efa2b56287cd8d3d5598b60c94afc530e6d",
         "lines": [
-          63,
-          63
+          66,
+          66
         ]
       },
       "form": "paragraph",
@@ -538,7 +550,8 @@
         "gives",
         "setting",
         "them"
-      ]
+      ],
+      "text": "Setting them equal at equilibrium gives $K = k_{+}/k_{-}$."
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-10-pure-solids-and-pure-liquids-1",
@@ -548,8 +561,8 @@
         "ordinal": 11,
         "contentHash": "7c6e480ad8dc07efc707bfb54499e83a38aedd1f469ff85edaf508685266e583",
         "lines": [
-          67,
-          67
+          70,
+          70
         ]
       },
       "form": "paragraph",
@@ -580,7 +593,8 @@
         "strictly",
         "terms",
         "the"
-      ]
+      ],
+      "text": "The terms in $K$ are strictly **activities**."
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-10-pure-solids-and-pure-liquids-2",
@@ -590,8 +604,8 @@
         "ordinal": 12,
         "contentHash": "645ebe96e222855fa016cd223f556f99543572f25b499d7170bda27493074331",
         "lines": [
-          69,
-          70
+          72,
+          73
         ]
       },
       "form": "paragraph",
@@ -636,7 +650,8 @@
         "treated",
         "water",
         "way"
-      ]
+      ],
+      "text": "A pure solid or pure liquid has an **activity of one**, so it does not appear in the expression.\nIn dilute aqueous solution the solvent water is treated the same way."
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-12-the-reaction-quotient-1",
@@ -646,8 +661,8 @@
         "ordinal": 13,
         "contentHash": "0090c1f672098e81d0aaec53e0849089d00353cae83521ac5638e65ca5a231a8",
         "lines": [
-          77,
-          77
+          80,
+          80
         ]
       },
       "form": "paragraph",
@@ -683,7 +698,8 @@
         "has",
         "same",
         "the"
-      ]
+      ],
+      "text": "$Q_r$ has the same algebraic form as $K$, but is evaluated at **any** composition."
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-12-the-reaction-quotient-2",
@@ -693,8 +709,8 @@
         "ordinal": 14,
         "contentHash": "83827021cb06ce4688df60323a7662c51aeaa1196747f9fdde7bec50799d6f5d",
         "lines": [
-          79,
-          81
+          82,
+          84
         ]
       },
       "form": "slide-group",
@@ -732,7 +748,8 @@
         "shift",
         "shifts",
         "too"
-      ]
+      ],
+      "text": "- $Q_r < K$ — too few products; shifts **forward**\n- $Q_r > K$ — too many products; shifts **reverse**\n- $Q_r = K$ — already at equilibrium; no net shift"
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-14-the-link-to-gibbs-energy-1",
@@ -742,8 +759,8 @@
         "ordinal": 15,
         "contentHash": "d35bdaa6e98aa7c841340dcaebe41c3b9ece4ee1ad46f4599e077d658f664989",
         "lines": [
-          88,
-          89
+          91,
+          92
         ]
       },
       "form": "paragraph",
@@ -765,7 +782,8 @@
       "stamp": {
         "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
         "spine:concept.chemical-equilibrium.k-and-gibbs": "24dfcac69f2f8de451de8830acb5e912c5046d5295e8174c701cbc8df655b5ff",
-        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475"
+        "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
+        "term:chemical-equilibrium:standard gibbs energy change": "d552936944bea24ed9c4e3352ddbde4042404a1cee16a2a630952f89afbf1fdc"
       },
       "tokens": [
         "energy",
@@ -778,7 +796,8 @@
         "the",
         "vanishes",
         "where"
-      ]
+      ],
+      "text": "Equilibrium is where the Gibbs energy of the system is at its minimum, so the reaction Gibbs\nenergy vanishes:"
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-14-the-link-to-gibbs-energy-2",
@@ -788,8 +807,8 @@
         "ordinal": 16,
         "contentHash": "362f32045139cad1bcbdbaa06b4650856b9396d635d523aa1079a30fac6445a2",
         "lines": [
-          91,
-          91
+          94,
+          94
         ]
       },
       "form": "equation",
@@ -817,7 +836,8 @@
       "tokens": [
         "delta",
         "ominus"
-      ]
+      ],
+      "text": "$$\\Delta G^\\ominus = -RT \\ln K$$"
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-14-the-link-to-gibbs-energy-3",
@@ -827,8 +847,8 @@
         "ordinal": 17,
         "contentHash": "ef79fc9a252d3382d599df26c1af7803bf78d20d0aae939b297a8bb554f0b049",
         "lines": [
-          93,
-          93
+          96,
+          96
         ]
       },
       "form": "paragraph",
@@ -861,7 +881,8 @@
         "ominus",
         "positive",
         "products"
-      ]
+      ],
+      "text": "Negative $\\Delta G^\\ominus$ corresponds to $K > 1$ (products favoured); positive to $K < 1$."
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-15-only-temperature-changes-k-1",
@@ -871,8 +892,8 @@
         "ordinal": 18,
         "contentHash": "530c129d13c8e435a32f9e6937d1b0ce18481a8d92acd21bde00abb6f6e64f2a",
         "lines": [
-          97,
-          98
+          100,
+          101
         ]
       },
       "form": "paragraph",
@@ -917,7 +938,8 @@
         "through",
         "van",
         "with"
-      ]
+      ],
+      "text": "$K$ is constant with respect to composition, but **depends on temperature** through the\n**van 't Hoff equation**. The sign of the reaction enthalpy fixes the direction:"
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-15-only-temperature-changes-k-2",
@@ -927,8 +949,8 @@
         "ordinal": 19,
         "contentHash": "f0c217b934c7702ea95e9adaf551a055e3518edc46edabed435fe3ef7db779a9",
         "lines": [
-          100,
-          101
+          103,
+          104
         ]
       },
       "form": "slide-group",
@@ -952,7 +974,9 @@
         "spine:concept.chemical-equilibrium.k-depends-on-temperature": "4afac3949c64c3423c7ab120ec93402d9709c49f47abf70a2313623f8f766d26",
         "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
         "spine:concept.chemical-equilibrium.k-and-gibbs": "24dfcac69f2f8de451de8830acb5e912c5046d5295e8174c701cbc8df655b5ff",
-        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b"
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "term:le-chatelier:exothermic reaction": "c20452115a1d09ee264abeb11c57548d06c6d732dbb57bd21fcd6673c570eb27",
+        "term:le-chatelier:endothermic reaction": "a6d35ce30483c0b5e231f8425ca24666d601ef261ec571088ad8d072e5be84ad"
       },
       "tokens": [
         "decreases",
@@ -960,7 +984,8 @@
         "exothermic",
         "increases",
         "raising"
-      ]
+      ],
+      "text": "- **Endothermic** — raising $T$ **increases** $K$\n- **Exothermic** — raising $T$ **decreases** $K$"
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-16-catalysts-change-neither-1",
@@ -970,8 +995,8 @@
         "ordinal": 20,
         "contentHash": "a0de0ebedefd068dbf57f9a8d56242a4cc955b996fdd9de7d6b2948fd677221f",
         "lines": [
-          105,
-          105
+          108,
+          108
         ]
       },
       "form": "paragraph",
@@ -1006,7 +1031,8 @@
         "same",
         "speeds",
         "the"
-      ]
+      ],
+      "text": "A catalyst speeds up the forward and reverse reactions by the **same factor**."
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-16-catalysts-change-neither-2",
@@ -1016,8 +1042,8 @@
         "ordinal": 21,
         "contentHash": "a316d9bf215cd1d5c9250e42076202252d814be554424472bdb3c6c89bae0954",
         "lines": [
-          107,
-          108
+          110,
+          111
         ]
       },
       "form": "paragraph",
@@ -1053,7 +1079,8 @@
         "shortens",
         "the",
         "time"
-      ]
+      ],
+      "text": "It shortens the time needed to *reach* equilibrium and changes **neither $K$ nor the position**\nof equilibrium."
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-17-watch-out-for-these-1",
@@ -1063,8 +1090,8 @@
         "ordinal": 22,
         "contentHash": "7bb0cd43eb8ff831963aa92ca269dafae9bf2f54f8ea291620257c50742ca424",
         "lines": [
-          112,
-          116
+          115,
+          119
         ]
       },
       "form": "slide-group",
@@ -1132,7 +1159,8 @@
         "they",
         "unequal",
         "yield"
-      ]
+      ],
+      "text": "- \"At equilibrium the reactions have stopped\" — the rates are equal but nonzero.\n- \"Concentrations are equal at equilibrium\" — they are *constant*, generally unequal.\n- \"A catalyst raises the yield\" — it changes neither $K$ nor the position.\n- \"Adding a pure solid changes $K$\" — its activity is one, so it is absent.\n- \"Changing a concentration changes $K$\" — only temperature changes $K$."
     },
     {
       "id": "u-slides-chemical-equilibrium-slide-18-next-disturbing-the-equilibrium-1",
@@ -1142,8 +1170,8 @@
         "ordinal": 23,
         "contentHash": "4b2ca1c80f1835baa0046962739a36742f31fa64d8a49ddd70b363bf48405cef",
         "lines": [
-          120,
-          121
+          123,
+          124
         ]
       },
       "form": "paragraph",
@@ -1182,8 +1210,9 @@
         "the",
         "way",
         "which"
-      ]
+      ],
+      "text": "Chapter 2 asks the qualitative question: once a system has reached equilibrium and we disturb it,\nwhich way does it move?"
     }
   ],
-  "stamps": 2
+  "stamps": 3
 }

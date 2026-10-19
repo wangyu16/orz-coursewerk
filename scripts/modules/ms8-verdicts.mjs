@@ -28,6 +28,7 @@
 // Verdicts concern the unit's CURRENT claims only: a record of other claims is history.
 import { trustedSidecarPath } from "../lib/core/unit_records.mjs"; // only records the log wrote are read (R7 H-04)
 import { segmentDeliverable } from "../lib/core/segment.mjs";
+import { segmentOptions } from "../lib/core/units_index.mjs";
 import { factHash } from "../lib/core/dependencies.mjs";
 import { checkableClaims, claimsHash } from "../lib/verify/claims.mjs";
 import { supports } from "../lib/verify/admission.mjs";
@@ -55,7 +56,7 @@ function currentUnits(s, sides = []) {
   for (const p of s.paths.filter((x) => x.startsWith("metadata/units/") && x.endsWith(".json")).filter(trustedSidecarPath(s.text("metadata/LOG.jsonl"))).sort()) {
     const side = s.json(p); if (!Array.isArray(side?.units) || typeof side.deliverable !== "string") continue; // malformed: the index reports it
     sides.push(side);
-    const seg = segmentDeliverable(s.text(side.deliverable) || "", side.deliverable).units;
+    const seg = segmentDeliverable(s.text(side.deliverable) || "", side.deliverable, segmentOptions(s, side.deliverable)).units;
     if (seg.length !== side.units.length) continue; // out of date: units-not-indexed covers it
     side.units.forEach((u, i) => out.set(u.id, { ...u, form: seg[i].form, text: seg[i].text, contentHash: u.locator?.contentHash }));
   }

@@ -221,7 +221,7 @@
       "path": "slides/chemical-equilibrium.md",
       "type": "slides",
       "chapter": "chemical-equilibrium",
-      "hash": "c6d4ad11c1973882d74989fc519bb1612eefc120ef973ccf6e516d2dc5e4fb26",
+      "hash": "81b9681c9cd1609032628b3f746b05455aaeff2ff6837abc3576cbba89ae046e",
       "dependencies": {
         "component:alembic.json": "96634ff4d20631beb20581a7b3c2d2152b2b205b8405c634fb6885bc8f556f4c",
         "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b",
@@ -234,7 +234,7 @@
       "path": "slides/le-chatelier.md",
       "type": "slides",
       "chapter": "le-chatelier",
-      "hash": "6d3cf5f2d0cf283fd79e0a4f5a03a239a1d217bd17b2f68958dbcf2296a1f2e6",
+      "hash": "91efcbd36039fce60b5032d52962962f1dcc1648e756119889c6222f9a95132c",
       "dependencies": {
         "component:alembic.json": "96634ff4d20631beb20581a7b3c2d2152b2b205b8405c634fb6885bc8f556f4c",
         "component:metadata/FOUNDATION.json": "f7fd19cafdd63c7e0408642857a8857a917780fd3eebc6c2c8d272677085b36b",

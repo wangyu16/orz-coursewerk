@@ -14,7 +14,7 @@ function fixture() {
   const files = {
     "study-guide/ch.md": "# Study\n\nText.\n",
     "practice/ch.md": "# Practice\n\nText.\n",
-    "slides/ch.md": "<!-- deck\ntitle: Ch\n-->\n<!-- slide template=title -->\n# Ch\n<!-- slide -->\n## Topic\nText.\n",
+    "slides/ch.md": "{{nyml\nkind: document\ncarrier: slides\ntitle: Ch\n}}\n\n<!-- slide template=title -->\n# Ch\n<!-- slide -->\n## Topic\nText.\n",
     "private/exams/midterm.md": "# Midterm\n\n::: question-workout\nQuestion\n::: answer\nAnswer\n:::\n:::\n",
   };
   for (const [rel, text] of Object.entries(files)) { fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true }); fs.writeFileSync(path.join(root, rel), text); }

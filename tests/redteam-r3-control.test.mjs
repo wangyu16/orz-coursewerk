@@ -86,18 +86,23 @@ test("[req.control.printed-by-parser] C3-03: a chain of one-sentence \"Sources: 
 });
 
 test("[req.control.printed-by-parser] C3-03 on slides: a section slide heads the slides up to the next section; a chain of section slides over nothing is read", () => {
-  // round 5: the section template renders its `#` title (and any other text) but NOT a `##` line — orz-slides' own
-  // renderer decides (printed.mjs slideRegionsShown) — so the section titles here are `#`, as the frame prints them
+  // the section titles here are `#`, the section template's title (orz-slides' own parse decides what a slide shows:
+  // printed.mjs slideRegionsShown)
   const deck = "<!-- slide template=section -->\n# Electrons flow from anode to cathode\n\n<!-- slide template=section -->\n# The salt bridge keeps both half-cells neutral\n\n<!-- slide template=section -->\n# Catalysts\n\n<!-- slide -->\n## Why nothing shifts\nA catalyst speeds up both directions equally.\n";
   const units = segmentDeliverable(deck, "slides/x.md").units;
   assert.deepEqual(units.map((u) => u.text), ["# Electrons flow from anode to cathode", "# The salt bridge keeps both half-cells neutral", "A catalyst speeds up both directions equally."]);
   assert.ok(units.slice(0, 2).every((u) => u.role === "framing" && u.form === "heading"), "a section slide's heading is framing: read for off-plan content");
-  // a `##` on a section slide prints nothing: no unit when it is a label, content-hidden when it is more
+  // a `##` on a section slide: orz-slides 0.x did not render it (a sentence there was content-hidden); 1.0 renders it as
+  // the section's subtitle (render-slide.js renderTemplate, D52) — so it prints: no unit while it is a label, and a
+  // unit, read like any heading that reads as sentences, when it is more
   const sub = "<!-- slide template=section -->\n# Part one\n## Electrons flow from anode to cathode\n\n<!-- slide -->\n## Why\nText.\n";
   assert.ok(!segmentDeliverable(sub, "slides/x.md").units.some((u) => /Electrons/.test(u.text)));
   assert.deepEqual(hiddenInText(sub, "slides/x.md"), []);
+  assert.ok(printedModel(sub, { frame: "slides" }).printed.has(2), "the subtitle prints");
   const long = sub.replace("## Electrons flow from anode to cathode", "## Electrons flow from the anode to the cathode. The salt bridge keeps the cell neutral.");
-  assert.match(hiddenInText(long, "slides/x.md").map((h) => h.what).join("\n"), /a heading that prints nothing \("## Electrons flow[^]*the section template does not render this line of @body/);
+  const read = segmentDeliverable(long, "slides/x.md").units.find((u) => /salt bridge/.test(u.text));
+  assert.ok(read && read.form === "heading" && read.role === "framing", "the sentence is read (framing: off-plan review)");
+  assert.deepEqual(hiddenInText(long, "slides/x.md"), []);
 });
 
 test("[req.control.printed-by-parser] C3-04: prose inside a `:::: tabs` group but outside every tab, and a `::: spoil` label that is no label, print — each is a unit", (t) => {
@@ -113,7 +118,7 @@ test("[req.control.printed-by-parser] C3-04: prose inside a `:::: tabs` group bu
   const SUMMARY = "In a galvanic cell oxidation happens at the anode and reduction at the cathode, and electrons flow from the anode to the cathode";
   const BODY = "A catalyst speeds up the forward and reverse reactions by the same factor.";
   c.asAgent(() => c.edit(SG, "## Worked examples\n", `::: spoil ${SUMMARY}\n${BODY}\n:::\n\n::: spoil Why a catalyst does nothing\n${BODY}\n:::\n\n::: spoil Galvanic cells run on spontaneous redox\n:::\n\n## Worked examples\n`));
-  assert.ok(renderLean(c.root, SG).includes(`<summary>${SUMMARY}</summary>`));
+  assert.match(renderLean(c.root, SG), new RegExp(`<summary[^>]*>${SUMMARY}</summary>`));
   const sum = c.units().filter((u) => /^(In a galvanic cell oxidation|Galvanic cells run)/.test(u.text));
   assert.deepEqual(sum.map((u) => u.form), ["heading", "heading"], "the long label, and a short one over an empty body");
   assert.equal(sum[0].text, SUMMARY, "the unit is what prints: the label");
@@ -144,7 +149,9 @@ test("[req.control.printed-by-parser] benign: the fixture's units are byte-ident
     for (const k of m.printed) {
       if (inUnit.has(k)) continue;
       const l = lines[k].trim();
-      assert.ok(/^#{1,2}\s/.test(l) || /^\|/.test(l) || /^\*?Adapted from/.test(l) || /^:::\s*tab\s/.test(l) || /^(\d+[.)]|[-*+])\s/.test(l), `${rel}:${k + 1} prints and is no label: ${l}`);
+      // (D52: a format-1 header's title prints — the tab — and is the document's label, shown with every unit)
+      const headerTitle = m.settings.some((v) => v.key === "title" && v.start === k);
+      assert.ok(headerTitle || /^#{1,2}\s/.test(l) || /^\|/.test(l) || /^\*?Adapted from/.test(l) || /^:::\s*tab\s/.test(l) || /^(\d+[.)]|[-*+])\s/.test(l), `${rel}:${k + 1} prints and is no label: ${l}`);
     }
     assert.deepEqual(printedModel(text).hidden, [], rel);
   }

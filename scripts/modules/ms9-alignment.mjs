@@ -18,6 +18,7 @@
 // Trial: questions only, never blocking, until its own study promotes it (D13).
 import { trustedSidecarPath } from "../lib/core/unit_records.mjs"; // only records the log wrote are read (R7 H-04)
 import { classifyUnit, derivedRole, segmentDeliverable } from "../lib/core/segment.mjs";
+import { segmentOptions } from "../lib/core/units_index.mjs";
 import { readDispatches } from "../lib/verify/dispatch.mjs";
 import { dispatchLogEntry, instructorAuthored, logRecordsOf } from "../lib/verify/verdicts.mjs";
 import { currentBases, linkOverrules, reviewBaselines, planOf, reviewInputs, reviewable, standingAlignment } from "../lib/verify/alignment.mjs";
@@ -30,7 +31,7 @@ function currentUnits(s, sides = []) {
   for (const p of s.paths.filter((x) => x.startsWith("metadata/units/") && x.endsWith(".json")).filter(trustedSidecarPath(s.text("metadata/LOG.jsonl"))).sort()) {
     const side = s.json(p); if (!Array.isArray(side?.units) || typeof side.deliverable !== "string") continue;
     sides.push(side);
-    const seg = segmentDeliverable(s.text(side.deliverable) || "", side.deliverable).units;
+    const seg = segmentDeliverable(s.text(side.deliverable) || "", side.deliverable, segmentOptions(s, side.deliverable)).units;
     if (seg.length !== side.units.length) continue;
     // the role is the segmenter's, never the sidecar's (C3-15)
     side.units.forEach((u, i) => out.push({ ...u, form: seg[i].form, text: seg[i].text, role: derivedRole(seg[i].role, [...new Set([...classifyUnit(seg[i]), ...(u.judgmentAdded || [])])]), ...(seg[i].label ? { label: seg[i].label } : {}), headings: seg[i].headings, ...(seg[i].credit ? { credit: seg[i].credit } : {}) }));

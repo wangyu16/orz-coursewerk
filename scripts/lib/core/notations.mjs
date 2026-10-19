@@ -1,147 +1,87 @@
-// Framework notations (redesign P6, D24/D25). The deliverable is lean Markdown in orz-markdown PLUS the notations of the
-// framework that will assemble it — orz-slides (deck config, slide markers, layouts, regions, templates), orz-paged
-// (the `{{nyml kind: document}}` settings), orz-mdhtml (core orz-markdown with an optional theme). The frameworks'
-// builders wrap a source without validating it, so assembly-readiness is checked here, against each framework's own
-// definitions (theme and template ids read from the installed packages) and its documented grammar.
-import fs from "node:fs";
-import path from "node:path";
-import { createRequire } from "node:module";
-import { SLIDE_REGION_MARKER, SLIDE_RESERVED_REGIONS } from "./printed.mjs";
+// Framework notations (redesign P6, D24/D25; text format 1, D52). The deliverable is lean Markdown in orz-markdown PLUS
+// the notations of the frame that will assemble it. Since D52 every orz deliverable is a format-1 TEXT (orz-markdown
+// FC-18): an optional header (`{{nyml` / `kind: document` … `}}`, leading the text) and a body. A slides text MUST open
+// with a header carrying `carrier: slides` and its deck keys; a declared print document likewise with `carrier: paged`;
+// a study guide or practice sheet is a page (`carrier: md`, or none). The notation check reads each text with the
+// carrier's OWN public reader (`readDocument(text, { kind })` of orz-slides, orz-paged and orz-mdhtml: the kit's header
+// lint, the carrier's value lints and — for slides — its deck parser's lints), never a parallel grammar, and never the
+// carriers' internals (D52, req.format1.public-readers). The frame's errors are defects; its warnings are notes to the
+// agent (a newer frame may know a name the installed one does not, D36/D38) — except where the warning means the text
+// would not show as written (below).
+import { readDocument as readSlides, THEMES as SLIDE_THEMES } from "orz-slides";
+import { readDocument as readPaged, THEMES as PAGED_THEMES, TEMPLATE_IDS as PAGED_TEMPLATES } from "orz-paged";
+import { readDocument as readPage, THEMES as PAGE_THEMES } from "orz-mdhtml";
+import { headerOf } from "./printed.mjs";
 
-const require = createRequire(import.meta.url);
 let defs = null;
-/** Theme and template ids, from the installed frameworks (async import once, cached). */
+/** Theme and template ids, from the installed frames' public exports (cached). */
 export async function frameworkDefinitions() {
   if (defs) return defs;
-  const slides = await import("orz-slides"), paged = await import("orz-paged");
-  const pkgDir = (name) => { const main = require.resolve(name); const k = main.lastIndexOf(`node_modules${path.sep}${name}`); return main.slice(0, k + `node_modules${path.sep}${name}`.length); };
-  const mdThemes = (() => { try { const dir = path.join(pkgDir("orz-markdown"), "themes"); return fs.readdirSync(dir).filter((f) => f.endsWith(".css") && f !== "common.css").map((f) => f.replace(/\.css$/, "")); } catch { return []; } })();
   defs = {
-    slideThemes: slides.THEME_DEFS.map((t) => t.id),
-    pagedTemplates: paged.loadTemplates().map((t) => t.id),
-    pagedThemes: [...paged.loadThemes().themes.map((t) => t.id), "none"],
-    mdThemes,
+    slideThemes: SLIDE_THEMES.map((t) => t.id),
+    pagedTemplates: [...PAGED_TEMPLATES],
+    pagedThemes: [...PAGED_THEMES],
+    mdThemes: PAGE_THEMES.map((t) => t.id),
   };
   return defs;
 }
 
-// ---- orz-slides ---------------------------------------------------------------------------------------------------
-const DECK_KEYS = new Set(["title", "theme", "ratio", "author", "footer", "transition"]);
-const TEMPLATES = { title: 6, section: 4, outline: 3, closing: 3 };
-const PRESETS = { "2col": ["left", "right"], "3col": ["left", "mid", "right"], "2row": ["top", "bottom"], "main-side": ["main", "side"], quad: ["tl", "tr", "bl", "br"] };
-// routed to fields of their own by orz-slides (compared lowercased, as it does); `float` is positioned, not a layout leaf
-const RESERVED = new Set(SLIDE_RESERVED_REGIONS.filter((n) => n !== "float"));
-const TRACK = /^(?:auto|\d+(?:\.\d+)?(?:fr|%|px)?)(?:\/(?:auto|\d+(?:\.\d+)?(?:fr|%|px)?))*$/;
-
-/** Parse a raw split ("col 2/1 { a; row 1/1 { b; c } }") into its leaf region names, or throw. */
-export function splitLeaves(src) {
-  let i = 0; const s = src.trim();
-  const ws = () => { while (s[i] === " ") i++; };
-  const word = () => { ws(); const m = /^[A-Za-z0-9_%./-]+/.exec(s.slice(i)); if (!m) throw new Error(`expected a name at "${s.slice(i, i + 12)}"`); i += m[0].length; return m[0]; };
-  const item = () => {
-    ws(); const w = word();
-    if (w === "row" || w === "col") {
-      const tracks = word(); if (!TRACK.test(tracks)) throw new Error(`bad track list "${tracks}"`);
-      ws(); if (s[i] !== "{") throw new Error(`expected "{" after ${w} ${tracks}`); i++;
-      const leaves = [...item()]; let items = 1; ws();
-      while (s[i] === ";") { i++; leaves.push(...item()); items++; ws(); }
-      if (s[i] !== "}") throw new Error("unbalanced braces in the layout"); i++;
-      if (items !== tracks.split("/").length) throw new Error(`${w} ${tracks} has ${tracks.split("/").length} track(s) but ${items} item(s)`);
-      return leaves;
-    }
-    // the frame's region-name grammar (slide-parser.js readName): letters, digits, "_" and "-"
-    if (!/^[A-Za-z0-9_-]+$/.test(w)) throw new Error(`"${w}" is not a region name`);
-    return [w];
-  };
-  const leaves = item(); ws();
-  if (i !== s.length) throw new Error(`unexpected "${s.slice(i)}" after the layout`);
-  return leaves;
+/** The fix a frame's lint names (Lint.next: the carrier CLI command that resolves it). */
+const NEXT = { upgrade: (pkg) => `run \`${pkg} upgrade\`, which moves a 0.x text's settings into the header` };
+/**
+ * A frame's lints as notation problems: [{ line, issue, aspect? }]. Errors are defects (no aspect); a theme the frame
+ * does not have is the "theme" aspect (clothing, never a defect, D36); any other warning is the "vocabulary" aspect (a
+ * note) unless `strict` holds for it (then a defect).
+ */
+function fromLint(lint, pkg, strict = () => false, vocabulary = () => false) {
+  return lint.map((l) => {
+    const issue = `${l.message}${l.next && NEXT[l.next] ? ` — ${NEXT[l.next](pkg)}` : ""} [${l.code}]`;
+    const line = l.line ?? 1;
+    if (vocabulary(l)) return { line, aspect: "vocabulary", issue };
+    if (l.level === "error" || strict(l)) return { line, issue };
+    return { line, aspect: l.code === "unknown-theme" ? "theme" : "vocabulary", issue };
+  });
 }
 
-/** Problems with an orz-slides deck source: [{ line, issue }]. */
-export function checkSlidesNotation(text, d) {
-  const P = [], lines = String(text).split("\n");
-  const add = (line, issue) => P.push({ line, issue });
-  // a name looked up in the installed frame's vocabulary: a newer frame may know it (the notations only grow, D36),
-  // so it is reported apart and never blocks an agent from using what the frame offers (D38)
-  const vocab = (line, issue) => P.push({ line, aspect: "vocabulary", issue });
-  let decks = 0, slide = null;
-  const closeSlide = () => {
-    if (!slide) return;
-    for (const r of slide.regions.filter((x) => !x.float)) if (!slide.leaves.includes(r.name) && !RESERVED.has(r.name.toLowerCase())) add(r.line, `region @${r.name} is not a region of this slide's layout (${slide.leaves.join(", ") || "single region"}): orz-slides drops it`);
-    // orz-slides keeps the LAST chunk of a region name (round 5, CONTROL C1-01): an earlier one never shows
-    // content before the first marker fills the layout's first region (orz-slides parseRegions)
-    const seen = new Map(slide.leading ? [[slide.leaves[0], slide.leading]] : []);
-    for (const r of slide.regions.filter((x) => !x.float && x.name.toLowerCase() !== "notes")) { const k = RESERVED.has(r.name.toLowerCase()) ? r.name.toLowerCase() : r.name; if (seen.has(k)) add(seen.get(k), `region @${r.name} appears again on line ${r.line} of this slide: orz-slides shows only the last one, so this one is dropped`); seen.set(k, r.line); }
-  };
-  for (let n = 0; n < lines.length; n++) {
-    const t = lines[n].trim();
-    if (t.startsWith("<!-- deck")) {
-      decks++; if (decks > 1) add(n + 1, "a deck has one <!-- deck … --> config block");
-      if (slide) add(n + 1, "the deck config block comes before the first slide");
-      let j = n; const body = [];
-      if (!t.endsWith("-->")) { for (j = n + 1; j < lines.length && !lines[j].includes("-->"); j++) body.push(lines[j]); }
-      for (const l of body) {
-        if (!l.trim()) continue;
-        const m = /^\s*([a-z]+)\s*:\s*(.*)$/.exec(l);
-        if (!m) { add(n + 1, `deck config line is not "key: value": ${l.trim()}`); continue; }
-        if (!DECK_KEYS.has(m[1])) vocab(n + 1, `deck config key "${m[1]}" is not known to the installed orz-slides (known: ${[...DECK_KEYS].join(", ")})`);
-        // a theme is the frame's clothing, not the course's notation (D36): reported apart, never a defect
-        if (m[1] === "theme" && !d.slideThemes.includes(m[2].trim())) P.push({ line: n + 1, aspect: "theme", issue: `slide theme "${m[2].trim()}" is not in the current orz-slides (has: ${d.slideThemes.join(", ")})` });
-        if (m[1] === "ratio" && !["16:9", "4:3"].includes(m[2].trim())) vocab(n + 1, `ratio ${m[2].trim()} is not one the installed orz-slides knows (16:9, 4:3)`);
-      }
-      n = j; continue;
-    }
-    const sm = /^<!--\s*slide\b(.*?)-->\s*$/.exec(t);
-    if (sm) {
-      closeSlide();
-      const tokens = sm[1].trim(); let rest = tokens;
-      const opts = {};
-      rest = rest.replace(/\b(template|v|bg|t|fit|class|id)=(\S+)/g, (_, k, v) => { opts[k] = v; return " "; }).replace(/\bstep\b/g, " ").trim();
-      if (opts.template && !(opts.template in TEMPLATES)) vocab(n + 1, `slide template "${opts.template}" is not known to the installed orz-slides (it has: ${Object.keys(TEMPLATES).join(", ")})`);
-      if (opts.v !== undefined) {
-        if (!opts.template) add(n + 1, "v= selects a template variant and needs template=");
-        else if (opts.template in TEMPLATES && !(Number.isInteger(Number(opts.v)) && Number(opts.v) >= 1 && Number(opts.v) <= TEMPLATES[opts.template])) vocab(n + 1, `template=${opts.template} has variants v=1…${TEMPLATES[opts.template]} (got v=${opts.v})`);
-      }
-      if (opts.fit && !["fit", "scroll", "off"].includes(opts.fit)) vocab(n + 1, `fit=${opts.fit} is not one the installed orz-slides knows (fit, scroll, off)`);
-      let leaves = ["body"];
-      if (rest) {
-        const [first, ...more] = rest.split(/\s+/);
-        if (PRESETS[first]) {
-          leaves = PRESETS[first];
-          const ratio = more.join(" ").replace(/^\[|\]$/g, "").trim();
-          if (ratio && !TRACK.test(ratio)) add(n + 1, `unexpected "${more.join(" ")}" after the ${first} preset (a track ratio like 3/2 is allowed)`);
-        } else if (first === "row" || first === "col") {
-          try { leaves = splitLeaves(rest); } catch (e) { add(n + 1, `layout: ${e.message}`); }
-        } else vocab(n + 1, `layout or option "${first}" is not known to the installed orz-slides`);
-      }
-      slide = { line: n + 1, leaves, regions: [], template: !!opts.template, leading: null, content: false };
-      continue;
-    }
-    // ONE region-name pattern: the frame's own marker (round 5, CONTROL C1-02: `@Aside`, `@x_y`, `@1x` were never read)
-    const rm = SLIDE_REGION_MARKER.exec(lines[n]);
-    if (rm && rm[1].toLowerCase() !== "float") { if (!slide) add(n + 1, `region @${rm[1]} appears before any slide`); else slide.regions.push({ name: rm[1], line: n + 1 }); }
-    else if (rm) { if (slide) slide.regions.push({ name: "float", line: n + 1, float: true }); }
-    else if (slide && t && !slide.regions.length) {
-      // the leading content of a normal slide, less its title (its first content line, when an h2)
-      if (!slide.content && !slide.template && /^##\s/.test(t)) { slide.content = true; continue; }
-      slide.content = true;
-      if (slide.leading == null) slide.leading = n + 1;
-    }
-  }
-  closeSlide();
-  return P;
+// ---- orz-slides ---------------------------------------------------------------------------------------------------
+// A NAME the installed frame does not know — a template variant, a template, a transition or fit value, a layout or an
+// option — is a note, never a defect: a newer frame may know it (D36, D38). Grammar that cannot render stays a defect.
+const SLIDE_VOCABULARY = (l) => l.code === "unknown-option" || l.code === "unknown-layout" || (l.code === "invalid-option" && /^(?:slide \d+: )?(?:v|template|t|fit)=/.test(l.message));
+/** A ratio that is a slide shape at all: w:h, both positive, between 1:4 and 4:1 (16:9, 4:3, 16:10 …). */
+const ratioShapeOk = (r) => { const m = /^\s*(\d+(?:\.\d+)?)\s*:\s*(\d+(?:\.\d+)?)\s*$/.exec(String(r ?? "")); return !!m && Number(m[1]) > 0 && Number(m[2]) > 0 && Number(m[2]) / Number(m[1]) >= 0.25 && Number(m[2]) / Number(m[1]) <= 4; };
+/**
+ * Problems with an orz-slides text: [{ line, issue, aspect? }]. It must open with a format-1 header carrying
+ * `carrier: slides` (a 0.x `<!-- deck … -->` block is the frame's error `deck-block`, resolved by `orz-slides upgrade`).
+ * A `ratio` that is no slide shape at all is a defect too (printed geometry, req.control.slide-ratio); one the frame
+ * merely does not take (16:10) is a note.
+ */
+export function checkSlidesNotation(text) {
+  const src = String(text ?? ""), P = [];
+  const head = headerOf(src);
+  if (!head) P.push({ line: 1, issue: "a slides text opens with the format-1 header `{{nyml` / `kind: document` / `carrier: slides` / its deck keys (title, ratio, footer …) / `}}` — a 0.x deck: run `orz-slides upgrade`, which moves the `<!-- deck … -->` keys into the header" });
+  else if (head.carrier !== "slides") P.push({ line: head.start + 1, issue: `the header ${head.carrier ? `says \`carrier: ${head.carrier}\`` : "names no carrier"}: a slides text's header carries \`carrier: slides\` (Alembic assembles slides/ as an orz-slides deck)` });
+  let doc; try { doc = readSlides(src, { kind: "slides" }); } catch (e) { return [...P, { line: 1, issue: `orz-slides cannot read this text (${e.message})` }]; }
+  // a ratio the frame does not take is a note (a newer frame may take it) unless it is no slide shape at all
+  return [...P, ...fromLint(doc.lint, "orz-slides", (l) => l.code === "invalid-value" && l.key === "ratio" && !ratioShapeOk(doc.header?.fields?.ratio), SLIDE_VOCABULARY)];
 }
 
 // ---- orz-paged ----------------------------------------------------------------------------------------------------
-/** Problems with an orz-paged document's settings block. */
-export function checkPagedNotation(text, d) {
-  const P = [];
-  const m = /\{\{nyml\s*\n([\s\S]*?)\}\}/.exec(String(text));
-  if (!m || !/^\s*kind:\s*document\s*$/m.test(m[1])) { P.push({ line: 1, issue: "an orz-paged document opens with a {{nyml kind: document}} settings block" }); return P; }
-  const get = (k) => new RegExp(`^\\s*${k}:\\s*(\\S+)\\s*$`, "m").exec(m[1])?.[1];
-  const tpl = get("template"), th = get("theme");
-  if (tpl && !d.pagedTemplates.includes(tpl) && !d.pagedTemplates.includes(`${tpl}-section`)) P.push({ line: 1, aspect: "vocabulary", issue: `orz-paged template "${tpl}" is not known to the installed orz-paged (it has: ${d.pagedTemplates.join(", ")})` });
-  if (th && !d.pagedThemes.includes(th)) P.push({ line: 1, aspect: "theme", issue: `orz-paged theme "${th}" is not in the current orz-paged (has: ${d.pagedThemes.join(", ")})` });
-  return P;
+/** Problems with an orz-paged print document: its settings are its format-1 header, which carries `carrier: paged`. */
+export function checkPagedNotation(text) {
+  const src = String(text ?? ""), P = [];
+  const head = headerOf(src);
+  if (!head) P.push({ line: 1, issue: "an orz-paged document opens with the format-1 header `{{nyml` / `kind: document` / `carrier: paged` / its settings / `}}` (a `{{nyml kind: document}}` block further down is not read: run `orz-paged upgrade` on a 0.x document)" });
+  else if (head.carrier !== "paged") P.push({ line: head.start + 1, issue: `the header ${head.carrier ? `says \`carrier: ${head.carrier}\`` : "names no carrier"}: a declared print document's header carries \`carrier: paged\`` });
+  let doc; try { doc = readPaged(src, { kind: "paged" }); } catch (e) { return [...P, { line: 1, issue: `orz-paged cannot read this text (${e.message})` }]; }
+  return [...P, ...fromLint(doc.lint, "orz-paged")];
+}
+
+// ---- orz-mdhtml (a page: the study guide, practice, any other declared document) ------------------------------------
+/** Problems with a page text: a header is optional; when there is one it is a page's (`carrier: md`, or none). */
+export function checkPageNotation(text) {
+  const src = String(text ?? ""), P = [];
+  const head = headerOf(src);
+  if (head?.carrier && head.carrier !== "md") P.push({ line: head.start + 1, issue: `the header says \`carrier: ${head.carrier}\`: this text is assembled as a page (orz-mdhtml) — write \`carrier: md\` or no carrier` });
+  let doc; try { doc = readPage(src, { kind: "md" }); } catch (e) { return [...P, { line: 1, issue: `orz-mdhtml cannot read this text (${e.message})` }]; }
+  return [...P, ...fromLint(doc.lint, "orz-mdhtml")];
 }
