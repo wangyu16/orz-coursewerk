@@ -7,6 +7,8 @@
 /dist/
 /guide/
 /.coursewerk/
+# the newest orz skills, fetched by scripts/skills.mjs (never committed: a copy goes stale)
+/.claude/skills/orz-*/
 
 # Saved example builds (e.g. examples/openstax_chemistry/) — kept locally for reference, never committed
 /examples/

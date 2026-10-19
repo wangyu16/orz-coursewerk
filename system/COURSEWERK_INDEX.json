@@ -5,7 +5,7 @@
       "id": "repo:.cursorrules",
       "path": ".cursorrules",
       "type": "repository-support",
-      "hash": "9e95b0d590c7db8e8c3c08b00695f8fc128b4134e2510867e896fbe5dfd5aa43"
+      "hash": "421eb8fe99168fe307f4be3cc5e0ae9918b87dc2a26d84fb4a246b5a8ad45e64"
     },
     {
       "id": "repo:.github/copilot-instructions.md",
@@ -29,19 +29,19 @@
       "id": "repo:.gitignore",
       "path": ".gitignore",
       "type": "repository-support",
-      "hash": "9a18358f26a4fb539c0ae6205f2c86566a17bf77911c41edb84c04314b9767c9"
+      "hash": "fa65c1d8293cf0c0210a338b338447dfbbd1cd079f87b4418a65b6c93227ce4e"
     },
     {
       "id": "repo:AGENTS.md",
       "path": "AGENTS.md",
       "type": "agent-constitution",
-      "hash": "79ddbf6e3bb3ae5a4c61f96b0f8803f0c676921c1a10576540e2536382f3968f"
+      "hash": "6ee339d9b8c7709b74a047af351d3c71e0988718567c4876f2d1aef0a2bacec4"
     },
     {
       "id": "repo:bootstrap/init.sh",
       "path": "bootstrap/init.sh",
       "type": "repository-support",
-      "hash": "f9cacd9ddf0d9c8a0c39edd257886d9b195db4afac8fcca3befc5cc045b919a0"
+      "hash": "d5257c3a06cb2288aed7e92d4e3395f894681a9141d9e12fd9bf25df63a0af9d"
     },
     {
       "id": "repo:CHANGELOG.md",
@@ -53,7 +53,7 @@
       "id": "repo:CLAUDE.md",
       "path": "CLAUDE.md",
       "type": "agent-constitution",
-      "hash": "fd0bc229c9d71e6a930b71dfb1d754c60eefba9ef18f3d341119913644a5116b"
+      "hash": "c7a0683ea08eb2f148577808916ecad77fc04e3cd0a1abc2bbda17da865de293"
     },
     {
       "id": "repo:COMPATIBILITY.md",
@@ -65,7 +65,7 @@
       "id": "repo:docs/assembling-carriers.md",
       "path": "docs/assembling-carriers.md",
       "type": "documentation",
-      "hash": "04e68676e1f77dfcd3a998ddbaf88d721828c7bce4748565bd7dd091f1f2755c"
+      "hash": "1f32c86a6df1ffb1ec8682d4575069ff2624afb0762b54e81301a503cff3dca1"
     },
     {
       "id": "repo:docs/assurance-kernel.md",
@@ -77,7 +77,7 @@
       "id": "repo:docs/authoring-guidelines.md",
       "path": "docs/authoring-guidelines.md",
       "type": "documentation",
-      "hash": "9b5fdf3916240b680727765a983ad009079038f8e95234540527b309d2b090d8"
+      "hash": "36a0fae58a7888c6fe65f79f5775814bf579e772ebf7cbff825b97eae54dc0e6"
     },
     {
       "id": "repo:docs/closed-loop-rounds.md",
@@ -101,7 +101,7 @@
       "id": "repo:docs/lite-path.md",
       "path": "docs/lite-path.md",
       "type": "documentation",
-      "hash": "85c521108cef2d0fbe0cf0683e9d57f7fa91b08cc04373589801792d48e4f5b1"
+      "hash": "7ffc7d1cc0dc1545fe2fded3f9f0aabe7538d1cdb8a1ce51d92724d6be490793"
     },
     {
       "id": "repo:docs/migrating-from-v0.12.md",
@@ -155,19 +155,19 @@
       "id": "repo:FEATURES.md",
       "path": "FEATURES.md",
       "type": "product-claim",
-      "hash": "0f2121237d8ced24282726fc8424d69f3a134a001345058b93cdb24011fc390f"
+      "hash": "03bb04ae51cb2f13a5c44ddb8256d46282723af63129b24bde0484a1fa4852ec"
     },
     {
       "id": "repo:format-contracts/deliverables.md",
       "path": "format-contracts/deliverables.md",
       "type": "documentation",
-      "hash": "1b7b37196c0e12a08598dfd5661b5544502a261df0420afe5d9e85153c517857"
+      "hash": "30accec148b91c316b6255e75e41b7ff962747fff21c53a4c04b9a92d371f799"
     },
     {
       "id": "repo:GEMINI.md",
       "path": "GEMINI.md",
       "type": "repository-support",
-      "hash": "70411f2a0a67a9722841778f039349508f1dbe528c8f8a8cd7fa80de91ff3960"
+      "hash": "4348b1d556ab794e17cc760b8ab1aee9323f25d652a295ec06a2cbcb792a4064"
     },
     {
       "id": "repo:LICENSE",
@@ -179,25 +179,25 @@
       "id": "repo:NOTES.md",
       "path": "NOTES.md",
       "type": "repository-support",
-      "hash": "73701f19c9aad0b8963148b313a88eb7c87d6881a75707749cd6b13ab7361720"
+      "hash": "d527dcb9457e3c4935e6f498d35e39ee504a83a005cdbd7f0b411d3b202a1d54"
     },
     {
       "id": "repo:package.json",
       "path": "package.json",
       "type": "release-metadata",
-      "hash": "3b00f02748b76b0f8efd2b3bd388eb21ad15c9dd6d08cd500732d3d890442b8d"
+      "hash": "7c7c98c0a95b3c1c64925667e0df5880a44b6480b4fc688d93cbf6d2bab53b14"
     },
     {
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "385cdba48a5b43aa3c7eaa2a9a6db09fd89021a27cf77c6e2a5da7af18c3f602"
+      "hash": "a86cdf3c6b0ca712cd9071f3ff90c84852a47ce132eef9eff8dbf43687ca0c92"
     },
     {
       "id": "repo:README.md",
       "path": "README.md",
       "type": "product-claim",
-      "hash": "c022b995a2c40da7ae94e55c26cebf62637641265c84e20abeec5706f163e608"
+      "hash": "c5bcd40cc82c44d35157227feb9d3831152da5de7a795bf44ba7a7386e2ef92a"
     },
     {
       "id": "repo:scripts/accept_coursewerk_revision.mjs",
@@ -221,7 +221,7 @@
       "id": "repo:scripts/attest_visual_review.mjs",
       "path": "scripts/attest_visual_review.mjs",
       "type": "executable",
-      "hash": "4e26cfa1deb2c8ea7b10cc89385ef98e57d7d4f267447da6dfbd446ec6220b6b"
+      "hash": "e516f241a92d44d2f9a49c6d1655366c3164aaf21434d122caae72eff0275737"
     },
     {
       "id": "repo:scripts/bind_key_fact_review.mjs",
@@ -233,7 +233,7 @@
       "id": "repo:scripts/build_carriers.mjs",
       "path": "scripts/build_carriers.mjs",
       "type": "executable",
-      "hash": "0281422340284b7117983139314bac1f80a568c83f66c53bf775d6267edede15"
+      "hash": "dcfee7b4b3d93be2ea57739b9a9d75b8a9b85ee2b7e8f07dde914eab045eb944"
     },
     {
       "id": "repo:scripts/capture_media_evidence.mjs",
@@ -401,7 +401,7 @@
       "id": "repo:scripts/lib/contract.mjs",
       "path": "scripts/lib/contract.mjs",
       "type": "kernel",
-      "hash": "c30c68455e1095ed94cc92a9e18f13aac92d42c53d8b5d7d5586a986055af35d"
+      "hash": "4d7724c0d5d43fb8f05568c67f91e56a6656e7c184dc5cbc1908cd9c2d2229f8"
     },
     {
       "id": "repo:scripts/lib/core/approvals.mjs",
@@ -605,7 +605,7 @@
       "id": "repo:scripts/lib/frames.mjs",
       "path": "scripts/lib/frames.mjs",
       "type": "kernel",
-      "hash": "30a84ec5ca6d50da50f38073ff406a499cb6b62f96aca1e94126dba180fca2ae"
+      "hash": "a714f01dff3b51101ba41244475ad302a8f07f6b5b3a722634e1f9f748b102d2"
     },
     {
       "id": "repo:scripts/lib/identity.mjs",
@@ -923,7 +923,7 @@
       "id": "repo:scripts/modules/ms5-carriers.mjs",
       "path": "scripts/modules/ms5-carriers.mjs",
       "type": "executable",
-      "hash": "259133c38782c8519ba77a93b346976a99a5ae296e2d2d75713a90b73cb0bec7"
+      "hash": "6f1c181e7af11823ccc167237f5e08de4fd5e246877ff1e6760735d9a8b42dcb"
     },
     {
       "id": "repo:scripts/modules/ms6-quotations.mjs",
@@ -965,7 +965,7 @@
       "id": "repo:scripts/pack.mjs",
       "path": "scripts/pack.mjs",
       "type": "executable",
-      "hash": "db2ab087b3bdd3e51a287361d041a682b65c09eabae1b90ecba47b1c1f8070d1"
+      "hash": "a60b6db5bbe6fb204bdf2d1306e3d72217cb27b020dbc5dd5d11cffdd7de781e"
     },
     {
       "id": "repo:scripts/prepare_source_corpus.mjs",
@@ -1002,6 +1002,12 @@
       "path": "scripts/revision_impact.mjs",
       "type": "executable",
       "hash": "e96a1c999f2283b2ea7520fb1b5e2fd81bec4d81fd5e51225ee66b1986937e65"
+    },
+    {
+      "id": "repo:scripts/skills.mjs",
+      "path": "scripts/skills.mjs",
+      "type": "executable",
+      "hash": "ea2dca5052576a71db2481e99bbd9d7a5e8a1feaf4a2156a2ec7b644055f2452"
     },
     {
       "id": "repo:scripts/spine.mjs",
@@ -1085,7 +1091,7 @@
       "id": "repo:skills/courseguide-standards/SKILL.md",
       "path": "skills/courseguide-standards/SKILL.md",
       "type": "skill",
-      "hash": "f9ee5982c84640e990b2f3b00b36a5a331684b6e8554203c1bc2f04676e54934"
+      "hash": "fc148f0010020e9a74c07ddf4e9dc830efdb23be9b9993b45797d3b008f5e227"
     },
     {
       "id": "repo:skills/oer-figures/scripts/draw_chem.py",
@@ -1109,55 +1115,7 @@
       "id": "repo:skills/oer-qa/SKILL.md",
       "path": "skills/oer-qa/SKILL.md",
       "type": "skill",
-      "hash": "f92a67d829f0db9683a43ae99cb3e3ddc7917eadb81f915d76a019c0ccdb5474"
-    },
-    {
-      "id": "repo:skills/orz-markdown/assets/minimal.css",
-      "path": "skills/orz-markdown/assets/minimal.css",
-      "type": "skill",
-      "hash": "44005a52ee7cf2a6d407cb887836e3a920b49827c58ed38c14e7721b2f19516e"
-    },
-    {
-      "id": "repo:skills/orz-markdown/assets/template.html",
-      "path": "skills/orz-markdown/assets/template.html",
-      "type": "skill",
-      "hash": "35b6ede8e4b907ddce7e9cfb445f2648a0ce23a794e6f91cdd6fc45b646aaed5"
-    },
-    {
-      "id": "repo:skills/orz-markdown/references/css-classes.md",
-      "path": "skills/orz-markdown/references/css-classes.md",
-      "type": "skill",
-      "hash": "7370e9c4939a6440012033d95d2cb403bdaf024415e50cf927ba9b2c8d35e981"
-    },
-    {
-      "id": "repo:skills/orz-markdown/references/syntax.md",
-      "path": "skills/orz-markdown/references/syntax.md",
-      "type": "skill",
-      "hash": "e373ba8706998c197dd6e9f2111b09472a0b04141a54ad5000f53f780f4a0e0f"
-    },
-    {
-      "id": "repo:skills/orz-markdown/references/themes.md",
-      "path": "skills/orz-markdown/references/themes.md",
-      "type": "skill",
-      "hash": "9e8c93cea730dd109ae26c13f6cf66ffb45fe73004293c151305c11e018b700c"
-    },
-    {
-      "id": "repo:skills/orz-markdown/SKILL.md",
-      "path": "skills/orz-markdown/SKILL.md",
-      "type": "skill",
-      "hash": "e849c906687ebafba697a77d0e13f9f361dc3e04f893ba34425c976aafe52ffe"
-    },
-    {
-      "id": "repo:skills/orz-paged/SKILL.md",
-      "path": "skills/orz-paged/SKILL.md",
-      "type": "skill",
-      "hash": "e3c2da6eec27afae60129a51c66d83bc0c4019e34121329300513823dc56c08f"
-    },
-    {
-      "id": "repo:skills/orz-slides/SKILL.md",
-      "path": "skills/orz-slides/SKILL.md",
-      "type": "skill",
-      "hash": "491e9a03ac8c5f0bfb4f0228718b76926fae37b0ab7a139c7ac5be3338b0b748"
+      "hash": "bf6f567c56ac64be3a80f9e56e9465754389a0cc995749c2801f357c1045bf22"
     },
     {
       "id": "repo:system/CLAIMS.json",
@@ -1193,7 +1151,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "8502b3fcaef12857fc38ac5154d5978e6f56c64143cd188962d414acef4d29c4"
+      "hash": "15be92fbf3c7de66da255605582c43cdcdca080da5fe7ee818b52ac689f16f38"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1397,7 +1355,7 @@
       "id": "repo:tests/assurance.test.mjs",
       "path": "tests/assurance.test.mjs",
       "type": "test",
-      "hash": "1d3165a46412035a30d902e076dbe7ffa9ee75548845e116bd81df76594072ef"
+      "hash": "4fa9b2d6d6a64ec55cdf7ead89b521d3b4c1fd2d86c89ddc3205639c10fecc42"
     },
     {
       "id": "repo:tests/audit-round-2.test.mjs",
@@ -1439,7 +1397,7 @@
       "id": "repo:tests/carriers.test.mjs",
       "path": "tests/carriers.test.mjs",
       "type": "test",
-      "hash": "8d7f9528e9d5ad62394075e1a00f4aacb6288f6bbf919d5c97a078c28481a1a9"
+      "hash": "d39ad1b6c7f762ff0f3d98946282a8fbc1e398a577b7472ab42e7e9e299ea9a6"
     },
     {
       "id": "repo:tests/check-oer-consistency.test.mjs",
@@ -1739,7 +1697,7 @@
       "id": "repo:tests/frames.test.mjs",
       "path": "tests/frames.test.mjs",
       "type": "test",
-      "hash": "6aabb3b6c86e1db7e0f0b03d47abdf23a5613da5b74dfdc6716ac0fea8445709"
+      "hash": "de6c0f25caa2bbda49192487debc8112d96ce9082b6d1d69a9fff3f1ab4cf9a4"
     },
     {
       "id": "repo:tests/gate-cli.test.mjs",
@@ -2010,6 +1968,12 @@
       "path": "tests/site.test.mjs",
       "type": "test",
       "hash": "b1b58a8088d517b779723e76be14dfc9cc6b3dbc8047c3e4fc7949a23c03d2de"
+    },
+    {
+      "id": "repo:tests/skills.test.mjs",
+      "path": "tests/skills.test.mjs",
+      "type": "test",
+      "hash": "7e8ab1c7a46f368dc8e2f701abec75c155503416aba90472bbd4a75b09746c0e"
     },
     {
       "id": "repo:tests/source-hygiene.test.mjs",
@@ -4281,6 +4245,14 @@
         "status": "closed"
       },
       {
+        "id": "req.frames.round-trip",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.gate.log-verified",
         "phase": "P2",
         "tiers": [
@@ -4876,6 +4848,14 @@
       },
       {
         "id": "req.ship.same-computation",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.skills.newest",
         "phase": "P11",
         "tiers": [
           "T1"

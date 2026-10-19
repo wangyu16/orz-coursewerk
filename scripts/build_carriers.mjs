@@ -1,16 +1,19 @@
 #!/usr/bin/env node
-// build_carriers — assemble the orz framework shells for LOCAL reading/preview + QA.
+// build_carriers — assemble the orz carriers ("clothes") for LOCAL reading/preview + QA.
 //
-// coursewerk authors LEAN markdown (the source of truth) and SHIPS lean. But while
-// authoring you want to see the real editable carrier — so this builds each lean
-// source via the orz family, into a throwaway
-// `preview/` tree (git-ignored, never uploaded; Alembic rebuilds carriers on its side).
+// coursewerk authors the plain TEXT (the source of truth, orz text format 1) and SHIPS the text. While authoring you
+// want to see the real editable carrier, so this assembles each text with the newest orz frames into a throwaway
+// `preview/` tree (git-ignored, never uploaded; Alembic assembles carriers on its side). D52:
 //
-//   study-guide/*.md , practice/*.md  → *.md.html      (orz-mdhtml)
-//   slides/*.md                        → *.slides.html  (orz-slides)
-//   paged/*.md                         → *.paged.html   (orz-paged)
+//   study-guide/*.md , practice/*.md  → *.md.html      (orz-mdhtml assemble)
+//   slides/*.md                        → *.slides.html  (orz-slides assemble)
+//   declared paged documents           → *.paged.html   (orz-paged assemble)
 //
-// Usage: node build_carriers.mjs --root <dir> --out <dir> [--theme <name>] [--receipt <json>] [--require-single-file]
+// Every carrier is CHECKED with the public library of the same frame that built it: extract(carrier).text must be
+// the text, byte for byte, and the carrier's own lint may report no error. Either failure fails the build. There is no
+// --theme: the look (title, theme, ratio, page settings) is the text's {{nyml}} header, never a build option.
+//
+// Usage: node build_carriers.mjs --root <dir> --out <dir> [--receipt <json>] [--require-single-file]
 //        [--frames latest|installed]   latest (default): the newest orz frames, from the frame cache (D36)
 import fs from "node:fs";
 import path from "node:path";
@@ -18,7 +21,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import crypto from "node:crypto";
 import { LEAN_SOURCE } from "./lib/contract.mjs";
-import { resolveFrames } from "./lib/frames.mjs";
+import { loadFrameLib, resolveFrames } from "./lib/frames.mjs";
 
 const args = process.argv.slice(2);
 const opt = (n, d = null) => {
@@ -28,7 +31,10 @@ const opt = (n, d = null) => {
 const pkg = path.resolve(opt("--root", opt("--package", "package")));
 const outRoot = path.resolve(opt("--out", "preview"));
 const receiptPath = opt("--receipt");
-const theme = opt("--theme");
+if (args.includes("--theme")) {
+  console.error("build_carriers: --theme is gone (orz text format 1, D52): the theme is the text's own header (`theme:` in its {{nyml kind: document}} block).");
+  process.exit(2);
+}
 const requireSingleFile = args.includes("--require-single-file");
 if (!fs.existsSync(pkg)) {
   console.error(`build_carriers: package dir not found: ${pkg}`);
@@ -69,20 +75,48 @@ function walk(root) {
   return out;
 }
 
+// each frame's public library, from the same node_modules as its CLI: the frame that built a carrier checks it
+const libs = {};
+for (const builder of new Set(Object.values(LEAN_SOURCE).map((spec) => spec.builder))) {
+  try { libs[builder] = await loadFrameLib(framesUsed.nodeModules, builder); }
+  catch (e) { console.error(`build_carriers: ${builder} not installed in ${framesUsed.nodeModules} — run \`npm install\` first (${e.message}).`); process.exit(2); }
+}
+
+/** `<frame> assemble <text> -o <carrier> --json` (format-1 CLI, inline delivery). Returns { ok, error }. */
 function runBuilder(builder, input, output) {
   const bin = path.join(binDir, builder);
   if (!fs.existsSync(bin)) {
     console.error(`build_carriers: ${builder} not installed — run \`npm install\` first.`);
     process.exit(2);
   }
-  const cliArgs = [input, "-o", output, "--inline"];
-  if (theme) cliArgs.push("--theme", theme);
-  const res = spawnSync(process.execPath, [bin, ...cliArgs], { encoding: "utf8" });
-  if (res.status !== 0) {
-    console.error(`build_carriers: ${builder} failed on ${input}:\n${res.stderr || res.stdout}`);
-    return false;
+  const res = spawnSync(process.execPath, [bin, "assemble", input, "-o", output, "--json"], { encoding: "utf8" });
+  let report = null;
+  try { report = JSON.parse(res.stdout); } catch { /* not JSON: report the raw output */ }
+  if (res.status !== 0 || !report?.ok) {
+    const error = `${builder} assemble refused ${path.relative(pkg, input)}: ${report?.error || (res.stderr || res.stdout || `exit ${res.status}`).trim()}`;
+    console.error(`build_carriers: ${error}`);
+    return { ok: false, error };
   }
-  return true;
+  return { ok: true, error: null };
+}
+
+/** The round-trip law (FC-18): the carrier holds exactly the text; and the carrier's own lint finds no error. */
+function checkCarrier(builder, text, html, relPath) {
+  const lib = libs[builder];
+  const problems = [];
+  let extracted = null;
+  try { extracted = lib.extract(html).text; } catch (e) { problems.push(`${builder} could not extract the text back: ${e.message}`); }
+  const exact = extracted === text;
+  if (extracted !== null && !exact) problems.push(`${relPath}: the carrier does not hold the text exactly (extract(assemble(text)).text differs from the text; mixed line endings or a refused character change it)`);
+  let lint = [];
+  try { lint = (lib.inspect(html, { filename: path.basename(relPath) }).lint || []).map(({ level, code, message, line }) => ({ level, code, message, ...(line ? { line } : {}) })); }
+  catch (e) { problems.push(`${builder} could not inspect the carrier: ${e.message}`); }
+  for (const l of lint.filter((x) => x.level === "error")) problems.push(`${relPath}${l.line ? `:${l.line}` : ""}: ${builder} lint error ${l.code}: ${l.message}`);
+  return {
+    roundTrip: { exact, textSha256: crypto.createHash("sha256").update(text).digest("hex"), extractedSha256: extracted === null ? null : crypto.createHash("sha256").update(extracted).digest("hex") },
+    lint,
+    problems,
+  };
 }
 
 // clean the preview tree, then rebuild
@@ -146,8 +180,16 @@ function buildOne(spec, src) {
   const relPath = path.relative(pkg, src).replaceAll(path.sep, "/");
   const outPath = path.join(outRoot, relPath.replace(/\.md$/, spec.carrier));
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  let ok = runBuilder(spec.builder, src, outPath);
-  const sourceInspection = inspectSource(fs.readFileSync(src, "utf8"), relPath);
+  const text = fs.readFileSync(src, "utf8");
+  const assembled = runBuilder(spec.builder, src, outPath);
+  let ok = assembled.ok;
+  const errors = assembled.error ? [assembled.error] : [];
+  let check = null;
+  if (ok) {
+    check = checkCarrier(spec.builder, text, fs.readFileSync(outPath, "utf8"), relPath);
+    if (check.problems.length) { ok = false; errors.push(...check.problems); for (const p of check.problems) console.error(`build_carriers: ${p}`); }
+  }
+  const sourceInspection = inspectSource(text, relPath);
   let staticCarrierInspection = { shellImages: 0, shellImagesMissingAlt: 0, note: "Static shell only; runtime-rendered content requires visual/DOM review." };
   let portability = { frameworkInline: false, singleFile: false, mode: "build-failed", localAssetDependencies: sourceInspection.localAssetDependencies, remoteRuntimeDependencies: [], runtimeVisualReviewRequired: true };
   if (ok) {
@@ -155,11 +197,11 @@ function buildOne(spec, src) {
     const images = [...html.matchAll(/<img\b[^>]*>/gi)].map((match) => match[0]);
     staticCarrierInspection = { shellImages: images.length, shellImagesMissingAlt: images.filter((tag) => !/\balt=["'][^"']+["']/i.test(tag)).length, note: "Static shell only; runtime-rendered content requires visual/DOM review." };
     portability = inspectCarrierPortability(fs.readFileSync(outPath, "utf8"), sourceInspection);
-    if (sourceInspection.imagesMissingAlt || staticCarrierInspection.shellImagesMissingAlt) ok = false;
-    if (requireSingleFile && !portability.singleFile) ok = false;
+    if (sourceInspection.imagesMissingAlt || staticCarrierInspection.shellImagesMissingAlt) { ok = false; errors.push(`${relPath}: an image has no alt text`); }
+    if (requireSingleFile && !portability.singleFile) { ok = false; errors.push(`${relPath}: not a single file (${portability.mode})`); }
   }
   if (ok) built += 1; else failed += 1;
-  results.push({ source: relPath, carrier: path.relative(outRoot, outPath).replaceAll(path.sep, "/"), builder: spec.builder, status: ok ? "passed" : "failed", sourceSha256: digest(src), outputSha256: fs.existsSync(outPath) ? digest(outPath) : null, reviewFingerprint: fs.existsSync(outPath) ? { algorithm: "sha256", normalization: "coursewerk-carrier-v1", value: reviewFingerprint(outPath) } : null, sourceInspection, staticCarrierInspection, portability });
+  results.push({ source: relPath, carrier: path.relative(outRoot, outPath).replaceAll(path.sep, "/"), builder: spec.builder, frameVersion: libs[spec.builder].VERSION || null, status: ok ? "passed" : "failed", errors, roundTrip: check?.roundTrip || null, lint: check?.lint || [], sourceSha256: digest(src), outputSha256: fs.existsSync(outPath) ? digest(outPath) : null, reviewFingerprint: fs.existsSync(outPath) ? { algorithm: "sha256", normalization: "coursewerk-carrier-v1", value: reviewFingerprint(outPath) } : null, sourceInspection, staticCarrierInspection, portability });
 }
 for (const [top, spec] of Object.entries(BUILDER_FOR)) {
   const srcDir = path.join(pkg, top);
@@ -191,7 +233,9 @@ if (fs.existsSync(assetsSrc)) {
   fs.cpSync(assetsSrc, path.join(outRoot, "assets"), { recursive: true });
 }
 
-const receipt = { schemaVersion: 2, root: pkg, preview: outRoot, theme: theme || null, frames: { source: framesUsed.source, versions: Object.fromEntries(Object.entries(framesUsed.frames).map(([k, v]) => [k, v.version])), note: framesUsed.note }, requireSingleFile, carriersBuilt: built, failed, runtimeVisualReviewRequired: results.length > 0, results };
+const frameMap = (key) => Object.fromEntries(Object.entries(framesUsed.frames).map(([k, v]) => [k, v[key] ?? null]));
+// theme: always null — the look is each text's header (kept for receipts and attestations made before D52)
+const receipt = { schemaVersion: 2, root: pkg, preview: outRoot, theme: null, frames: { source: framesUsed.source, versions: frameMap("version"), newest: frameMap("newest"), harnessInstalled: frameMap("installed"), harnessBehind: framesUsed.harnessBehind, note: framesUsed.note }, requireSingleFile, carriersBuilt: built, failed, runtimeVisualReviewRequired: results.length > 0, results };
 if (receiptPath) {
   const file = path.resolve(receiptPath);
   fs.mkdirSync(path.dirname(file), { recursive: true });

@@ -22,7 +22,7 @@ if (receipt.failed !== 0 || !Array.isArray(receipt.results) || receipt.results.l
 const review = {
   schemaVersion: 1,
   status: "passed",
-  // M10: the theme the attested carriers were built under; pack rebuilds under the same one
+  // M10: the build theme; null since D52 (the theme is each text's header, bound through its source hash)
   theme: receipt.theme || null,
   reviewer: { type: "human", name: reviewer },
   reviewedAt,

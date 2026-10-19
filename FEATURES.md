@@ -52,12 +52,11 @@ references local figures must travel with its asset directory unless a future bu
 printing work in modern browsers. Rendered selections can round-trip back to clean Markdown, including tables,
 math, plugin constructs, and diagram source.
 
-Coursewerk keeps lean `.md` as the canonical package source and places these heavier carriers in `preview/`.
-This gives authors convenient standalone files for local use, emailing, presenting, browser editing, and PDF
-export while keeping the Alembic upload small and maintainable. Alembic can reconstruct the carriers from the
-lean source. Browser edits are ideal for standalone use and experimentation; to retain them in the Coursewerk
-package, save or copy the resulting Markdown back to the canonical `.md` file and rebuild the preview, because
-generated preview carriers are replaceable build artifacts.
+Coursewerk keeps the plain text (orz text format 1) as the canonical package source and places these heavier
+carriers in `preview/`, assembled with the newest orz frames and checked to hold their text byte for byte. They are
+clothes: convenient standalone files for local use, emailing, presenting, browser editing, and PDF export, while the
+Alembic upload stays small. Alembic reassembles the carriers from the text. To keep a browser edit, bring the text
+back with the carrier's `extract` into the canonical `.md` and rebuild the preview.
 
 ### Rich formatting without hand-built HTML
 

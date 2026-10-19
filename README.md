@@ -51,15 +51,14 @@ hash-bound pre-ingestion clearance, revision-aware API capture, and a 6,000–25
 An **Alembic package** — the exact tree Alembic ingests with zero friction, then turns into a published
 course website with paired public/private repositories. The trick is a **lean, framework-free** package:
 
-- You author **lean markdown** — study guides and practice in orz-markdown, slides in the orz-slides deck
-  grammar, concept maps and assessment guides in plain markdown. This is the source of truth.
-- Coursewerk **builds the orz framework carriers** (`.md.html` / `.slides.html` / `.paged.html`) into a
-  throwaway `preview/` folder. Each HTML carrier embeds its Markdown source: open, read, present, print, or edit
-  it directly in a browser. Text-only carriers may travel as one file; media-bearing carriers travel with their
-  local asset directory, and the build receipt declares that dependency instead of claiming false
-  self-containment. The three shapes provide continuous web documents, reveal.js slide decks, and paginated
-  print/PDF views from the same rich formatting family. Lean `.md` remains canonical, so copy any browser edits
-  back to the source before rebuilding the preview.
+- You author **plain text** (orz text format 1) — study guides and practice in orz-markdown, slides as orz-slides
+  texts (a `{{nyml kind: document}}` header with `carrier: slides`, then the slides), concept maps and assessment
+  guides in plain markdown. The text is the source of truth.
+- Coursewerk **assembles the orz carriers** (`.md.html` / `.slides.html` / `.paged.html`) with the newest orz frames
+  into a throwaway `preview/` folder. They are clothes: each holds its text exactly (checked on every build) plus a
+  regenerable shell, so you can open, read, present, print, or edit it in a browser. Text-only carriers may travel
+  as one file; media-bearing carriers travel with their local asset directory, and the build receipt declares that
+  dependency. The text remains canonical: bring browser edits back with the carrier's `extract` before rebuilding.
 - The upload zip ships **lean only** — the heavy framework shell is left out, and **Alembic reassembles it**
   (and assigns permalinks/ids) on its side. Light to transport, native on both ends.
 
@@ -67,7 +66,7 @@ course website with paired public/private repositories. The trick is a **lean, f
 
 - An **AI CLI engine** installed and authenticated — at least one of: Claude Code, Codex CLI, GitHub Copilot
   CLI, or similar. (This is the executor; Coursewerk is the harness it follows.)
-- **Node.js 18+** (for the orz-family builders + quality-check scripts) and **git**.
+- **Node.js 20.16+** (for the orz-family builders + quality-check scripts) and **git**.
 - Optional: a second engine, to let the agent cross-critique each chapter for higher quality.
 
 ## Quickstart (from your desktop AI app or terminal)
@@ -143,8 +142,9 @@ PROCEDURE.md                   # the pipeline the agent follows (the heart of Co
 format-contracts/              # the exact Alembic package tree + format each deliverable must honor
 VERSION                        # for auto-update checks
 package.json                   # depends on the orz-family builders (orz-mdhtml/slides/paged)
-bootstrap/init.sh              # installs builders + creates the workspace folders
-skills/                        # bundled harness skills (orz-markdown, oer-figures, oer-qa, courseguide-standards)
+bootstrap/init.sh              # installs builders, fetches the newest orz skills, creates the workspace folders
+skills/                        # Coursewerk's own skills (oer-figures, oer-qa, courseguide-standards)
+scripts/skills.mjs             # fetch the newest orz skills (orz-markdown/mdhtml/slides/paged) into .claude/skills
 scripts/check_oer.mjs          # automated quality gate (Alembic contract + OER quality)
 scripts/check_assurance.mjs    # foundation/provenance gate for private/restricted work
 scripts/capture_rights_evidence.mjs # snapshot/hash rights evidence and classify separate access/AI-use notices

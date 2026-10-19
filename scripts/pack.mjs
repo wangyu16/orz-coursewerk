@@ -83,13 +83,14 @@ if (check.status !== 0) {
   process.exit(2);
 }
 const buildScript = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "build_carriers.mjs");
-// M10 (round-3 audit): carriers attested under a theme must be rebuilt under the same theme, or the
-// pack-side rebuild refuses a right package. The attestation carries the receipt's theme.
+// M10 (round-3 audit) bound an attestation to the theme the carriers were built under. Since D52 (orz text format 1)
+// there is no build theme: the look is each text's own header, which the attestation already binds through the
+// source hash. An attestation made under a 0.x `--theme` cannot be rebuilt as attested; it is said below, not guessed.
 let attestedTheme = null;
 try { attestedTheme = JSON.parse(fs.readFileSync(path.join(pkg, "metadata", "VISUAL_REVIEW.json"), "utf8")).theme || null; } catch { /* no attestation yet: the gate reports it */ }
 // v0.12 only: the attestation is bound to carrier bytes, so the rebuild uses the frames it was made with (the
 // harness's installed ones), not the newest (D36 applies to v2, which has no carrier attestation, D24).
-const build = spawnSync(process.execPath, [buildScript, "--frames", "installed", "--package", pkg, "--out", carrierPreview, "--receipt", carrierReceipt, ...(attestedTheme ? ["--theme", attestedTheme] : [])], { encoding: "utf8" });
+const build = spawnSync(process.execPath, [buildScript, "--frames", "installed", "--package", pkg, "--out", carrierPreview, "--receipt", carrierReceipt], { encoding: "utf8" });
 if (build.status !== 0) {
   console.error("pack: carrier build verification failed; no archive was created.");
   console.error(build.stdout || build.stderr);
@@ -101,6 +102,7 @@ const visualVerification = verifyVisualReviewAgainstCarrierReceipt(pkg, rebuiltC
 if (!visualVerification.ready) {
   console.error("pack: rebuilt carriers do not match the human visual-review attestation; no archive was created.");
   console.error(visualVerification.failures.join("\n"));
+  if (attestedTheme) console.error(`pack: the attestation was made with the 0.x build option --theme ${attestedTheme}; a format-1 carrier takes its theme from its text's header (\`theme: ${attestedTheme}\`), so put it there, rebuild the carriers and attest again.`);
   fs.rmSync(work, { recursive: true, force: true });
   process.exit(2);
 }

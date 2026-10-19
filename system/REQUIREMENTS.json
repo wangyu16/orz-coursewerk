@@ -1531,12 +1531,42 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Carriers are assembled with the newest orz frames (orz-mdhtml, orz-slides, orz-paged, orz-markdown), installed into a frame cache outside the package and the harness; the versions used are recorded in the build receipt, never in the course. Unreachable registry: the installed frames, said so.",
-      "source": "D36 (operator, 2026-10-02)",
+      "statement": "Carriers are assembled with the newest orz frames (orz-mdhtml, orz-slides, orz-paged, orz-markdown), installed into a frame cache outside the package and the harness; the versions used, and whether the harness's own installed frames are behind the newest, are recorded in the build receipt, never in the course. Unreachable registry: the installed frames, said so.",
+      "source": "D36 (operator, 2026-10-02); D52 (operator, 2026-10-19)",
       "status": "closed",
       "evidence": {
         "T1": [
           "tests/frames.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.frames.round-trip",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The plain text is the course and the assembled carrier is clothes (orz text format 1): every carrier is built by the frame's format-1 CLI with no build-time theme (the look is the text's header) and checked by the public library of the same frame that built it — extract(carrier).text equals the text byte for byte. A mismatch, a carrier lint error (level error) or a text the frame refuses fails the build with the carrier's own message; the receipt records each frame's version and each text's sha256.",
+      "source": "D52 (operator, 2026-10-19)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/carriers.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.skills.newest",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Agents use the newest orz skills, never an outdated copy: scripts/skills.mjs installs the newest published skill of each orz package (orz-markdown, orz-mdhtml, orz-slides, orz-paged) into the agent's skills folder with a record of its version and source, --check reports any that are missing, stale or unverifiable without changing anything, and offline it says the skills may be stale and gives the jsDelivr URLs. The harness bundles no orz skill copy, and the entry files direct agents to fetch the newest before writing a deliverable.",
+      "source": "D52 (operator, 2026-10-19)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/skills.test.mjs"
         ]
       }
     },

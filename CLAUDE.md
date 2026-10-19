@@ -28,19 +28,23 @@ You may author from your own knowledge. The origin is recorded.
 ## What you are building
 
 An **Alembic package** (https://alembic.orz.how), which also works without the platform:
-- **Lean orz Markdown is the deliverable.** Study guides and practice are orz-markdown; slides are the orz-slides
-  deck grammar; print documents carry orz-paged settings. Concept maps and assessment guides are plain Markdown.
-- **The framework shells** (`.md.html`, `.slides.html`, `.paged.html`) are not deliverables. Alembic, or an agent,
-  assembles them from the lean files: `docs/assembling-carriers.md`.
+- **The plain text is the deliverable and the source of truth** (orz text format 1). Study guides and practice are
+  orz-markdown; slides are orz-slides texts opening with a `{{nyml kind: document}}` header (`carrier: slides`);
+  print documents are orz-paged texts (`carrier: paged`). Concept maps and assessment guides are plain Markdown with no
+  header.
+- **The assembled files** (`.md.html`, `.slides.html`, `.paged.html`) are clothes, not deliverables: built from the
+  text with the newest orz frames, they never change the content. Alembic, or an agent, assembles them:
+  `docs/assembling-carriers.md`.
 - **The exact tree, manifest and per-file contracts** are in `format-contracts/deliverables.md`.
 - **Records:** everything the harness records (units, the decision log, verification records, approvals) lives in
   the package's `metadata/` and is committed with it.
 
 **What Coursewerk provides, and what it trusts you with.** Coursewerk provides the 3C control core (Control,
-Confidence, Coherence). The content is lean orz-markdown under the Alembic contract, and its notations are stable.
+Confidence, Coherence). The content is plain orz text under the Alembic contract, and its notations are stable.
 You are trusted with the rest:
-- **Frames:** orz-mdhtml, orz-slides, orz-paged and Alembic are updated from time to time. Use the newest; a new
-  frame changes the look, never the course.
+- **Frames and their skills:** orz-markdown, orz-mdhtml, orz-slides, orz-paged and Alembic are updated from time to
+  time. Use the newest frames and the newest skills (`scripts/skills.mjs`); a new frame changes the look, never the
+  course.
 - **The instructor's taste:** structure, depth of explanation, graphics tools and theme, kept in `~/.coursewerk/`.
   It shapes the materials, never the checks.
 
@@ -52,12 +56,15 @@ See `docs/rules-vs-preferences.md`.
 2. `bash bootstrap/init.sh` (idempotent). It installs the orz-family builders and creates the workspace. Skip both
    steps when the harness is not yours to change (a shared or read-only checkout): the builders must then already be
    installed.
-3. Read the house skills before doing their kind of work: `skills/` (orz-markdown, orz-slides, orz-paged,
-   oer-figures, courseguide-standards), plus `docs/authoring-guidelines.md` and
-   `docs/writing-checkable-statements.md`.
-4. On a resumed package, run `git -C <package> status` and `diff` first. Then `node scripts/units.mjs index --root
+3. Fetch the newest orz skills: `node <harness>/scripts/skills.mjs` (run in the course repo; installs
+   orz-markdown, orz-mdhtml, orz-slides and orz-paged into `.claude/skills/`; `--check` says whether yours are the
+   newest). Do it again before writing a deliverable if you cannot show your copy is the newest; offline, read
+   `https://cdn.jsdelivr.net/npm/<pkg>/<pkg>-skills/SKILL.md`. Never work from an older copy.
+4. Read Coursewerk's own skills before doing their kind of work: `skills/` (courseguide-standards, oer-figures,
+   oer-qa), plus `docs/authoring-guidelines.md` and `docs/writing-checkable-statements.md`.
+5. On a resumed package, run `git -C <package> status` and `diff` first. Then `node scripts/units.mjs index --root
    <package>`. An edit nobody recorded is raised to the instructor at the next digest — never overwritten.
-5. Run `node scripts/coursewerk.mjs status --root <package>` to see each chapter's state and what blocks it.
+6. Run `node scripts/coursewerk.mjs status --root <package>` to see each chapter's state and what blocks it.
 
 ## Whose acts are whose
 
@@ -115,7 +122,8 @@ Bring few, critical questions, then do large chunks of work on your own.
   - Public packages pass the rights checks; private ones are never cleared for public release.
 - **The private folder is private.** Instructor-only material (summative keys, exams, private notes) goes only under
   `package/private/`.
-- **The format contracts are exact.** Each lean file carries its framework's notation and is assembly-ready as is.
+- **The format contracts are exact.** Each text carries its framework's notation and is assembly-ready as is; its
+  assembled file must extract back to it byte for byte.
 - **Outward actions are the instructor's.** Never push, upload or publish anything. The publish decision records
   what the instructor chose; uploading the pack to Alembic is theirs.
 

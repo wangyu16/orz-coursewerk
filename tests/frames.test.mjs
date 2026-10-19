@@ -12,7 +12,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const tmp = (t) => { const d = fs.mkdtempSync(path.join(os.tmpdir(), "cw-frames-")); t.after(() => fs.rmSync(d, { recursive: true, force: true })); return d; };
 const fakeHarness = (dir, versions) => { for (const [n, v] of Object.entries(versions)) { fs.mkdirSync(path.join(dir, "node_modules", n), { recursive: true }); fs.writeFileSync(path.join(dir, "node_modules", n, "package.json"), JSON.stringify({ name: n, version: v })); } return dir; };
 const OLD = { "orz-mdhtml": "0.9.0", "orz-slides": "0.8.2", "orz-paged": "0.7.0", "orz-markdown": "1.6.0" };
-const NEW = { "orz-mdhtml": "0.9.3", "orz-slides": "0.8.5", "orz-paged": "0.7.3", "orz-markdown": "1.6.3" };
+const NEW = { "orz-mdhtml": "1.0.1", "orz-slides": "1.0.0", "orz-paged": "1.0.0", "orz-markdown": "2.4.0" };
 
 test("[req.frames.newest] a carrier is built with the newest frames, installed outside the package and the harness", (t) => {
   const h = fakeHarness(tmp(t), OLD), cache = tmp(t);
@@ -23,13 +23,17 @@ test("[req.frames.newest] a carrier is built with the newest frames, installed o
   assert.ok(r.binDir.startsWith(cache), "the frame cache, not the harness or the package");
   assert.deepEqual(Object.fromEntries(Object.entries(r.frames).map(([k, v]) => [k, v.version])), NEW);
   assert.deepEqual(JSON.parse(fs.readFileSync(path.join(h, "node_modules", "orz-mdhtml", "package.json"))).version, "0.9.0", "the harness's own install is untouched");
+  assert.deepEqual(r.harnessBehind.sort(), [...FRAMES].sort(), "the harness's installed frames being behind is recorded");
+  assert.equal(r.frames["orz-slides"].installed, OLD["orz-slides"]); assert.match(r.note, /behind the newest/);
+  assert.equal(r.nodeModules, path.dirname(r.binDir));
   // the second build reuses the cache
   installed = null; resolveFrames(h, { latest: (n) => NEW[n], install, cache }); assert.equal(installed, null);
 });
 
 test("[req.frames.newest] already newest: the installed frames; registry unreachable: the installed frames, said so; --frames installed: as asked", (t) => {
   const h = fakeHarness(tmp(t), NEW);
-  assert.equal(resolveFrames(h, { latest: (n) => NEW[n], install: () => assert.fail("no install needed"), cache: tmp(t) }).source, "installed (already the newest)");
+  const same = resolveFrames(h, { latest: (n) => NEW[n], install: () => assert.fail("no install needed"), cache: tmp(t) });
+  assert.equal(same.source, "installed (already the newest)"); assert.deepEqual(same.harnessBehind, []);
   const off = resolveFrames(fakeHarness(tmp(t), OLD), { latest: () => null, install: () => assert.fail("offline"), cache: tmp(t) });
   assert.match(off.source, /registry unreachable/); assert.match(off.note, /may not be the newest/);
   assert.equal(resolveFrames(h, { mode: "installed", latest: () => assert.fail("not asked") }).source, "installed");

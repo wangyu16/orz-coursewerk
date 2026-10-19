@@ -1,6 +1,6 @@
 ---
 name: courseguide-standards
-description: "The house DOCUMENT STANDARD for course_guide / study_guide teaching packages — the canonical structure, section order, and orz-markdown styling for each of the five per-chapter deliverables (study guide, slides, concept map, assessment guide, practice sheet) in the Alembic package layout (study-guide/ slides/ concepts/ assessment-support/ practice/, one <slug>.md per chapter), with slides authored in the orz-slides deck grammar. Includes a self-check checklist. Invoke when AUTHORING or CRITIQUING any chapter of a course/study guide so every chapter is CONSISTENT (same skeleton, same styling palette, same assessment format). Pairs with orz-markdown (syntax) and oer-figures (figures). Derived from the operator's gold-standard chapter."
+description: "The house DOCUMENT STANDARD for course_guide / study_guide teaching packages — the canonical structure, section order, and orz-markdown styling for each of the five per-chapter deliverables (study guide, slides, concept map, assessment guide, practice sheet) in the Alembic package layout (study-guide/ slides/ concepts/ assessment-support/ practice/, one <slug>.md per chapter), with slides authored as orz-slides texts (text format 1). Includes a self-check checklist. Invoke when AUTHORING or CRITIQUING any chapter of a course/study guide so every chapter is CONSISTENT (same skeleton, same styling palette, same assessment format). Pairs with orz-markdown (syntax) and oer-figures (figures). Derived from the operator's gold-standard chapter."
 ---
 
 # courseguide-standards — one consistent shape for every chapter
@@ -37,7 +37,7 @@ Two global rules:
     scuba tank, a weather balloon, cooking, a car battery, a photo of a real object) so it lands and sticks.
   - **Slides are visual, not bullet dumps.** Use varied rich layouts (`2col`/`main-side`/`quad` splits,
     `@region`s, `{{mermaid}}`, `{{chart}}`, figures, step reveals, callouts, badges) — see
-    `skills/orz-slides` "Slide design patterns". Most slides should carry a visual, not just a title + bullets.
+    the newest orz-slides skill (`scripts/skills.mjs`). Most slides should carry a visual, not just a title + bullets.
   - Consistency > flourish, and *meaning* > decoration — but a memorable OER is **vivid**, not spartan.
 
 ---
@@ -83,19 +83,22 @@ Styling palette (use exactly this way every chapter):
 
 ---
 
-## 2. SLIDES — `slides/<slug>.md` (orz-slides deck grammar — deck SOURCE, not HTML)
+## 2. SLIDES — `slides/<slug>.md` (orz-slides text — the deck TEXT, not HTML)
 
-The slides file is the **deck source** in the **orz-slides deck grammar** (built to `.slides.html`
-via orz-slides for preview — you author the lean source, never the HTML).
+The slides file is the **deck text** (orz text format 1; assembled to `.slides.html` by orz-slides for
+preview — you author the text, never the HTML).
 
-- **The file opens with a deck frontmatter block:**
+- **The file opens with the document header:**
   ```
-  <!-- deck
+  {{nyml
+  kind: document
+  carrier: slides
   title: <Chapter Title>
   ratio: 16:9
-  -->
+  }}
   ```
-  Do NOT bake a `theme:` line — the theme is applied at generation time, not in the source.
+  Add `theme: <id>` when the instructor chose one (`~/.coursewerk/styles.md`), else leave the frame's default.
+  Never a `uid:` (Alembic assigns identity) and never a 0.x `<!-- deck -->` block (an error in format 1).
 - **Slides are separated by the marker `<!-- slide -->`** on its own line (NOT a bare `---`).
 - **Title / divider slide:** `<!-- slide template=title -->` followed by a `# H1` (and an optional
   `## subtitle`).
@@ -113,7 +116,7 @@ via orz-slides for preview — you author the lean source, never the HTML).
   chapter-logic slide → for each section (a `template=section` divider + one slide per concept + **at least
   one worked EXAMPLE QUESTION**: a question slide, then its solution via a `step` reveal or a follow-up
   slide) → a synthesis / closing slide.
-- **Teach with questions, and use rich layouts** — see `skills/orz-slides` "Slide design patterns". Most
+- **Teach with questions, and use rich layouts** — see the newest orz-slides skill. Most
   slides carry a visual (figure/chart/diagram/split), not just bullets; use `{{smiles}}` for a single
   structure.
 - **Balanced density (not crowded, NOT empty).** Each slide fills its layout grid with a *proper amount* —
@@ -124,10 +127,12 @@ via orz-slides for preview — you author the lean source, never the HTML).
 
 Concrete example (new grammar):
 ```
-<!-- deck
+{{nyml
+kind: document
+carrier: slides
 title: Chapter 5: Gases
 ratio: 16:9
--->
+}}
 
 <!-- slide template=title -->
 # Chapter 5: Gases
@@ -287,7 +292,7 @@ license) · `:::success` Chapter Learning Objectives · `## Chapter Logic` + mer
 every image · NO practice-question section · tabs use container syntax (not `{{tabs}}`) · figures
 captioned via `../assets/`, grids non-overlapping.
 
-**Slides (`slides/<slug>.md`):** `<!-- deck -->` frontmatter (title + ratio, no theme) · `<!-- slide -->`
+**Slides (`slides/<slug>.md`):** `{{nyml kind: document}}` header first (`carrier: slides`, title, ratio, the chosen theme; no uid) · `<!-- slide -->`
 markers between slides · `## H2` content-slide titles · `template=title` / `template=outline` (roadmap) /
 `template=section` (dividers) / `template=closing` · ONE concept per slide (split if crowded) · short
 scannable text · **layout variety (most slides carry a figure/chart/diagram/split, not just bullets)** ·

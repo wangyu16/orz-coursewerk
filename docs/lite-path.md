@@ -14,8 +14,10 @@ The intended-use profile still determines whether output belongs in `personal/` 
 
 1. **Give the AI the contracts.** Paste (or attach) these four files so the model has the rules:
    `CLAUDE.md`, `PROCEDURE.md`, `format-contracts/deliverables.md`, and
-   `skills/courseguide-standards/SKILL.md`, plus `docs/assurance-kernel.md`. Add `skills/orz-markdown/`, `skills/orz-slides/`,
-   `skills/orz-paged/`, and `skills/oer-figures/SKILL.md` when you reach figures/slides/print.
+   `skills/courseguide-standards/SKILL.md`, plus `docs/assurance-kernel.md`. Add `skills/oer-figures/SKILL.md` and
+   the newest orz skills when you reach figures/slides/print: give the AI the current
+   `https://cdn.jsdelivr.net/npm/<pkg>/<pkg>-skills/SKILL.md` for orz-markdown, orz-slides and orz-paged (that URL
+   always serves the newest; never paste an older saved copy).
 2. **Choose intended use, then author chapter by chapter.** Personal/restricted work goes under `personal/`;
    public OER goes under `package/`. In either case create the structured FOUNDATION and PROVENANCE records.
    Ask the AI to follow `PROCEDURE.md`, pausing at each gate. It produces lean Markdown as chat output or

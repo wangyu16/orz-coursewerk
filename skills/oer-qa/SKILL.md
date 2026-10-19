@@ -56,7 +56,7 @@ node scripts/check_oer.mjs --package package --inputs inputs --for-discovery --r
 - **Accessibility floor** — images missing alt text, Mermaid/chart blocks without visible text alternatives,
   empty headings, heading-level jumps, first-heading-not-H1, and non-descriptive link text are release-blocking.
 - **Body placeholders** — leftover `[VERIFY]` / `[NEEDS DATA]`.
-- **Format contracts** — graphics-free concept maps + assessment guides; slides in orz-slides deck grammar;
+- **Format contracts** — graphics-free concept maps + assessment guides; slides as orz-slides texts (a format-1 header with `carrier: slides`);
   practice with Q/A tabs; every deliverable has an H1; a chapter without a photograph has a reviewed decision
   in `metadata/MEDIA_PLAN.json`.
 

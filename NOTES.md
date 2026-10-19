@@ -5,16 +5,15 @@ Tracked here so they aren't lost; not yet implemented.
 ## Operator will implement later
 - **Study-guide & slides visual DESIGN** — the operator has ideas to improve the study-guide and slide
   *visual/layout design* and will incorporate them later. NOTE (v0.6.0): the underlying **grammars** are now
-  fixed by the orz family (orz-markdown for study guides, the orz-slides deck grammar for slides, orz-paged
+  fixed by the orz family (orz-markdown for study guides, orz-slides texts for slides, orz-paged
   for print) — that is the stable interchange format Alembic reassembles. The operator's design work layers
   *on top* of those grammars (themes, slide templates, section styling), and lands in
   `format-contracts/deliverables.md`, `skills/courseguide-standards`, and PROCEDURE.md slide rules.
 
-## Round-trip: edit-the-carrier → sync-back-to-lean (deferred)
-- Today the agent authors lean `.md` and builds carriers to `preview/` for reading. If a human wants to
-  hand-edit using a carrier's in-file editor, we'd need a `sync-back` step that extracts the embedded lean
-  source from the edited `.md.html`/`.slides.html` back into `package/`. The orz files embed their source
-  (that's how the in-file editor + `#orz-meta` uid work), so it's extractable — not yet wired.
+## Round-trip: edit-the-carrier → sync-back-to-text (deferred)
+- Since D52 every orz frame has `extract` (text format 1: `extract(assemble(T)).text === T`), so a carrier edited in
+  the browser gives its text back exactly (`orz-<frame> extract x.slides.html -o …`). Not yet wired: a Coursewerk
+  step that takes such a text back into `package/` through the unit index (an edit nobody recorded is raised).
 
 ## Alembic-side: first-class print/paged home (small, optional)
 - There is no dedicated `paged/` top-level folder in the Alembic contract; print/handout deliverables live

@@ -102,7 +102,8 @@ export const CARRIER_EXTENSIONS = [
 export const SCHEMA_VERSION = 2;
 export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-/** Lean source formats coursewerk SHIPS (framework-free). Alembic reassembles the carrier. */
+/** The texts coursewerk SHIPS (orz text format 1: the text is the source of truth) and the carrier each one's frame
+ *  assembles (`<builder> assemble <slug>.md` → `<slug><carrier>`, D52). Alembic reassembles the carrier. */
 export const LEAN_SOURCE = {
   "study-guide": { ext: ".md", carrier: ".md.html", builder: "orz-mdhtml" },
   practice: { ext: ".md", carrier: ".md.html", builder: "orz-mdhtml" },

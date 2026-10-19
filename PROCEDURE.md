@@ -111,7 +111,8 @@ Work in batches (one to three chapters, or a session's budget). In each batch:
 1. **Author** the study guide, slides and practice from the approved spine, the steering and the sources, or from
    your own knowledge.
    - Run `units.mjs begin` before writing and `units.mjs index --as agent` after: every unit gets its origin.
-   - Follow the skills, `docs/authoring-guidelines.md` and `docs/writing-checkable-statements.md`.
+   - First make sure your orz skills are the newest (`node <harness>/scripts/skills.mjs --check`; if not, run it
+     without `--check`). Then follow them, `docs/authoring-guidelines.md` and `docs/writing-checkable-statements.md`.
    - Everything that ships is read. Declare any other markdown the course ships (a handout, a reading) in
      `metadata/DOCUMENTS.json`; it is then checked like a study guide. Only the instructor exempts one as
      administrative (`coursewerk.mjs administrative --document <path>`, in their words). An `{{md …}}` include must

@@ -2,9 +2,9 @@
 
 The house rules for *quality* — how to make a course package clear, correct, copyright-clean, and
 accessible. The **structure** rules live in `format-contracts/deliverables.md`; the **per-deliverable
-skeletons** live in `skills/courseguide-standards`; the **tool grammars** live in the `orz-markdown`,
-`orz-slides`, `orz-paged`, and `oer-figures` skills. This file is the connective tissue: the principles
-that apply across all of them.
+skeletons** live in `skills/courseguide-standards`; the **tool grammars** live in the newest `orz-markdown`,
+`orz-slides` and `orz-paged` skills (fetch them with `scripts/skills.mjs`; never from an older copy) and in
+`skills/oer-figures`. This file is the connective tissue: the principles that apply across all of them.
 
 ---
 
@@ -57,7 +57,7 @@ Alembic cleanly — raster `.png`/`.jpg`/`.pdf` are skipped on a *trial* import 
 
 **Sizing.** Size for legibility, not dominance: structures at a *consistent* scale across the chapter,
 charts full-column, inline structures small. In slides, size explicitly (`![alt](../assets/x.svg =520x)`)
-so a figure is readable from the back of a room but doesn't swamp the slide (see `skills/orz-slides`).
+so a figure is readable from the back of a room but doesn't swamp the slide (see the orz-slides skill).
 
 **Aim high — a good OER is vivid, not dry.** Generate figures *generously*: a study guide with zero asset
 files and slides that are only bullet lists is a defect, not restraint. Target **several captioned figures
@@ -71,7 +71,7 @@ to gratuitous *text* decoration — never to meaningful visuals or real-world gr
 
 Every device carries information and is used **the same way in every chapter**. The goal is to make the
 **logic flow visible** and the **important things easy to catch** — not to decorate. If removing a device
-loses no meaning, remove it. (Exact syntax: `skills/orz-markdown`.)
+loses no meaning, remove it. (Exact syntax: the orz-markdown skill.)
 
 | Device | Syntax | Use it for (one job) |
 |---|---|---|
@@ -97,7 +97,7 @@ loses no meaning, remove it. (Exact syntax: `skills/orz-markdown`.)
 
 ## 3. Study guide → slides
 
-The single most important transformation. Full detail in `skills/orz-slides`; the essentials:
+The single most important transformation. Full detail in the orz-slides skill; the essentials:
 - **Same logic flow, full coverage** — slides follow the study guide's concept order and hit every
   concept/subconcept.
 - **One concept per slide; split long content; never crowd** (a crowded slide is a defect).
@@ -190,4 +190,5 @@ generated from `PROVENANCE.json`; never maintain the two independently.
 — not the fixed package items. Exams use the `exam-*` template with the **answer-key toggle** (one source →
 blank exam + instructor key); syllabi use `report-page`; handouts use `note`/`article-section`. Exam content
 and answer keys are **instructor-only** (`private/`); syllabi and handouts are student-facing (the current
-term). See `skills/orz-paged`.
+term). A paged text opens with a `{{nyml kind: document}}` header carrying `carrier: paged` and its page settings.
+See the orz-paged skill.

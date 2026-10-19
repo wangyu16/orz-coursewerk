@@ -33,6 +33,7 @@
     "system:verify": "node scripts/verify_coursewerk.mjs",
     "system:accept": "node scripts/accept_coursewerk_revision.mjs",
     "build:carriers": "node scripts/build_carriers.mjs --package package --out preview",
+    "skills": "node scripts/skills.mjs",
     "pack": "node scripts/pack.mjs --package package --out dist",
     "test": "node --test tests/*.test.mjs",
     "test:usage": "node --test tests/usage-e2e.test.mjs",

@@ -1,6 +1,7 @@
 // MS5 — Carrier preview (optional; D24). Carriers — the lean sources wrapped in their orz framework shells — are not a
 // Coursewerk deliverable: Alembic assembles them on import, or an agent does (docs/assembling-carriers.md). This module
-// is therefore not in the standard registry; enabled, it tries a build and reports any failure as a question only.
+// is therefore not in the standard registry; enabled, it tries a build (newest frames; every carrier checked to hold its
+// text exactly, D52) and reports any failure, with the carrier's own message, as a question only.
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -15,7 +16,7 @@ function run(s) {
   const out = [];
   if (!fs.existsSync(receipt)) { out.push({ kind: "carrier-build-failed", units: [], evidence: { type: "judgment", note: `the carrier preview did not build: ${(r.stderr || "").trim().split("\n").slice(-1)[0] || `exit ${r.status}`}` } }); return out; }
   const rec = JSON.parse(fs.readFileSync(receipt, "utf8"));
-  for (const x of rec.results || []) if (x.status !== "passed") out.push({ kind: "carrier-build-failed", units: [], evidence: { type: "judgment", note: `${x.source} did not build with ${x.builder}` } });
+  for (const x of rec.results || []) if (x.status !== "passed") out.push({ kind: "carrier-build-failed", units: [], evidence: { type: "judgment", note: `${x.source} did not build with ${x.builder}${(x.errors || []).length ? `: ${x.errors.join("; ")}` : ""}` } });
   return out;
 }
 

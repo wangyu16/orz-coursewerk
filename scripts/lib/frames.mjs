@@ -6,12 +6,13 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { pathToFileURL } from "node:url";
 
 export const FRAMES = Object.freeze(["orz-mdhtml", "orz-slides", "orz-paged", "orz-markdown"]);
 export const frameCache = () => path.join(process.env.XDG_CACHE_HOME || path.join(os.homedir(), ".cache"), "coursewerk", "frames");
 
-const installedVersion = (dir, name) => { try { return JSON.parse(fs.readFileSync(path.join(dir, "node_modules", name, "package.json"), "utf8")).version; } catch { return null; } };
-const newer = (a, b) => { const x = String(a).split(".").map(Number), y = String(b).split(".").map(Number); for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); return false; };
+export const installedVersion = (dir, name) => { try { return JSON.parse(fs.readFileSync(path.join(dir, "node_modules", name, "package.json"), "utf8")).version; } catch { return null; } };
+export const newer = (a, b) => { const x = String(a).split(".").map(Number), y = String(b).split(".").map(Number); for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); return false; };
 
 /** The newest published version of each frame, or null when the registry cannot be reached. */
 export function npmLatest(name, { timeoutMs = 15000 } = {}) {
@@ -31,18 +32,31 @@ function npmInstall(dir, specs) {
  * mode "latest" (the default): the newest published versions, installed once into the frame cache (outside the
  * package and the harness); when the registry cannot be reached, the harness's installed frames, said so.
  * mode "installed": the harness's own node_modules, as they are.
- * @returns { binDir, frames: { name: { version, newest } }, source, note }
+ * @returns { binDir, nodeModules, frames: { name: { version, newest, installed } }, harnessBehind, source, note }
+ *   harnessBehind: the frames the harness itself has installed older than the newest (null when the newest is unknown)
  */
 export function resolveFrames(harnessRoot, { mode = "latest", latest = npmLatest, install = npmInstall, cache = frameCache() } = {}) {
   const local = path.join(harnessRoot, "node_modules");
-  const localFrames = Object.fromEntries(FRAMES.map((n) => [n, { version: installedVersion(harnessRoot, n), newest: null }]));
-  if (mode === "installed") return { binDir: path.join(local, ".bin"), frames: localFrames, source: "installed", note: "the harness's installed frames, as asked" };
+  const at = (nodeModules, frames, source, note, harnessBehind = null) => ({ binDir: path.join(nodeModules, ".bin"), nodeModules, frames, harnessBehind, source, note });
+  const localFrames = Object.fromEntries(FRAMES.map((n) => [n, { version: installedVersion(harnessRoot, n), newest: null, installed: installedVersion(harnessRoot, n) }]));
+  if (mode === "installed") return at(local, localFrames, "installed", "the harness's installed frames, as asked");
   const want = Object.fromEntries(FRAMES.map((n) => [n, latest(n)]));
-  if (FRAMES.some((n) => !want[n])) return { binDir: path.join(local, ".bin"), frames: localFrames, source: "installed (registry unreachable)", note: "could not reach the npm registry: built with the installed frames, which may not be the newest" };
+  if (FRAMES.some((n) => !want[n])) return at(local, localFrames, "installed (registry unreachable)", "could not reach the npm registry: built with the installed frames, which may not be the newest");
   const behind = FRAMES.filter((n) => !localFrames[n].version || newer(want[n], localFrames[n].version));
-  if (!behind.length) return { binDir: path.join(local, ".bin"), frames: Object.fromEntries(FRAMES.map((n) => [n, { version: localFrames[n].version, newest: want[n] }])), source: "installed (already the newest)", note: null };
+  const known = (version) => Object.fromEntries(FRAMES.map((n) => [n, { version: version(n), newest: want[n], installed: localFrames[n].version }]));
+  if (!behind.length) return at(local, known((n) => localFrames[n].version), "installed (already the newest)", null, []);
   const dir = path.join(cache, FRAMES.map((n) => `${n}@${want[n]}`).join("+"));
   const ready = FRAMES.every((n) => installedVersion(dir, n) === want[n]) || install(dir, FRAMES.map((n) => `${n}@${want[n]}`));
-  if (!ready) return { binDir: path.join(local, ".bin"), frames: localFrames, source: "installed (update failed)", note: `could not install the newest frames (${behind.join(", ")}): built with the installed ones` };
-  return { binDir: path.join(dir, "node_modules", ".bin"), frames: Object.fromEntries(FRAMES.map((n) => [n, { version: want[n], newest: want[n] }])), source: "newest", note: null };
+  if (!ready) return at(local, known((n) => localFrames[n].version), "installed (update failed)", `could not install the newest frames (${behind.join(", ")}): built with the installed ones`, behind);
+  return at(path.join(dir, "node_modules"), known((n) => want[n]), "newest", `the harness's installed ${behind.map((n) => `${n} ${localFrames[n].version || "(missing)"}`).join(", ")} ${behind.length > 1 ? "are" : "is"} behind the newest; built with the newest from the frame cache`, behind);
+}
+
+/** A frame's public Node library (its package's main export: `assemble`, `extract`, `inspect`, `VERSION`), from the
+ *  same node_modules the build took its CLI from — so a carrier is checked by the frames that built it. */
+export async function loadFrameLib(nodeModules, name) {
+  const dir = path.join(nodeModules, name);
+  const pj = JSON.parse(fs.readFileSync(path.join(dir, "package.json"), "utf8"));
+  const exp = pj.exports?.["."];
+  const main = (typeof exp === "string" ? exp : exp?.import || exp?.default) || pj.main || "index.js";
+  return import(pathToFileURL(path.join(dir, main)).href);
 }
