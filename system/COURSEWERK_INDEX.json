@@ -185,7 +185,7 @@
       "id": "repo:package.json",
       "path": "package.json",
       "type": "release-metadata",
-      "hash": "b0c0fcfd19f2cf485022a3d212f3b039ff9975161b42d6261e499b238e7345e9"
+      "hash": "3b00f02748b76b0f8efd2b3bd388eb21ad15c9dd6d08cd500732d3d890442b8d"
     },
     {
       "id": "repo:PROCEDURE.md",
@@ -1727,7 +1727,7 @@
       "id": "repo:tests/fixtures/usage-package/slides/melting.md",
       "path": "tests/fixtures/usage-package/slides/melting.md",
       "type": "test",
-      "hash": "a0a01bbbc70eda1089c162be469f868a8ca3f5f9f93f06fba98807ddf0430ff4"
+      "hash": "d1c39a437e75caad35fe818d904f875576acf384a721b29edefd508b250c47be"
     },
     {
       "id": "repo:tests/fixtures/usage-package/study-guide/melting.md",

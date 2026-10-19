@@ -1,7 +1,10 @@
-<!-- deck
+{{nyml
+kind: document
+carrier: slides
 title: Chemical Equilibrium
 ratio: 16:9
--->
+theme: paper
+}}
 
 <!-- slide template=title -->
 # Chemical Equilibrium

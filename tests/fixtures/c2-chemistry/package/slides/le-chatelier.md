@@ -1,7 +1,10 @@
-<!-- deck
+{{nyml
+kind: document
+carrier: slides
 title: Le Chatelier's Principle
 ratio: 16:9
--->
+theme: paper
+}}
 
 <!-- slide template=title -->
 # Le Chatelier's Principle
