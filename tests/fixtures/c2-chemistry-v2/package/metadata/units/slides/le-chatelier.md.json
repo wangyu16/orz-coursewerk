@@ -10,8 +10,8 @@
         "ordinal": 0,
         "contentHash": "40cfb2e62c7dd5368ce0dcb640a699a13ba8d230f27eb74c393794aa7ea21a68",
         "lines": [
-          8,
-          8
+          11,
+          11
         ]
       },
       "form": "paragraph",
@@ -34,7 +34,8 @@
         "qualitative",
         "response",
         "the"
-      ]
+      ],
+      "text": "The qualitative response of a disturbed equilibrium"
     },
     {
       "id": "u-slides-le-chatelier-slide-3-what-we-will-cover-1",
@@ -44,8 +45,8 @@
         "ordinal": 1,
         "contentHash": "cbdeda16b447c1e41b92e29f78a68315919f7c6986c69e99980e469d8c6c6d8b",
         "lines": [
-          20,
-          24
+          23,
+          27
         ]
       },
       "form": "slide-group",
@@ -84,7 +85,8 @@
         "volume",
         "why",
         "word"
-      ]
+      ],
+      "text": "- The principle itself, and the word *partially*\n- Concentration changes\n- Temperature changes, and why they are special\n- Volume and pressure on gas-phase equilibria\n- The two changes that do nothing"
     },
     {
       "id": "u-slides-le-chatelier-slide-5-partially-counteract-1",
@@ -94,8 +96,8 @@
         "ordinal": 2,
         "contentHash": "a78360da81d43ed3ed6a3b3e80ad363fe0b5bdfee240b3dc6299eabc0517b18a",
         "lines": [
-          31,
-          32
+          34,
+          35
         ]
       },
       "form": "paragraph",
@@ -131,7 +133,8 @@
         "system",
         "that",
         "the"
-      ]
+      ],
+      "text": "A system at equilibrium, disturbed by a change in a determining factor, adjusts to a **new**\nequilibrium that **partially counteracts** the change."
     },
     {
       "id": "u-slides-le-chatelier-slide-5-partially-counteract-2",
@@ -141,8 +144,8 @@
         "ordinal": 3,
         "contentHash": "ed24ae99279c6b2aae2c0213a19e178c28f52d61d494eb08e815c362aff1696f",
         "lines": [
-          34,
-          35
+          37,
+          38
         ]
       },
       "form": "paragraph",
@@ -181,7 +184,8 @@
         "system",
         "the",
         "word"
-      ]
+      ],
+      "text": "*Partially* is the load-bearing word. The system never fully cancels the disturbance and never\nreturns to its original equilibrium."
     },
     {
       "id": "u-slides-le-chatelier-slide-7-adding-and-removing-a-species-1",
@@ -191,8 +195,8 @@
         "ordinal": 4,
         "contentHash": "75ff19de0095a32091867025dbb0fa4024282bb1860bde8c12c78b4d9ddf06e7",
         "lines": [
-          42,
-          44
+          45,
+          47
         ]
       },
       "form": "slide-group",
@@ -235,7 +239,8 @@
         "toward",
         "was",
         "what"
-      ]
+      ],
+      "text": "- **Increase** the concentration of a species → the equilibrium shifts toward the **opposite**\n  side, consuming what was added.\n- **Decrease** it → the equilibrium shifts toward **that** side, replacing what was removed."
     },
     {
       "id": "u-slides-le-chatelier-slide-7-adding-and-removing-a-species-2",
@@ -245,8 +250,8 @@
         "ordinal": 5,
         "contentHash": "ac31fe7ee9222969e4bdff66614f260ad305a7d6ad18182ddab351f2945c05a7",
         "lines": [
-          46,
-          46
+          49,
+          49
         ]
       },
       "form": "paragraph",
@@ -283,7 +288,8 @@
         "the",
         "until",
         "value"
-      ]
+      ],
+      "text": "The value of $K$ does not change; the system moves until $Q_r$ equals $K$ again."
     },
     {
       "id": "u-slides-le-chatelier-slide-9-treat-heat-as-a-species-1",
@@ -293,8 +299,8 @@
         "ordinal": 6,
         "contentHash": "e699c28e3643f5d503909eddecf22e91cf55bbd5046edda25f6df3decbdbe843",
         "lines": [
-          53,
-          54
+          56,
+          57
         ]
       },
       "form": "slide-group",
@@ -328,7 +334,8 @@
         "product",
         "reactant",
         "reaction"
-      ]
+      ],
+      "text": "- **Exothermic** reaction — heat behaves as a **product**\n- **Endothermic** reaction — heat behaves as a **reactant**"
     },
     {
       "id": "u-slides-le-chatelier-slide-9-treat-heat-as-a-species-2",
@@ -338,8 +345,8 @@
         "ordinal": 7,
         "contentHash": "60ed70bdfce1c18691754a7b841783b178b06f37164ce8411dcd8996bbda8795",
         "lines": [
-          56,
-          57
+          59,
+          60
         ]
       },
       "form": "paragraph",
@@ -383,7 +390,8 @@
         "the",
         "then",
         "where"
-      ]
+      ],
+      "text": "Then apply exactly the same reasoning as for a concentration change. Raising the temperature\npushes the equilibrium away from the side where heat sits."
     },
     {
       "id": "u-slides-le-chatelier-slide-10-temperature-is-the-special-one-1",
@@ -393,8 +401,8 @@
         "ordinal": 8,
         "contentHash": "52865c2aed3cfe21dd7f93ccbcac7f0d0b72712474eaba8644d440df2a489a97",
         "lines": [
-          61,
-          61
+          64,
+          64
         ]
       },
       "form": "paragraph",
@@ -427,7 +435,8 @@
         "temperature",
         "the",
         "value"
-      ]
+      ],
+      "text": "A temperature change **changes the value of the equilibrium constant**."
     },
     {
       "id": "u-slides-le-chatelier-slide-10-temperature-is-the-special-one-2",
@@ -437,8 +446,8 @@
         "ordinal": 9,
         "contentHash": "55be56c864daa208ff4a8aeaf1e85477b3af08dc77b1bd2e184051a802ae8ef3",
         "lines": [
-          63,
-          64
+          66,
+          67
         ]
       },
       "form": "paragraph",
@@ -481,7 +490,8 @@
         "this",
         "untouched",
         "volume"
-      ]
+      ],
+      "text": "Concentration, volume and pressure changes shift the **position** of the equilibrium but leave\n$K$ untouched. This is the single sharpest distinction in the chapter."
     },
     {
       "id": "u-slides-le-chatelier-slide-12-count-the-moles-of-gas-1",
@@ -491,8 +501,8 @@
         "ordinal": 10,
         "contentHash": "2294e84bdad8c901714b000834b92677bb4152f79dd4d850e339868a56f8e175",
         "lines": [
-          71,
-          71
+          74,
+          74
         ]
       },
       "form": "paragraph",
@@ -521,7 +531,8 @@
         "for",
         "gas",
         "phase"
-      ]
+      ],
+      "text": "For a gas-phase equilibrium:"
     },
     {
       "id": "u-slides-le-chatelier-slide-12-count-the-moles-of-gas-2",
@@ -531,8 +542,8 @@
         "ordinal": 11,
         "contentHash": "9209269b7550dd001bb86474dcadda333fdbe26c34069ee28b17abb0b9cc8203",
         "lines": [
-          73,
-          74
+          76,
+          77
         ]
       },
       "form": "slide-group",
@@ -571,7 +582,8 @@
         "toward",
         "volume",
         "with"
-      ]
+      ],
+      "text": "- **Decrease** the volume (raise the pressure) → shifts toward the side with **fewer** moles of gas\n- **Increase** the volume → shifts toward the side with **more** moles of gas"
     },
     {
       "id": "u-slides-le-chatelier-slide-12-count-the-moles-of-gas-3",
@@ -581,8 +593,8 @@
         "ordinal": 12,
         "contentHash": "1d654e692be2112eb9c5bc787f468b091dbe62cab8027e0d464a15fb1f935296",
         "lines": [
-          76,
-          76
+          79,
+          79
         ]
       },
       "form": "paragraph",
@@ -617,7 +629,8 @@
         "pressure",
         "shifts",
         "sides"
-      ]
+      ],
+      "text": "If both sides have equal moles of gas, a pressure change shifts nothing."
     },
     {
       "id": "u-slides-le-chatelier-slide-14-an-inert-gas-at-constant-volume-1",
@@ -627,8 +640,8 @@
         "ordinal": 13,
         "contentHash": "a848e41fbc177022f624cedacb0d76c85f74b23a87e3abd2ef218388057106d1",
         "lines": [
-          83,
-          84
+          86,
+          87
         ]
       },
       "form": "paragraph",
@@ -667,7 +680,8 @@
         "the",
         "total",
         "volume"
-      ]
+      ],
+      "text": "Adding an inert gas at constant volume raises the total pressure but changes **no partial\npressure**."
     },
     {
       "id": "u-slides-le-chatelier-slide-14-an-inert-gas-at-constant-volume-2",
@@ -677,8 +691,8 @@
         "ordinal": 14,
         "contentHash": "82d68cf3618263b9030c82941558b6c394256a6dc6e60c8ebfd497b04d72bbd3",
         "lines": [
-          86,
-          86
+          89,
+          89
         ]
       },
       "form": "paragraph",
@@ -714,7 +728,8 @@
         "shift",
         "the",
         "unchanged"
-      ]
+      ],
+      "text": "No partial pressure changes, so $Q_r$ is unchanged, so the equilibrium does not shift."
     },
     {
       "id": "u-slides-le-chatelier-slide-15-a-catalyst-1",
@@ -724,8 +739,8 @@
         "ordinal": 15,
         "contentHash": "a0de0ebedefd068dbf57f9a8d56242a4cc955b996fdd9de7d6b2948fd677221f",
         "lines": [
-          90,
-          90
+          93,
+          93
         ]
       },
       "form": "paragraph",
@@ -761,7 +776,8 @@
         "same",
         "speeds",
         "the"
-      ]
+      ],
+      "text": "A catalyst speeds up the forward and reverse reactions by the **same factor**."
     },
     {
       "id": "u-slides-le-chatelier-slide-15-a-catalyst-2",
@@ -771,8 +787,8 @@
         "ordinal": 16,
         "contentHash": "0c8a856d681f45f61787362e02c1c0f0d6d0431ceeb5d0032af633b685fd88d2",
         "lines": [
-          92,
-          93
+          95,
+          96
         ]
       },
       "form": "paragraph",
@@ -811,7 +827,8 @@
         "system",
         "the",
         "there"
-      ]
+      ],
+      "text": "It changes neither the position nor the composition of the equilibrium — only how fast the system\ngets there."
     },
     {
       "id": "u-slides-le-chatelier-slide-16-watch-out-for-these-1",
@@ -821,8 +838,8 @@
         "ordinal": 17,
         "contentHash": "77bf5e5cce5d8816d92bba31e61acbba8d1227c96fc5d5413ae843da871ca557",
         "lines": [
-          97,
-          101
+          100,
+          104
         ]
       },
       "form": "slide-group",
@@ -895,7 +912,8 @@
         "unchanged",
         "when",
         "yield"
-      ]
+      ],
+      "text": "- \"The system cancels the disturbance completely\" — it only *partially* counteracts it.\n- \"A catalyst increases the amount of product at equilibrium\" — it does not.\n- \"An inert gas shifts the equilibrium because total pressure rises\" — partial pressures are unchanged.\n- \"Raising the temperature always increases the yield\" — it depends on the sign of the enthalpy.\n- \"Pressure shifts every gas-phase equilibrium\" — not when the moles of gas are equal."
     },
     {
       "id": "u-slides-le-chatelier-slide-17-the-two-chapters-together-1",
@@ -905,8 +923,8 @@
         "ordinal": 18,
         "contentHash": "703461b023cb7a2d50489ee6cd051a66e0ac5d1161cd6439cb46abed2d2229f7",
         "lines": [
-          105,
-          107
+          108,
+          110
         ]
       },
       "form": "paragraph",
@@ -954,8 +972,9 @@
         "what",
         "when",
         "which"
-      ]
+      ],
+      "text": "Chapter 1 gives the quantitative description: $K$, $Q_r$, and what changes $K$.\nChapter 2 gives the qualitative prediction: which way a disturbed equilibrium moves, and when it\ndoes not move at all."
     }
   ],
-  "stamps": 2
+  "stamps": 3
 }

@@ -63,16 +63,18 @@ test("[req.ms3.contract] [req.retire.old-checks] MS3: syntax, placeholders and l
 });
 
 test("[req.ms3.contract] MS3: slide decks must carry valid orz-slides notation — templates, variants, layouts, regions; a theme the frame lacks is a note, never a defect (D36)", (t) => {
+  // D52: the deck config is the format-1 header, and the notation is read by orz-slides' own readDocument
   const p = copy(t);
-  p.edit("slides/le-chatelier.md", (x) => x.replace("<!-- deck\n", "<!-- deck\ntheme: midnight\n").replace("<!-- slide template=outline -->", "<!-- slide template=outline v=9 -->")
+  p.edit("slides/le-chatelier.md", (x) => x.replace("theme: paper\n", "theme: midnight\n").replace("<!-- slide template=outline -->", "<!-- slide template=outline v=9 -->")
     .replace(/<!-- slide -->\n## Partially counteract/, "<!-- slide col 2/1 { main; side; extra } -->\n<!-- @aside -->\n## Partially counteract"));
   const issues = run(p, "ms3-format").findings.filter((f) => f.evidence.rule === "framework-notation").map((f) => f.evidence.issue).join("\n");
-  assert.doesNotMatch(issues, /midnight|v=9/, "a theme, or a name a newer frame may know, never blocks (D36, D38)");
+  assert.doesNotMatch(issues, /midnight|v=9|unknown-theme/, "a theme, or a name a newer frame may know, never blocks (D36, D38)");
   const notes = run(p, "ms3-format").findings.filter((f) => f.kind === "frame-name-unknown");
   assert.ok(notes.length >= 2 && notes.every((f) => f.statusClass === "question" && f.route === "agent"));
-  assert.match(notes.map((f) => f.evidence.note).join("\n"), /slide theme "midnight" is not in the current orz-slides/);
-  assert.match(notes.map((f) => f.evidence.note).join("\n"), /template=outline has variants v=1…3 \(got v=9\)/);
-  assert.match(issues, /col 2\/1 has 2 track\(s\) but 3 item\(s\)/, "grammar that cannot render stays a defect");
+  assert.match(notes.map((f) => f.evidence.note).join("\n"), /theme is not one of this kind's themes[^]*\[unknown-theme\]/);
+  assert.match(notes.map((f) => f.evidence.note).join("\n"), /v=9: the outline template has variants 1 to 3/);
+  assert.match(issues, /col 2\/1 \{ main; side; extra \}": 2 tracks for 3 items/, "grammar that cannot render stays a defect");
+  assert.match(issues, /the layout has no region "aside"[^]*\[unknown-region\]/, "a region the frame drops is a defect");
 });
 
 test("[req.ms4.links] MS4: broken links and missing assets are defects; unresolved external links and unrecorded assets are obligations", (t) => {

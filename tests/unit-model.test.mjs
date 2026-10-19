@@ -54,9 +54,11 @@ What is 0 °C in kelvin?
 :::
 ::::
 `;
-const SLIDES = `<!-- deck
+const SLIDES = `{{nyml
+kind: document
+carrier: slides
 title: Melting
--->
+}}
 
 <!-- slide template=title -->
 # Melting

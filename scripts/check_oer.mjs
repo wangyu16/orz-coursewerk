@@ -32,7 +32,6 @@ import { parseSections, labelMatcher } from "./lib/terms.mjs";
 import { spineCycles } from "./lib/spine.mjs";
 import { isAuthorizedDivergence, OVERRIDES_PATH } from "./lib/overrides.mjs";
 import { commitOutput, outputGitState } from "./lib/output_git.mjs";
-import { md as orzMarkdown } from "orz-markdown";
 import { createQaAudits } from "./lib/legacy/qa_audits.mjs";
 import { isActionableQuotation, reproducedQuotationBody } from "./lib/legacy/quotation.mjs";
 

@@ -22,6 +22,7 @@ import os from "node:os";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
+import { parseDeck } from "orz-slides";
 import { liveReader, manifestChapters } from "../scripts/lib/core/package_reader.mjs";
 import { coreObligations, guideAssignment, guideReviewState, indexAndStamp, linkUnits, loadUnits } from "../scripts/lib/core/obligations.mjs";
 import { beginSession } from "../scripts/lib/core/units_index.mjs";
@@ -84,8 +85,10 @@ const whatHides = (doc, frame = "page") => printedModel(doc, { frame }).hidden.m
 // ============================== 1. what prints is the FRAME's call (C1-01, C1-02, C3-01) ===========================
 test("[req.control.printed-by-frame] C1-01 (study guide): a lone `::: tab` outside a `:::: tabs` group is hidden by every theme — its units print nothing and the gate refuses it; a tab inside a tab group still prints", (t) => {
   const c = course(t);
-  const css = fs.readFileSync(path.join(REPO, "node_modules/orz-markdown/themes/light-neat-3.css"), "utf8");
-  assert.match(css, /(^|\n)\.tab\s*\{\s*display:\s*none/, "the default theme hides a .tab panel outside an active tab group");
+  // every theme imports orz-markdown's common.css (read through the package's exported `themes/*`, D52)
+  const css = fs.readFileSync(require_.resolve("orz-markdown/themes/common.css"), "utf8");
+  assert.match(css, /(^|\n)\.markdown-body \.tab\s*\{\s*display:\s*none/, "every theme hides a .tab panel outside an active tab group");
+  assert.match(fs.readFileSync(require_.resolve("orz-markdown/themes/light-neat-3.css"), "utf8"), /@import[^;]*common\.css/, "the default theme takes it");
   const sec = c.read(SG1).split("## Pure solids and liquids\n\n")[1].split("\n\n## Equilibrium and Gibbs energy")[0];
   const before = new Map(c.units().map((u) => [u.id, u.text]));
   // each unit in its own lone tab (a callout body is one unit, so its text is unchanged)
@@ -108,20 +111,18 @@ test("[req.control.printed-by-frame] C1-01 (study guide): a lone `::: tab` outsi
 
 test("[req.control.printed-by-frame] C1-01 (slides): speaker notes print nothing on a slide — they are no unit and never count toward coverage; a per-slide footer region still prints and is read", async (t) => {
   const c = course(t);
-  const { parseDeck } = await import(path.join(REPO, "node_modules/orz-slides/dist/slide-parser.js"));
-  const { renderDeck } = await import(path.join(REPO, "node_modules/orz-slides/dist/render-slide.js"));
   const linked = () => c.units().filter((u) => u.locator.deliverable === SL1 && (u.spineNodes || []).includes(OBJ4)).map((u) => u.text);
   assert.ok(linked().some((x) => /activity of one/.test(x)), "the slide body teaches it before the attack");
   c.asAgent(() => c.edit(SL1, "## Pure solids and pure liquids\n", "## Pure solids and pure liquids\n<!-- @notes -->\n"));
-  const html = renderDeck(parseDeck(c.read(SL1)), require_("orz-markdown").md);
-  assert.match(html, /<aside class="notes">[\s\S]*?activity of one[\s\S]*?<\/aside>/, "orz-slides puts the body into the presenter's notes");
+  // the frame's own public parser routes it to the presenter's notes (its renderer writes them into <aside class="notes">)
+  assert.ok(parseDeck(c.read(SL1)).slides.some((s) => /activity of one/.test(s.notes ?? "") && !s.regions.some((r) => /activity of one/.test(r.markdown))), "orz-slides puts the body into the presenter's notes");
   assert.ok(!c.units().some((u) => u.locator.deliverable === SL1 && /activity of one/.test(u.text)), "the notes are no unit");
   assert.ok(!linked().some((x) => /activity of one/.test(x)), "so they count toward no objective");
   const m = printedModel(c.read(SL1), { frame: "slides" });
   const k = c.read(SL1).split("\n").findIndex((l) => /activity of one/.test(l));
   assert.ok(m.notes.has(k) && !m.printed.has(k));
   // a per-slide footer region prints on its slide: read like any other content
-  const seg = segmentDeliverable("<!-- slide -->\n## A catalyst\nIt speeds both directions equally.\n<!-- @footer -->\nA galvanic cell has an anode and a cathode.\n<!-- @notes -->\nRemind them of Chapter 1.\n", "slides/x.md");
+  const seg = segmentDeliverable("{{nyml\nkind: document\ncarrier: slides\n}}\n\n<!-- slide -->\n## A catalyst\nIt speeds both directions equally.\n<!-- @footer -->\nA galvanic cell has an anode and a cathode.\n<!-- @notes -->\nRemind them of Chapter 1.\n", "slides/x.md");
   assert.deepEqual(seg.units.map((u) => u.text), ["It speeds both directions equally.", "A galvanic cell has an anode and a cathode."]);
 });
 
@@ -129,7 +130,7 @@ test("[req.control.printed-by-frame] C1-02: a {{yaml}} block renders as a <scrip
   const c = course(t);
   const sec = c.read(SG1).split("## Pure solids and liquids\n\n")[1].split("\n\n## Equilibrium and Gibbs energy")[0];
   c.asAgent(() => c.edit(SG1, `## Pure solids and liquids\n\n${sec}\n\n## Equilibrium`, `## Pure solids and liquids\n\n{{yaml\n\n${sec}\n\n}}\n\n## Equilibrium`));
-  assert.match(renderLean(c.root, SG1), /<script type="application\/yaml">[\s\S]*activity of one[\s\S]*<\/script>/);
+  assert.match(renderLean(c.root, SG1), /<script type="application\/yaml"[^>]*>[\s\S]*activity of one[\s\S]*<\/script>/);
   const hid = c.hidden().map((f) => f.evidence.detail);
   assert.ok(hid.some((d) => /a \{\{yaml\}\} block: it shows none of its text/.test(d)), hid.join("\n"));
   assert.ok(hid.some((d) => /prints nothing \("The concentration terms/.test(d)), hid.join("\n"));
@@ -157,8 +158,9 @@ test("[req.control.printed-by-frame] C1-02: a {{yaml}} block renders as a <scrip
   ];
   for (const doc of shown) assert.deepEqual(whatHides(doc), [], doc);
   // an orz-paged document prints its {{nyml}} elements (the frame decides)
-  const paged = `{{nyml\nkind: document\n}}\n\n{{nyml\nkind: abstract\ntext: ${P}.\n}}\n`;
-  assert.equal(frameOf("handouts/h.md", paged), "paged"); assert.equal(frameOf(SG1, paged), "page");
+  // (D52: a print document's header carries `carrier: paged`; a header on a study guide does not make it one)
+  const paged = `{{nyml\nkind: document\ncarrier: paged\n}}\n\n{{nyml\nkind: abstract\ntext: ${P}.\n}}\n`;
+  assert.equal(frameOf("handouts/h.md", paged), "paged"); assert.equal(frameOf(SG1, paged.replace("carrier: paged\n", "")), "page");
   assert.deepEqual(whatHides(paged, "paged"), []);
   assert.equal(whatHides(paged, "page").length, 1);
 });
@@ -173,13 +175,15 @@ test("[req.control.printed-by-frame] seen in round 4: a link reference definitio
   assert.deepEqual(hides("A catalyst speeds up both directions equally.\nIt does not change K.\n"), []);
 });
 
-test("[req.control.printed-by-frame] C3-01: the deck config values orz-slides prints are read — `footer:` (every content slide) and `author:` are framing units, owed their off-plan review; a title that is no label is a unit; text before the first slide prints nothing", async (t) => {
+test("[req.control.printed-by-frame] C3-01 (D52: the deck config is the format-1 header): the deck config values orz-slides prints are read — `footer:` (every content slide) and `author:` are framing units, owed their off-plan review; a title that is no label is a unit; text before the first slide prints nothing", async (t) => {
   const c = course(t);
   const LESSON = "A galvanic cell turns a spontaneous redox reaction into electrical work: oxidation at the anode, reduction at the cathode, and a salt bridge keeps both half-cells neutral.";
   c.asAgent(() => c.edit(SL2, "ratio: 16:9\n", `ratio: 16:9\nfooter: ${LESSON}\n`));
-  const { parseDeck } = await import(path.join(REPO, "node_modules/orz-slides/dist/slide-parser.js"));
-  const { renderDeck } = await import(path.join(REPO, "node_modules/orz-slides/dist/render-slide.js"));
-  assert.ok((renderDeck(parseDeck(c.read(SL2)), require_("orz-markdown").md).match(/<footer class="orz-footer">[\s\S]*?galvanic cell/g) || []).length >= 5, "it prints on every content slide");
+  // the frame reads it from the header (public parseDeck: the deck config), and its renderer prints the deck footer on
+  // every slide but a title page that has no @footer of its own (render-slide.js chromeSlot)
+  const parsed = parseDeck(c.read(SL2));
+  assert.equal(parsed.config.footer, LESSON);
+  assert.ok(parsed.slides.filter((s) => s.footer === undefined && !(s.kind === "template" && (s.template ?? "title") === "title")).length >= 5, "it prints on every content slide");
   const u = c.units().filter((x) => ELECTRO.test(x.text));
   assert.equal(u.length, 1); assert.equal(u[0].text, LESSON);
   assert.ok(c.core().some((f) => f.kind === "framing-review-owed" && f.units.includes(u[0].id)), kinds(c.core()).filter((k) => /framing|unlinked/.test(k)).join(" "));
@@ -188,7 +192,7 @@ test("[req.control.printed-by-frame] C3-01: the deck config values orz-slides pr
   await reviewAlignment(c.root, c.r(), { verifier: rev.verifier, only: [u[0].id] });
   assert.ok(rev.seen.some((pr) => /galvanic cell/.test(pr)));
   // the rest of the deck config: author is read; the title is structure while it is a label; nothing before slide 1 prints
-  const deck = (cfg, between = "") => `<!-- deck\n${cfg}\nratio: 16:9\n-->\n\n${between}<!-- slide -->\n## Catalysts\nA catalyst does not shift the equilibrium.\n`;
+  const deck = (cfg, between = "") => `{{nyml\nkind: document\ncarrier: slides\n${cfg}\nratio: 16:9\n}}\n\n${between}<!-- slide -->\n## Catalysts\nA catalyst does not shift the equilibrium.\n`;
   assert.deepEqual(segmentDeliverable(deck("title: Le Chatelier's Principle"), "slides/x.md").units.map((x) => x.text), ["A catalyst does not shift the equilibrium."]);
   const withAuthor = segmentDeliverable(deck("title: Le Chatelier's Principle\nauthor: A salt bridge keeps both half-cells neutral. The anode is negative."), "slides/x.md").units;
   assert.deepEqual(withAuthor.map((x) => [x.text, x.role]), [["A salt bridge keeps both half-cells neutral. The anode is negative.", "framing"], ["A catalyst does not shift the equilibrium.", "teaching"]]);

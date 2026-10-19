@@ -129,8 +129,9 @@ test("[req.control.structure-unprinted] benign: a short single credit line, comm
 });
 
 test("[req.control.structure-unprinted] C3-05: of the {{nyml}} blocks, only the settings and metadata blocks are notation; every element orz-paged prints is a unit", async (t) => {
-  // the element kinds orz-paged prints, read from the installed package (a new kind would be content too: fail closed)
-  const src = fs.readFileSync(path.join(REPO, "node_modules/orz-paged/dist/render-paged.js"), "utf8");
+  // the element kinds orz-paged prints, read from the installed package's source text (an oracle: orz-paged 1.0 exports
+  // no list of them, and Coursewerk never imports its internals, D52) — a new kind would be content too: fail closed
+  const src = fs.readFileSync(path.join(path.dirname(require_.resolve("orz-paged")), "render-paged.js"), "utf8");
   const printed = [...src.match(/const ELEMENT_KINDS = new Set\(\[([\s\S]*?)\]\)/)[1].matchAll(/'([a-z-]+)'/g)].map((m) => m[1]);
   assert.ok(printed.includes("abstract") && printed.includes("question-open"), printed.join(","));
   for (const kind of printed) assert.ok(!NYML_NOTATION_KINDS.includes(kind), `${kind} prints`);
@@ -140,14 +141,15 @@ test("[req.control.structure-unprinted] C3-05: of the {{nyml}} blocks, only the 
   }
   for (const kind of NYML_NOTATION_KINDS) assert.equal(segmentDeliverable(`{{nyml\nkind: ${kind}\ntitle: T\n}}\n\nText.\n`, "current/x.md").units.length, 1, `${kind} is notation`);
   // the attack: a declared paged handout whose abstract and question teach electrochemistry
-  const { assemble } = await import(path.join(REPO, "node_modules/orz-paged/dist/render-paged.js"));
   const c = course(t);
   const H = "current/fall-2026/le-chatelier-handout.md";
-  const text = "{{nyml\nkind: document\ntemplate: note\n}}\n\n# Handout\n\n{{nyml\nkind: abstract\ntext: A galvanic cell converts the chemical energy of a spontaneous redox reaction into electrical energy; a salt bridge keeps both half-cells neutral.\n}}\n\n{{nyml\nkind: question-open\nn: 1\nbody: In a galvanic cell, at which electrode does reduction take place?\nanswer: At the cathode.\n}}\n";
+  const text = "{{nyml\nkind: document\ncarrier: paged\ntemplate: note\n}}\n\n# Handout\n\n{{nyml\nkind: abstract\ntext: A galvanic cell converts the chemical energy of a spontaneous redox reaction into electrical energy; a salt bridge keeps both half-cells neutral.\n}}\n\n{{nyml\nkind: question-open\nn: 1\nbody: In a galvanic cell, at which electrode does reduction take place?\nanswer: At the cathode.\n}}\n";
   c.write(H, text);
   c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "h", title: "Handout", source: H, carrier: "paged" }] }, null, 2) + "\n");
   c.asAgent(() => {});
-  assert.ok(/galvanic cell converts/.test(assemble(text).bodyHtml) && /which electrode does reduction/.test(assemble(text).bodyHtml), "orz-paged prints both");
+  // orz-paged prints both: they are element blocks of kinds it renders (its own token scanner finds them, D52)
+  const { scanNymlBlocks } = require_("orz-markdown");
+  assert.deepEqual(scanNymlBlocks(text).map((b) => b.kind).filter((k) => printed.includes(k)), ["abstract", "question-open"], "orz-paged prints both");
   const units = c.units().filter((u) => u.locator.deliverable === H);
   assert.deepEqual(units.map((u) => u.form), ["element", "question"]);
   const unlinked = new Set(c.core().filter((f) => f.kind === "unit-unlinked").flatMap((f) => f.units));
@@ -202,7 +204,7 @@ test("[req.ship.same-computation] C3-07: an undeclared markdown file the pack wo
 test("[req.ship.administrative-instructor] C3-06: `role: administrative` exempts a document only by the instructor's logged confirmation of its current content; the agent's field alone exempts nothing", (t) => {
   const c = course(t);
   const H = "current/fall-2026/le-chatelier-handout.md";
-  c.write(H, "{{nyml\nkind: document\n}}\n\n# Handout\n\n## Electrochemistry\n\nA galvanic cell converts the chemical energy of a spontaneous redox reaction into electrical energy.\n");
+  c.write(H, "{{nyml\nkind: document\ncarrier: paged\n}}\n\n# Handout\n\n## Electrochemistry\n\nA galvanic cell converts the chemical energy of a spontaneous redox reaction into electrical energy.\n");
   c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "h", title: "Handout", source: H, carrier: "paged", role: "administrative" }] }, null, 2) + "\n");
   c.asAgent(() => {});
   const lesson = c.units().find((u) => u.locator.deliverable === H && ELECTRO.test(u.text));

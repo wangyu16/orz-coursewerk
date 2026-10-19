@@ -3,10 +3,11 @@
 // Root causes fixed:
 //   A. visibility and edges were read with a fixed vocabulary that fails silently.
 //      - What a slide shows is now orz-slides' OWN call: its parser (parseDeck) splits the regions and its renderer
-//        (renderSlide, run with a recording markdown renderer) decides which reach the slide. A region named outside
-//        the layout (any name the frame accepts: `@Aside`, `@x_y`, `@1x`), a repeated region name (the frame keeps the
-//        last), anything but `body` on a template slide and an overwritten `@footer` print nothing; a unit read there is
-//        content-hidden. The notation check uses the frame's region-name pattern and reports repeated regions.
+//        decides which reach the slide. A region named outside the layout (any name the frame accepts: `@Aside`,
+//        `@x_y`, `@1x`) and anything but `body` on a template slide print nothing; a unit read there is content-hidden.
+//        D52 (orz-slides 1.0): the frame's PUBLIC parser is read (parseDeck, scanMarkers: its spans, its token scanner);
+//        a repeated region name is no longer dropped — 1.0 joins the chunks and reports its own lint error
+//        (duplicate-region / region-twice), which the notation check makes a blocking defect.
 //      - A table row is compared with what markdown-it renders of it: a cell beyond the header's column count is
 //        dropped by the frame, so the row is content-hidden.
 //      - A figure and the prose that names it ("the diagram", "Figure 2", a visual description) are linked both ways.
@@ -29,7 +30,8 @@ import { liveReader, manifestChapters } from "../scripts/lib/core/package_reader
 import { coreObligations, indexAndStamp, linkUnits, loadUnits } from "../scripts/lib/core/obligations.mjs";
 import { beginSession } from "../scripts/lib/core/units_index.mjs";
 import { isLabel, segmentDeliverable } from "../scripts/lib/core/segment.mjs";
-import { SLIDES_DIST, SLIDE_REGION_MARKER, printedModel, slideRegionsShown, unrenderedText } from "../scripts/lib/core/printed.mjs";
+import { printedModel, slideRegionsShown, unrenderedText } from "../scripts/lib/core/printed.mjs";
+import { parseDeck, scanMarkers } from "orz-slides";
 import { hiddenInText, uncheckedShippedFindings } from "../scripts/lib/core/shipped.mjs";
 import { checkSlidesNotation, frameworkDefinitions } from "../scripts/lib/core/notations.mjs";
 import { dependencyEdges, figuresNamedBy, namesFigure, sourceHashes, termDefinitions, termHeadWords, termMatcher } from "../scripts/lib/core/dependencies.mjs";
@@ -99,38 +101,44 @@ function honest(needle = ELECTRO) {
 }
 
 // ============================================ A. visibility: orz-slides decides =====================================
-test("[req.control.visible-by-frame-render] C1-01 (slides): a second, empty `<!-- @body -->` empties the slide — the frame keeps the last chunk of a region name, so the units before it are content-hidden and the notation check names the repeat", async (t) => {
+test("[req.control.visible-by-frame-render] C1-01 (slides; D52: orz-slides 1.0 joins a repeated region and calls it an error): a second, empty `<!-- @body -->` no longer empties the slide — nothing is hidden, and the frame's own lint makes each repeat a blocking notation defect", async (t) => {
   const c = course(t);
   const before = new Map(c.units().filter((u) => u.locator.deliverable === SL1).map((u) => [u.id, u.text]));
   assert.deepEqual(c.hidden(), [], "the fixture hides nothing");
   c.edit(SL1, "In dilute aqueous solution the solvent water is treated the same way.\n", "In dilute aqueous solution the solvent water is treated the same way.\n<!-- @body -->\n");
   c.edit(SL1, "only temperature changes $K$.\n\n<!-- slide template=closing -->", "only temperature changes $K$.\n<!-- @body -->\n\n<!-- slide template=closing -->");
   assert.deepEqual(c.units().filter((u) => u.locator.deliverable === SL1).map((u) => [u.id, u.text]), [...before], "no unit's text changed");
-  const hidden = c.hidden();
-  assert.ok(hidden.some((h) => /activity of one/.test(h) && /names @body 2 times and the frame keeps only the last/.test(h)), hidden.join("\n"));
-  assert.ok(hidden.some((h) => /Adding a pure solid changes/.test(h) || /At equilibrium the reactions have stopped/.test(h)), "the misconception list is hidden too");
+  // the 0.x frame kept only the last chunk (the attack hid the slide); 1.0 joins them in order, so every unit prints
+  const deck = parseDeck(c.read(SL1));
+  assert.ok(deck.slides.some((s) => /activity of one/.test(s.regions.find((r) => r.name === "body")?.markdown ?? "")), "orz-slides 1.0 shows the first chunk");
+  assert.deepEqual(c.hidden(), [], "so nothing is hidden");
+  // … and calls the repeat an error of its own: the notation check (the frame's readDocument) makes each a defect
   const notation = checkSlidesNotation(c.read(SL1), await frameworkDefinitions());
-  assert.ok(notation.filter((p) => /region @body appears again/.test(p.issue)).length >= 2, JSON.stringify(notation));
+  assert.ok(notation.filter((p) => !p.aspect && /\[(?:region-twice|duplicate-region)\]/.test(p.issue)).length >= 2, JSON.stringify(notation));
 });
 
-test("[req.control.visible-by-frame-render] C1-02: a region named outside the old check's pattern (`@Aside`, `@x_y`, `@1x`) is dropped by orz-slides — its units are content-hidden and the notation check, now on the frame's own region pattern, reports it", async (t) => {
+test("[req.control.visible-by-frame-render] C1-02: a region named outside the old check's pattern (`@Aside`, `@x_y`, `@1x`) is dropped by orz-slides — its units are content-hidden and the notation check, now on the frame's own parser, reports it", async (t) => {
   const c = course(t), d = await frameworkDefinitions();
   for (const name of ["Aside", "x_y", "1x"]) {
     const deck = c.read(SL1).replace("## Pure solids and pure liquids\n", `## Pure solids and pure liquids\n<!-- @${name} -->\n`);
     const hidden = hiddenInText(deck, SL1).map((h) => h.what);
     assert.ok(hidden.some((h) => /activity of one/.test(h) && new RegExp(`no region "${name}"`).test(h)), `@${name}: ${hidden.join("\n")}`);
-    assert.ok(checkSlidesNotation(deck, d).some((p) => p.issue.startsWith(`region @${name} is not a region of this slide's layout`)), `@${name} is checked`);
+    assert.ok(checkSlidesNotation(deck, d).some((p) => !p.aspect && p.issue.includes(`the layout has no region "${name}"`) && /\[unknown-region\]/.test(p.issue)), `@${name} is checked`);
+    // ONE marker reading: the harness locates regions by the frame's own token scanner (scanMarkers), so every region
+    // the frame reads is one the harness routes
+    const k = deck.split("\n").indexOf(`<!-- @${name} -->`);
+    assert.ok(scanMarkers(deck).some((m) => m.type === "region" && m.name === name && m.span.line === k + 1), `the frame reads @${name}`);
+    assert.ok(slideRegionsShown(deck).some((r) => r.name === name && r.lines.includes(k + 1) && !r.shown), `the harness routes @${name}`);
   }
-  // ONE region-name pattern: the harness's is the frame's own, character for character
-  const src = fs.readFileSync(path.join(SLIDES_DIST, "slide-parser.js"), "utf8");
-  const frame = /const REGION_MARKER = (\/.*\/[a-z]*);/.exec(src)?.[1];
-  assert.ok(frame, "the installed orz-slides declares its REGION_MARKER");
-  assert.equal(String(SLIDE_REGION_MARKER), frame);
+  // and a marker the frame does NOT read (inside a code block) is no region for the harness either
+  const fenced = c.read(SL1).replace("## Pure solids and pure liquids\n", "## Pure solids and pure liquids\n```\n<!-- @aside -->\n```\n");
+  assert.ok(!slideRegionsShown(fenced).some((r) => r.name === "aside"));
 });
 
-test("[req.control.visible-by-frame-render] variants: anything but `body` on a template slide, an overwritten `@footer`, a third region on a 2col slide are dropped; regions the layout has, a float, a per-slide footer and repeated notes behave as the frame renders them", async () => {
+test("[req.control.visible-by-frame-render] variants: anything but `body` on a template slide, a third region on a 2col slide are dropped; regions the layout has, a float, per-slide footers and repeated notes behave as the frame renders them", async () => {
   const d = await frameworkDefinitions();
   const deck = [
+    "{{nyml", "kind: document", "carrier: slides", "}}", "",
     "<!-- slide template=section -->", "# Part one", "<!-- @left -->", "Galvanic cells oxidize at the anode.", "",
     "<!-- slide 2col -->", "## Two sides", "<!-- @left -->", "Left side teaching.", "<!-- @right -->", "Right side teaching.", "<!-- @main -->", "Main region teaching.", "",
     "<!-- slide -->", "## Footers", "Body text.", "<!-- @footer -->", "First footer words.", "<!-- @footer -->", "Second footer words.", "<!-- @float left=50% top=10% -->", "A floating note.", "",
@@ -140,29 +148,32 @@ test("[req.control.visible-by-frame-render] variants: anything but `body` on a t
   assert.equal(shown("Galvanic").shown, false); assert.match(shown("Galvanic").why, /template slide shows only its body/);
   assert.equal(shown("Left side").shown, true); assert.equal(shown("Right side").shown, true);
   assert.equal(shown("Main region").shown, false); assert.match(shown("Main region").why, /no region "main"/);
-  assert.equal(shown("First footer").shown, false); assert.equal(shown("Second footer").shown, true);
+  // orz-slides 1.0 joins a repeated @footer (both print) and reports it (D52)
+  assert.equal(shown("First footer").shown, true); assert.equal(shown("Second footer").shown, true);
+  assert.match(parseDeck(deck).slides[2].footer, /First footer words\.\n\nSecond footer words\./);
   assert.equal(shown("A floating note").shown, true);
   assert.equal(shown("First notes").notes, true); assert.equal(shown("Second notes").notes, true);
   const hidden = hiddenInText(deck, "slides/x.md").map((h) => h.what).join("\n");
-  for (const t of ["Galvanic cells", "Main region", "First footer"]) assert.match(hidden, new RegExp(t));
-  for (const t of ["Left side", "Right side", "Second footer", "floating", "notes", "Shown body"]) assert.doesNotMatch(hidden, new RegExp(t));
+  for (const t of ["Galvanic cells", "Main region"]) assert.match(hidden, new RegExp(t));
+  for (const t of ["Left side", "Right side", "First footer", "Second footer", "floating", "notes", "Shown body"]) assert.doesNotMatch(hidden, new RegExp(t));
   const m = printedModel(deck, { frame: "slides" }), L = deck.split("\n");
   assert.ok(L.map((l, k) => [l, k]).filter(([l]) => /notes\.$/.test(l)).every(([, k]) => m.notes.has(k) && !m.printed.has(k)), "both notes chunks are notes");
   assert.ok(!segmentDeliverable(deck, "slides/x.md").units.some((u) => /notes\./.test(u.text)), "notes are no unit");
-  const issues = checkSlidesNotation(deck, d).map((p) => p.issue).join("\n");
-  assert.match(issues, /region @left is not a region of this slide's layout \(body\)/);
-  assert.match(issues, /region @main is not a region/);
-  assert.match(issues, /region @footer appears again/);
-  assert.doesNotMatch(issues, /notes/i);
-  // the fixture's own decks: a section slide's `##` subtitle is not rendered by the section template — it prints
-  // nothing and is no unit, and nothing is reported hidden
+  const issues = checkSlidesNotation(deck, d).filter((p) => !p.aspect).map((p) => p.issue).join("\n");
+  assert.match(issues, /a template slide has one region, body[^\n]*"@left" is not shown \[unknown-region\]/);
+  assert.match(issues, /the layout has no region "main"[^\n]*\[unknown-region\]/);
+  assert.match(issues, /the slide footer \(@footer\) is marked twice[^\n]*\[duplicate-region\]/);
+  assert.match(issues, /speaker notes \(@notes\) are marked twice[^\n]*\[duplicate-region\]/, "1.0 calls repeated notes an error too");
+  // the fixture's own decks: nothing is reported hidden, and their notation is clean. (orz-slides 1.0's section template
+  // renders a `##` under the `#` as the section's subtitle: it prints, a label over the section — no unit)
   for (const rel of ["slides/chemical-equilibrium.md", "slides/le-chatelier.md", SG1, SG2, "practice/chemical-equilibrium.md", PR2]) {
     const text = fs.readFileSync(path.join(C2, rel), "utf8");
     assert.deepEqual(hiddenInText(text, rel), [], rel);
     if (rel.startsWith("slides/")) assert.deepEqual(checkSlidesNotation(text, d).filter((p) => !p.aspect), [], rel);
   }
-  const sec = fs.readFileSync(path.join(C2, SL1), "utf8").split("\n"), k = sec.indexOf("## Dynamic equilibrium");
-  assert.ok(k > 0 && !printedModel(sec.join("\n"), { frame: "slides" }).printed.has(k), "the section slide's ## prints nothing");
+  const sec = fs.readFileSync(path.join(C2, SL1), "utf8"), k = sec.split("\n").indexOf("## Dynamic equilibrium");
+  assert.ok(k > 0 && printedModel(sec, { frame: "slides" }).printed.has(k), "the section slide's ## prints");
+  assert.ok(!segmentDeliverable(sec, SL1).units.some((u) => u.text === "## Dynamic equilibrium"), "a label, no unit");
 });
 
 // ============================================ A. visibility: markdown-it's table =====================================

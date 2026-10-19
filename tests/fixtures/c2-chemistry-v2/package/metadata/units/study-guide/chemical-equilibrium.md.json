@@ -81,7 +81,8 @@
         "why",
         "with",
         "zero"
-      ]
+      ],
+      "text": "Chemical equilibrium is the state of a reversible reaction in which the forward reaction proceeds at the same rate as the reverse reaction, so the reactant and product concentrations no longer change with time. The forward and reverse rates are generally **not zero** — they are simply equal — so individual molecules keep reacting in both directions even though the macroscopic concentrations stay constant. This is why the state is called *dynamic* equilibrium."
     },
     {
       "id": "u-study-guide-chemical-equilibrium-dynamic-equilibrium-2",
@@ -152,7 +153,8 @@
         "water",
         "worked",
         "yet"
-      ]
+      ],
+      "text": "A worked illustration from the source: in acetic acid dissolved in water, a proton may hop from one acetic acid molecule onto a water molecule and then onto an acetate anion, forming another acetic acid molecule — the number of acetic acid molecules is unchanged, yet reaction never stops. Equilibrium is a statistical average of ceaseless microscopic events."
     },
     {
       "id": "u-study-guide-chemical-equilibrium-the-equilibrium-constant-1",
@@ -192,7 +194,8 @@
         "for",
         "reaction",
         "reversible"
-      ]
+      ],
+      "text": "For a balanced reversible reaction"
     },
     {
       "id": "u-study-guide-chemical-equilibrium-the-equilibrium-constant-2",
@@ -232,7 +235,8 @@
         "beta",
         "sigma",
         "tau"
-      ]
+      ],
+      "text": "$$\\ce{\\alpha A + \\beta B <=> \\sigma S + \\tau T}$$"
     },
     {
       "id": "u-study-guide-chemical-equilibrium-the-equilibrium-constant-3",
@@ -285,7 +289,8 @@
         "reactant",
         "stoichiometric",
         "the"
-      ]
+      ],
+      "text": "the **equilibrium constant** collects the product concentrations in the numerator and the reactant concentrations in the denominator, each raised to its stoichiometric coefficient:"
     },
     {
       "id": "u-study-guide-chemical-equilibrium-the-equilibrium-constant-4",
@@ -327,7 +332,8 @@
         "frac",
         "sigma",
         "tau"
-      ]
+      ],
+      "text": "$$K = \\frac{[\\ce{S}]^{\\sigma}\\,[\\ce{T}]^{\\tau}}{[\\ce{A}]^{\\alpha}\\,[\\ce{B}]^{\\beta}}$$"
     },
     {
       "id": "u-study-guide-chemical-equilibrium-the-equilibrium-constant-5",
@@ -406,7 +412,8 @@
         "this",
         "waage",
         "when"
-      ]
+      ],
+      "text": "This form follows from Guldberg and Waage's **law of mass action** (1865): the forward rate is $k_{+}[\\ce{A}]^{\\alpha}[\\ce{B}]^{\\beta}$ and the reverse rate is $k_{-}[\\ce{S}]^{\\sigma}[\\ce{T}]^{\\tau}$; setting them equal at equilibrium gives $K = k_{+}/k_{-}$. The equilibrium position lies \"far to the right\" when nearly all reactants are consumed, and \"far to the left\" when hardly any product forms."
     },
     {
       "id": "u-study-guide-chemical-equilibrium-the-reaction-quotient-1",
@@ -464,7 +471,8 @@
         "reaction",
         "same",
         "the"
-      ]
+      ],
+      "text": "The **reaction quotient** $Q_r$ has exactly the same algebraic form as $K$, but is evaluated at *any* composition — not only at equilibrium. Comparing $Q_r$ to $K$ predicts the direction of change:"
     },
     {
       "id": "u-study-guide-chemical-equilibrium-the-reaction-quotient-2",
@@ -510,7 +518,8 @@
         "the",
         "too",
         "toward"
-      ]
+      ],
+      "text": "- $Q_r < K$ — too few products; the reaction shifts **forward** (toward products)."
     },
     {
       "id": "u-study-guide-chemical-equilibrium-the-reaction-quotient-3",
@@ -557,7 +566,8 @@
         "the",
         "too",
         "toward"
-      ]
+      ],
+      "text": "- $Q_r > K$ — too many products; the reaction shifts **reverse** (toward reactants)."
     },
     {
       "id": "u-study-guide-chemical-equilibrium-the-reaction-quotient-4",
@@ -601,7 +611,8 @@
         "shift",
         "system",
         "the"
-      ]
+      ],
+      "text": "- $Q_r = K$ — the system is already at equilibrium; no net shift."
     },
     {
       "id": "u-study-guide-chemical-equilibrium-pure-solids-and-liquids-1",
@@ -680,7 +691,8 @@
         "which",
         "why",
         "written"
-      ]
+      ],
+      "text": "The concentration terms in $K$ are strictly **activities**, the effective concentration of each species. A pure solid or a pure liquid has an **activity of one**, so it does not appear in the equilibrium constant expression. For a reaction in dilute aqueous solution the solvent water is treated as a pure liquid of activity one and is likewise omitted — which is why, for acetic acid dissociation, $K$ is written over the dissolved species alone:"
     },
     {
       "id": "u-study-guide-chemical-equilibrium-pure-solids-and-liquids-2",
@@ -721,7 +733,8 @@
         "ch3co2h",
         "frac",
         "h3o"
-      ]
+      ],
+      "text": "$$K = \\frac{[\\ce{CH3CO2-}][\\ce{H3O+}]}{[\\ce{CH3CO2H}]}$$"
     },
     {
       "id": "u-study-guide-chemical-equilibrium-equilibrium-and-gibbs-energy-1",
@@ -774,7 +787,8 @@
         "the",
         "vanishes",
         "when"
-      ]
+      ],
+      "text": "Equilibrium is reached when the Gibbs energy of the system is at its minimum, so the reaction Gibbs energy vanishes. The equilibrium constant is related to the **standard Gibbs energy change** of the reaction by"
     },
     {
       "id": "u-study-guide-chemical-equilibrium-equilibrium-and-gibbs-energy-2",
@@ -813,7 +827,8 @@
       "tokens": [
         "delta",
         "ominus"
-      ]
+      ],
+      "text": "$$\\Delta G^\\ominus = -RT \\ln K,$$"
     },
     {
       "id": "u-study-guide-chemical-equilibrium-equilibrium-and-gibbs-energy-3",
@@ -866,7 +881,8 @@
         "the",
         "therefore",
         "where"
-      ]
+      ],
+      "text": "where $R$ is the gas constant and $T$ the absolute temperature. A negative $\\Delta G^\\ominus$ therefore corresponds to $K > 1$ (products favoured), and a positive $\\Delta G^\\ominus$ to $K < 1$ (reactants favoured)."
     },
     {
       "id": "u-study-guide-chemical-equilibrium-temperature-dependence-1",
@@ -926,7 +942,8 @@
         "the",
         "van",
         "with"
-      ]
+      ],
+      "text": "The equilibrium constant is genuinely constant with respect to composition, but it **does depend on temperature**, as described by the **van 't Hoff equation**. The direction of the dependence is fixed by the sign of the reaction enthalpy:"
     },
     {
       "id": "u-study-guide-chemical-equilibrium-temperature-dependence-2",
@@ -971,7 +988,8 @@
         "reaction",
         "temperature",
         "the"
-      ]
+      ],
+      "text": "- **Endothermic** reaction — raising the temperature **increases** $K$."
     },
     {
       "id": "u-study-guide-chemical-equilibrium-temperature-dependence-3",
@@ -1016,7 +1034,8 @@
         "reaction",
         "temperature",
         "the"
-      ]
+      ],
+      "text": "- **Exothermic** reaction — raising the temperature **decreases** $K$."
     },
     {
       "id": "u-study-guide-chemical-equilibrium-catalysts-and-equilibrium-1",
@@ -1081,7 +1100,8 @@
         "the",
         "this",
         "time"
-      ]
+      ],
+      "text": "A **catalyst** speeds up the forward and reverse reactions by the same factor. It lowers the time needed to *reach* equilibrium but changes **neither the equilibrium constant nor the position of equilibrium**. This is a frequent source of error and is revisited in the misconceptions below."
     },
     {
       "id": "u-study-guide-chemical-equilibrium-deciding-the-direction-of-change-1",
@@ -1117,7 +1137,8 @@
         "spine:concept.chemical-equilibrium.reaction-quotient": "03bd300dd7d3fb6b8434463a782faa7ddd54acfe00643bf73e39f0757dee1fc9",
         "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
         "term:chemical-equilibrium:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f",
-        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b"
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "ref:u-study-guide-chemical-equilibrium-deciding-the-direction-of-change-2": "q3:66630eec196046749a70d5f34a3ec3ba1d6ea913e0aa865d5378b637bc694ebb"
       },
       "tokens": [
         "already",
@@ -1143,7 +1164,8 @@
         "too",
         "until",
         "with"
-      ]
+      ],
+      "text": "{{mermaid}}\nflowchart TD\n    A[\"Measure the current composition\"] --> B[\"Evaluate the reaction quotient Qr\"]\n    B --> C{\"Compare Qr with K\"}\n    C -->|\"Qr < K\"| D[\"Too few products<br/>shift FORWARD\"]\n    C -->|\"Qr > K\"| E[\"Too many products<br/>shift REVERSE\"]\n    C -->|\"Qr = K\"| F[\"Already at equilibrium<br/>no net shift\"]\n    D --> G[\"Qr rises until Qr = K\"]\n    E --> G\n{{/mermaid}}"
     },
     {
       "id": "u-study-guide-chemical-equilibrium-deciding-the-direction-of-change-2",
@@ -1179,7 +1201,8 @@
         "spine:concept.chemical-equilibrium.reaction-quotient": "03bd300dd7d3fb6b8434463a782faa7ddd54acfe00643bf73e39f0757dee1fc9",
         "spine:concept.chemical-equilibrium.k-expression": "c535b43ddd62d0c7c03498cc3182c8cb3d1c1ddcb490f205061ce9e5c4b30475",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
-        "term:chemical-equilibrium:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f"
+        "term:chemical-equilibrium:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f",
+        "ref:u-study-guide-chemical-equilibrium-deciding-the-direction-of-change-1": "q3:6c64df859f20ee13e017ed4ad0d96dc051d09515bf753051541cafa425004c2f"
       },
       "tokens": [
         "already",
@@ -1246,7 +1269,8 @@
         "which",
         "with",
         "you"
-      ]
+      ],
+      "text": "**Visual description:** The diagram shows the three-way decision that predicts the direction of a\nreaction. From a measured composition you evaluate the reaction quotient and compare it with the\nequilibrium constant. Three outcomes branch from that comparison: when the quotient is smaller than\nthe constant there are too few products and the reaction shifts forward; when it is larger there are\ntoo many products and the reaction shifts in reverse; when the two are equal the system is already\nat equilibrium and does not shift. Both shifting branches converge on the same end state, in which\nthe quotient has moved until it equals the constant. Note that the constant itself never moves in\nthis diagram: only the quotient does."
     },
     {
       "id": "u-study-guide-chemical-equilibrium-worked-examples-1",
@@ -1290,7 +1314,8 @@
         "synthesis",
         "the",
         "write"
-      ]
+      ],
+      "text": "Write the equilibrium constant expression for the ammonia synthesis $\\ce{N2 + 3 H2 <=> 2 NH3}$."
     },
     {
       "id": "u-study-guide-chemical-equilibrium-worked-examples-2",
@@ -1321,8 +1346,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-study-guide-chemical-equilibrium-worked-examples-1": "1d17850dcef728ce29128d53aee81fe14fd1d51ff1e2c37b4bba450d1895d2c9",
-        "question:u-study-guide-chemical-equilibrium-worked-examples-1": "q2:5944533a3bd5b61ca1324e50ffb4d8f2d55720ccaa22a27cca748cb13411afe5",
+        "unit:u-study-guide-chemical-equilibrium-worked-examples-1": "v:1d17850dcef728ce29128d53aee81fe14fd1d51ff1e2c37b4bba450d1895d2c9",
+        "question:u-study-guide-chemical-equilibrium-worked-examples-1": "q3:f4d2e5ccec52bc43e8f6ae48abc28fd8ebd07203474ab13859ee92dd37677ae9",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
         "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185"
       },
@@ -1336,7 +1361,8 @@
         "products",
         "raised",
         "reactants"
-      ]
+      ],
+      "text": "Products over reactants, each raised to its coefficient:\n$$K = \\frac{[\\ce{NH3}]^{2}}{[\\ce{N2}]\\,[\\ce{H2}]^{3}}.$$"
     },
     {
       "id": "u-study-guide-chemical-equilibrium-worked-examples-3",
@@ -1368,9 +1394,9 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-chemical-equilibrium-questions-21": "035de8f2db3e2d39d24a207e1f0153d94f8671a224e0afd4d958551d1ff51990",
-        "unit:u-study-guide-chemical-equilibrium-worked-examples-4": "35bb57f1a45c8711dea0b86f6d0d68029f4c829834a82b37114830009f98e47f",
-        "unit:u-practice-chemical-equilibrium-questions-22": "35bb57f1a45c8711dea0b86f6d0d68029f4c829834a82b37114830009f98e47f",
+        "unit:u-practice-chemical-equilibrium-questions-21": "v:035de8f2db3e2d39d24a207e1f0153d94f8671a224e0afd4d958551d1ff51990",
+        "unit:u-study-guide-chemical-equilibrium-worked-examples-4": "v:35bb57f1a45c8711dea0b86f6d0d68029f4c829834a82b37114830009f98e47f",
+        "unit:u-practice-chemical-equilibrium-questions-22": "v:35bb57f1a45c8711dea0b86f6d0d68029f4c829834a82b37114830009f98e47f",
         "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
         "term:chemical-equilibrium:standard gibbs energy change": "d552936944bea24ed9c4e3352ddbde4042404a1cee16a2a630952f89afbf1fdc",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b"
@@ -1390,7 +1416,8 @@
         "text",
         "the",
         "using"
-      ]
+      ],
+      "text": "Suppose a reaction has $K = 4.0$ at $T = 298\\ \\text{K}$. Using $R = 8.314\\ \\text{J mol}^{-1}\\text{K}^{-1}$, estimate the standard Gibbs energy change."
     },
     {
       "id": "u-study-guide-chemical-equilibrium-worked-examples-4",
@@ -1422,10 +1449,10 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-chemical-equilibrium-questions-22": "35bb57f1a45c8711dea0b86f6d0d68029f4c829834a82b37114830009f98e47f",
-        "unit:u-study-guide-chemical-equilibrium-worked-examples-3": "a112c43329ba04c5821de7f9c6ec41e9af81a50e0dcd02596094e7b4e3f70772",
-        "unit:u-practice-chemical-equilibrium-questions-21": "035de8f2db3e2d39d24a207e1f0153d94f8671a224e0afd4d958551d1ff51990",
-        "question:u-study-guide-chemical-equilibrium-worked-examples-3": "q2:336735d29c4a94aee0bed0d6398b5d25f331294087b7b62e42b005951a55dcf5",
+        "unit:u-practice-chemical-equilibrium-questions-22": "v:35bb57f1a45c8711dea0b86f6d0d68029f4c829834a82b37114830009f98e47f",
+        "unit:u-study-guide-chemical-equilibrium-worked-examples-3": "v:a112c43329ba04c5821de7f9c6ec41e9af81a50e0dcd02596094e7b4e3f70772",
+        "unit:u-practice-chemical-equilibrium-questions-21": "v:035de8f2db3e2d39d24a207e1f0153d94f8671a224e0afd4d958551d1ff51990",
+        "question:u-study-guide-chemical-equilibrium-worked-examples-3": "q3:05d885eb734260e8b390021aa9731a4d6e1142513393d819320fe43c9a240f06",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
         "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd"
       },
@@ -1451,7 +1478,8 @@
         "the",
         "value",
         "with"
-      ]
+      ],
+      "text": "$\\Delta G^\\ominus = -RT\\ln K = -(8.314)(298)\\ln(4.0) = -3435\\ \\text{J mol}^{-1} \\approx -3.4\\ \\text{kJ mol}^{-1}$. The negative sign is consistent with $K > 1$ (products favoured). *(The value $K = 4.0$ is a teaching hypothetical, not a source datum.)*"
     },
     {
       "id": "u-study-guide-chemical-equilibrium-common-misconceptions-1",
@@ -1499,7 +1527,8 @@
         "reactions",
         "stopped",
         "the"
-      ]
+      ],
+      "text": "- **\"At equilibrium the reactions have stopped.\"** No — the rates are equal but nonzero; reaction continues at the molecular level."
     },
     {
       "id": "u-study-guide-chemical-equilibrium-common-misconceptions-2",
@@ -1549,7 +1578,8 @@
         "their",
         "they",
         "unequal"
-      ]
+      ],
+      "text": "- **\"At equilibrium reactant and product concentrations are equal.\"** No — they are *constant*, but generally unequal; their ratio is fixed by $K$."
     },
     {
       "id": "u-study-guide-chemical-equilibrium-common-misconceptions-3",
@@ -1603,7 +1633,8 @@
         "toward",
         "which",
         "yield"
-      ]
+      ],
+      "text": "- **\"A catalyst shifts equilibrium toward products and raises the yield.\"** No — a catalyst changes neither $K$ nor the position, only the rate at which equilibrium is reached."
     },
     {
       "id": "u-study-guide-chemical-equilibrium-common-misconceptions-4",
@@ -1652,7 +1683,8 @@
         "pure",
         "solid",
         "the"
-      ]
+      ],
+      "text": "- **\"Adding more of a pure solid or liquid changes $K$.\"** No — its activity is one, so it is absent from the expression."
     },
     {
       "id": "u-study-guide-chemical-equilibrium-common-misconceptions-5",
@@ -1701,8 +1733,9 @@
         "system",
         "temperature",
         "the"
-      ]
+      ],
+      "text": "- **\"Changing a concentration changes $K$.\"** No — only temperature changes $K$; a concentration change moves $Q_r$ and the system re-shifts back to the same $K$."
     }
   ],
-  "stamps": 2
+  "stamps": 3
 }

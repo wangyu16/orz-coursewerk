@@ -4,7 +4,7 @@
 // (the study guide, practice) and orz-slides (the deck) with their stylesheets, orz-paged for a print document. The
 // student sees what the FRAME shows, and orz-markdown alone disagrees with it both ways: a lone `::: tab` renders a
 // `<div class="tab">` every theme hides; `{{yaml}}` renders a <script>; speaker notes render into the presenter's
-// <aside>; and the deck config's `footer:` prints on every slide although, to orz-markdown, it is a comment.
+// <aside>; and the header's `footer:` prints on every slide although, to orz-markdown, the header renders nothing.
 // One parse (orz-markdown's token stream, the parser the frames render with) plus the frame's own grammar answers, per
 // source line:
 //   - printed: the line puts text on the page (a paragraph, heading, table row, list text, code, maths, a plugin
@@ -19,31 +19,27 @@
 //     the ATTRIBUTE level (round 6, CONTROL C1-01/02/03), a container argument orz copies into a style or attribute
 //     that is off the allowlist of values known to show, a plugin argument that is not the value the plugin takes,
 //     and a slide attribute (class, bg, fit=off, a layout track, a float's geometry or what it is painted over);
-//   - settings (round 6, C3-02): the values a frame prints from a {{nyml}} settings block — orz-paged's running
-//     header and footer, the head metadata — each read as a unit (segment.mjs);
+//   - settings (round 6, C3-02; D52): the values a frame PRINTS from the text's format-1 header (orz-markdown FC-18
+//     §5: the leading `{{nyml kind: document}}` block, read with orz-markdown/carrier readHeader, as every carrier reads
+//     it) — the head metadata every carrier's envelope emits (title in the tab, author, description), the slide footer,
+//     orz-paged's running header and footer — each read as a framing unit (segment.mjs). The header itself renders
+//     nothing and is never a unit;
 //   - notes (slides): the speaker-notes lines (`<!-- @notes -->` to the next region or slide) — the presenter's, not the
 //     students': they print nothing on a slide, and are no unit (they never count toward coverage);
-//   - dropped (slides; red team round 5, CONTROL C1-01/C1-02): what orz-slides itself does not show — its parser and
-//     renderer are RUN (slideRegionsShown), not modelled: a region outside the layout, a repeated region name, a
-//     template slide's other regions or unrendered lines, an overwritten @footer; each such line prints nothing, with
-//     the frame's reason (a unit there is content-hidden). A table row's text beyond the cells markdown-it renders is
-//     hidden too (unrenderedText);
-//   - deck (slides): the deck config values orz-slides prints (`footer:` on every content slide, `title:` in the tab,
-//     `author:` in the document's metadata) — each is read (segment.mjs), so each counts as printed.
-// Deterministic and offline: parsing never reads an included file (that happens only when rendering).
-import fs from "node:fs";
-import path from "node:path";
+//   - dropped (slides; red team round 5, CONTROL C1-01/C1-02): what orz-slides itself does not show — read from its own
+//     public parser (parseDeck: each region's source spans, its layout, its template), routed as its renderer routes
+//     them (render-slide.js fillRegions / renderTemplate / chromeSlot): a region outside the layout, a template slide's
+//     other regions, text in no region it shows; each such line prints nothing, with the frame's reason (a unit there
+//     is content-hidden). A table row's text beyond the cells markdown-it renders is hidden too (unrenderedText).
+// Deterministic and offline: parsing never reads an included file (that happens only when rendering). Every orz package
+// is read through its exported entry points only (D52, req.format1.public-readers).
 import { createRequire } from "node:module";
-import { pathToFileURL } from "node:url";
+import { parseDeck, scanMarkers } from "orz-slides";
+import { readDocument as readPagedDocument, readSettings as readPagedSettings, resolveSettings as resolvePagedSettings, SETTING_DEFAULTS as PAGED_DEFAULTS, THEMES as PAGED_THEME_LIST, TEMPLATE_IDS as PAGED_TEMPLATE_IDS } from "orz-paged";
 
 const require_ = createRequire(import.meta.url);
 const { md, scanNymlBlocks } = require_("orz-markdown");
-// orz-slides' own parser and renderer (the deck's frame): its package exports only the builder, so the two modules are
-// loaded from the installed package's dist folder
-const SLIDES_DIST = path.dirname(require_.resolve("orz-slides"));
-const { parseDeck } = await import(pathToFileURL(path.join(SLIDES_DIST, "slide-parser.js")).href);
-const { renderSlide } = await import(pathToFileURL(path.join(SLIDES_DIST, "render-slide.js")).href);
-export { SLIDES_DIST };
+const { readHeader } = require_("orz-markdown/carrier");
 
 export const INCLUDE_ALIASES = Object.freeze(["markdown", "md", "md-include"]);
 /** orz-paged {{nyml}} kinds that print nothing: the document settings and the head metadata. Every other kind (the
@@ -142,11 +138,47 @@ export function pluginArgIssues(t, srcLines) {
   }
   return { issues: [...new Set(out)], dark: [...new Set(dark)] };
 }
+// ---- the format-1 header (D52; orz-markdown FC-18 §5) ------------------------------------------------------------------
+// Every carrier reads one header: the leading `{{nyml kind: document}}` block (a legacy leading `kind: meta` block, or
+// the pair, is read as one), found by orz-markdown's token scanner (orz-markdown/carrier readHeader), never a block
+// further down. It renders nothing. What each carrier PRINTS from it is read as a framing unit — no more, no less:
+//   - every kind: the envelope's `<title>` (header `title`) and head metadata `<meta name="author">`,
+//     `<meta name="description">` (orz-markdown dist/carrier/envelope.js assembleEnvelope :102-110, doc-meta.js
+//     renderDocMetaHead :227-249) — the same three keys the 0.x `{{nyml kind: meta}}` block printed;
+//   - slides: `footer` on every slide but the title page, unless the slide's own `@footer` replaces it (orz-slides
+//     dist/render-slide.js chromeSlot :39-47); `title` also in the running head the theme may show (headSlot :33-37);
+//   - paged: the running header and footer boxes `header_left` … `footer_right` (orz-paged dist/doc/page-css.js
+//     buildPageCss addStatic :99-109).
+// Everything else in the header sets the look (theme, ratio, measure, page geometry …), names the document (uid, lang,
+// license …) or belongs to a host (`x_<host>_…`): it prints no text of the author's, so it is no unit and owes nothing.
+// An orz-paged key the frame writes raw into the page's CSS is still held to its allowlist (below): it can hide text.
+/** The header keys every carrier's envelope prints (the tab title, the head metadata). */
+export const PRINTED_META_KEYS = Object.freeze(["title", "author", "description"]);
+/** The orz-slides header keys that print: the envelope's title and author, and the slide footer. */
+export const PRINTED_DECK_KEYS = Object.freeze(["title", "author", "footer"]);
 /** The orz-paged settings that PRINT: the running header and footer boxes on every page (page-css.js addStatic). */
 export const PRINTED_PAGED_KEYS = Object.freeze(["header_left", "header_center", "header_right", "footer_left", "footer_center", "footer_right"]);
-/** The head metadata every frame emits from a `{{nyml kind: meta}}` block (doc-meta.js): the title (the tab), author
- *  and description. */
-export const PRINTED_META_KEYS = Object.freeze(["title", "author", "description"]);
+/** The header keys a frame prints, by frame. */
+export const printedHeaderKeys = (frame) => (frame === "slides" ? [...PRINTED_META_KEYS, "footer"] : frame === "paged" ? [...PRINTED_META_KEYS, ...PRINTED_PAGED_KEYS] : [...PRINTED_META_KEYS]);
+const lineOfOffset = (src, off) => { let n = 0; for (let k = src.indexOf("\n"); k >= 0 && k < off; k = src.indexOf("\n", k + 1)) n++; return n; };
+/**
+ * The format-1 header of a text as the carriers read it: null (none), or { start, end (0-based lines, inclusive),
+ * blocks: [0-based start line of each header block], fields: { key: value } (the last of a duplicate wins), carrier,
+ * entries: [{ key, value, start, end }] (every key line, duplicates included, `|` lines in their entry) }.
+ */
+export function headerOf(text) {
+  const src = String(text ?? "");
+  let h = null; try { h = readHeader(src); } catch { h = null; }
+  if (!h) return null;
+  const endAt = (off) => lineOfOffset(src, Math.max(0, off - 1));
+  const entries = h.entries.map((e, k) => {
+    const start = e.line - 1, end = Math.max(start, endAt(e.to));
+    // a duplicate's own value (the reader keeps only the last): its first line's text after the separator
+    const value = k === h.entries.map((x) => x.key).lastIndexOf(e.key) ? String(h.fields[e.key] ?? "") : src.slice(e.valueFrom, src.indexOf("\n", e.valueFrom) < 0 ? src.length : src.indexOf("\n", e.valueFrom)).trim();
+    return { key: e.key, value, start, end };
+  });
+  return { start: lineOfOffset(src, h.start), end: endAt(h.end), blocks: h.blocks.map((b) => lineOfOffset(src, b.start)), fields: { ...h.fields }, carrier: String(h.fields.carrier ?? "").trim() || null, entries };
+}
 /** The `key: value` settings of a {{nyml}} block as orz-paged reads them (settings.js parseNymlBody: `key: |` takes the
  *  more-indented lines after it): [{ key, value, start, end }] (0-based source lines; `kind` left out). */
 export function nymlValues(srcLines, a, b) {
@@ -176,20 +208,28 @@ export function nymlValues(srcLines, a, b) {
 // fields raw into a style (`style="height:${space}"`). A value that closes the declaration writes CSS of its own:
 // `font_family: serif; } .orz-doc::before { content: "<lesson>" } x {` prints a lesson no unit reads, and the same
 // trick hides body text. A five-key denylist let every other key through. So the frame's OWN settings reader decides
-// which block is the document's settings and what each value is (settings.js parseDocSettings: the first `{{nyml}}`
-// anywhere in the source — a code block or a comment included — whose body has a `kind: document` line), and EVERY key
+// what the document's settings are (orz-paged 1.0 readSettings / resolveSettings: the format-1 header, and only it — a
+// `{{nyml kind: document}}` block further down is no settings source, the lint `stray-document-block`), and EVERY key
 // it reads is held to a strict grammar of values known to show text: lengths and sizes in range, a colour, a font-family
-// list, a page size, a name from the frame's own catalogue (fonts, themes, templates, page-number styles). A key the
-// frame does not read prints nothing; a value off its grammar may hide the page. Both are content-hidden and fail
-// closed. The running header and footer text (printed, read as units) must also reach the page: one line (a newline
-// breaks the CSS string and the declaration is dropped — measured in a headless browser), in a margin box the page
-// number does not take over, on every page.
-const PAGED_DOC = path.join(path.dirname(require_.resolve("orz-paged")), "doc");
-const pagedFrame = async (f) => import(pathToFileURL(path.join(PAGED_DOC, f)).href);
-const { parseDocSettings, normalizeRawToLayer, mergeSettings, DEFAULTS: PAGED_DEFAULTS } = await pagedFrame("settings.js");
-const { FONT_PRESETS } = await pagedFrame("fonts.js");
-const { canonicalTemplate, resolveTemplate } = await pagedFrame("templates.js");
-const PAGED_THEMES = (() => { try { return new Set(fs.readdirSync(path.join(PAGED_DOC, "..", "..", "assets", "themes")).filter((f) => f.endsWith(".css") && f !== "base.css").map((f) => f.slice(0, -4))); } catch { return new Set(); } })();
+// list, a page size, a name from the frame's own catalogue (fonts, themes, templates, page-number styles — a name is
+// checked by the frame's own value lint, readDocument's `invalid-value`). A value off its grammar may hide the page:
+// content-hidden, fail closed. A key the frame does not read prints nothing and is inert (D52: the header carries the
+// document's metadata and its host's keys beside the settings; the kit's lint names a misspelt key). The running header
+// and footer text (printed, read as units) must also reach the page: one line (a newline breaks the CSS string and the
+// declaration is dropped — measured in a headless browser), in a margin box the page number does not take over, on
+// every page.
+const PAGED_THEMES = new Set(PAGED_THEME_LIST);
+const takesCache = new Map();
+/** Does orz-paged take this value for an enumerated key (its own value lint, readDocument `invalid-value`)? */
+function pagedTakes(key, v) {
+  const k = `${key}\u0000${v}`;
+  if (!takesCache.has(k)) {
+    if (takesCache.size > 256) takesCache.delete(takesCache.keys().next().value);
+    const ok = !/[\r\n]|\}\}/.test(v) && !readPagedDocument(`{{nyml\nkind: document\ncarrier: paged\n${key}: ${JSON.stringify(v)}\n}}\n`, { kind: "paged" }).lint.some((l) => l.code === "invalid-value" && l.key === key);
+    takesCache.set(k, ok);
+  }
+  return takesCache.get(k);
+}
 const PAGE_NUMBER_POSITIONS = new Set(["header-left", "header-center", "header-right", "footer-left", "footer-center", "footer-right", "none"]);
 const PAGE_NUMBER_STYLES = new Set(["simple", "page-n", "page-n-of-N", "n-of-N", "n-slash-N", "dash-n-dash", "brackets", "parentheses"]);
 const BOOL = /^(?:true|false|yes|no|on|off|1|0)$/i;
@@ -239,12 +279,10 @@ const show = (v) => JSON.stringify(String(v).slice(0, 40));
 /** The ALLOWLIST: every key orz-paged's settings reader takes (settings.js normalizeRawToLayer), each with the values
  *  known to show the page — (value, raw) → null, or the reason it may hide text. */
 export const PAGED_SETTINGS = Object.freeze({
-  page_size: (v) => (pageSizeOk(v) ? null : `\`page_size: ${show(v)}\` is not a page size (A3–A6, B4, B5, letter, legal, ledger, optionally portrait/landscape, or two lengths of 50–2000 mm): orz-paged writes it raw into the page's CSS`),
+  page_size: (v) => (pageSizeOk(v) && pagedTakes("page_size", v) ? null : `\`page_size: ${show(v)}\` is not a page size (A3–A6, B4, B5, letter, legal, ledger, optionally portrait/landscape, or two lengths of 50–2000 mm): orz-paged writes it raw into the page's CSS`),
   ...Object.fromEntries(["margin_top", "margin_bottom", "margin_left", "margin_right"].map((k) => [k, (v) => (inRange(v, "mm", 0, 60) != null ? null : `\`${k}: ${show(v)}\` is not a margin that leaves room for the page (0–60 mm)`)])),
   page_background: (v) => (/^(?:#fff(?:fff)?|white|transparent|none)$/i.test(v) ? null : `\`page_background: ${show(v)}\`: a background can make the text unreadable — leave the page white`),
-  font_preset: (v) => (Object.hasOwn(FONT_PRESETS, v) ? null : `\`font_preset: ${show(v)}\` is not one of orz-paged's font presets (${Object.keys(FONT_PRESETS).join(", ")})`),
-  font_heading_preset: (v) => (Object.hasOwn(FONT_PRESETS, v) ? null : `\`font_heading_preset: ${show(v)}\` is not one of orz-paged's font presets`),
-  font_margin_box_preset: (v) => (Object.hasOwn(FONT_PRESETS, v) ? null : `\`font_margin_box_preset: ${show(v)}\` is not one of orz-paged's font presets`),
+  ...Object.fromEntries(["font_preset", "font_heading_preset", "font_margin_box_preset"].map((k) => [k, (v) => (pagedTakes(k, v) ? null : `\`${k}: ${show(v)}\` is not one of orz-paged's font presets`)])),
   font_family: (v) => (FONT_FAMILY.test(v) ? null : `\`font_family: ${show(v)}\` is not a font-family list (family names and generic families, comma-separated): orz-paged writes it raw into the page's CSS, where anything else can write rules of its own`),
   font_size: (v) => (inRange(v, "pt", 8, 30) != null ? null : `\`font_size: ${show(v)}\` is not a size known to show text (8–30 pt)`),
   line_height: (v) => (inRange(v, "", 1, 3) != null ? null : `\`line_height: ${show(v)}\`: lines that overlap or vanish (1–3)`),
@@ -261,14 +299,15 @@ export const PAGED_SETTINGS = Object.freeze({
   front_matter: (v) => (BOOL.test(v) || /^(?:clean|plain)$/i.test(v) ? null : `\`front_matter: ${show(v)}\` is not clean, plain, true or false`),
   front_matter_clean: (v) => (BOOL.test(v) || /^(?:clean|plain)$/i.test(v) ? null : `\`front_matter_clean: ${show(v)}\` is not clean, plain, true or false`),
   theme: (v) => (PAGED_THEMES.has(v) ? null : `\`theme: ${show(v)}\` is not one of orz-paged's themes (${[...PAGED_THEMES].join(", ")})`),
-  template: (v) => (canonicalTemplate(v) ? null : `\`template: ${show(v)}\` is not one of orz-paged's templates`),
+  template: (v) => (pagedTakes("template", v) ? null : `\`template: ${show(v)}\` is not one of orz-paged's templates (${PAGED_TEMPLATE_IDS.join(", ")})`),
   custom_css: () => "an orz-paged `custom_css` setting: CSS can hide anything on the page, and the harness cannot read what it hides — style through a theme or template instead",
   dynamic_choices: (v) => (String(v).split("\n").every((l) => !l.trim() || /^\s*[A-Za-z0-9_-]+\s*:\s*[A-Za-z0-9_-]+\s*$/.test(l)) ? null : `\`dynamic_choices\` holds a line that is not \`key: value\` (words, digits, - and _)`),
 });
-/** Does an orz-paged setting hide text? The reason, or null (an unknown key prints nothing and fails closed too). */
+/** Does an orz-paged setting hide text? The reason, or null. A key orz-paged does not read (the document's metadata,
+ *  a host's `x_…` key, a key of another kind, a misspelling) sets nothing on the page and prints nothing: inert (D52). */
 export function pagedSettingHides(key, value) {
   const v = String(value ?? "").trim();
-  if (!Object.hasOwn(PAGED_SETTINGS, key)) return `an orz-paged setting \`${key}\` the frame does not read: its text prints nowhere (the settings it reads: see orz-paged's document model)`;
+  if (!Object.hasOwn(PAGED_SETTINGS, key)) return null;
   if (!v && key !== "custom_css") return null;
   return PAGED_SETTINGS[key](v);
 }
@@ -283,31 +322,24 @@ function headerFooterIssue(key, value, settings) {
   if (first) return `\`${key}\`: the ${key.startsWith("header") ? "header" : "footer"} is hidden on the first page (${key.startsWith("header") ? "first_page_hide_header" : settings.firstPageHideFooter ? "first_page_hide_footer" : "first_page_skip_number"}), so a one-page document never shows it, and the harness cannot tell how many pages print`;
   return null;
 }
-/** orz-paged's document settings as the FRAME reads them: { raw, settings, start, keys: Map(key → [0-based line]),
- *  issues: [{ line, what }] } — `start` the 0-based line of the block it takes (null: none). */
+/** orz-paged's document settings as the FRAME reads them (its header: readSettings, resolveSettings): { raw,
+ *  settings, start, keys: Map(key → [0-based line]), issues: [{ line, what }] } — `start` the 0-based line of the header
+ *  (null: none). */
 export function pagedDocument(src) {
   const text = String(src ?? "");
-  const { raw } = parseDocSettings(text);
-  const settings = mergeSettings(PAGED_DEFAULTS, resolveTemplate(String(raw.template ?? "")), normalizeRawToLayer(raw));
-  // where the frame's block is: its own search (settings.js: the first `{{nyml` … first `}}` whose body has a
-  // `kind: document` line), repeated to place it
-  let at = -1, inner = "";
-  for (let from = 0; ;) {
-    const open = text.indexOf("{{nyml", from); if (open < 0) break;
-    const close = text.indexOf("}}", open + 6); if (close < 0) break;
-    const body = text.slice(open + 6, close);
-    if (/(^|\n)\s*kind\s*:\s*document\s*(\n|$)/.test(body)) { at = open; inner = body; break; }
-    from = close + 2;
-  }
-  if (at < 0) return { raw, settings, start: null, keys: new Map(), issues: [] };
-  const start = text.slice(0, at).split("\n").length - 1, keys = new Map(), issues = [];
-  inner.split("\n").forEach((l, k) => { const m = /^(\s*)([A-Za-z0-9_]+)\s*:/.exec(k === 0 ? l.replace(/^\s*/, "") : l); if (m && m[2] !== "kind") keys.set(m[2], [...(keys.get(m[2]) || []), start + k]); });
+  const { raw } = readPagedSettings(text);
+  const settings = resolvePagedSettings(text);
+  const head = headerOf(text);
+  if (!head) return { raw, settings, start: null, keys: new Map(), issues: [] };
+  const keys = new Map(), issues = [];
+  for (const e of head.entries) keys.set(e.key, [...(keys.get(e.key) || []), e.start]);
   for (const [key, lines] of keys) {
+    if (!Object.hasOwn(PAGED_SETTINGS, key)) continue; // read by no part of the page: inert
     if (lines.length > 1) issues.push({ line: lines[0], what: `the orz-paged setting \`${key}\` is given ${lines.length} times: the frame keeps only the last, so the others print nothing` });
     const why = pagedSettingHides(key, raw[key]) || (HEADER_BOX[key] ? headerFooterIssue(key, raw[key], settings) : null);
     if (why) issues.push({ line: lines.at(-1), what: why });
   }
-  return { raw, settings, start, keys, issues };
+  return { raw, settings, start: head.start, keys, issues };
 }
 // the curated elements orz-paged renders (render-paged.js ELEMENT_KINDS), each with the fields it PRINTS and the fields
 // that set its form (elements.js); any other kind renders nothing (the block is left to markdown: a <script>), and any
@@ -361,16 +393,19 @@ const range = (a, b) => Array.from({ length: b - a + 1 }, (_, k) => a + k);
 export const VISIBLE_SPAN_CLASSES = Object.freeze(new Set(["red", "yellow", "green", "blue", "success", "info", "warning", "danger"]));
 /** `{{attrs[…]}}` may set an id (`#x`, `id="x"`) and the slides' step-reveal class; nothing that can hide the element. */
 const ATTRS_CLASSES = new Set(["fragment"]);
-/** The deck config keys orz-slides prints: `footer:` on every content slide, `title:` (the tab), `author:` (metadata). */
-export const PRINTED_DECK_KEYS = Object.freeze(["title", "author", "footer"]);
-/** A text's frame: "slides" (orz-slides), "paged" (an orz-paged print document: it opens with a {{nyml kind: document}}
- *  settings block), or "page" (orz-mdhtml: the study guide, practice, any other document). */
-export function frameOf(rel, text) {
-  const r = String(rel || "");
-  if (r.startsWith("slides/")) return "slides";
-  if (/^(?:study-guide|practice)\//.test(r)) return "page";
-  const m = /^\s*\{\{nyml\b([^]*?)\}\}/.exec(String(text || ""));
-  return m && nymlKindOf(m[1]) === "document" ? "paged" : "page";
+/**
+ * A text's frame (D52, req.format1.kind): the kind its header's `carrier:` key names (orz-markdown FC-18 §3, §5.1),
+ * else its place — `slides/` is a deck, a document DOCUMENTS.json declares with `carrier: paged` (`declared`) an
+ * orz-paged print document — else a page (orz-mdhtml). A header on a study guide does not make it a print document:
+ * only `carrier: paged` (or the declaration) does. Returns "slides", "paged" or "page".
+ */
+export function frameOf(rel, text, declared = null) {
+  const carrier = headerOf(text)?.carrier;
+  if (carrier === "slides" || carrier === "paged") return carrier;
+  if (carrier === "md") return "page";
+  if (String(rel || "").startsWith("slides/")) return "slides";
+  if (declared === "paged") return "paged";
+  return "page";
 }
 // orz-markdown's attrs grammar (plugins/attrs.js parseAttrs)
 const attrPairs = (s) => [...String(s || "").matchAll(/\.([^\s.#=]+)|#([^\s.#=]+)|([a-zA-Z][\w-]*)(?:="([^"]*)")?/g)].map((m) => (m[1] ? ["class", m[1]] : m[2] ? ["id", m[2]] : [m[3], m[4] ?? ""]));
@@ -439,7 +474,8 @@ export function printedModel(text, { frame = "page" } = {}) {
   const tokens = md.parse(src, {}), srcLines = src.split("\n");
   const printed = new Set(), labels = new Map(), blocks = new Map(), headings = new Map(), includes = [], hidden = [], leaf = new Map();
   const unprint = new Set(), notes = new Set(), stack = [], dropped = new Map(), settings = [];
-  let deck = null, lastLine = 0, frameDocSeen = false;
+  let deck = null, lastLine = 0;
+  const head = headerOf(src), headerSeen = new Set();
   // a print document's settings, as orz-paged reads them (round 7, C3-01): every key on the allowlist, every value on
   // its grammar
   const paged = frame === "paged" ? pagedDocument(src) : { start: null, settings: PAGED_DEFAULTS, issues: [] };
@@ -455,6 +491,20 @@ export function printedModel(text, { frame = "page" } = {}) {
     if (!map) continue;
     lastLine = map[0];
     const a = map[0], b = Math.max(map[0], map[1] - 1);
+    // orz-markdown 2.x keeps the text after a block directive's closing `}}` as a paragraph of its own, mapped to the
+    // directive's whole range: only that closing line prints, and only when the tail shows anything (a lone comment
+    // does not)
+    const prev = tokens[x - 1];
+    if (t.type === "paragraph_open" && prev?.type === "plugin_block" && prev.map?.[0] === a) {
+      const tail = tokens[x + 1]?.type === "inline" ? tokens[x + 1] : null;
+      if (String(tail?.content ?? "").replace(/<!--[\s\S]*?(?:-->|$)/g, "").trim()) {
+        mark(b, b); lastLine = b;
+        for (const ch of tail?.children || []) if (ch.type === "html_inline") hide(b, htmlHides(ch.content, { inline: true }));
+        hide(b, inlinePluginHides(tail));
+      }
+      x++; // its inline token is read here
+      continue;
+    }
     if (t.type === "paragraph_open" || t.type === "heading_open" || t.type === "tr_open" || t.type === "math_block" || t.type === "fence" || t.type === "code_block") {
       mark(a, b);
       if (t.type === "heading_open") headings.set(a, Number(t.tag.slice(1)));
@@ -492,25 +542,17 @@ export function printedModel(text, { frame = "page" } = {}) {
       if (t.info === "nyml") {
         // orz-paged prints an element kind; orz-mdhtml and orz-slides render every {{nyml}} as a <script> (round 4)
         const kind = nymlKindOf(t.content), notation = NYML_NOTATION_KINDS.includes(kind) || !kind;
-        // orz-paged takes the FIRST block whose body has a `kind: document` line as the settings, whatever kind the
-        // block names first (round 7): that block is settings, never an element
-        const isFrameDoc = frame === "paged" && paged.start === a;
-        if (isFrameDoc) frameDocSeen = true;
-        if (!notation && frame === "paged" && !isFrameDoc) {
+        // the format-1 header (D52) renders nothing in any frame: its printed values are read below; a document or meta
+        // block that is not the header renders nothing either (a stray `kind: document` is not read by any carrier)
+        const isHeader = !!head && head.blocks.includes(a);
+        if (isHeader) headerSeen.add(a);
+        if (!notation && frame === "paged" && !isHeader) {
           // an element prints only the fields orz-paged renders for its kind (round 7: by allowlist, as the frame reads it)
           const el = pagedElementIssues(srcLines.slice(a, b + 1).join("\n"), a, srcLines, b, paged.settings);
           for (const k of el.printed) mark(k, k);
           for (const x of el.issues) hide(x.line, [x.what]);
         }
-        else if (!notation && !isFrameDoc) hide(a, [`a {{nyml kind: ${kind}}} element: only orz-paged prints it — this ${frame === "slides" ? "deck" : "page"} renders it as a <script>, so none of its text shows`]);
-        // the settings values a frame PRINTS are read (round 6, C3-02): orz-paged's running headers and footers (on
-        // every page; only the frame's own settings block counts) and the head metadata every frame emits; every
-        // paged setting is held to the frame's allowlist (pagedDocument: round 7) and fails closed
-        else if (isFrameDoc) {
-          for (const v of nymlValues(srcLines, a, b)) if (PRINTED_PAGED_KEYS.includes(v.key) && v.value.trim()) { settings.push({ kind: "document", ...v }); for (let k = v.start; k <= v.end; k++) mark(k, k); }
-        } else if (kind === "meta" && !settings.some((v) => v.kind === "meta")) {
-          for (const v of nymlValues(srcLines, a, b)) if (PRINTED_META_KEYS.includes(v.key) && v.value.trim()) { settings.push({ kind, ...v }); for (let k = v.start; k <= v.end; k++) mark(k, k); }
-        }
+        else if (!notation && !isHeader) hide(a, [`a {{nyml kind: ${kind}}} element: only orz-paged prints it — this ${frame === "slides" ? "deck" : "page"} renders it as a <script>, so none of its text shows`]);
       } else if (VISIBLE_BLOCK_PLUGINS.has(t.info)) {
         // a plugin's argument prints only as the frame renders it (round 6, C1-02): checked, not assumed from its kind
         const { issues, dark } = pluginArgIssues(t, srcLines);
@@ -541,11 +583,27 @@ export function printedModel(text, { frame = "page" } = {}) {
       if (label) { labels.set(a, label); printed.add(a); if (!leaf.has(a)) leaf.set(a, [a, a]); }
     }
   }
-  // the frame takes its settings from a block the markdown reading does not see as one (inside a code block, a
-  // comment, a list …): settings no check here would read
-  if (paged.start != null && !frameDocSeen) hide(paged.start, ["orz-paged reads its document settings from here, where the markdown reading sees no settings block (inside a code block, a comment or another block): write the {{nyml kind: document}} block on its own at the top of the document"]);
-  if (frame === "slides") deck = slidesFrame(src, { printed, unprint, notes, hide, dropped });
+  // the carriers take the header from a block the markdown reading does not see as one: nothing here would read it
+  if (head && head.blocks.some((l) => !headerSeen.has(l))) hide(head.start, ["the carriers read the document header here, where the markdown reading sees no block: write the `{{nyml` / `kind: document` … `}}` header on its own at the top of the text"]);
+  if (frame === "slides") deck = slidesFrame(src, head, { printed, unprint, notes, hide, dropped });
   for (const k of unprint) { printed.delete(k); labels.delete(k); }
+  // the header values a frame PRINTS are read (round 6, C3-02; D52): each a framing unit (segment.mjs); every other
+  // header line prints nothing
+  if (head) {
+    const keys = printedHeaderKeys(frame), last = new Map();
+    for (const e of head.entries) last.set(e.key, e);
+    for (const e of head.entries) if (keys.includes(e.key) && !PAGED_SETTINGS[e.key] && last.get(e.key) !== e && e.value.trim()) hide(e.start, [`the header key \`${e.key}\` is given more than once: the carriers keep only the last, so this one prints nothing`]);
+    for (const [key, e] of last) {
+      if (!keys.includes(key) || !String(e.value).trim()) continue;
+      // the deck footer prints where a slide shows it: on every slide but the title page, unless the slide's own @footer
+      // replaces it (render-slide.js chromeSlot)
+      if (key === "footer" && !deck?.footerShown) continue;
+      settings.push({ kind: "header", frame, key, value: String(e.value), start: e.start, end: e.end });
+      for (let k = e.start; k <= e.end; k++) mark(k, k);
+      // the slide footer is rendered as markdown: what hides in a paragraph hides there
+      if (key === "footer") for (const h of printedModel(String(e.value), { frame: "page" }).hidden) hide(e.start, [`in the header's slide footer: ${h.what}`]);
+    }
+  }
   // a line the parser left in no token (a link reference definition, say) prints nothing
   const model = { printed, labels, blocks, headings, includes, hidden, leaf, notes, deck, frame, dropped, settings };
   if (cache.size > 64) cache.delete(cache.keys().next().value);
@@ -553,19 +611,14 @@ export function printedModel(text, { frame = "page" } = {}) {
   return model;
 }
 
-// orz-slides' own grammar (slide-parser.js): the deck block at the very start, slides split at `<!-- slide … -->`,
-// regions at whole-line `<!-- @name … -->` markers
-const DECK_BLOCK = /^\s*<!--\s*deck\b([\s\S]*?)-->/;
-const SLIDE_AT = /<!--\s*slide\b/;
-/** orz-slides' region marker, character for character (slide-parser.js REGION_MARKER; a test reads the installed
- *  frame's source and fails if they ever differ). The ONE region-name pattern: the notation check uses it too. */
-export const SLIDE_REGION_MARKER = /^[ \t]*<!--\s*@([A-Za-z0-9_-]+)\b([^>]*?)-->[ \t]*$/;
+// orz-slides' own grammar is read through its public parser (D52): parseDeck (the slides, each region's source spans,
+// layout and template) and scanMarkers (every top-level marker comment, found with the kit's token scanner — never inside
+// code, a list, a quote or a container).
 /** The names orz-slides routes to fields of their own rather than to the layout (compared lowercased, as it does). */
 export const SLIDE_RESERVED_REGIONS = Object.freeze(["notes", "footer", "float"]);
 
 /** The leaf region names of an orz-slides layout tree, in order. */
 const layoutLeaves = (n) => (!n ? [] : n.kind === "region" ? [n.name] : (n.children || []).flatMap(layoutLeaves));
-const lineKey = (l) => String(l).trim().replace(/^#{1,6}\s+/, "");
 // ---- slide attributes (red team round 6, CONTROL C1-03) ---------------------------------------------------------------
 // orz-slides copies a slide's attributes into its HTML: `class=` onto the <section> (reveal.js hides `.fragment` until a
 // step that never comes for a whole slide; a theme may hide any class), `bg=` as the slide's background colour, `fit=off`
@@ -660,50 +713,36 @@ export function slideVisibility(slide, config = {}) {
 }
 
 /**
- * Every region chunk of a deck as orz-slides parses it, located in the source, and whether its renderer shows it:
- * [{ slide, name, lines: [0-based line], notes, shown, why }]. The parse is the frame's (parseDeck). What shows is what
- * the frame's renderSlide hands to the markdown renderer, recorded by running it with a recording renderer (speaker
- * notes left out: they go to the presenter's view) — so a region named outside the layout, a repeated region name
- * (only the last one of a slide is kept), a second @footer, or anything but `body` on a template slide is found
- * because the frame drops it, not because a rule here says so. A chunk that cannot be found in the source is reported
- * (it fails loud, never silently printed).
+ * Every region chunk of a deck as orz-slides parses it, located in the source by the frame's own spans, and whether its
+ * renderer shows it: [{ slide, name, lines: [0-based line], notes, shown, why }]. The parse is the frame's (parseDeck,
+ * scanMarkers); what shows follows its renderer (orz-slides dist/render-slide.js, not exported: renderNormal fills only
+ * the layout's leaves, renderTemplate only `body`, chromeSlot the slide's @footer, notesBlock the presenter's notes) — so
+ * a region named outside the layout, or anything but `body` on a template slide, prints nothing; a repeated region name
+ * is joined by the frame (and is its lint error `duplicate-region`, a format defect). Speaker notes go to the presenter.
+ * A slide's lines in no chunk it shows (and no marker) are reported too: they never reach a student.
  */
 export function slideRegionsShown(text) {
   const src = String(text || "").replace(/\r\n/g, "\n"), lines = src.split("\n"), out = [];
-  let deck; try { deck = parseDeck(src); } catch (e) { return [{ slide: 0, name: "", lines: [0], notes: false, shown: false, unlocated: true, why: `orz-slides cannot parse this deck (${e.message})` }]; }
-  let cursor = 0;
+  let deck, markers; try { deck = parseDeck(src); markers = scanMarkers(src); } catch (e) { return [{ slide: 0, name: "", lines: [0], notes: false, shown: false, unlocated: true, why: `orz-slides cannot parse this deck (${e.message})` }]; }
+  // a span's lines (0-based), blank lines left out; an empty span (from === to) has none
+  const spanLines = (s) => { const ls = []; if (!s || s.to <= s.from) return ls; for (let k = s.line - 1; k <= s.endLine - 1; k++) if (lines[k]?.trim()) ls.push(k); return ls; };
+  const markerLines = new Set(markers.flatMap((m) => Array.from({ length: m.span.endLine - m.span.line + 1 }, (_, j) => m.span.line - 1 + j)));
   deck.slides.forEach((slide, si) => {
-    const at = src.indexOf(slide.raw, cursor);
-    if (at < 0) { out.push({ slide: si + 1, name: "", lines: [0], notes: false, shown: false, unlocated: true, why: `slide ${si + 1}: orz-slides' parse of it could not be found in the source` }); return; }
-    cursor = at + slide.raw.length;
-    const from = src.slice(0, at).split("\n").length - 1, to = from + slide.raw.split("\n").length - 1;
-    // what the frame renders on the slide: every source its renderer passes to the markdown renderer
-    const seen = [], rec = (s) => { seen.push(String(s ?? "")); return ""; };
-    renderSlide({ ...slide, notes: undefined }, { render: rec, renderInline: rec }, deck.config);
-    const seenLines = new Set(seen.flatMap((s) => s.split("\n")).map(lineKey).filter(Boolean));
-    const chunks = [
-      ...slide.regions.map((r, k) => ({ name: r.name, markdown: r.markdown, k })),
-      ...slide.floats.map((f, fi) => ({ name: "float", markdown: f.markdown, fi })),
-      ...(slide.footer !== undefined ? [{ name: "footer", markdown: slide.footer }] : []),
-      ...(slide.notes !== undefined ? [{ name: "notes", markdown: slide.notes, notes: true }] : []),
-    ];
-    // a region the parser overwrote (a second @notes or @footer) is in no field: find its lines from what is left
-    const claimed = new Set();
-    const locate = (md_) => {
-      const want = String(md_).split("\n"), n = want.length;
-      for (let s = from; s + n - 1 <= to; s++) {
-        let ok = true;
-        for (let j = 0; j < n && ok; j++) {
-          const have = lines[s + j], w = want[j].trim(), h = have.trim();
-          if (claimed.has(s + j) && w) ok = false;
-          else if (!w) ok = !h;
-          else ok = h === w || (j === 0 && h.endsWith(w)) || (j === n - 1 && h.startsWith(w)) || (n === 1 && h.includes(w));
-        }
-        if (ok) { const ls = []; for (let j = 0; j < n; j++) if (lines[s + j].trim()) { ls.push(s + j); claimed.add(s + j); } return ls; }
-      }
-      return null;
-    };
+    const from = slide.span.line - 1, to = slide.span.endLine - 1;
     const leaves = slide.kind === "template" ? ["body"] : layoutLeaves(slide.layout);
+    const chunks = [];
+    for (const r of slide.regions) for (const s of r.sources) chunks.push({ name: r.name, lines: spanLines(s.body) });
+    slide.floats.forEach((f, fi) => chunks.push({ name: "float", fi, lines: spanLines(f.body) }));
+    // the slide's @notes and @footer (the frame keeps their text, not their spans): from its own region markers, each
+    // to the next marker of the slide
+    const mine = markers.filter((m) => m.span.line - 1 > from && m.span.line - 1 <= to).sort((x, y) => x.span.from - y.span.from);
+    mine.forEach((m, k) => {
+      const name = String(m.name || "").toLowerCase();
+      if (m.type !== "region" || (name !== "notes" && name !== "footer")) return;
+      const end = k + 1 < mine.length ? mine[k + 1].span.line - 2 : to, ls = [];
+      for (let j = m.span.endLine; j <= end; j++) if (lines[j]?.trim() && !markerLines.has(j)) ls.push(j);
+      chunks.push({ name, lines: ls, notes: name === "notes" });
+    });
     // what the slide's ATTRIBUTES let show (round 6, C1-03): its class, background and fit, each layout track, each
     // float's geometry and what the float is painted over — checked against values known to show
     const vis = slideVisibility(slide, deck.config);
@@ -717,42 +756,29 @@ export function slideRegionsShown(text) {
       const over = vis.floatRects.findIndex((r, fi) => r && box && paintsOver(fi) && overlaps(r, box));
       return over < 0 ? null : `the slide's float ${floatName(slide.floats[over])} is painted opaque over ${c.name === "float" ? "this float" : c.name === "footer" ? "the slide's footer" : `region @${c.name}`} (orz-slides gives a float a solid background), so what lies under it may never show`;
     };
+    const claimed = new Set();
     for (const c of chunks) {
-      if (!String(c.markdown).trim()) continue;
-      const ls = locate(c.markdown);
-      if (!ls) { out.push({ slide: si + 1, name: c.name, lines: [from], notes: false, shown: false, unlocated: true, why: `slide ${si + 1}: orz-slides reads a region @${c.name} here whose lines could not be found in the source` }); continue; }
-      if (c.notes) { out.push({ slide: si + 1, name: c.name, lines: ls, notes: true, shown: false }); continue; }
-      // shown whole, or line by line (a template renders its body in pieces: the section template, for one, renders
-      // its `#` title and other text but not a `##` line)
-      const dark = seen.includes(c.markdown) ? [] : ls.filter((k) => !seenLines.has(lineKey(lines[k].slice(lines[k].indexOf(lines[k].trim()))))
-        && !String(c.markdown).split("\n").some((l) => l.trim() && lines[k].trim().endsWith(l.trim()) && seenLines.has(lineKey(l))));
-      const same = slide.regions.filter((r) => r.name === c.name).length;
-      const partly = dark.length && dark.length < ls.length;
-      const why = !dark.length ? "" : `slide ${si + 1}: ${partly ? `the ${slide.template || "slide"} template does not render this line of @${c.name}` : `the region @${c.name} is not shown by orz-slides — ${same > 1 ? `the slide names @${c.name} ${same} times and the frame keeps only the last` : slide.kind === "template" ? (c.name === "body" ? `the ${slide.template} template renders none of it` : "a template slide shows only its body") : `the slide's layout has no region "${c.name}" (it has: ${leaves.join(", ")})`}`}; its text reaches no student`;
+      for (const k of c.lines) claimed.add(k);
+      if (!c.lines.length) continue;
+      if (c.notes) { out.push({ slide: si + 1, name: c.name, lines: c.lines, notes: true, shown: false }); continue; }
+      // a region the renderer has no place for prints nothing: the layout's leaves on a normal slide, `body` on a template
+      const placed = c.name === "float" || c.name === "footer" || leaves.includes(c.name);
+      if (!placed) { out.push({ slide: si + 1, name: c.name, lines: c.lines, notes: false, shown: false, why: `slide ${si + 1}: the region @${c.name} is not shown by orz-slides — ${slide.kind === "template" ? "a template slide shows only its body" : `the slide's layout has no region "${c.name}" (it has: ${leaves.join(", ")})`}; its text reaches no student` }); continue; }
       const aw = attrWhy(c), hid = aw ? `slide ${si + 1}: ${aw}` : "";
-      if (dark.length && dark.length < ls.length) out.push({ slide: si + 1, name: c.name, lines: ls.filter((k) => !dark.includes(k)), notes: false, shown: !hid, why: hid, ...(hid ? { attribute: true } : {}) });
-      if (dark.length) out.push({ slide: si + 1, name: c.name, lines: dark, notes: false, shown: false, why });
-      else out.push({ slide: si + 1, name: c.name, lines: ls, notes: false, shown: !hid, why: hid, ...(hid ? { attribute: true } : {}) });
+      out.push({ slide: si + 1, name: c.name, lines: c.lines, notes: false, shown: !hid, why: hid, ...(hid ? { attribute: true } : {}) });
     }
-    // lines of the slide the parser put in no chunk it kept (an overwritten @notes or @footer chunk): what is left of
-    // the slide once its chunks, its title and its markers are accounted for
-    const titleLine = slide.title !== undefined ? lines.findIndex((l, k) => k >= from && k <= to && /^##\s/.test(l.trim()) && l.trim().replace(/^##\s+/, "").trim() === slide.title) : -1;
+    // the title band (a normal slide's leading `##`)
+    const titleLine = slide.titleSpan ? slide.titleSpan.line - 1 : -1;
     if (titleLine >= 0) {
+      claimed.add(titleLine);
       const over = vis.floatRects.findIndex((r) => r && overlaps(r, TITLE_BAND));
       const tw = vis.slide || (over >= 0 ? `the slide's float ${floatName(slide.floats[over])} is painted opaque over the slide's title band` : "");
       if (tw) out.push({ slide: si + 1, name: "title", lines: [titleLine], notes: false, shown: false, attribute: true, why: `slide ${si + 1}: ${tw}` });
     }
-    const left = [], leftNotes = [];
-    let region = null;
-    for (let k = from; k <= to; k++) {
-      const t = lines[k].trim(), rm = SLIDE_REGION_MARKER.exec(lines[k]);
-      if (rm) { region = rm[1].toLowerCase(); continue; }
-      if (!t || claimed.has(k) || k === titleLine || (k === from && SLIDE_AT.test(t))) continue;
-      // an overwritten @notes chunk was the presenter's text all the same: notes, never a unit
-      (region === "notes" ? leftNotes : left).push(k);
-    }
-    if (leftNotes.length) out.push({ slide: si + 1, name: "notes", lines: leftNotes, notes: true, shown: false });
-    if (left.length) out.push({ slide: si + 1, name: "", lines: left, notes: false, shown: false, why: `slide ${si + 1}: text orz-slides keeps in no region it shows (a repeated @footer is overwritten by the last): "${lines[left[0]].trim().slice(0, 50)}"` });
+    // lines of the slide the frame put in no chunk it renders (and no marker): they reach no student
+    const left = [];
+    for (let k = from; k <= to; k++) if (lines[k]?.trim() && !claimed.has(k) && !markerLines.has(k)) left.push(k);
+    if (left.length) out.push({ slide: si + 1, name: "", lines: left, notes: false, shown: false, why: `slide ${si + 1}: text orz-slides keeps in no region it shows: "${lines[left[0]].trim().slice(0, 50)}"` });
   });
   return out;
 }
@@ -773,43 +799,37 @@ export function unrenderedText(line, pieces) {
   return rest.replace(/[\s|>]+/g, " ").trim();
 }
 /**
- * What orz-slides shows of a deck, by its own grammar: the deck config values it prints are printed (and read as
- * units by the segmenter); everything before the first slide marker is dropped (it prints nothing); a `@notes`
- * region goes to the presenter's notes (it prints nothing on a slide). Returns the deck block:
- * { start, end, values: [{ key, line, value }] } (0-based lines), or null.
+ * What orz-slides shows of a deck, by its own grammar: everything between the header and the first slide marker is
+ * dropped (it prints nothing: the frame's lint `text-before-first-slide`); a `@notes` region goes to the presenter's
+ * notes (it prints nothing on a slide); a region the frame does not show prints nothing. Returns { footerShown,
+ * ratio }: whether any slide shows the header's footer, and the ratio the frame lays the deck out at.
  */
-function slidesFrame(src, { printed, unprint, notes, hide, dropped }) {
+function slidesFrame(src, head, { unprint, notes, hide, dropped }) {
   const lines = src.split("\n");
-  let deck = null, from = 0;
-  const dm = DECK_BLOCK.exec(src);
-  if (dm) {
-    const start = src.slice(0, dm.index + dm[0].indexOf("<!--")).split("\n").length - 1, end = start + dm[0].slice(dm[0].indexOf("<!--")).split("\n").length - 1;
-    const values = [];
-    dm[1].split("\n").forEach((seg, k) => {
-      const kv = /^\s*([A-Za-z_][\w-]*)\s*:\s*(.*?)\s*$/.exec(seg);
-      if (kv && kv[2] !== "" && PRINTED_DECK_KEYS.includes(kv[1].toLowerCase())) values.push({ key: kv[1].toLowerCase(), line: start + k, value: kv[2] });
-      // the deck's ratio sets the slide's height (browser-entry.js: 960 × h/w), and the frame scales the slide to fit:
-      // a ratio off the grammar or far from a screen's shape shrinks every slide's text out of sight (round 7 audit)
-      if (kv && kv[1].toLowerCase() === "ratio" && kv[2] !== "" && !deckRatioOk(kv[2])) hide(start + k, [`the deck's \`ratio: ${kv[2].slice(0, 20)}\` is not a slide shape known to show text (w:h, each a positive number, between 1:4 and 4:1 — 16:9, 4:3, 16:10 …): the frame scales every slide to it`]);
-    });
-    deck = { start, end, values };
-    from = end + 1;
-  }
-  const first = lines.findIndex((l, k) => k >= from && SLIDE_AT.test(l));
-  for (let k = from; k < (first < 0 ? lines.length : first); k++) unprint.add(k);
-  // which slide region each line falls in, and whether the frame shows that region, is orz-slides' OWN call: its parser
-  // (parseDeck) and its renderer (renderSlide) are run, not modelled (red team round 5, CONTROL C1-01/C1-02)
+  let deck = null; try { deck = parseDeck(src.replace(/\r\n/g, "\n")); } catch { deck = null; }
+  const from = head ? head.end + 1 : 0;
+  const first = deck?.slides?.length ? deck.slides[0].span.line - 1 : lines.length;
+  for (let k = from; k < first; k++) unprint.add(k);
+  // which slide region each line falls in, and whether the frame shows that region, is orz-slides' OWN parse (red team
+  // round 5, CONTROL C1-01/C1-02; D52: its public parseDeck)
   // A dropped region prints nothing: its lines are unprinted, and why is kept per line — a unit read there is text the
-  // review reads and no student sees (shipped.mjs hiddenInText reports it, with this reason); a label over nothing
-  // (a section slide's `##`, which the section template does not render) is simply not printed
+  // review reads and no student sees (shipped.mjs hiddenInText reports it, with this reason)
   for (const r of slideRegionsShown(src)) {
     if (r.notes) { for (const k of r.lines) { notes.add(k); unprint.add(k); } continue; }
     if (r.shown) continue;
     for (const k of r.lines) { unprint.add(k); if (!dropped.has(k)) dropped.set(k, r.why); }
     if (r.unlocated) hide(r.lines[0], [r.why]);
   }
-  if (deck) for (const v of deck.values) printed.add(v.line);
-  return deck;
+  // the deck footer shows on every slide but a title page, unless the slide's own @footer replaces it (chromeSlot)
+  const footerShown = !!deck?.slides?.some((s) => s.footer === undefined && !(s.kind === "template" && (s.template ?? "title") === "title"));
+  // the ratio the frame lays every slide out at (its deckConfig: a header value it does not take is its default)
+  // (round 7 audit: a ratio off the grammar or far from a screen's shape shrinks every slide's text out of sight). The
+  // ratio WRITTEN is held to it too: orz-slides 1.0 lays a ratio it does not take out at its default, so the deck would
+  // print at another shape than the one written — fail closed, as the 0.x frame's scaling did
+  const ratio = deck?.config?.ratio ?? "16:9", written = head?.entries.filter((e) => e.key === "ratio").at(-1);
+  if (!deckRatioOk(ratio)) hide(head ? head.start : 0, [`the deck's ratio ${ratio} is not a slide shape known to show text (w:h, each a positive number, between 1:4 and 4:1): the frame scales every slide to it`]);
+  else if (written && String(written.value).trim() && !deckRatioOk(written.value)) hide(written.start, [`the deck's \`ratio: ${String(written.value).trim().slice(0, 20)}\` is not a slide shape known to show text (w:h, each a positive number, between 1:4 and 4:1 — 16:9, 4:3 …): orz-slides lays the deck out at ${ratio} instead`]);
+  return { footerShown, ratio };
 }
 
 /**

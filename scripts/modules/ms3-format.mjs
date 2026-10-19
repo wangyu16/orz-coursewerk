@@ -3,9 +3,11 @@
 // the concept-map and assessment-guide section rules (the spine core check owns the spine), W17 objective-tag
 // containment (replaced by unit links), and the photograph rule's mandatory human review (now a question, D1).
 // Added (D25): every deliverable must carry valid notation for the framework that will assemble it — orz-slides for
-// slides, orz-paged for declared print documents — checked against each framework's own theme and template ids.
+// slides, orz-paged for declared print documents, orz-mdhtml for the pages. Since D52 (text format 1) each text is read
+// by its carrier's own public readDocument: its errors are defects, its warnings notes (a `deck-block`, a slides text
+// without its `carrier: slides` header, a declared print document without `carrier: paged`, are defects).
 import { createQaAudits } from "../lib/legacy/qa_audits.mjs";
-import { checkPagedNotation, checkSlidesNotation, frameworkDefinitions } from "../lib/core/notations.mjs";
+import { checkPageNotation, checkPagedNotation, checkSlidesNotation, frameworkDefinitions } from "../lib/core/notations.mjs";
 import { base, recheckByRerun } from "./_shared.mjs";
 
 const RETIRED = [/practice sheet does not tag objective coverage/, /slides source is missing objective coverage/, /^assessment support is missing/,
@@ -42,14 +44,15 @@ async function run(s) {
     lines.forEach((l, i) => { if (/^\s*(```|~~~)/.test(l)) fence = !fence; if (fence) return; for (const _ of l.matchAll(/\$\$/g)) open = open ? 0 : i + 1; });
     if (open) defect("math-delimiters", file, `line ${open}: a $$ display equation opens here and is never closed`);
   }
+  // each orz text is read by its carrier's own public reader (D52): the carrier named by its header, else its place
   const defs = await frameworkDefinitions();
-  for (const file of s.paths.filter((p) => /^slides\/[^/]+\.md$/.test(p)).sort())
-    for (const pr of checkSlidesNotation(s.text(file) || "", defs)) pr.aspect ? theme(file, `line ${pr.line}: ${pr.issue}`) : defect("framework-notation", file, `line ${pr.line}: ${pr.issue} (orz-slides)`);
   const docs = s.json("metadata/DOCUMENTS.json");
-  for (const d of Array.isArray(docs?.documents) ? docs.documents : []) {
-    if (!/paged/i.test(String(d.carrier || d.type || d.framework || ""))) continue;
-    const file = d.source || d.path; if (!file || s.text(file) == null) continue;
-    for (const pr of checkPagedNotation(s.text(file), defs)) pr.aspect ? theme(file, pr.issue) : defect("framework-notation", file, `${pr.issue} (orz-paged)`);
+  const declared = new Map((Array.isArray(docs?.documents) ? docs.documents : []).map((d) => [String(d?.source || d?.path || ""), /paged/i.test(String(d?.carrier || d?.type || d?.framework || "")) ? "paged" : "page"]).filter(([f]) => f));
+  const texts = [...new Set([...s.paths.filter((p) => /^(?:slides|study-guide|practice)\/[^/]+\.md$/.test(p)), ...[...declared.keys()].filter((f) => /\.md$/.test(f))])].filter((f) => s.text(f) != null).sort();
+  for (const file of texts) {
+    const place = file.startsWith("slides/") ? "slides" : declared.get(file) === "paged" ? "paged" : "page";
+    const [check, frame] = place === "slides" ? [checkSlidesNotation, "orz-slides"] : place === "paged" ? [checkPagedNotation, "orz-paged"] : [checkPageNotation, "orz-mdhtml"];
+    for (const pr of check(s.text(file) || "", defs)) pr.aspect ? theme(file, `line ${pr.line}: ${pr.issue}`) : defect("framework-notation", file, `line ${pr.line}: ${pr.issue} (${frame})`);
   }
   return out;
 }

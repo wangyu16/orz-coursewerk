@@ -40,7 +40,8 @@
         "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
         "spine:objective.chemical-equilibrium.omit-pure-phases": "26f069ce2bba4c71ac7d536d53ae77f3979043b94b233dc42f0edaf4b2c75e2f",
         "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
-        "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78"
+        "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
+        "term:chemical-equilibrium:chemical equilibrium": "a26e86a7360c03ec8fe04897e6fec2e0af396e866f38de8515fd15770f9dd962"
       },
       "tokens": [
         "all",
@@ -61,7 +62,8 @@
         "six",
         "support",
         "worked"
-      ]
+      ],
+      "text": "Fifteen questions instantiated from `assessment-support/chemical-equilibrium.md`, covering all six\nobjectives of `concepts/chemical-equilibrium.md`. Each question is followed by a worked answer."
     },
     {
       "id": "u-practice-chemical-equilibrium-practice-chemical-equilibrium-2",
@@ -102,36 +104,36 @@
         "spine:objective.chemical-equilibrium.omit-pure-phases": "26f069ce2bba4c71ac7d536d53ae77f3979043b94b233dc42f0edaf4b2c75e2f",
         "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
         "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
-        "ref:u-practice-chemical-equilibrium-questions-1": "q2:894aa961173b5c70a42c29c651b3018dcabe7d7910afb1c0d3ec0adcfdda25ce",
-        "ref:u-practice-chemical-equilibrium-questions-2": "q2:ac09ecd3f89e31f36bba7a00883481c564194a4e4762916b3f24389e2c0bf667",
-        "ref:u-practice-chemical-equilibrium-questions-3": "q2:d9a6023bb1b9c7943323f1a26a2772b5f263f1fa4b29efb7d764d5c017b628b2",
-        "ref:u-practice-chemical-equilibrium-questions-4": "q2:6d2577ff38cd3fcab4d45c2e320424e984c4561fad8a4a10b4f8b12c3a7e8e6d",
-        "ref:u-practice-chemical-equilibrium-questions-5": "q2:f3983fe99a1c7133c5f397b16a6cf60ccb0effa7a2a294805c500764075fddfb",
-        "ref:u-practice-chemical-equilibrium-questions-6": "q2:68c439114e5a6c4bca903c456c095d97932006c75f016ad2198072ae72e20fc3",
-        "ref:u-practice-chemical-equilibrium-questions-7": "q2:36754d7f93904ae965761f2ae22bc33a04565866306dd3290e42eaec7870b5ba",
-        "ref:u-practice-chemical-equilibrium-questions-8": "q2:37350f233ce782b86676f5df90398c51d66d993c8bf8aea9e31c0133046a2c53",
-        "ref:u-practice-chemical-equilibrium-questions-9": "q2:fc54723bb957ac67af5f5fed1f52226f24aa5c4fb3579af6284859787aa1bd34",
-        "ref:u-practice-chemical-equilibrium-questions-10": "q2:6f653bace8d77b20a81bb47774db6bbe7d1a0e0c29044bb6e9ed919c6d994933",
-        "ref:u-practice-chemical-equilibrium-questions-11": "q2:bb0b54cd46a5539eeb060ab0023d05cffb7018ccead6008568fc432bbea9ad07",
-        "ref:u-practice-chemical-equilibrium-questions-12": "q2:1067b78d14ff8ff6f3e1f69c7e740ad7ea6494b1f436a7076d5cf56fe33ca73c",
-        "ref:u-practice-chemical-equilibrium-questions-13": "q2:ab9ffdf7a4120ef6c81410956faa3e63c2bf124819d0f841f2ac4280ad184f90",
-        "ref:u-practice-chemical-equilibrium-questions-14": "q2:2137b59f585b346e91b8b6e2a03eb533dbb1fe0885dc93a607516e797fef9193",
-        "ref:u-practice-chemical-equilibrium-questions-15": "q2:ecf8191555a9ff6c8eb5fe0b6d8d7581e3eb1fee52f3e89388a2487930806fd4",
-        "ref:u-practice-chemical-equilibrium-questions-16": "q2:7caca1f62a4bb221260a745558419f061cc7d9484ee759a4da3898af7f82d669",
-        "ref:u-practice-chemical-equilibrium-questions-17": "q2:d4712bb93e4f2250ebd3005cf04872aea82d19577e6c76b47b98cd7799717a54",
-        "ref:u-practice-chemical-equilibrium-questions-18": "q2:e4a9462139460665b36c2a6b3a13d8f151a2dea318114166b9c975f23ceb88f6",
-        "ref:u-practice-chemical-equilibrium-questions-19": "q2:8895683dec3ff5077a2b4139ef3e45dc2744f0140ad452252508a6933521c61b",
-        "ref:u-practice-chemical-equilibrium-questions-20": "q2:753e91da027306663f676e512871eccfc021ab82936416ae2e469a1495c29ca5",
-        "ref:u-practice-chemical-equilibrium-questions-21": "q2:94c0b2deaf92d125e21f8680e46b0a89400f0dd7a18f4f68b41a150e6f7feca4",
-        "ref:u-practice-chemical-equilibrium-questions-22": "q2:5f9bfaac0390325103baa6215d09d7461786ce50cf934f00114cf961e495c5bf",
-        "ref:u-practice-chemical-equilibrium-questions-23": "q2:c8d8a350b93f0b6ab067b8d687135bb9fa5397551d151214544b300b6579b13b",
-        "ref:u-practice-chemical-equilibrium-questions-24": "q2:83e1fe194035b393ca35f32014819f9bf269b928ee6f282643813f1b89f47fca",
-        "ref:u-practice-chemical-equilibrium-questions-25": "q2:2274111c27fe92f7c59c72d118bb6d6277323a619c97339d755ef9729ca9cf51",
-        "ref:u-practice-chemical-equilibrium-questions-26": "q2:d6cb2e67c556ebf17e953ac979c0881577980436c7891e3bb498d84e6469d1c3",
-        "ref:u-practice-chemical-equilibrium-questions-27": "q2:c942aecbdc72364bed9967015d3b4d02dffa1e3ab0b7ca9acfbee330ee215c8f",
-        "ref:u-practice-chemical-equilibrium-questions-28": "q2:8d614c3c3ae90691fd13e73b6f8e2b87339e873aac9794d4b23773e3cff458fc",
-        "ref:u-practice-chemical-equilibrium-questions-29": "q2:f6d856c22af99e9bc73cf9e3cb4958f8ddf7060d52716a8d088b4b642731bfd9",
-        "ref:u-practice-chemical-equilibrium-questions-30": "q2:59d6db1cde5757a466f884ae139104d8cdb7cc3196754552acc41d95bd9b7792"
+        "ref:u-practice-chemical-equilibrium-questions-1": "q3:adfc9b0fb3c055c9e40c0c1825cd2cdc8303db54458599888ae7a3e7cd8b6739",
+        "ref:u-practice-chemical-equilibrium-questions-2": "q3:fc9eacd638c3845d6414e141677b68eb67a005f9a092a01767707192ad885f84",
+        "ref:u-practice-chemical-equilibrium-questions-3": "q3:d9a6023bb1b9c7943323f1a26a2772b5f263f1fa4b29efb7d764d5c017b628b2",
+        "ref:u-practice-chemical-equilibrium-questions-4": "q3:6d2577ff38cd3fcab4d45c2e320424e984c4561fad8a4a10b4f8b12c3a7e8e6d",
+        "ref:u-practice-chemical-equilibrium-questions-5": "q3:56940983f50e3b6d823bc9bfdd39b308fb6be9ca2cee1d81a129885b1dca3019",
+        "ref:u-practice-chemical-equilibrium-questions-6": "q3:e88bdd42b962933709cbf4f2b5437219c759128739fbf4525c76922acc0b3656",
+        "ref:u-practice-chemical-equilibrium-questions-7": "q3:7e6b04f4b9d9f93a6c4b7d5115c757c15f333a52292371a12336fc8af6e09c3a",
+        "ref:u-practice-chemical-equilibrium-questions-8": "q3:a64ebb16e385a38df84878b725f4efcbd6e381934b3c0dc83b90167938295d6b",
+        "ref:u-practice-chemical-equilibrium-questions-9": "q3:7bd140a1e6d8f5b7c88cf17297a869fffb89ef17c07013a39a362fb1e65c3103",
+        "ref:u-practice-chemical-equilibrium-questions-10": "q3:ceda75cef25cf66e35db6eb80dd5ddee61a89534090734a50f880e594fca3183",
+        "ref:u-practice-chemical-equilibrium-questions-11": "q3:09ac7ba5ce9a3eb4d61a47b2fc4ce19d3401bf8e31cdc3db1fd9fc470d191135",
+        "ref:u-practice-chemical-equilibrium-questions-12": "q3:744ccd5f5eb5febe98bfa4e24e0217053de8b36208a8a26b010c2eee8eafcd77",
+        "ref:u-practice-chemical-equilibrium-questions-13": "q3:380f00b732d295e7104d06727db587e709fe024cb996de3205f3499f3996ebe5",
+        "ref:u-practice-chemical-equilibrium-questions-14": "q3:1aae6df33dc6390124354bb27ede964bdf8599b2912b5c0e01f4087bd82da978",
+        "ref:u-practice-chemical-equilibrium-questions-15": "q3:2c9f84ed6a420d9c644fd758e62714c219bf35225b0600fe75700ea5626d5117",
+        "ref:u-practice-chemical-equilibrium-questions-16": "q3:b89a397c28ca1641419ed8f1b4a84b44986d30eaec7b01fed36b367f8544d278",
+        "ref:u-practice-chemical-equilibrium-questions-17": "q3:017252aeabf60e219cba5682ae7cb45f746f199a160e1b0eb3edafe7fb16c813",
+        "ref:u-practice-chemical-equilibrium-questions-18": "q3:b30a9ea890c30830405b1ef504df85e4f028b05a7c8feca6612116748e81993e",
+        "ref:u-practice-chemical-equilibrium-questions-19": "q3:e1bfc307cb9b4b068273382d192d1e9404324613ca9339bcbd6eabb39f3b1eb3",
+        "ref:u-practice-chemical-equilibrium-questions-20": "q3:3720efada6a733c1ccdf5bed4f736c42352aeaa2d25cf9181517ff484187b30f",
+        "ref:u-practice-chemical-equilibrium-questions-21": "q3:3761a8ab4eebbb0512a049f21fd583cee9faab21e99003150fd234c60ddaabe1",
+        "ref:u-practice-chemical-equilibrium-questions-22": "q3:869d65e30d9dd9d5df3a7282c93ef08fdcba99449f8f9c8cfc9b4a97571f2a8e",
+        "ref:u-practice-chemical-equilibrium-questions-23": "q3:b408a86fbaedd9a4169da6a8d3b54700c95eb12e6ba832d0e34bd42076385588",
+        "ref:u-practice-chemical-equilibrium-questions-24": "q3:a5831a6c965b8616045366e7c2816c3ead68380ec0fcd7078270e78154ab2c97",
+        "ref:u-practice-chemical-equilibrium-questions-25": "q3:b09854bbda790bfd57a7e6a03a1118c3e6393461d7b31cb91670b5b92fe79d67",
+        "ref:u-practice-chemical-equilibrium-questions-26": "q3:2635be5e88a66766c26b8715ea27a7cf02aa55047142c784d51510694a4e7cc8",
+        "ref:u-practice-chemical-equilibrium-questions-27": "q3:13ec089cd6feb7edfe1eeaa965abb1595d90e0d269a4aa49abde67aabf8732f8",
+        "ref:u-practice-chemical-equilibrium-questions-28": "q3:f1d344c8ed910767c70417d8c0bf71bb8c2b51ee70a001ba11e7df5491cafd61",
+        "ref:u-practice-chemical-equilibrium-questions-29": "q3:33039a1c9339c742e213604b8b9200f4075f03d882829c8658843ceeefac3396",
+        "ref:u-practice-chemical-equilibrium-questions-30": "q3:5988c0ba98f839cedfb789170c337bed4d7f40b9a0377f24eb897c8efa2c0153"
       },
       "tokens": [
         "coverage",
@@ -141,7 +143,8 @@
         "q12",
         "q13",
         "q15"
-      ]
+      ],
+      "text": "**Objective coverage:** Q1–Q2 objective 1 · Q3–Q5 objective 2 · Q6–Q8 objective 3 · Q9–Q10 objective 4 · Q11–Q12 objective 5 · Q13–Q15 objective 6."
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-1",
@@ -202,7 +205,8 @@
         "that",
         "the",
         "what"
-      ]
+      ],
+      "text": "A sealed flask contains $\\ce{N2O4}$ and $\\ce{NO2}$. The brown colour of the mixture stops changing.\nA student concludes that both reactions have stopped. Is the student right? Explain what is\nhappening at the molecular level. *(Objective 1)*"
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-2",
@@ -234,10 +238,11 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-chemical-equilibrium-questions-1": "354215ddd6843038a1e16e1a5c86a7cc09bf42e38dd6da40cc71de3304cfd1c8",
-        "question:u-practice-chemical-equilibrium-questions-1": "q2:894aa961173b5c70a42c29c651b3018dcabe7d7910afb1c0d3ec0adcfdda25ce",
+        "unit:u-practice-chemical-equilibrium-questions-1": "v:354215ddd6843038a1e16e1a5c86a7cc09bf42e38dd6da40cc71de3304cfd1c8",
+        "question:u-practice-chemical-equilibrium-questions-1": "q3:adfc9b0fb3c055c9e40c0c1825cd2cdc8303db54458599888ae7a3e7cd8b6739",
         "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
-        "spine:guide.chemical-equilibrium.stopped-reaction-probe": "f03f9685d12b6d0dc02c1ea66cb260382ff84bb79432e2d739c877b15dd591af"
+        "spine:guide.chemical-equilibrium.stopped-reaction-probe": "f03f9685d12b6d0dc02c1ea66cb260382ff84bb79432e2d739c877b15dd591af",
+        "term:chemical-equilibrium:chemical equilibrium": "a26e86a7360c03ec8fe04897e6fec2e0af396e866f38de8515fd15770f9dd962"
       },
       "tokens": [
         "and",
@@ -270,7 +275,8 @@
         "student",
         "the",
         "wrong"
-      ]
+      ],
+      "text": "The student is wrong. The colour stops changing because the forward and reverse reactions have\nreached **equal, nonzero** rates, so the concentrations no longer change. Molecules of $\\ce{N2O4}$\ncontinue to dissociate and molecules of $\\ce{NO2}$ continue to recombine, at matching rates. The\nequilibrium is dynamic, not static."
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-3",
@@ -304,7 +310,7 @@
       "stamp": {
         "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
         "spine:guide.chemical-equilibrium.equal-concentrations-probe": "fb79ad11d6b23f700ea3ac6368fa45a06d151872b4f489433aa4fcbef2220845",
-        "ref:u-practice-chemical-equilibrium-questions-1": "q2:894aa961173b5c70a42c29c651b3018dcabe7d7910afb1c0d3ec0adcfdda25ce"
+        "ref:u-practice-chemical-equilibrium-questions-1": "q3:adfc9b0fb3c055c9e40c0c1825cd2cdc8303db54458599888ae7a3e7cd8b6739"
       },
       "tokens": [
         "and",
@@ -330,7 +336,8 @@
         "these",
         "this",
         "values"
-      ]
+      ],
+      "text": "At equilibrium a reaction mixture contains 0.80 M of a reactant and 0.20 M of a product, and these\nvalues stay constant for an hour. Is this system at equilibrium, given that the concentrations are\nnot equal? *(Objective 1)*"
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-4",
@@ -361,12 +368,12 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-chemical-equilibrium-questions-3": "0eb422d8e8944fc6ccf5a9a46de7f99e3b35d9e22414ce7c4330869f315d77dc",
-        "question:u-practice-chemical-equilibrium-questions-3": "q2:d9a6023bb1b9c7943323f1a26a2772b5f263f1fa4b29efb7d764d5c017b628b2",
+        "unit:u-practice-chemical-equilibrium-questions-3": "v:0eb422d8e8944fc6ccf5a9a46de7f99e3b35d9e22414ce7c4330869f315d77dc",
+        "question:u-practice-chemical-equilibrium-questions-3": "q3:d9a6023bb1b9c7943323f1a26a2772b5f263f1fa4b29efb7d764d5c017b628b2",
         "spine:objective.chemical-equilibrium.define-equilibrium": "c84955b3548582bd10124805db9bbc858ff0d1000b50f491faa2eee6dbbc0752",
         "spine:guide.chemical-equilibrium.equal-concentrations-probe": "fb79ad11d6b23f700ea3ac6368fa45a06d151872b4f489433aa4fcbef2220845",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
-        "ref:u-practice-chemical-equilibrium-questions-1": "q2:894aa961173b5c70a42c29c651b3018dcabe7d7910afb1c0d3ec0adcfdda25ce"
+        "ref:u-practice-chemical-equilibrium-questions-1": "q3:adfc9b0fb3c055c9e40c0c1825cd2cdc8303db54458599888ae7a3e7cd8b6739"
       },
       "tokens": [
         "common",
@@ -385,7 +392,8 @@
         "unequal",
         "value",
         "yes"
-      ]
+      ],
+      "text": "Yes. Equilibrium requires the concentrations to be **constant**, not equal. Their unequal ratio is\nfixed by the value of the equilibrium constant. Expecting equal concentrations at equilibrium is a\ncommon error."
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-5",
@@ -432,7 +440,8 @@
         "synthesis",
         "the",
         "write"
-      ]
+      ],
+      "text": "Write the equilibrium constant expression for the ammonia synthesis\n$\\ce{N2(g) + 3 H2(g) <=> 2 NH3(g)}$. *(Objective 2)*"
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-6",
@@ -464,8 +473,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-chemical-equilibrium-questions-5": "dbd99711a004479bac42eeb6ca365bee662a893e2223bf1e743fb4b0a0d3d690",
-        "question:u-practice-chemical-equilibrium-questions-5": "q2:f3983fe99a1c7133c5f397b16a6cf60ccb0effa7a2a294805c500764075fddfb",
+        "unit:u-practice-chemical-equilibrium-questions-5": "v:dbd99711a004479bac42eeb6ca365bee662a893e2223bf1e743fb4b0a0d3d690",
+        "question:u-practice-chemical-equilibrium-questions-5": "q3:56940983f50e3b6d823bc9bfdd39b308fb6be9ca2cee1d81a129885b1dca3019",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
         "term:chemical-equilibrium:stoichiometric coefficient": "ceb28b3bd97ae3f16ba5825c706b367f558525ac2254ee1d080774a061a35222",
         "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
@@ -483,7 +492,8 @@
         "raised",
         "stoichiometric",
         "the"
-      ]
+      ],
+      "text": "Products in the numerator, each concentration raised to its stoichiometric coefficient:\n$$K = \\frac{[\\ce{NH3}]^{2}}{[\\ce{N2}]\\,[\\ce{H2}]^{3}}$$"
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-7",
@@ -518,7 +528,7 @@
         "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
         "spine:guide.chemical-equilibrium.reversed-equation-variant": "a333c0bb754e4bcbf52c042cc61f52ca88f9f01b6222d33038154234dde53f7c",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
-        "ref:u-practice-chemical-equilibrium-questions-5": "q2:f3983fe99a1c7133c5f397b16a6cf60ccb0effa7a2a294805c500764075fddfb"
+        "ref:u-practice-chemical-equilibrium-questions-5": "q3:56940983f50e3b6d823bc9bfdd39b308fb6be9ca2cee1d81a129885b1dca3019"
       },
       "tokens": [
         "are",
@@ -539,7 +549,8 @@
         "two",
         "write",
         "written"
-      ]
+      ],
+      "text": "Write the equilibrium constant expression for $\\ce{2 SO2(g) + O2(g) <=> 2 SO3(g)}$, then write it\nfor the same reaction written in reverse. How are the two related? *(Objective 2)*"
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-8",
@@ -571,9 +582,9 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-chemical-equilibrium-questions-7": "37ff1172404adb4f5846dbc68237a54d41625e3ed6e9f6f75e9bdb034e2d6f60",
-        "question:u-practice-chemical-equilibrium-questions-7": "q2:36754d7f93904ae965761f2ae22bc33a04565866306dd3290e42eaec7870b5ba",
-        "ref:u-practice-chemical-equilibrium-questions-5": "q2:f3983fe99a1c7133c5f397b16a6cf60ccb0effa7a2a294805c500764075fddfb",
+        "unit:u-practice-chemical-equilibrium-questions-7": "v:37ff1172404adb4f5846dbc68237a54d41625e3ed6e9f6f75e9bdb034e2d6f60",
+        "question:u-practice-chemical-equilibrium-questions-7": "q3:7e6b04f4b9d9f93a6c4b7d5115c757c15f333a52292371a12336fc8af6e09c3a",
+        "ref:u-practice-chemical-equilibrium-questions-5": "q3:56940983f50e3b6d823bc9bfdd39b308fb6be9ca2cee1d81a129885b1dca3019",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
         "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
         "spine:guide.chemical-equilibrium.reversed-equation-variant": "a333c0bb754e4bcbf52c042cc61f52ca88f9f01b6222d33038154234dde53f7c"
@@ -594,7 +605,8 @@
         "swaps",
         "the",
         "two"
-      ]
+      ],
+      "text": "Forward: $K = \\dfrac{[\\ce{SO3}]^{2}}{[\\ce{SO2}]^{2}[\\ce{O2}]}$.\n\nReverse: $K' = \\dfrac{[\\ce{SO2}]^{2}[\\ce{O2}]}{[\\ce{SO3}]^{2}}$.\n\nThe two are reciprocals: $K' = 1/K$. Reversing the equation swaps numerator and denominator."
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-9",
@@ -644,7 +656,8 @@
         "student",
         "the",
         "writes"
-      ]
+      ],
+      "text": "A student writes, for $\\ce{H2(g) + I2(g) <=> 2 HI(g)}$, the expression\n$K = \\dfrac{[\\ce{H2}][\\ce{I2}]}{[\\ce{HI}]}$. Identify both errors and give the correct expression.\n*(Objective 2)*"
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-10",
@@ -677,8 +690,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-chemical-equilibrium-questions-9": "db5eb785a657061f2909f8a35de08fe7008d07df103302dbcfadb062755e0333",
-        "question:u-practice-chemical-equilibrium-questions-9": "q2:fc54723bb957ac67af5f5fed1f52226f24aa5c4fb3579af6284859787aa1bd34",
+        "unit:u-practice-chemical-equilibrium-questions-9": "v:db5eb785a657061f2909f8a35de08fe7008d07df103302dbcfadb062755e0333",
+        "question:u-practice-chemical-equilibrium-questions-9": "q3:7bd140a1e6d8f5b7c88cf17297a869fffb89ef17c07013a39a362fb1e65c3103",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
         "spine:objective.chemical-equilibrium.write-k-expression": "2bfb02e97571767fa7bc6201c60cf6d850a0facca810c4699ea8fd172e0f6185",
         "spine:guide.chemical-equilibrium.error-finding": "3e9a9d54fe06a8810f2f324afbe73716e664c748dab4d648185857e0f0cc33a0"
@@ -705,7 +718,8 @@
         "two",
         "way",
         "wrong"
-      ]
+      ],
+      "text": "Two errors. First, the products and reactants are the wrong way round: products belong in the\nnumerator. Second, the coefficient 2 on $\\ce{HI}$ has been dropped as an exponent. Correct:\n$$K = \\frac{[\\ce{HI}]^{2}}{[\\ce{H2}]\\,[\\ce{I2}]}$$"
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-11",
@@ -738,8 +752,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-chemical-equilibrium-questions-13": "7cc2900afc3fef2777ea682635e69eac2072b2ab89d03ddf969c44957c16b9df",
-        "unit:u-practice-chemical-equilibrium-questions-14": "d71d90c058061d3e2486be30ecc4c0c87f4c762f0a66ae71da4026104d6bd87f",
+        "unit:u-practice-chemical-equilibrium-questions-13": "v:7cc2900afc3fef2777ea682635e69eac2072b2ab89d03ddf969c44957c16b9df",
+        "unit:u-practice-chemical-equilibrium-questions-14": "v:d71d90c058061d3e2486be30ecc4c0c87f4c762f0a66ae71da4026104d6bd87f",
         "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
         "spine:guide.chemical-equilibrium.three-case-sweep": "06739bf86a59143d99b39e4d317b5d0b451f870e78d748f7ebf297d30c3218ce",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
@@ -760,7 +774,8 @@
         "why",
         "will",
         "with"
-      ]
+      ],
+      "text": "For a reaction with $K = 50$, a mixture is found to have $Q_r = 12$. Which direction will the\nreaction shift, and why? *(Objective 3)*"
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-12",
@@ -791,8 +806,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-chemical-equilibrium-questions-11": "517982b0b6766c4248620910c78532605c8f6b0c694768294c0cadbab600c0f9",
-        "question:u-practice-chemical-equilibrium-questions-11": "q2:bb0b54cd46a5539eeb060ab0023d05cffb7018ccead6008568fc432bbea9ad07",
+        "unit:u-practice-chemical-equilibrium-questions-11": "v:517982b0b6766c4248620910c78532605c8f6b0c694768294c0cadbab600c0f9",
+        "question:u-practice-chemical-equilibrium-questions-11": "q3:09ac7ba5ce9a3eb4d61a47b2fc4ce19d3401bf8e31cdc3db1fd9fc470d191135",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
         "term:chemical-equilibrium:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f",
         "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
@@ -814,7 +829,8 @@
         "too",
         "toward",
         "until"
-      ]
+      ],
+      "text": "$Q_r < K$, so there are too few products relative to equilibrium. The reaction shifts **forward**,\ntoward products, until $Q_r$ rises to equal $K$."
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-13",
@@ -847,14 +863,14 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-chemical-equilibrium-questions-11": "517982b0b6766c4248620910c78532605c8f6b0c694768294c0cadbab600c0f9",
-        "unit:u-practice-chemical-equilibrium-questions-14": "d71d90c058061d3e2486be30ecc4c0c87f4c762f0a66ae71da4026104d6bd87f",
+        "unit:u-practice-chemical-equilibrium-questions-11": "v:517982b0b6766c4248620910c78532605c8f6b0c694768294c0cadbab600c0f9",
+        "unit:u-practice-chemical-equilibrium-questions-14": "v:d71d90c058061d3e2486be30ecc4c0c87f4c762f0a66ae71da4026104d6bd87f",
         "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
         "spine:guide.chemical-equilibrium.three-case-sweep": "06739bf86a59143d99b39e4d317b5d0b451f870e78d748f7ebf297d30c3218ce",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
         "term:chemical-equilibrium:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f",
-        "ref:u-practice-chemical-equilibrium-questions-11": "q2:bb0b54cd46a5539eeb060ab0023d05cffb7018ccead6008568fc432bbea9ad07",
-        "ref:u-practice-chemical-equilibrium-questions-9": "q2:fc54723bb957ac67af5f5fed1f52226f24aa5c4fb3579af6284859787aa1bd34"
+        "ref:u-practice-chemical-equilibrium-questions-11": "q3:09ac7ba5ce9a3eb4d61a47b2fc4ce19d3401bf8e31cdc3db1fd9fc470d191135",
+        "ref:u-practice-chemical-equilibrium-questions-9": "q3:7bd140a1e6d8f5b7c88cf17297a869fffb89ef17c07013a39a362fb1e65c3103"
       },
       "tokens": [
         "140",
@@ -873,7 +889,8 @@
         "which",
         "will",
         "would"
-      ]
+      ],
+      "text": "For the same reaction ($K = 50$), a second mixture has $Q_r = 140$. Which direction will it shift?\nWhat would $Q_r = 50$ mean? *(Objective 3)*"
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-14",
@@ -906,11 +923,11 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-chemical-equilibrium-questions-11": "517982b0b6766c4248620910c78532605c8f6b0c694768294c0cadbab600c0f9",
-        "unit:u-practice-chemical-equilibrium-questions-13": "7cc2900afc3fef2777ea682635e69eac2072b2ab89d03ddf969c44957c16b9df",
-        "question:u-practice-chemical-equilibrium-questions-13": "q2:ab9ffdf7a4120ef6c81410956faa3e63c2bf124819d0f841f2ac4280ad184f90",
-        "ref:u-practice-chemical-equilibrium-questions-11": "q2:bb0b54cd46a5539eeb060ab0023d05cffb7018ccead6008568fc432bbea9ad07",
-        "ref:u-practice-chemical-equilibrium-questions-9": "q2:fc54723bb957ac67af5f5fed1f52226f24aa5c4fb3579af6284859787aa1bd34",
+        "unit:u-practice-chemical-equilibrium-questions-11": "v:517982b0b6766c4248620910c78532605c8f6b0c694768294c0cadbab600c0f9",
+        "unit:u-practice-chemical-equilibrium-questions-13": "v:7cc2900afc3fef2777ea682635e69eac2072b2ab89d03ddf969c44957c16b9df",
+        "question:u-practice-chemical-equilibrium-questions-13": "q3:380f00b732d295e7104d06727db587e709fe024cb996de3205f3499f3996ebe5",
+        "ref:u-practice-chemical-equilibrium-questions-11": "q3:09ac7ba5ce9a3eb4d61a47b2fc4ce19d3401bf8e31cdc3db1fd9fc470d191135",
+        "ref:u-practice-chemical-equilibrium-questions-9": "q3:7bd140a1e6d8f5b7c88cf17297a869fffb89ef17c07013a39a362fb1e65c3103",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
         "term:chemical-equilibrium:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f",
         "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
@@ -938,7 +955,8 @@
         "too",
         "toward",
         "until"
-      ]
+      ],
+      "text": "$Q_r > K$, so there are too many products. The reaction shifts **reverse**, toward reactants, until\n$Q_r$ falls to 50. If $Q_r = K = 50$ the system is already at equilibrium and there is no net shift\nin either direction."
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-15",
@@ -993,7 +1011,8 @@
         "using",
         "why",
         "without"
-      ]
+      ],
+      "text": "Without using any numbers, explain through $Q_r$ and $K$ why adding more product to a system at\nequilibrium drives the reaction in reverse. *(Objective 3)*"
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-16",
@@ -1024,8 +1043,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-chemical-equilibrium-questions-15": "a0157900b78c4f7c4c411f907d88115bf167bfa33b7ca2f80742a2ea28d5ef21",
-        "question:u-practice-chemical-equilibrium-questions-15": "q2:ecf8191555a9ff6c8eb5fe0b6d8d7581e3eb1fee52f3e89388a2487930806fd4",
+        "unit:u-practice-chemical-equilibrium-questions-15": "v:a0157900b78c4f7c4c411f907d88115bf167bfa33b7ca2f80742a2ea28d5ef21",
+        "question:u-practice-chemical-equilibrium-questions-15": "q3:2c9f84ed6a420d9c644fd758e62714c219bf35225b0600fe75700ea5626d5117",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
         "term:chemical-equilibrium:reaction quotient": "95dbdda0e64a893dc4d18d096fead3ab3e1d8ee4c3128cf5903ffd64f63be20f",
         "spine:objective.chemical-equilibrium.compare-q-and-k": "04790f9d8343b7aea636a67367e39f9bc27ea020faef17f2d26710bfdbadef99",
@@ -1055,7 +1074,8 @@
         "until",
         "value",
         "while"
-      ]
+      ],
+      "text": "Adding product raises the numerator of the quotient while the denominator is unchanged, so $Q_r$\nrises above $K$. Since $Q_r > K$, the system shifts in reverse, consuming product, until $Q_r$\nfalls back to $K$. The value of $K$ itself never changed."
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-17",
@@ -1106,7 +1126,8 @@
         "solid",
         "the",
         "write"
-      ]
+      ],
+      "text": "Write the equilibrium constant expression for the decomposition of solid calcium carbonate,\n$\\ce{CaCO3(s) <=> CaO(s) + CO2(g)}$. *(Objective 4)*"
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-18",
@@ -1139,8 +1160,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-chemical-equilibrium-questions-17": "419c3d2636af4e3af20041de973f8f5fc2da26e71be935a6ae6327cd034da2b8",
-        "question:u-practice-chemical-equilibrium-questions-17": "q2:d4712bb93e4f2250ebd3005cf04872aea82d19577e6c76b47b98cd7799717a54",
+        "unit:u-practice-chemical-equilibrium-questions-17": "v:419c3d2636af4e3af20041de973f8f5fc2da26e71be935a6ae6327cd034da2b8",
+        "question:u-practice-chemical-equilibrium-questions-17": "q3:017252aeabf60e219cba5682ae7cb45f746f199a160e1b0eb3edafe7fb16c813",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
         "term:chemical-equilibrium:activity": "e44ef5ba96fa9bd4dd745d5abd13bb67b55934a4863d74d6bc02c108c1e73601",
         "spine:objective.chemical-equilibrium.omit-pure-phases": "26f069ce2bba4c71ac7d536d53ae77f3979043b94b233dc42f0edaf4b2c75e2f",
@@ -1160,7 +1181,8 @@
         "only",
         "solids",
         "the"
-      ]
+      ],
+      "text": "Both solids have an activity of one and are omitted, leaving only the gas:\n$$K = [\\ce{CO2}]$$"
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-19",
@@ -1193,8 +1215,8 @@
       "stamp": {
         "spine:objective.chemical-equilibrium.omit-pure-phases": "26f069ce2bba4c71ac7d536d53ae77f3979043b94b233dc42f0edaf4b2c75e2f",
         "spine:guide.chemical-equilibrium.added-solid-probe": "11b5359fc706b16cecaa259d9e2c2dcd7171dcdd3cabf73d945072b3ed8487e7",
-        "ref:u-practice-chemical-equilibrium-questions-17": "q2:d4712bb93e4f2250ebd3005cf04872aea82d19577e6c76b47b98cd7799717a54",
-        "ref:u-practice-chemical-equilibrium-questions-18": "q2:e4a9462139460665b36c2a6b3a13d8f151a2dea318114166b9c975f23ceb88f6"
+        "ref:u-practice-chemical-equilibrium-questions-17": "q3:017252aeabf60e219cba5682ae7cb45f746f199a160e1b0eb3edafe7fb16c813",
+        "ref:u-practice-chemical-equilibrium-questions-18": "q3:b30a9ea890c30830405b1ef504df85e4f028b05a7c8feca6612116748e81993e"
       },
       "tokens": [
         "adds",
@@ -1216,7 +1238,8 @@
         "the",
         "vessel",
         "will"
-      ]
+      ],
+      "text": "For the reaction in Q9, a student adds more solid $\\ce{CaCO3}$ to the sealed vessel and predicts\nthat more $\\ce{CO2}$ will form. Evaluate the prediction. *(Objective 4)*"
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-20",
@@ -1249,10 +1272,10 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-chemical-equilibrium-questions-19": "c425f5ebe4fa5d6592f3c3901abeb34a8c04199271bba5e48f6f40ed9c2ce478",
-        "question:u-practice-chemical-equilibrium-questions-19": "q2:8895683dec3ff5077a2b4139ef3e45dc2744f0140ad452252508a6933521c61b",
-        "ref:u-practice-chemical-equilibrium-questions-17": "q2:d4712bb93e4f2250ebd3005cf04872aea82d19577e6c76b47b98cd7799717a54",
-        "ref:u-practice-chemical-equilibrium-questions-18": "q2:e4a9462139460665b36c2a6b3a13d8f151a2dea318114166b9c975f23ceb88f6",
+        "unit:u-practice-chemical-equilibrium-questions-19": "v:c425f5ebe4fa5d6592f3c3901abeb34a8c04199271bba5e48f6f40ed9c2ce478",
+        "question:u-practice-chemical-equilibrium-questions-19": "q3:e1bfc307cb9b4b068273382d192d1e9404324613ca9339bcbd6eabb39f3b1eb3",
+        "ref:u-practice-chemical-equilibrium-questions-17": "q3:017252aeabf60e219cba5682ae7cb45f746f199a160e1b0eb3edafe7fb16c813",
+        "ref:u-practice-chemical-equilibrium-questions-18": "q3:b30a9ea890c30830405b1ef504df85e4f028b05a7c8feca6612116748e81993e",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
         "term:chemical-equilibrium:activity": "e44ef5ba96fa9bd4dd745d5abd13bb67b55934a4863d74d6bc02c108c1e73601",
         "term:le-chatelier:partial pressure": "1911d9c4cb6332589c0c654fabfa7dd7bfd78d9bfceb7146973dee1784dcec0d",
@@ -1287,7 +1310,8 @@
         "solid",
         "the",
         "wrong"
-      ]
+      ],
+      "text": "The prediction is wrong. A pure solid has an activity of one regardless of how much is present, so\nit does not appear in the expression. Neither $K$ nor the equilibrium partial pressure of\n$\\ce{CO2}$ changes. Adding more solid changes only the amount of solid present."
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-21",
@@ -1320,9 +1344,9 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-study-guide-chemical-equilibrium-worked-examples-3": "a112c43329ba04c5821de7f9c6ec41e9af81a50e0dcd02596094e7b4e3f70772",
-        "unit:u-study-guide-chemical-equilibrium-worked-examples-4": "35bb57f1a45c8711dea0b86f6d0d68029f4c829834a82b37114830009f98e47f",
-        "unit:u-practice-chemical-equilibrium-questions-22": "35bb57f1a45c8711dea0b86f6d0d68029f4c829834a82b37114830009f98e47f",
+        "unit:u-study-guide-chemical-equilibrium-worked-examples-3": "v:a112c43329ba04c5821de7f9c6ec41e9af81a50e0dcd02596094e7b4e3f70772",
+        "unit:u-study-guide-chemical-equilibrium-worked-examples-4": "v:35bb57f1a45c8711dea0b86f6d0d68029f4c829834a82b37114830009f98e47f",
+        "unit:u-practice-chemical-equilibrium-questions-22": "v:35bb57f1a45c8711dea0b86f6d0d68029f4c829834a82b37114830009f98e47f",
         "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
         "spine:guide.chemical-equilibrium.numerical-substitution": "9e4464b9fe17997f7dbbdb0acc949c6170f2d10c2f15f1d323140011ad66e495",
         "term:chemical-equilibrium:standard gibbs energy change": "d552936944bea24ed9c4e3352ddbde4042404a1cee16a2a630952f89afbf1fdc",
@@ -1343,7 +1367,8 @@
         "text",
         "the",
         "using"
-      ]
+      ],
+      "text": "A reaction has $K = 4.0$ at $T = 298\\ \\text{K}$. Using $R = 8.314\\ \\text{J mol}^{-1}\\text{K}^{-1}$,\ncalculate the standard Gibbs energy change. *(Objective 5)*"
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-22",
@@ -1376,10 +1401,10 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-study-guide-chemical-equilibrium-worked-examples-4": "35bb57f1a45c8711dea0b86f6d0d68029f4c829834a82b37114830009f98e47f",
-        "unit:u-study-guide-chemical-equilibrium-worked-examples-3": "a112c43329ba04c5821de7f9c6ec41e9af81a50e0dcd02596094e7b4e3f70772",
-        "unit:u-practice-chemical-equilibrium-questions-21": "035de8f2db3e2d39d24a207e1f0153d94f8671a224e0afd4d958551d1ff51990",
-        "question:u-practice-chemical-equilibrium-questions-21": "q2:94c0b2deaf92d125e21f8680e46b0a89400f0dd7a18f4f68b41a150e6f7feca4",
+        "unit:u-study-guide-chemical-equilibrium-worked-examples-4": "v:35bb57f1a45c8711dea0b86f6d0d68029f4c829834a82b37114830009f98e47f",
+        "unit:u-study-guide-chemical-equilibrium-worked-examples-3": "v:a112c43329ba04c5821de7f9c6ec41e9af81a50e0dcd02596094e7b4e3f70772",
+        "unit:u-practice-chemical-equilibrium-questions-21": "v:035de8f2db3e2d39d24a207e1f0153d94f8671a224e0afd4d958551d1ff51990",
+        "question:u-practice-chemical-equilibrium-questions-21": "q3:3761a8ab4eebbb0512a049f21fd583cee9faab21e99003150fd234c60ddaabe1",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
         "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
         "spine:guide.chemical-equilibrium.numerical-substitution": "9e4464b9fe17997f7dbbdb0acc949c6170f2d10c2f15f1d323140011ad66e495"
@@ -1408,7 +1433,8 @@
         "the",
         "value",
         "with"
-      ]
+      ],
+      "text": "$\\Delta G^\\ominus = -RT\\ln K = -(8.314)(298)\\ln(4.0) = -3435\\ \\text{J mol}^{-1} \\approx\n-3.4\\ \\text{kJ mol}^{-1}$.\n\nThe negative sign is consistent with $K > 1$, meaning products are favoured. *(The value\n$K = 4.0$ is a teaching hypothetical, not a source datum.)*"
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-23",
@@ -1465,7 +1491,8 @@
         "whose",
         "without",
         "your"
-      ]
+      ],
+      "text": "Without calculating, state whether $K$ is greater or less than one for a reaction whose standard\nGibbs energy change is positive. Justify your answer. *(Objective 5)*"
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-24",
@@ -1497,8 +1524,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-chemical-equilibrium-questions-23": "a19cecca4a1fe478104e1532f4686f5d76e1fa2ea5b0aa6243477b52d966d7c2",
-        "question:u-practice-chemical-equilibrium-questions-23": "q2:c8d8a350b93f0b6ab067b8d687135bb9fa5397551d151214544b300b6579b13b",
+        "unit:u-practice-chemical-equilibrium-questions-23": "v:a19cecca4a1fe478104e1532f4686f5d76e1fa2ea5b0aa6243477b52d966d7c2",
+        "question:u-practice-chemical-equilibrium-questions-23": "q3:b408a86fbaedd9a4169da6a8d3b54700c95eb12e6ba832d0e34bd42076385588",
         "spine:objective.chemical-equilibrium.relate-k-to-gibbs": "2c24a5562ee301f885b23a80f63ef69804c238d54e11e01be901552ce032bebd",
         "spine:guide.chemical-equilibrium.sign-reasoning": "024e318d6c29476842f8262152581b1f82b69122e4efa452822cd97218f36657",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b"
@@ -1516,7 +1543,8 @@
         "reactants",
         "requires",
         "which"
-      ]
+      ],
+      "text": "$K < 1$. From $\\Delta G^\\ominus = -RT\\ln K$, a positive $\\Delta G^\\ominus$ requires $\\ln K$ to be\nnegative, which means $K < 1$. Reactants are favoured at equilibrium."
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-25",
@@ -1563,7 +1591,8 @@
         "the",
         "value",
         "what"
-      ]
+      ],
+      "text": "An endothermic reaction is at equilibrium. The temperature is raised. What happens to the value of\n$K$? *(Objective 6)*"
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-26",
@@ -1594,12 +1623,13 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-chemical-equilibrium-questions-25": "81ef8203dbc2f408ae4e57fa936bd0d8d104d3ebce0949e72234517b3d6d7287",
-        "question:u-practice-chemical-equilibrium-questions-25": "q2:2274111c27fe92f7c59c72d118bb6d6277323a619c97339d755ef9729ca9cf51",
+        "unit:u-practice-chemical-equilibrium-questions-25": "v:81ef8203dbc2f408ae4e57fa936bd0d8d104d3ebce0949e72234517b3d6d7287",
+        "question:u-practice-chemical-equilibrium-questions-25": "q3:b09854bbda790bfd57a7e6a03a1118c3e6393461d7b31cb91670b5b92fe79d67",
         "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
         "spine:guide.chemical-equilibrium.enthalpy-sign-sweep": "6ebc2a593781685d94635177eca564dc520712ed95558c31b293aa5ebeb686a9",
         "term:le-chatelier:endothermic reaction": "a6d35ce30483c0b5e231f8425ca24666d601ef261ec571088ad8d072e5be84ad",
-        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b"
+        "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
+        "term:chemical-equilibrium:van 't hoff equation": "c8f1a9ece0b32d45f0c15d92498889176d99734414f44c824283705a4f3266bd"
       },
       "tokens": [
         "dependence",
@@ -1621,7 +1651,8 @@
         "this",
         "van",
         "which"
-      ]
+      ],
+      "text": "For an endothermic reaction, raising the temperature **increases** $K$. This follows from the\nvan 't Hoff relation, in which the sign of the reaction enthalpy fixes the direction of the\ntemperature dependence."
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-27",
@@ -1668,7 +1699,8 @@
         "the",
         "value",
         "what"
-      ]
+      ],
+      "text": "An exothermic reaction is at equilibrium. The temperature is lowered. What happens to the value of\n$K$? *(Objective 6)*"
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-28",
@@ -1699,8 +1731,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-chemical-equilibrium-questions-27": "81ef8203dbc2f408ae4e57fa936bd0d8d104d3ebce0949e72234517b3d6d7287",
-        "question:u-practice-chemical-equilibrium-questions-27": "q2:c942aecbdc72364bed9967015d3b4d02dffa1e3ab0b7ca9acfbee330ee215c8f",
+        "unit:u-practice-chemical-equilibrium-questions-27": "v:81ef8203dbc2f408ae4e57fa936bd0d8d104d3ebce0949e72234517b3d6d7287",
+        "question:u-practice-chemical-equilibrium-questions-27": "q3:13ec089cd6feb7edfe1eeaa965abb1595d90e0d269a4aa49abde67aabf8732f8",
         "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
         "spine:guide.chemical-equilibrium.enthalpy-sign-sweep": "6ebc2a593781685d94635177eca564dc520712ed95558c31b293aa5ebeb686a9",
         "term:le-chatelier:exothermic reaction": "c20452115a1d09ee264abeb11c57548d06c6d732dbb57bd21fcd6673c570eb27",
@@ -1723,7 +1755,8 @@
         "temperature",
         "the",
         "therefore"
-      ]
+      ],
+      "text": "For an exothermic reaction, raising the temperature decreases $K$; therefore **lowering** the\ntemperature **increases** $K$. Products are favoured more strongly at the lower temperature."
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-29",
@@ -1780,7 +1813,8 @@
         "undergoes",
         "value",
         "which"
-      ]
+      ],
+      "text": "A system at equilibrium undergoes two separate experiments: in the first the concentration of a\nreactant is doubled, in the second the temperature is raised by 20 K. In which experiment does the\nvalue of $K$ change? *(Objective 6)*"
     },
     {
       "id": "u-practice-chemical-equilibrium-questions-30",
@@ -1812,8 +1846,8 @@
       ],
       "evidence": [],
       "stamp": {
-        "unit:u-practice-chemical-equilibrium-questions-29": "2a7df7840b11131e62b81378e531105f25c44663e06ddf46078676fd7b5ed5b3",
-        "question:u-practice-chemical-equilibrium-questions-29": "q2:f6d856c22af99e9bc73cf9e3cb4958f8ddf7060d52716a8d088b4b642731bfd9",
+        "unit:u-practice-chemical-equilibrium-questions-29": "v:2a7df7840b11131e62b81378e531105f25c44663e06ddf46078676fd7b5ed5b3",
+        "question:u-practice-chemical-equilibrium-questions-29": "q3:33039a1c9339c742e213604b8b9200f4075f03d882829c8658843ceeefac3396",
         "spine:objective.chemical-equilibrium.predict-k-with-temperature": "6cb8f2dfa1a3f9a2b5a874d44580732f962de9cb1abcd6f889f29fe4393a7c78",
         "spine:guide.chemical-equilibrium.separating-position-constant": "60408c787b6527a01d73c7bb546a2fdeccdb9087507f1dd07aff2f3797a867ed",
         "term:chemical-equilibrium:equilibrium constant": "35b6940c257a440e77ab73b7d8583bb0e909b8a651196fe71b9354400089f09b",
@@ -1849,8 +1883,9 @@
         "two",
         "until",
         "value"
-      ]
+      ],
+      "text": "Only in the second. A concentration change moves $Q_r$ away from $K$, and the system shifts until\n$Q_r$ equals the **same** $K$ again. A temperature change is the one disturbance that alters the\nvalue of $K$ itself. Confusing these two is the most common error in the chapter."
     }
   ],
-  "stamps": 2
+  "stamps": 3
 }

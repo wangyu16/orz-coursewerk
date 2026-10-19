@@ -1,0 +1,368 @@
+{
+  "schemaVersion": 1,
+  "planId": "2b63a8a076a8e9c97570537f5bb6764dbe4f944aa0637a74fbaee133f03ae76a",
+  "baseRef": "HEAD",
+  "baseTip": "9d4ecf61f669a9a5af4b9cf11fd81b916eaeaa1c",
+  "baseCommit": "9d4ecf61f669a9a5af4b9cf11fd81b916eaeaa1c",
+  "reviewedHead": "9d4ecf61f669a9a5af4b9cf11fd81b916eaeaa1c",
+  "changed": [
+    "scripts/check_oer.mjs",
+    "scripts/lib/core/notations.mjs",
+    "scripts/lib/core/obligations.mjs",
+    "scripts/lib/core/printed.mjs",
+    "scripts/lib/core/rendered.mjs",
+    "scripts/lib/core/segment.mjs",
+    "scripts/lib/core/shipped.mjs",
+    "scripts/lib/core/units_index.mjs",
+    "scripts/lib/legacy/qa_audits.mjs",
+    "scripts/modules/ms3-format.mjs",
+    "scripts/modules/ms8-verdicts.mjs",
+    "scripts/modules/ms9-alignment.mjs",
+    "scripts/units.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/format1.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/redteam-r2-control.test.mjs",
+    "tests/redteam-r3-control.test.mjs",
+    "tests/redteam-r4-control.test.mjs",
+    "tests/redteam-r5-visible.test.mjs",
+    "tests/redteam-r6-visible.test.mjs",
+    "tests/redteam-r7-exact.test.mjs",
+    "tests/stable-modules.test.mjs",
+    "tests/unit-model.test.mjs"
+  ],
+  "requiredReview": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "docs/coherence-index.md",
+    "format-contracts/deliverables.md",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/core/notations.mjs",
+    "scripts/lib/core/obligations.mjs",
+    "scripts/lib/core/printed.mjs",
+    "scripts/lib/core/rendered.mjs",
+    "scripts/lib/core/segment.mjs",
+    "scripts/lib/core/shipped.mjs",
+    "scripts/lib/core/units_index.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/legacy/qa_audits.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/modules/ms3-format.mjs",
+    "scripts/modules/ms8-verdicts.mjs",
+    "scripts/modules/ms9-alignment.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/revision_impact.mjs",
+    "scripts/units.mjs",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "system/REQUIREMENTS.json",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/format1.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/redteam-r2-control.test.mjs",
+    "tests/redteam-r3-control.test.mjs",
+    "tests/redteam-r4-control.test.mjs",
+    "tests/redteam-r5-visible.test.mjs",
+    "tests/redteam-r6-visible.test.mjs",
+    "tests/redteam-r7-exact.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site.test.mjs",
+    "tests/stable-modules.test.mjs",
+    "tests/unit-model.test.mjs"
+  ],
+  "reviewed": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "docs/coherence-index.md",
+    "format-contracts/deliverables.md",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/core/notations.mjs",
+    "scripts/lib/core/obligations.mjs",
+    "scripts/lib/core/printed.mjs",
+    "scripts/lib/core/rendered.mjs",
+    "scripts/lib/core/segment.mjs",
+    "scripts/lib/core/shipped.mjs",
+    "scripts/lib/core/units_index.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/legacy/qa_audits.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/modules/ms3-format.mjs",
+    "scripts/modules/ms8-verdicts.mjs",
+    "scripts/modules/ms9-alignment.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/revision_impact.mjs",
+    "scripts/units.mjs",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "system/REQUIREMENTS.json",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/format1.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/redteam-r2-control.test.mjs",
+    "tests/redteam-r3-control.test.mjs",
+    "tests/redteam-r4-control.test.mjs",
+    "tests/redteam-r5-visible.test.mjs",
+    "tests/redteam-r6-visible.test.mjs",
+    "tests/redteam-r7-exact.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site.test.mjs",
+    "tests/stable-modules.test.mjs",
+    "tests/unit-model.test.mjs"
+  ],
+  "impactedClaims": [
+    "claim.accessibility.floor",
+    "claim.authorship.accountable",
+    "claim.carriers.honest-portability",
+    "claim.carriers.three-shapes",
+    "claim.coherence.anchors",
+    "claim.coherence.claims",
+    "claim.coherence.index-fresh",
+    "claim.coherence.prerequisites",
+    "claim.coherence.revisions",
+    "claim.control.coverage",
+    "claim.control.overrides",
+    "claim.format.contracts",
+    "claim.git.visible-edits",
+    "claim.language.editorial",
+    "claim.media.decision",
+    "claim.provenance.complete",
+    "claim.release.fail-closed",
+    "claim.release.measured-vs-declared",
+    "claim.review.blind-bundle",
+    "claim.review.key-facts",
+    "claim.revision.propagation",
+    "claim.rights.verified",
+    "claim.source.comparison",
+    "claim.trust.consistency",
+    "claim.trust.immutable",
+    "claim.website.published",
+    "claim.website.showcase"
+  ],
+  "testResults": [
+    {
+      "path": "tests/anchors.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/assurance.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-2.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-3.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-4.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/blind_bundle.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/carriers.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-control.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-revision.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-semantic.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/classify.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/coherence-claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/escalation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/evidence-tools.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/fingerprint.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/immutable.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/index-freshness.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/integration-study-pairs.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/key-fact-bindings.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/overrides.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate-cli.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/qa.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/range.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/reviews.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/semantic-index-artifact.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/site.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/spine.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/terms.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/units.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/unverifiable_quotation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/usage-e2e.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/wiring.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "D52 reader lane: every orz text is read through the carriers public readers (orz-markdown/carrier readHeader, orz-slides parseDeck/scanMarkers/readDocument, orz-paged readSettings/resolveSettings/readDocument, orz-mdhtml readDocument). Reviewed the frame kind rule (header carrier, else place), the header-as-structure rule with printed header values as framing units, the paged allowlist, the MS3 notation check on the carriers lints, the v0.12 audit header check, the re-derived c2 fixture metadata, and each ported red-team attack; every required test was run one file at a time and passed.",
+  "generatedIndexHash": "5985727b045ec6bbb2359f792fbe9a8bdea491dbeff81c4b3f1b222106d5419d",
+  "acceptedAt": "2026-10-19T22:28:48.373Z"
+}

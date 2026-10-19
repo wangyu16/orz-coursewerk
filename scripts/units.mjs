@@ -21,7 +21,7 @@
 //        harness's dependency rules changed (logged as a harness action; never a substitute for re-verification)
 import fs from "node:fs";
 import { liveReader } from "./lib/core/package_reader.mjs";
-import { addJudgmentKinds, beginSession, claimAuthorship, deliverablesOf, readSidecar, unindexedFindings } from "./lib/core/units_index.mjs";
+import { addJudgmentKinds, beginSession, claimAuthorship, deliverablesOf, readSidecar, segmentOptions, unindexedFindings } from "./lib/core/units_index.mjs";
 import { confirmUnits, coreObligations, indexAndStamp, linkUnits, loadUnits, restamp, reverifyUnits } from "./lib/core/obligations.mjs";
 import { appendLogRecord } from "./lib/records/log.mjs";
 import { reconcileUnitRecords } from "./lib/core/reconcile.mjs";
@@ -57,7 +57,7 @@ try {
   if (cmd === "status") {
     const out = { deliverables: {}, unindexed: unindexedFindings(root, reader, "status").map((f) => f.evidence.what) };
     for (const rel of deliverablesOf(reader)) {
-      const side = readSidecar(root, rel), seg = segmentDeliverable(reader.text(rel), rel);
+      const side = readSidecar(root, rel), seg = segmentDeliverable(reader.text(rel), rel, segmentOptions(reader, rel));
       const origins = {}; for (const u of side?.units || []) origins[u.origin.kind] = (origins[u.origin.kind] || 0) + 1;
       out.deliverables[rel] = { units: side?.units.length ?? null, origins, gaps: uncoveredLines(reader.text(rel), seg).length };
     }

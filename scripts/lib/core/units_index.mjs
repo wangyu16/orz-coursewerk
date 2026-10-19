@@ -58,8 +58,19 @@ export function declaredDocuments(reader) {
 export function documentEntries(reader) {
   let docs = null; try { docs = JSON.parse(reader.text("metadata/DOCUMENTS.json") || "null"); } catch { docs = null; }
   return (Array.isArray(docs?.documents) ? docs.documents : []).filter((d) => d && typeof d === "object")
-    .map((d) => ({ source: String(d.source || d.path || ""), role: d.role || null, chapters: [...new Set([d.chapter, ...(Array.isArray(d.chapters) ? d.chapters : [])].filter((c) => typeof c === "string" && c))] })).filter((d) => /\.md$/.test(d.source) && !d.source.startsWith("private/") && !d.source.includes(".."));
+    .map((d) => ({ source: String(d.source || d.path || ""), role: d.role || null, carrier: String(d.carrier || d.type || d.framework || ""), chapters: [...new Set([d.chapter, ...(Array.isArray(d.chapters) ? d.chapters : [])].filter((c) => typeof c === "string" && c))] })).filter((d) => /\.md$/.test(d.source) && !d.source.startsWith("private/") && !d.source.includes(".."));
 }
+/**
+ * The kind a document's PLACE gives it (D52, req.format1.kind): "paged" for a document DOCUMENTS.json declares with
+ * `carrier: paged` (an orz-paged print document), else null. A text's own header `carrier:` key wins over it
+ * (printed.mjs frameOf); a declared print document is required to carry that header (ms3, notations.mjs).
+ */
+export function declaredKind(reader, rel) {
+  const d = documentEntries(reader).find((x) => x.source === rel);
+  return d && /paged/i.test(d.carrier) ? "paged" : null;
+}
+/** segmentDeliverable's options for a deliverable of a package (its declared kind). */
+export const segmentOptions = (reader, rel) => ({ declared: declaredKind(reader, rel) });
 const docHash = (text) => sha256(String(text ?? ""));
 /** Declared documents the instructor confirmed as administrative, at their current content (source paths). */
 export function administrativeDocuments(reader) {
@@ -267,7 +278,7 @@ export function beginSession(root, reader, party, { step = "authoring" } = {}) {
   // a logged act whose record write died half-way is completed before anything else is written (R6 G3)
   try { reconcileUnitRecords(root, reader); } catch { /* an altered record or a broken log: the gate reports it */ }
   const baseline = {}, credited = {};
-  for (const rel of deliverablesOf(reader)) { const seg = segmentDeliverable(reader.text(rel), rel).units; baseline[rel] = seg.map((s) => unitHash(s.text)); credited[rel] = creditKey(seg.find((s) => s.credit)?.credit); }
+  for (const rel of deliverablesOf(reader)) { const seg = segmentDeliverable(reader.text(rel), rel, segmentOptions(reader, rel)).units; baseline[rel] = seg.map((s) => unitHash(s.text)); credited[rel] = creditKey(seg.find((s) => s.credit)?.credit); }
   // the label baseline (red team round 5, CONTROL C3-01): the first session under round 5 logs the printed labels over
   // every indexed unit — a link review recorded before then was shown none, and stands only while they are unchanged
   let labels;
@@ -314,7 +325,7 @@ export function registerInstructorBaseline(root, reader) {
   const log = parseLog(logText), reg = instructorRegister(root, log), ancestry = packageAncestry(root, reader), texts = {};
   for (const rel of deliverablesOf(reader)) {
     const side = readSidecar(root, rel);
-    const seg = segmentDeliverable(reader.text(rel) ?? "", rel).units;
+    const seg = segmentDeliverable(reader.text(rel) ?? "", rel, segmentOptions(reader, rel)).units;
     if (!side || side.units.length !== seg.length) continue;
     side.units.forEach((u, i) => {
       if (unitHash(seg[i].text) !== u.locator?.contentHash || u.origin?.kind === "unknown") return;
@@ -375,7 +386,7 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
   const reserved = new Set([...register, ...orphaned].map((e) => e.contentHash));
   // 1. live matching, deliverable by deliverable
   const plan = rels.map((rel) => {
-    const seg = segmentDeliverable(reader.text(rel), rel).units, old = sidecars.get(rel)?.units || [];
+    const seg = segmentDeliverable(reader.text(rel), rel, segmentOptions(reader, rel)).units, old = sidecars.get(rel)?.units || [];
     return { rel, seg, old, m: matchUnits(old, seg, { reserved }) };
   });
   // 2. what is left is matched against every retired unit: the register, and the units retired by this index run
@@ -566,7 +577,7 @@ export function claimAuthorship(root, { units, as = "instructor", instructorWord
     const side = JSON.parse(fs.readFileSync(rel, "utf8"));
     let touched = false;
     // the text they accept is registered as theirs (red team R6): read from the deliverable, where it matches its index
-    let seg = null; try { seg = segmentDeliverable(fs.readFileSync(path.join(root, side.deliverable), "utf8"), side.deliverable).units; } catch { seg = null; }
+    let seg = null; try { seg = segmentDeliverable(fs.readFileSync(path.join(root, side.deliverable), "utf8"), side.deliverable, segmentOptions({ text: (r) => { try { return fs.readFileSync(path.join(root, r), "utf8"); } catch { return null; } } }, side.deliverable)).units; } catch { seg = null; }
     side.units.forEach((u, i) => {
       if (!ids.has(u.id)) return;
       if (u.origin.kind !== "unknown") throw new Error(`${u.id} is not of unknown authorship`);
@@ -600,7 +611,7 @@ export function unindexedFindings(root, reader, basis) {
       evidence: { type: "missing", what: `an index of the ${side.units.length} unit record(s) in metadata/units/${rel}.json — ${rel} is no longer a deliverable (renamed, moved or removed): run units index, so the records follow their text to its new path or retire into the register with what they owed` } }));
   for (const rel of deliverablesOf(reader)) {
     const side = readSidecar(root, rel);
-    const now = segmentDeliverable(reader.text(rel), rel).units.map((s) => unitHash(s.text));
+    const now = segmentDeliverable(reader.text(rel), rel, segmentOptions(reader, rel)).units.map((s) => unitHash(s.text));
     const then = (side?.units || []).map((u) => u.locator.contentHash);
     if (!side || JSON.stringify(now) !== JSON.stringify(then))
       out.push(makeFinding({ module: "skeleton", kind: "units-not-indexed", units: [], statusClass: "obligation", route: "agent", basis,
