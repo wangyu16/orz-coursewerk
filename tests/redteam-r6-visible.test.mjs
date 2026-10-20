@@ -337,15 +337,24 @@ test("[req.control.shipped-equals-read] C3-04: a teaching handout under metadata
   c.write("metadata/further-reading.md", `# Further reading\n\n${LESSON}\n`);
   c.write("study-guide/galvanic-cells.html", `<!doctype html>\n<h1>Galvanic cells</h1>\n<p>${LESSON}</p>\n`);
   const ships = new Set(shippedFiles(c.root).files);
-  assert.ok(ships.has("metadata/further-reading.md") && ships.has("study-guide/galvanic-cells.html"), "both ship");
+  // D53: under metadata/ only the attribution and declared documents are delivered — an undeclared handout there
+  // never reaches Alembic (closed by construction); the .html beside the study guide ships, and is refused
+  assert.ok(!ships.has("metadata/further-reading.md") && ships.has("study-guide/galvanic-cells.html"));
   const docs = c.shipped().filter((f) => f.kind === "document-unchecked").map((f) => f.evidence.file).sort();
-  assert.deepEqual(docs, ["metadata/further-reading.md", "study-guide/galvanic-cells.html"]);
+  assert.deepEqual(docs, ["study-guide/galvanic-cells.html"]);
+  // declared, it is delivered — and read like a study guide
+  c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "fr", title: "Further reading", source: "metadata/further-reading.md", carrier: "lean" }] }, null, 2) + "\n");
+  assert.ok(shippedFiles(c.root).files.includes("metadata/further-reading.md"));
 });
 
 test("[req.control.shipped-equals-read] variants: named records, the named evidence snapshot, the licence and media ship unread; an unknown metadata record, an unnamed evidence file, a text or json file anywhere, an svg or pdf outside assets/ (D49) are refused", async (t) => {
   const c = course(t);
-  const refused = ["assets/notes.txt", "materials/diagram.svg", "slides/figure.pdf", "materials/handout.htm", "metadata/NOTES.json", "metadata/evidence/unnamed.html", "concepts/extra.json", "metadata/units/notes.md"];
-  for (const rel of refused) c.write(rel, LESSON);
+  const refused = ["assets/notes.txt", "materials/diagram.svg", "slides/figure.pdf", "materials/handout.htm", "concepts/extra.json"];
+  const neverDelivered = ["metadata/NOTES.json", "metadata/evidence/unnamed.html", "metadata/units/notes.md"]; // D53: working-record folder
+  for (const rel of [...refused, ...neverDelivered]) c.write(rel, LESSON);
+  fs.appendFileSync(path.join(c.root, SG2), "\nSee [the notes](../assets/notes.txt).\n"); // an asset ships only when a text uses it (D53)
+  const lean = new Set(shippedFiles(c.root).files);
+  for (const rel of neverDelivered) assert.ok(!lean.has(rel), `never delivered: ${rel}`);
   c.write("assets/photo.png", "\x89PNG");
   c.write("assets/clip.mp4", "binary");
   const docs = new Set(uncheckedShipped(c.root, c.r()).documents);

@@ -30,7 +30,7 @@ import { runCheckpoint } from "../scripts/lib/skeleton/runner.mjs";
 import { parseLog, readLogText } from "../scripts/lib/records/log.mjs";
 import { replayVerifier } from "../scripts/lib/verify/dispatch.mjs";
 import { currentReviewsAt, linkOverrules, reviewAlignment } from "../scripts/lib/verify/alignment.mjs";
-import { isMedia, uncheckedShipped } from "../scripts/lib/core/shipped.mjs";
+import { isMedia, shippedFiles, uncheckedShipped } from "../scripts/lib/core/shipped.mjs";
 import { computeComponentGraph } from "../scripts/lib/coherence.mjs";
 import { createSnapshot } from "../scripts/lib/skeleton/snapshot.mjs";
 import ms9 from "../scripts/modules/ms9-alignment.mjs";
@@ -248,8 +248,11 @@ test("[req.control.media-ships-as-media] [req.control.shipped-equals-read] an SV
   c.write("assets/le-chatelier-shift.svg", SVG);
   c.write("assets/figures/ammonia-plant.PDF", "%PDF-1.4\n% a drawn figure\n");
   c.write("assets/photo.png", "\x89PNG");
-  const refused = ["assets/notes.txt", "assets/figure.html", "assets/data.json", "study-guide/figure.svg", "materials/handout.pdf", "figure.svg"];
-  for (const rel of refused) c.write(rel, "Raising the temperature raises K for every reaction.");
+  const refused = ["assets/notes.txt", "assets/figure.html", "assets/data.json", "study-guide/figure.svg", "materials/handout.pdf"];
+  for (const rel of [...refused, "figure.svg"]) c.write(rel, "Raising the temperature raises K for every reaction.");
+  // an asset ships only when a text uses it, and a stray root file is never delivered (D53): the study guide links them
+  fs.appendFileSync(path.join(c.root, SG), "\n![shift](../assets/le-chatelier-shift.svg) ![plant](../assets/figures/ammonia-plant.PDF) ![p](../assets/photo.png) [n](../assets/notes.txt) [f](../assets/figure.html) [d](../assets/data.json)\n");
+  assert.ok(!shippedFiles(c.root).files.includes("figure.svg"), "a stray root file is not delivered");
   const docs = new Set(uncheckedShipped(c.root, c.r()).documents);
   for (const rel of ["assets/le-chatelier-shift.svg", "assets/figures/ammonia-plant.PDF", "assets/photo.png"]) assert.ok(!docs.has(rel), `media: ${rel}`);
   for (const rel of refused) assert.ok(docs.has(rel), `refused: ${rel}`);

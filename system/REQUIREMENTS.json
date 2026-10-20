@@ -3627,6 +3627,23 @@
           "tests/format1.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.ship.lean",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "D53: the delivered package (pack) holds only what Alembic needs — the manifest of the published chapters, LICENSE, README.md/CITATION.cff, the published chapters' texts and checked declared documents, only the assets those texts use, private/, metadata/ATTRIBUTION.md and the pack's own metadata/PUBLISHED.json (decision, licence, accountable authors, AI-assistance disclosure). No working record ships (log, unit, verification and correction records, evidence and source snapshots, settings): no source text reaches Alembic. The release receipt counts what was left out and binds the archive to the local record (publish content hash, log head).",
+      "source": "D53 (operator 2026-10-20)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/ship-lean.test.mjs",
+          "tests/workflow.test.mjs",
+          "tests/redteam-r1-coherence.test.mjs"
+        ]
+      }
     }
   ]
 }

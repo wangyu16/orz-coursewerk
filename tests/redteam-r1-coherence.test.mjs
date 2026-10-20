@@ -261,7 +261,7 @@ test("[req.records.unit-digest] F6: a hand edit of a unit record is a blocking d
   assert.ok(c.owes(A6).length);
 });
 
-test("[req.publish.pack-bound] F9: the pack ships only what the publish binds plus the log; a decision record that differs from the log is refused", (t) => {
+test("[req.ship.lean] [req.publish.pack-bound] F9: the pack ships only what Alembic needs (D53), the decision rebuilt from the log; a decision record that differs from the log is refused", (t) => {
   const c = course(t);
   const ids = [...new Set(coreObligations(c.root, c.r(), "t").filter((f) => ["evidence-missing", "absolute-unreviewed"].includes(f.kind)).flatMap((f) => f.units).filter((u) => /le-chatelier/.test(u)))];
   confirmUnits(c.root, c.r(), ids, { what: "fact", instructorWords: "I confirm these." }, I); c.commit("confirmed");
@@ -279,11 +279,13 @@ test("[req.publish.pack-bound] F9: the pack ships only what the publish binds pl
   assert.equal(p.ok, true, p.error);
   const x = path.join(c.dir, "x"); fs.mkdirSync(x); spawnSync("unzip", ["-q", p.zip, "-d", x]);
   assert.ok(!fs.existsSync(path.join(x, "metadata/FINDINGS.json")), "an unbound record is not shipped");
-  const shipped = JSON.parse(fs.readFileSync(path.join(x, "metadata/publish", path.basename(rec)), "utf8"));
-  // the open questions as decided: the planted one, plus the course's own spine-detail questions (round 6, D48)
-  assert.equal(shipped.openQuestions.length, 1 + g.findings.filter((f) => f.kind === "detail-in-spine").length);
-  assert.ok(JSON.stringify(shipped.openQuestions).includes("q-open-1")); assert.equal(shipped.instructorWords, "Publish it, over those questions.");
-  assert.ok(fs.existsSync(path.join(x, "metadata/LOG.jsonl")));
+  // the decision ships as metadata/PUBLISHED.json, rebuilt from the LOGGED decision (D53: the record itself, and the
+  // log, stay with the local package): the open questions as decided — the planted one, plus the course's own
+  // spine-detail questions (round 6, D48) — and published over them, whatever the tampered file said
+  const shipped = JSON.parse(fs.readFileSync(path.join(x, "metadata/PUBLISHED.json"), "utf8"));
+  assert.equal(shipped.openQuestions, 1 + g.findings.filter((f) => f.kind === "detail-in-spine").length);
+  assert.equal(shipped.overQuestions, true); assert.equal(shipped.publishSeq, d.seq);
+  assert.ok(!fs.existsSync(path.join(x, "metadata/publish")) && !fs.existsSync(path.join(x, "metadata/LOG.jsonl")), "no working record ships (D53)");
 });
 
 test("[req.records.history-extends] F10: a past log record rewritten, re-chained and committed as a new commit is caught against the history", (t) => {

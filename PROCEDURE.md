@@ -190,7 +190,8 @@ At the instructor's word, `coursewerk.mjs publish` records the decision:
 - the open questions.
 
 Then `scripts/pack.mjs --package <pkg> --out <dir>` produces the Alembic zip of exactly that decision, and refuses
-if the package changed since. It first fetches the newest Alembic package contract and runs Alembic's own
+if the package changed since. The zip is lean (D53): the published texts, the assets they use, `private/`, the attribution
+and a short `PUBLISHED.json`; the working record and every source text stay with the local package. It first fetches the newest Alembic package contract and runs Alembic's own
 validator on the package; a refusal names what to fix. Offline, it says it checked only against the local mirror. A private package is packed with its profile recorded and is never cleared for public
 release. Hand the zip to the instructor; uploading it is theirs.
 

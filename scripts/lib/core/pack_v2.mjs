@@ -20,8 +20,8 @@ export function packPublished(pkg, outDir) {
   const pub = latestPublish(pkg);
   if (!pub) return { ok: false, error: "there is no publish decision: the instructor publishes first (node scripts/coursewerk.mjs publish …)" };
   if (!pub.current) return { ok: false, error: `the package changed after publish decision #${pub.seq}: publish again (node scripts/coursewerk.mjs publish …) before packing` };
-  // The pack ships only what the publish content hash binds, plus the log; the decision record it ships is rebuilt from
-  // the logged decision, and an on-disk record that says otherwise is refused (red team R1 coherence, F9).
+  // The pack ships only what Alembic needs (D53: shipped.mjs shippedFiles); the decision it ships (PUBLISHED.json) is
+  // rebuilt from the logged decision, and an on-disk record that says otherwise is refused (red team R1 coherence, F9).
   const logged = parseLog(readLogText(pkg)).find((r) => r.seq === pub.seq);
   const record = { seq: logged.seq, at: logged.at, by: logged.party.name, ...logged.payload };
   const recordRel = `metadata/publish/${String(pub.seq).padStart(4, "0")}.json`;
@@ -58,11 +58,17 @@ export function packPublished(pkg, outDir) {
   const last = parseLog(readLogText(pkg)).at(-1);
   const decision = { publishSeq: pub.seq, profile: pub.profile, contentHash: pub.contentHash, chapters: [...published], drafts: [...drafts], course: !!pub.course,
     openQuestions: pub.openQuestions.length, clearedForPublicRelease: pub.profile === "public" && drafts.size === 0, logHead: { seq: last.seq, hash: last.hash } };
-  fs.mkdirSync(path.join(staged, "metadata", "publish"), { recursive: true });
-  fs.writeFileSync(path.join(staged, recordRel), JSON.stringify(record, null, 2) + "\n");
-  fs.utimesSync(path.join(staged, recordRel), new Date("2000-01-01T00:00:00Z"), new Date("2000-01-01T00:00:00Z"));
+  // what a reader of the delivered package needs to know of how it was made (D53): the decision (from the log), the
+  // licence, the accountable authors and the AI-assistance disclosure — the full record stays in the local package
+  let foundation = null; try { foundation = JSON.parse(fs.readFileSync(path.join(pkg, "metadata", "FOUNDATION.json"), "utf8")); } catch { foundation = null; }
+  const manifest = JSON.parse(fs.readFileSync(path.join(pkg, "alembic.json"), "utf8"));
+  const summary = { ...decision, decidedAt: record.at, decidedBy: record.by, overQuestions: !!record.overQuestions, license: manifest.license ?? null,
+    authors: (foundation?.outputAuthors || []).map((a) => ({ name: a.name, role: a.role, ...(a.affiliation ? { affiliation: a.affiliation } : {}) })),
+    aiAssistance: [...new Set((foundation?.outputAuthors || []).map((a) => a.aiAssistanceDisclosure).filter(Boolean))],
+    madeWith: "Coursewerk", record: "the full working record (decision log, unit and verification records) is kept with the local package, not delivered" };
+  fs.mkdirSync(path.join(staged, "metadata"), { recursive: true });
+  fs.writeFileSync(path.join(staged, "metadata", "PUBLISHED.json"), JSON.stringify(summary, null, 2) + "\n");
   files++;
-  fs.writeFileSync(path.join(staged, "metadata", "PUBLISHED.json"), JSON.stringify(decision, null, 2) + "\n");
   fs.utimesSync(path.join(staged, "metadata", "PUBLISHED.json"), new Date("2000-01-01T00:00:00Z"), new Date("2000-01-01T00:00:00Z"));
   fs.mkdirSync(outDir, { recursive: true });
   const title = JSON.parse(fs.readFileSync(path.join(pkg, "alembic.json"), "utf8")).title || "course";
@@ -80,7 +86,7 @@ export function packPublished(pkg, outDir) {
   fs.rmSync(work, { recursive: true, force: true });
   if (z.status !== 0) return { ok: false, error: `zip failed: ${z.stderr || z.stdout}` };
   const archiveSha256 = crypto.createHash("sha256").update(fs.readFileSync(zipPath)).digest("hex");
-  const receipt = { schemaVersion: 3, ...decision, archive: path.basename(zipPath), archiveSha256, filesPacked: files, filesLeftOut: left, createdAt: new Date().toISOString() };
+  const receipt = { schemaVersion: 4, ...decision, archive: path.basename(zipPath), archiveSha256, filesPacked: files, filesLeftOut: left, leftOut: shipped.leftOut, createdAt: new Date().toISOString() };
   fs.writeFileSync(path.join(outDir, `${base}.release.json`), JSON.stringify(receipt, null, 2) + "\n");
   return { ok: true, zip: zipPath, ...receipt };
 }

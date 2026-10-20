@@ -300,7 +300,12 @@ the **text** (`slides/<slug>.md`, …: canonical, what you write, what ships) an
   newest published orz-mdhtml / orz-slides / orz-paged into `preview/` (regenerable, **never shipped**) and checks
   every carrier: it must extract to its exact text, and a carrier lint error fails the build. The receipt records the
   frames' versions and each text's sha256. A new frame changes the look, never the course.
-- **Pack the text.** `node scripts/pack.mjs` zips `package/` **without** carriers; Alembic assembles them on its side.
+- **Deliver lean (D53).** The local package is the full record; `node scripts/pack.mjs` delivers only what Alembic
+  needs: the manifest of the published chapters, `LICENSE`, `README.md`/`CITATION.cff`, the published texts and
+  checked declared documents, only the assets those texts use, `private/`, `metadata/ATTRIBUTION.md` and a small
+  `metadata/PUBLISHED.json` (the decision, licence, authors, AI-assistance disclosure). No carrier, no working record
+  (log, unit and verification records, evidence, settings) and no source text ships; Alembic assembles the carriers.
+  The release receipt beside the archive counts what stayed local and binds the archive to the local log.
 - **Migrating** a package from the 0.x forms (`<!-- deck -->` blocks): `docs/assembling-carriers.md`.
 
 **License & identity across the strip:** the **license** is package-level (`alembic.json` +

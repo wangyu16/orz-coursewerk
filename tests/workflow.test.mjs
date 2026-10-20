@@ -135,7 +135,7 @@ test("[req.answers.persist] an answered question is not asked again while its ba
 });
 
 // ---- publish and pack (T1) ----------------------------------------------------------------------------------------
-test("[req.publish.record] [req.publish.scope] [req.oldgate.retired] a publish records hash, approvals and open questions; only eligible chapters go; the pack is exactly that decision", (t) => {
+test("[req.publish.record] [req.publish.scope] [req.oldgate.retired] [req.ship.lean] a publish records hash, approvals and open questions; only eligible chapters go; the pack is exactly that decision", (t) => {
   const p = copy(t);
   clearLeChatelier(p);
   const g = runGate(p.root, { inputsDir: p.inputs });
@@ -163,7 +163,10 @@ test("[req.publish.record] [req.publish.scope] [req.oldgate.retired] a publish r
   const receipt = JSON.parse(pk.stdout);
   const list = spawnSync("unzip", ["-Z1", receipt.zip], { encoding: "utf8" }).stdout.split("\n");
   assert.ok(list.includes("study-guide/le-chatelier.md") && !list.includes("study-guide/chemical-equilibrium.md"), "only the published chapter");
-  assert.ok(list.includes("concepts/course.md") && list.includes("metadata/PUBLISHED.json") && list.includes("metadata/LOG.jsonl"));
+  assert.ok(list.includes("concepts/course.md") && list.includes("metadata/PUBLISHED.json"));
+  // lean (D53): the working record stays with the local package
+  assert.ok(!list.some((f) => /^metadata\/(?:LOG\.jsonl|units\/|verification\/|publish\/|corrections\/|evidence\/|FOUNDATION\.json|coursewerk\.json)/.test(f)), list.filter((f) => f.startsWith("metadata/")).join(", "));
+  assert.ok(receipt.leftOut["working record"] > 0 && receipt.logHead?.hash, "the receipt counts what stayed local and binds the archive to the local log");
   const manifest = JSON.parse(spawnSync("unzip", ["-p", receipt.zip, "alembic.json"], { encoding: "utf8" }).stdout);
   assert.deepEqual(manifest.chapters.map((c) => c.slug), ["le-chatelier"]);
   assert.equal(receipt.clearedForPublicRelease, true); assert.equal(latestPublish(p.root).current, true);

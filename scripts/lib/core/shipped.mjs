@@ -15,33 +15,72 @@ import path from "node:path";
 import { isCarrierPath } from "../contract.mjs";
 import { makeFinding } from "../records/findings.mjs";
 import { COURSE_MAP, spinePaths } from "./spine.mjs";
-import { manifestChapters } from "./package_reader.mjs";
+import { liveReader, manifestChapters } from "./package_reader.mjs";
 import { administrativeDocuments, declaredKind, deliverablesOf } from "./units_index.mjs";
 import { frameOf, printedModel } from "./printed.mjs";
 import { segmentDeliverable } from "./segment.mjs";
 
 const CHAPTER_FILE = /^(?:study-guide|slides|practice|concepts|assessment-support)\/([^/]+)\.md$/;
-const CHAPTER_SIDECAR = /^metadata\/units\/(?:study-guide|slides|practice)\/([^/]+)\.md\.json$/;
 
 /**
- * The package files a pack ships, in a stable order: { files: [rel], left: number of files left out }. `keep(slug)`:
- * whether a chapter's files ship (default: every chapter); `course`: whether the course map ships (default: yes).
+ * The package files a pack ships, in a stable order: { files: [rel], left: number of files left out, leftOut: { why:
+ * count } }. `keep(slug)`: whether a chapter's files ship (default: every chapter); `course`: whether the course map
+ * ships (default: yes).
+ *
+ * THE DELIVERED PACKAGE IS LEAN (D53, operator 2026-10-20: "it should never deliver heavy package beyond needed to
+ * Alembic"). The local package is the full record; Alembic gets only what it needs:
+ *   - at the root, only what the Alembic contract allows there and a reader needs (manifest, LICENSE, README.md,
+ *     CITATION.cff);
+ *   - every other folder as before (study-guide/, slides/, practice/, concepts/, assessment-support/, materials/,
+ *     current/, private/ …: every file in them ships, and is read or refused — D42; a folder Alembic does not accept
+ *     is refused by its contract at pack);
+ *   - under metadata/, only the attribution (ATTRIBUTION.md) and a document a student reads (a declared or
+ *     administrative document placed there) — never a working record: the log, unit and verification records,
+ *     corrections, evidence and source snapshots stay local (the pack writes metadata/PUBLISHED.json itself);
+ *   - under assets/, only the files a shipped text uses;
+ * A stray file at the root is not part of the delivery.
  */
+const ROOT_SHIPPED = new Set(["alembic.json", "LICENSE", "README.md", "CITATION.cff"]);
+export const SHIPPED_RECORDS = Object.freeze(new Set(["metadata/ATTRIBUTION.md"]));
+/** The asset paths a text refers to (resolved against the text's folder), and every asset file name it mentions: a
+ *  figure is kept whether it is linked as `../assets/x.png`, `assets/x.png` or named in a directive. */
+function assetsUsedBy(rel, text) {
+  const out = new Set();
+  for (const m of String(text || "").matchAll(/(?:\.\.\/|\.\/|\/)?((?:\.\.\/)*assets\/[^\s)"'<>\]|}]+)/g)) {
+    const at = path.posix.normalize(path.posix.join(path.posix.dirname(rel), m[0]));
+    out.add(at.startsWith("assets/") ? at : path.posix.normalize(m[1].replace(/^(?:\.\.\/)+/, "")));
+  }
+  return out;
+}
 export function shippedFiles(pkg, { keep = () => true, course = true } = {}) {
-  const files = [];
-  let left = 0;
+  const all = [];
   const walk = (d, rel = "") => { for (const e of fs.readdirSync(d, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
     const r = rel ? `${rel}/${e.name}` : e.name;
-    // records the publish content hash does not bind are not shipped (the decision record is written from the log)
-    if (r === ".git" || e.name === ".DS_Store" || r.startsWith("metadata/digest") || r.startsWith("metadata/publish") || r === "metadata/FINDINGS.json") continue;
+    if (r === ".git" || e.name === ".DS_Store") continue;
     if (e.isDirectory()) { walk(path.join(d, e.name), r); continue; }
-    if (!e.isFile() || isCarrierPath(r)) { left++; continue; }
-    const ch = r.match(CHAPTER_FILE)?.[1] || r.match(CHAPTER_SIDECAR)?.[1];
-    if ((ch && r !== COURSE_MAP && !keep(ch)) || (r === COURSE_MAP && !course)) { left++; continue; }
-    files.push(r);
+    if (e.isFile()) all.push(r);
   } };
   walk(pkg);
-  return { files, left };
+  const reader = liveReader(pkg);
+  const read = new Set([...deliverablesOf(reader), ...administrativeDocuments(reader)]);
+  const files = [], leftOut = {};
+  const out = (why) => { leftOut[why] = (leftOut[why] || 0) + 1; };
+  const assets = [];
+  for (const r of all) {
+    if (isCarrierPath(r)) { out("carrier"); continue; }
+    const ch = r.match(CHAPTER_FILE)?.[1];
+    if ((ch && r !== COURSE_MAP && !keep(ch)) || (r === COURSE_MAP && !course)) { out("unpublished chapter"); continue; }
+    if (!r.includes("/")) { if (ROOT_SHIPPED.has(r)) files.push(r); else out("root file"); continue; }
+    if (r.startsWith("assets/")) { assets.push(r); continue; }
+    if (r.startsWith("metadata/")) { if (SHIPPED_RECORDS.has(r) || read.has(r)) files.push(r); else out("working record"); continue; }
+    files.push(r);
+  }
+  const used = new Set();
+  for (const r of files) if (/\.(?:md|markdown|html?|svg|css)$/i.test(r)) for (const a of assetsUsedBy(r, fs.readFileSync(path.join(pkg, r), "utf8"))) used.add(a);
+  const names = new Set([...used].map((a) => path.posix.basename(a)));
+  for (const a of assets) { if (used.has(a) || names.has(path.posix.basename(a))) files.push(a); else out("unused asset"); }
+  files.sort();
+  return { files, left: Object.values(leftOut).reduce((a, b) => a + b, 0), leftOut };
 }
 
 const INCLUDE = /\{\{\s*(?:markdown|md-include|md)\b([^}]*)\}\}/g;
