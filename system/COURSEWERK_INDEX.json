@@ -71,7 +71,7 @@
       "id": "repo:docs/assurance-kernel.md",
       "path": "docs/assurance-kernel.md",
       "type": "documentation",
-      "hash": "ee98fa88a7284acce51e1bfb31e7c4708a97fe12f32c24f7077e98aac7d8eefa"
+      "hash": "3e8b6d99176305908e9fcf2c00953b0f6962ca1fdc3c234a7cf98cb080f1c9da"
     },
     {
       "id": "repo:docs/authoring-guidelines.md",
@@ -161,7 +161,7 @@
       "id": "repo:format-contracts/deliverables.md",
       "path": "format-contracts/deliverables.md",
       "type": "documentation",
-      "hash": "497f0cc7165e7459ff742b526379667b602f80d91c46cde3abe511ab561c7a2c"
+      "hash": "ec9539b9148b7ef6e9f516408de9a8edce1ac3ec13a93ab2afa81d06538e85ef"
     },
     {
       "id": "repo:GEMINI.md",
@@ -365,7 +365,7 @@
       "id": "repo:scripts/lib/assurance.mjs",
       "path": "scripts/lib/assurance.mjs",
       "type": "kernel",
-      "hash": "fe17e1f5757abde4c87ce039ccfa94d2b7e61486ecf21157f5d862e70b61cbac"
+      "hash": "fb2c5d1696031c73d341b9a7cd866f6fa2beac4812850631c2f43c599878d76d"
     },
     {
       "id": "repo:scripts/lib/blind_bundle.mjs",
@@ -659,7 +659,7 @@
       "id": "repo:scripts/lib/pre_ingestion.mjs",
       "path": "scripts/lib/pre_ingestion.mjs",
       "type": "kernel",
-      "hash": "dffa52bc99908bc408498621e300ad1bd8c8dae31fe63af5dfd3d9fa8131944f"
+      "hash": "128ff0b0c4fb8cb98dc0a61e720f9b41e16d326c3df398104aeb097f22d99ef4"
     },
     {
       "id": "repo:scripts/lib/propagate.mjs",
@@ -902,6 +902,12 @@
       "hash": "d54cadf2a2fa14607b0279459acf005893358d5ca3a42dab1a40db19b8e42eb9"
     },
     {
+      "id": "repo:scripts/modules/ms10-copying.mjs",
+      "path": "scripts/modules/ms10-copying.mjs",
+      "type": "executable",
+      "hash": "e3a72145148b988c42258bf5f760f27f6bbf37b11d9f4383bc1b0ff51a4ccfa5"
+    },
+    {
       "id": "repo:scripts/modules/ms2-rights.mjs",
       "path": "scripts/modules/ms2-rights.mjs",
       "type": "executable",
@@ -959,7 +965,7 @@
       "id": "repo:scripts/modules/standard.json",
       "path": "scripts/modules/standard.json",
       "type": "executable",
-      "hash": "212e3ba4297afde8403ccbcf88659c9183888a9f53cb40bfb0c1cd37af7a6126"
+      "hash": "8a3637b1455f917461d737455602003597b69f07680b3951abbbd0a8b276688e"
     },
     {
       "id": "repo:scripts/pack.mjs",
@@ -1151,7 +1157,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "18af7e556070946acaa86fa6e8856d56213e2cc78eeb563cf76a56fffd196076"
+      "hash": "b98da59a2c9135fdc238241fa6d9c63e5d8be747e16ab555bb518b9ab511236e"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1355,7 +1361,7 @@
       "id": "repo:tests/assurance.test.mjs",
       "path": "tests/assurance.test.mjs",
       "type": "test",
-      "hash": "4fa9b2d6d6a64ec55cdf7ead89b521d3b4c1fd2d86c89ddc3205639c10fecc42"
+      "hash": "c9f2be3e0ac254735b63239064947c8636099ceecd2f3b882fce089f6c20beee"
     },
     {
       "id": "repo:tests/audit-round-2.test.mjs",
@@ -1946,6 +1952,12 @@
       "hash": "6e6746a4c2f1e427bda9b49f121c2da88a36d85aaeee40d059cfb4f1a027cdf8"
     },
     {
+      "id": "repo:tests/reference-copying.test.mjs",
+      "path": "tests/reference-copying.test.mjs",
+      "type": "test",
+      "hash": "915b7d6eb8a1f964421956da969646d774415c9fa08b646423ab18c8ea78791b"
+    },
+    {
       "id": "repo:tests/requirements.test.mjs",
       "path": "tests/requirements.test.mjs",
       "type": "test",
@@ -2009,7 +2021,7 @@
       "id": "repo:tests/stable-modules.test.mjs",
       "path": "tests/stable-modules.test.mjs",
       "type": "test",
-      "hash": "b1ac0b1fb4eca329004d8a6ba482847f80402d0f573cf90cacd363e26133c24b"
+      "hash": "e960a5b7918add6d4bf4f439dc303f3861bfdcc903d98cfa6029bc7f1a665aa3"
     },
     {
       "id": "repo:tests/system-index.test.mjs",
@@ -4868,6 +4880,22 @@
       },
       {
         "id": "req.reviews.standing",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.rights.reference-copy-check",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.rights.reference-only",
         "phase": "P11",
         "tiers": [
           "T1"

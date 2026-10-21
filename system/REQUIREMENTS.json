@@ -3644,6 +3644,36 @@
           "tests/redteam-r1-coherence.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.rights.reference-only",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "D54: rights basis reference-only — a source used for its ideas and knowledge only (use: \"reference\"), on the instructor's statement in their words (rightsBasis.statement), needs no licence, publisher URL or rights-page receipt and never blocks a public package by itself; with any other use, or without the statement, it fails.",
+      "source": "D54 (operator 2026-10-21)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/assurance.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.rights.reference-copy-check",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "D54: MS10 compares every shipped text (chapter deliverables and spine, course map, declared documents) with the pinned text of every reference source (declared use: reference) and every pinned verification reference; a run of 8 or more consecutive words in common (case-folded letters and digits) is a blocking reference-copied defect for the agent naming file, line, source and words; a reference source without a matching pinned text is a reference-text-missing obligation (fail closed).",
+      "source": "D54 (operator 2026-10-21)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/reference-copying.test.mjs"
+        ]
+      }
     }
   ]
 }

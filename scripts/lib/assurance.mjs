@@ -23,6 +23,9 @@ export const RIGHTS_BASES = [
   "institutional-authorization",
   "user-asserted-exception",
   "unknown",
+  // D54 (operator 2026-10-21): a source used for its ideas and knowledge only, never its expression. No licence is
+  // needed because nothing of it ships; the gate's copy check (modules/ms10-copying.mjs) holds the condition.
+  "reference-only",
 ];
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -299,9 +302,9 @@ function auditSource(source, index, foundation, manifestLicense, privateFailures
   const label = `source[${index}]`;
   if (!nonempty(source?.id)) privateFailures.push(`${label}: id is required.`);
   if (!nonempty(source?.title)) privateFailures.push(`${label}: exact title is required.`);
-  if (!nonempty(source?.publisher) && !["owned", "unknown"].includes(source?.rightsBasis?.type))
+  if (!nonempty(source?.publisher) && !["owned", "unknown", "reference-only"].includes(source?.rightsBasis?.type))
     privateFailures.push(`${label}: publisher/rights holder is required.`);
-  if (!nonempty(source?.canonicalUrl) && !["owned", "unknown"].includes(source?.rightsBasis?.type))
+  if (!nonempty(source?.canonicalUrl) && !["owned", "unknown", "reference-only"].includes(source?.rightsBasis?.type))
     privateFailures.push(`${label}: canonical source URL is required.`);
   if (!Array.isArray(source?.scope) || source.scope.length === 0)
     privateFailures.push(`${label}: scope must identify the chapters/sections/material used.`);
@@ -317,6 +320,11 @@ function auditSource(source, index, foundation, manifestLicense, privateFailures
   const nonPublished = foundation.usageProfile !== "public-oer";
   const rightsReadiness = nonPublished ? warnings : privateFailures;
   if (!RIGHTS_BASES.includes(basis.type)) rightsReadiness.push(`${label}: valid rightsBasis.type is unrecorded.`);
+  if (basis.type === "reference-only") {
+    // D54: valid only for a source used as a reference, and only on the instructor's statement of that use
+    if (source?.use !== "reference") privateFailures.push(`${label}: rightsBasis reference-only requires use: "reference" (its expression is never used).`);
+    if (!nonempty(basis.statement)) rightsReadiness.push(`${label}: reference-only lacks the instructor's statement of reference-only use (rightsBasis.statement, in their words).`);
+  }
   if (["owned", "user-asserted-exception", "institutional-authorization"].includes(basis.type) && basis.attestedByUser !== true)
     rightsReadiness.push(`${label}: ${basis.type} lacks explicit user attestation.`);
   if (basis.type === "user-asserted-exception" && !nonempty(foundation.jurisdiction))
@@ -401,7 +409,7 @@ function auditSource(source, index, foundation, manifestLicense, privateFailures
   requireAttributionEverywhere(foundation.__root, source.requiredAttribution, publicationBlockers);
 
   if (foundation.usageProfile === "public-oer") {
-    if (["unknown", "user-asserted-exception"].includes(basis.type)) return;
+    if (["unknown", "user-asserted-exception", "reference-only"].includes(basis.type)) return;
     // H1 (round-3 audit): the matrix used to run only for `use: adaptation` on non-assets, so a
     // CC-BY-NC EXCERPT (copied expression) or an NC asset reached a CC-BY pack. Copied or adapted
     // expression is copied or adapted expression whatever the field says; only a pure REFERENCE

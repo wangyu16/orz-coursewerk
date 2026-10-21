@@ -251,7 +251,9 @@ own** figure *if its license permits and it carries no third-party credit line*.
 in structured `metadata/PROVENANCE.json` and public `metadata/ATTRIBUTION.md` (asset · source URL · license · attribution). Verified external media also retains an authoritative description/license-page snapshot and
 structured capture/retrieval metadata under `metadata/evidence/`; a remembered URL/license label is insufficient.
 Copyrighted/paywalled or
-third-party-credited assets are **never** embedded. The package license follows the explicit supported
+third-party-credited assets are **never** embedded. A copyrighted textbook or paper may still be a **reference** (D54: `use: "reference"`, rights basis
+`reference-only`): its ideas inform the course and its text checks the facts, but no sentence of it is reproduced — the
+gate refuses any run of 8 or more words shared with a pinned reference text. The package license follows the explicit supported
 compatibility matrix for every adapted source; ShareAlike sources remain ShareAlike, while public domain is not
 mislabelled as CC0.
 Remote hot-linked media is release-blocking: fetch it into `assets/` and record it, so the package cannot lose

@@ -40,6 +40,13 @@ Source preference is a separate product judgment. Coursewerk advises using alter
 access-terms disputes, but that advice does not block private authoring or publication and is not a determination
 that copyright law or the declared CC license forbids AI processing.
 
+**Reference-only sources (D54).** A source used for its ideas and knowledge only (a copyrighted textbook, a downloaded
+paper, the instructor's notes of mixed origin) is declared with `use: "reference"` and rights basis `reference-only`,
+with the instructor's statement of that use in their words (`rightsBasis.statement`). It needs no licence or rights
+receipt, because nothing of its expression ships: the gate's copy check (MS10) refuses any shipped text that shares a
+run of 8 or more words with a pinned reference text, and fact-check quotes stay in the local package (D53). Its
+figures, tables and problems are never used.
+
 For `personal-private` and `restricted-teaching`, source-rights checks are advisory: any source may be used without
 a receipt, while identity, provenance, unknown-source labels, and warnings are retained for a possible later
 publication review. For `public-oer`, verified license statements, attribution, compatible licensing of copied or

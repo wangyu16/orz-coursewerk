@@ -136,7 +136,7 @@ test("[req.modules.manifest] the standard registry: a package without one runs e
   const p = copy(t);
   fs.rmSync(path.join(p.root, "metadata", "modules.json"), { force: true });
   const std = readRegistry(p.root);
-  assert.equal(std.standard, true); assert.equal(std.modules.length, 8); assert.equal(std.modules.filter((m) => m.maturity === "stable").length, 7);
+  assert.equal(std.standard, true); assert.equal(std.modules.length, 9); assert.equal(std.modules.filter((m) => m.maturity === "stable").length, 8); // D54 added ms10-copying
   fs.writeFileSync(path.join(p.root, "metadata", "modules.json"), JSON.stringify({ schemaVersion: 1, __noStandard: true, standard: true, modules: std.modules.filter((m) => m.name !== "ms6-quotations") }));
   const fromFile = readRegistry(p.root);
   assert.equal(fromFile.__noStandard, undefined); assert.equal(fromFile.standard, undefined);

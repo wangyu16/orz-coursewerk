@@ -49,6 +49,12 @@
       "version": "1.0.0",
       "maturity": "trial",
       "enabled": true
+    },
+    {
+      "name": "ms10-copying",
+      "version": "1.0.0",
+      "maturity": "stable",
+      "enabled": true
     }
   ]
 }

@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { auditAssurance, renderAttribution } from "../scripts/lib/assurance.mjs";
-import { buildPreflightReceipt, writePreflightReceipt } from "../scripts/lib/pre_ingestion.mjs";
+import { auditIngestionReadiness, buildPreflightReceipt, writePreflightReceipt } from "../scripts/lib/pre_ingestion.mjs";
 import {
   auditCoherence,
   computeComponentGraph,
@@ -721,4 +721,28 @@ test("revision review becomes stale after any further edit", () => {
   review.attestation = "Reviewed all components before a subsequent unreviewed edit.";
   fs.appendFileSync(path.join(f.root, "slides", "ch1.md"), "Later edit.\n");
   assert.match(validateRevisionReview(f.root, review).failures.join("\n"), /stale/);
+});
+
+// ---- D54: reference-only sources --------------------------------------------------------------------------------
+const addReference = (f, over = {}) => {
+  const file = path.join(f.root, "metadata", "FOUNDATION.json"), fd = JSON.parse(fs.readFileSync(file, "utf8"));
+  fd.sources.push({ id: "textbook-a", title: "A Polymer Textbook", authors: "A. Author", edition: "3rd", role: "supplemental", use: "reference", scope: ["chapters 1-13, for knowledge and fact checking"],
+    rightsBasis: { type: "reference-only", statement: "The textbooks provide the knowledge and help to check the results, but contents should not be directly delivered." }, ...over });
+  writeJson(file, fd);
+  return fd;
+};
+test("[req.rights.reference-only] a copyrighted textbook used for its ideas only clears a public package on the instructor's statement (D54)", () => {
+  const f = publicFixture();
+  const fd = addReference(f);
+  const result = auditAssurance({ root: f.root, manifest: f.manifest });
+  assert.deepEqual(result.hardFailures.filter((m) => /textbook-a|source\[1\]/.test(m)), [], result.hardFailures.join("\n"));
+  assert.equal(result.canPack, true, result.hardFailures.join("\n"));
+  assert.equal(auditIngestionReadiness(f.root, fd).sources.find((s) => s.sourceId === "textbook-a")?.ready, true, "no rights-page receipt is needed to read it");
+});
+test("[req.rights.reference-only] reference-only needs use \"reference\" and the instructor's statement", () => {
+  const a = publicFixture(); addReference(a, { use: "adaptation" });
+  assert.match(auditAssurance({ root: a.root, manifest: a.manifest }).hardFailures.join("\n"), /reference-only requires use: "reference"/);
+  const b = publicFixture(); const fd = addReference(b, { rightsBasis: { type: "reference-only" } });
+  assert.match(auditAssurance({ root: b.root, manifest: b.manifest }).hardFailures.join("\n"), /lacks the instructor's statement/);
+  assert.equal(auditIngestionReadiness(b.root, fd).ready, false);
 });

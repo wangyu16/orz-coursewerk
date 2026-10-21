@@ -188,6 +188,13 @@ export function auditIngestionReadiness(root, foundation) {
       sources.push({ sourceId: source.id, ready, receipt: null });
       continue;
     }
+    if (source.rightsBasis.type === "reference-only") {
+      // D54: read for its ideas only, on the instructor's statement; nothing of its expression ships (the copy check)
+      const ready = source.use === "reference" && String(source.rightsBasis.statement || "").trim() !== "";
+      if (!ready) failures.push(`source ${source.id}: reference-only requires use: "reference" and the instructor's statement (rightsBasis.statement)`);
+      sources.push({ sourceId: source.id, ready, receipt: null });
+      continue;
+    }
     if (source.rightsBasis.type === "unknown")
       failures.push(`source ${source.id}: unknown rights basis cannot clear ingestion`);
     if (["institutional-authorization", "user-asserted-exception"].includes(source.rightsBasis.type) && source.rightsBasis.attestedByUser !== true)
