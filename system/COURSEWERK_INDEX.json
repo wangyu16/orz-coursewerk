@@ -869,7 +869,7 @@
       "id": "repo:scripts/lib/verify/retrieval.mjs",
       "path": "scripts/lib/verify/retrieval.mjs",
       "type": "kernel",
-      "hash": "c1616d9f5b31ead73fca2f81c742054a219eaeac679b766cecb9c39a00b491cd"
+      "hash": "a6896f5079f6f75bf4ef88de636b847d9c460329fee89664246a3756fdfdc749"
     },
     {
       "id": "repo:scripts/lib/verify/standing.mjs",
@@ -1043,7 +1043,7 @@
       "id": "repo:scripts/verify.mjs",
       "path": "scripts/verify.mjs",
       "type": "executable",
-      "hash": "37e164b42cc5ddcf34a23d4347ce4cca0c56b01c92863f64047bb315c5d50f64"
+      "hash": "cabb2e14d847b4ed8c460ebc2575adab7146420fecd3088f8d9dd79df83639e0"
     },
     {
       "id": "repo:site/assets/coursewerk-favicon.svg",
@@ -2027,7 +2027,7 @@
       "id": "repo:tests/stable-modules.test.mjs",
       "path": "tests/stable-modules.test.mjs",
       "type": "test",
-      "hash": "e44c1cc7db629ac741b9f82f66c48d5fedc013862b1bf2e7259587376f7a1073"
+      "hash": "ccb91bef46a395a4ff70bfc31f54c7b221f9a4d50c8f26888ef9d8bd2445f188"
     },
     {
       "id": "repo:tests/system-index.test.mjs",

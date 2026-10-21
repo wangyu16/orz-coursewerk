@@ -141,11 +141,31 @@ export function recordLinkResolutions(root, resolved) {
   if (resolved.length) appendLogRecord(root, { type: "revision", party: { role: "harness", name: "links" }, payload: { event: "links-resolved", links: resolved.map((r) => ({ url: r.url, status: r.status, finalUrl: r.finalUrl ?? null })) } });
   return links;
 }
-/** The URLs the log shows resolved (2xx/3xx at their latest logged resolution). */
+/**
+ * The instructor opened links the harness could not (a publisher that refuses automated requests: 401, 403, 429) and
+ * says they work. Logged in their words; it never stands in for a fetch the harness could make.
+ */
+export function confirmLinks(root, urls, { words }, party) {
+  if (party?.role !== "instructor") throw new Error("only the instructor confirms a link by opening it");
+  if (!String(words || "").trim()) throw new Error("a link confirmation quotes the instructor's words");
+  const list = [...new Set((urls || []).map((u) => String(u).trim()).filter((u) => /^https?:/i.test(u)))];
+  if (!list.length) throw new Error("name at least one http(s) link");
+  return appendLogRecord(root, { type: "steering", party, payload: { event: "links-confirmed", links: list, words } });
+}
+const BLOCKED = new Set([401, 403, 429]);
+/**
+ * The URLs the log shows resolved: 2xx/3xx at their latest logged resolution, or confirmed by the instructor and not
+ * since found broken (a later fetch refused again, 401/403/429, keeps the confirmation; a 404 or 5xx ends it).
+ */
 export function loggedLinkResolutions(logRecords) {
   const last = new Map();
-  for (const r of logRecords) if (r.type === "revision" && r.party?.role === "harness" && r.payload?.event === "links-resolved") for (const l of r.payload.links || []) last.set(l.url, l.status);
-  return new Set([...last].filter(([, st]) => st >= 200 && st < 400).map(([url]) => url));
+  for (const r of logRecords) {
+    if (r.type === "revision" && r.party?.role === "harness" && r.payload?.event === "links-resolved") {
+      for (const l of r.payload.links || []) last.set(l.url, last.get(l.url) === "confirmed" && BLOCKED.has(l.status) ? "confirmed" : l.status);
+    }
+    if (r.type === "steering" && r.party?.role === "instructor" && r.payload?.event === "links-confirmed") for (const u of r.payload.links || []) last.set(u, "confirmed");
+  }
+  return new Set([...last].filter(([, st]) => st === "confirmed" || (st >= 200 && st < 400)).map(([url]) => url));
 }
 
 export async function resolveLinks(root, urls, { fetchImpl = fetch } = {}) {

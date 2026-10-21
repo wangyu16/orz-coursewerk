@@ -17,6 +17,7 @@
 //   node scripts/verify.mjs revert  --root <pkg> --correction <id> --name <instructor> --note "<why the text stands>"
 //   node scripts/verify.mjs corrections --root <pkg> [--mark-shown]                 applied corrections with their diffs
 //   node scripts/verify.mjs links   --root <pkg>                                    resolve external links (declared destinations)
+//   node scripts/verify.mjs links   --root <pkg> --confirm <url,…> --name <instructor> --words "…"   the instructor opened links a publisher refuses to robots
 //   node scripts/verify.mjs status  --root <pkg>                                    evidence state of every semi-mechanical unit
 // The verifier command is the harness environment's COURSEWERK_VERIFIER (JSON array), default headless `claude -p`
 // with no tools, settings, MCP servers or session, in an empty temporary directory (D26).
@@ -30,7 +31,7 @@ import { checkableClaims, claimsHash, folded } from "./lib/verify/claims.mjs";
 import { admit } from "./lib/verify/admission.mjs";
 import { headlessVerifier, recordDispatch, selectPassages, semiBundle, readDispatches } from "./lib/verify/dispatch.mjs";
 import { fsInputReader, pinnedTexts, syncReferenceRecord } from "./lib/verify/references.mjs";
-import { declareRetrieval, recordLinkResolutions, fetchAndPin, onTopic, resolveLinks, searchWikipedia } from "./lib/verify/retrieval.mjs";
+import { confirmLinks, declareRetrieval, recordLinkResolutions, fetchAndPin, onTopic, resolveLinks, searchWikipedia } from "./lib/verify/retrieval.mjs";
 import { applyCorrection, correctionsToShow, readmitRecorded, reviewAbsolutes, revertCorrection, verifyKnowledge, verifySemi } from "./lib/verify/verdicts.mjs";
 import { admitEvidence } from "./lib/core/obligations.mjs";
 import { createQaAudits } from "./lib/legacy/qa_audits.mjs";
@@ -144,6 +145,11 @@ try {
     out(r); process.exit(0);
   }
   if (cmd === "corrections") { out({ corrections: correctionsToShow(root, { mark: flag("--mark-shown") }) }); process.exit(0); }
+  if (cmd === "links" && opt("--confirm")) {
+    const name = opt("--name") || fail("--name <instructor> is required: the instructor opened the link");
+    const r = confirmLinks(root, String(opt("--confirm")).split(","), { words: opt("--words") || fail('--words "<the instructor\'s own words>" is required') }, { role: "instructor", name });
+    out({ confirmed: r.payload.links }); process.exit(0);
+  }
   if (cmd === "links") {
     const q = createQaAudits(path.resolve(root), { forDiscovery: false });
     const urls = new Set();

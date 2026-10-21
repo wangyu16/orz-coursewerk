@@ -93,6 +93,24 @@ test("[req.ms4.links] MS4: a link target with balanced parentheses (a Wikimedia 
   assert.deepEqual(f.map((x) => x.evidence.what), [`a recorded resolution of ${url}`]);
 });
 
+test("[req.ms4.links] MS4: a link a publisher refuses to robots is cleared only by the instructor's logged confirmation, which a later 404 ends", async (t) => {
+  const { recordLinkResolutions, confirmLinks } = await import("../scripts/lib/verify/retrieval.mjs");
+  const p = copy(t);
+  const url = "https://doi.org/10.1021/acscentsci.9b00722";
+  p.edit("study-guide/le-chatelier.md", (x) => x.replace("## The principle", `## The principle\n\nSee [the report](${url}).\n`));
+  const unresolved = () => run(p, "ms4-links").findings.filter((x) => x.kind === "external-link-unresolved").length;
+  recordLinkResolutions(p.root, [{ url, status: 403 }]);
+  assert.equal(unresolved(), 1, "a refused fetch resolves nothing");
+  assert.throws(() => confirmLinks(p.root, [url], { words: "checked" }, { role: "agent", name: "executor" }), /instructor/);
+  assert.throws(() => confirmLinks(p.root, [url], { words: "" }, { role: "instructor", name: "Dr. W" }), /words/);
+  confirmLinks(p.root, [url], { words: "checked and confirmed" }, { role: "instructor", name: "Dr. W" });
+  assert.equal(unresolved(), 0, "the instructor opened it");
+  recordLinkResolutions(p.root, [{ url, status: 403 }]);
+  assert.equal(unresolved(), 0, "refused again by the publisher: the confirmation stands");
+  recordLinkResolutions(p.root, [{ url, status: 404 }]);
+  assert.equal(unresolved(), 1, "found gone: the confirmation ends");
+});
+
 test("[req.ms6.quotations] MS6: an unfound quotation is an obligation, a misquoted attributed passage a defect, copying a defect in public packages only", (t) => {
   const p = copy(t);
   assert.deepEqual(found(run(p, "ms6-quotations"), "ms6-quotations"), [], "clean");
