@@ -85,6 +85,14 @@ test("[req.ms4.links] MS4: broken links and missing assets are defects; unresolv
   assert.deepEqual(found(run(p, "ms4-links"), "ms4-links"), ["asset-unrecorded:obligation", "external-link-unresolved:obligation", "link-broken:defect"]);
 });
 
+test("[req.ms4.links] MS4: a link target with balanced parentheses (a Wikimedia Commons file name) is read whole, not cut at the first parenthesis", (t) => {
+  const p = copy(t);
+  const url = "https://commons.wikimedia.org/wiki/File:Bakelite_Telephone_(20967111954).jpg";
+  p.edit("study-guide/le-chatelier.md", (x) => x.replace("## The principle", `## The principle\n\nPhoto: [source](${url}).\n`));
+  const f = run(p, "ms4-links").findings.filter((x) => x.kind === "external-link-unresolved");
+  assert.deepEqual(f.map((x) => x.evidence.what), [`a recorded resolution of ${url}`]);
+});
+
 test("[req.ms6.quotations] MS6: an unfound quotation is an obligation, a misquoted attributed passage a defect, copying a defect in public packages only", (t) => {
   const p = copy(t);
   assert.deepEqual(found(run(p, "ms6-quotations"), "ms6-quotations"), [], "clean");

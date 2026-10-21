@@ -67,7 +67,8 @@ export function createQaAudits(pkg, { forDiscovery = false } = {}) {
   const isExternal = (t) => /^(https?:|mailto:|tel:|#|javascript:)/i.test(t) || t.startsWith("<http");
   function markdownLinks(text) {
     const links = [];
-    const re = /(!?)\[([^\]]*)]\(([^)\s]+)(?:\s+"[^"]*")?\)/g;
+    // a target may hold balanced parentheses (CommonMark), as Wikimedia Commons file names often do
+    const re = /(!?)\[([^\]]*)]\(((?:[^()\s]|\([^()\s]*\))+)(?:\s+"[^"]*")?\)/g;
     let m;
     while ((m = re.exec(text))) {
       const target = m[3];
@@ -496,7 +497,7 @@ export function createQaAudits(pkg, { forDiscovery = false } = {}) {
         for (const required of ["objective", "question guide", "rubric"]) if (!new RegExp(required, "i").test(text)) fail.push({ file: name, issue: `assessment support is missing ${required} content` });
       }
       if (t === "practice") {
-        const questions = (text.match(/:{3,}\s*tab\s+Q\b/gi) || []).length;
+        const questions = (text.match(/:{3,}\s*tab\s+(?:Q\s*\d+|Q|Question)\b/gi) || []).length; // "Q", "Q3", "Q 3", "Question" (courseguide-standards labels practice tabs "Q3")
         const answers = (text.match(/:{3,}\s*tab\s+Answer\b/gi) || []).length;
         if (questions < 10) fail.push({ file: name, issue: `practice sheet has ${questions} question tabs; at least 10 are required` });
         if (answers !== questions) fail.push({ file: name, issue: `practice question/answer tab counts differ (${questions}/${answers})` });

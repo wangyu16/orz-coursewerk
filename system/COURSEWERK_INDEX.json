@@ -635,7 +635,7 @@
       "id": "repo:scripts/lib/legacy/qa_audits.mjs",
       "path": "scripts/lib/legacy/qa_audits.mjs",
       "type": "kernel",
-      "hash": "8a854057e32098477acb5db302e46bdfeafba6cee54b01031772f0a483723197"
+      "hash": "c819df13dcc8b7d5869ddf96b362787f80dfe71f989dfb4c1ed65ecc1216574b"
     },
     {
       "id": "repo:scripts/lib/legacy/quotation.mjs",
@@ -2027,7 +2027,7 @@
       "id": "repo:tests/stable-modules.test.mjs",
       "path": "tests/stable-modules.test.mjs",
       "type": "test",
-      "hash": "e960a5b7918add6d4bf4f439dc303f3861bfdcc903d98cfa6029bc7f1a665aa3"
+      "hash": "e44c1cc7db629ac741b9f82f66c48d5fedc013862b1bf2e7259587376f7a1073"
     },
     {
       "id": "repo:tests/system-index.test.mjs",
