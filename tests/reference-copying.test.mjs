@@ -61,3 +61,12 @@ test("[req.rights.reference-copy-check] a reference source whose text is not pin
   const f = copying(c);
   assert.deepEqual(f.map((x) => [x.kind, x.statusClass, x.evidence.source]), [["reference-text-missing", "obligation", "textbook-a"]]);
 });
+
+test("[req.rights.reference-copy-check] citing the same paper (its URL or DOI) is not copying", (t) => {
+  const c = course(t, { study: "# Ch\n\nSee [the report](https://doi.org/10.1038/s41586-020-2149-4) and doi:10.1038/s41586-020-2149-4 for details.\n", paper: false });
+  fs.writeFileSync(path.join(c.inputs, "text/book.txt"), BOOK + " Further reading: https://doi.org/10.1038/s41586-020-2149-4 (doi:10.1038/s41586-020-2149-4).");
+  const corpus = JSON.parse(fs.readFileSync(path.join(c.inputs, "SOURCE_CORPUS.json"), "utf8"));
+  corpus.sources[0].sha256 = sha256(fs.readFileSync(path.join(c.inputs, "text/book.txt"), "utf8"));
+  fs.writeFileSync(path.join(c.inputs, "SOURCE_CORPUS.json"), JSON.stringify(corpus));
+  assert.deepEqual(copying(c), []);
+});

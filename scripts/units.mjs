@@ -3,7 +3,7 @@
 //   node scripts/units.mjs begin  --root <pkg> --model <model id> [--step authoring]     before writing
 //   node scripts/units.mjs index  --root <pkg> [--as agent --model <model id>]            after writing (or to detect others' edits)
 //        [--initial-origin agent-knowledge|instructor --name <name>]                     first index of an existing package
-//   node scripts/units.mjs claim  --root <pkg> --units <id,…> --name <instructor> --words "<their words>" [--author "<someone else>"]
+//   node scripts/units.mjs claim  --root <pkg> --units <id,…> --name <instructor> --words "<their words>" [--author "<someone else>" | --author agent:<model>]
 //   node scripts/units.mjs status --root <pkg>                                             counts, origins, gaps, unindexed edits
 //   node scripts/units.mjs link   --root <pkg> --links <file.json> --model <model id>      { "<unit id>": ["<spine node id>", …] }
 //   node scripts/units.mjs confirm --root <pkg> --units <id,…> --what fact|still-correct --name <instructor> --words "<their words>"

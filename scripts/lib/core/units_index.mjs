@@ -357,6 +357,19 @@ export function adoptInstructorText(root, reader, ids, { instructorWords }, part
  * Index every deliverable. `as`: "agent" (requires an open session) or null. `origins`: optional map from a new
  * unit's content hash to an explicit origin (e.g. source-derived with its span). Returns findings and a summary.
  */
+/**
+ * The old unit whose recorded lines wholly contain a passage (startLine..endLine) while those lines still hold, byte for
+ * byte, the text that unit recorded — or null. Such a passage is words nobody changed, re-read: it keeps the author of
+ * the unit that held them.
+ */
+export function unchangedCovering(oldUnits, fileText, passage) {
+  const lines = String(fileText ?? "").split("\n");
+  return (oldUnits || []).find((o) => {
+    const [a, b] = o.locator?.lines || [];
+    if (!(a >= 1 && b >= a && passage.startLine >= a && passage.endLine <= b && o.origin)) return false;
+    return unitHash(lines.slice(a - 1, b).join("\n").trim()) === o.locator.contentHash;
+  }) || null;
+}
 export function indexUnits(root, reader, { as = null, party = null, origins = {}, initialOrigin = null, date = new Date().toISOString().slice(0, 10) } = {}) {
   const logText = readLogText(root);
   const session = as === "agent" ? openSession(logText) : null;
@@ -451,6 +464,14 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
   const sides = [];
   for (const { rel, seg, old, m, back: returned, inherit, absorbed } of plan) {
     const sessionBaseline = new Set(session?.payload.baseline?.[rel] || []);
+    // A RE-READING IS NOT AN EDIT (found by the Chemistry of Macromolecules course): when the harness reads a text
+    // differently (a segmenter fix splits what was one unit into many), words nobody changed must keep their author.
+    // A new passage lying wholly inside an old unit's recorded lines, while those lines still hold exactly the text that
+    // unit recorded (byte for byte, so no edit hides in them), was written by whoever wrote that unit: it takes that
+    // unit's origin, whatever the form either was read as. Any change to those lines leaves the passage to the rules
+    // below (an edit outside a session is still unknown).
+    const fileText = reader.text(rel);
+    const unchangedCover = (s) => unchangedCovering(old, fileText, s);
     const units = seg.map((s, i) => {
       const prev = m.assigned.get(i) || (returned.has(i) ? asOldUnit(returned.get(i)) : null);
       const hash = unitHash(s.text);
@@ -481,7 +502,11 @@ export function indexUnits(root, reader, { as = null, party = null, origins = {}
           summary.agent++;
         }
         else if (!old.length && !prev && initialOrigin) origin = initialOrigin;
-        else { origin = origins[hash] || { kind: "unknown" }; if (origin.kind === "unknown") summary.unknown++; }
+        else {
+          const cover = !prev && !origins[hash] ? unchangedCover(s) : null;
+          if (cover) origin = cover.origin;
+          else { origin = origins[hash] || { kind: "unknown" }; if (origin.kind === "unknown") summary.unknown++; }
+        }
       }
       // the pieces of a split, and a merge, keep the spine links of what they came from
       const inherited = !prev ? [...new Set(sources.flatMap((o) => o.spineNodes || []))] : null;
@@ -581,7 +606,12 @@ export function claimAuthorship(root, { units, as = "instructor", instructorWord
     side.units.forEach((u, i) => {
       if (!ids.has(u.id)) return;
       if (u.origin.kind !== "unknown") throw new Error(`${u.id} is not of unknown authorship`);
-      u.origin = as === "instructor" ? { kind: "instructor-authored", instructor: party.name, date } : { kind: "unknown", namedAuthor: as };
+      // the instructor may also say the AGENT wrote it ("agent:<model>"): the agent can never claim text for itself
+      // (an unknown passage stays unknown until the instructor answers), but the instructor who asked for it can
+      const agent = /^agent:(\S+)$/.exec(String(as));
+      u.origin = as === "instructor" ? { kind: "instructor-authored", instructor: party.name, date }
+        : agent ? { kind: "agent-knowledge", model: agent[1], step: "authoring", date, confirmedBy: party.name }
+        : { kind: "unknown", namedAuthor: as };
       if (as === "instructor" && seg && seg.length === side.units.length && unitHash(seg[i].text) === u.locator?.contentHash) texts[u.id] = seg[i].text;
       done.push(u.id); touched = true;
     });

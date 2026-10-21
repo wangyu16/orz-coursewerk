@@ -5,13 +5,17 @@
 // a web page). A run of COPY_RUN or more consecutive words in common is copied expression: a blocking defect for the
 // agent, who rewrites it in their own words. A reference source whose text is not pinned cannot be compared, so it
 // fails closed. Words are compared case-folded, letters and digits only, so markup, punctuation and line breaks
-// neither hide a copy nor make one.
+// neither hide a copy nor make one; web addresses and DOIs are citations, not expression, and are not compared.
 import { base, chaptersOf, recheckByRerun } from "./_shared.mjs";
 import { pinnedTexts, snapshotInputReader } from "../lib/verify/references.mjs";
 
 export const COPY_RUN = 8;
 const IN = "@inputs/";
-const wordsOf = (text) => { const out = []; for (const m of String(text ?? "").matchAll(/[\p{L}\p{N}]+/gu)) out.push({ w: m[0].toLowerCase(), at: m.index }); return out; };
+// a citation is not expression: web addresses and DOIs are blanked (keeping offsets) before words are read, so citing
+// the same paper as a reference does is never a copy
+const CITATION = /\b(?:https?:\/\/|www\.)[^\s)\]>"']+|\bdoi:\s*10\.\S+|\b10\.\d{4,9}\/[^\s)\]>"']+/giu;
+const blankCitations = (text) => String(text ?? "").replace(CITATION, (m) => " ".repeat(m.length));
+const wordsOf = (text) => { const out = []; for (const m of blankCitations(text).matchAll(/[\p{L}\p{N}]+/gu)) out.push({ w: m[0].toLowerCase(), at: m.index }); return out; };
 
 /** The texts the package ships that a reader reads (D42, D53): chapter deliverables and spine, course map, declared documents. */
 function shippedTexts(s) {

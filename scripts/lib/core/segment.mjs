@@ -188,6 +188,11 @@ export function segmentDeliverable(text, deliverable, { declared = null } = {}) 
     // figures as blocks
     const fig = /^\{\{(mermaid|chart|smiles|structure)\b/.exec(t);
     if (fig) {
+      // where the block ends is orz-markdown's call (its block-directive token), never a closing tag of our own: a
+      // multi-line `{{mermaid … }}` closes at its `}}` line (the legacy `{{/mermaid}}` form, which orz does not
+      // render as one block, keeps the old scan)
+      const ob = orz.blocks.get(i);
+      if (ob && ob.end >= i) { push("figure", i, Math.min(ob.end, lines.length - 1)); i = ob.end + 1; continue; }
       let j = i; if (!t.includes(`{{/${fig[1]}}}`) && !t.endsWith("}}") ) { while (j < lines.length && !lines[j].includes(`{{/${fig[1]}}}`)) j++; }
       else if (!t.includes(`{{/${fig[1]}}}`) && t.endsWith("}}") && !/^\{\{\w+\}\}$/.test(t)) j = i;
       else if (/^\{\{\w+\}\}$/.test(t)) { while (j < lines.length && !lines[j].includes(`{{/${fig[1]}}}`)) j++; }
