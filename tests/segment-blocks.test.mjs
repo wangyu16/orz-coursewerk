@@ -23,3 +23,8 @@ test("[req.units.segmenter] the legacy {{mermaid}} … {{/mermaid}} form stays o
   const f = forms("# T\n\nIntro.\n\n{{mermaid}}\nflowchart TD\n    A --> B\n{{/mermaid}}\n\nAfter.\n");
   assert.deepEqual(f.map(([k]) => k), ["paragraph", "figure", "paragraph"]);
 });
+
+test("[req.units.segmenter] a `:::: cols` group: its markers are structure, an image in a column is a figure, text a paragraph", () => {
+  const f = forms("# T\n\n:::: cols\n::: col\n![a](../assets/a.svg)\n:::\n::: col\n![b](../assets/b.svg)\n\n*A caption in the column.*\n:::\n::::\n\nAfter.\n");
+  assert.deepEqual(f, [["figure", "![a](../assets/a.svg)"], ["figure", "![b](../assets/b.svg)"], ["paragraph", "*A caption in the column.*"], ["paragraph", "After."]]);
+});

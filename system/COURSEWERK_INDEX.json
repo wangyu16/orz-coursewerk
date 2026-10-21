@@ -521,7 +521,7 @@
       "id": "repo:scripts/lib/core/segment.mjs",
       "path": "scripts/lib/core/segment.mjs",
       "type": "kernel",
-      "hash": "66f1cbd498c1511c9ea5a65e9f58fccc00c095a2569801c3f49d75b5e0ee1025"
+      "hash": "38a8ffbadd0f22dc825cca20a98b3289845df29638adf492cae8578b4f327567"
     },
     {
       "id": "repo:scripts/lib/core/shipped.mjs",
@@ -1979,7 +1979,7 @@
       "id": "repo:tests/segment-blocks.test.mjs",
       "path": "tests/segment-blocks.test.mjs",
       "type": "test",
-      "hash": "69425d2d96482755db66639e0213c9eb558c4f1e33c6252d0efa30c7d918796c"
+      "hash": "92bbfc150c4da521c45cdbe97408ee53fa37a9609cae8ecb2712b009088a5f1d"
     },
     {
       "id": "repo:tests/semantic-index-artifact.test.mjs",

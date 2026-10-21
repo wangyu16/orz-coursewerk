@@ -220,6 +220,32 @@ export function segmentDeliverable(text, deliverable, { declared = null } = {}) 
       if (j < lines.length) struct(j);
       i = j + 1; continue;
     }
+    // column groups (`:::: cols [tracks]` … `::: col` … `::::`): the markers are structure; each column's content is read
+    // block by block — an image as a figure, anything else as a paragraph (orz prints every column)
+    if (/^::::\s*cols\b/.test(t)) {
+      struct(i, "label");
+      let j = i + 1;
+      while (j < lines.length && !/^::::\s*$/.test(lines[j].trim())) {
+        if (/^:::\s*[a-z-]+\b/.test(lines[j].trim())) {
+          struct(j, "label");
+          let k = j + 1; while (k < lines.length && !/^:::\s*$/.test(lines[k].trim())) k++;
+          let a = j + 1;
+          while (a < k) {
+            if (!lines[a].trim()) { a++; continue; }
+            let b = a; while (b + 1 < k && lines[b + 1].trim()) b++;
+            const block = lines.slice(a, b + 1).map((x) => x.trim());
+            push(block.every((x) => /^!\[[^\]]*\]\([^)]*\)\s*$/.test(x)) ? "figure" : "paragraph", a, b);
+            a = b + 1;
+          }
+          if (k < lines.length) struct(k);
+          j = k + 1; continue;
+        }
+        if (lines[j].trim()) struct(j);
+        j++;
+      }
+      if (j < lines.length) struct(j);
+      i = j + 1; continue;
+    }
     // callouts
     const box = /^:::\s*([a-z-]+)\b/.exec(t);
     if (box) {
