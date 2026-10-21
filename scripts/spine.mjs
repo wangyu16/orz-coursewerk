@@ -12,7 +12,7 @@
 //   node scripts/spine.mjs preview  --root <pkg> --chapter <slug>     the approval view
 //   node scripts/spine.mjs approve  --root <pkg> (--chapter <slug> | --course) --name <instructor> --words "<what they said>" [--glance] [--without-review]
 //   node scripts/spine.mjs version  --root <pkg> --scopes chapter:<slug>[,…] --reason "<why>" --name <instructor> --words "<their words>"   (carries the chapter's units: each owes re-verification)
-//   node scripts/spine.mjs steering --root <pkg> --defaults <file.json> [--answers <file.json>] [--accept-all] --name <instructor> --words "…"
+//   node scripts/spine.mjs steering --root <pkg> --defaults <file.json> [--answers <file.json>] [--overrides <file.json>] [--accept-all] --name <instructor> --words "…"
 import fs from "node:fs";
 import path from "node:path";
 import { liveReader, manifestChapters } from "./lib/core/package_reader.mjs";
@@ -157,7 +157,8 @@ try {
   if (cmd === "steering") {
     const defaults = JSON.parse(fs.readFileSync(opt("--defaults") || fail("--defaults <file.json> is required"), "utf8"));
     const answers = opt("--answers") ? JSON.parse(fs.readFileSync(opt("--answers"), "utf8")) : {};
-    const s = recordSteering(root, { defaults, answers, acceptAll: flag("--accept-all"), instructorWords: opt("--words") }, instructor());
+    const overrides = opt("--overrides") ? JSON.parse(fs.readFileSync(opt("--overrides"), "utf8")) : undefined;
+    const s = recordSteering(root, { defaults, answers, acceptAll: flag("--accept-all"), overrides, instructorWords: opt("--words") }, instructor());
     console.log(JSON.stringify({ recorded: "steering", answers: s.answers }, null, 2));
     process.exit(0);
   }

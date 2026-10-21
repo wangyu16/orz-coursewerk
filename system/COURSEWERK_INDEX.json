@@ -551,7 +551,7 @@
       "id": "repo:scripts/lib/core/steering_intake.mjs",
       "path": "scripts/lib/core/steering_intake.mjs",
       "type": "kernel",
-      "hash": "7f2e64623d3f82ffc0c22996ad19d76e8686bc7127002d7d1f5cf0dcb3706f25"
+      "hash": "6c9495179743b1a5a4b58ccbbcd7e77d46c868ef9a684c6c2f34e3efba0185d1"
     },
     {
       "id": "repo:scripts/lib/core/unit_records.mjs",
@@ -1019,7 +1019,7 @@
       "id": "repo:scripts/spine.mjs",
       "path": "scripts/spine.mjs",
       "type": "executable",
-      "hash": "2035e0500d8f216009a80cf1f48b8c2f90e7d8a51a2d97e2065838eacbd5ef61"
+      "hash": "357d9e1affc940f27f533708fbbe929be7a0a81f34891f01464cda03cb903201"
     },
     {
       "id": "repo:scripts/study_pairs.mjs",
@@ -2015,7 +2015,7 @@
       "id": "repo:tests/spine-v2.test.mjs",
       "path": "tests/spine-v2.test.mjs",
       "type": "test",
-      "hash": "5b92408405a313941a6a8a9ee2f018cd16718732ed088a1d43c6582a83577c89"
+      "hash": "66dab589eabab2e4c8b81fcd80e2a8a1eefd444d51ad323f08d18e40473ed1c2"
     },
     {
       "id": "repo:tests/spine.test.mjs",

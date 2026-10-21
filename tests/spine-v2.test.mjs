@@ -228,6 +228,19 @@ test("[req.steering.intake] seven questions with proposed defaults; accept-all i
   assert.match(readLogText(p.root), /"type":"steering"/);
 });
 
+test("[req.steering.intake] re-recording steering never silently drops the per-chapter overrides", (t) => {
+  const p = pkg(t);
+  const defaults = { level: "first-year", depth: "conceptual", emphasis: "reasoning", notation: "SI", exampleStyle: "everyday", exclusions: [], tone: "plain" };
+  const overrides = { melting: { depth: "quantitative" } };
+  recordSteering(p.root, { defaults, acceptAll: true, overrides, instructorWords: "defaults are fine; melting deeper" }, I);
+  assert.throws(() => recordSteering(p.root, { defaults, answers: { notation: "common names" }, acceptAll: true, instructorWords: "names change" }, I), /drop the per-chapter overrides \(melting\)/);
+  assert.deepEqual(readSteering(p.root).overrides, overrides, "the refused re-record wrote nothing");
+  recordSteering(p.root, { defaults, answers: { notation: "common names" }, acceptAll: true, overrides, instructorWords: "names change" }, I);
+  assert.equal(readSteering(p.root).answers.notation, "common names"); assert.deepEqual(readSteering(p.root).overrides, overrides);
+  recordSteering(p.root, { defaults, acceptAll: true, overrides: {}, instructorWords: "drop the chapter steering" }, I);
+  assert.deepEqual(readSteering(p.root).overrides, {}, "dropping them is an explicit act");
+});
+
 test("[req.versions.major] a structural change opens a new major version with lineage before it can be approved", (t) => {
   const p = pkg(t);
   recordApproval(p.root, p.reader, ["melting"], { chapter: "melting", instructorWords: "approve" }, I);
