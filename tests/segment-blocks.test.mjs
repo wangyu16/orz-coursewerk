@@ -18,3 +18,8 @@ test("[req.units.segmenter] a multi-line {{mermaid}}, {{chart}} or {{smiles}} bl
   const deck = "{{nyml\nkind: document\ncarrier: slides\ntitle: T\n}}\n\n<!-- slide -->\n## One\n{{mermaid\nflowchart LR\n  A --> B\n}}\n\n<!-- slide -->\n## Two\n- a point after the diagram\n";
   assert.ok(segmentDeliverable(deck, "slides/x.md").units.some((u) => /a point after the diagram/.test(u.text)), "the next slide is read");
 });
+
+test("[req.units.segmenter] the legacy {{mermaid}} … {{/mermaid}} form stays one figure unit (the C2 fixture's form)", () => {
+  const f = forms("# T\n\nIntro.\n\n{{mermaid}}\nflowchart TD\n    A --> B\n{{/mermaid}}\n\nAfter.\n");
+  assert.deepEqual(f.map(([k]) => k), ["paragraph", "figure", "paragraph"]);
+});
