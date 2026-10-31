@@ -88,7 +88,7 @@ export function transition(root, reader, { chapter, to, instructorWords }, party
 }
 
 // ---- which findings belong to which chapter ---------------------------------------------------------------------
-const DELIVERABLE = /^(?:study-guide|slides|practice|concepts|assessment-support)\/([^/]+)\.md$/;
+const DELIVERABLE = /^(?:study-guide|slides|practice|concepts|assessment-support)\/([^/]+?)(?:\.slides)?\.md$/;
 /** The chapter a finding concerns, or null when it concerns the whole package. */
 export function chapterOfFinding(f, unitDeliverable) {
   const chs = new Set();

@@ -352,7 +352,7 @@ export function readAlignment(raw, nonce, declared, knownIds, guides = []) {
  * A question is checked against every guide entry it is linked to (C5-08). An answer is read with its question (C1-04).
  */
 export function reviewInputs(u, all, plan) {
-  const ch = plan.chapters.find((c) => u.locator.deliverable.endsWith(`/${c}.md`));
+  const ch = plan.chapters.find((c) => u.locator.deliverable.endsWith(`/${c}.md`) || u.locator.deliverable.endsWith(`/${c}.slides.md`));
   const links = (u.spineNodes || []).map((id) => plan.nodes.get(id)).filter(Boolean);
   const guideLinks = links.filter((n) => n.kind === "guide");
   const declared = [], add = (n) => { if (n && !declared.some((x) => x.id === n.id)) declared.push(n); };

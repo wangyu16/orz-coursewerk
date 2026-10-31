@@ -11,7 +11,7 @@ import { fileURLToPath } from "node:url";
 const HERE = path.dirname(fileURLToPath(import.meta.url)), REPO = path.dirname(HERE);
 const RETIRED = ["misconception-asserted", "revision-escalate", "spine-relabeled", "key-fact-review", "visual-review", "definition-drift"];
 
-test("[req.modules.no-writes] [req.modules.wiring-report] [req.retire.old-checks] the real C2 package: all eight stable modules ran, none wrote, retired checks are gone", (t) => {
+test("[req.modules.no-writes] [req.modules.wiring-report] [req.retire.old-checks] the real C2 package: all nine stable modules ran (ms10-copying since D54), none wrote, retired checks are gone", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-wiring-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   fs.cpSync(path.join(HERE, "fixtures", "c2-chemistry-v2", "package"), root, { recursive: true });
@@ -21,7 +21,7 @@ test("[req.modules.no-writes] [req.modules.wiring-report] [req.retire.old-checks
   const before = spawnSync("git", ["-C", root, "status", "--porcelain"], { encoding: "utf8" }).stdout;
   spawnSync(process.execPath, [path.join(REPO, "scripts", "gate.mjs"), "--root", root, "--checkpoint", "V8", "--inputs", path.join(HERE, "fixtures", "c2-chemistry", "inputs"), "--json", json]);
   const r = JSON.parse(fs.readFileSync(json, "utf8"));
-  assert.deepEqual(r.wiring.modulesRan, ["ms1-sources", "ms2-rights", "ms3-format", "ms4-links", "ms6-quotations", "ms7-consistency", "ms8-verdicts", "ms9-alignment"]);
+  assert.deepEqual(r.wiring.modulesRan, ["ms1-sources", "ms10-copying", "ms2-rights", "ms3-format", "ms4-links", "ms6-quotations", "ms7-consistency", "ms8-verdicts", "ms9-alignment"]);
   assert.deepEqual(r.wiring.registeredNeverRan, []);
   assert.deepEqual(r.wiring.moduleWrites, []);
   assert.equal(spawnSync("git", ["-C", root, "status", "--porcelain"], { encoding: "utf8" }).stdout, before, "the package is untouched");

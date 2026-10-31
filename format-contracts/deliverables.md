@@ -18,7 +18,7 @@ package/
   study-guide/<slug>.md        # per chapter — the study guide (orz-markdown, rich)
   concepts/<slug>.md           # per chapter — concept map (plain markdown, no graphics)
   concepts/course.md           # course-wide concept map (plain markdown)
-  slides/<slug>.md             # per chapter — slide deck TEXT (orz-slides; header with carrier: slides)
+  slides/<slug>.slides.md      # per chapter — slide deck TEXT (orz-slides; header with carrier: slides; older packages: slides/<slug>.md)
   practice/<slug>.md           # per chapter — practice sheet (orz-markdown)
   assessment-support/<slug>.md # per chapter — assessment guide (plain markdown, no graphics)
   assets/…                     # figures/structures/plots/media (self-generated or open-licensed)
@@ -97,10 +97,10 @@ concepts/ assessment-support/ assets/ metadata/ current/` are **public** (shared
 
 | # | File | Format | Contract |
 |---|------|--------|----------|
-| 1 | `concepts/<slug>.md` | **Plain Markdown, NO graphics, NO header** (any parser, readable raw) | **THE SPINE — see §Concept maps for the required sections.** Concept/topic dependency logic + per-section objectives + the `## Key terms` vocabulary authority. Headings, nested lists, tables, text arrows (→) only — no mermaid, no images, no `{{plugins}}`. Everything student-facing is derived from this file, and the index resolves every term through it. |
+| 1 | `concepts/<slug>.md` | **Plain Markdown, NO graphics** (any parser, readable raw; the format-1 header Alembic writes is allowed and is not plan content) | **THE SPINE — see §Concept maps for the required sections.** Concept/topic dependency logic + per-section objectives + the `## Key terms` vocabulary authority. Headings, nested lists, tables, text arrows (→) only — no mermaid, no images, no `{{plugins}}`. Everything student-facing is derived from this file, and the index resolves every term through it. |
 | 2 | `study-guide/<slug>.md` | **orz-markdown**, visually rich | Concise study guide derived from the concept map; opens with objectives; figures + worked **example questions** (container tabs); full orz feature use (KaTeX/mhchem, `{{smiles}}`, mermaid, `:::info/:::success`, columns). Every Mermaid/chart block has a nearby visible `**Visual description:**`/`**Data summary:**`. Each `## H2` section MAY carry a stable block ID `{{attrs[#blk-…]}}`. MAY open with a header (`{{nyml`↵`kind: document`↵…`}}`: `title`, `theme`, `measure`, `lang`; no `uid`). Assembled to `.md.html` by **orz-mdhtml** for preview. |
-| 3 | `slides/<slug>.md` | **orz-slides text** (format 1) | Deck TEXT, not HTML. Opens with the header `{{nyml`↵`kind: document`↵`carrier: slides`↵`title: …`↵`ratio: 16:9`↵`}}` (deck keys: `title`, `theme`, `ratio`, `footer`, `transition`, …; no `uid`; a 0.x `<!-- deck -->` block is an error); slides separated by the `<!-- slide -->` marker (NOT bare `---`); `# H1` on a `<!-- slide template=title -->` = title slide; `## H2` = content-slide title; `<!-- slide template=closing -->` for the closing slide. One concept per slide. **Reuse only the study guide's `../assets/` figures.** Assembled to `.slides.html` by **orz-slides** for preview. The gate requires `template=title`, `template=outline` and `template=closing` slides and an objective slide. |
-| 4 | `assessment-support/<slug>.md` | **Plain Markdown, NO graphics, NO header** | Per objective, **how to design** questions/activities (assignments, discussion, quizzes, exams, projects) at the right cognitive level — guidance, **NOT a question bank**. Part of the spine: each objective's section and each question guide follow the grammar in §Assessment guides, so the gate can count what the practice sheet owes. |
+| 3 | `slides/<slug>.slides.md` (older packages: `slides/<slug>.md`) | **orz-slides text** (format 1) | Deck TEXT, not HTML. Opens with the header `{{nyml`↵`kind: document`↵`carrier: slides`↵`title: …`↵`ratio: 16:9`↵`}}` (deck keys: `title`, `theme`, `ratio`, `footer`, `transition`, …; no `uid`; a 0.x `<!-- deck -->` block is an error); slides separated by the `<!-- slide -->` marker (NOT bare `---`); `# H1` on a `<!-- slide template=title -->` = title slide; `## H2` = content-slide title; `<!-- slide template=closing -->` for the closing slide. One concept per slide. **Reuse only the study guide's `../assets/` figures.** Assembled to `.slides.html` by **orz-slides** for preview. The gate requires `template=title`, `template=outline` and `template=closing` slides and an objective slide. |
+| 4 | `assessment-support/<slug>.md` | **Plain Markdown, NO graphics** (the format-1 header Alembic writes is allowed) | Per objective, **how to design** questions/activities (assignments, discussion, quizzes, exams, projects) at the right cognitive level — guidance, **NOT a question bank**. Part of the spine: each objective's section and each question guide follow the grammar in §Assessment guides, so the gate can count what the practice sheet owes. |
 | 5 | `practice/<slug>.md` | **orz-markdown** | Concrete questions instantiated from the assessment guide — at least each guide entry's **Count** — each question unit linked to its guide entry; each Q + worked answer in container tabs (`:::: tabs` / `::: tab`); correct, work shown. MAY open with a header (`{{nyml`↵`kind: document`↵…`}}`: `title`, `theme`, `measure`, `lang`; no `uid`). Assembled to `.md.html` by **orz-mdhtml** for preview. |
 | — | `concepts/course.md` | **Plain Markdown, NO graphics** | Course-wide concept map + overall summary + course-wide `## Key terms`. See §Concept maps. (**Not** a `## Keywords` dump — that is an authoring input, not a stored section.) |
 | — | `private/…` | Plain Markdown | Answer keys, full solutions, exam content, instructor notes — **PRIVATE**, never in a public folder. |
@@ -289,15 +289,16 @@ matplotlib (see `skills/oer-figures`). The QA gate flags unclosed containers and
 
 ## The text is the course; the assembled file is clothes — ship the text
 Every orz deliverable follows the family's **text format 1** (orz-markdown spec FC-18). One document has two forms:
-the **text** (`slides/<slug>.md`, …: canonical, what you write, what ships) and the **assembled file**
+the **text** (`slides/<slug>.slides.md`, …: canonical, what you write, what ships) and the **assembled file**
 (`.md.html` / `.slides.html` / `.paged.html`: the text plus a regenerable shell).
 
 - **The text is the source of truth.** All content and every author choice live in it. The assembled file holds the
   text exactly — `extract(assemble(text)).text === text`, byte for byte — and adds nothing to the content.
 - **The header is document data, never content.** A `{{nyml`↵`kind: document`↵…`}}` block at the very top holds
   the title, theme, ratio, page settings and `carrier:`; it renders nothing to a reader. What a frame does print from
-  it (a slide footer, a running header) is framing, read and checked as such. The spine files carry no header.
-- **No identity in the text.** Package texts carry no `uid`: Alembic assigns identity on import.
+  it (a slide footer, a running header) is framing, read and checked as such. A spine file may carry the header too
+  (Alembic writes one, with its `uid`, on every document); it is document data, never plan content.
+- **No identity invented.** Never write a `uid` yourself: Alembic assigns it. A `uid` Alembic wrote stays as it is.
 - **Clothes are built with the newest frames.** `node scripts/build_carriers.mjs` assembles each text with the
   newest published orz-mdhtml / orz-slides / orz-paged into `preview/` (regenerable, **never shipped**) and checks
   every carrier: it must extract to its exact text, and a carrier lint error fails the build. The receipt records the

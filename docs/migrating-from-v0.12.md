@@ -15,6 +15,12 @@ Their request to migrate ("get it into shape with the current Coursewerk") is th
 
 ## 1. Convert the spine (the instructor's request)
 
+**A plan older than v0.12** (Coursewerk 0.11: "Section-Level Concept Map", "Objective 1.1a" ids, concept trees, no
+`## Key terms` or `## Misconceptions to surface`) cannot be converted by the tool, which refuses it and writes nothing.
+Standardize it as the agent instead: the old plan is raw material for the v2 plan (§Concept maps in
+`format-contracts/deliverables.md`); mark what you added (`spine.mjs propose`), pass `spine.mjs check`, and bring each
+chapter to the instructor for approval (M3), as for a new course.
+
 ```bash
 git -C <pkg> status                                   # must be clean: the migration is one reviewable diff
 node scripts/spine.mjs migrate --root <pkg> --name "<instructor>" --words "<their words>"

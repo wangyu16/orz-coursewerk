@@ -44,6 +44,14 @@ import { NYML_NOTATION_KINDS, frameOf, listItemsOf, nymlKindOf, printedModel } f
 export { NYML_NOTATION_KINDS };
 
 export const DELIVERABLE_DIRS = Object.freeze(["study-guide", "slides", "practice"]);
+/** A chapter's file in a folder: the deck is `slides/<ch>.slides.md` (the site-type contract, §5) when the package has
+ *  it, else the older `slides/<ch>.md`. `exists(rel)` says whether the package holds a file. */
+export function chapterFile(dir, ch, exists = () => false) {
+  if (dir === "slides" && exists(`slides/${ch}.slides.md`)) return `slides/${ch}.slides.md`;
+  return `${dir}/${ch}.md`;
+}
+/** The chapter of a chapter file ("slides/gases.slides.md" and "slides/gases.md" are both gases), or null. */
+export const chapterOfFile = (rel) => /^(?:study-guide|slides|practice|concepts|assessment-support)\/([^/]+?)(?:\.slides)?\.md$/.exec(rel || "")?.[1] ?? null;
 const FRAMING_SECTION = /^(summary|overview|introduction|what we will cover|key takeaways|looking ahead|recap|outline)\b/i;
 const FRAMING_TEMPLATES = new Set(["title", "outline", "section", "closing"]);
 

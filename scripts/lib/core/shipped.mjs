@@ -20,7 +20,7 @@ import { administrativeDocuments, declaredKind, deliverablesOf } from "./units_i
 import { frameOf, printedModel } from "./printed.mjs";
 import { segmentDeliverable } from "./segment.mjs";
 
-const CHAPTER_FILE = /^(?:study-guide|slides|practice|concepts|assessment-support)\/([^/]+)\.md$/;
+const CHAPTER_FILE = /^(?:study-guide|slides|practice|concepts|assessment-support)\/([^/]+?)(?:\.slides)?\.md$/;
 
 /**
  * The package files a pack ships, in a stable order: { files: [rel], left: number of files left out, leftOut: { why:
@@ -121,6 +121,11 @@ export function hiddenContent(root, reader, { keep = () => true } = {}) {
   return out;
 }
 
+// a table's delimiter row ("|---|:--:|") under its header row is structure, not text: it prints the table's rules, never
+// words, so it hides nothing (GenChem re-evaluation 2026-10-31: tables inside question tabs were reported as hidden)
+const TABLE_RULE = /^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)*\|?\s*$/;
+const tableRule = (lines, k) => TABLE_RULE.test(lines[k] || "") && /^\s*\|.*\|\s*$/.test(lines[k - 1] || "");
+
 /** What one deliverable's text hides from its reader, read through its frame: [{ file, line, what }]. `declared`: the
  *  kind DOCUMENTS.json declares for it (units_index.mjs declaredKind). */
 export function hiddenInText(text, file, declared = null) {
@@ -129,7 +134,7 @@ export function hiddenInText(text, file, declared = null) {
   for (const u of segmentDeliverable(text, file, { declared }).units) {
     // EVERY line of a unit must print (round 4): a link reference definition on a paragraph's first line, or a line
     // the frame drops, is text the review reads and no student sees, even when the unit's other lines print
-    const dark = []; for (let k = u.startLine - 1; k < u.endLine; k++) if (lines[k]?.trim() && !m.printed.has(k)) dark.push(k);
+    const dark = []; for (let k = u.startLine - 1; k < u.endLine; k++) if (lines[k]?.trim() && !m.printed.has(k) && !tableRule(lines, k)) dark.push(k);
     // the frame's own reason, where it dropped the line (a slide region it does not show: round 5, CONTROL C1-01/02)
     const why = dark.map((k) => m.dropped?.get(k)).find(Boolean), because = why ? ` — ${why}` : "";
     if (dark.length && dark.length === lines.slice(u.startLine - 1, u.endLine).filter((l) => l.trim()).length) out.push({ file, line: u.startLine, what: `a ${u.form} that prints nothing ("${u.text.replace(/\s+/g, " ").slice(0, 60)}")${because}` });

@@ -24,7 +24,7 @@ export function unitClaims(s) {
     // shape); anywhere else (a declared handout), the one chapter its links serve, or the whole package (red-team round
     // 5, the audit of F4: the second path segment was taken as the chapter, so "current/fall-2026/x.md" was read in a
     // chapter named "fall-2026" and its chapter's terms never resolved — its values were never compared)
-    const own = side.deliverable.match(/^(?:study-guide|slides|practice)\/([^/]+)\.md$/)?.[1] ?? null;
+    const own = side.deliverable.match(/^(?:study-guide|slides|practice)\/([^/]+?)(?:\.slides)?\.md$/)?.[1] ?? null;
     const linkedChapter = (u) => { const chs = [...new Set((u.spineNodes || []).map((n) => String(n).split(".")[1]).filter((c) => c && c !== "course"))]; return chs.length === 1 ? chs[0] : null; };
     for (const u of side.units || []) {
       const scope = own ?? linkedChapter(u);

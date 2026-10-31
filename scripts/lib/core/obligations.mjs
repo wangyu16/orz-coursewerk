@@ -449,7 +449,7 @@ function valueSuccessors(u, x, ctx, heirs = [], { wide = true } = {}) {
   if (!chase.length) return none;
   const left = !!was || ![...mine].some((k) => now.has(k));
   const near = new Set([`${x.deliverable}|${x.section}`, ...heirs.map((w) => `${w.locator.deliverable}|${w.locator.section}`)]);
-  const chapterOf = (rel) => /([^/]+)\.md$/.exec(rel || "")?.[1] ?? null;
+  const chapterOf = (rel) => /([^/]+?)(?:\.slides)?\.md$/.exec(rel || "")?.[1] ?? null;
   const tier = (w) => (near.has(`${w.locator.deliverable}|${w.locator.section}`) ? 0 : w.locator.deliverable === x.deliverable ? 1 : chapterOf(w.locator.deliverable) === chapterOf(x.deliverable) ? 2 : 3);
   const known = (w) => !!u.stamp && u.stamp[`unit:${w.id}`] != null && u.stamp[`unit:${w.id}`] === ctx.hashes[`unit:${w.id}`];
   const at = Number.isInteger(x.ordinal) ? x.ordinal : (heirs[0]?.locator.ordinal ?? 0);
@@ -1081,7 +1081,7 @@ export function openVersionCarrying(root, reader, { scopes, reason, instructorWo
  *     it is carried by every chapter's new version rather than by none.
  */
 export function chapterScopeUnits(units, reader, spine, chapter) {
-  const own = new Set(DELIVERABLE_DIRS.map((d) => `${d}/${chapter}.md`));
+  const own = new Set([...DELIVERABLE_DIRS.map((d) => `${d}/${chapter}.md`), `slides/${chapter}.slides.md`]);
   const nodesOf = (ch) => new Set([...(spine.chapters[ch]?.map.nodes || []), ...(spine.chapters[ch]?.guide.entries || [])].map((n) => n.id).filter(Boolean));
   const mine = nodesOf(chapter), anyChapter = new Set(Object.keys(spine.chapters).flatMap((ch) => [...nodesOf(ch)]));
   const docs = new Map(documentEntries(reader).map((d) => [d.source, d]));

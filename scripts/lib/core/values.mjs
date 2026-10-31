@@ -54,7 +54,10 @@ const MINUS = "[-−\\u2010-\\u2015]";
 const NUM = String.raw`(?:\d{1,3}(?:,\d{3})+(?![\d])(?:\.\d+)?|\d+(?:[.,]\d+)?)`;
 // a sign: a minus not preceded by a number or a closing bracket (else it subtracts) — a unit's exponent ("mol^-1") is
 // not a number — spaces and LaTeX spacing allowed; and never the minus of an exponent itself
-const SIGN = `(?:(?<!(?:(?<![-−^])\\d|[.)\\]}])\\s*)(?<![A-Za-z_^])(${MINUS})\\s*(?:\\\\[,;:! ]\\s*)*)?(?<!\\^\\s*[-−]?\\s*)`;
+// a minus is a sign, not a subtraction or a list dash (GenChem re-evaluation 2026-10-31): never straight after a
+// one-letter symbol ("K − 273.15 K"; the articles a, A and I excepted), and, when a space follows it, only after =, (, :,
+// ≈, < or > — a dash opening a line or a bullet ("- 125 g") is no sign
+const SIGN = `(?:(?<!(?:(?<![-−^])\\d|[.)\\]}])\\s*)(?<![A-Za-z_^])(?<!(?:^|[^\\w\\\\])[B-HJ-Zb-z]\\s+)(${MINUS})(?:(?!\\s)|(?<=[=(≈:<>]\\s*[-−\\u2010-\\u2015])(?=\\s))\\s*(?:\\\\[,;:! ]\\s*)*)?(?<!\\^\\s*[-−]?\\s*)`;
 const TIMES = String.raw`(?:\\times|\\cdot|×|·|⋅|x|\*)`;
 // scientific notation: [sign mantissa ×] 10^{e} | 10^e | 10 −e (the source extraction's flattened superscript)
 const SCI = new RegExp(`${SIGN}(?:(?<![\\w.])(${NUM})\\s*${TIMES}\\s*)?(?<![\\w.])10\\s*(?:\\^\\s*\\{\\s*(${MINUS}|\\+)?\\s*(\\d+)\\s*\\}|\\^\\s*(${MINUS}|\\+)?(\\d+)|(−)\\s*(\\d+))(?![\\d.])`, "g");

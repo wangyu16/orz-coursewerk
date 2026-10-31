@@ -65,7 +65,7 @@
       "id": "repo:docs/assembling-carriers.md",
       "path": "docs/assembling-carriers.md",
       "type": "documentation",
-      "hash": "1f32c86a6df1ffb1ec8682d4575069ff2624afb0762b54e81301a503cff3dca1"
+      "hash": "b0707c9f3e753ea2edced6d793afdd7b5b28147aa029abff1ce3e7074938a4de"
     },
     {
       "id": "repo:docs/assurance-kernel.md",
@@ -107,7 +107,7 @@
       "id": "repo:docs/migrating-from-v0.12.md",
       "path": "docs/migrating-from-v0.12.md",
       "type": "documentation",
-      "hash": "f4042a0023d052259cf0d7d3ac80ecaee7c7b77b75e43b50956419641d9f8521"
+      "hash": "9693f808fa0c5878d778dbbcfddb7b73634524925258d22e48af592f94879777"
     },
     {
       "id": "repo:docs/procedure-v2.md",
@@ -161,7 +161,7 @@
       "id": "repo:format-contracts/deliverables.md",
       "path": "format-contracts/deliverables.md",
       "type": "documentation",
-      "hash": "ec9539b9148b7ef6e9f516408de9a8edce1ac3ec13a93ab2afa81d06538e85ef"
+      "hash": "ec751bbf2e446878bf11b402036a2c66f960e6f13cab41824b53064fca7f3acf"
     },
     {
       "id": "repo:GEMINI.md",
@@ -233,7 +233,7 @@
       "id": "repo:scripts/build_carriers.mjs",
       "path": "scripts/build_carriers.mjs",
       "type": "executable",
-      "hash": "e669aa1dc1db41fad4e539ee9049365ce9cefb501887f3d34aa34f4105ba156e"
+      "hash": "b8f18601f96de012fb34148b67627a692adeb8182a2b1d4fab746c66c7d8d064"
     },
     {
       "id": "repo:scripts/capture_media_evidence.mjs",
@@ -425,7 +425,7 @@
       "id": "repo:scripts/lib/core/core_checks.mjs",
       "path": "scripts/lib/core/core_checks.mjs",
       "type": "kernel",
-      "hash": "b3aa97db8c9f4a65207856cddb5eabc905201da91b4342b24699465dbfbf11f4"
+      "hash": "95200c903bd0dd9c3954c1af3e4464e8bdab2981ebc63e250f4e0dbbfd36bb71"
     },
     {
       "id": "repo:scripts/lib/core/critique.mjs",
@@ -437,7 +437,7 @@
       "id": "repo:scripts/lib/core/dependencies.mjs",
       "path": "scripts/lib/core/dependencies.mjs",
       "type": "kernel",
-      "hash": "70fc907eea2c2b8bda412d76bccf86e5bfe330834beb15a00fee146500b9af6c"
+      "hash": "8aa60e94d8e43ab44bb5b065773a27ed0a15d4700405afd57842f72fed965681"
     },
     {
       "id": "repo:scripts/lib/core/digest.mjs",
@@ -479,7 +479,7 @@
       "id": "repo:scripts/lib/core/obligations.mjs",
       "path": "scripts/lib/core/obligations.mjs",
       "type": "kernel",
-      "hash": "2bae038dabf712b15b37b3959f55cad4fbb28d897d94efabfa7c91f7a28abeb7"
+      "hash": "92d663e80d22e0421be58ba2dcbd4264d55db33703823353a63935689a2c7a4d"
     },
     {
       "id": "repo:scripts/lib/core/pack_v2.mjs",
@@ -503,7 +503,7 @@
       "id": "repo:scripts/lib/core/printed.mjs",
       "path": "scripts/lib/core/printed.mjs",
       "type": "kernel",
-      "hash": "2e81ef57623d7a3a8dc1025bff72d7d931e057f32ae61090178a051c6b75303f"
+      "hash": "02cb7b2f4edd8d7e269be5fd11be1cf6d07fe23bcea475d9d4e4ee73fd3fa320"
     },
     {
       "id": "repo:scripts/lib/core/reconcile.mjs",
@@ -521,19 +521,19 @@
       "id": "repo:scripts/lib/core/segment.mjs",
       "path": "scripts/lib/core/segment.mjs",
       "type": "kernel",
-      "hash": "38a8ffbadd0f22dc825cca20a98b3289845df29638adf492cae8578b4f327567"
+      "hash": "874d6599894370a8bd7841dfeab47ddc0681b441f03ec6f6fb52137695909b30"
     },
     {
       "id": "repo:scripts/lib/core/shipped.mjs",
       "path": "scripts/lib/core/shipped.mjs",
       "type": "kernel",
-      "hash": "726fd950e23cad8e18a36bb147da7a2352bf53131a3d00953731492f9fb87d87"
+      "hash": "1dab5b570fcabd94f7a4ad6e705b3bfd84544395208bd7c1765c20e08b8a12d5"
     },
     {
       "id": "repo:scripts/lib/core/spine_detail.mjs",
       "path": "scripts/lib/core/spine_detail.mjs",
       "type": "kernel",
-      "hash": "6d0259193a1fab8f0d8e66d8cd13fc8aacc0561597e4cb8d3ef6643edb2af5ba"
+      "hash": "37b37ca230fa9c4ec2702ececc3c7b5a0af15a989799fa4756f1da5d2dd1a454"
     },
     {
       "id": "repo:scripts/lib/core/spine_review.mjs",
@@ -545,7 +545,7 @@
       "id": "repo:scripts/lib/core/spine.mjs",
       "path": "scripts/lib/core/spine.mjs",
       "type": "kernel",
-      "hash": "4d3ce6207f9ffc833384271ee1f0bf2eba58e8ec6122a9813b34b57e9973652b"
+      "hash": "fef74c391b8a9c5777757a4e8865fa379e42b12ea9a21cb9834de5a62078c8e8"
     },
     {
       "id": "repo:scripts/lib/core/steering_intake.mjs",
@@ -563,13 +563,13 @@
       "id": "repo:scripts/lib/core/units_index.mjs",
       "path": "scripts/lib/core/units_index.mjs",
       "type": "kernel",
-      "hash": "98a622ffa175f828bd324a54eb1d71279633d1ef97db0cb727067a3c2babcc56"
+      "hash": "8f8d6edab7161fa7bf2709a759238a12a8c69dcf211dde8ea08b8d1170d837b6"
     },
     {
       "id": "repo:scripts/lib/core/values.mjs",
       "path": "scripts/lib/core/values.mjs",
       "type": "kernel",
-      "hash": "a2070c7ece1976b1a45b32f29707e95c2a4e534e1a08ae423dbf3b9d4e0e6ddd"
+      "hash": "121a411778197c2b3f9037927ee6bcba199ee20a4539721417c6bee8fcb9bd18"
     },
     {
       "id": "repo:scripts/lib/core/version_scope.mjs",
@@ -587,7 +587,7 @@
       "id": "repo:scripts/lib/core/workflow.mjs",
       "path": "scripts/lib/core/workflow.mjs",
       "type": "kernel",
-      "hash": "ee38a30834877d65c0713ecb2585f46e779fe85a42dfcf21ade3663176ef0ed9"
+      "hash": "e5cea9c8e8cdbddd2084a24b7ba6d866a1928d0efeef72929be8a5bef1e2f1e2"
     },
     {
       "id": "repo:scripts/lib/escalation.mjs",
@@ -635,7 +635,7 @@
       "id": "repo:scripts/lib/legacy/qa_audits.mjs",
       "path": "scripts/lib/legacy/qa_audits.mjs",
       "type": "kernel",
-      "hash": "c819df13dcc8b7d5869ddf96b362787f80dfe71f989dfb4c1ed65ecc1216574b"
+      "hash": "1b940cf3842fec69c38f9ba9df7a49937a24fcb1a928c91ec08622ff063910ae"
     },
     {
       "id": "repo:scripts/lib/legacy/quotation.mjs",
@@ -839,7 +839,7 @@
       "id": "repo:scripts/lib/verify/alignment.mjs",
       "path": "scripts/lib/verify/alignment.mjs",
       "type": "kernel",
-      "hash": "f0ae4500a4d4a9b0daad939b16e02c76d33a527fe6836788c0989e99fb1f8e1f"
+      "hash": "6d11101492e24536620b97fcce1a395fa343b7b5632ed4782bbfda9a384399ac"
     },
     {
       "id": "repo:scripts/lib/verify/claims.mjs",
@@ -857,7 +857,7 @@
       "id": "repo:scripts/lib/verify/mechanical.mjs",
       "path": "scripts/lib/verify/mechanical.mjs",
       "type": "kernel",
-      "hash": "161df062218a4fbd53abc20ef9e249d360e306631b4a373a1ef90da0fcb6d9c5"
+      "hash": "4401f185014bc32b6181f7f0d35fdcc2938fb547289d55f48f5d461b5ba87071"
     },
     {
       "id": "repo:scripts/lib/verify/references.mjs",
@@ -893,7 +893,7 @@
       "id": "repo:scripts/modules/_shared.mjs",
       "path": "scripts/modules/_shared.mjs",
       "type": "executable",
-      "hash": "9ae008dcb59dc97a401b2f1fcd21aec50f757371347e182ce502d0ecb59a17dc"
+      "hash": "04c7b29aca00e4725589e4d1028bb83c63d9016070f117542d1168afecdc022d"
     },
     {
       "id": "repo:scripts/modules/ms1-sources.mjs",
@@ -905,7 +905,7 @@
       "id": "repo:scripts/modules/ms10-copying.mjs",
       "path": "scripts/modules/ms10-copying.mjs",
       "type": "executable",
-      "hash": "398d1de88de35a95e4c69b4e6d99505b162c25a645b9e6b194f0a4340e581fd7"
+      "hash": "747e8bdd2dc95cb8ac877dec5fff2c28d04fea712d410c76d615454b68d57eec"
     },
     {
       "id": "repo:scripts/modules/ms2-rights.mjs",
@@ -941,7 +941,7 @@
       "id": "repo:scripts/modules/ms7-consistency.mjs",
       "path": "scripts/modules/ms7-consistency.mjs",
       "type": "executable",
-      "hash": "89ace1f6ccab704d16319b8578c370e3f4f819c21997a4a2df99c60ce8756610"
+      "hash": "21741f8834f4a470529e8d66d7f6065ba3889afa46cf1d053862b75c4dcbab81"
     },
     {
       "id": "repo:scripts/modules/ms8-verdicts.mjs",
@@ -1019,7 +1019,7 @@
       "id": "repo:scripts/spine.mjs",
       "path": "scripts/spine.mjs",
       "type": "executable",
-      "hash": "357d9e1affc940f27f533708fbbe929be7a0a81f34891f01464cda03cb903201"
+      "hash": "04ac7a33691cfcf0020feac9dd0b25f5c826047a9f7d948db1d0b896527d383a"
     },
     {
       "id": "repo:scripts/study_pairs.mjs",
@@ -1044,6 +1044,102 @@
       "path": "scripts/verify.mjs",
       "type": "executable",
       "hash": "cabb2e14d847b4ed8c460ebc2575adab7146420fecd3088f8d9dd79df83639e0"
+    },
+    {
+      "id": "repo:site-type/licences/all-rights-reserved.txt",
+      "path": "site-type/licences/all-rights-reserved.txt",
+      "type": "repository-support",
+      "hash": "82d737ca384f9af2e3c7615e98d26ec5e0725ad0bd0a444eb1c7cba4125a3c68"
+    },
+    {
+      "id": "repo:site-type/licences/CC-BY-4.0.txt",
+      "path": "site-type/licences/CC-BY-4.0.txt",
+      "type": "repository-support",
+      "hash": "9e5f1b3c610b9c2da5c313bf81d577a7d1acec686bdb0384edefa6df0f90cd94"
+    },
+    {
+      "id": "repo:site-type/licences/CC-BY-NC-4.0.txt",
+      "path": "site-type/licences/CC-BY-NC-4.0.txt",
+      "type": "repository-support",
+      "hash": "3711f963c05d0be80d53e5923308a6dee31b203da23435c9cfb7c7b6e4dd5e19"
+    },
+    {
+      "id": "repo:site-type/licences/CC-BY-NC-SA-4.0.txt",
+      "path": "site-type/licences/CC-BY-NC-SA-4.0.txt",
+      "type": "repository-support",
+      "hash": "1349a4b6148492b44f629e64eed676612e234fe9a839e4f3b277c1482c8849f1"
+    },
+    {
+      "id": "repo:site-type/licences/CC-BY-SA-4.0.txt",
+      "path": "site-type/licences/CC-BY-SA-4.0.txt",
+      "type": "repository-support",
+      "hash": "23ee78c8bae49cf08ea2f0c84945c66b987ebe4520881fb51b3dad4fb43d07c2"
+    },
+    {
+      "id": "repo:site-type/licences/CC0-1.0.txt",
+      "path": "site-type/licences/CC0-1.0.txt",
+      "type": "repository-support",
+      "hash": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+    },
+    {
+      "id": "repo:site-type/site-type.json",
+      "path": "site-type/site-type.json",
+      "type": "repository-support",
+      "hash": "d47618c73311f67ab680308bbe0b6840f88e3e78e1e0d473b4bec20c98096ca5"
+    },
+    {
+      "id": "repo:site-type/starters/assessment-guide.md",
+      "path": "site-type/starters/assessment-guide.md",
+      "type": "repository-support",
+      "hash": "bb20cb11524990e9a790f44f53e14a35cf30d84c9bf8c9ebe8dd11cab26780c7"
+    },
+    {
+      "id": "repo:site-type/starters/concept-map.md",
+      "path": "site-type/starters/concept-map.md",
+      "type": "repository-support",
+      "hash": "212df27a20e2c6280e446e08ee8ec79ca63a91f53912b3e85e1491ebf070122b"
+    },
+    {
+      "id": "repo:site-type/starters/course-map.md",
+      "path": "site-type/starters/course-map.md",
+      "type": "repository-support",
+      "hash": "7d63e7b2fd4960a52e7fa67cc8223dbabdef1a286b01cb68d34118163f141653"
+    },
+    {
+      "id": "repo:site-type/starters/practice.md",
+      "path": "site-type/starters/practice.md",
+      "type": "repository-support",
+      "hash": "fcf22b3febd530b82fbbc4c2608519688aa5c8b1a307650fba11fe3b02453663"
+    },
+    {
+      "id": "repo:site-type/starters/README.md",
+      "path": "site-type/starters/README.md",
+      "type": "repository-support",
+      "hash": "289693016673762909dffe51f12fcca0666e9926574efb6a234da5c6dc91d5fe"
+    },
+    {
+      "id": "repo:site-type/starters/slides.slides.md",
+      "path": "site-type/starters/slides.slides.md",
+      "type": "repository-support",
+      "hash": "ddac404a8628755c1439446a60c3d1d07f9685a66507bbd50cd4532879a57e29"
+    },
+    {
+      "id": "repo:site-type/starters/study-guide.md",
+      "path": "site-type/starters/study-guide.md",
+      "type": "repository-support",
+      "hash": "a2f6bada3bfd9be35e17043de4b29ea70d5c68ffeee7f6550df20c0257c70354"
+    },
+    {
+      "id": "repo:site-type/template/private/README.md",
+      "path": "site-type/template/private/README.md",
+      "type": "repository-support",
+      "hash": "15f9cd2cefa75d5a65f2540c1d7c861d55fef22c17f4e895814d39730b70fa9f"
+    },
+    {
+      "id": "repo:site-type/templates/CITATION.cff",
+      "path": "site-type/templates/CITATION.cff",
+      "type": "repository-support",
+      "hash": "be1fe6d045b1dfdf7ff95c42c4c2a2cd6a69801778694b7ecc5f02f9e360116f"
     },
     {
       "id": "repo:site/assets/coursewerk-favicon.svg",
@@ -1718,6 +1814,12 @@
       "hash": "02560bf380c22aafb750c70197038c8481a970341c736f7f096427f53385113a"
     },
     {
+      "id": "repo:tests/genchem-reeval.test.mjs",
+      "path": "tests/genchem-reeval.test.mjs",
+      "type": "test",
+      "hash": "af2eb60a64aef92c45f0bf792f7027a64962f72fb335e9bbe48708edd6c0d6e2"
+    },
+    {
       "id": "repo:tests/helpers/baseline.mjs",
       "path": "tests/helpers/baseline.mjs",
       "type": "test",
@@ -2099,7 +2201,7 @@
       "id": "repo:tests/wiring-modules.test.mjs",
       "path": "tests/wiring-modules.test.mjs",
       "type": "test",
-      "hash": "7d39d466215098315e46e62d0e0fc099533de7d70cfaa226dd58ea6de08ef906"
+      "hash": "05d411837e3196e158b435bf86a30552c40215535d6a5b71084dc9851f1cacc2"
     },
     {
       "id": "repo:tests/wiring.test.mjs",

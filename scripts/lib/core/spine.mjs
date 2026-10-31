@@ -15,6 +15,7 @@
 //                                                          - **Level:** … (optional)  - **Targets:** <misconception id> (optional)
 //
 // This module parses and checks; it never writes. Minting missing anchors is a separate, explicit tool (spine.mjs CLI).
+import { withoutHeader } from "./printed.mjs";
 import { canonicalJson, sha256 } from "../records/canonical.mjs";
 import { listItemsOf } from "./printed.mjs";
 
@@ -163,7 +164,9 @@ function parseGuide(text, chapter, file) {
 const levelList = (s) => String(s || "").toLowerCase().split(/\s*(?:,|\band\b|\/)\s*/).map((x) => x.trim()).filter(Boolean);
 
 /** Parse the whole spine of a package from a snapshot-like reader ({ text(rel) }). */
-export function parseSpine(reader, chapters) {
+export function parseSpine(reader0, chapters) {
+  // the plan is read without its format-1 header (document data, not plan content)
+  const reader = { ...reader0, text: (rel) => withoutHeader(reader0.text(rel)) };
   const course = parseMap(reader.text(COURSE_MAP), "course", COURSE_SECTIONS, COURSE_MAP);
   const out = { course, chapters: {} };
   for (const ch of chapters) {

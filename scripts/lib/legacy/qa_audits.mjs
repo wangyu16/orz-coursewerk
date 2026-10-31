@@ -2,6 +2,7 @@
 // that both the old gate and the new stable modules call the same code. Behaviour is unchanged: check_oer.mjs builds
 // these with createQaAudits(pkg, { forDiscovery }) and uses them exactly as before; modules call them on a private,
 // materialized copy of the package. Do not change behaviour here without changing it for both callers.
+import { withoutHeader } from "../core/printed.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
@@ -426,7 +427,7 @@ export function createQaAudits(pkg, { forDiscovery = false } = {}) {
         fail.push({ file: name, issue: `${t} must be graphics-free but contains an image` });
       if ((t === "concepts" || t === "assessment-support") && /\{\{\s*(?:mermaid|mm|smiles|sm)\b/i.test(text))
         fail.push({ file: name, issue: `${t} must be graphics-free but contains a rich plugin` });
-      if ((t === "concepts" || t === "assessment-support") && /(?:\{\{|:{3,}\s+\S)/.test(text))
+      if ((t === "concepts" || t === "assessment-support") && /(?:\{\{|:{3,}\s+\S)/.test(withoutHeader(text)))
         fail.push({ file: name, issue: `${t} must be plain Markdown without plugins or semantic containers` });
       // THE SPINE'S SECTIONS — enforced against `format-contracts/deliverables.md` §Concept maps, which is
       // the single authority. [FIXED 2026-07-17: this check REQUIRED a `## Keywords` section while the

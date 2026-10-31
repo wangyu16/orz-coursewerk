@@ -6,6 +6,7 @@
 // agent, who rewrites it in their own words. A reference source whose text is not pinned cannot be compared, so it
 // fails closed. Words are compared case-folded, letters and digits only, so markup, punctuation and line breaks
 // neither hide a copy nor make one; web addresses and DOIs are citations, not expression, and are not compared.
+import { chapterFile } from "../lib/core/segment.mjs";
 import { base, chaptersOf, recheckByRerun } from "./_shared.mjs";
 import { pinnedTexts, snapshotInputReader } from "../lib/verify/references.mjs";
 
@@ -20,7 +21,7 @@ const wordsOf = (text) => { const out = []; for (const m of blankCitations(text)
 /** The texts the package ships that a reader reads (D42, D53): chapter deliverables and spine, course map, declared documents. */
 function shippedTexts(s) {
   const rels = new Set(["concepts/course.md"]);
-  for (const ch of chaptersOf(s)) for (const d of ["study-guide", "slides", "practice", "concepts", "assessment-support"]) rels.add(`${d}/${ch}.md`);
+  for (const ch of chaptersOf(s)) for (const d of ["study-guide", "slides", "practice", "concepts", "assessment-support"]) rels.add(chapterFile(d, ch, (p) => s.text(p) != null));
   for (const d of s.json("metadata/DOCUMENTS.json")?.documents || []) if (typeof d?.source === "string") rels.add(d.source);
   return [...rels].map((rel) => [rel, s.text(rel)]).filter(([, t]) => t != null);
 }

@@ -179,6 +179,17 @@ export function headerOf(text) {
   });
   return { start: lineOfOffset(src, h.start), end: endAt(h.end), blocks: h.blocks.map((b) => lineOfOffset(src, b.start)), fields: { ...h.fields }, carrier: String(h.fields.carrier ?? "").trim() || null, entries };
 }
+/** The text with its format-1 header blanked line for line (line numbers kept): what a reader of the body sees. The
+ *  plan files carry the header Alembic writes on every document (site-type contract §5 "header"; GenChem re-evaluation
+ *  2026-10-31) — it is document data, never plan content. */
+export function withoutHeader(text) {
+  if (text == null) return text;
+  const h = headerOf(text);
+  if (!h) return text;
+  const lines = String(text).split("\n");
+  for (let k = h.start; k <= h.end && k < lines.length; k++) lines[k] = "";
+  return lines.join("\n");
+}
 /** The `key: value` settings of a {{nyml}} block as orz-paged reads them (settings.js parseNymlBody: `key: |` takes the
  *  more-indented lines after it): [{ key, value, start, end }] (0-based source lines; `kind` left out). */
 export function nymlValues(srcLines, a, b) {

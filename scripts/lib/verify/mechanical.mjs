@@ -97,6 +97,11 @@ function chainsOf(text) {
   return carried(chains);
 }
 
+// a value as written, not arithmetic: a signed number or scientific notation ("+1", "-566.0", "3.4\times10^{-5}") — a
+// chain ending in one states its value, so a later chain on the same symbol is a new statement (GenChem re-evaluation
+// 2026-10-31: "$k = 3.4\times10^{-5}$ at 298 K and $k = 5.2\times10^{-4}$" was read as one chain)
+const writtenValue = (raw) => /^[-+−]?\s*\d+(?:\.\d+)?(?:\s*(?:\\times|×|\\cdot|·)\s*10\s*\^\s*\{?\s*[-+−]?\d+\s*\}?)?$/.test(String(raw || "").replace(/\{,\}/g, "").trim());
+
 /** A chain carried by its SYMBOL across spans (R5-K03): "$Q_r = \frac{…}{…}$, and therefore $Q_r = 148$" — an
  *  expression left without its value is completed by the next chain that names the same subject. Joined only when the
  *  earlier chain ENDS in arithmetic (it states no value of its own), so "[A] = 0.10 … later [A] = 0.05" stays two. */
@@ -108,7 +113,7 @@ function carried(chains) {
     const prev = subj && partOf(parts[0]).kind === "sym" ? [...out].reverse().find((x) => x.subject === subj) : null;
     if (prev && !prev.closed) {
       const last = partOf(prev.parts.at(-1));
-      if (last.kind === "num" && last.op || last.kind === "unread") {
+      if (last.kind === "num" && last.op && !writtenValue(last.raw) || last.kind === "unread") {
         prev.text += ` ${c.text.slice(parts[0].length)}`;
         prev.parts = relationParts(prev.text).parts;
         prev.closed = true;
@@ -198,6 +203,9 @@ function splitUnit(part) {
   if (!m || !m[1].trim() || /\\(?:ln|log|exp|sqrt|frac)/.test(m[1])) return { body: p, unit: "" };
   const body = p.slice(0, p.length - m[0].length).trim();
   if (!/[\d)}]\s*$/.test(body)) return { body: p, unit: "" }; // "x" alone is a symbol, not a value with a unit
+  // one letter glued to the number ("1367.3T" in "1367.3T = 48,353 ⟹ T = 35.4") is a product with a symbol, unless it is
+  // a unit commonly written that way ("298K", "5g"); GenChem re-evaluation 2026-10-31 (T was read as tesla)
+  if (/^[A-Za-z]$/.test(m[0]) && !/^[KgLmsJMVAWN]$/.test(m[0])) return { body: p, unit: "" };
   return { body, unit: unitKey(m[1]) };
 }
 
@@ -450,7 +458,7 @@ export function workedLinks(text) {
   }
   return { compared, skipped };
 }
-const PREFIX_STEPS = [1e-3, 1e3, 1e-6, 1e6, 1e-9, 1e9, 1e-2, 1e2];
+const PREFIX_STEPS = [1e-3, 1e3, 1e-6, 1e6, 1e-9, 1e9, 1e-2, 1e2, 1e-12, 1e12, 1e-15, 1e15];
 
 /** Every worked expression the check reads in a text, compared: [{ expression, written, recomputed, ok }]. */
 export const workedExpressions = (text) => workedLinks(text).compared;
@@ -658,14 +666,22 @@ const formulaLike = (tok) => { const x = String(tok).replace(/^[([{"'“]+|[)\]}
 const ELEMENT_NAMES = { H: "hydrogen", B: "boron", C: "carbon", N: "nitrogen", O: "oxygen", F: "fluorine", P: "phosphorus", S: "sulfur|sulphur", K: "potassium", V: "vanadium", Y: "yttrium", I: "iodine", W: "tungsten", U: "uranium", D: "deuterium", T: "tritium" };
 const namesElement = (text, letters) => letters.some((l) => ELEMENT_NAMES[l] && new RegExp(`\\b(?:${ELEMENT_NAMES[l]})\\b`, "i").test(text));
 /** Every reaction a text writes, read or not: [{ e, raw } | { raw, unread: reason }]. */
+const SCHEMATIC_CONTEXT = /\b(?:steps?|mechanisms?|intermediates?|generic|schematic|overall reaction|rate law|rate-determining)\b/i;
 export function reactionsIn(text) {
   const t = String(text || ""), out = [];
   for (const b of ceBlocks(t)) {
     const sides = ceSides(b.body);
     if (!sides) continue;
     for (let i = 0; i + 1 < sides.length; i++) {
-      const [l, r] = [sides[i], sides[i + 1]].map((s) => (s.trim() ? sideOf(s.trim().split(/\s+\+\s+/)) : null));
       const raw = sides.length > 2 ? `${sides[i].trim()} → ${sides[i + 1].trim()}` : b.body.trim();
+      // \ce{} says chemistry (R5-K07) — except a generic mechanism written in it (GenChem re-evaluation 2026-10-31:
+      // "Step 2 (fast): \ce{I + B -> C}" was iodine, boron and carbon to the reader): every species one bare capital, the
+      // unit naming none of them as elements and speaking of steps, a mechanism, an intermediate or a generic reaction
+      const pieces = [sides[i], sides[i + 1]].flatMap((s) => s.trim().split(/\s+\+\s+/)).map((x) => x.trim());
+      if (pieces.every((x) => /^(?:\d+(?:\.\d+)?\s*)?[A-Z]$/.test(x)) && SCHEMATIC_CONTEXT.test(t) && !namesElement(t, pieces.map((x) => x.slice(-1)))) {
+        out.push({ raw, unread: "schematic letters, not a formula (the unit names none of these elements)" }); continue;
+      }
+      const [l, r] = [sides[i], sides[i + 1]].map((s) => (s.trim() ? sideOf(s.trim().split(/\s+\+\s+/)) : null));
       out.push(l && r ? { e: { left: l, right: r }, raw } : { raw, unread: "a species or side the reader does not parse" });
     }
   }

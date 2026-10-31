@@ -28,7 +28,7 @@ import { sha256 } from "../records/canonical.mjs";
 import { unitsPathFor, recordFile } from "../records/paths.mjs";
 import { JUDGMENT_KINDS, validateUnitSidecar } from "../records/units.mjs";
 import { makeFinding } from "../records/findings.mjs";
-import { DELIVERABLE_DIRS, classifyUnit, creditBaseline, creditKey, derivedRole, headingsKey, labelBaseline, segmentDeliverable, slugify, tokensOf, unitHash } from "./segment.mjs";
+import { DELIVERABLE_DIRS, classifyUnit, creditBaseline, creditKey, derivedRole, headingsKey, labelBaseline, segmentDeliverable, slugify, tokensOf, unitHash, chapterFile } from "./segment.mjs";
 import { manifestChapters } from "./package_reader.mjs";
 import { loadUnits, migrateUnitRecords, upgradeStamps } from "./obligations.mjs";
 import { allSidecars, assertUnaltered, deliverableOfSidecar, sidecarTrusted, upgradeUnitRecordDigests, writeUnitRecords } from "./unit_records.mjs";
@@ -39,7 +39,7 @@ import { readerView } from "./rendered.mjs";
 import { unitTargetHash } from "./dependencies.mjs";
 
 export function deliverablesOf(reader) {
-  const chapters = manifestChapters(reader).flatMap((ch) => DELIVERABLE_DIRS.map((d) => `${d}/${ch}.md`));
+  const chapters = manifestChapters(reader).flatMap((ch) => DELIVERABLE_DIRS.map((d) => chapterFile(d, ch, (p) => reader.text(p) != null)));
   return [...chapters, ...declaredDocuments(reader)].filter((rel, i, all) => reader.text(rel) != null && all.indexOf(rel) === i);
 }
 /**
@@ -235,7 +235,9 @@ export function matchUnits(oldUnits, segs, { reserved = new Set() } = {}) {
   }
   segs.forEach((s, i) => {
     if (usedNew.has(i)) return;
-    const parents = oldUnits.filter((u) => !usedOld.has(u.id) && u.locator.section === s.section && (u.tokens || []).length && contained(u.tokens || [], segTokens[i]) >= 0.6)
+    // of the segment's own form, as a split's pieces are (a question never merges into its answer, which repeats its
+    // words: red-team R1 F5 after the 2026-10-21 block-end fix shifted the ordinals an edit-and-revert compares)
+    const parents = oldUnits.filter((u) => !usedOld.has(u.id) && u.form === s.form && u.locator.section === s.section && (u.tokens || []).length && contained(u.tokens || [], segTokens[i]) >= 0.6)
       .filter((u, _, all) => all.some((v) => v !== u && Math.abs(v.locator.ordinal - u.locator.ordinal) === 1) && Math.abs(u.locator.ordinal - i) <= 2); // adjacent, at this place
     if (parents.length >= 2) { merges.push({ into: i, from: parents.map((u) => u.id) }); parents.forEach((u) => usedOld.add(u.id)); usedNew.add(i); }
   });

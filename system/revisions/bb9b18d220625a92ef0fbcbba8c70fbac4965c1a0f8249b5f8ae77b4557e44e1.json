@@ -1,0 +1,414 @@
+{
+  "schemaVersion": 1,
+  "planId": "bb9b18d220625a92ef0fbcbba8c70fbac4965c1a0f8249b5f8ae77b4557e44e1",
+  "baseRef": "HEAD",
+  "baseTip": "409fa083dcde41ebc30f782ace9ebc93abcd062d",
+  "baseCommit": "409fa083dcde41ebc30f782ace9ebc93abcd062d",
+  "reviewedHead": "409fa083dcde41ebc30f782ace9ebc93abcd062d",
+  "changed": [
+    "docs/assembling-carriers.md",
+    "docs/migrating-from-v0.12.md",
+    "format-contracts/deliverables.md",
+    "scripts/build_carriers.mjs",
+    "scripts/lib/core/core_checks.mjs",
+    "scripts/lib/core/dependencies.mjs",
+    "scripts/lib/core/obligations.mjs",
+    "scripts/lib/core/printed.mjs",
+    "scripts/lib/core/segment.mjs",
+    "scripts/lib/core/shipped.mjs",
+    "scripts/lib/core/spine.mjs",
+    "scripts/lib/core/spine_detail.mjs",
+    "scripts/lib/core/units_index.mjs",
+    "scripts/lib/core/values.mjs",
+    "scripts/lib/core/workflow.mjs",
+    "scripts/lib/legacy/qa_audits.mjs",
+    "scripts/lib/verify/alignment.mjs",
+    "scripts/lib/verify/mechanical.mjs",
+    "scripts/modules/_shared.mjs",
+    "scripts/modules/ms10-copying.mjs",
+    "scripts/modules/ms7-consistency.mjs",
+    "scripts/spine.mjs",
+    "site-type/licences/CC-BY-4.0.txt",
+    "site-type/licences/CC-BY-NC-4.0.txt",
+    "site-type/licences/CC-BY-NC-SA-4.0.txt",
+    "site-type/licences/CC-BY-SA-4.0.txt",
+    "site-type/licences/CC0-1.0.txt",
+    "site-type/licences/all-rights-reserved.txt",
+    "site-type/site-type.json",
+    "site-type/starters/README.md",
+    "site-type/starters/assessment-guide.md",
+    "site-type/starters/concept-map.md",
+    "site-type/starters/course-map.md",
+    "site-type/starters/practice.md",
+    "site-type/starters/slides.slides.md",
+    "site-type/starters/study-guide.md",
+    "site-type/template/private/README.md",
+    "site-type/templates/CITATION.cff",
+    "tests/genchem-reeval.test.mjs",
+    "tests/wiring-modules.test.mjs"
+  ],
+  "requiredReview": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "docs/assembling-carriers.md",
+    "docs/coherence-index.md",
+    "docs/migrating-from-v0.12.md",
+    "format-contracts/deliverables.md",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/core/core_checks.mjs",
+    "scripts/lib/core/dependencies.mjs",
+    "scripts/lib/core/obligations.mjs",
+    "scripts/lib/core/printed.mjs",
+    "scripts/lib/core/segment.mjs",
+    "scripts/lib/core/shipped.mjs",
+    "scripts/lib/core/spine.mjs",
+    "scripts/lib/core/spine_detail.mjs",
+    "scripts/lib/core/units_index.mjs",
+    "scripts/lib/core/values.mjs",
+    "scripts/lib/core/workflow.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/legacy/qa_audits.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/verify/alignment.mjs",
+    "scripts/lib/verify/mechanical.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/modules/_shared.mjs",
+    "scripts/modules/ms10-copying.mjs",
+    "scripts/modules/ms7-consistency.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/revision_impact.mjs",
+    "scripts/spine.mjs",
+    "site-type/licences/CC-BY-4.0.txt",
+    "site-type/licences/CC-BY-NC-4.0.txt",
+    "site-type/licences/CC-BY-NC-SA-4.0.txt",
+    "site-type/licences/CC-BY-SA-4.0.txt",
+    "site-type/licences/CC0-1.0.txt",
+    "site-type/licences/all-rights-reserved.txt",
+    "site-type/site-type.json",
+    "site-type/starters/README.md",
+    "site-type/starters/assessment-guide.md",
+    "site-type/starters/concept-map.md",
+    "site-type/starters/course-map.md",
+    "site-type/starters/practice.md",
+    "site-type/starters/slides.slides.md",
+    "site-type/starters/study-guide.md",
+    "site-type/template/private/README.md",
+    "site-type/templates/CITATION.cff",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/genchem-reeval.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site.test.mjs",
+    "tests/wiring-modules.test.mjs"
+  ],
+  "reviewed": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "docs/assembling-carriers.md",
+    "docs/coherence-index.md",
+    "docs/migrating-from-v0.12.md",
+    "format-contracts/deliverables.md",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/core/core_checks.mjs",
+    "scripts/lib/core/dependencies.mjs",
+    "scripts/lib/core/obligations.mjs",
+    "scripts/lib/core/printed.mjs",
+    "scripts/lib/core/segment.mjs",
+    "scripts/lib/core/shipped.mjs",
+    "scripts/lib/core/spine.mjs",
+    "scripts/lib/core/spine_detail.mjs",
+    "scripts/lib/core/units_index.mjs",
+    "scripts/lib/core/values.mjs",
+    "scripts/lib/core/workflow.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/legacy/qa_audits.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/verify/alignment.mjs",
+    "scripts/lib/verify/mechanical.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/modules/_shared.mjs",
+    "scripts/modules/ms10-copying.mjs",
+    "scripts/modules/ms7-consistency.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/revision_impact.mjs",
+    "scripts/spine.mjs",
+    "site-type/licences/CC-BY-4.0.txt",
+    "site-type/licences/CC-BY-NC-4.0.txt",
+    "site-type/licences/CC-BY-NC-SA-4.0.txt",
+    "site-type/licences/CC-BY-SA-4.0.txt",
+    "site-type/licences/CC0-1.0.txt",
+    "site-type/licences/all-rights-reserved.txt",
+    "site-type/site-type.json",
+    "site-type/starters/README.md",
+    "site-type/starters/assessment-guide.md",
+    "site-type/starters/concept-map.md",
+    "site-type/starters/course-map.md",
+    "site-type/starters/practice.md",
+    "site-type/starters/slides.slides.md",
+    "site-type/starters/study-guide.md",
+    "site-type/template/private/README.md",
+    "site-type/templates/CITATION.cff",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/genchem-reeval.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site.test.mjs",
+    "tests/wiring-modules.test.mjs"
+  ],
+  "impactedClaims": [
+    "claim.accessibility.floor",
+    "claim.authorship.accountable",
+    "claim.carriers.honest-portability",
+    "claim.carriers.three-shapes",
+    "claim.coherence.anchors",
+    "claim.coherence.claims",
+    "claim.coherence.index-fresh",
+    "claim.coherence.prerequisites",
+    "claim.coherence.revisions",
+    "claim.control.coverage",
+    "claim.control.overrides",
+    "claim.format.contracts",
+    "claim.git.visible-edits",
+    "claim.language.editorial",
+    "claim.media.decision",
+    "claim.provenance.complete",
+    "claim.release.fail-closed",
+    "claim.release.measured-vs-declared",
+    "claim.review.blind-bundle",
+    "claim.review.key-facts",
+    "claim.revision.propagation",
+    "claim.rights.verified",
+    "claim.source.comparison",
+    "claim.trust.consistency",
+    "claim.trust.immutable",
+    "claim.website.published",
+    "claim.website.showcase"
+  ],
+  "testResults": [
+    {
+      "path": "tests/anchors.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/assurance.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-2.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-3.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-4.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/blind_bundle.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/carriers.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-control.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-revision.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-semantic.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/classify.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/coherence-claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/escalation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/evidence-tools.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/fingerprint.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/immutable.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/index-freshness.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/integration-study-pairs.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/key-fact-bindings.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/overrides.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate-cli.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/qa.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/range.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/reviews.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/semantic-index-artifact.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/site.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/spine.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/terms.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/units.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/unverifiable_quotation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/usage-e2e.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/wiring.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "GenChem re-evaluation fixes (2026-10-31): a minus is a sign only where a sign can stand (not a list dash, not a subtraction after a one-letter symbol); a written value ends a worked chain; pico/femto prefix steps; a variable glued to a number is not a unit; generic mechanisms in \\ce{} are schematic (only with mechanism context, \\ce{S -> P} stays chemistry); a table delimiter row is not hidden text; the package's own titles are not attributions; the format-1 header on plan files is document data (withoutHeader in the spine readers and the v0.12 audit); the deck is slides/<slug>.slides.md when present (chapterFile/chapterOfFile; every chapter-file regex reads .slides.md); spine.mjs migrate refuses a pre-v0.12 plan and writes nothing, and reports only changed files; a merge takes parents of the segment's own form (fixes the pre-existing R1 F5 failure, bisected to 75fd5cf); wiring-modules expects ms10-copying (D54). Reviewed docs by grepping the required-review set for the changed surfaces (deck path, header on plan files, uid wording): deliverables.md, assembling-carriers.md, migrating-from-v0.12.md updated; the rest do not name them. The whole suite was run one file at a time: 1118 passed; system-index re-run after regenerating the index: passed.",
+  "generatedIndexHash": "8bb7d360caa637d10cccc202becb88e1e906bc2dad7d033527ffd8540e14043f",
+  "acceptedAt": "2026-10-31T04:44:53.125Z"
+}

@@ -277,7 +277,7 @@ export function headWordMatcher(def, defs) {
   const re = new RegExp(`(?<![\\p{L}\\p{N}])(?:${ws.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})(?:['’]s)?(?![\\p{L}\\p{N}])`, "iu");
   return (text) => { const raw = String(text || ""); return re.test(raw) || re.test(readerView(raw)); };
 }
-const chapterOfUnit = (u) => /\/([^/]+)\.md$/.exec(u?.locator?.deliverable || "")?.[1] ?? null;
+const chapterOfUnit = (u) => /\/([^/]+?)(?:\.slides)?\.md$/.exec(u?.locator?.deliverable || "")?.[1] ?? null;
 
 // A reference WITHOUT a number (red team R4 coherence F2): "for the same reaction", "the previous question", "the
 // reaction above", "this reaction". It names the nearest question before it in its set, or the reaction it means — the

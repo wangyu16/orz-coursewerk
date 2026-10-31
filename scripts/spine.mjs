@@ -13,6 +13,7 @@
 //   node scripts/spine.mjs approve  --root <pkg> (--chapter <slug> | --course) --name <instructor> --words "<what they said>" [--glance] [--without-review]
 //   node scripts/spine.mjs version  --root <pkg> --scopes chapter:<slug>[,…] --reason "<why>" --name <instructor> --words "<their words>"   (carries the chapter's units: each owes re-verification)
 //   node scripts/spine.mjs steering --root <pkg> --defaults <file.json> [--answers <file.json>] [--overrides <file.json>] [--accept-all] --name <instructor> --words "…"
+import { withoutHeader } from "./lib/core/printed.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { liveReader, manifestChapters } from "./lib/core/package_reader.mjs";
@@ -60,7 +61,17 @@ try {
       if (st.status !== 0) fail("the package must be a git repository, so the migration is one reviewable diff");
       if (st.stdout.trim()) fail("commit or set aside the package's changes first: the migration must be its own reviewable diff");
     }
+    // a plan older than v0.12 (Coursewerk 0.11: "Section-Level Concept Map", "Objective 1.1a" ids, concept trees) has
+    // none of the sections this conversion reads, so it would convert nothing; refuse before writing anything, and say
+    // what to do instead (GenChem re-evaluation 2026-10-31: the tool reported every file "rewritten" and logged a migration)
+    if (cmd === "migrate") {
+      const V012 = /^##\s+(?:objectives|concept sequence|misconceptions to surface)\s*$/im;
+      const old = [COURSE_MAP, ...chapters.map((ch) => spinePaths(ch).map)].filter((rel) => reader.text(rel) != null && !V012.test(withoutHeader(reader.text(rel))));
+      if (old.length) fail(`these plan files are older than v0.12 (none of "## Objectives", "## Concept sequence", "## Misconceptions to surface"), so this tool cannot convert them: ${old.join(", ")}. `
+        + "Standardize them as the agent instead (format-contracts/deliverables.md §Concept maps): write the v2 plan from the old one as raw material, mark what you added (spine.mjs propose), run spine.mjs check, and bring each chapter to the instructor for approval (M3). Nothing was written.");
+    }
     const renames = {}, notes = [], docs = {};
+    const before = {};
     const course = anchorMap(reader.text(COURSE_MAP) || "", "course"); Object.assign(renames, course.renames); docs[COURSE_MAP] = course.text;
     const objectiveAnchors = {};
     for (const ch of chapters) {
@@ -70,7 +81,9 @@ try {
     }
     for (const rel of Object.keys(docs)) { const r = rewriteRefs(docs[rel], renames); docs[rel] = r.text; notes.push(...r.notes.map((n) => `${rel}: ${n}`)); }
     if (cmd === "migrate") for (const ch of chapters) { const { guide } = spinePaths(ch); const g = reader.text(guide); if (g !== null && !/\[objective:/.test(g)) docs[guide] = migrateGuide(g, objectiveAnchors[ch]); }
+    for (const rel of Object.keys(docs)) before[rel] = reader.text(rel);
     for (const [rel, text] of Object.entries(docs)) write(rel, text);
+    const changed = Object.keys(docs).filter((rel) => docs[rel] !== before[rel]);
     if (cmd === "migrate") {
       writeConfig(root, { ...readConfig(root), schemaVersion: 1, spine: 2 });
       // migrated content pre-existed: every item is marked "standardized" until the instructor says otherwise
@@ -81,11 +94,11 @@ try {
       // what the conversion could not carry exactly (an uncertain prerequisite made firm, guide fields to fill) is
       // recorded with the migration and must be shown to the instructor at approval (P9 scenario)
       const todo = Object.entries(docs).filter(([rel, t]) => rel.startsWith("assessment-support/") && /\*\*(?:Type|Count):\*\* TODO/.test(t)).map(([rel]) => `${rel}: question-guide Type and Count to propose`);
-      appendLogRecord(root, { type: "intake", party, payload: { event: "migrated-from-v0.12", files: Object.keys(docs), renamed: Object.keys(renames).length, notes: [...notes, ...todo], instructorWords: words } });
+      appendLogRecord(root, { type: "intake", party, payload: { event: "migrated-from-v0.12", files: changed, renamed: Object.keys(renames).length, notes: [...notes, ...todo], instructorWords: words } });
       for (const ch of chapters) appendLogRecord(root, { type: "transition", party, payload: { chapter: ch, from: "DRAFT", to: "ASSEMBLING", instructorWords: words, migration: true } });
     }
     const left = checkSpine(parseSpine(liveReader(root), chapters), chapters);
-    console.log(JSON.stringify({ rewritten: Object.keys(docs), renamed: Object.keys(renames).length, notes, remainingProblems: left.length, byRule: left.reduce((a, p) => ((a[p.rule] = (a[p.rule] || 0) + 1), a), {}),
+    console.log(JSON.stringify({ rewritten: changed, renamed: Object.keys(renames).length, notes, remainingProblems: left.length, byRule: left.reduce((a, p) => ((a[p.rule] = (a[p.rule] || 0) + 1), a), {}),
       ...(cmd === "migrate" ? { next: "every chapter is ASSEMBLING: bring the instructor `git diff`, `spine.mjs preview --chapter <slug>` and every note above (M3) — an uncertain prerequisite was made firm and must be confirmed or removed — then approve each chapter and the course map" } : {}) }, null, 2));
     process.exit(0);
   }

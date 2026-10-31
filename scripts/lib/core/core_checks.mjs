@@ -54,7 +54,7 @@ export function restatedObjectiveFindings(reader, basis) {
     // the chapter is the manifest's (its own deliverables, by exact path), or what a declared document declares; a
     // document that declares none restates SOME chapter's approved objectives (red-team round 5, the audit of F4: the
     // chapter was taken from the file name, so a handout not named <chapter>.md was never checked at all)
-    const own = chapters.find((c) => DELIVERABLE_DIRS.some((d) => rel === `${d}/${c}.md`));
+    const own = chapters.find((c) => DELIVERABLE_DIRS.some((d) => rel === `${d}/${c}.md`) || rel === `slides/${c}.slides.md`);
     const doc = own ? null : docs.get(rel);
     const chs = own ? [own] : doc ? (doc.chapters.filter((c) => chapters.includes(c)).length ? doc.chapters.filter((c) => chapters.includes(c)) : chapters) : [];
     const ch = chs.join(", ");

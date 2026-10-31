@@ -21,6 +21,7 @@
 // the vocabulary authority the format requires (format-contracts/deliverables.md); any detail in it is still detail. A
 // misconception is a false statement by design, so its false reasons are not "an explanation".
 // PURE and DETERMINISTIC.
+import { withoutHeader } from "./printed.mjs";
 import { readValues } from "./values.mjs";
 import { factNamesIn, namesIn } from "./names.mjs";
 import { yearsIn, contentWords } from "../verify/claims.mjs";
@@ -37,7 +38,7 @@ export function spineLines(text) {
   const out = [];
   let section = "", objective = null, entry = null, cur = null;
   const flush = () => { if (cur) out.push(cur); cur = null; };
-  String(text || "").split(/\r?\n/).forEach((raw, k) => {
+  String(withoutHeader(text) || "").split(/\r?\n/).forEach((raw, k) => {
     const h = /^(#{1,6})\s+(.*)$/.exec(raw);
     if (h) {
       flush();
@@ -113,7 +114,7 @@ export function spineDetail(l, { termNames = [], guide = false } = {}) {
   const relations = relationsIn(t);
   for (const r of relations) if (WORKED(r.raw)) add("worked numbers", r.raw);
   // attributions and history
-  const fold = (x) => String(x).toLowerCase().replace(/[\u2010-\u2015−]/g, "-");
+  const fold = (x) => String(x).toLowerCase().replace(/[\u2010-\u2015−]/g, "-").replace(/[^\p{L}\p{N}-]+/gu, " ").trim();
   const lowerTerms = termNames.map(fold);
   const names = factNamesIn(t).filter((n) => !lowerTerms.some((x) => x.includes(fold(n))));
   for (const n of names) add("an attribution", n);
@@ -174,6 +175,11 @@ export function spineDetailLines(reader, chapters, { units = [] } = {}) {
     const m = l.text.match(/^\*\*([^*]+)\*\*\s*(?:\(([^)]*)\))?/);
     if (m) termNames.push(m[1], ...(m[2] || "").replace(/aliases?:/gi, "").split(",").map((x) => x.trim()).filter(Boolean));
   }
+  // the package's own titles (the course, its chapters, the spine's headings) are names of the course, not attributions
+  // (GenChem re-evaluation 2026-10-31: "Atoms, Molecules, and Ions" and "Course Concept Map" were asked about as history)
+  let manifest = null; try { manifest = JSON.parse(reader.text("alembic.json") || "null"); } catch { manifest = null; }
+  termNames.push(...[manifest?.title, ...(manifest?.chapters || manifest?.units || []).map((c) => c?.title)].filter(Boolean));
+  for (const f of files) for (const h of String(reader.text(f.file) || "").matchAll(/^#{1,6}\s+(.+)$/gm)) termNames.push(h[1]);
   const out = [];
   for (const f of files) {
     const text = reader.text(f.file);

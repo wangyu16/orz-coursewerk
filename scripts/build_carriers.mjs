@@ -6,7 +6,7 @@
 // `preview/` tree (git-ignored, never uploaded; Alembic assembles carriers on its side). D52:
 //
 //   study-guide/*.md , practice/*.md  → *.md.html      (orz-mdhtml assemble)
-//   slides/*.md                        → *.slides.html  (orz-slides assemble)
+//   slides/*.slides.md (or *.md)       → *.slides.html  (orz-slides assemble)
 //   declared paged documents           → *.paged.html   (orz-paged assemble)
 //
 // Every carrier is CHECKED with the public library of the same frame that built it: extract(carrier).text must be
@@ -179,7 +179,7 @@ function inspectCarrierPortability(html, sourceInspection) {
 
 function buildOne(spec, src) {
   const relPath = path.relative(pkg, src).replaceAll(path.sep, "/");
-  const outPath = path.join(outRoot, relPath.replace(/\.md$/, spec.carrier));
+  const outPath = path.join(outRoot, relPath.replace(/(?:\.slides)?\.md$/, spec.carrier)); // slides/<slug>.slides.md → <slug>.slides.html
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   const text = fs.readFileSync(src, "utf8");
   const assembled = runBuilder(spec.builder, src, outPath);
