@@ -1,5 +1,10 @@
 # Coursewerk
 
+> **Preview branch (2026-10-31), for testing — not a release.** This branch carries the redesigned Coursewerk (spine v2,
+> orz text format 1, the Alembic site type). The rest of this README and `FEATURES.md` still describe v0.12. To test,
+> start from `CLAUDE.md` (the agent's entry) and `PROCEDURE.md` (the workflow); `npm install`, then `npm test` runs the
+> suite (slow: run it on a machine with spare cores). Please report what breaks or confuses you to the owner.
+
 **Website:** [coursewerk.orz.how](https://coursewerk.orz.how/)
 
 **An AI agent that does the coursework of building your course** — it turns a textbook or your own source
