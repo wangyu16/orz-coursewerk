@@ -350,7 +350,7 @@ test("[req.absolute.log-bound] CONTROL handoff: an absolute review counts only t
   const raw = JSON.stringify({ nonce: "0123456789abcdef", sentences: [{ n: 1, class: "casual", why: "test double" }] });
   const dispatch = `d-${bundle.bundleHash.slice(0, 16)}`;
   const record = { schemaVersion: 1, dispatch, kind: "absolute", unit: u.id, at: new Date().toISOString(), bundle: { nonce: bundle.nonce, bundleHash: bundle.bundleHash, prompt: bundle.prompt }, passages: [], answer: { mode: "replay", raw, model: "replay", costUsd: 0, responseHash: sha256(raw) }, admission: { status: "reviewed" }, sentences, context, absolutesHash: absolutesHash(u.text) };
-  const file = recordFile(c.root, `metadata/verification/${dispatch}.json`);
+  const file = recordFile(c.root, `private/coursewerk/verification/${dispatch}.json`);
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, JSON.stringify(record, null, 2) + "\n");
   appendLogRecord(c.root, { type: "dispatch", party: { role: "harness", name: "verify" }, payload: { dispatch, kind: "absolute", unit: u.id, bundleHash: bundle.bundleHash, responseHash: sha256(raw), mode: "replay", status: "reviewed" } });

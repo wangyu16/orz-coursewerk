@@ -43,7 +43,7 @@ export function deliverablesOf(reader) {
   return [...chapters, ...declaredDocuments(reader)].filter((rel, i, all) => reader.text(rel) != null && all.indexOf(rel) === i);
 }
 /**
- * D42: everything that ships is checked. A document declared in metadata/DOCUMENTS.json (a handout, a print
+ * D42: everything that ships is checked. A document declared in private/coursewerk/DOCUMENTS.json (a handout, a print
  * document) is a deliverable like the study guide — segmented, linked, fact-checked and reviewed — unless the
  * instructor marks it `role: administrative` (a schedule, a syllabus), which keeps only the format and rights checks.
  * The mark is the INSTRUCTOR's act (red team round 2, C3-06): `role: administrative` in DOCUMENTS.json is a field
@@ -56,7 +56,7 @@ export function declaredDocuments(reader) {
 }
 /** The documents DOCUMENTS.json declares: { source, role, chapters } (markdown sources inside the package, private/ excluded). */
 export function documentEntries(reader) {
-  let docs = null; try { docs = JSON.parse(reader.text("metadata/DOCUMENTS.json") || "null"); } catch { docs = null; }
+  let docs = null; try { docs = JSON.parse(reader.text("private/coursewerk/DOCUMENTS.json") || "null"); } catch { docs = null; }
   return (Array.isArray(docs?.documents) ? docs.documents : []).filter((d) => d && typeof d === "object")
     .map((d) => ({ source: String(d.source || d.path || ""), role: d.role || null, carrier: String(d.carrier || d.type || d.framework || ""), chapters: [...new Set([d.chapter, ...(Array.isArray(d.chapters) ? d.chapters : [])].filter((c) => typeof c === "string" && c))] })).filter((d) => /\.md$/.test(d.source) && !d.source.startsWith("private/") && !d.source.includes(".."));
 }
@@ -76,7 +76,7 @@ const docHash = (text) => sha256(String(text ?? ""));
 export function administrativeDocuments(reader) {
   const marked = documentEntries(reader).filter((d) => d.role === "administrative");
   if (!marked.length) return new Set();
-  const logText = reader.text("metadata/LOG.jsonl") || "";
+  const logText = reader.text("private/coursewerk/LOG.jsonl") || "";
   if (verifyLog(logText).length) return new Set();
   const confirmed = new Set(parseLog(logText).filter((r) => r.type === "confirmation" && r.party?.role === "instructor" && r.payload?.what === "administrative-document" && String(r.payload?.instructorWords || "").trim())
     .map((r) => `${r.payload.source}|${r.payload.contentHash}`));
@@ -88,8 +88,8 @@ export function confirmAdministrative(root, reader, { source, instructorWords },
   if (party?.role !== "instructor") throw new Error("marking a document administrative is the instructor's act");
   if (!hasVisibleWords(instructorWords)) throw new Error("the confirmation quotes the instructor's words");
   const d = documentEntries(reader).find((x) => x.source === source);
-  if (!d) throw new Error(`${source} is not a document declared in metadata/DOCUMENTS.json`);
-  if (d.role !== "administrative") throw new Error(`${source} is not marked role: administrative in metadata/DOCUMENTS.json`);
+  if (!d) throw new Error(`${source} is not a document declared in private/coursewerk/DOCUMENTS.json`);
+  if (d.role !== "administrative") throw new Error(`${source} is not marked role: administrative in private/coursewerk/DOCUMENTS.json`);
   const text = reader.text(source);
   if (text == null) throw new Error(`${source} does not exist`);
   return appendLogRecord(root, { type: "confirmation", party, payload: { what: "administrative-document", source, contentHash: docHash(text), instructorWords } });
@@ -306,7 +306,7 @@ export function beginSession(root, reader, party, { step = "authoring" } = {}) {
 /** The instructor's register as the log and the correction records give it (authorship.mjs instructorTextRegister). */
 export function instructorRegister(root, logRecords = null) {
   const log = logRecords || (() => { const t = readLogText(root); return verifyLog(t).length ? [] : parseLog(t); })();
-  const dir = recordFile(root, "metadata/corrections"), corrections = new Map();
+  const dir = recordFile(root, "private/coursewerk/corrections"), corrections = new Map();
   if (fs.existsSync(dir)) for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json"))) { try { const c = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")); if (c?.id) corrections.set(c.id, c); } catch { /* unreadable: not counted */ } }
   return instructorTextRegister(log, { corrections, correctionOk: (c, l) => correctionMatchesLog(c, log, l) });
 }
@@ -599,7 +599,7 @@ export function claimAuthorship(root, { units, as = "instructor", instructorWord
   if (party?.role !== "instructor") throw new Error("authorship is confirmed by the instructor");
   if (!hasVisibleWords(instructorWords)) throw new Error("an authorship confirmation quotes the instructor's words");
   const ids = new Set(units), date = new Date().toISOString().slice(0, 10), done = [], writes = [], texts = {};
-  for (const rel of fs.existsSync(recordFile(root, "metadata/units")) ? walkSidecars(recordFile(root, "metadata/units")) : []) {
+  for (const rel of fs.existsSync(recordFile(root, "private/coursewerk/units")) ? walkSidecars(recordFile(root, "private/coursewerk/units")) : []) {
     if (!sidecarTrusted(root, deliverableOfSidecar(root, rel))) continue; // a record the log never wrote is not read (R7)
     const side = JSON.parse(fs.readFileSync(rel, "utf8"));
     let touched = false;
@@ -640,7 +640,7 @@ export function unindexedFindings(root, reader, basis) {
   // a sidecar left at a path no longer listed still holds live units: their records have not followed their text (R6 G1)
   for (const [rel, side] of Object.entries(orphanSidecars(root, reader))) if ((side.units || []).length)
     out.push(makeFinding({ module: "skeleton", kind: "units-not-indexed", units: [], statusClass: "obligation", route: "agent", basis,
-      evidence: { type: "missing", what: `an index of the ${side.units.length} unit record(s) in metadata/units/${rel}.json — ${rel} is no longer a deliverable (renamed, moved or removed): run units index, so the records follow their text to its new path or retire into the register with what they owed` } }));
+      evidence: { type: "missing", what: `an index of the ${side.units.length} unit record(s) in private/coursewerk/units/${rel}.json — ${rel} is no longer a deliverable (renamed, moved or removed): run units index, so the records follow their text to its new path or retire into the register with what they owed` } }));
   for (const rel of deliverablesOf(reader)) {
     const side = readSidecar(root, rel);
     const now = segmentDeliverable(reader.text(rel), rel, segmentOptions(reader, rel)).units.map((s) => unitHash(s.text));

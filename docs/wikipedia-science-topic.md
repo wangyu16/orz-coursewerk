@@ -49,7 +49,7 @@ in `PROVENANCE.json`.
 
    The command uses a meaningful User-Agent, records exact page/revision/retrieval metadata, preserves raw API
    snapshots and extracted text hashes, rejects redirects/aliases that duplicate a page ID, revision ID, or
-   extracted text, writes the exact compact release record to `metadata/SOURCE_RECORD.json`, and rejects a corpus
+   extracted text, writes the exact compact release record to `private/coursewerk/SOURCE_RECORD.json`, and rejects a corpus
    outside the configured chapter-size range.
 
 5. Only after the command succeeds may the agent read the extracted corpus and author the chapter. Run the

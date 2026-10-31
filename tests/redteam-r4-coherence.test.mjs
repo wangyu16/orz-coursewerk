@@ -147,7 +147,7 @@ test("[req.coherence.edges-complete] F2: \"the same reaction\", \"the previous q
 
 // ============================================ F3: every branch is an anchor ========================================
 test("[req.records.history-extends] F3: HEAD's reflog, every local branch and its reflog are anchors — a forgery committed on a new branch made at an old commit is log-broken; a release receipt's logHead is an anchor too", (t) => {
-  const c = course(t), LOG = "metadata/LOG.jsonl", f = path.join(c.root, LOG);
+  const c = course(t), LOG = "private/coursewerk/LOG.jsonl", f = path.join(c.root, LOG);
   // a second honest commit, holding an instructor's answer the first commit does not
   const at = appendLogRecord(c.root, { type: "answer", party: I, payload: { instructorWords: "Accept your recommendations.", answers: [] } }).seq;
   assert.equal(gitIn(c.root, "add", "-A").status, 0); assert.equal(gitIn(c.root, "commit", "-qm", "digest answered").status, 0);
@@ -244,7 +244,7 @@ test("[req.coherence.question-binding] F5: an answer's binding reads the visible
     (legacyQuestionCurrent(u.stamp[key], q.text) ? safe : unsafe).push(u.id);
   }
   assert.ok(safe.length && unsafe.length, `${safe.length} safe, ${unsafe.length} unsafe`);
-  fs.writeFileSync(path.join(d.root, "metadata/units", `${PR}.json`), JSON.stringify(side, null, 2) + "\n");
+  fs.writeFileSync(path.join(d.root, "private/coursewerk/units", `${PR}.json`), JSON.stringify(side, null, 2) + "\n");
   const owed = d.reverifyOwed();
   assert.deepEqual(safe.filter((id) => owed.has(id)), [], "unchanged under both keys: upgraded, nothing owed");
   assert.deepEqual(unsafe.filter((id) => !owed.has(id)), [], "otherwise: one re-check");
@@ -266,7 +266,7 @@ test("[req.coherence.edges-complete] F6: a key term defined in two maps is two t
 
   // a stamp written before R4 (`term:catalyst`, chapter 2's hash) reads as both definitions, baselined: no work…
   const d = course(t);
-  const rel = d.units().find((u) => users.includes(u.id)).locator.deliverable, f = path.join(d.root, "metadata/units", `${rel}.json`);
+  const rel = d.units().find((u) => users.includes(u.id)).locator.deliverable, f = path.join(d.root, "private/coursewerk/units", `${rel}.json`);
   const side = JSON.parse(fs.readFileSync(f, "utf8")); delete side.stamps;
   const legacy = [];
   for (const u of side.units) if (u.stamp?.["term:le-chatelier:catalyst"]) { const h = u.stamp["term:le-chatelier:catalyst"]; delete u.stamp["term:le-chatelier:catalyst"]; delete u.stamp["term:chemical-equilibrium:catalyst"]; u.stamp["term:catalyst"] = h; legacy.push(u.id); }

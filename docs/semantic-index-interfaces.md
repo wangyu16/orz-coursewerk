@@ -288,7 +288,7 @@ export function buildQueue(findings, claims)   // -> REVIEW_QUEUE (schema) incl.
   // would also silently MERGE them, since the queue kind is the dedupe key.
 
 // M10 also OWNS THE ARTIFACT PATH:
-export const REVIEW_QUEUE_PATH  // "metadata/REVIEW_QUEUE.json" — import it, NEVER respell it (§5d).
+export const REVIEW_QUEUE_PATH  // "private/coursewerk/REVIEW_QUEUE.json" — import it, NEVER respell it (§5d).
   // [ADDED 2026-07-17 — M14 found the queue had NO PRODUCER and no constant, so it had to spell the
   // path literally in coherence's EXCLUDE: a second authority created to work around a missing one.]
   // An UNMAPPED detector kind THROWS. It is a contract break, caught by tests at build time; silently folding
@@ -434,7 +434,7 @@ Four modules independently hit the same failure during implementation, so it is 
 - **M6/M10**: M6's detector kinds (`value-disagreement`/`definition-drift`) had no field in REVIEW_QUEUE's enum
   → folding them into the generic `internal-inconsistency` destroyed the observation → fixed with
   `detectorKinds[]`, carried alongside the decision-level `kind`.
-- **M10/M14**: `metadata/REVIEW_QUEUE.json` **has no producer.** `buildQueue` returns the object; *nothing writes
+- **M10/M14**: `private/coursewerk/REVIEW_QUEUE.json` **has no producer.** `buildQueue` returns the object; *nothing writes
   it*. The path exists only in the schema's title and in doc prose — so M14, needing it in coherence's `EXCLUDE`,
   had no module constant to import and had to **spell the path literally**, creating a second authority. Third
   instance of the no-producer family (`derivedFrom`, the spine namespace, now an artifact), and the first at
@@ -495,7 +495,7 @@ only by behavior tests is a §5d fix with a timer on it.**
 
 ## 6. Non-negotiables for every module
 1. **Pure/deterministic** (M3–M6, M4): same input → same output. No LLM, no network, no clock in the index path.
-2. **Backward compatible:** `metadata/COMPONENT_INDEX.json` untouched; new files additive; a package with no
+2. **Backward compatible:** `private/coursewerk/COMPONENT_INDEX.json` untouched; new files additive; a package with no
    `CLAIMS.json` degrades to today's behavior.
 3. **Never touch** the study clone (`…/manuscript-ai-oer-authoring/workspace/tools/orz-coursewerk`).
 4. **Do not push.** Commit on `feat/semantic-index` only.

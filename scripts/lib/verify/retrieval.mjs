@@ -1,5 +1,5 @@
 // Retrieval at verification time — "cite after" (redesign P7; Q13; I16 declared destinations; D26).
-// Only declared destinations are contacted: the package declares them in metadata/coursewerk.json
+// Only declared destinations are contacted: the package declares them in private/coursewerk/coursewerk.json
 //   "retrieval": { "destinations": ["en.wikipedia.org", "openstax.org/books/chemistry-2e"], "context": "chemistry" }
 //   or "retrieval": false. `context` is a few words the instructor declares to keep searches on the subject (a claim's
 //   own words drift: "the most common error" finds medical errors); it names a subject, never the course.
@@ -17,7 +17,7 @@ import { allowed, pinReference } from "./references.mjs";
 export const USER_AGENT = "Coursewerk-verifier/1 (https://github.com/wangyu16/orz-coursewerk)";
 
 // The destinations are the INSTRUCTOR's declaration (I16), and they decide which texts may become evidence: a
-// destination the agent added by editing metadata/coursewerk.json would let it pin a page it controls and verify a wrong
+// destination the agent added by editing private/coursewerk/coursewerk.json would let it pin a page it controls and verify a wrong
 // fact against it. So they are read from the instructor's latest logged declaration (red-team round 5, the audit of
 // F2: no setting the checks rely on is taken from an unbound file); the file only mirrors it.
 export function loggedRetrieval(logText) {
@@ -78,7 +78,7 @@ async function get(fetchImpl, url) {
 
 function guard(root, url) {
   const cfg = retrievalConfig(root);
-  if (!cfg.enabled) throw new Error("retrieval is off for this package (no destinations declared in metadata/coursewerk.json)");
+  if (!cfg.enabled) throw new Error("retrieval is off for this package (no destinations declared in private/coursewerk/coursewerk.json)");
   const d = allowed(url, cfg.destinations);
   if (!d) throw new Error(`${url} is not inside a declared destination (${cfg.destinations.join(", ")})`);
   return d;
@@ -128,12 +128,12 @@ export function onTopic(claim) {
 
 /** Resolve external links for MS4 (req.ms4.links): only links inside declared destinations are contacted. */
 /**
- * Record link resolutions: metadata/LINK_RESOLUTIONS.json (merged by URL), and the same resolutions in the log — the
+ * Record link resolutions: private/coursewerk/LINK_RESOLUTIONS.json (merged by URL), and the same resolutions in the log — the
  * record MS4 reads (red-team round 5, the audit of F3: the file is one anyone can write, and a `status: 200` written
  * into it cleared an unresolved link without any request). Returns the merged list.
  */
 export function recordLinkResolutions(root, resolved) {
-  const file = recordFile(root, "metadata/LINK_RESOLUTIONS.json");
+  const file = recordFile(root, "private/coursewerk/LINK_RESOLUTIONS.json");
   const prior = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")).links || [] : [];
   const merged = new Map(prior.map((l) => [l.url, l])); for (const r of resolved) merged.set(r.url, r);
   const links = [...merged.values()].sort((a, b) => a.url.localeCompare(b.url));

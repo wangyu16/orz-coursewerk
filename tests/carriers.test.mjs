@@ -19,8 +19,8 @@ function fixture() {
     "private/exams/midterm.md": "# Midterm\n\n::: question-workout\nQuestion\n::: answer\nAnswer\n:::\n:::\n",
   };
   for (const [rel, text] of Object.entries(files)) { fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true }); fs.writeFileSync(path.join(root, rel), text); }
-  fs.mkdirSync(path.join(root, "metadata"), { recursive: true });
-  fs.writeFileSync(path.join(root, "metadata", "DOCUMENTS.json"), JSON.stringify({ schemaVersion: 1, documents: [{ id: "midterm", source: "private/exams/midterm.md", carrier: "paged", audience: "instructor-only" }] }));
+  fs.mkdirSync(path.join(root, "private", "coursewerk"), { recursive: true }); fs.mkdirSync(path.join(root, "provenance", "coursewerk"), { recursive: true });
+  (fs.mkdirSync(path.dirname(path.join(root, "private", "coursewerk", "DOCUMENTS.json")), { recursive: true }), fs.writeFileSync)(path.join(root, "private", "coursewerk", "DOCUMENTS.json"), JSON.stringify({ schemaVersion: 1, documents: [{ id: "midterm", source: "private/exams/midterm.md", carrier: "paged", audience: "instructor-only" }] }));
   return { parent, root, out: path.join(parent, "preview"), receipt: path.join(parent, "receipt.json") };
 }
 

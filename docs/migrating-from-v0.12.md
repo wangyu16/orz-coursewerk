@@ -1,8 +1,12 @@
 # Migrating a package from Coursewerk v0.12
 
-A v0.12 package has no `"spine": 2` in `metadata/coursewerk.json`. Its deliverables stay as they are; what changes
+A v0.12 package has no `"spine": 2` in `private/coursewerk/coursewerk.json`. Its deliverables stay as they are; what changes
 is the spine's grammar, and the records the harness keeps about it. The migration is the instructor's request. The
 result is presented to them as a revision for approval, never converted silently.
+
+**First, move the records** (a package written before 2026-10-31 keeps them in `metadata/`): commit, then run
+`node scripts/records_move.mjs --root <pkg>` and commit the move as its own change. The records now live in
+`private/coursewerk/` (never shipped) and `provenance/coursewerk/` (public).
 
 ## 0. The intake (M1) for a migration
 
@@ -73,10 +77,10 @@ The v0.12 claim declarations in front matter are not needed any more. They do no
 ## 4. Records that no longer apply
 
 These v0.12 records are not read by the v2 workflow:
-- `metadata/KEY_FACT_REVIEW.json` and `metadata/VISUAL_REVIEW.json`;
-- `metadata/COMPONENT_INDEX.json`, `metadata/CLAIMS.json`, `metadata/TERMS.json`, `metadata/SPINE.json`, and
-  `metadata/claims/`;
-- `metadata/REVIEW_QUEUE.json` and `metadata/OVERRIDES.json`.
+- `private/coursewerk/KEY_FACT_REVIEW.json` and `private/coursewerk/VISUAL_REVIEW.json`;
+- `private/coursewerk/COMPONENT_INDEX.json`, `private/coursewerk/CLAIMS.json`, `private/coursewerk/TERMS.json`, `private/coursewerk/SPINE.json`, and
+  `private/coursewerk/claims/`;
+- `private/coursewerk/REVIEW_QUEUE.json` and `private/coursewerk/OVERRIDES.json`.
 
 The decision log, the unit index and the publish record replace them. Propose removing them as one commit, with the
 instructor's agreement. They would otherwise be packed with the course.
@@ -84,5 +88,5 @@ instructor's agreement. They would otherwise be packed with the course.
 ## What stays the same
 
 - The deliverables and their formats (`format-contracts/deliverables.md`).
-- The source corpus (`inputs/SOURCE_CORPUS.json`, `metadata/SOURCE_RECORD.json`).
+- The source corpus (`inputs/SOURCE_CORPUS.json`, `private/coursewerk/SOURCE_RECORD.json`).
 - The rights evidence and attribution, provenance, `FOUNDATION.json`, and `alembic.json`.

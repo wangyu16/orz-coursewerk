@@ -268,7 +268,7 @@ test("[req.coherence.reader-view] migration: records keyed on the old normalisat
   // the frozen fixture: the session begin writes every record migrated, and nothing is owed
   const c = course(t);
   const base = c.sig(), reviewed = c.reviews().size;
-  const keys = () => fs.readdirSync(path.join(c.root, "metadata/units"), { recursive: true }).filter((f) => f.endsWith(".json")).flatMap((f) => readSidecar(c.root, f.replace(/\.json$/, ""))?.units || []).flatMap((u) => Object.entries(u.stamp || {}));
+  const keys = () => fs.readdirSync(path.join(c.root, "private/coursewerk/units"), { recursive: true }).filter((f) => f.endsWith(".json")).flatMap((f) => readSidecar(c.root, f.replace(/\.json$/, ""))?.units || []).flatMap((u) => Object.entries(u.stamp || {}));
   beginSession(c.root, c.r(), AGENT);
   const after = keys();
   assert.ok(after.filter(([k]) => /^(question|ref):/.test(k)).every(([, h]) => h.startsWith("q3:")), "every question binding is on the R5 key");

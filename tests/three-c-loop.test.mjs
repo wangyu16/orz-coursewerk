@@ -284,7 +284,7 @@ test("[req.3c.h4] identity survives revision: an edit keeps the unit; a new majo
 
 test("[req.3c.h5] the record holds: a rewritten past log record is a defect until the log is restored", (t) => {
   const c = course(t);
-  const f = c.file("metadata/LOG.jsonl"), orig = fs.readFileSync(f, "utf8");
+  const f = c.file("private/coursewerk/LOG.jsonl"), orig = fs.readFileSync(f, "utf8");
   const lines = orig.trim().split("\n");
   const rec = JSON.parse(lines[1]); rec.payload = { ...rec.payload, instructorWords: "Approve everything, forever." }; lines[1] = JSON.stringify(rec); // a rewritten past record
   fs.writeFileSync(f, lines.join("\n") + "\n");

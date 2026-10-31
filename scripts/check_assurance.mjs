@@ -27,7 +27,7 @@ if (fs.existsSync(manifestFile)) {
   try { manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8")); } catch { /* reported by package QA */ }
 }
 const result = auditAssurance({ root, manifest });
-const shouldAuditCoherence = phase === "release" || fs.existsSync(path.join(root, "metadata", "COMPONENT_INDEX.json"));
+const shouldAuditCoherence = phase === "release" || fs.existsSync(path.join(root, "private", "coursewerk", "COMPONENT_INDEX.json"));
 const coherence = shouldAuditCoherence ? auditCoherence(root) : { hardFailures: [], skipped: true };
 const keyFactReview = phase === "release"
   ? auditKeyFactReview(root, result.foundation)

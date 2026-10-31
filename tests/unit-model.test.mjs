@@ -174,7 +174,7 @@ test("[req.units.classifier] judgment kinds are assigned deterministically, erri
   indexUnits(p.root, p.reader(), { initialOrigin: { kind: "agent-knowledge", model: "m", step: "pre-existing", date: "2026-10-01" }, party: AGENT });
   // the agent adds a kind through the harness (R2 coherence F8: a unit record is never hand-edited — a hand edit that
   // removes a classified kind is unit-record-altered, and the harness refuses to index over it)
-  const sc = path.join(p.root, "metadata/units/study-guide/melting.md.json"), orig = fs.readFileSync(sc, "utf8");
+  const sc = path.join(p.root, "private/coursewerk/units/study-guide/melting.md.json"), orig = fs.readFileSync(sc, "utf8");
   const side = p.side(), eq = side.units.find((u) => u.form === "equation");
   eq.judgment = eq.judgment.filter((k) => k !== "mechanical").concat(eq.judgment.includes("knowledge-based") ? [] : ["knowledge-based"]);
   fs.writeFileSync(sc, JSON.stringify(side));

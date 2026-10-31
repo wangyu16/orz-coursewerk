@@ -29,10 +29,10 @@ test("[req.units.segmenter] the instructor can confirm that the agent wrote a pa
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const w = (rel, s) => { fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true }); fs.writeFileSync(path.join(root, rel), s); };
   w("alembic.json", JSON.stringify({ schemaVersion: 2, packageId: "pending", title: "T", license: "CC-BY-4.0", createdAt: "2026-10-21T00:00:00Z", chapters: [{ slug: "ch", title: "Ch" }] }));
-  w("metadata/coursewerk.json", JSON.stringify({ schemaVersion: 1, spine: 2 }));
+  w("private/coursewerk/coursewerk.json", JSON.stringify({ schemaVersion: 1, spine: 2 }));
   w("study-guide/ch.md", "# Ch\n\nA paragraph written outside any session.\n");
   indexUnits(root, liveReader(root));
-  const side = () => JSON.parse(fs.readFileSync(path.join(root, "metadata/units/study-guide/ch.md.json"), "utf8"));
+  const side = () => JSON.parse(fs.readFileSync(path.join(root, "private/coursewerk/units/study-guide/ch.md.json"), "utf8"));
   const ids = side().units.filter((u) => u.origin.kind === "unknown").map((u) => u.id);
   assert.ok(ids.length > 0);
   assert.throws(() => claimAuthorship(root, { units: ids, as: "agent:claude-opus-5-5", instructorWords: "x" }, { role: "agent", name: "a", model: "m" }), /confirmed by the instructor/);

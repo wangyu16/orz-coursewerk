@@ -69,7 +69,7 @@ function course(t) {
   };
   return c;
 }
-const sidecarPath = (rel) => `metadata/units/${rel}.json`;
+const sidecarPath = (rel) => `private/coursewerk/units/${rel}.json`;
 
 // ======================================== 1. ONLY WHAT THE LOG WROTE IS TRUSTED ========================================
 
@@ -125,14 +125,14 @@ test("[req.records.only-logged-trusted] variant: a planted LIVE-unit sidecar at 
   const logText = readLogText(c.root);
   assert.equal(trustedSidecarPath(logText)(sidecarPath(GONE)), false);
   assert.equal(trustedSidecarPath(logText)(sidecarPath(SG)), true);
-  assert.equal(trustedSidecarPath(logText)("metadata/LOG.jsonl"), true);
+  assert.equal(trustedSidecarPath(logText)("private/coursewerk/LOG.jsonl"), true);
 });
 
 test("[req.records.only-logged-trusted] variant: a planted sidecar at a newly declared document's path is never written over — the index refuses and names it; removing it lets the harness write its own", (t) => {
   const c = course(t);
   const DOC = "current/handout.md";
   c.write(DOC, "{{nyml\nkind: document\n}}\n\n# Handout\n\n## Temperature\n\nFor an exothermic reaction, heat behaves as a product: raising the temperature shifts the equilibrium toward the reactants.\n");
-  c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "handout", title: "Handout", source: DOC, carrier: "paged" }] }, null, 2) + "\n");
+  c.write("private/coursewerk/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "handout", title: "Handout", source: DOC, carrier: "paged" }] }, null, 2) + "\n");
   c.write(sidecarPath(DOC), JSON.stringify({ schemaVersion: 1, deliverable: DOC, units: [] }, null, 2) + "\n");
   assert.equal(readSidecar(c.root, DOC), null, "not read");
   beginSession(c.root, c.r(), AGENT);
@@ -168,13 +168,13 @@ test("[req.records.only-logged-trusted] variant: a deleted sidecar is caught and
   // the harness's own removal is logged; a file planted back at that path is not trusted
   const d = course(t), DOC = "current/handout.md";
   d.write(DOC, "{{nyml\nkind: document\n}}\n\n# Handout\n\n## Catalysts\n\nA catalyst speeds up the forward and reverse reactions by the same factor.\n");
-  d.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "handout", title: "Handout", source: DOC, carrier: "paged" }] }, null, 2) + "\n");
+  d.write("private/coursewerk/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "handout", title: "Handout", source: DOC, carrier: "paged" }] }, null, 2) + "\n");
   d.asAgent(() => {});
   const kept = fs.readFileSync(d.file(sidecarPath(DOC)), "utf8");
   // the document moves: its units follow their text, and the harness removes the record left behind (logged absent)
   const MOVED = "current/handout-v2.md";
   d.write(MOVED, d.read(DOC)); fs.rmSync(d.file(DOC));
-  d.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "handout", title: "Handout", source: MOVED, carrier: "paged" }] }, null, 2) + "\n");
+  d.write("private/coursewerk/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "handout", title: "Handout", source: MOVED, carrier: "paged" }] }, null, 2) + "\n");
   d.asAgent(() => {});
   assert.ok(!fs.existsSync(d.file(sidecarPath(DOC))));
   assert.equal(loggedDigests(d.root)[DOC], "absent", "the removal is logged");
@@ -193,8 +193,8 @@ test("[req.records.only-logged-trusted] migration: a package whose log holds no 
   const recs = readLogText(c.root).trim().split("\n").map((l) => JSON.parse(l)).filter((r) => r.payload?.event !== "unit-records");
   let prev = "0".repeat(64);
   recs.forEach((r, i) => { r.seq = i + 1; r.prev = prev; delete r.hash; r.hash = recordHash(r); prev = r.hash; });
-  fs.writeFileSync(c.file("metadata/LOG.jsonl"), recs.map((r) => JSON.stringify({ seq: r.seq, prev: r.prev, type: r.type, party: r.party, at: r.at, payload: r.payload, hash: r.hash })).join("\n") + "\n");
-  const onDisk = fs.readdirSync(c.file("metadata/units"), { recursive: true }).filter((f) => f.endsWith(".json")).map((f) => f.split(path.sep).join("/").replace(/\.json$/, "")).sort();
+  fs.writeFileSync(c.file("private/coursewerk/LOG.jsonl"), recs.map((r) => JSON.stringify({ seq: r.seq, prev: r.prev, type: r.type, party: r.party, at: r.at, payload: r.payload, hash: r.hash })).join("\n") + "\n");
+  const onDisk = fs.readdirSync(c.file("private/coursewerk/units"), { recursive: true }).filter((f) => f.endsWith(".json")).map((f) => f.split(path.sep).join("/").replace(/\.json$/, "")).sort();
   assert.deepEqual(loggedDigests(c.root), {});
   assert.deepEqual(unloggedSidecars(c.root), [], "pre-rule: nothing to compare against, nothing untrusted");
   assert.equal(readSidecar(c.root, SG)?.deliverable, SG);

@@ -17,7 +17,7 @@ function gateJson(root, checkpoint) {
   const r = cli("gate.mjs", "--root", root, "--checkpoint", checkpoint, "--json", out);
   const j = JSON.parse(fs.readFileSync(out, "utf8")); fs.rmSync(out); return { status: r.status, ...j };
 }
-const sidecars = (root) => ["study-guide", "slides", "practice"].flatMap((d) => ["chemical-equilibrium", "le-chatelier"].map((c) => JSON.parse(fs.readFileSync(path.join(root, "metadata/units", d, `${c}.md.json`), "utf8")).units)).flat();
+const sidecars = (root) => ["study-guide", "slides", "practice"].flatMap((d) => ["chemical-equilibrium", "le-chatelier"].map((c) => JSON.parse(fs.readFileSync(path.join(root, "private/coursewerk/units", d, `${c}.md.json`), "utf8")).units)).flat();
 
 test("[req.core.coverage-obligation] [req.core.reverify-obligation] the real C2 package: the core names its open obligations, and a planted value change makes exactly its dependents stale", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-core-c2-"));

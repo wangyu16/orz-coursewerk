@@ -366,7 +366,7 @@ test("[req.confirmation.bound-text] migration: a confirmation logged before R6 s
   await verifySemi(c.root, c.r(), { texts: c.texts(), verifier: semiReplay("unsupported"), only: [id] });
   const u = c.find(S);
   const legacy = (payload) => instructorActsOf([...c.log(), { seq: 1e9, type: "confirmation", party: I, payload: { what: "fact", units: [id], factHashes: { [id]: factHash(S) }, ...payload } }]);
-  const shown = shownBeforeOf(c.log(), (d) => { try { return JSON.parse(fs.readFileSync(path.join(c.root, "metadata", "verification", `${d}.json`), "utf8")); } catch { return null; } });
+  const shown = shownBeforeOf(c.log(), (d) => { try { return JSON.parse(fs.readFileSync(path.join(c.root, "private", "coursewerk", "verification", `${d}.json`), "utf8")); } catch { return null; } });
   const actsOf = (payload) => instructorActsOf([...c.log(), { seq: 1e9, type: "confirmation", party: I, payload: { what: "fact", units: [id], factHashes: { [id]: factHash(S) }, ...payload } }], { shownBefore: shown });
   assert.ok(confirmationStands(actsOf({ contentHashes: { [id]: u.locator.contentHash } }), u), "R4-R5 record: its contentHash");
   assert.ok(confirmationStands(actsOf({}), u), "pre-R4 record: the latest review before it showed this text (bound by the log)");

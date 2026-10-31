@@ -21,7 +21,7 @@ function pkg(t) {
   const root = path.join(dir, "pkg"); fs.cpSync(C2, root, { recursive: true });
   // a deck at the contract's path, and an attribution naming the old one
   fs.renameSync(path.join(root, "slides/le-chatelier.md"), path.join(root, "slides/le-chatelier.slides.md"));
-  fs.writeFileSync(path.join(root, "metadata/ATTRIBUTION.md"), "| asset | used in |\n|---|---|\n| `assets/x.svg` | study-guide/le-chatelier.md, slides/le-chatelier.md |\n");
+  fs.writeFileSync(path.join(root, "provenance/coursewerk/ATTRIBUTION.md"), "| asset | used in |\n|---|---|\n| `assets/x.svg` | study-guide/le-chatelier.md, slides/le-chatelier.md |\n");
   const git = (...a) => spawnSync("git", ["-C", root, ...a], { encoding: "utf8" });
   git("init", "-q"); git("add", "-A"); git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "c2");
   return { root, dir, git };
@@ -34,12 +34,12 @@ test("[req.records.site-export] the export maps the record onto private/coursewe
   assert.deepEqual(r.problems, []);
   assert.equal(git("status", "--porcelain").stdout, "", "the package is untouched");
   // the decision log, byte for byte, still a verifiable chain
-  const log = fs.readFileSync(path.join(out, "private/coursewerk/log.jsonl"), "utf8");
-  assert.equal(log, fs.readFileSync(path.join(root, "metadata/LOG.jsonl"), "utf8"));
+  const log = fs.readFileSync(path.join(out, "private/coursewerk/LOG.jsonl"), "utf8");
+  assert.equal(log, fs.readFileSync(path.join(root, "private/coursewerk/LOG.jsonl"), "utf8"));
   assert.deepEqual(verifyLog(log), []);
   // every verification record is one line, in few files, each under the cap
   const vdir = path.join(out, "private/coursewerk/verification"), vfiles = fs.readdirSync(vdir);
-  const n = fs.readdirSync(path.join(root, "metadata/verification")).filter((f) => f.endsWith(".json")).length;
+  const n = fs.readdirSync(path.join(root, "private/coursewerk/verification")).filter((f) => f.endsWith(".json")).length;
   const lines = vfiles.flatMap((f) => fs.readFileSync(path.join(vdir, f), "utf8").trim().split("\n"));
   assert.equal(lines.length, n);
   assert.ok(vfiles.length <= 4 && vfiles.every((f) => fs.statSync(path.join(vdir, f)).size <= RECORD_LIMITS.bytesPerFile), vfiles.join(", "));
@@ -62,8 +62,8 @@ test("[req.records.site-export] the export maps the record onto private/coursewe
 test("[req.records.site-export] a later export only appends verification lines", (t) => {
   const { root } = pkg(t);
   const before = verificationLines(root);
-  fs.writeFileSync(path.join(root, "metadata/verification/d-ffffffffffffffff.json"), JSON.stringify({ schemaVersion: 1, dispatch: "d-ffffffffffffffff", kind: "knowledge", at: "2099-01-01T00:00:00Z" }));
-  fs.writeFileSync(path.join(root, "metadata/verification/d-0000000000000000.json"), JSON.stringify({ schemaVersion: 1, dispatch: "d-0000000000000000", kind: "knowledge", at: "2099-01-02T00:00:00Z" }));
+  fs.writeFileSync(path.join(root, "private/coursewerk/verification/d-ffffffffffffffff.json"), JSON.stringify({ schemaVersion: 1, dispatch: "d-ffffffffffffffff", kind: "knowledge", at: "2099-01-01T00:00:00Z" }));
+  fs.writeFileSync(path.join(root, "private/coursewerk/verification/d-0000000000000000.json"), JSON.stringify({ schemaVersion: 1, dispatch: "d-0000000000000000", kind: "knowledge", at: "2099-01-02T00:00:00Z" }));
   const after = verificationLines(root);
   for (const [k, v] of Object.entries(before)) assert.equal(after[k], v, `${k} is unchanged`);
   assert.ok(after["verification/2099-01.jsonl"].indexOf("d-ffffffffffffffff") < after["verification/2099-01.jsonl"].indexOf("d-0000000000000000"), "dispatch order, not file-name order");
@@ -73,7 +73,7 @@ test("[req.records.site-export] CHECKED.json counts what is open on each page", 
   const reader = fs.mkdtempSync(path.join(process.env.TMPDIR || os.tmpdir(), "cw-chk-"));
   try {
     fs.cpSync(C2, reader, { recursive: true });
-    const units = JSON.parse(fs.readFileSync(path.join(reader, "metadata/units/practice/le-chatelier.md.json"), "utf8")).units;
+    const units = JSON.parse(fs.readFileSync(path.join(reader, "private/coursewerk/units/practice/le-chatelier.md.json"), "utf8")).units;
     const f = (statusClass, extra = {}) => ({ statusClass, status: "open", units: [units[0].id], ...extra });
     const c = checkedRecord(reader, { findings: [f("defect"), f("question"), f("question", { status: "answered" }), { statusClass: "obligation", status: "open", units: [], evidence: { file: "concepts/le-chatelier.md" } }] });
     assert.deepEqual(c.pages.find((p) => p.path === "practice/le-chatelier.md").open, { defects: 1, obligations: 0, questions: 1 });

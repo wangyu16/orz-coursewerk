@@ -1,4 +1,4 @@
-// The unit sidecars are records the harness writes (metadata/units/**.json): stamps, owed re-verifications, carried
+// The unit sidecars are records the harness writes (private/coursewerk/units/**.json): stamps, owed re-verifications, carried
 // flags, roles, links, origins, evidence, locators and the retired-unit register. A hand edit of one could silence an
 // obligation (red team R1 coherence, F6: deleting a stale answer's `stamp` key removed its re-verification). So every
 // harness write logs a digest of each sidecar it changed, and a sidecar that differs from its last logged digest is a
@@ -22,7 +22,7 @@ import { recordFile, unitsPathFor } from "../records/paths.mjs";
 import { makeFinding } from "../records/findings.mjs";
 import { migrateRecordSides, unitRecordWriteProblems } from "./obligations.mjs";
 
-const DIR = "metadata/units";
+const DIR = "private/coursewerk/units";
 export const UNIT_RECORDS_EVENT = "unit-records";
 
 /** What the digest binds: the whole sidecar (every field an obligation, a question or the gate reads). */
@@ -75,7 +75,7 @@ const trustOf = (logged) => {
 };
 /** Is a sidecar (by its deliverable) one the log wrote? A pure reading of the log text (the gate's snapshot uses it). */
 export function sidecarTrust(logText) { return trustOf(loggedDigests(null, logText)); }
-/** A snapshot path filter: metadata/units/<deliverable>.json is read only if the log wrote it (other paths pass). */
+/** A snapshot path filter: private/coursewerk/units/<deliverable>.json is read only if the log wrote it (other paths pass). */
 export function trustedSidecarPath(logText) {
   const trusted = sidecarTrust(logText), pre = `${DIR}/`;
   return (p) => !(p.startsWith(pre) && p.endsWith(".json")) || trusted(p.slice(pre.length).replace(/\.json$/, ""));
@@ -84,7 +84,7 @@ export function trustedSidecarPath(logText) {
 let trustMemo = { key: null, fn: null };
 function trustedHere(root) {
   let key = null;
-  try { const st = fs.statSync(recordFile(root, "metadata/LOG.jsonl")); key = `${root}|${st.size}|${st.mtimeMs}|${st.ino}`; } catch { key = `${root}|none`; }
+  try { const st = fs.statSync(recordFile(root, "private/coursewerk/LOG.jsonl")); key = `${root}|${st.size}|${st.mtimeMs}|${st.ino}`; } catch { key = `${root}|none`; }
   if (trustMemo.key !== key) trustMemo = { key, fn: trustOf(loggedDigests(root)) };
   return trustMemo.fn;
 }
@@ -117,12 +117,12 @@ export function alteredSidecars(root) {
 export function assertUnaltered(root, rels = null) {
   const unlogged = new Set(unloggedSidecars(root));
   const bad = alteredSidecars(root).filter((r) => !unlogged.has(r) && (!rels || rels.includes(r)));
-  if (bad.length) throw new Error(`refusing to write unit records: ${bad.join(", ")} changed outside the harness since its last logged digest — restore it from git (git checkout -- metadata/units/…); the harness never writes over an edited record`);
+  if (bad.length) throw new Error(`refusing to write unit records: ${bad.join(", ")} changed outside the harness since its last logged digest — restore it from git (git checkout -- private/coursewerk/units/…); the harness never writes over an edited record`);
   // a sidecar the log never wrote is never written over (nor deleted) by the harness (R7 H-04)
   const planted = [...unlogged].filter((r) => !rels || rels.includes(r));
-  if (planted.length) throw new Error(`refusing to write unit records: metadata/units/${planted.join(".json, metadata/units/")}.json ${planted.length === 1 ? "was" : "were"} never written by the harness (no logged digest) — remove ${planted.length === 1 ? "it" : "them"} (git rm, or git checkout the records the harness wrote); the harness never writes over a record it did not write`);
+  if (planted.length) throw new Error(`refusing to write unit records: private/coursewerk/units/${planted.join(".json, private/coursewerk/units/")}.json ${planted.length === 1 ? "was" : "were"} never written by the harness (no logged digest) — remove ${planted.length === 1 ? "it" : "them"} (git rm, or git checkout the records the harness wrote); the harness never writes over a record it did not write`);
 }
-/** The deliverable a sidecar file records (metadata/units/practice/x.md.json → practice/x.md). */
+/** The deliverable a sidecar file records (private/coursewerk/units/practice/x.md.json → practice/x.md). */
 export const deliverableOfSidecar = (root, file) => path.relative(recordFile(root, DIR), file).split(path.sep).join("/").replace(/\.json$/, "");
 // log the digests of these sidecars where they changed (no check: callers have checked before writing)
 // (a sidecar the write removed — an orphan whose every unit moved to its document's new path — is logged "absent")
@@ -208,9 +208,9 @@ export function unitRecordFindings(root, basis) {
   const unlogged = new Set(unloggedSidecars(root));
   return [...alteredSidecars(root).filter((rel) => !unlogged.has(rel)).map((rel) => makeFinding({ module: "skeleton", kind: "unit-record-altered", units: [], statusClass: "defect", route: "agent", basis,
     evidence: { type: "rule", rule: "a unit record changes only through the harness (its digest is logged at every write)", file: `${DIR}/${rel}.json`,
-      detail: `metadata/units/${rel}.json differs from its last logged digest: restore it from git; re-verification, links and confirmations go through units.mjs` } })),
+      detail: `private/coursewerk/units/${rel}.json differs from its last logged digest: restore it from git; re-verification, links and confirmations go through units.mjs` } })),
   // a record the log never wrote (R7 H-04): untrusted, unread, and blocking until it is removed
   ...[...unlogged].map((rel) => makeFinding({ module: "skeleton", kind: "unit-record-altered", units: [], statusClass: "defect", route: "agent", basis,
     evidence: { type: "rule", rule: "only a unit record the log wrote is trusted (every harness write logs its digest)", file: `${DIR}/${rel}.json`,
-      detail: `metadata/units/${rel}.json was never written by the harness (no logged digest): it is not read; remove it (git rm), or restore the records the harness wrote from git` } }))];
+      detail: `private/coursewerk/units/${rel}.json was never written by the harness (no logged digest): it is not read; remove it (git rm), or restore the records the harness wrote from git` } }))];
 }

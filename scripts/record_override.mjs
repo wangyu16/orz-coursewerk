@@ -3,7 +3,7 @@
 //
 // WHY THIS FILE EXISTS (added 2026-07-17; finding F-C, the 5th no-producer defect)
 // --------------------------------------------------------------------------------
-// `lib/overrides.mjs` exports OVERRIDES_PATH = "metadata/OVERRIDES.json" and a complete, tested,
+// `lib/overrides.mjs` exports OVERRIDES_PATH = "private/coursewerk/OVERRIDES.json" and a complete, tested,
 // mutation-covered API — and **nothing wrote the file**. The module is PURE (no I/O by design, which is
 // correct), so the producer had to live somewhere, and it lived nowhere. The feature could not be
 // exercised through the CLI at all: no npm script, no scripts/*.mjs, and the package tree in
@@ -63,7 +63,7 @@ if (!entry.claimId || !entry.divergesFrom || !entry.basis || !entry.rationale) {
     "record-override: record an authorized divergence from a source.\n" +
       "\n" +
       "  --root <dir>            package root (default: package)\n" +
-      "  --claim-id <claim.…>    the claim that diverges (from metadata/CLAIMS.json)\n" +
+      "  --claim-id <claim.…>    the claim that diverges (from private/coursewerk/CLAIMS.json)\n" +
       "  --diverges-from <ref>   the source ref it diverges from\n" +
       `  --basis <${BASES.join("|")}>\n` +
       "  --rationale <text>      REQUIRED — why this is deliberate, for the next reader\n" +
@@ -108,7 +108,7 @@ try {
 // M4 (design audit): an override for an id that no claim carries is a forged or stranded record.
 // When the package is indexed, the id must exist there; `--force` records it anyway (with the
 // dangling-override finding the gate will then raise).
-const claimsFile = path.join(root, "metadata", "CLAIMS.json");
+const claimsFile = path.join(root, "private", "coursewerk", "CLAIMS.json");
 if (fs.existsSync(claimsFile) && !args.includes("--force")) {
   let known = null;
   try { known = new Set((JSON.parse(fs.readFileSync(claimsFile, "utf8")).claims ?? []).map((c) => c.id)); } catch { known = null; }

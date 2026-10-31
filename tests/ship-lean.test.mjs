@@ -23,15 +23,15 @@ test("[req.ship.lean] the delivered package holds only what Alembic needs: no wo
     "slides/ch.md": "{{nyml\nkind: document\ncarrier: slides\ntitle: Ch\n}}\n\n<!-- slide -->\n## Ch\n![x](../assets/figs/deck.svg)\n",
     "practice/ch.md": "# Practice\n", "concepts/ch.md": "# Concept Map — Ch\n", "assessment-support/ch.md": "# Assessment Guide — Ch\n",
     "assets/plot.png": "png", "assets/figs/deck.svg": "<svg/>", "assets/unused.png": "png",
-    "metadata/ATTRIBUTION.md": "# Attribution\n", "metadata/LOG.jsonl": "{}\n", "metadata/units/study-guide/ch.md.json": "{}",
-    "metadata/verification/d-1.json": JSON.stringify({ passages: [{ source: "ref-textbook", text: "a textbook passage" }] }),
-    "metadata/evidence/textbook.html": "<p>snapshot</p>", "metadata/FOUNDATION.json": "{}", "metadata/coursewerk.json": "{}",
-    "metadata/corrections/c-1.json": "{}", "private/notes/key.md": "# Key\n",
+    "provenance/coursewerk/ATTRIBUTION.md": "# Attribution\n", "private/coursewerk/LOG.jsonl": "{}\n", "private/coursewerk/units/study-guide/ch.md.json": "{}",
+    "private/coursewerk/verification/d-1.json": JSON.stringify({ passages: [{ source: "ref-textbook", text: "a textbook passage" }] }),
+    "private/coursewerk/evidence/textbook.html": "<p>snapshot</p>", "private/coursewerk/FOUNDATION.json": "{}", "private/coursewerk/coursewerk.json": "{}",
+    "private/coursewerk/corrections/c-1.json": "{}", "private/notes/key.md": "# Key\n",
   });
   const { files, leftOut } = shippedFiles(root);
   assert.deepEqual(files, ["LICENSE", "README.md", "alembic.json", "assessment-support/ch.md", "assets/figs/deck.svg", "assets/plot.png", "concepts/ch.md",
-    "metadata/ATTRIBUTION.md", "practice/ch.md", "private/notes/key.md", "slides/ch.md", "study-guide/ch.md"]);
-  assert.ok(!files.some((f) => f.startsWith("metadata/") && !SHIPPED_RECORDS.has(f)), "no working record ships: log, units, verification (source passages), evidence, corrections");
+    "practice/ch.md", "private/notes/key.md", "provenance/coursewerk/ATTRIBUTION.md", "slides/ch.md", "study-guide/ch.md"]);
+  assert.ok(!files.some((f) => f.startsWith("private/coursewerk/")), "no working record ships: log, units, verification (source passages), evidence, corrections");
   assert.deepEqual(leftOut, { "root file": 2, "unused asset": 1, "working record": 7 });
   // a chapter that is not published leaves its files, and the assets only it used, behind
   const one = shippedFiles(root, { keep: () => false, course: false });
@@ -41,10 +41,10 @@ test("[req.ship.lean] the delivered package holds only what Alembic needs: no wo
 test("[req.ship.lean] a document a student reads ships wherever it is declared, and the assets it uses with it", (t) => {
   const root = pkg(t, {
     "alembic.json": manifest, LICENSE: "x", "study-guide/ch.md": "# Ch\n",
-    "metadata/DOCUMENTS.json": JSON.stringify({ documents: [{ source: "metadata/reading.md", title: "Reading" }] }),
+    "private/coursewerk/DOCUMENTS.json": JSON.stringify({ documents: [{ source: "metadata/reading.md", title: "Reading" }] }),
     "metadata/reading.md": "# Reading\n\n<img src=\"../assets/map.png\" alt=\"map\">\n", "assets/map.png": "png",
   });
   const { files } = shippedFiles(root);
   assert.ok(files.includes("metadata/reading.md") && files.includes("assets/map.png"));
-  assert.ok(!files.includes("metadata/DOCUMENTS.json"), "the declaration is a working record");
+  assert.ok(!files.includes("private/coursewerk/DOCUMENTS.json"), "the declaration is a working record");
 });

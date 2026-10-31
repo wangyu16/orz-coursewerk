@@ -37,7 +37,8 @@ An **Alembic package** (https://alembic.orz.how), which also works without the p
   `docs/assembling-carriers.md`.
 - **The exact tree, manifest and per-file contracts** are in `format-contracts/deliverables.md`.
 - **Records:** everything the harness records (units, the decision log, verification records, approvals) lives in
-  the package's `metadata/` and is committed with it.
+  the package's `private/coursewerk/` and is committed with it; the public record (attribution, what was checked) is
+  `provenance/coursewerk/`. A package written before 2026-10-31 moves once: `scripts/records_move.mjs`.
 
 **What Coursewerk provides, and what it trusts you with.** Coursewerk provides the 3C control core (Control,
 Confidence, Coherence). The content is plain orz text under the Alembic contract, and its notations are stable.
@@ -161,6 +162,6 @@ unreviewed change.
 
 ## Packages from Coursewerk v0.12
 
-A package without `"spine": 2` in `metadata/coursewerk.json` is a v0.12 package. Migrate it
+A package without `"spine": 2` in `private/coursewerk/coursewerk.json` is a v0.12 package. Migrate it
 (`docs/migrating-from-v0.12.md`). The v0.12 tools (`check_oer.mjs` and the release path in `pack.mjs`) remain only
 for unmigrated packages.

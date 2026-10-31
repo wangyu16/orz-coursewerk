@@ -49,10 +49,10 @@ EOF
 # personal/ — private working materials, not cleared for distribution
 
 Use this tree only for creator-only or genuinely restricted work. Keep structured source and item records in
-`metadata/FOUNDATION.json` and `metadata/PROVENANCE.json`; use the examples under `templates/`. Unknown or
+`private/coursewerk/FOUNDATION.json` and `private/coursewerk/PROVENANCE.json`; use the examples under `templates/`. Unknown or
 private-only material must be visibly labelled and remains a publication blocker. This tree is never packed as
 an Alembic package. Run `node scripts/check_assurance.mjs --root personal` to check it. After first assembly,
-initialize `metadata/COMPONENT_INDEX.json`; use the revision-impact workflow for every later edit.
+initialize `private/coursewerk/COMPONENT_INDEX.json`; use the revision-impact workflow for every later edit.
 EOF
 [ -f package/private/README.md ] || cat > package/private/README.md <<'EOF'
 # private/ — instructor-only (NEVER shared with students)

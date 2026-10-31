@@ -193,7 +193,7 @@ test("[req.gate.log-verified] every gate evaluation checks the log against the c
   assert.deepEqual(logFindings(root, "b"), []);
   appendLogRecord(root, { type: "steering", party });
   assert.deepEqual(logFindings(root, "b"), [], "an extension of the committed log is fine");
-  const file = path.join(root, "metadata", "LOG.jsonl");
+  const file = path.join(root, "private", "coursewerk", "LOG.jsonl");
   fs.writeFileSync(file, fs.readFileSync(file, "utf8").split("\n").slice(1).join("\n"));
   const f = logFindings(root, "b")[0];
   assert.equal(f.kind, "log-broken"); assert.equal(f.statusClass, "defect");
@@ -260,13 +260,13 @@ test("[req.modules.no-writes] [req.modules.admission] round P2-2 probes: git his
   assert.notDeepEqual(kinds(run(s, reg(["demo"]))), ["demo/wrong-value:defect"]);
   // 6. the registry must be a regular, valid JSON file
   fs.writeFileSync(path.join(path.dirname(s.root), "outside.json"), JSON.stringify(reg(["demo"])));
-  fs.mkdirSync(path.join(s.root, "metadata"), { recursive: true });
-  fs.symlinkSync(path.join(path.dirname(s.root), "outside.json"), path.join(s.root, "metadata", "modules.json"));
+  fs.mkdirSync(path.join(s.root, "private", "coursewerk"), { recursive: true }); fs.mkdirSync(path.join(s.root, "provenance", "coursewerk"), { recursive: true });
+  fs.symlinkSync(path.join(path.dirname(s.root), "outside.json"), path.join(s.root, "private", "coursewerk", "modules.json"));
   assert.throws(() => readRegistry(s.root), /must be a regular file/);
-  fs.rmSync(path.join(s.root, "metadata", "modules.json"));
-  fs.writeFileSync(path.join(s.root, "metadata", "modules.json"), "{ not json");
+  fs.rmSync(path.join(s.root, "private", "coursewerk", "modules.json"));
+  (fs.mkdirSync(path.dirname(path.join(s.root, "private", "coursewerk", "modules.json")), { recursive: true }), fs.writeFileSync)(path.join(s.root, "private", "coursewerk", "modules.json"), "{ not json");
   assert.throws(() => readRegistry(s.root), /not valid JSON/);
-  assert.deepEqual(kinds(run(s, { schemaVersion: 1, modules: [], __readError: "metadata/modules.json is not valid JSON" })), ["skeleton/registry-invalid:obligation"]);
+  assert.deepEqual(kinds(run(s, { schemaVersion: 1, modules: [], __readError: "private/coursewerk/modules.json is not valid JSON" })), ["skeleton/registry-invalid:obligation"]);
 });
 
 test("[req.modules.no-writes] [req.modules.manifest] round P2-3 probes: unreadable, huge and vanishing files; open handles; error text; more write targets", (t) => {
@@ -307,7 +307,7 @@ test("[req.gate.log-verified] a log past 1 MB is read whole: a long history neve
   const { root } = scratch(t);
   const party = { role: "harness", name: "gate" };
   for (let i = 0; i < 2200; i++) appendLogRecord(root, { type: "intake", party, payload: { note: "x".repeat(400), i } });
-  assert.ok(fs.statSync(path.join(root, "metadata", "LOG.jsonl")).size > 1 << 20, "over Node's default 1 MB buffer");
+  assert.ok(fs.statSync(path.join(root, "private", "coursewerk", "LOG.jsonl")).size > 1 << 20, "over Node's default 1 MB buffer");
   gitInit(root);
   appendLogRecord(root, { type: "steering", party });
   assert.deepEqual(logFindings(root, "b"), [], "read and verified, not 'unreadable'");

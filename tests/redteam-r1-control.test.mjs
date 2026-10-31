@@ -123,7 +123,7 @@ test("[req.control.review-record-bound] C2-03: a logged review whose 'declared',
   const c = course(t);
   uncover(c); c.link({ [FALSE]: [...c.unit(FALSE).spineNodes, OBJ] });
   const [res] = await reviewAlignment(c.root, c.r(), { verifier: honestOBJ().verifier, only: [FALSE] });
-  const file = c.file(`metadata/verification/${res.dispatch}.json`), orig = fs.readFileSync(file, "utf8");
+  const file = c.file(`private/coursewerk/verification/${res.dispatch}.json`), orig = fs.readFileSync(file, "utf8");
   assert.ok(ms9(c).some((f) => f.kind === "link-doubtful"));
   for (const [field, value] of [["declared", []], ["alignmentBasis", "0".repeat(64)], ["at", "2099-01-01T00:00:00.000Z"]]) {
     fs.writeFileSync(file, JSON.stringify({ ...JSON.parse(orig), [field]: value }, null, 2) + "\n");
@@ -263,7 +263,7 @@ test("[req.control.role-derived] C3-15: a unit's role comes from its text and st
   c.asAgent(() => c.edit(SG, CATALYST_END, `${CATALYST_END}\n\n${OFF}`));
   const off = c.units().find((u) => u.text === OFF);
   assert.ok(added(c).some((f) => f.kind === "unit-unlinked" && f.units.includes(off.id)));
-  const SIDE = "metadata/units/study-guide/le-chatelier.md.json", side = JSON.parse(c.read(SIDE));
+  const SIDE = "private/coursewerk/units/study-guide/le-chatelier.md.json", side = JSON.parse(c.read(SIDE));
   side.units.find((u) => u.id === off.id).role = "framing";
   c.write(SIDE, JSON.stringify(side, null, 2) + "\n");
   assert.equal(c.unit(off.id).role, "teaching");
@@ -432,7 +432,7 @@ test("[req.control.link-review] C3-14: a handout declared in DOCUMENTS.json is s
   const H = "current/fall-2026/le-chatelier-handout.md";
   fs.mkdirSync(path.dirname(c.file(H)), { recursive: true });
   c.write(H, "{{nyml\nkind: document\n}}\n\n# Handout\n\n## Electrochemistry\n\nA galvanic cell converts the chemical energy of a spontaneous redox reaction into electrical energy.\n");
-  c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "le-chatelier-handout", title: "Le Chatelier handout", source: H, carrier: "paged" }] }, null, 2) + "\n");
+  c.write("private/coursewerk/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "le-chatelier-handout", title: "Le Chatelier handout", source: H, carrier: "paged" }] }, null, 2) + "\n");
   assert.ok(c.units().some((u) => u.locator.deliverable === H) || added(c).some((f) => JSON.stringify(f.evidence).includes(H)));
 });
 
@@ -457,7 +457,7 @@ test("[req.ship.checked] D42: a declared document is a deliverable unless the in
   const H = "current/fall-2026/schedule.md";
   fs.mkdirSync(path.dirname(c.file(H)), { recursive: true });
   c.write(H, "{{nyml\nkind: document\n}}\n\n# Schedule\n\nWeek 1: equilibrium. Week 2: Le Chatelier's principle.\n");
-  c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "schedule", title: "Schedule", source: H, carrier: "paged", role: "administrative" }] }, null, 2) + "\n");
+  c.write("private/coursewerk/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "schedule", title: "Schedule", source: H, carrier: "paged", role: "administrative" }] }, null, 2) + "\n");
   // red team round 2 (C3-06): the mark is the instructor's logged act, never the field alone — until they confirm it,
   // the document is a deliverable like any other
   assert.ok(added(c).some((f) => JSON.stringify(f).includes(H) && f.kind === "units-not-indexed"), "the field alone: a deliverable to index");

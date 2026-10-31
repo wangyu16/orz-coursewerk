@@ -229,7 +229,7 @@ test("[req.control.include-read-under-includer] C3-03: the study guide includes 
 
 test("[req.control.include-read-under-includer] variants: an include of a document read under the same frame is accepted; a deck with no notes still prints, as page text, what the deck does not show (D52: its text before the first slide — orz-slides 1.0 renders the section subtitles 0.x dropped), and is refused; a paged document prints less as page content, and is accepted", async (t) => {
   const c = course(t);
-  const docs = (list) => c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: list }, null, 2) + "\n");
+  const docs = (list) => c.write("private/coursewerk/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: list }, null, 2) + "\n");
   c.asAgent(() => {
     c.write("handouts/inert.md", `# Inert gases\n\n${INERT}\n`);
     c.write("handouts/print.md", `{{nyml\nkind: document\ncarrier: paged\nheader_left: Le Chatelier\n}}\n\n# Print\n\n${INERT}\n`);
@@ -258,7 +258,7 @@ test("[req.control.printed-settings-read] C3-02: orz-paged prints a document's r
   // CSS writes into @top-left of every page (page-css.js addStatic), the page number being in another box
   const frame = resolveSettings(text);
   assert.equal(frame.headerLeft, HEADER); assert.notEqual(frame.pageNumberPosition, "header-left");
-  c.asAgent(() => { c.write(DOC, text); c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ source: DOC, chapter: "le-chatelier" }] }, null, 2) + "\n"); });
+  c.asAgent(() => { c.write(DOC, text); c.write("private/coursewerk/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ source: DOC, chapter: "le-chatelier" }] }, null, 2) + "\n"); });
   const head = c.units().find((u) => u.locator.deliverable === DOC && ELECTRO.test(u.text));
   assert.ok(head, "the header is a unit");
   assert.equal(head.role, "framing");
@@ -320,10 +320,10 @@ test("[req.control.credit-line-read] variants: a session that leaves the credit 
   c.asAgent(() => {});
   assert.deepEqual([...c.reviewed()].sort(), [...before].sort(), "the credit baseline is the line as it stands: nothing moves");
   // the credit baseline is logged once, by the first session
-  const logged = c.read("metadata/LOG.jsonl").split("\n").filter((l) => /"credits"/.test(l));
+  const logged = c.read("private/coursewerk/LOG.jsonl").split("\n").filter((l) => /"credits"/.test(l));
   assert.equal(logged.length, 1);
   c.asAgent(() => {});
-  assert.equal(c.read("metadata/LOG.jsonl").split("\n").filter((l) => /"credits"/.test(l)).length, 1);
+  assert.equal(c.read("private/coursewerk/LOG.jsonl").split("\n").filter((l) => /"credits"/.test(l)).length, 1);
   // two credit lines: each is a unit (round 2), and no unit carries a credit label
   const two = `## A\n\n${INERT}\n\n*Adapted from X (CC-BY-4.0).*\n\n*Adapted from Y (CC-BY-4.0).*\n`;
   const u = segmentDeliverable(two, "study-guide/x.md").units;
@@ -343,14 +343,14 @@ test("[req.control.shipped-equals-read] C3-04: a teaching handout under metadata
   const docs = c.shipped().filter((f) => f.kind === "document-unchecked").map((f) => f.evidence.file).sort();
   assert.deepEqual(docs, ["study-guide/galvanic-cells.html"]);
   // declared, it is delivered — and read like a study guide
-  c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "fr", title: "Further reading", source: "metadata/further-reading.md", carrier: "lean" }] }, null, 2) + "\n");
+  c.write("private/coursewerk/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "fr", title: "Further reading", source: "metadata/further-reading.md", carrier: "lean" }] }, null, 2) + "\n");
   assert.ok(shippedFiles(c.root).files.includes("metadata/further-reading.md"));
 });
 
 test("[req.control.shipped-equals-read] variants: named records, the named evidence snapshot, the licence and media ship unread; an unknown metadata record, an unnamed evidence file, a text or json file anywhere, an svg or pdf outside assets/ (D49) are refused", async (t) => {
   const c = course(t);
   const refused = ["assets/notes.txt", "materials/diagram.svg", "slides/figure.pdf", "materials/handout.htm", "concepts/extra.json"];
-  const neverDelivered = ["metadata/NOTES.json", "metadata/evidence/unnamed.html", "metadata/units/notes.md"]; // D53: working-record folder
+  const neverDelivered = ["private/coursewerk/NOTES.json", "private/coursewerk/evidence/unnamed.html", "private/coursewerk/units/notes.md"]; // D53: working-record folder
   for (const rel of [...refused, ...neverDelivered]) c.write(rel, LESSON);
   fs.appendFileSync(path.join(c.root, SG2), "\nSee [the notes](../assets/notes.txt).\n"); // an asset ships only when a text uses it (D53)
   const lean = new Set(shippedFiles(c.root).files);
@@ -359,8 +359,8 @@ test("[req.control.shipped-equals-read] variants: named records, the named evide
   c.write("assets/clip.mp4", "binary");
   const docs = new Set(uncheckedShipped(c.root, c.r()).documents);
   for (const rel of refused) assert.ok(docs.has(rel), rel);
-  for (const rel of ["assets/photo.png", "assets/clip.mp4", "LICENSE", "alembic.json", "metadata/ATTRIBUTION.md", "metadata/evidence/wikipedia-anchor.html", "metadata/LOG.jsonl"]) assert.ok(!docs.has(rel), rel);
-  assert.ok(isHarnessRecord("metadata/units/study-guide/le-chatelier.md.json") && isHarnessRecord("metadata/verification/d-1.json") && !isHarnessRecord("metadata/further-reading.md"));
+  for (const rel of ["assets/photo.png", "assets/clip.mp4", "LICENSE", "alembic.json", "provenance/coursewerk/ATTRIBUTION.md", "private/coursewerk/evidence/wikipedia-anchor.html", "private/coursewerk/LOG.jsonl"]) assert.ok(!docs.has(rel), rel);
+  assert.ok(isHarnessRecord("private/coursewerk/units/study-guide/le-chatelier.md.json") && isHarnessRecord("private/coursewerk/verification/d-1.json") && !isHarnessRecord("metadata/further-reading.md"));
   // the fixture as it stands ships nothing unread
   const d = course(t);
   assert.deepEqual(uncheckedShipped(d.root, d.r()), { documents: [], includes: [] });

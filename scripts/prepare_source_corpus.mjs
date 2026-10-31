@@ -13,8 +13,8 @@ const inputs = path.resolve(opt("--inputs", "inputs"));
 const root = path.resolve(opt("--root", "package"));
 const sourceId = opt("--source-id");
 if (!sourceId || !/^[a-z0-9][a-z0-9._-]*$/i.test(sourceId)) { console.error("prepare-source-corpus: --source-id is required and must be path-safe"); process.exit(2); }
-const foundationFile = path.join(root, "metadata", "FOUNDATION.json");
-if (!fs.existsSync(foundationFile)) { console.error("prepare-source-corpus: --root must contain metadata/FOUNDATION.json so rights preflight can be enforced"); process.exit(3); }
+const foundationFile = path.join(root, "private", "coursewerk", "FOUNDATION.json");
+if (!fs.existsSync(foundationFile)) { console.error("prepare-source-corpus: --root must contain private/coursewerk/FOUNDATION.json so rights preflight can be enforced"); process.exit(3); }
 const foundation = JSON.parse(fs.readFileSync(foundationFile, "utf8"));
 const sourceRecord = (foundation.sources || []).find((item) => item.id === sourceId);
 if (!sourceRecord) { console.error(`prepare-source-corpus: source ${sourceId} is not declared in FOUNDATION.json`); process.exit(3); }

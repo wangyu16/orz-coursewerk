@@ -70,15 +70,15 @@ function course(t) {
     ob: (kinds) => coreObligations(root, liveReader(root), "t").filter((f) => !kinds || kinds.includes(f.kind)),
     owing: (kinds = ["reverify", "carried-unverified"]) => [...new Set(coreObligations(root, liveReader(root), "t").filter((f) => kinds.includes(f.kind)).flatMap((f) => f.units))],
     behind: () => logRecordFindings(root, "t"),
-    sidecarFile: (rel) => path.join(root, "metadata", "units", `${rel}.json`),
+    sidecarFile: (rel) => path.join(root, "private", "coursewerk", "units", `${rel}.json`),
   };
   return c;
 }
 const nonceOf = (pr) => pr.match(/"nonce": "([0-9a-f]+)"/)[1];
 const review = (flag = () => []) => replayVerifier((pr) => ({ nonce: nonceOf(pr), concerns: flag(pr) }));
-/** The process dies while writing unit records: every write under metadata/units throws (the log append is untouched). */
+/** The process dies while writing unit records: every write under private/coursewerk/units throws (the log append is untouched). */
 function dieWritingRecords(root) {
-  const orig = fs.writeFileSync, dir = path.join(root, "metadata", "units");
+  const orig = fs.writeFileSync, dir = path.join(root, "private", "coursewerk", "units");
   fs.writeFileSync = function (f, ...rest) { if (String(f).startsWith(dir)) throw new Error("simulated crash: the process died writing unit records"); return orig.call(this, f, ...rest); };
   return () => { fs.writeFileSync = orig; };
 }
@@ -91,7 +91,7 @@ const docs = (src) => JSON.stringify({ schemaVersion: 1, documents: src ? [{ id:
 const linkOf = (u) => [/catalyst/i.test(u.text) ? "objective.le-chatelier.explain-inert-and-catalyst" : "objective.le-chatelier.predict-temperature-shift"];
 /** The handout written in a session, declared, linked; version 2 of the chapter carries it (the R5 fix). */
 function carriedHandout(c) {
-  c.asAgent(() => { c.write(OLD, HANDOUT); c.write("metadata/DOCUMENTS.json", docs(OLD)); });
+  c.asAgent(() => { c.write(OLD, HANDOUT); c.write("private/coursewerk/DOCUMENTS.json", docs(OLD)); });
   const h = c.at(OLD);
   assert.equal(h.length, 2);
   linkUnits(c.root, c.r(), Object.fromEntries(h.map((u) => [u.id, linkOf(u)])), AGENT);
@@ -104,8 +104,8 @@ test("[req.coherence.identity-across-paths] R6 G1: a carried declared handout mo
   const c = course(t);
   const h1 = carriedHandout(c);
   // the move, outside any re-index first: the record left behind is held by the gate, never silently ignored
-  fs.mkdirSync(c.file("current/spring-2027"), { recursive: true }); fs.renameSync(c.file(OLD), c.file(NEW)); c.write("metadata/DOCUMENTS.json", docs(NEW));
-  assert.ok(unindexedFindings(c.root, c.r(), "t").some((f) => f.kind === "units-not-indexed" && /metadata\/units\/current\/fall-2026\/le-chatelier-handout\.md\.json/.test(f.evidence.what) && /no longer a deliverable/.test(f.evidence.what)));
+  fs.mkdirSync(c.file("current/spring-2027"), { recursive: true }); fs.renameSync(c.file(OLD), c.file(NEW)); c.write("private/coursewerk/DOCUMENTS.json", docs(NEW));
+  assert.ok(unindexedFindings(c.root, c.r(), "t").some((f) => f.kind === "units-not-indexed" && /private\/coursewerk\/units\/current\/fall-2026\/le-chatelier-handout\.md\.json/.test(f.evidence.what) && /no longer a deliverable/.test(f.evidence.what)));
   assert.throws(() => openVersionCarrying(c.root, c.r(), { ...OPEN_V2, instructorWords: "Open version 3." }, I), /not yet indexed/, "no version is opened over a rename its records have not followed");
   // the agent's session indexes it: the records follow the text
   beginSession(c.root, c.r(), AGENT); indexAndStamp(c.root, c.r(), { as: "agent", party: AGENT });
@@ -127,7 +127,7 @@ test("[req.coherence.identity-across-paths] variants: a move across folders with
   // rename + move + an edit in the same session
   const MOVED = "handouts/review/le-chatelier-one-pager.md";
   c.asAgent(() => {
-    fs.mkdirSync(c.file("handouts/review"), { recursive: true }); fs.renameSync(c.file(OLD), c.file(MOVED)); c.write("metadata/DOCUMENTS.json", docs(MOVED));
+    fs.mkdirSync(c.file("handouts/review"), { recursive: true }); fs.renameSync(c.file(OLD), c.file(MOVED)); c.write("private/coursewerk/DOCUMENTS.json", docs(MOVED));
     c.edit(MOVED, "raising the temperature shifts", "increasing the temperature shifts");
   });
   const moved = c.at(MOVED);
@@ -135,7 +135,7 @@ test("[req.coherence.identity-across-paths] variants: a move across folders with
   for (const u of moved) assert.deepEqual(u.carried, { scope: SCOPE, version: 2 });
   assert.equal(fs.existsSync(c.sidecarFile(OLD)), false);
   // the document is withdrawn: DOCUMENTS.json no longer lists it and the file is gone
-  c.asAgent(() => { fs.rmSync(c.file(MOVED)); c.write("metadata/DOCUMENTS.json", docs(null)); });
+  c.asAgent(() => { fs.rmSync(c.file(MOVED)); c.write("private/coursewerk/DOCUMENTS.json", docs(null)); });
   const side = JSON.parse(fs.readFileSync(c.sidecarFile(MOVED), "utf8"));
   assert.deepEqual(side.units, [], "nothing of it ships");
   for (const id of [temp, cat]) assert.deepEqual(side.retired.find((e) => e.id === id)?.carried, { scope: SCOPE, version: 2 }, `${id} retired into the register with its carry`);
@@ -144,7 +144,7 @@ test("[req.coherence.identity-across-paths] variants: a move across folders with
   assert.deepEqual(c.behind(), []);
   // the text comes back at a third path: it takes back its id and its carry from the register of an unlisted sidecar
   const BACK = "current/spring-2027/review.md";
-  c.asAgent(() => { c.write(BACK, HANDOUT); c.write("metadata/DOCUMENTS.json", docs(BACK)); });
+  c.asAgent(() => { c.write(BACK, HANDOUT); c.write("private/coursewerk/DOCUMENTS.json", docs(BACK)); });
   const back = c.at(BACK);
   assert.ok(back.some((u) => u.id === cat), "the catalyst paragraph came back byte for byte under its old id");
   for (const u of back.filter((x) => [temp, cat].includes(x.id))) assert.deepEqual(u.carried, { scope: SCOPE, version: 2 });

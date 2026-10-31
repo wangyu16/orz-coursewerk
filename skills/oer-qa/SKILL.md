@@ -43,11 +43,11 @@ node scripts/check_oer.mjs --package package --inputs inputs --for-discovery --r
 - **Source corpus** — `inputs/SOURCE_CORPUS.json` binds every primary source to a raw snapshot/hash, canonical
   URL, structured retrieval/byte metadata, versioned extractor, hashed comparison text/word count, or a dated
   human attestation. Duplicate text and Wikipedia page/revision identities fail. The exact compact mirror in
-  `metadata/SOURCE_RECORD.json` must be current. Scaffolding never counts.
-- **Focused key-fact critique** — `metadata/KEY_FACT_REVIEW.json` covers identity, source/version, licenses,
+  `private/coursewerk/SOURCE_RECORD.json` must be current. Scaffolding never counts.
+- **Focused key-fact critique** — `private/coursewerk/KEY_FACT_REVIEW.json` covers identity, source/version, licenses,
   media rights, attribution, and at least one traced key fact per chapter. Light requires a context-reset
   same-model pass; Full requires cross-model review; evidence or teaching edits invalidate its hashes.
-- **Human carrier review** — `metadata/VISUAL_REVIEW.json` identifies the human who inspected every browser
+- **Human carrier review** — `private/coursewerk/VISUAL_REVIEW.json` identifies the human who inspected every browser
   carrier and binds current source/local-asset hashes plus stable carrier fingerprints.
 - **Attribution completeness** — every media asset has an existing local path and `usedIn` locations in
   structured provenance; public attribution is generated exactly from it. Remote hot-linked media is blocked.
@@ -58,7 +58,7 @@ node scripts/check_oer.mjs --package package --inputs inputs --for-discovery --r
 - **Body placeholders** — leftover `[VERIFY]` / `[NEEDS DATA]`.
 - **Format contracts** — graphics-free concept maps + assessment guides; slides as orz-slides texts (a format-1 header with `carrier: slides`);
   practice with Q/A tabs; every deliverable has an H1; a chapter without a photograph has a reviewed decision
-  in `metadata/MEDIA_PLAN.json`.
+  in `private/coursewerk/MEDIA_PLAN.json`.
 
 `criticalCounts` aggregates the release-blocking subset; `criticalTotal == 0` ⇒ the package passes the gate.
 
@@ -67,7 +67,7 @@ node scripts/check_oer.mjs --package package --inputs inputs --for-discovery --r
 1. Run the checker with `--report reports/qa_report.md` and `--json`.
 2. **Fix the auto-fixable issues**: correct the manifest; move stray root files / unknown folders into the
    contract; add each declared chapter's study guide; move any leaked carrier out of `package/` (rebuild it
-   under `preview/` instead); add unmanifested assets to `metadata/ATTRIBUTION.md`; close unclosed orz
+   under `preview/` instead); add unmanifested assets to `provenance/coursewerk/ATTRIBUTION.md`; close unclosed orz
    containers / fix escaped pipes; repair broken asset paths; add missing alt text.
 3. **Re-run** until `criticalTotal == 0`.
 4. Run `npm run generate:attribution` after provenance changes. Complete and bind the mode-appropriate focused

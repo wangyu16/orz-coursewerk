@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "metadata/SPINE.json — the concept-map SPINE: the instructor's own structure, projected",
+  "title": "private/coursewerk/SPINE.json — the concept-map SPINE: the instructor's own structure, projected",
   "description": "The `chapter.*`/`concept.*`/`objective.*`/`misconception.*` namespace every spineRef in the package points into. Like TERMS, SPINE is a PURE PROJECTION of the concept maps and is ALWAYS derived, NEVER an authority: regenerate it any time; it cannot disagree with the maps because it has no independent existence. It exists so that one question is answerable at all — 'does this spineRef's target exist?' — which six consuming modules ask and, before M13, no code could refute. NOTHING here is inferred: a node comes from a list item under a section interfaces §1 names, or it does not exist. A fabricated node puts words in the instructor's mouth about what their own course teaches, and every downstream layer then reads the fabrication as authorization.",
   "type": "object",
   "required": [

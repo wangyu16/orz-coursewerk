@@ -34,7 +34,7 @@ test("[req.ms1.pin-all] [req.ms1.span] [req.ms1.profiles] MS1: unpinned, changed
   q.edit("SOURCE_CORPUS.json", (x) => { const c = JSON.parse(x); c.sources = c.sources.slice(0, 1); return JSON.stringify(c); }, q.inputs);
   assert.deepEqual(found(run(q, "ms1-sources"), "ms1-sources"), ["source-record-mismatch:defect", "source-unpinned:obligation"]);
   const u = copy(t);
-  u.edit("metadata/units/study-guide/chemical-equilibrium.md.json", (x) => { const s = JSON.parse(x); s.units[0].evidence = [{ type: "quote-verified", source: "a-textbook-never-declared" }]; return JSON.stringify(s); });
+  u.edit("private/coursewerk/units/study-guide/chemical-equilibrium.md.json", (x) => { const s = JSON.parse(x); s.units[0].evidence = [{ type: "quote-verified", source: "a-textbook-never-declared" }]; return JSON.stringify(s); });
   assert.deepEqual(found(run(u, "ms1-sources", { profile: "private" }), "ms1-sources"), ["evidence-source-undeclared:defect"], "runs in private packages too");
 });
 
@@ -45,7 +45,7 @@ test("[req.ms2.public-only] [req.ms2.two-profiles] MS2: rights problems in publi
   assert.deepEqual(found(run(p, "ms2-rights"), "ms2-rights"), ["rights-publication-requirement:obligation"]);
   assert.equal(run(p, "ms2-rights", { profile: "private" }).wiring.skipped[0].reason, "profile");
   const q = copy(t);
-  q.edit("metadata/FOUNDATION.json", (x) => { const f = JSON.parse(x); delete f.sources[0].rightsBasis; return JSON.stringify(f); });
+  q.edit("private/coursewerk/FOUNDATION.json", (x) => { const f = JSON.parse(x); delete f.sources[0].rightsBasis; return JSON.stringify(f); });
   const r = run(q, "ms2-rights").findings.filter((f) => f.kind === "rights-source-blocker");
   assert.ok(r.length >= 1); assert.equal(r[0].route, "interrupt"); assert.equal(r[0].interruptReason, "rights-blocker");
 });
@@ -132,7 +132,7 @@ test("[req.ms7.consistency] [req.ms7.no-drift] MS7: a value disagreement and an 
   const p = copy(t);
   assert.deepEqual(found(run(p, "ms7-consistency"), "ms7-consistency"), [], "clean");
   p.edit("study-guide/chemical-equilibrium.md", (x) => x.replace("The forward and reverse rates are generally **not zero**", "Cooled to -40 K, the forward and reverse rates are generally **not zero**"));
-  p.edit("metadata/units/study-guide/chemical-equilibrium.md.json", (x) => x); // the index is the agent's job; MS7 reads units by their recorded lines
+  p.edit("private/coursewerk/units/study-guide/chemical-equilibrium.md.json", (x) => x); // the index is the agent's job; MS7 reads units by their recorded lines
   const r = found(run(p, "ms7-consistency"), "ms7-consistency");
   assert.ok(r.includes("implausible-quantity:defect"), r.join(","));
   const m = copy(t);
@@ -160,10 +160,10 @@ test("[req.modules.manifest] the standard registry: a package without one runs e
   const { readRegistry } = await import("../scripts/lib/records/registry.mjs");
   const { disableModule } = await import("../scripts/lib/skeleton/promotion.mjs");
   const p = copy(t);
-  fs.rmSync(path.join(p.root, "metadata", "modules.json"), { force: true });
+  fs.rmSync(path.join(p.root, "private", "coursewerk", "modules.json"), { force: true });
   const std = readRegistry(p.root);
   assert.equal(std.standard, true); assert.equal(std.modules.length, 9); assert.equal(std.modules.filter((m) => m.maturity === "stable").length, 8); // D54 added ms10-copying
-  fs.writeFileSync(path.join(p.root, "metadata", "modules.json"), JSON.stringify({ schemaVersion: 1, __noStandard: true, standard: true, modules: std.modules.filter((m) => m.name !== "ms6-quotations") }));
+  (fs.mkdirSync(path.dirname(path.join(p.root, "private", "coursewerk", "modules.json")), { recursive: true }), fs.writeFileSync)(path.join(p.root, "private", "coursewerk", "modules.json"), JSON.stringify({ schemaVersion: 1, __noStandard: true, standard: true, modules: std.modules.filter((m) => m.name !== "ms6-quotations") }));
   const fromFile = readRegistry(p.root);
   assert.equal(fromFile.__noStandard, undefined); assert.equal(fromFile.standard, undefined);
   const r = runCheckpoint({ root: p.root, checkpoint: "V3", profile: "public", registry: fromFile, inputsDir: p.inputs });
@@ -194,6 +194,6 @@ test("[req.ms3.contract] MS3: a $$ display equation that is never closed is a de
 
 test("[req.modules.wiring-report] a malformed unit sidecar does not crash MS7 or MS8", (t) => {
   const p = copy(t);
-  fs.writeFileSync(path.join(p.root, "metadata", "units", "stub.json"), JSON.stringify({ schemaVersion: 1, units: [] }));
+  (fs.mkdirSync(path.dirname(path.join(p.root, "private", "coursewerk", "units", "stub.json")), { recursive: true }), fs.writeFileSync)(path.join(p.root, "private", "coursewerk", "units", "stub.json"), JSON.stringify({ schemaVersion: 1, units: [] }));
   for (const m of ["ms7-consistency", "ms8-verdicts"]) assert.ok(!run(p, m).findings.some((f) => f.kind === "module-failed"), `${m} survives`);
 });

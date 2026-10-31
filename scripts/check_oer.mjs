@@ -1149,7 +1149,7 @@ function semanticAudit(verbatim) {
   // "Committed" is asked of the paths that DEFINE the strand — the three index artifacts, the
   // concept maps and the deliverables — not of the whole tree: a scratch note elsewhere must not
   // hide a committed strand of the index forever (audit finding 10).
-  const outputGit = outputGitState(pkg, { paths: ["metadata/CLAIMS.json", "metadata/SPINE.json", "metadata/TERMS.json", "concepts", "study-guide", "slides", "assessment-support", "practice"] });
+  const outputGit = outputGitState(pkg, { paths: ["private/coursewerk/CLAIMS.json", "private/coursewerk/SPINE.json", "private/coursewerk/TERMS.json", "concepts", "study-guide", "slides", "assessment-support", "practice"] });
   const committed = outputGit.available && outputGit.clean;
   const freshnessFindings = !freshness.fresh && !movement && committed
     ? [{
@@ -1253,7 +1253,7 @@ function semanticAudit(verbatim) {
 }
 
 /**
- * Write `metadata/REVIEW_QUEUE.json` — the artifact's MISSING PRODUCER (§5c's third no-producer
+ * Write `private/coursewerk/REVIEW_QUEUE.json` — the artifact's MISSING PRODUCER (§5c's third no-producer
  * defect, and its first at artifact scale). `buildQueue` returned the object; nothing wrote it.
  * The gate is its natural writer: it runs the detectors, so it is the only thing holding the
  * findings.
@@ -1367,7 +1367,7 @@ if (!visualReview.ready) discoverBlockers.push(`visual review has ${visualReview
 // require the index; while authoring (no --for-discovery) the layer stays additive-when-off (spec §6.2).
 if (forDiscovery && !semantic.ran) discoverBlockers.push("no stored semantic index (metadata/{CLAIMS,SPINE,TERMS}.json) — the TRUST layers (consistency, range, unverifiable-quotation) and the CONTROL coverage audit cannot run at release; run `npm run index:semantic` before release");
 if (semantic.ran && semantic.indexErrors.length) discoverBlockers.push(`stored semantic index is corrupt: ${semantic.indexErrors.join("; ")}`);
-if (semantic.ran && !semantic.indexComplete) discoverBlockers.push("stored semantic index is INCOMPLETE (one of metadata/CLAIMS.json, SPINE.json, TERMS.json is missing) — run `npm run index:semantic`");
+if (semantic.ran && !semantic.indexComplete) discoverBlockers.push("stored semantic index is INCOMPLETE (one of private/coursewerk/CLAIMS.json, SPINE.json, TERMS.json is missing) — run `npm run index:semantic`");
 // G15h: at release the accepted index must BE the package's index. A stale artifact means the
 // attested baseline describes some other state of the package; re-index and re-attest.
 if (semantic.ran && semantic.freshness && !semantic.freshness.fresh)

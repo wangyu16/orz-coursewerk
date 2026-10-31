@@ -44,8 +44,8 @@ try {
   // the spine setting is bound to the log (red-team round 5, F2): a v2 package whose file says otherwise is not a v0.12
   // package — the setting was lowered, and is restored, never migrated again
   const b = boundConfig(root);
-  if (b.problems.length) refuse(b.problems[0], "restore it: git checkout -- metadata/coursewerk.json");
-  if (b.spine !== 2) refuse("this is a v0.12 package (no `\"spine\": 2` in metadata/coursewerk.json)", "migrate the spine first: node scripts/spine.mjs migrate --root <pkg>");
+  if (b.problems.length) refuse(b.problems[0], "restore it: git checkout -- private/coursewerk/coursewerk.json");
+  if (b.spine !== 2) refuse("this is a v0.12 package (no `\"spine\": 2` in private/coursewerk/coursewerk.json)", "migrate the spine first: node scripts/spine.mjs migrate --root <pkg>");
 }
 catch (e) { refuse(e.message); }
 const reader = liveReader(root);
@@ -55,7 +55,7 @@ const instructor = () => {
   if (!words || !words.trim()) refuse("this is the instructor's act and quotes their words", '--words "<what the instructor said>"');
   return { party: { role: "instructor", name }, words };
 };
-const DIGEST_FILE = "metadata/digest/current.json";
+const DIGEST_FILE = "private/coursewerk/digest/current.json";
 
 try {
   if (cmd === "status") {
@@ -99,7 +99,7 @@ try {
   }
   if (cmd === "administrative") {
     // D42 (red team round 2, C3-06): `role: administrative` exempts a document only by the instructor's own act
-    const doc = opt("--document"); if (!doc) refuse("name the document", "--document <its source path in metadata/DOCUMENTS.json>");
+    const doc = opt("--document"); if (!doc) refuse("name the document", "--document <its source path in private/coursewerk/DOCUMENTS.json>");
     const { party, words } = instructor();
     const r = confirmAdministrative(root, reader, { source: doc, instructorWords: words }, party);
     out({ administrative: doc, logged: r.seq }); process.exit(0);
@@ -130,7 +130,7 @@ try {
     // the agent's own recommendations, attached before delivery, carry over to the same entries
     let prev = null; try { prev = JSON.parse(fs.readFileSync(recordFile(root, DIGEST_FILE), "utf8")); } catch { prev = null; }
     for (const e of d.entries) { const p = prev?.entries?.find((x) => x.key === e.key && String(x.recommendedBy || "").startsWith("agent")); if (p) { e.recommendation = p.recommendation; e.recommendedBy = p.recommendedBy; } }
-    fs.mkdirSync(recordFile(root, "metadata/digest"), { recursive: true });
+    fs.mkdirSync(recordFile(root, "private/coursewerk/digest"), { recursive: true });
     fs.writeFileSync(recordFile(root, DIGEST_FILE), JSON.stringify({ at: new Date().toISOString(), ...d }, null, 2) + "\n");
     if (flag("--deliver")) {
       const model = opt("--model") || refuse("a delivered digest names the agent that brings it", "--model <model id>");

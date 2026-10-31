@@ -33,8 +33,8 @@ function run(script, args) {
 }
 
 function writeOwnedFoundation(root, sourceId) {
-  fs.mkdirSync(path.join(root, "metadata"), { recursive: true });
-  fs.writeFileSync(path.join(root, "metadata", "FOUNDATION.json"), JSON.stringify({
+  fs.mkdirSync(path.join(root, "private", "coursewerk"), { recursive: true }); fs.mkdirSync(path.join(root, "provenance", "coursewerk"), { recursive: true });
+  (fs.mkdirSync(path.dirname(path.join(root, "private", "coursewerk", "FOUNDATION.json")), { recursive: true }), fs.writeFileSync)(path.join(root, "private", "coursewerk", "FOUNDATION.json"), JSON.stringify({
     schemaVersion: 1,
     sources: [{ id: sourceId, rightsBasis: { type: "owned", attestedByUser: true } }],
   }));
@@ -61,7 +61,7 @@ test("source preparation extracts normalized text and records its digest", () =>
   assert.equal(entry.extractor.tool, "coursewerk");
   assert.ok(entry.extractor.version);
   assert.match(extracted, /^# Source/);
-  const publicRecord = JSON.parse(fs.readFileSync(path.join(root, "metadata", "SOURCE_RECORD.json"), "utf8"));
+  const publicRecord = JSON.parse(fs.readFileSync(path.join(root, "private", "coursewerk", "SOURCE_RECORD.json"), "utf8"));
   assert.equal(publicRecord.sources[0].sourceId, "primary");
   assert.equal(publicRecord.sources[0].textSha256, entry.sha256);
   assert.equal(publicRecord.sources[0].originalSha256, entry.originalSha256);
@@ -89,15 +89,15 @@ test("source preparation records an explicit human attestation", () => {
     attestedAt: "2026-07-13",
     reason: "The licensed print source has no extractable digital text.",
   });
-  const publicRecord = JSON.parse(fs.readFileSync(path.join(root, "metadata", "SOURCE_RECORD.json"), "utf8"));
+  const publicRecord = JSON.parse(fs.readFileSync(path.join(root, "private", "coursewerk", "SOURCE_RECORD.json"), "utf8"));
   assert.equal(publicRecord.sources[0].comparisonMode, "human-attested");
   assert.equal(publicRecord.sources[0].reason, "The licensed print source has no extractable digital text.");
 });
 
 test("rights evidence snapshots are content-address deduplicated", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-rights-dedup-"));
-  fs.mkdirSync(path.join(root, "metadata"), { recursive: true });
-  fs.writeFileSync(path.join(root, "metadata", "FOUNDATION.json"), JSON.stringify({
+  fs.mkdirSync(path.join(root, "private", "coursewerk"), { recursive: true }); fs.mkdirSync(path.join(root, "provenance", "coursewerk"), { recursive: true });
+  (fs.mkdirSync(path.dirname(path.join(root, "private", "coursewerk", "FOUNDATION.json")), { recursive: true }), fs.writeFileSync)(path.join(root, "private", "coursewerk", "FOUNDATION.json"), JSON.stringify({
     schemaVersion: 1,
     sources: ["source-a", "source-b"].map((id) => ({ id, rightsBasis: { evidenceUrl: "https://example.org/license" } })),
   }));
@@ -107,14 +107,14 @@ test("rights evidence snapshots are content-address deduplicated", () => {
     const result = run("capture_rights_evidence.mjs", ["--root", root, "--source-id", id, "--operator-name", "Course author", "--operator-type", "human", "--file", evidence]);
     assert.equal(result.status, 0, result.stderr);
   }
-  const updated = JSON.parse(fs.readFileSync(path.join(root, "metadata", "FOUNDATION.json"), "utf8"));
+  const updated = JSON.parse(fs.readFileSync(path.join(root, "private", "coursewerk", "FOUNDATION.json"), "utf8"));
   assert.equal(updated.sources[0].rightsBasis.evidenceSnapshot, updated.sources[1].rightsBasis.evidenceSnapshot);
 });
 
 test("media evidence capture retains a hashed authoritative snapshot", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-media-evidence-"));
-  fs.mkdirSync(path.join(root, "metadata"), { recursive: true });
-  fs.writeFileSync(path.join(root, "metadata", "PROVENANCE.json"), JSON.stringify({
+  fs.mkdirSync(path.join(root, "private", "coursewerk"), { recursive: true }); fs.mkdirSync(path.join(root, "provenance", "coursewerk"), { recursive: true });
+  (fs.mkdirSync(path.dirname(path.join(root, "private", "coursewerk", "PROVENANCE.json")), { recursive: true }), fs.writeFileSync)(path.join(root, "private", "coursewerk", "PROVENANCE.json"), JSON.stringify({
     schemaVersion: 1,
     items: [{ id: "photo-1", provenanceStatus: "verified", sourceUrl: "https://example.org/photo", license: "CC-BY-4.0" }],
   }));
@@ -123,7 +123,7 @@ test("media evidence capture retains a hashed authoritative snapshot", () => {
   fs.writeFileSync(evidence, bytes);
   const result = run("capture_media_evidence.mjs", ["--root", root, "--item-id", "photo-1", "--operator-name", "Course author", "--operator-type", "human", "--file", evidence]);
   assert.equal(result.status, 0, result.stderr);
-  const item = JSON.parse(fs.readFileSync(path.join(root, "metadata", "PROVENANCE.json"), "utf8")).items[0];
+  const item = JSON.parse(fs.readFileSync(path.join(root, "private", "coursewerk", "PROVENANCE.json"), "utf8")).items[0];
   assert.equal(item.rightsEvidence.evidenceUrl, item.sourceUrl);
   assert.equal(item.rightsEvidence.evidenceSha256, crypto.createHash("sha256").update(bytes).digest("hex"));
   assert.deepEqual(fs.readFileSync(path.join(root, item.rightsEvidence.evidenceSnapshot)), bytes);
@@ -134,8 +134,8 @@ test("non-published authoring permits a source without a rights receipt", () => 
   const inputs = path.join(root, "inputs");
   const source = path.join(root, "source.txt");
   fs.writeFileSync(source, "scientific fact ".repeat(120));
-  fs.mkdirSync(path.join(root, "metadata"), { recursive: true });
-  fs.writeFileSync(path.join(root, "metadata", "FOUNDATION.json"), JSON.stringify({
+  fs.mkdirSync(path.join(root, "private", "coursewerk"), { recursive: true }); fs.mkdirSync(path.join(root, "provenance", "coursewerk"), { recursive: true });
+  (fs.mkdirSync(path.dirname(path.join(root, "private", "coursewerk", "FOUNDATION.json")), { recursive: true }), fs.writeFileSync)(path.join(root, "private", "coursewerk", "FOUNDATION.json"), JSON.stringify({
     schemaVersion: 1,
     usageProfile: "personal-private",
     sources: [{ id: "unverified-private-source" }],
@@ -151,15 +151,15 @@ test("source preparation fails before reading when a current preflight receipt i
   const source = path.join(root, "source.md");
   fs.writeFileSync(source, `# Source\n\n${"word ".repeat(120)}`);
   const evidence = "This material may not be ingested into a large language model or generative AI offering without permission.";
-  fs.mkdirSync(path.join(root, "metadata", "evidence"), { recursive: true });
-  fs.writeFileSync(path.join(root, "metadata", "evidence", "restricted.html"), evidence);
-  fs.writeFileSync(path.join(root, "metadata", "FOUNDATION.json"), JSON.stringify({
+  fs.mkdirSync(path.join(root, "private", "coursewerk", "evidence"), { recursive: true });
+  (fs.mkdirSync(path.dirname(path.join(root, "private", "coursewerk", "evidence", "restricted.html")), { recursive: true }), fs.writeFileSync)(path.join(root, "private", "coursewerk", "evidence", "restricted.html"), evidence);
+  (fs.mkdirSync(path.dirname(path.join(root, "private", "coursewerk", "FOUNDATION.json")), { recursive: true }), fs.writeFileSync)(path.join(root, "private", "coursewerk", "FOUNDATION.json"), JSON.stringify({
     schemaVersion: 1,
     sources: [{
       id: "restricted",
       rightsBasis: {
         type: "open-license",
-        evidenceSnapshot: "metadata/evidence/restricted.html",
+        evidenceSnapshot: "private/coursewerk/evidence/restricted.html",
         evidenceSha256: crypto.createHash("sha256").update(evidence).digest("hex"),
         processUseReview: { status: "notice-recorded", legalEffectDetermined: false, notices: [{ id: "generative-ai-ingestion" }] },
       },
@@ -173,7 +173,7 @@ test("source preparation fails before reading when a current preflight receipt i
 
 test("rights evidence capture stores a snapshot and updates the foundation", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-rights-tool-"));
-  fs.mkdirSync(path.join(root, "metadata"), { recursive: true });
+  fs.mkdirSync(path.join(root, "private", "coursewerk"), { recursive: true }); fs.mkdirSync(path.join(root, "provenance", "coursewerk"), { recursive: true });
   const foundation = {
     schemaVersion: 1,
     sources: [{
@@ -181,16 +181,16 @@ test("rights evidence capture stores a snapshot and updates the foundation", () 
       rightsBasis: { evidenceUrl: "https://example.org/license" },
     }],
   };
-  fs.writeFileSync(path.join(root, "metadata", "FOUNDATION.json"), JSON.stringify(foundation));
+  (fs.mkdirSync(path.dirname(path.join(root, "private", "coursewerk", "FOUNDATION.json")), { recursive: true }), fs.writeFileSync)(path.join(root, "private", "coursewerk", "FOUNDATION.json"), JSON.stringify(foundation));
   const evidence = path.join(root, "official-license.html");
   const bytes = Buffer.from("<html><body>Creative Commons Attribution 4.0</body></html>\n");
   fs.writeFileSync(evidence, bytes);
 
   const result = run("capture_rights_evidence.mjs", ["--root", root, "--source-id", "source-1", "--operator-name", "Course author", "--operator-type", "human", "--file", evidence]);
   assert.equal(result.status, 0, result.stderr);
-  const updated = JSON.parse(fs.readFileSync(path.join(root, "metadata", "FOUNDATION.json"), "utf8"));
+  const updated = JSON.parse(fs.readFileSync(path.join(root, "private", "coursewerk", "FOUNDATION.json"), "utf8"));
   const rights = updated.sources[0].rightsBasis;
-  assert.equal(rights.evidenceSnapshot, "metadata/evidence/source-1.html");
+  assert.equal(rights.evidenceSnapshot, "private/coursewerk/evidence/source-1.html");
   assert.deepEqual(rights.evidenceCapture.operator, { type: "human", name: "Course author" });
   assert.equal(rights.evidenceRetrieval.captureMode, "local-file");
   assert.ok(rights.preflightReceipt);
@@ -202,15 +202,15 @@ test("rights evidence capture stores a snapshot and updates the foundation", () 
 
 test("rights capture records an AI-use notice without treating it as copyright law", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-rights-restriction-"));
-  fs.mkdirSync(path.join(root, "metadata"), { recursive: true });
-  fs.writeFileSync(path.join(root, "metadata", "FOUNDATION.json"), JSON.stringify({ schemaVersion: 1, sources: [{ id: "restricted", rightsBasis: { evidenceUrl: "https://example.org/restricted" } }] }));
+  fs.mkdirSync(path.join(root, "private", "coursewerk"), { recursive: true }); fs.mkdirSync(path.join(root, "provenance", "coursewerk"), { recursive: true });
+  (fs.mkdirSync(path.dirname(path.join(root, "private", "coursewerk", "FOUNDATION.json")), { recursive: true }), fs.writeFileSync)(path.join(root, "private", "coursewerk", "FOUNDATION.json"), JSON.stringify({ schemaVersion: 1, sources: [{ id: "restricted", rightsBasis: { evidenceUrl: "https://example.org/restricted" } }] }));
   const evidence = path.join(root, "restriction.html");
   fs.writeFileSync(evidence, "This book may not be used in the training of large language models or otherwise be ingested into large language models or generative AI offerings without Example Publisher's permission.");
   const result = run("capture_rights_evidence.mjs", ["--root", root, "--source-id", "restricted", "--operator-name", "Course author", "--operator-type", "human", "--file", evidence]);
   assert.equal(result.status, 0, result.stderr);
   const summary = JSON.parse(result.stdout);
   assert.match(summary.warnings.join("\n"), /does not treat the notice as part of the copyright license/);
-  const updated = JSON.parse(fs.readFileSync(path.join(root, "metadata", "FOUNDATION.json"), "utf8"));
+  const updated = JSON.parse(fs.readFileSync(path.join(root, "private", "coursewerk", "FOUNDATION.json"), "utf8"));
   assert.equal(updated.sources[0].rightsBasis.processUseReview.status, "notice-recorded");
   assert.equal(updated.sources[0].rightsBasis.processUseReview.legalEffectDetermined, false);
   assert.equal(updated.sources[0].rightsBasis.processUseReview.notices[0].id, "generative-ai-ingestion");
@@ -222,8 +222,8 @@ test("rights capture records an AI-use notice without treating it as copyright l
 test("known-source expected notice is enforced before source preparation", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-known-source-preflight-"));
   const inputs = path.join(root, "inputs");
-  fs.mkdirSync(path.join(root, "metadata"), { recursive: true });
-  fs.writeFileSync(path.join(root, "metadata", "FOUNDATION.json"), JSON.stringify({
+  fs.mkdirSync(path.join(root, "private", "coursewerk"), { recursive: true }); fs.mkdirSync(path.join(root, "provenance", "coursewerk"), { recursive: true });
+  (fs.mkdirSync(path.dirname(path.join(root, "private", "coursewerk", "FOUNDATION.json")), { recursive: true }), fs.writeFileSync)(path.join(root, "private", "coursewerk", "FOUNDATION.json"), JSON.stringify({
     schemaVersion: 1,
     sources: [{
       id: "openstax-chemistry-2e",
@@ -272,8 +272,8 @@ test("known-source expected notice is enforced before source preparation", () =>
 
 test("English Wikipedia policy clears only with its official license markers", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-wikipedia-preflight-"));
-  fs.mkdirSync(path.join(root, "metadata"), { recursive: true });
-  fs.writeFileSync(path.join(root, "metadata", "FOUNDATION.json"), JSON.stringify({
+  fs.mkdirSync(path.join(root, "private", "coursewerk"), { recursive: true }); fs.mkdirSync(path.join(root, "provenance", "coursewerk"), { recursive: true });
+  (fs.mkdirSync(path.dirname(path.join(root, "private", "coursewerk", "FOUNDATION.json")), { recursive: true }), fs.writeFileSync)(path.join(root, "private", "coursewerk", "FOUNDATION.json"), JSON.stringify({
     schemaVersion: 1,
     sources: [{
       id: "wikipedia-photosynthesis",

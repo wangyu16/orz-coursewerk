@@ -45,7 +45,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
-export const OVERRIDES_PATH = "metadata/OVERRIDES.json";
+export const OVERRIDES_PATH = "private/coursewerk/OVERRIDES.json";
 
 /** The `basis` enum, in schema order. All three are equally authoritative. */
 export const BASES = Object.freeze(["cited", "instructor-expertise", "pedagogical-choice"]);
@@ -167,7 +167,7 @@ export function overrideIdOf(entry) {
 }
 
 /**
- * Read `metadata/OVERRIDES.json` off disk for `root`. A missing file is `null` ("no overrides");
+ * Read `private/coursewerk/OVERRIDES.json` off disk for `root`. A missing file is `null` ("no overrides");
  * a corrupt one is ALSO `null` here — reporting corruption is the gate's job (`readOverrides` in
  * check_oer.mjs, which names the fault); consumers that only need the authorizations fail toward
  * the human when they get none. Owned here so M2 never parses a registry it does not own (§5d).

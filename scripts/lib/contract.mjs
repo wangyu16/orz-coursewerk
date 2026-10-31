@@ -233,14 +233,14 @@ export function frontMatterLength(fileText) {
 }
 
 /**
- * Where a deliverable's declaration SIDECAR lives: `metadata/claims/<path-without-.md>.json`
+ * Where a deliverable's declaration SIDECAR lives: `private/coursewerk/claims/<path-without-.md>.json`
  * (spec §2 — the new metadata files all live under `metadata/`).
  *
  * Pure path derivation, stated once so the contract doc, the generator and the extractor cannot
  * disagree about where a declaration is.
  */
 export function claimSidecarPath(rel) {
-  return `metadata/claims/${String(rel ?? "").replace(/\.md$/, "")}.json`;
+  return `private/coursewerk/claims/${String(rel ?? "").replace(/\.md$/, "")}.json`;
 }
 
 const byString = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
@@ -456,7 +456,7 @@ function parseDeclarationDocument(raw, tried) {
  *
  * ONE entry point for BOTH carriers, because they carry the same document in two places:
  *   - an ARTIFACT (`study-guide/<slug>.md`): the declarations are its front-matter body;
- *   - a SIDECAR (`metadata/claims/<slug>.json`): the declarations are the whole file.
+ *   - a SIDECAR (`private/coursewerk/claims/<slug>.json`): the declarations are the whole file.
  * Front matter, when present, IS the declaration text — a file that opens with `---` is never then
  * re-read as a JSON document. Otherwise the text is read as the document itself, so an ordinary
  * markdown file with no front matter yields nothing (it is not JSON) rather than an error.

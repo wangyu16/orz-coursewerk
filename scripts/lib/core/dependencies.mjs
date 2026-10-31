@@ -416,7 +416,7 @@ export function referenceBindingProblems(stamp, edgeList) {
 /** Source hashes from the package's compact source record. */
 export function sourceHashes(reader) {
   try {
-    const rec = JSON.parse(reader.text("metadata/SOURCE_RECORD.json") || "null");
+    const rec = JSON.parse(reader.text("private/coursewerk/SOURCE_RECORD.json") || "null");
     return Object.fromEntries((rec?.sources || []).filter((s) => s.id).map((s) => [s.id, s.textSha256 || s.rawSha256 || sha256(canonicalJson(s))]));
   } catch { return {}; }
 }

@@ -22,25 +22,25 @@ package/
   practice/<slug>.md           # per chapter — practice sheet (orz-markdown)
   assessment-support/<slug>.md # per chapter — assessment guide (plain markdown, no graphics)
   assets/…                     # figures/structures/plots/media (self-generated or open-licensed)
-  metadata/FOUNDATION.json     # intended use · sources · rights/license evidence · privacy (required)
-  metadata/PROVENANCE.json     # structured record for every incorporated asset/item (required)
-  metadata/MEDIA_PLAN.json     # reviewed decision for chapters without a real photograph
-  metadata/SOURCE_RECORD.json  # exact compact source revision/retrieval/digest record (required)
-  metadata/ATTRIBUTION.md      # asset · source · license · attribution  (NOT at root — see note)
-  metadata/DOCUMENTS.json      # optional declared mdhtml/slides/paged collection sources
-  metadata/evidence/…          # local source-rights evidence snapshots
-  metadata/preflight/…         # hash-bound public-source receipts; optional/advisory for non-published work
+  private/coursewerk/FOUNDATION.json     # intended use · sources · rights/license evidence · privacy (required)
+  private/coursewerk/PROVENANCE.json     # structured record for every incorporated asset/item (required)
+  private/coursewerk/MEDIA_PLAN.json     # reviewed decision for chapters without a real photograph
+  private/coursewerk/SOURCE_RECORD.json  # exact compact source revision/retrieval/digest record (required)
+  provenance/coursewerk/ATTRIBUTION.md      # asset · source · license · attribution  (NOT at root — see note)
+  private/coursewerk/DOCUMENTS.json      # optional declared mdhtml/slides/paged collection sources
+  private/coursewerk/evidence/…          # local source-rights evidence snapshots
+  private/coursewerk/preflight/…         # hash-bound public-source receipts; optional/advisory for non-published work
   # the harness's records (spine v2) — written by the commands, committed with the package, never hand-edited:
-  metadata/coursewerk.json     # package settings: "spine": 2, retrieval destinations
-  metadata/LOG.jsonl           # the hash-chained decision log: approvals, steering, answers, transitions, publish …
-  metadata/STEERING.json       # the instructor's standing preferences (M2)
-  metadata/units/…             # the unit index: every unit's id, origin, spine links, evidence
-  metadata/spine/…             # who proposed each spine item (standardized from the instructor, or the agent's)
-  metadata/verification/…      # every verifier and review dispatch, with its exact prompt and answer
-  metadata/corrections/…       # every auto-correction, with its before and after
-  metadata/REFERENCE_RECORD.json # the retrieved references the evidence cites (url, time, hash)
-  metadata/LINK_RESOLUTIONS.json # recorded resolution of external links
-  metadata/publish/…           # the instructor's publish decisions
+  private/coursewerk/coursewerk.json     # package settings: "spine": 2, retrieval destinations
+  private/coursewerk/LOG.jsonl           # the hash-chained decision log: approvals, steering, answers, transitions, publish …
+  private/coursewerk/STEERING.json       # the instructor's standing preferences (M2)
+  private/coursewerk/units/…             # the unit index: every unit's id, origin, spine links, evidence
+  private/coursewerk/spine/…             # who proposed each spine item (standardized from the instructor, or the agent's)
+  private/coursewerk/verification/…      # every verifier and review dispatch, with its exact prompt and answer
+  private/coursewerk/corrections/…       # every auto-correction, with its before and after
+  private/coursewerk/REFERENCE_RECORD.json # the retrieved references the evidence cites (url, time, hash)
+  private/coursewerk/LINK_RESOLUTIONS.json # recorded resolution of external links
+  private/coursewerk/publish/…           # the instructor's publish decisions
   private/…                    # instructor-only: answer keys, exams, notes (NEVER shared)
 ```
 
@@ -48,15 +48,15 @@ v0.12 records (`KEY_FACT_REVIEW.json`, `VISUAL_REVIEW.json`, `COMPONENT_INDEX.js
 `SPINE.json`, `REVIEW_QUEUE.json`, `OVERRIDES.json`) are not part of a spine-v2 package; see `docs/migrating-from-v0.12.md`.
 
 **Folder → repo is decided by the top-level folder and is total.** `study-guide/ slides/ practice/
-concepts/ assessment-support/ assets/ metadata/ current/` are **public** (shared with the world);
-`private/` is **PRIVATE** (instructor-only). Never put instructor-only material anywhere but
+concepts/ assessment-support/ assets/ provenance/` are **public** (shared with the world);
+`private/` is **PRIVATE** (instructor-only, and the harness's working record in `private/coursewerk/`). Never put instructor-only material anywhere but
 `private/`. Any other top-level folder, or a stray file at the root, is **rejected** by Alembic
 (fail-closed) — stick to the tree above. `<slug>` is lowercase, hyphen-joined
 (`^[a-z0-9]+(?:-[a-z0-9]+)*$`), and matches the chapter's `slug` in `alembic.json`.
 
 > **Attribution & reports live where the contract allows.** The only files permitted at the package
 > root are `alembic.json`, `LICENSE`, `README.md`, `CITATION.cff`, `.gitignore`. So the asset record
-> goes in **`metadata/ATTRIBUTION.md`**, not at the root. The QA report / evaluation / delivery note
+> goes in **`provenance/coursewerk/ATTRIBUTION.md`**, not at the root. The QA report / evaluation / delivery note
 > are written to **`reports/`** (a sibling of `package/`, never shipped).
 
 ## The manifest — `package/alembic.json`
@@ -120,7 +120,7 @@ machine convenience. If a section is hard to read back, it is the wrong format.
 
 **What the agent adds is marked as its proposal.** Standardizing means restructuring what the instructor said. When
 the agent adds a concept, an objective or a misconception the instructor did not state, the item is recorded as the
-agent's proposal (`metadata/spine/`), shown as such in the approval view (`spine.mjs preview`), and becomes part of
+agent's proposal (`private/coursewerk/spine/`), shown as such in the approval view (`spine.mjs preview`), and becomes part of
 the course only by the instructor's approval. Never present an added node as the instructor's.
 
 ### `concepts/<chapter-slug>.md`
@@ -240,7 +240,7 @@ have no vocabulary to resolve: keep it.
 
 ## v0.12 claim-provenance declarations
 
-v0.12 packages declared claims in front matter and `metadata/claims/` for the semantic index. A spine-v2 package does
+v0.12 packages declared claims in front matter and `private/coursewerk/claims/` for the semantic index. A spine-v2 package does
 not need them: the harness segments every deliverable into units, records each unit's origin and spine links
 (`scripts/units.mjs`), and checks facts per unit. Existing declarations do no harm; see `docs/migrating-from-v0.12.md`.
 
@@ -248,8 +248,8 @@ not need them: the harness segments every deliverable into units, records each u
 Every visual is **self-generated** (RDKit/matplotlib via `oer-figures`) or **openly-licensed**
 (CC0 / Public Domain / CC-BY / CC-BY-SA — Wikimedia Commons, Openverse) or the **source textbook's
 own** figure *if its license permits and it carries no third-party credit line*. Each is recorded
-in structured `metadata/PROVENANCE.json` and public `metadata/ATTRIBUTION.md` (asset · source URL · license · attribution). Verified external media also retains an authoritative description/license-page snapshot and
-structured capture/retrieval metadata under `metadata/evidence/`; a remembered URL/license label is insufficient.
+in structured `private/coursewerk/PROVENANCE.json` and public `provenance/coursewerk/ATTRIBUTION.md` (asset · source URL · license · attribution). Verified external media also retains an authoritative description/license-page snapshot and
+structured capture/retrieval metadata under `private/coursewerk/evidence/`; a remembered URL/license label is insufficient.
 Copyrighted/paywalled or
 third-party-credited assets are **never** embedded. A copyrighted textbook or paper may still be a **reference** (D54: `use: "reference"`, rights basis
 `reference-only`): its ideas inform the course and its text checks the facts, but no sentence of it is reproduced — the
@@ -305,8 +305,8 @@ the **text** (`slides/<slug>.slides.md`, …: canonical, what you write, what sh
   frames' versions and each text's sha256. A new frame changes the look, never the course.
 - **Deliver lean (D53).** The local package is the full record; `node scripts/pack.mjs` delivers only what Alembic
   needs: the manifest of the published chapters, `LICENSE`, `README.md`/`CITATION.cff`, the published texts and
-  checked declared documents, only the assets those texts use, `private/`, `metadata/ATTRIBUTION.md` and a small
-  `metadata/PUBLISHED.json` (the decision, licence, authors, AI-assistance disclosure). No carrier, no working record
+  checked declared documents, only the assets those texts use, `private/`, `provenance/coursewerk/ATTRIBUTION.md` and a small
+  `provenance/coursewerk/PUBLISHED.json` (the decision, licence, authors, AI-assistance disclosure). No carrier, no working record
   (log, unit and verification records, evidence, settings) and no source text ships; Alembic assembles the carriers.
   The release receipt beside the archive counts what stayed local and binds the archive to the local log.
 - **Migrating** a package from the 0.x forms (`<!-- deck -->` blocks): `docs/assembling-carriers.md`.

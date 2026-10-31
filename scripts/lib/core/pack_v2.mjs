@@ -24,7 +24,7 @@ export function packPublished(pkg, outDir) {
   // rebuilt from the logged decision, and an on-disk record that says otherwise is refused (red team R1 coherence, F9).
   const logged = parseLog(readLogText(pkg)).find((r) => r.seq === pub.seq);
   const record = { seq: logged.seq, at: logged.at, by: logged.party.name, ...logged.payload };
-  const recordRel = `metadata/publish/${String(pub.seq).padStart(4, "0")}.json`;
+  const recordRel = `private/coursewerk/publish/${String(pub.seq).padStart(4, "0")}.json`;
   if (fs.existsSync(path.join(pkg, recordRel))) {
     let onDisk = null; try { onDisk = JSON.parse(fs.readFileSync(path.join(pkg, recordRel), "utf8")); } catch { /* unreadable: differs */ }
     if (canonicalJson(onDisk) !== canonicalJson(record)) return { ok: false, error: `${recordRel} differs from the logged publish decision #${pub.seq}: restore it from git (the log is the record; the file is only its copy)` };
@@ -34,7 +34,7 @@ export function packPublished(pkg, outDir) {
   // what ships is what the gate checked: one computation (shipped.mjs; red team round 2, C3-04, C3-07)
   const unchecked = uncheckedShipped(pkg, liveReader(pkg), { keep, course: !!pub.course });
   if (unchecked.documents.length || unchecked.includes.length)
-    return { ok: false, error: `refusing to pack what nothing checked: ${[...unchecked.documents.map((r) => `${r} (not a declared document)`), ...unchecked.includes.map((x) => `${x.file} includes ${x.target} (${x.why || "not a deliverable"})`)].join("; ")} — declare each in metadata/DOCUMENTS.json, or remove it` };
+    return { ok: false, error: `refusing to pack what nothing checked: ${[...unchecked.documents.map((r) => `${r} (not a declared document)`), ...unchecked.includes.map((x) => `${x.file} includes ${x.target} (${x.why || "not a deliverable"})`)].join("; ")} — declare each in private/coursewerk/DOCUMENTS.json, or remove it` };
   const hidden = hiddenContent(pkg, liveReader(pkg), { keep });
   if (hidden.length) return { ok: false, error: `refusing to pack text hidden from the student: ${hidden.map((x) => `${x.file} line ${x.line} (${x.what})`).join("; ")}` };
   const work = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-pack-"));
@@ -60,16 +60,16 @@ export function packPublished(pkg, outDir) {
     openQuestions: pub.openQuestions.length, clearedForPublicRelease: pub.profile === "public" && drafts.size === 0, logHead: { seq: last.seq, hash: last.hash } };
   // what a reader of the delivered package needs to know of how it was made (D53): the decision (from the log), the
   // licence, the accountable authors and the AI-assistance disclosure — the full record stays in the local package
-  let foundation = null; try { foundation = JSON.parse(fs.readFileSync(path.join(pkg, "metadata", "FOUNDATION.json"), "utf8")); } catch { foundation = null; }
+  let foundation = null; try { foundation = JSON.parse(fs.readFileSync(path.join(pkg, "private", "coursewerk", "FOUNDATION.json"), "utf8")); } catch { foundation = null; }
   const manifest = JSON.parse(fs.readFileSync(path.join(pkg, "alembic.json"), "utf8"));
   const summary = { ...decision, decidedAt: record.at, decidedBy: record.by, overQuestions: !!record.overQuestions, license: manifest.license ?? null,
     authors: (foundation?.outputAuthors || []).map((a) => ({ name: a.name, role: a.role, ...(a.affiliation ? { affiliation: a.affiliation } : {}) })),
     aiAssistance: [...new Set((foundation?.outputAuthors || []).map((a) => a.aiAssistanceDisclosure).filter(Boolean))],
     madeWith: "Coursewerk", record: "the full working record (decision log, unit and verification records) is kept with the local package, not delivered" };
-  fs.mkdirSync(path.join(staged, "metadata"), { recursive: true });
-  fs.writeFileSync(path.join(staged, "metadata", "PUBLISHED.json"), JSON.stringify(summary, null, 2) + "\n");
+  fs.mkdirSync(path.join(staged, "provenance", "coursewerk"), { recursive: true });
+  fs.writeFileSync(path.join(staged, "provenance", "coursewerk", "PUBLISHED.json"), JSON.stringify(summary, null, 2) + "\n");
   files++;
-  fs.utimesSync(path.join(staged, "metadata", "PUBLISHED.json"), new Date("2000-01-01T00:00:00Z"), new Date("2000-01-01T00:00:00Z"));
+  fs.utimesSync(path.join(staged, "provenance", "coursewerk", "PUBLISHED.json"), new Date("2000-01-01T00:00:00Z"), new Date("2000-01-01T00:00:00Z"));
   fs.mkdirSync(outDir, { recursive: true });
   const title = JSON.parse(fs.readFileSync(path.join(pkg, "alembic.json"), "utf8")).title || "course";
   const base = (title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "course") + (pub.profile === "private" ? ".private" : "");

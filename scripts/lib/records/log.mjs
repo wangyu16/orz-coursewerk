@@ -1,4 +1,4 @@
-// The decision log — metadata/LOG.jsonl: append-only, hash-chained, every record naming its party (skeleton §5).
+// The decision log — private/coursewerk/LOG.jsonl: append-only, hash-chained, every record naming its party (skeleton §5).
 //
 // What the chain proves, and what it does not. Each record carries the hash of its predecessor and its own hash, so
 // an edited, deleted, reordered or inserted record breaks verification. A writer who rewrites the WHOLE chain

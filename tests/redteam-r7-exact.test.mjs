@@ -195,7 +195,7 @@ test("[req.control.paged-settings-allowlist] R7-C3-01 end to end: the gate refus
   const DOC = "materials/le-chatelier-print.md";
   c.asAgent(() => {
     c.write(DOC, paged(`font_family: serif; } .orz-doc::before { content: "${LESSON}"; } x { color: inherit\n`));
-    c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ source: DOC, chapter: "le-chatelier", carrier: "paged" }] }, null, 2) + "\n");
+    c.write("private/coursewerk/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ source: DOC, chapter: "le-chatelier", carrier: "paged" }] }, null, 2) + "\n");
   });
   assert.ok(!c.units().some((u) => ELECTRO.test(u.text)), "no unit reads the lesson");
   const hit = c.shipped().filter((f) => f.kind === "content-hidden" && f.evidence.file === DOC);
@@ -336,8 +336,8 @@ test("[req.retrieval.declared-destination-only] MS1: evidence quoting an off-des
 test("[req.ship.administrative-instructor] C3.16: a document the agent indexed and the instructor then confirmed administrative is exempt — its records rest, no index is owed; an edit makes it a deliverable again", (t) => {
   const c = course(t, { declare: false });
   const DOC = "handouts/schedule.md";
-  c.asAgent(() => { c.write(DOC, "# Schedule\n\nWeek 1: chapter 1. Week 2: chapter 2.\n"); c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ source: DOC, role: "administrative" }] }, null, 2) + "\n"); });
-  assert.ok(fs.existsSync(c.file(`metadata/units/${DOC}.json`)), "the agent's session indexed it while it was a deliverable");
+  c.asAgent(() => { c.write(DOC, "# Schedule\n\nWeek 1: chapter 1. Week 2: chapter 2.\n"); c.write("private/coursewerk/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ source: DOC, role: "administrative" }] }, null, 2) + "\n"); });
+  assert.ok(fs.existsSync(c.file(`private/coursewerk/units/${DOC}.json`)), "the agent's session indexed it while it was a deliverable");
   confirmAdministrative(c.root, c.r(), { source: DOC, instructorWords: "Yes, that is just the schedule." }, I);
   assert.ok(administrativeDocuments(c.r()).has(DOC) && !deliverablesOf(c.r()).includes(DOC));
   assert.deepEqual(Object.keys(orphanSidecars(c.root, c.r())), []);

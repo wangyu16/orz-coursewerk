@@ -113,7 +113,7 @@ test("A.3 · slug-coverage gate: all or none per list, unique per file — inact
 
 test("A.4 · a declaration may address a block by @slug, and then travels with the prose through a reorder", (t) => {
   const root = stage(t);
-  const sidecar = path.join(root, "metadata", "claims", "study-guide");
+  const sidecar = path.join(root, "private", "coursewerk", "claims", "study-guide");
   fs.mkdirSync(sidecar, { recursive: true });
   fs.writeFileSync(path.join(sidecar, "phase-change.json"), JSON.stringify({ schemaVersion: 1, claims: [
     { type: "objective", anchor: "@obj-melting-point", spineRefs: ["objective.phase-change.1"], sourceRefs: [], termRefs: ["term.melting-point"] },
@@ -137,7 +137,7 @@ test("A.4 · a declaration may address a block by @slug, and then travels with t
 
 test("A.5 · a POSITIONAL declaration on an anchored item is refused — the stale-sidecar mis-binding cannot be rewarded", (t) => {
   const root = stage(t);
-  const sidecar = path.join(root, "metadata", "claims", "study-guide");
+  const sidecar = path.join(root, "private", "coursewerk", "claims", "study-guide");
   fs.mkdirSync(sidecar, { recursive: true });
   // the G22 scenario B: a positional declaration for objectives#1 asserting the melting term
   fs.writeFileSync(path.join(sidecar, "phase-change.json"), JSON.stringify({ schemaVersion: 1, claims: [
@@ -154,8 +154,8 @@ test("A.5 · a POSITIONAL declaration on an anchored item is refused — the sta
   // unanchored packages are untouched: no slug, no refusal
   const plain = stage(t);
   for (const rel of [SG, "concepts/phase-change.md"]) write(plain, rel, read(plain, rel).replace(/ \[anchor: [a-z0-9-]+\]/g, ""));
-  fs.mkdirSync(path.join(plain, "metadata", "claims", "study-guide"), { recursive: true });
-  fs.writeFileSync(path.join(plain, "metadata", "claims", "study-guide", "phase-change.json"), JSON.stringify({ schemaVersion: 1, claims: [
+  fs.mkdirSync(path.join(plain, "private", "coursewerk", "claims", "study-guide"), { recursive: true });
+  (fs.mkdirSync(path.dirname(path.join(plain, "private", "coursewerk", "claims", "study-guide", "phase-change.json")), { recursive: true }), fs.writeFileSync)(path.join(plain, "private", "coursewerk", "claims", "study-guide", "phase-change.json"), JSON.stringify({ schemaVersion: 1, claims: [
     { type: "objective", anchor: "objectives#1", spineRefs: ["objective.phase-change.1"], sourceRefs: [], termRefs: ["term.melting-point"] },
   ] }));
   assert.deepEqual(positionalDeclarationsOnAnchoredItems(plain), []);

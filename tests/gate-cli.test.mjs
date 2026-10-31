@@ -44,7 +44,7 @@ test("[req.gate.log-verified] the gate checks the decision log on every run of t
   assert.equal(r.report.basis.length, 64);
 
   // the committed record is rewritten in the working tree: blocked by a skeleton defect
-  const file = path.join(root, "metadata", "LOG.jsonl");
+  const file = path.join(root, "private", "coursewerk", "LOG.jsonl");
   const [first, ...rest] = fs.readFileSync(file, "utf8").trim().split("\n");
   fs.writeFileSync(file, [first.replace('"intake"}', '"intake!"}'), ...rest].join("\n") + "\n");
   r = gate(root);
@@ -64,7 +64,7 @@ test("the gate refuses bad usage with a plain message", () => {
 test("round P2-3: the gate CLI never crashes into a false verdict; its own failure has its own exit code", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-gate-err-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  fs.mkdirSync(path.join(root, "metadata", "modules.json"), { recursive: true }); // a directory where the registry should be
+  fs.mkdirSync(path.join(root, "private", "coursewerk", "modules.json"), { recursive: true }); // a directory where the registry should be
   const r = gate(root);
   assert.equal(r.status, 1, "an invalid registry is a blocking obligation, not a crash");
   assert.ok(r.report.findings.some((f) => f.kind === "registry-invalid"));
@@ -73,9 +73,9 @@ test("round P2-3: the gate CLI never crashes into a false verdict; its own failu
 test("[req.modules.profiles] [req.ms2.two-profiles] the gate takes the use profile from FOUNDATION.json's usageProfile", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-gate-profile-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  fs.mkdirSync(path.join(root, "metadata"));
+  fs.mkdirSync(path.join(root, "private", "coursewerk"), { recursive: true }); fs.mkdirSync(path.join(root, "provenance", "coursewerk"), { recursive: true });
   for (const [usage, expected] of [["public-oer", "public"], ["personal-private", "private"], ["restricted-teaching", "private"]]) {
-    fs.writeFileSync(path.join(root, "metadata", "FOUNDATION.json"), JSON.stringify({ usageProfile: usage }));
+    (fs.mkdirSync(path.dirname(path.join(root, "private", "coursewerk", "FOUNDATION.json")), { recursive: true }), fs.writeFileSync)(path.join(root, "private", "coursewerk", "FOUNDATION.json"), JSON.stringify({ usageProfile: usage }));
     assert.equal(gate(root).report.profile, expected, usage);
   }
 });

@@ -36,7 +36,7 @@ export function readRegistry(root) {
   const text = readRegularFile(recordFile(root, RECORD_PATHS.registry), 1024 * 1024);
   if (text === null) return { ...standardRegistry(), standard: true };
   let r;
-  try { r = JSON.parse(text); } catch (e) { throw new Error(`metadata/modules.json is not valid JSON (${e.message})`); }
+  try { r = JSON.parse(text); } catch (e) { throw new Error(`private/coursewerk/modules.json is not valid JSON (${e.message})`); }
   if (r && typeof r === "object") { delete r.standard; delete r.__noStandard; } // runner-internal flags never come from a package
   return r;
 }

@@ -120,7 +120,7 @@ async function addAndVerify(c, text, verdict, quotes, pins) {
 function legacyDispatch(c, { kind, unit, prompt, nonce, answer, status, fields = {} }) {
   const raw = JSON.stringify(answer), bundleHash = sha256(prompt), dispatch = `d-${bundleHash.slice(0, 16)}`;
   const record = { schemaVersion: 1, dispatch, kind, unit, at: new Date().toISOString(), bundle: { nonce, bundleHash, prompt }, passages: [], answer: { mode: "replay", raw, model: "replay", costUsd: 0, responseHash: sha256(raw) }, admission: { status }, ...fields };
-  const file = recordFile(c.root, `metadata/verification/${dispatch}.json`);
+  const file = recordFile(c.root, `private/coursewerk/verification/${dispatch}.json`);
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, JSON.stringify(record, null, 2) + "\n");
   appendLogRecord(c.root, { type: "dispatch", party: { role: "harness", name: "verify" }, payload: { dispatch, kind, unit, bundleHash, responseHash: sha256(raw), mode: "replay", status } });

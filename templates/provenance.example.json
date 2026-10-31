@@ -18,7 +18,7 @@
         "evidenceType": "official-media-description-page",
         "evidenceUrl": "https://example.org/or-null-when-unknown",
         "verifiedAt": "REPLACE-WITH-YYYY-MM-DD",
-        "evidenceSnapshot": "metadata/evidence/media-asset-example-1.html",
+        "evidenceSnapshot": "private/coursewerk/evidence/media-asset-example-1.html",
         "evidenceSha256": "REPLACE-WITH-SHA256",
         "evidenceRetrieval": {
           "captureMode": "network-or-local-file",

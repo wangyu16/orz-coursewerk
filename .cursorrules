@@ -11,6 +11,6 @@ Quick orientation:
 - Build the five-deliverable teaching package into package/ (an Alembic package, lean .md) per
   PROCEDURE.md, pausing at each gate. Author plain orz text (the source of truth); assembled files are clothes.
 - Never fabricate facts or figures; keep everything copyright-clean, recorded in
-  package/metadata/ATTRIBUTION.md.
+  package/provenance/coursewerk/ATTRIBUTION.md.
 - Finish with the QA gate: `node scripts/check_oer.mjs --package package --report reports/qa_report.md`
   until it passes, then `node scripts/pack.mjs` for the lean upload zip in dist/.

@@ -2,15 +2,30 @@
 import fs from "node:fs";
 import path from "node:path";
 
+// Where Coursewerk's records live (records layout, owner 2026-10-31; site-type contract §5 "records"): the working
+// record under private/coursewerk/ (private by place), the public record under provenance/coursewerk/. One layout for a
+// local package and an Alembic site alike; a package written before it is moved once (scripts/records_move.mjs).
+export const RECORDS = "private/coursewerk";
+export const PUBLIC_RECORDS = "provenance/coursewerk";
+const PUBLIC_NAMES = new Set(["ATTRIBUTION.md", "PUBLISHED.json", "CHECKED.json"]);
+/** A record path as written before the layout ("metadata/evidence/x.html", stored inside older records) read at its
+ *  place now ("private/coursewerk/evidence/x.html"); any other path is returned as it is. Stored paths are never
+ *  rewritten (their records are hash-bound), only read here. */
+export function relocate(rel) {
+  const p = String(rel ?? "");
+  const m = /^metadata\/(.+)$/.exec(p);
+  if (!m) return p;
+  return PUBLIC_NAMES.has(m[1]) ? `${PUBLIC_RECORDS}/${m[1]}` : `${RECORDS}/${m[1]}`;
+}
 export const RECORD_PATHS = Object.freeze({
-  steering: "metadata/STEERING.json",
-  findings: "metadata/FINDINGS.json",
-  log: "metadata/LOG.jsonl",
-  unitsDir: "metadata/units",
-  registry: "metadata/modules.json", // inside metadata/: the Alembic contract allows no extra root files
+  steering: "private/coursewerk/STEERING.json",
+  findings: "private/coursewerk/FINDINGS.json",
+  log: "private/coursewerk/LOG.jsonl",
+  unitsDir: "private/coursewerk/units",
+  registry: "private/coursewerk/modules.json",
 });
 
-/** The sidecar path for a deliverable's units, e.g. `study-guide/ch1.md` → `metadata/units/study-guide/ch1.md.json`. */
+/** The sidecar path for a deliverable's units, e.g. `study-guide/ch1.md` → `private/coursewerk/units/study-guide/ch1.md.json`. */
 export function unitsPathFor(deliverable) {
   const rel = String(deliverable || "");
   if (!rel || path.isAbsolute(rel) || rel.includes("\\") || rel.split("/").some((part) => part === ".." || part === "." || part === ""))

@@ -33,15 +33,15 @@ function plantedPackage() {
   fs.cpSync(src, dir, { recursive: true });
 
   // (1) generation log with a transcript line
-  fs.writeFileSync(path.join(dir, "metadata/PROVENANCE.json"),
+  fs.writeFileSync(path.join(dir, "private/coursewerk/PROVENANCE.json"),
     JSON.stringify({ schemaVersion: 1, items: [{ step: 7, note: SENTINEL_TRANSCRIPT }] }));
   // (2) a PRIOR reviewer's verdict sitting in the package
-  fs.writeFileSync(path.join(dir, "metadata/KEY_FACT_REVIEW.json"),
+  fs.writeFileSync(path.join(dir, "private/coursewerk/KEY_FACT_REVIEW.json"),
     JSON.stringify({ schemaVersion: 1, mode: "full", verdict: SENTINEL_PRIOR_VERDICT }));
   // (3) authoring accountability / AI-assistance disclosure inside FOUNDATION.outputAuthors
-  const foundation = JSON.parse(fs.readFileSync(path.join(dir, "metadata/FOUNDATION.json"), "utf8"));
+  const foundation = JSON.parse(fs.readFileSync(path.join(dir, "private/coursewerk/FOUNDATION.json"), "utf8"));
   foundation.outputAuthors = [{ name: "Someone", aiAssistanceDisclosure: SENTINEL_AI_DISCLOSURE }];
-  fs.writeFileSync(path.join(dir, "metadata/FOUNDATION.json"), JSON.stringify(foundation));
+  fs.writeFileSync(path.join(dir, "private/coursewerk/FOUNDATION.json"), JSON.stringify(foundation));
   return dir;
 }
 
@@ -72,7 +72,7 @@ test("PROVABLE BLINDNESS — no planted process sentinel survives anywhere in th
   try {
     const serialized = JSON.stringify(assembleBlindBundle(dir));
     // Sanity: the sentinels really are on disk (else the test would pass vacuously).
-    const provenance = fs.readFileSync(path.join(dir, "metadata/PROVENANCE.json"), "utf8");
+    const provenance = fs.readFileSync(path.join(dir, "private/coursewerk/PROVENANCE.json"), "utf8");
     assert.ok(provenance.includes(SENTINEL_TRANSCRIPT), "guard: sentinel must exist on disk");
     for (const sentinel of [SENTINEL_TRANSCRIPT, SENTINEL_PRIOR_VERDICT, SENTINEL_AI_DISCLOSURE])
       assert.ok(!serialized.includes(sentinel),
@@ -86,9 +86,9 @@ test("EVERY withheld process file is named in the audit trail (no silent drop)",
     const { excluded } = assembleBlindBundle(dir);
     const processExcl = excluded.filter((e) => e.class === "process");
     const withheld = new Set(processExcl.map((e) => e.path));
-    assert.ok(withheld.has("metadata/PROVENANCE.json"), "PROVENANCE must be recorded as withheld");
-    assert.ok(withheld.has("metadata/KEY_FACT_REVIEW.json"), "prior review must be recorded as withheld");
-    assert.ok(withheld.has("metadata/FOUNDATION.json#outputAuthors"), "outputAuthors must be recorded as withheld");
+    assert.ok(withheld.has("private/coursewerk/PROVENANCE.json"), "PROVENANCE must be recorded as withheld");
+    assert.ok(withheld.has("private/coursewerk/KEY_FACT_REVIEW.json"), "prior review must be recorded as withheld");
+    assert.ok(withheld.has("private/coursewerk/FOUNDATION.json#outputAuthors"), "outputAuthors must be recorded as withheld");
     for (const e of processExcl) assert.ok(e.reason && e.reason.length >= 10, `withheld ${e.path} needs a reason`);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
@@ -170,10 +170,10 @@ test("DIGEST · deterministic across runs, and moves when the RESULT moves — n
   const d1 = blindBundleDigest(pkg);
   assert.equal(blindBundleDigest(pkg), d1, "same package, same bytes");
   // process context changes (a new generation log) must NOT move the digest — the reviewer never sees it
-  fs.writeFileSync(path.join(pkg, "metadata/PROVENANCE.json"), JSON.stringify({ schemaVersion: 1, items: [{ note: "regenerated" }] }));
+  fs.writeFileSync(path.join(pkg, "private/coursewerk/PROVENANCE.json"), JSON.stringify({ schemaVersion: 1, items: [{ note: "regenerated" }] }));
   assert.equal(blindBundleDigest(pkg), d1, "process context is outside the bundle, so outside the digest");
   // recording the review itself (a withheld process file) must not move it either — self-binding is forbidden
-  fs.writeFileSync(path.join(pkg, "metadata/KEY_FACT_REVIEW.json"), JSON.stringify({ schemaVersion: 1, mode: "light" }));
+  fs.writeFileSync(path.join(pkg, "private/coursewerk/KEY_FACT_REVIEW.json"), JSON.stringify({ schemaVersion: 1, mode: "light" }));
   assert.equal(blindBundleDigest(pkg), d1, "the review is not bound into itself");
   // a deliverable edit MUST move it — the reviewer would be judging a different result
   const sg = path.join(pkg, "study-guide/melting.md");
@@ -184,8 +184,8 @@ test("DIGEST · deterministic across runs, and moves when the RESULT moves — n
 
 test("GATE · a key-fact review that does not name the bundle it judged, or names a different one, is refused", () => {
   const { dir, pkg } = usagePackage();
-  const foundation = JSON.parse(fs.readFileSync(path.join(pkg, "metadata/FOUNDATION.json"), "utf8"));
-  const reviewFile = path.join(pkg, "metadata/KEY_FACT_REVIEW.json");
+  const foundation = JSON.parse(fs.readFileSync(path.join(pkg, "private/coursewerk/FOUNDATION.json"), "utf8"));
+  const reviewFile = path.join(pkg, "private/coursewerk/KEY_FACT_REVIEW.json");
   const base = {
     schemaVersion: 1, mode: "light", reviewKind: "same-model-independent-pass",
     authoringSystem: "author-x", authoringModelId: "model-1",
@@ -226,8 +226,8 @@ test("GATE · a key-fact review that does not name the bundle it judged, or name
 test("GATE · bind:key-fact-review can stamp the digest the reviewer was handed", () => {
   const { dir, pkg } = usagePackage();
   const digest = blindBundleDigest(pkg);
-  const reviewFile = path.join(pkg, "metadata/KEY_FACT_REVIEW.json");
-  const foundation = JSON.parse(fs.readFileSync(path.join(pkg, "metadata/FOUNDATION.json"), "utf8"));
+  const reviewFile = path.join(pkg, "private/coursewerk/KEY_FACT_REVIEW.json");
+  const foundation = JSON.parse(fs.readFileSync(path.join(pkg, "private/coursewerk/FOUNDATION.json"), "utf8"));
   fs.writeFileSync(reviewFile, JSON.stringify({
     schemaVersion: 1, mode: "light", reviewKind: "same-model-independent-pass",
     authoringSystem: "author-x", authoringModelId: "model-1", reviewer: { type: "ai", name: "reviewer-x", modelId: "model-1" },

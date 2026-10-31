@@ -185,7 +185,7 @@ Packages from v0.12 keep `check_oer.mjs` until they are migrated. Checks are mod
 and the evidence that closes each requirement.
 
 Spine v2 tools (anchors, parsed assessment guides, approvals): `node scripts/spine.mjs check|migrate|anchor|propose|critique|status|preview|approve|version|steering --root package`.
-A package opts in with `metadata/coursewerk.json` (`"spine": 2`); approvals are the instructor's words, recorded in the package's decision log.
+A package opts in with `private/coursewerk/coursewerk.json` (`"spine": 2`); approvals are the instructor's words, recorded in the package's decision log.
 Unit index (every deliverable split into checkable units with stable ids and recorded origins): `node scripts/units.mjs begin|index|claim|status|link|confirm|obligations|restamp --root package` — the deterministic core's
 obligations (facts without evidence, unlinked units, uncovered objectives, short guide entries, stale dependents) block the gate.
 Verification (a fresh, context-blind verifier per unit; the harness admits a fact only when the verifier's quote is in a

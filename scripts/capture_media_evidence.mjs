@@ -12,14 +12,14 @@ const operatorName = opt("--operator-name");
 const operatorType = opt("--operator-type");
 const evidenceType = opt("--evidence-type", "official-media-description-page");
 const contact = opt("--contact", "https://coursewerk.orz.how/");
-const provenanceFile = path.join(root, "metadata", "PROVENANCE.json");
+const provenanceFile = path.join(root, "private", "coursewerk", "PROVENANCE.json");
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const version = fs.readFileSync(path.join(repoRoot, "VERSION"), "utf8").trim();
 
 if (!itemId || !operatorName || !["automation", "human"].includes(operatorType) ||
     !["official-media-description-page", "publisher-supplied-license-file", "official-license-metadata"].includes(evidenceType) ||
     !fs.existsSync(provenanceFile)) {
-  console.error("capture-media-evidence: --item-id, --operator-name, --operator-type automation|human, an authoritative --evidence-type, and metadata/PROVENANCE.json are required");
+  console.error("capture-media-evidence: --item-id, --operator-name, --operator-type automation|human, an authoritative --evidence-type, and private/coursewerk/PROVENANCE.json are required");
   process.exit(2);
 }
 const provenance = JSON.parse(fs.readFileSync(provenanceFile, "utf8"));
@@ -76,7 +76,7 @@ if (inputFile) {
 
 const safeId = itemId.replace(/[^a-z0-9._-]+/gi, "-");
 const extension = /html/i.test(retrieval.contentType || "") ? "html" : /json/i.test(retrieval.contentType || "") ? "json" : "txt";
-const rel = `metadata/evidence/media-${safeId}.${extension}`;
+const rel = `private/coursewerk/evidence/media-${safeId}.${extension}`;
 fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
 fs.writeFileSync(path.join(root, rel), bytes);
 item.rightsEvidence = {

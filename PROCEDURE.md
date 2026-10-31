@@ -46,8 +46,8 @@ waits for M4. An answered question is never asked again while the text it is abo
 
 Create the package:
 - `alembic.json` and `LICENSE` per `format-contracts/deliverables.md` §The manifest;
-- `metadata/FOUNDATION.json` (use profile, sources, accountable author) from `templates/foundation.*.example.json`;
-- `metadata/coursewerk.json` with `"spine": 2`.
+- `private/coursewerk/FOUNDATION.json` (use profile, sources, accountable author) from `templates/foundation.*.example.json`;
+- `private/coursewerk/coursewerk.json` with `"spine": 2`.
 
 Pin the sources:
 - `scripts/prepare_source_corpus.mjs` or `scripts/prepare_wikipedia_topic.mjs`, then `scripts/generate_source_record.mjs`;
@@ -114,7 +114,7 @@ Work in batches (one to three chapters, or a session's budget). In each batch:
    - First make sure your orz skills are the newest (`node <harness>/scripts/skills.mjs --check`; if not, run it
      without `--check`). Then follow them, `docs/authoring-guidelines.md` and `docs/writing-checkable-statements.md`.
    - Everything that ships is read. Declare any other markdown the course ships (a handout, a reading) in
-     `metadata/DOCUMENTS.json`; it is then checked like a study guide. Only the instructor exempts one as
+     `private/coursewerk/DOCUMENTS.json`; it is then checked like a study guide. Only the instructor exempts one as
      administrative (`coursewerk.mjs administrative --document <path>`, in their words). An `{{md …}}` include must
      name a declared document. Whatever prints is content: a sub-heading, a printed `{{nyml}}` element, text after
      a comment.
@@ -153,7 +153,7 @@ when the index sees it; if the gate says `version-carry-owed`, run `units.mjs re
 `verify.mjs knowledge --units <ids>`, then `units.mjs reverify --units <ids> --model <id>`. An answer is reviewed
 with its question. A link review (`verify.mjs alignment`) does not count. A review that finds the text wrong does not
 count: revise it, and review it again. The instructor
-may confirm a unit instead (`units.mjs confirm --what still-correct`). Unit records (`metadata/units/`) change only
+may confirm a unit instead (`units.mjs confirm --what still-correct`). Unit records (`private/coursewerk/units/`) change only
 through these tools. A hand edit is a blocking defect; restore it from git.
 
 **Before you deliver the digest,** attach your recommendation to any entry that has none (`coursewerk.mjs recommend`).
@@ -208,6 +208,7 @@ To read or present the materials locally, assemble the framework shells: `script
 | verification | `scripts/verify.mjs` — destinations, search, fetch, semi, readmit, absolutes, knowledge, alignment, correct, revert, corrections, links, status |
 | gate | `scripts/gate.mjs` |
 | pack | `scripts/pack.mjs` (checks the newest Alembic contract first); `scripts/alembic_check.mjs` checks it on its own |
+| records move | `scripts/records_move.mjs --root <pkg>`: once, for a package written before the records layout (`metadata/` → `private/coursewerk/` and `provenance/coursewerk/`) |
 | site export | `scripts/site_export.mjs --root <pkg> --out <dir>`: the records an Alembic site holds (`private/coursewerk/`, and the public `provenance/coursewerk/CHECKED.json` and `ATTRIBUTION.md`), for the hand-in; the package is not changed |
 
 ## Packages from v0.12

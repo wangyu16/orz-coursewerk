@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "metadata/REVIEW_QUEUE.json \u2014 the escalation artifact (the recovery step)",
+  "title": "private/coursewerk/REVIEW_QUEUE.json \u2014 the escalation artifact (the recovery step)",
   "type": "object",
   "required": [
     "schemaVersion",

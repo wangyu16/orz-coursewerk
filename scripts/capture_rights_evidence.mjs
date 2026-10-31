@@ -12,7 +12,7 @@ const sourceId = opt("--source-id");
 const operatorName = opt("--operator-name");
 const operatorType = opt("--operator-type");
 const contact = opt("--contact", "https://coursewerk.orz.how/");
-const foundationFile = path.join(root, "metadata", "FOUNDATION.json");
+const foundationFile = path.join(root, "private", "coursewerk", "FOUNDATION.json");
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const version = fs.readFileSync(path.join(repoRoot, "VERSION"), "utf8").trim();
 
@@ -83,7 +83,7 @@ if (inputFile) {
 const safeId = sourceId.replace(/[^a-z0-9._-]+/gi, "-");
 const extension = /html/i.test(retrieval.contentType || "") ? "html" : "txt";
 const digest = crypto.createHash("sha256").update(bytes).digest("hex");
-const evidenceDir = path.join(root, "metadata", "evidence");
+const evidenceDir = path.join(root, "private", "coursewerk", "evidence");
 fs.mkdirSync(evidenceDir, { recursive: true });
 const shared = fs.readdirSync(evidenceDir, { withFileTypes: true })
   .filter((entry) => entry.isFile())
@@ -91,7 +91,7 @@ const shared = fs.readdirSync(evidenceDir, { withFileTypes: true })
   .find((file) => crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex") === digest);
 const rel = shared
   ? path.relative(root, shared).replaceAll(path.sep, "/")
-  : `metadata/evidence/${safeId}.${extension}`;
+  : `private/coursewerk/evidence/${safeId}.${extension}`;
 const out = path.join(root, rel);
 fs.mkdirSync(path.dirname(out), { recursive: true });
 if (!shared) fs.writeFileSync(out, bytes);

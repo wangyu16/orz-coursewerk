@@ -92,10 +92,10 @@ test("[req.commands] every command refuses with a plain next step when its preco
   expect(cli("revert", "--root", p.root), /which correction\?/);
   // a v2 package whose setting was lowered is told to restore it, never to migrate (red-team round 5, F2: the setting
   // is bound to the log)…
-  fs.writeFileSync(path.join(p.root, "metadata", "coursewerk.json"), JSON.stringify({ schemaVersion: 1, spine: 1 }));
+  (fs.mkdirSync(path.dirname(path.join(p.root, "private", "coursewerk", "coursewerk.json")), { recursive: true }), fs.writeFileSync)(path.join(p.root, "private", "coursewerk", "coursewerk.json"), JSON.stringify({ schemaVersion: 1, spine: 1 }));
   expect(cli("status", "--root", p.root), /decision log shows spine v2 in force[\s\S]*next: restore it/);
   // …and a v0.12 package (no v2 record in its log) is told how to migrate
-  fs.rmSync(path.join(p.root, "metadata", "LOG.jsonl"));
+  fs.rmSync(path.join(p.root, "private", "coursewerk", "LOG.jsonl"));
   expect(cli("status", "--root", p.root), /v0\.12 package[\s\S]*next: migrate the spine first/);
 });
 
@@ -151,9 +151,9 @@ test("[req.publish.record] [req.publish.scope] [req.oldgate.retired] [req.ship.l
   assert.ok(r.course?.approval, "the course map, with its own approval");
   assert.match(r.excluded[0].why.join(), /evidence-missing|guide-entry-short/);
   assert.match(r.contentHash, /^[0-9a-f]{64}$/); assert.ok(Array.isArray(r.openQuestions));
-  assert.ok(fs.existsSync(path.join(p.root, "metadata", "publish", `${String(r.seq).padStart(4, "0")}.json`)));
+  assert.ok(fs.existsSync(path.join(p.root, "private", "coursewerk", "publish", `${String(r.seq).padStart(4, "0")}.json`)));
   // the pack: only what was published, no v0.12 release checks (no key-fact review, no visual attestation needed)
-  assert.ok(!["KEY_FACT_REVIEW.json", "VISUAL_REVIEW.json"].some((f) => fs.existsSync(path.join(p.root, "metadata", f))), "no v0.12 key-fact review or visual attestation exists");
+  assert.ok(!["KEY_FACT_REVIEW.json", "VISUAL_REVIEW.json"].some((f) => fs.existsSync(path.join(p.root, "private", "coursewerk", f))), "no v0.12 key-fact review or visual attestation exists");
   fs.appendFileSync(path.join(p.root, "study-guide", "le-chatelier.md"), "\nAn edit after the decision.\n");
   let pk = spawnSync(process.execPath, [path.join(REPO, "scripts", "pack.mjs"), "--contract", "mirror", "--package", p.root, "--out", p.out], { encoding: "utf8" });
   assert.equal(pk.status, 2, "the package changed after the decision"); assert.match(pk.stderr, /publish again/);
@@ -163,9 +163,9 @@ test("[req.publish.record] [req.publish.scope] [req.oldgate.retired] [req.ship.l
   const receipt = JSON.parse(pk.stdout);
   const list = spawnSync("unzip", ["-Z1", receipt.zip], { encoding: "utf8" }).stdout.split("\n");
   assert.ok(list.includes("study-guide/le-chatelier.md") && !list.includes("study-guide/chemical-equilibrium.md"), "only the published chapter");
-  assert.ok(list.includes("concepts/course.md") && list.includes("metadata/PUBLISHED.json"));
+  assert.ok(list.includes("concepts/course.md") && list.includes("provenance/coursewerk/PUBLISHED.json"));
   // lean (D53): the working record stays with the local package
-  assert.ok(!list.some((f) => /^metadata\/(?:LOG\.jsonl|units\/|verification\/|publish\/|corrections\/|evidence\/|FOUNDATION\.json|coursewerk\.json)/.test(f)), list.filter((f) => f.startsWith("metadata/")).join(", "));
+  assert.ok(!list.some((f) => /^private\/coursewerk\//.test(f)), list.filter((f) => f.startsWith("metadata/")).join(", "));
   assert.ok(receipt.leftOut["working record"] > 0 && receipt.logHead?.hash, "the receipt counts what stayed local and binds the archive to the local log");
   const manifest = JSON.parse(spawnSync("unzip", ["-p", receipt.zip, "alembic.json"], { encoding: "utf8" }).stdout);
   assert.deepEqual(manifest.chapters.map((c) => c.slug), ["le-chatelier"]);
@@ -400,7 +400,7 @@ test("[req.publish.questions-raised] open questions never block, but are raised 
   let raised;
   assert.throws(() => publishDecision(p.root, p.reader, { gateResult: g, unitInfo: info, instructorWords: "Publish what is ready." }, I), (e) => ((raised = e.openQuestions), /open question/.test(e.message)));
   assert.equal(raised.length, 1); assert.equal(raised[0].question, "Is the catalyst sentence too strong?");
-  assert.ok(!fs.existsSync(path.join(p.root, "metadata", "publish")), "nothing was published before the question was raised");
+  assert.ok(!fs.existsSync(path.join(p.root, "private", "coursewerk", "publish")), "nothing was published before the question was raised");
   const r = publishDecision(p.root, p.reader, { gateResult: g, unitInfo: info, instructorWords: "I have seen the question. Publish anyway.", overQuestions: true }, I);
   assert.deepEqual(r.chapters.map((c) => c.chapter), ["le-chatelier"], "the instructor's order is followed");
   assert.equal(r.overQuestions, true); assert.equal(r.openQuestions[0].id, "q-open-1");

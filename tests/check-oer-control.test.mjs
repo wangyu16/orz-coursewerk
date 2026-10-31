@@ -70,7 +70,7 @@ const FIXTURE = path.join(HERE, "fixtures", "usage-package");
 
 const MAP = "concepts/melting.md";
 const SG = "study-guide/melting.md";
-const SG_SIDECAR = "metadata/claims/study-guide/melting.json";
+const SG_SIDECAR = "private/coursewerk/claims/study-guide/melting.json";
 
 function cli(script, args) {
   const res = spawnSync(process.execPath, [path.join(REPO, "scripts", script), ...args], {
@@ -92,7 +92,7 @@ function freshPackage(t) {
 /** PROCEDURE Stage 4. */
 function index(pkg) {
   // First baseline: the CLI directly. A re-baseline goes through the decision sheet (option 1).
-  if (!fs.existsSync(path.join(pkg, "metadata", "CLAIMS.json"))) {
+  if (!fs.existsSync(path.join(pkg, "private", "coursewerk", "CLAIMS.json"))) {
     const res = cli("index_semantic.mjs", ["--root", pkg]);
     assert.equal(res.code, 0, `index:semantic failed: ${res.stderr}`);
     return;
@@ -116,7 +116,7 @@ function gate(pkg) {
 
 const read = (pkg, rel) => fs.readFileSync(path.join(pkg, rel), "utf8");
 const write = (pkg, rel, text) => fs.writeFileSync(path.join(pkg, rel), text);
-const queueOf = (pkg) => JSON.parse(read(pkg, "metadata/REVIEW_QUEUE.json"));
+const queueOf = (pkg) => JSON.parse(read(pkg, "private/coursewerk/REVIEW_QUEUE.json"));
 const evidenceText = (q) => q.items.flatMap((i) => i.evidence).join("\n");
 const itemsOfKind = (q, kind) => q.items.filter((i) => i.kind === kind);
 
@@ -283,7 +283,7 @@ test("2c · the RECALL LIMIT, revisited — a WHOLE chapter's objectives dropped
     "- **nucleation** — the initial formation of a solid seed that triggers freezing [objective.melting.3]",
   );
   // The whole chapter's declarations are dropped — before E1 this armed nothing and the gate stayed shut.
-  fs.rmSync(path.join(pkg, "metadata", "claims"), { recursive: true, force: true });
+  fs.rmSync(path.join(pkg, "private", "coursewerk", "claims"), { recursive: true, force: true });
   const g = run(pkg);
 
   const flags = itemsOfKind(g.queue, "missing-coverage");
@@ -455,7 +455,7 @@ test("3c · a chapter that DECLARES NOTHING earns no coverage flag — absence o
   // Without traceability coverage is not a floor — it is UNDEFINED, and the honest report of an
   // undefined value is silence. Flagging here would also aim the loudest possible queue at exactly
   // the authors who have not yet adopted the convention: every author, on day one.
-  fs.rmSync(path.join(pkg, "metadata", "claims"), { recursive: true, force: true });
+  fs.rmSync(path.join(pkg, "private", "coursewerk", "claims"), { recursive: true, force: true });
   const g = run(pkg);
 
   assert.ok(g.json.semantic.claims >= 10, "the claims still index — the scan backstop still ran");
@@ -483,8 +483,8 @@ test("3d · the gate reads the SAME signal the check reads — one unrelated dec
   // declare ANYTHING?" is armed by that unrelated declaration, after which every objective flags.
   // A gate must read the same signal the check reads (declarations against OBJECTIVES) or it is a
   // different question standing in for the real one, and it will be armed by an accident.
-  fs.rmSync(path.join(pkg, "metadata", "claims"), { recursive: true, force: true });
-  fs.mkdirSync(path.join(pkg, "metadata", "claims", "study-guide"), { recursive: true });
+  fs.rmSync(path.join(pkg, "private", "coursewerk", "claims"), { recursive: true, force: true });
+  fs.mkdirSync(path.join(pkg, "private", "coursewerk", "claims", "study-guide"), { recursive: true });
   write(
     pkg,
     SG_SIDECAR,
@@ -604,9 +604,9 @@ test("5 · determinism — two identical runs produce a byte-identical queue, fl
 
   index(pkg);
   gate(pkg);
-  const first = read(pkg, "metadata/REVIEW_QUEUE.json");
+  const first = read(pkg, "private/coursewerk/REVIEW_QUEUE.json");
   gate(pkg);
-  const second = read(pkg, "metadata/REVIEW_QUEUE.json");
+  const second = read(pkg, "private/coursewerk/REVIEW_QUEUE.json");
 
   assert.equal(second, first, "the queue is not byte-stable across identical runs");
   // Not vacuous: it is stable WITH both new flag families in it.

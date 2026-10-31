@@ -96,6 +96,6 @@ test("[req.docs.migration] migrate refuses a plan older than v0.12 and writes no
     assert.notEqual(r.status, 0);
     assert.match(r.stderr + r.stdout, /older than v0\.12/);
     assert.equal(git("status", "--porcelain").stdout.trim(), "", "nothing was written");
-    assert.ok(!fs.existsSync(path.join(dir, "metadata/LOG.jsonl")));
+    assert.ok(!fs.existsSync(path.join(dir, "private/coursewerk/LOG.jsonl")));
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });

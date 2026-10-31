@@ -108,7 +108,7 @@ import { createHash } from "node:crypto";
  * creating a second authority to work around a missing one. The producer is `check_oer.mjs`'s
  * semantic audit (M11), which runs the detectors and calls `buildQueue`; `EXCLUDE` now imports this.
  */
-export const REVIEW_QUEUE_PATH = "metadata/REVIEW_QUEUE.json";
+export const REVIEW_QUEUE_PATH = "private/coursewerk/REVIEW_QUEUE.json";
 
 /**
  * Frozen enum order (schema `kind`) — doubles as the intra-severity triage order.

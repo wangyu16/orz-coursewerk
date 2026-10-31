@@ -15,7 +15,7 @@ anchored in a sibling `.coursewerk` ledger, so replacing content and the index i
 
 ## What is indexed
 
-`metadata/COMPONENT_INDEX.json` is generated from all files under the selected output root, including:
+`private/coursewerk/COMPONENT_INDEX.json` is generated from all files under the selected output root, including:
 
 - manifest, LICENSE, README, foundation, provenance, attribution, compact source record, focused key-fact
   critique, and human visual-review records;

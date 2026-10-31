@@ -32,7 +32,7 @@
 // imports from `scripts/lib/` — a library import would re-create the exact blind spot this file
 // exists to close (M6 the library was always fine; the space between M6 and the product was not,
 // and twenty green unit tests could not see it). Every assertion reads a user-visible surface: the
-// JSON report and `metadata/REVIEW_QUEUE.json`.
+// JSON report and `private/coursewerk/REVIEW_QUEUE.json`.
 //
 // The fixture is READ-ONLY: every case runs against a fresh `mkdtemp` copy, removed afterwards.
 import test from "node:test";
@@ -75,7 +75,7 @@ function freshPackage(t) {
 /** PROCEDURE Stage 4. */
 function index(pkg) {
   // First baseline: the CLI directly. A re-baseline goes through the decision sheet (option 1).
-  if (!fs.existsSync(path.join(pkg, "metadata", "CLAIMS.json"))) {
+  if (!fs.existsSync(path.join(pkg, "private", "coursewerk", "CLAIMS.json"))) {
     const res = cli("index_semantic.mjs", ["--root", pkg]);
     assert.equal(res.code, 0, `index:semantic failed: ${res.stderr}`);
     return;
@@ -94,7 +94,7 @@ function gate(pkg, extra = []) {
 
 const read = (pkg, rel) => fs.readFileSync(path.join(pkg, rel), "utf8");
 const write = (pkg, rel, text) => fs.writeFileSync(path.join(pkg, rel), text);
-const queueOf = (pkg) => JSON.parse(read(pkg, "metadata/REVIEW_QUEUE.json"));
+const queueOf = (pkg) => JSON.parse(read(pkg, "private/coursewerk/REVIEW_QUEUE.json"));
 const evidenceText = (q) => q.items.flatMap((i) => i.evidence).join("\n");
 const inconsistencies = (q) => q.items.filter((i) => i.kind === "internal-inconsistency");
 
@@ -308,8 +308,8 @@ function withDefinitions(pkg, sgText, keyText) {
   fs.appendFileSync(path.join(pkg, SG), `\n## Definition\n${sgText}\n`);
   fs.appendFileSync(path.join(pkg, PRACTICE), `\n## Definition restated\n${keyText}\n`);
   for (const [file, anchor] of [
-    ["metadata/claims/study-guide/melting.json", "definition#1"],
-    ["metadata/claims/practice/melting.json", "definition-restated#1"],
+    ["private/coursewerk/claims/study-guide/melting.json", "definition#1"],
+    ["private/coursewerk/claims/practice/melting.json", "definition-restated#1"],
   ]) {
     const doc = JSON.parse(read(pkg, file));
     doc.claims.push({
@@ -390,13 +390,13 @@ test("7 · DETERMINISTIC — the same package yields a byte-identical queue", (t
   gate(a);
   gate(b);
 
-  assert.equal(read(a, "metadata/REVIEW_QUEUE.json"), read(b, "metadata/REVIEW_QUEUE.json"),
+  assert.equal(read(a, "private/coursewerk/REVIEW_QUEUE.json"), read(b, "private/coursewerk/REVIEW_QUEUE.json"),
     "two identical packages produced different queues — a flag is not reproducible");
 
   // And re-running the gate over one package does not churn the artifact either.
-  const once = read(a, "metadata/REVIEW_QUEUE.json");
+  const once = read(a, "private/coursewerk/REVIEW_QUEUE.json");
   gate(a);
-  assert.equal(read(a, "metadata/REVIEW_QUEUE.json"), once, "a second identical run rewrote the queue");
+  assert.equal(read(a, "private/coursewerk/REVIEW_QUEUE.json"), once, "a second identical run rewrote the queue");
 });
 
 test("8 · backward compat — a package with NO stored index emits no queue and says 'not run'", (t) => {
@@ -406,7 +406,7 @@ test("8 · backward compat — a package with NO stored index emits no queue and
   const g = gate(pkg); // no index() — the fixture ships no index, on purpose
 
   assert.equal("semantic" in g.json, false, "an unindexed package now emits a semantic JSON key");
-  assert.equal(fs.existsSync(path.join(pkg, "metadata/REVIEW_QUEUE.json")), false, "an unindexed package emitted a queue");
+  assert.equal(fs.existsSync(path.join(pkg, "private/coursewerk/REVIEW_QUEUE.json")), false, "an unindexed package emitted a queue");
   assert.match(g.report, /\*\*not run\*\*/, "the report does not say the semantic layer did not run");
   assert.match(g.report, /index:semantic/, "the report does not name the command that would run it");
 });

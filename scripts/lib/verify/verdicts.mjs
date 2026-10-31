@@ -25,7 +25,7 @@ import { admit, sameAtPrecision, supports } from "./admission.mjs";
 import { admissiblePin, pinLedger } from "./references.mjs";
 import { boundRecord, dispatchLogEntry, knowledgeBundle, readDispatches, readKnowledgeReview, recordDispatch, recordHashOf, selectPassages, semiBundle } from "./dispatch.mjs";
 
-export const CORRECTIONS_DIR = "metadata/corrections";
+export const CORRECTIONS_DIR = "private/coursewerk/corrections";
 
 // evidence counts for the unit's current facts, lead-in and the instructor's answers (core/obligations.mjs)
 const hasAdmitted = (root, u, all) => evidenceStands(root, u, all);
@@ -44,9 +44,9 @@ export const checksCurrentClaims = (record, unitText, lead = null) => JSON.strin
   // a record whose lead-in no longer introduces the equation is history; a record without leads (before P11) is not judged on them
   && (!Object.keys(recordLeads(record)).length || Object.values(recordLeads(record)).every((l) => l === String(lead || "").replace(/\s+/g, " ")));
 const packageDispatches = (root) => {
-  const dir = recordFile(root, "metadata/verification");
+  const dir = recordFile(root, "private/coursewerk/verification");
   if (!fs.existsSync(dir)) return [];
-  return readDispatches((p) => fs.readFileSync(recordFile(root, p), "utf8"), fs.readdirSync(dir).map((f) => `metadata/verification/${f}`));
+  return readDispatches((p) => fs.readFileSync(recordFile(root, p), "utf8"), fs.readdirSync(dir).map((f) => `private/coursewerk/verification/${f}`));
 };
 
 /** Evidence the harness writes when a dispatch is admitted. */

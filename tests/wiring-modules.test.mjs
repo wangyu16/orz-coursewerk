@@ -15,7 +15,7 @@ test("[req.modules.no-writes] [req.modules.wiring-report] [req.retire.old-checks
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-wiring-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   fs.cpSync(path.join(HERE, "fixtures", "c2-chemistry-v2", "package"), root, { recursive: true });
-  fs.rmSync(path.join(root, "metadata", "modules.json"), { force: true });
+  fs.rmSync(path.join(root, "private", "coursewerk", "modules.json"), { force: true });
   for (const a of [["init", "-q"], ["config", "user.name", "T"], ["config", "user.email", "t@example.invalid"], ["add", "-A"], ["commit", "-q", "-m", "c2"]]) spawnSync("git", ["-C", root, ...a]);
   const json = path.join(os.tmpdir(), `wiring-${process.pid}.json`); t.after(() => fs.rmSync(json, { force: true }));
   const before = spawnSync("git", ["-C", root, "status", "--porcelain"], { encoding: "utf8" }).stdout;

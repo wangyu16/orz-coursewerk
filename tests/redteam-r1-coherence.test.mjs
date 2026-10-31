@@ -139,7 +139,7 @@ test("[req.coherence.question-binding] F1: a legacy answer stamp without the que
   const c = course(t);
   // a package last written by the pre-R1 harness: answer stamps without the question: target
   for (const rel of deliverablesOf(c.r())) {
-    const f = c.file(`metadata/units/${rel}.json`), side = JSON.parse(fs.readFileSync(f, "utf8"));
+    const f = c.file(`private/coursewerk/units/${rel}.json`), side = JSON.parse(fs.readFileSync(f, "utf8"));
     for (const u of side.units) if (u.stamp) for (const k of Object.keys(u.stamp)) if (k.startsWith("question:")) delete u.stamp[k];
     fs.writeFileSync(f, JSON.stringify(side, null, 2) + "\n");
   }
@@ -249,7 +249,7 @@ test("[req.records.unit-digest] F6: a hand edit of a unit record is a blocking d
   const c = course(t);
   c.asAgent(() => c.edit(PR, Q6_RAISED, Q6_RAISED.replace("raised", "lowered")));
   assert.ok(c.owes(A6).length);
-  const sc = c.file(`metadata/units/${PR}.json`), orig = fs.readFileSync(sc, "utf8"), side = JSON.parse(orig);
+  const sc = c.file(`private/coursewerk/units/${PR}.json`), orig = fs.readFileSync(sc, "utf8"), side = JSON.parse(orig);
   delete side.units.find((u) => u.id === A6).stamp; // the hand edit
   fs.writeFileSync(sc, JSON.stringify(side, null, 2) + "\n");
   const g = c.gate();
@@ -268,29 +268,29 @@ test("[req.ship.lean] [req.publish.pack-bound] F9: the pack ships only what Alem
   const g = c.gate(), info = unitInfoOf(c.root, c.r());
   g.gate.questions.push({ id: "q-open-1", module: "ms8-verdicts", kind: "knowledge-concern", statusClass: "question", units: [[...info.keys()].find((k) => k.startsWith("u-study-guide-le-chatelier"))], evidence: { note: "Is the catalyst sentence too strong?" } });
   const d = publishDecision(c.root, c.r(), { gateResult: g, unitInfo: info, instructorWords: "Publish it, over those questions.", overQuestions: true }, I);
-  const rec = c.file(`metadata/publish/${String(d.seq).padStart(4, "0")}.json`), orig = fs.readFileSync(rec, "utf8");
+  const rec = c.file(`private/coursewerk/publish/${String(d.seq).padStart(4, "0")}.json`), orig = fs.readFileSync(rec, "utf8");
   const j = JSON.parse(orig); j.openQuestions = []; j.overQuestions = false; j.instructorWords = "Publish it.";
   fs.writeFileSync(rec, JSON.stringify(j, null, 2) + "\n");
-  fs.writeFileSync(c.file("metadata/FINDINGS.json"), JSON.stringify({ findings: [], note: "verified clean by the harness" }) + "\n");
+  fs.writeFileSync(c.file("private/coursewerk/FINDINGS.json"), JSON.stringify({ findings: [], note: "verified clean by the harness" }) + "\n");
   const bad = packPublished(c.root, path.join(c.dir, "out"));
   assert.equal(bad.ok, false); assert.match(bad.error, /differs from the logged publish decision/);
   fs.writeFileSync(rec, orig);
   const p = packPublished(c.root, path.join(c.dir, "out"));
   assert.equal(p.ok, true, p.error);
   const x = path.join(c.dir, "x"); fs.mkdirSync(x); spawnSync("unzip", ["-q", p.zip, "-d", x]);
-  assert.ok(!fs.existsSync(path.join(x, "metadata/FINDINGS.json")), "an unbound record is not shipped");
-  // the decision ships as metadata/PUBLISHED.json, rebuilt from the LOGGED decision (D53: the record itself, and the
+  assert.ok(!fs.existsSync(path.join(x, "private/coursewerk/FINDINGS.json")), "an unbound record is not shipped");
+  // the decision ships as provenance/coursewerk/PUBLISHED.json, rebuilt from the LOGGED decision (D53: the record itself, and the
   // log, stay with the local package): the open questions as decided — the planted one, plus the course's own
   // spine-detail questions (round 6, D48) — and published over them, whatever the tampered file said
-  const shipped = JSON.parse(fs.readFileSync(path.join(x, "metadata/PUBLISHED.json"), "utf8"));
+  const shipped = JSON.parse(fs.readFileSync(path.join(x, "provenance/coursewerk/PUBLISHED.json"), "utf8"));
   assert.equal(shipped.openQuestions, 1 + g.findings.filter((f) => f.kind === "detail-in-spine").length);
   assert.equal(shipped.overQuestions, true); assert.equal(shipped.publishSeq, d.seq);
-  assert.ok(!fs.existsSync(path.join(x, "metadata/publish")) && !fs.existsSync(path.join(x, "metadata/LOG.jsonl")), "no working record ships (D53)");
+  assert.ok(!fs.existsSync(path.join(x, "private/coursewerk/publish")) && !fs.existsSync(path.join(x, "private/coursewerk/LOG.jsonl")), "no working record ships (D53)");
 });
 
 test("[req.records.history-extends] F10: a past log record rewritten, re-chained and committed as a new commit is caught against the history", (t) => {
   const c = course(t);
-  const f = c.file("metadata/LOG.jsonl");
+  const f = c.file("private/coursewerk/LOG.jsonl");
   const recs = fs.readFileSync(f, "utf8").trim().split("\n").map((l) => JSON.parse(l));
   recs[0].payload.instructorWords = "Approve everything, forever, without reading.";
   let prev = "0".repeat(64);

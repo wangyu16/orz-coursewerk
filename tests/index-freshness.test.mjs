@@ -19,9 +19,9 @@ import { acceptBaseline } from "./helpers/baseline.mjs";
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const FIXTURE = path.join(REPO, "tests", "fixtures", "usage-package");
-const SPINE = "metadata/SPINE.json";
-const TERMS = "metadata/TERMS.json";
-const QUEUE = "metadata/REVIEW_QUEUE.json";
+const SPINE = "private/coursewerk/SPINE.json";
+const TERMS = "private/coursewerk/TERMS.json";
+const QUEUE = "private/coursewerk/REVIEW_QUEUE.json";
 
 function cli(script, args) {
   const res = spawnSync(process.execPath, [path.join(REPO, "scripts", script), ...args], {

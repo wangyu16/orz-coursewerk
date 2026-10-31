@@ -131,7 +131,7 @@ export function eligibility(root, reader, gateResult, unitDeliverable, { without
 }
 
 // ---- the publish decision (M6) ------------------------------------------------------------------------------------
-const VOLATILE = (rel) => rel === "metadata/LOG.jsonl" || rel.startsWith("metadata/publish/") || rel === "metadata/FINDINGS.json" || rel.startsWith("metadata/digest/") || rel.startsWith(".git/") || rel === ".git";
+const VOLATILE = (rel) => rel === "private/coursewerk/LOG.jsonl" || rel.startsWith("private/coursewerk/publish/") || rel === "private/coursewerk/FINDINGS.json" || rel.startsWith("private/coursewerk/digest/") || rel.startsWith(".git/") || rel === ".git";
 /** The content a publish binds: every package file except the records that change because of the publish itself. */
 export function publishContentHash(root) {
   const files = [];
@@ -183,8 +183,8 @@ export function publishDecision(root, reader, { gateResult, unitInfo, instructor
     openQuestions, overQuestions: openQuestions.length > 0, ...(skippedReviews.length ? { withoutReview: skippedReviews } : {}), instructorWords,
   };
   const rec = appendLogRecord(root, { type: "publish", party, payload });
-  fs.mkdirSync(recordFile(root, "metadata/publish"), { recursive: true });
-  fs.writeFileSync(recordFile(root, `metadata/publish/${String(rec.seq).padStart(4, "0")}.json`), JSON.stringify({ seq: rec.seq, at: rec.at, by: party.name, ...payload }, null, 2) + "\n");
+  fs.mkdirSync(recordFile(root, "private/coursewerk/publish"), { recursive: true });
+  fs.writeFileSync(recordFile(root, `private/coursewerk/publish/${String(rec.seq).padStart(4, "0")}.json`), JSON.stringify({ seq: rec.seq, at: rec.at, by: party.name, ...payload }, null, 2) + "\n");
   return { seq: rec.seq, ...payload };
 }
 

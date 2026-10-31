@@ -17,7 +17,7 @@
 // Every command below is spawned as a child process exactly as `PROCEDURE.md` spells it. Nothing in
 // this file imports from `scripts/lib/`. If a test here needs a library import to pass, the test has
 // stopped testing the thing. Assertions read only user-visible surfaces: exit codes, the JSON
-// report, the markdown report, and `metadata/REVIEW_QUEUE.json`.
+// report, the markdown report, and `private/coursewerk/REVIEW_QUEUE.json`.
 //
 // A gap between the DOCS and the CODE must surface here as a FAILURE.
 //
@@ -56,7 +56,7 @@
 //   `applyMechanical` have no product caller — see test 11, which is why it still passes vacuously.
 //
 // F-C (test: "12 · an override is not flagged as hallucination")
-//   `lib/overrides.mjs` exports `OVERRIDES_PATH = "metadata/OVERRIDES.json"`. No product code writes
+//   `lib/overrides.mjs` exports `OVERRIDES_PATH = "private/coursewerk/OVERRIDES.json"`. No product code writes
 //   it, no product code reads it, and `format-contracts/deliverables.md`'s package tree does not
 //   list it. There is no documented command to record an override, so a user cannot authorize a
 //   divergence at all. Same no-producer family as `derivedFrom`, the spine namespace and
@@ -140,7 +140,7 @@ function gate(pkg, extra = []) {
 
 const read = (pkg, rel) => fs.readFileSync(path.join(pkg, rel), "utf8");
 const write = (pkg, rel, text) => fs.writeFileSync(path.join(pkg, rel), text);
-const queueOf = (pkg) => JSON.parse(read(pkg, "metadata/REVIEW_QUEUE.json"));
+const queueOf = (pkg) => JSON.parse(read(pkg, "private/coursewerk/REVIEW_QUEUE.json"));
 const evidenceText = (q) => q.items.flatMap((i) => i.evidence).join("\n");
 
 // =============================================================================================
@@ -152,15 +152,15 @@ test("1 · fresh package -> index:semantic writes the three artifacts, schema-va
 
   // The artifacts are ABSENT before Stage 4 — the fixture ships no index, on purpose. A fixture with
   // a pre-baked index could not tell you whether the documented command produces one, which is W1.
-  for (const rel of ["metadata/SPINE.json", "metadata/TERMS.json", "metadata/CLAIMS.json"])
+  for (const rel of ["private/coursewerk/SPINE.json", "private/coursewerk/TERMS.json", "private/coursewerk/CLAIMS.json"])
     assert.equal(fs.existsSync(path.join(pkg, rel)), false, `${rel} must not exist before Stage 4`);
 
   const { semantic } = stage4(pkg);
   assert.equal(semantic.code, 0, `index:semantic failed: ${semantic.stderr}`);
 
-  const spine = JSON.parse(read(pkg, "metadata/SPINE.json"));
-  const terms = JSON.parse(read(pkg, "metadata/TERMS.json"));
-  const claims = JSON.parse(read(pkg, "metadata/CLAIMS.json"));
+  const spine = JSON.parse(read(pkg, "private/coursewerk/SPINE.json"));
+  const terms = JSON.parse(read(pkg, "private/coursewerk/TERMS.json"));
+  const claims = JSON.parse(read(pkg, "private/coursewerk/CLAIMS.json"));
 
   // Shape, per docs/semantic-index-interfaces.md §3.
   for (const key of ["schemaVersion", "generatedFrom", "chapters", "nodes", "edges", "prerequisites", "chapterSequence"])
@@ -255,7 +255,7 @@ test("3 · skipping index:semantic is REPORTED, and the report names the command
   // The machine surfaces stay frozen for callers that diff/pin/grep (W7's fix was scoped to the
   // human report on purpose): no `semantic` key at all, and no queue emitted.
   assert.equal("semantic" in g.json, false, "the JSON gained a semantic key for an unindexed package");
-  assert.equal(fs.existsSync(path.join(pkg, "metadata/REVIEW_QUEUE.json")), false,
+  assert.equal(fs.existsSync(path.join(pkg, "private/coursewerk/REVIEW_QUEUE.json")), false,
     "a queue was emitted for a package with no index");
 });
 
@@ -296,9 +296,9 @@ test("5 · a REAL edit flags the related claims, INCLUDING the answer key derive
   stage4(pkg);
 
   // The claim ids the stored index minted, and the authored derivation between them. This is the
-  // package's own artifact, not an internal: `metadata/claims/practice/melting.json` declares
+  // package's own artifact, not an internal: `private/coursewerk/claims/practice/melting.json` declares
   // `derivedFrom: [<the melting-point fact>]`, and CLAIMS.json shows the edge was honoured.
-  const stored = JSON.parse(read(pkg, "metadata/CLAIMS.json"));
+  const stored = JSON.parse(read(pkg, "private/coursewerk/CLAIMS.json"));
   const fact = stored.claims.find((c) => c.locations[0].file === "study-guide/melting.md" && c.locations[0].anchor === "melting-point-of-pure-water#1");
   const key = stored.claims.find((c) => c.locations[0].file === "practice/melting.md" && c.locations[0].anchor === "practice-melting#2");
   assert.ok(fact && key, "the fixture's declared fact/answer-key pair did not index");
@@ -334,8 +334,8 @@ test("5 · a REAL edit flags the related claims, INCLUDING the answer key derive
 test("6a · a RENAME holds every claim id (the ids survive the migration)", (t) => {
   const pkg = freshPackage(t);
   stage4(pkg);
-  const idsBefore = JSON.parse(read(pkg, "metadata/CLAIMS.json")).claims.map((c) => c.id).sort();
-  const termsBefore = JSON.parse(read(pkg, "metadata/TERMS.json")).terms.map((x) => x.id).sort();
+  const idsBefore = JSON.parse(read(pkg, "private/coursewerk/CLAIMS.json")).claims.map((c) => c.id).sort();
+  const termsBefore = JSON.parse(read(pkg, "private/coursewerk/TERMS.json")).terms.map((x) => x.id).sort();
 
   // The IUPAC migration case: the instructor adopts "fusion point" as the preferred label and DEMOTES
   // "melting point" to an alias. Per §2 the old label must never be deleted — that overlap is the
@@ -356,7 +356,7 @@ test("6a · a RENAME holds every claim id (the ids survive the migration)", (t) 
   const re = acceptBaseline(REPO, pkg).accept;
   assert.equal(re.code, 0, `re-baseline failed: ${re.stderr}`);
 
-  const terms = JSON.parse(read(pkg, "metadata/TERMS.json"));
+  const terms = JSON.parse(read(pkg, "private/coursewerk/TERMS.json"));
   const mp = terms.terms.find((x) => x.id === "term.melting-point");
 
   // The id is MINTED ONCE and never re-minted (§2). It is now a historical artifact carrying the new
@@ -368,7 +368,7 @@ test("6a · a RENAME holds every claim id (the ids survive the migration)", (t) 
 
   // FIRST HALF: the ids HOLD. `identityLabel` hashes sorted term IDS, which did not move.
   assert.deepEqual(
-    JSON.parse(read(pkg, "metadata/CLAIMS.json")).claims.map((c) => c.id).sort(),
+    JSON.parse(read(pkg, "private/coursewerk/CLAIMS.json")).claims.map((c) => c.id).sort(),
     idsBefore,
     "a rename changed claim ids — the terminology migration this feature exists for is broken",
   );
@@ -408,9 +408,9 @@ test("7 · determinism — two identical runs produce a byte-identical queue", (
   stage4(pkg);
 
   gate(pkg);
-  const first = read(pkg, "metadata/REVIEW_QUEUE.json");
+  const first = read(pkg, "private/coursewerk/REVIEW_QUEUE.json");
   gate(pkg);
-  const second = read(pkg, "metadata/REVIEW_QUEUE.json");
+  const second = read(pkg, "private/coursewerk/REVIEW_QUEUE.json");
 
   // Byte-identical, not deep-equal: a flag a human acted on must be regenerable from git months
   // later, and "same object, different bytes" does not survive a diff.
@@ -418,7 +418,7 @@ test("7 · determinism — two identical runs produce a byte-identical queue", (
 
   // And it holds where it MATTERS — over a package that actually has findings. A determinism claim
   // proved only on an empty queue proves the serializer, not the pipeline.
-  write(pkg, "metadata/claims/study-guide/melting.json", JSON.stringify({
+  write(pkg, "private/coursewerk/claims/study-guide/melting.json", JSON.stringify({
     schemaVersion: 1,
     claims: [
       { type: "fact", anchor: "melting-point-of-pure-water#1", spineRefs: ["concept.melting.404"], sourceRefs: [], termRefs: ["term.melting-point"] },
@@ -428,9 +428,9 @@ test("7 · determinism — two identical runs produce a byte-identical queue", (
   acceptBaseline(REPO, pkg); // re-baseline the documented way (gate → decide → accept)
 
   gate(pkg);
-  const dirtyFirst = read(pkg, "metadata/REVIEW_QUEUE.json");
+  const dirtyFirst = read(pkg, "private/coursewerk/REVIEW_QUEUE.json");
   gate(pkg);
-  const dirtySecond = read(pkg, "metadata/REVIEW_QUEUE.json");
+  const dirtySecond = read(pkg, "private/coursewerk/REVIEW_QUEUE.json");
   assert.ok(JSON.parse(dirtyFirst).items.length > 0, "the planted defects produced no findings to be deterministic about");
   assert.equal(dirtySecond, dirtyFirst, "two runs over a package WITH findings produced different queues");
 });
@@ -440,7 +440,7 @@ test("8 · the emitted REVIEW_QUEUE.json does not make the package fail its own 
   stage4(pkg);
 
   const first = gate(pkg);
-  assert.ok(fs.existsSync(path.join(pkg, "metadata/REVIEW_QUEUE.json")), "the gate emitted no queue");
+  assert.ok(fs.existsSync(path.join(pkg, "private/coursewerk/REVIEW_QUEUE.json")), "the gate emitted no queue");
 
   // The gate WRITES an artifact into the package it is checking. That artifact must not then be
   // reported as an uncommitted/unindexed component — a checker whose own output fails the next check
@@ -453,7 +453,7 @@ test("8 · the emitted REVIEW_QUEUE.json does not make the package fail its own 
 
   // It committed its own artifact — which is what stops `auditCoherence`'s unfiltered git loop from
   // reporting `Git ??` on the gate's own output.
-  assert.equal(first.json.semantic.emitted.path, "metadata/REVIEW_QUEUE.json");
+  assert.equal(first.json.semantic.emitted.path, "private/coursewerk/REVIEW_QUEUE.json");
   assert.equal(first.json.semantic.emitted.committed, true, "the gate emitted the queue but did not commit it");
   // The second run commits NOTHING: same package, byte-identical queue, nothing to record. That is
   // correct and is worth pinning — a checker that manufactures an empty commit on every run would
@@ -482,7 +482,7 @@ test("9 · a dangling spineRef is flagged, and the message NAMES the offending r
   assert.equal(gate(pkg).json.semantic.burden.flagCount, 0, "the clean package flagged a dangling ref it does not have");
 
   // Plant one, in the two places §5b assigns to the gate: a CLAIM's parent, and a TERM's bracket.
-  write(pkg, "metadata/claims/study-guide/melting.json", JSON.stringify({
+  write(pkg, "private/coursewerk/claims/study-guide/melting.json", JSON.stringify({
     schemaVersion: 1,
     claims: [{ type: "fact", anchor: "melting-point-of-pure-water#1", spineRefs: ["concept.melting.999"], sourceRefs: ["src.synthetic.handbook.rev1"], termRefs: ["term.melting-point"] }],
   }, null, 2));
@@ -521,7 +521,7 @@ test("10 · a MALFORMED declaration is refused AND reported — as malformed, no
 
   // The exact mistake the contract calls out: a single ref written as a STRING instead of a list.
   // It is the one an author makes while TRYING to declare — which is why the message matters.
-  write(pkg, "metadata/claims/study-guide/melting.json", JSON.stringify({
+  write(pkg, "private/coursewerk/claims/study-guide/melting.json", JSON.stringify({
     schemaVersion: 1,
     claims: [
       { type: "fact", anchor: "melting-point-of-pure-water#1", spineRefs: "objective.melting.1", sourceRefs: [], termRefs: ["term.melting-point"] },
@@ -549,7 +549,7 @@ test("10 · a MALFORMED declaration is refused AND reported — as malformed, no
 
   // A closed enum must REFUSE, never coerce to the nearest member — coercion asserts a type nobody
   // chose. The refused entry must not appear as an honoured claim of some other type.
-  const claims = JSON.parse(read(pkg, "metadata/CLAIMS.json")).claims;
+  const claims = JSON.parse(read(pkg, "private/coursewerk/CLAIMS.json")).claims;
   const coerced = claims.find((c) => c.locations[0].file === "study-guide/melting.md" && c.locations[0].anchor === "latent-heat-of-fusion#1" && c.spineRefs.length > 0);
   assert.equal(coerced, undefined, "a refused entry was coerced into an honoured claim");
 
@@ -567,7 +567,7 @@ test("11 · an edit is never auto-applied inside a direct QUOTATION", (t) => {
   // fixture's quote carries no quantity, so nothing ever targets it and this branch never fires —
   // a known gap this fixture exists not to repeat.)
   const QUOTE = '"the melting point of pure water at standard pressure is 0 °C"';
-  const stored = JSON.parse(read(pkg, "metadata/CLAIMS.json"));
+  const stored = JSON.parse(read(pkg, "private/coursewerk/CLAIMS.json"));
   const quoted = stored.claims.find((c) => c.locations[0].file === "study-guide/melting.md" && c.locations[0].anchor === "what-the-source-says#1");
   assert.ok(quoted, "the quotation did not index as a claim — nothing would ever target it");
   assert.ok(read(pkg, "study-guide/melting.md").includes(QUOTE), "the fixture's quotation moved");
@@ -627,10 +627,10 @@ test("12 · a knowledge update beyond the source is not flagged as hallucination
   const scripts = JSON.parse(fs.readFileSync(path.join(REPO, "package.json"), "utf8")).scripts;
   const recorder = Object.entries(scripts).find(([, cmd]) => /override/i.test(cmd));
   assert.ok(recorder,
-    "no documented command records an authorized divergence: OVERRIDES_PATH ('metadata/OVERRIDES.json') has no producer, so an instructor cannot authorize a divergence (F-C)");
+    "no documented command records an authorized divergence: OVERRIDES_PATH ('private/coursewerk/OVERRIDES.json') has no producer, so an instructor cannot authorize a divergence (F-C)");
 
   // Record it through the CLI, exactly as an instructor would.
-  const claims = JSON.parse(read(pkg, "metadata/CLAIMS.json")).claims;
+  const claims = JSON.parse(read(pkg, "private/coursewerk/CLAIMS.json")).claims;
   const seed = claims.find((c) => c.locations[0].file === "study-guide/melting.md" && /melting point/i.test(c.text));
   assert.ok(seed, "the fixture's melting-point fact did not index");
   const rec = spawnSync(process.execPath, [

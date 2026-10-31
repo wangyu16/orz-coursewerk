@@ -124,7 +124,7 @@ export function spineReviewBundle(lines, context, nonce = randomBytes(8).toStrin
   return { kind: "spine-review", nonce, prompt, bundleHash: sha256(prompt) };
 }
 
-const reviewFile = (scope) => `metadata/spine/review/${scope.replace(":", "-")}.json`;
+const reviewFile = (scope) => `private/coursewerk/spine/review/${scope.replace(":", "-")}.json`;
 
 const parseAnswer = (raw, nonce) => {
   const m = String(raw || "").match(/\{[\s\S]*\}/);
@@ -149,7 +149,7 @@ function readSpineConcerns(raw, nonce, lines) {
 }
 
 /** Run the blind review of a scope's changed lines; the record is logged like every dispatch (and bound to the text
- *  and the exact lines it was shown). The file under metadata/spine/review/ is a readable copy, never trusted. */
+ *  and the exact lines it was shown). The file under private/coursewerk/spine/review/ is a readable copy, never trusted. */
 export async function reviewSpineChanges(root, reader, scope, { verifier }) {
   const ch = changedSpineLines(root, reader, scope);
   if (!ch.reapproval) return { scope, reapproval: false, concerns: [] };
@@ -166,7 +166,7 @@ export async function reviewSpineChanges(root, reader, scope, { verifier }) {
     meaning = readSpineMeaning(answer.raw, bundle.nonce, ch.asked);
   }
   const out = { scope, textHash: ch.textHash, baseSeq: ch.baseSeq, lines: ch.lines.length, asked: ch.asked.length, dispatch, concerns, meaning, at: new Date().toISOString() };
-  fs.mkdirSync(recordFile(root, "metadata/spine/review"), { recursive: true });
+  fs.mkdirSync(recordFile(root, "private/coursewerk/spine/review"), { recursive: true });
   fs.writeFileSync(recordFile(root, reviewFile(scope)), JSON.stringify(out, null, 2) + "\n");
   return { ...out, costUsd };
 }
@@ -226,7 +226,7 @@ export function currentSpineReview(root, reader, scope) {
   const log = parseLog(readLogText(root));
   const recs = [];
   for (const e of log.filter((r) => r.type === "dispatch" && r.party?.role === "harness" && r.payload?.kind === "spine-review" && r.payload?.unit === `spine:${scope}`)) {
-    let rec = null; try { rec = JSON.parse(fs.readFileSync(path.join(recordFile(root, "metadata/verification"), `${e.payload.dispatch}.json`), "utf8")); } catch { continue; }
+    let rec = null; try { rec = JSON.parse(fs.readFileSync(path.join(recordFile(root, "private/coursewerk/verification"), `${e.payload.dispatch}.json`), "utf8")); } catch { continue; }
     if (!dispatchLogEntry(rec, log) || rec.kind !== "spine-review") continue;
     recs.push({ rec, seq: Number(e.seq ?? 0), asked: [...(rec.lines || []), ...(rec.removed || []).map((l) => ({ ...l, removed: true }))] });
   }

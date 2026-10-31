@@ -4,6 +4,7 @@
 // protect the foundation facts that determine whether material is safe to keep
 // private, distribute, or publish: intended use, source identity/rights,
 // package-license consistency, provenance, privacy, and publication clearance.
+import { relocate } from "./records/paths.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
@@ -36,7 +37,7 @@ const MEDIA = /\.(?:png|jpe?g|webp|avif|svg|gif|bmp|tiff?|pdf|mp3|mp4|mov|webm|w
 
 const read = (f) => fs.readFileSync(f, "utf8");
 const exists = (f) => fs.existsSync(f);
-const norm = (p) => String(p || "").replaceAll("\\", "/").replace(/^\.\//, "");
+const norm = (p) => relocate(String(p || "").replaceAll("\\", "/").replace(/^\.\//, "")); // a stored pre-layout path is read at its place now
 const nonempty = (v) => typeof v === "string" && v.trim().length > 0;
 const sha256 = (value) => crypto.createHash("sha256").update(value).digest("hex");
 const normalizeLegalText = (value) => String(value).replace(/\r\n/g, "\n").trimEnd() + "\n";
@@ -93,8 +94,8 @@ function evidenceSnapshotAudit(root, source, basis, label, publicationBlockers, 
     return;
   }
   const rel = norm(basis.evidenceSnapshot);
-  if (path.isAbsolute(rel) || rel.split("/").includes("..") || !rel.startsWith("metadata/evidence/")) {
-    publicationBlockers.push(`${label}: evidenceSnapshot must stay under metadata/evidence/.`);
+  if (path.isAbsolute(rel) || rel.split("/").includes("..") || !rel.startsWith("private/coursewerk/evidence/")) {
+    publicationBlockers.push(`${label}: evidenceSnapshot must stay under private/coursewerk/evidence/.`);
     return;
   }
   const file = path.join(root, rel);
@@ -209,8 +210,8 @@ function mediaEvidenceAudit(root, item, label, publicationBlockers) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(evidence.verifiedAt || "")))
     publicationBlockers.push(`${label}: rightsEvidence.verifiedAt must be YYYY-MM-DD.`);
   const rel = norm(evidence.evidenceSnapshot);
-  if (!rel || path.isAbsolute(rel) || rel.split("/").includes("..") || !rel.startsWith("metadata/evidence/")) {
-    publicationBlockers.push(`${label}: verified external media requires a local rights-evidence snapshot under metadata/evidence/.`);
+  if (!rel || path.isAbsolute(rel) || rel.split("/").includes("..") || !rel.startsWith("private/coursewerk/evidence/")) {
+    publicationBlockers.push(`${label}: verified external media requires a local rights-evidence snapshot under private/coursewerk/evidence/.`);
     return;
   }
   const file = path.join(root, rel);
@@ -518,7 +519,7 @@ export function renderAttribution(provenance) {
   const lines = [
     "# Attribution",
     "",
-    "Generated from `metadata/PROVENANCE.json`; do not edit independently.",
+    "Generated from `private/coursewerk/PROVENANCE.json`; do not edit independently.",
     "",
     "| Asset | Title | Creator | Source | License/status | Attribution | Used in |",
     "|---|---|---|---|---|---|---|",
@@ -532,13 +533,15 @@ export function renderAttribution(provenance) {
 
 function attributionMirrorAudit(root, provenance, usageProfile, privateFailures, publicationBlockers) {
   if (usageProfile !== "public-oer") return;
-  const file = path.join(root, "metadata", "ATTRIBUTION.md");
+  const file = path.join(root, "provenance", "coursewerk", "ATTRIBUTION.md");
   const expected = renderAttribution(provenance);
   if (!exists(file)) {
-    publicationBlockers.push("metadata/ATTRIBUTION.md is missing; generate it from PROVENANCE.json.");
+    publicationBlockers.push("provenance/coursewerk/ATTRIBUTION.md is missing; generate it from PROVENANCE.json.");
     return;
   }
-  if (read(file) !== expected) publicationBlockers.push("metadata/ATTRIBUTION.md does not exactly match generated structured provenance.");
+  // an attribution generated before the records layout names its source at metadata/PROVENANCE.json: the same file
+  const beforeMove = expected.replace("`private/coursewerk/PROVENANCE.json`", "`metadata/PROVENANCE.json`");
+  if (read(file) !== expected && read(file) !== beforeMove) publicationBlockers.push("provenance/coursewerk/ATTRIBUTION.md does not exactly match generated structured provenance.");
 }
 
 /**
@@ -550,10 +553,10 @@ export function auditAssurance({ root, manifest = null }) {
   const privateFailures = [];
   const publicationBlockers = [];
   const warnings = [];
-  const foundationFile = path.join(root, "metadata", "FOUNDATION.json");
-  const provenanceFile = path.join(root, "metadata", "PROVENANCE.json");
-  const foundation = parseJson(foundationFile, privateFailures, "metadata/FOUNDATION.json");
-  const provenance = parseJson(provenanceFile, privateFailures, "metadata/PROVENANCE.json");
+  const foundationFile = path.join(root, "private", "coursewerk", "FOUNDATION.json");
+  const provenanceFile = path.join(root, "private", "coursewerk", "PROVENANCE.json");
+  const foundation = parseJson(foundationFile, privateFailures, "private/coursewerk/FOUNDATION.json");
+  const provenance = parseJson(provenanceFile, privateFailures, "private/coursewerk/PROVENANCE.json");
   if (!foundation) return { usageProfile: null, ingestionFailures: privateFailures, ingestionReady: false, authoringReady: false, privateFailures, publicationBlockers, warnings, hardFailures: privateFailures, canPack: false };
   foundation.__root = root;
   const ingestion = auditIngestionReadiness(root, foundation);

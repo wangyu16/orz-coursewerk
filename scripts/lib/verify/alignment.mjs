@@ -45,7 +45,7 @@ export function planOf(reader) {
 
 /** Plan nodes as they stood at the last full approval of every scope whose current approval is a valid light glance. */
 function lightAccepted(reader, chapters) {
-  const out = new Map(), logText = reader.text("metadata/LOG.jsonl") || "";
+  const out = new Map(), logText = reader.text("private/coursewerk/LOG.jsonl") || "";
   if (!logText || verifyLog(logText).length) return out;
   let status; try { status = approvalStatus(reader, chapters, logText); } catch { return out; }
   const recs = parseLog(logText).filter((r) => r.type === "approval" && r.party?.role === "instructor");
@@ -527,8 +527,8 @@ export function currentReviews(all, plan, records, log) {
 }
 /** The same, read from a package on disk. */
 export function currentReviewsAt(root, reader, all) {
-  const dir = path.join(root, "metadata", "verification");
-  const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.endsWith(".json")).map((f) => `metadata/verification/${f}`) : [];
+  const dir = path.join(root, "private", "coursewerk", "verification");
+  const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.endsWith(".json")).map((f) => `private/coursewerk/verification/${f}`) : [];
   const records = readDispatches((p) => fs.readFileSync(path.join(root, p), "utf8"), files);
   const log = readLogText(root).split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
   return currentReviews(all, planOf(reader), records, log);

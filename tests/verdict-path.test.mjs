@@ -113,7 +113,7 @@ test("[req.dispatch.blind] one blind bundle per unit, recorded in the package an
   const res = await verifySemi(p.root, p.reader, { texts: texts(p), verifier, only: [target] });
   assert.equal(res.length, 1); assert.equal(prompts.length, 1, "one dispatch per unit");
   // the fixture carries earlier records (its round-1 question-binding re-checks): count this unit's semi dispatches
-  const recs = fs.readdirSync(path.join(p.root, "metadata", "verification")).map((f) => JSON.parse(fs.readFileSync(path.join(p.root, "metadata", "verification", f), "utf8"))).filter((r) => r.kind === "semi" && r.unit === target);
+  const recs = fs.readdirSync(path.join(p.root, "private", "coursewerk", "verification")).map((f) => JSON.parse(fs.readFileSync(path.join(p.root, "private", "coursewerk", "verification", f), "utf8"))).filter((r) => r.kind === "semi" && r.unit === target);
   assert.equal(recs.length, 1);
   const rec = recs[0];
   assert.equal(rec.bundle.prompt, prompts[0]); assert.equal(rec.unit, target); assert.ok(rec.answer.responseHash);
@@ -143,9 +143,9 @@ test("[req.dispatch.blind] [req.verdict.semi-mechanical] admitted evidence clear
   assert.deepEqual(kinds(run(p, "ms1-sources", "ms8-verdicts"), "ms8-verdicts"), []);
   assert.deepEqual(kinds(run(p, "ms1-sources"), "ms1-sources"), []);
   // forged evidence is caught: a quote moved off its span, and evidence whose dispatch was never recorded
-  p.edit(`metadata/units/study-guide/le-chatelier.md.json`, (x) => { const s = JSON.parse(x); const u = s.units.find((y) => y.id === target); u.evidence.find((e) => e.type === "quote-verified").quotes[0].span[0] += 3; return JSON.stringify(s, null, 2); });
+  p.edit(`private/coursewerk/units/study-guide/le-chatelier.md.json`, (x) => { const s = JSON.parse(x); const u = s.units.find((y) => y.id === target); u.evidence.find((e) => e.type === "quote-verified").quotes[0].span[0] += 3; return JSON.stringify(s, null, 2); });
   assert.deepEqual(kinds(run(p, "ms1-sources"), "ms1-sources"), ["evidence-span-unresolved:defect"]);
-  p.edit(`metadata/units/study-guide/le-chatelier.md.json`, (x) => { const s = JSON.parse(x); const u = s.units.find((y) => y.id === target); u.evidence.find((e) => e.type === "quote-verified").quotes[0].span[0] -= 3; u.evidence.find((e) => e.type === "quote-verified").dispatch = "d-forged"; return JSON.stringify(s, null, 2); });
+  p.edit(`private/coursewerk/units/study-guide/le-chatelier.md.json`, (x) => { const s = JSON.parse(x); const u = s.units.find((y) => y.id === target); u.evidence.find((e) => e.type === "quote-verified").quotes[0].span[0] -= 3; u.evidence.find((e) => e.type === "quote-verified").dispatch = "d-forged"; return JSON.stringify(s, null, 2); });
   assert.deepEqual(kinds(run(p, "ms8-verdicts"), "ms8-verdicts"), ["evidence-unsupported:defect"]);
 });
 
@@ -321,7 +321,7 @@ test("[req.ms4.links] external links inside declared destinations are resolved a
   indexAndStamp(p.root, p.reader, { party: I, initialOrigin: null });
   assert.ok(kinds(run(p, "ms4-links"), "ms4-links").includes("external-link-unresolved:obligation"));
   // the file alone, written by hand, resolves nothing (red-team round 5): the harness records what it resolved in the log
-  fs.writeFileSync(path.join(p.root, "metadata", "LINK_RESOLUTIONS.json"), JSON.stringify({ schemaVersion: 1, links: resolved }));
+  (fs.mkdirSync(path.dirname(path.join(p.root, "private", "coursewerk", "LINK_RESOLUTIONS.json")), { recursive: true }), fs.writeFileSync)(path.join(p.root, "private", "coursewerk", "LINK_RESOLUTIONS.json"), JSON.stringify({ schemaVersion: 1, links: resolved }));
   assert.ok(kinds(run(p, "ms4-links"), "ms4-links").includes("external-link-unresolved:obligation"));
   recordLinkResolutions(p.root, resolved);
   assert.ok(!kinds(run(p, "ms4-links"), "ms4-links").includes("external-link-unresolved:obligation"));
@@ -402,9 +402,9 @@ test("[req.absolute.review] D30: casual usage passes; 'accurate in context' must
   await reviewAbsolutes(p.root, p.reader, { verifier: replayVerifier(() => "I think these are fine."), only: [c] });
   assert.equal(waiting(), n0 - 1, "only the well-formed casual review counts");
   // a hand-written review record (not in the log) does not count either
-  const recs = fs.readdirSync(path.join(p.root, "metadata", "verification")).map((f) => JSON.parse(fs.readFileSync(path.join(p.root, "metadata", "verification", f), "utf8")));
+  const recs = fs.readdirSync(path.join(p.root, "private", "coursewerk", "verification")).map((f) => JSON.parse(fs.readFileSync(path.join(p.root, "private", "coursewerk", "verification", f), "utf8")));
   const forged = { ...recs.find((r) => r.unit === a), unit: b, dispatch: "d-forgedabsolute00" };
-  fs.writeFileSync(path.join(p.root, "metadata", "verification", "d-forgedabsolute00.json"), JSON.stringify(forged));
+  (fs.mkdirSync(path.dirname(path.join(p.root, "private", "coursewerk", "verification", "d-forgedabsolute00.json")), { recursive: true }), fs.writeFileSync)(path.join(p.root, "private", "coursewerk", "verification", "d-forgedabsolute00.json"), JSON.stringify(forged));
   assert.equal(waiting(), n0 - 1);
 });
 
@@ -546,7 +546,7 @@ test("[req.knowledge.review] the reviewer sees labels, and the question a passag
   assert.match(seen, /^Q 5: Justify the answer to Q3/m, "the units before carry their labels");
   assert.match(seen, /\nPASSAGE \(Answer 5\)\n/);
   assert.match(seen, /do not guess what it says/);
-  const sidecar = fs.readFileSync(path.join(p.root, "metadata", "units", "practice", "le-chatelier.md.json"), "utf8");
+  const sidecar = fs.readFileSync(path.join(p.root, "private", "coursewerk", "units", "practice", "le-chatelier.md.json"), "utf8");
   assert.ok(!sidecar.includes('"label"'), "the label is read from the text, never stored in the index");
 });
 

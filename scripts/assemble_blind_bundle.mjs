@@ -48,7 +48,7 @@ const manifest = {
   withheld: bundle.excluded.filter((e) => e.class === "process").map((e) => e.path),
   outOfScope: bundle.excluded.filter((e) => e.class === "out-of-scope").length,
   criteria: bundle.criteria,
-  next: "Hand ONLY bundle.md to the fresh reviewer; record its verdicts in metadata/KEY_FACT_REVIEW.json with independence.bundleSha256 = bundleSha256; then run npm run bind:key-fact-review.",
+  next: "Hand ONLY bundle.md to the fresh reviewer; record its verdicts in private/coursewerk/KEY_FACT_REVIEW.json with independence.bundleSha256 = bundleSha256; then run npm run bind:key-fact-review.",
 };
 fs.writeFileSync(path.join(out, "MANIFEST.json"), JSON.stringify(manifest, null, 2) + "\n");
 console.log(JSON.stringify({ action: "assembled", out, bundleSha256: digest, deliverables: manifest.deliverables.length, withheld: manifest.withheld.length }, null, 2));

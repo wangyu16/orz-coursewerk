@@ -23,7 +23,7 @@ import { uncheckedShippedFindings } from "../core/shipped.mjs";
 /** The package's use profile: the FOUNDATION's usageProfile ("public-oer" → public), unless given. */
 export function profileOf(root, given = null) {
   if (given) return given;
-  try { return JSON.parse(fs.readFileSync(path.join(root, "metadata", "FOUNDATION.json"), "utf8")).usageProfile === "public-oer" ? "public" : "private"; }
+  try { return JSON.parse(fs.readFileSync(path.join(root, "private", "coursewerk", "FOUNDATION.json"), "utf8")).usageProfile === "public-oer" ? "public" : "private"; }
   catch { return "public"; }
 }
 
@@ -37,7 +37,7 @@ export function runGate(root, { checkpoint = "V8", profile = null, inputsDir = n
   // setting is itself a blocking defect, and the v2 core runs whenever the log shows v2 in force
   const bound = boundConfig(root);
   const core = bound.problems.map((detail) => makeFinding({ module: "skeleton", kind: "setting-lowered", units: [], statusClass: "defect", route: "agent", basis: run.snapshot.id,
-    evidence: { type: "rule", rule: "a setting that changes what the gate checks is lowered only through the decision log", file: "metadata/coursewerk.json", detail } }));
+    evidence: { type: "rule", rule: "a setting that changes what the gate checks is lowered only through the decision log", file: "private/coursewerk/coursewerk.json", detail } }));
   const approvalProblems = [];
   let mechanical = null;
   if (bound.spine === 2) {

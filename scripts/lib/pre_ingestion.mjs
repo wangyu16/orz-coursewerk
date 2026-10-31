@@ -1,3 +1,4 @@
+import { relocate } from "./records/paths.mjs";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -10,7 +11,7 @@ const policiesFile = path.resolve(here, "../data/source-policies.json");
 const sourcePolicies = JSON.parse(fs.readFileSync(policiesFile, "utf8")).policies || [];
 
 const sha256 = (value) => crypto.createHash("sha256").update(value).digest("hex");
-const norm = (value) => String(value || "").replaceAll("\\", "/").replace(/^\.\//, "");
+const norm = (value) => relocate(String(value || "").replaceAll("\\", "/").replace(/^\.\//, "")); // a stored pre-layout path is read at its place now
 
 function canonical(value) {
   if (Array.isArray(value)) return value.map(canonical);
@@ -111,7 +112,7 @@ export function buildPreflightReceipt({ source, evidenceBytes, retrieval, operat
 
 export function writePreflightReceipt(root, source, receipt) {
   const safeId = source.id.replace(/[^a-z0-9._-]+/gi, "-");
-  const rel = `metadata/preflight/${safeId}.json`;
+  const rel = `private/coursewerk/preflight/${safeId}.json`;
   const file = path.join(root, rel);
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, JSON.stringify(receipt, null, 2) + "\n");
@@ -124,8 +125,8 @@ export function verifyPreflightReceipt(root, source) {
   const failures = [];
   const basis = source?.rightsBasis || {};
   const rel = norm(basis.preflightReceipt);
-  if (!rel || path.isAbsolute(rel) || rel.split("/").includes("..") || !rel.startsWith("metadata/preflight/"))
-    return { ready: false, failures: [`source ${source?.id || "unknown"}: a valid metadata/preflight receipt is required before ingestion`], receipt: null };
+  if (!rel || path.isAbsolute(rel) || rel.split("/").includes("..") || !rel.startsWith("private/coursewerk/preflight/"))
+    return { ready: false, failures: [`source ${source?.id || "unknown"}: a valid private/coursewerk/preflight receipt is required before ingestion`], receipt: null };
   const file = path.join(root, rel);
   if (!fs.existsSync(file)) return { ready: false, failures: [`source ${source.id}: preflight receipt is missing: ${rel}`], receipt: null };
   const bytes = fs.readFileSync(file);

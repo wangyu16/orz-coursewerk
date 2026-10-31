@@ -1,5 +1,5 @@
-// Semantic index WRITER (M14) — the module that persists `metadata/SPINE.json`,
-// `metadata/TERMS.json` and `metadata/CLAIMS.json`.
+// Semantic index WRITER (M14) — the module that persists `private/coursewerk/SPINE.json`,
+// `private/coursewerk/TERMS.json` and `private/coursewerk/CLAIMS.json`.
 //
 // Why this exists
 // ---------------
@@ -68,9 +68,9 @@ import { readConceptMaps, buildSpine } from "./spine.mjs";
 import { buildTermsReport } from "./terms.mjs";
 import { extractClaims } from "./claims.mjs";
 
-export const SPINE_PATH = "metadata/SPINE.json";
-export const TERMS_PATH = "metadata/TERMS.json";
-export const CLAIMS_PATH = "metadata/CLAIMS.json";
+export const SPINE_PATH = "private/coursewerk/SPINE.json";
+export const TERMS_PATH = "private/coursewerk/TERMS.json";
+export const CLAIMS_PATH = "private/coursewerk/CLAIMS.json";
 
 /**
  * The three derived artifacts, sorted, as `lib/coherence.mjs`'s EXCLUDE knows them.

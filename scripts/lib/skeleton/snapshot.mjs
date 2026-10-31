@@ -16,7 +16,7 @@ function fileMark(full) {
     return sha256(fs.readFileSync(full));
   } catch (e) { return `unreadable:${e.code || e.message}`; }
 }
-const SKIP_FILES = new Set(["metadata/LOG.jsonl.lock"]);
+const SKIP_FILES = new Set(["private/coursewerk/LOG.jsonl.lock"]);
 const TEXT_EXT = /\.(md|json|jsonl|txt|csv|yml|yaml|svg|html|mjs|js|css|bib|cff)$/i;
 const MAX_CONTENT = 8 * 1024 * 1024;
 /** Text for anything that is UTF-8 without NUL bytes (LICENSE, CITATION…); base64 bytes for the rest, so a module's

@@ -1,6 +1,6 @@
 // Promotion trial → stable (skeleton §6; D19-G). A promotion is a logged module-change record that cites the study
 // bar the module met on development cases. The registry may not claim more maturity than the module's own manifest
-// unless such a record exists — so a quiet edit of metadata/modules.json cannot make a trial module block.
+// unless such a record exists — so a quiet edit of private/coursewerk/modules.json cannot make a trial module block.
 import { appendLogRecord, parseLog, readLogText, verifyLog } from "../records/log.mjs";
 import { readRegistry, writeRegistry } from "../records/registry.mjs";
 

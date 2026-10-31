@@ -170,7 +170,7 @@ function declaredDerivationPackage() {
 
   // A sidecar declares the objective as DERIVED FROM the melting-point fact. A sidecar rather than
   // front matter so the artifact's prose — and therefore every anchor and offset — is untouched.
-  const sidecar = path.join(root, "metadata/claims/study-guide/phase-change.json");
+  const sidecar = path.join(root, "private/coursewerk/claims/study-guide/phase-change.json");
   fs.mkdirSync(path.dirname(sidecar), { recursive: true });
   fs.writeFileSync(
     sidecar,

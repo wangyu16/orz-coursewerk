@@ -47,7 +47,7 @@ const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const FIXTURE = path.join(repo, "tests/fixtures/mini-package");
 const CHECK = path.join(repo, "scripts/check_oer.mjs");
 const REINDEX = path.join(repo, "scripts/index_semantic.mjs");
-const SIDECAR = "metadata/claims/study-guide/phase-change.json";
+const SIDECAR = "private/coursewerk/claims/study-guide/phase-change.json";
 
 const temps = [];
 test.after(() => {
@@ -75,7 +75,7 @@ const declare = (root, claims) => writePkg(root, SIDECAR, { schemaVersion: 1, cl
 function reindex(root) {
   // First baseline: the CLI directly. Any later re-baseline goes through the documented decision
   // sheet (option 1, 2026-09-06): gate → queue:review → index:semantic --review.
-  const stored = fs.existsSync(path.join(root, "metadata", "CLAIMS.json"));
+  const stored = fs.existsSync(path.join(root, "private", "coursewerk", "CLAIMS.json"));
   if (!stored) {
     const run = spawnSync(process.execPath, [REINDEX, "--root", root, "--no-commit"], { encoding: "utf8" });
     assert.equal(run.status, 0, `reindex failed: ${run.stdout}\n${run.stderr}`);
@@ -248,7 +248,7 @@ test("CHECK 4 — a dangling derivedFrom is flagged (M5 mints no edge, so the de
   reindex(root);
   const first = check(root).semantic.claims;
   assert.ok(first > 0);
-  const id = JSON.parse(readPkg(root, "metadata/CLAIMS.json")).claims.find((c) => c.locations[0].anchor === "melting-point-of-water#1").id;
+  const id = JSON.parse(readPkg(root, "private/coursewerk/CLAIMS.json")).claims.find((c) => c.locations[0].anchor === "melting-point-of-water#1").id;
   declare(root, [
     { type: "fact", anchor: "melting-point-of-water#1", spineRefs: ["concept.phase-change.1"], sourceRefs: [] },
     { type: "fact", anchor: "latent-heat#1", spineRefs: ["concept.phase-change.2"], sourceRefs: [], derivedFrom: [id] },
@@ -377,7 +377,7 @@ function baselineGate() {
 
 test("BACKWARD COMPAT: a package with NO semantic artifacts is byte-identical to today", () => {
   const root = tempPackage(); // deliberately NOT reindexed
-  assert.equal(fs.existsSync(path.join(root, "metadata/CLAIMS.json")), false, "precondition: no stored index");
+  assert.equal(fs.existsSync(path.join(root, "private/coursewerk/CLAIMS.json")), false, "precondition: no stored index");
 
   const run = (script, tag) => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), `cw-m11-${tag}-`));
@@ -518,9 +518,9 @@ test("QUEUE PROOF, the negative: an identical file NOT excluded reproduces the f
 
   // Same bytes, same folder, same moment — only the path is not in EXCLUDE. This proves the test
   // above is a fix and not an accident of a lenient gate.
-  const decoy = "metadata/NOT_EXCLUDED.json";
+  const decoy = "private/coursewerk/NOT_EXCLUDED.json";
   fs.copyFileSync(path.join(root, REVIEW_QUEUE_PATH), path.join(root, decoy));
-  assert.match(auditCoherence(root).hardFailures.join("\n"), /Git \?\?: metadata\/NOT_EXCLUDED\.json/, "failure 1: untracked");
+  assert.match(auditCoherence(root).hardFailures.join("\n"), /Git \?\?: private\/coursewerk\/NOT_EXCLUDED\.json/, "failure 1: untracked");
   commitOutput(root, "test: commit the decoy");
   const committed = auditCoherence(root).hardFailures.join("\n");
   assert.match(committed, /NOT_EXCLUDED\.json: new component is not in the coherence index/, "failure 2: EXCLUDE's half");
@@ -542,7 +542,7 @@ test("§5d: the queue path has ONE home — no module respells it", () => {
   // duplicate, right up until the day it doesn't. This literal is exactly the kind that comes back:
   // M14 had to spell it here because M10 had no constant to import, and that second authority is
   // what this guard exists to stop from reappearing now that the constant exists.
-  assert.equal(REVIEW_QUEUE_PATH, "metadata/REVIEW_QUEUE.json", "the value M10 owns");
+  assert.equal(REVIEW_QUEUE_PATH, "private/coursewerk/REVIEW_QUEUE.json", "the value M10 owns");
   const owner = path.join(repo, "scripts/lib/escalation.mjs");
   for (const rel of ["scripts/lib/coherence.mjs", "scripts/check_oer.mjs"]) {
     const src = fs.readFileSync(path.join(repo, rel), "utf8");

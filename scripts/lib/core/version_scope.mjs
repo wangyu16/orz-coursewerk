@@ -2,7 +2,7 @@
 // all times). A major version (D15) carries the units of its scope into it as open obligations — but the scope is not a
 // snapshot taken when the version opens: the instructor opens the version FIRST and the restructuring follows, so units
 // keep entering it — moved from another chapter (byte for byte, keeping their id and their version-1 evidence),
-// relinked to one of its nodes, or brought in by a `chapters` entry added to metadata/DOCUMENTS.json. So, at all times:
+// relinked to one of its nodes, or brought in by a `chapters` entry added to private/coursewerk/DOCUMENTS.json. So, at all times:
 //
 //   every unit now in an open version's scope was carried into that version (or into another, still owed), or was
 //   re-verified (a logged blind re-check, or the instructor's confirmation) since the version opened.

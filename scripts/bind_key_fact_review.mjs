@@ -19,7 +19,7 @@ review.reviewedAt = opt("--reviewed-at", review.reviewedAt);
 if (opt("--bundle-sha256") !== null) review.independence = { ...(review.independence || {}), bundleSha256: opt("--bundle-sha256") };
 review.bindings = makeKeyFactBindings(root);
 fs.writeFileSync(file, JSON.stringify(review, null, 2) + "\n");
-const foundation = JSON.parse(fs.readFileSync(path.join(root, "metadata", "FOUNDATION.json"), "utf8"));
+const foundation = JSON.parse(fs.readFileSync(path.join(root, "private", "coursewerk", "FOUNDATION.json"), "utf8"));
 const audit = auditKeyFactReview(root, foundation);
 if (!audit.ready) {
   console.error(`bind-key-fact-review: review is incomplete: ${audit.failures.join("; ")}`);

@@ -43,7 +43,7 @@ const RENAME = ["--term", "term.melting-point", "--from", "melting point", "--to
 test("H1 · a study guide that only RESTATES an objective does not cover it; dropping its teaching blocks", (t) => {
   const { pkg } = pkgCopy(t);
   // objective.melting.2 is taught by practice#8 (answer-key) — remove that declaration and the prose
-  const sidecar = path.join(pkg, "metadata/claims/practice/melting.json");
+  const sidecar = path.join(pkg, "private/coursewerk/claims/practice/melting.json");
   const decl = JSON.parse(fs.readFileSync(sidecar, "utf8"));
   const before = decl.claims.length;
   decl.claims = decl.claims.filter((c) => !(c.spineRefs || []).includes("objective.melting.2"));
@@ -79,14 +79,14 @@ test("H2/H3 · a wrong ANSWER behind a distractor in the question, or behind a d
 
 test("H5 · the template's placeholders are refused, and a key fact must be locatable in its usedIn files", (t) => {
   const { pkg } = pkgCopy(t, { indexed: false });
-  const foundation = JSON.parse(read(pkg, "metadata/FOUNDATION.json"));
+  const foundation = JSON.parse(read(pkg, "private/coursewerk/FOUNDATION.json"));
   const template = JSON.parse(fs.readFileSync(path.join(REPO, "templates/key-fact-review.example.json"), "utf8"));
   template.reviewedAt = "2026-09-05";
   template.keyFacts[0].evidenceSourceIds = [foundation.sources[0].id];
   template.keyFacts[0].usedIn = ["study-guide/melting.md"];
   template.independence.bundleSha256 = blindBundleDigest(pkg);
   template.bindings = makeKeyFactBindings(pkg);
-  write(pkg, "metadata/KEY_FACT_REVIEW.json", JSON.stringify(template));
+  write(pkg, "private/coursewerk/KEY_FACT_REVIEW.json", JSON.stringify(template));
   const audit = auditKeyFactReview(pkg, foundation);
   assert.equal(audit.ready, false);
   assert.ok(audit.failures.filter((f) => /placeholder/.test(f)).length >= 3, audit.failures.join("\n"));
@@ -95,12 +95,12 @@ test("H5 · the template's placeholders are refused, and a key fact must be loca
     independence: { ...template.independence, approach: "A fresh context reviewed only the assembled bundle after drafting ended." },
     checks: template.checks.map((c) => ({ ...c, note: "Examined independently against the bundle; nothing to qualify here." })),
     keyFacts: [{ ...template.keyFacts[0], claim: "The boiling point of ethanol is 78 °C at sea level.", note: "Traced against the bundle; consistent with the declared source." }] };
-  write(pkg, "metadata/KEY_FACT_REVIEW.json", JSON.stringify(real));
+  write(pkg, "private/coursewerk/KEY_FACT_REVIEW.json", JSON.stringify(real));
   const audit2 = auditKeyFactReview(pkg, foundation);
   assert.ok(audit2.failures.some((f) => /not supported by its usedIn/.test(f)), audit2.failures.join("\n"));
   // and a fact the study guide states passes that check
   const good = { ...real, keyFacts: [{ ...real.keyFacts[0], claim: "At standard pressure the melting point of pure water is 0 °C." }] };
-  write(pkg, "metadata/KEY_FACT_REVIEW.json", JSON.stringify(good));
+  write(pkg, "private/coursewerk/KEY_FACT_REVIEW.json", JSON.stringify(good));
   assert.deepEqual(auditKeyFactReview(pkg, foundation).failures.filter((f) => /not supported|placeholder/.test(f)), []);
 });
 
@@ -168,7 +168,7 @@ test("M3 · a repeated heading slug cannot silently rebind a declaration", (t) =
   const declared = index.claims.claims.filter((c) => c.provenanceDeclared && c.locations[0].file === "study-guide/melting.md" && c.locations[0].anchor.startsWith("melting-point-of-pure-water#"));
   assert.ok(declared.every((c) => !c.text.includes("32 °F")), "the declaration stays on the FIRST section's block");
   // and a declaration that targets the REPEATED section is refused, not bound
-  const sidecarFile = path.join(pkg, "metadata/claims/study-guide/melting.json");
+  const sidecarFile = path.join(pkg, "private/coursewerk/claims/study-guide/melting.json");
   const sc = JSON.parse(fs.readFileSync(sidecarFile, "utf8"));
   const under = index.claims.claims.filter((c) => c.locations[0].file === "study-guide/melting.md" && c.text.includes("32 °F"));
   assert.equal(under.length, 1, "the 32 °F block exists as a scan-found claim");
@@ -216,21 +216,21 @@ test("M10 · asserting the map's own misconception is blocking", (t) => {
 
 test("#1/#16b · a deleted index artifact is STALE (not fresh), blocks release; CRLF is not staleness", (t) => {
   const { pkg } = pkgCopy(t);
-  fs.rmSync(path.join(pkg, "metadata/TERMS.json"));
+  fs.rmSync(path.join(pkg, "private/coursewerk/TERMS.json"));
   commitAll(pkg, "deleted terms");
   const f = auditIndexFreshness(pkg, computeSemanticIndex(pkg));
-  assert.equal(f.fresh, false); assert.ok(f.stale.some((s) => s.path === "metadata/TERMS.json" && s.storedBytes === null));
+  assert.equal(f.fresh, false); assert.ok(f.stale.some((s) => s.path === "private/coursewerk/TERMS.json" && s.storedBytes === null));
   const r = gate(pkg, ["--for-discovery"]);
   assert.ok(r.json.discoverability.blockers.some((b) => /INCOMPLETE|stale/.test(b)), r.json.discoverability.blockers.join("\n"));
   // CRLF
   const { pkg: p2 } = pkgCopy(t);
-  write(p2, "metadata/SPINE.json", read(p2, "metadata/SPINE.json").replace(/\n/g, "\r\n"));
+  write(p2, "private/coursewerk/SPINE.json", read(p2, "private/coursewerk/SPINE.json").replace(/\n/g, "\r\n"));
   assert.equal(auditIndexFreshness(p2, computeSemanticIndex(p2)).fresh, true);
 });
 
 test("#10 · a scratch file elsewhere does not hide a committed strand", (t) => {
   const { pkg } = pkgCopy(t);
-  const spine = JSON.parse(read(pkg, "metadata/SPINE.json")); spine.edges = []; write(pkg, "metadata/SPINE.json", JSON.stringify(spine, null, 2) + "\n");
+  const spine = JSON.parse(read(pkg, "private/coursewerk/SPINE.json")); spine.edges = []; write(pkg, "private/coursewerk/SPINE.json", JSON.stringify(spine, null, 2) + "\n");
   commitAll(pkg, "stale spine");
   write(pkg, "scratch.txt", "notes");
   const r = gate(pkg);
@@ -313,8 +313,8 @@ test("H8-migration · an index accepted with legacy raw-byte hashes does not rea
   const { pkg } = pkgCopy(t);
   const crypto = await import("node:crypto");
   const { recordAcceptedCoherence, auditCoherence } = await import("../scripts/lib/coherence.mjs");
-  const indexFile = path.join(pkg, "metadata/COMPONENT_INDEX.json");
-  const index = JSON.parse(read(pkg, "metadata/COMPONENT_INDEX.json"));
+  const indexFile = path.join(pkg, "private/coursewerk/COMPONENT_INDEX.json");
+  const index = JSON.parse(read(pkg, "private/coursewerk/COMPONENT_INDEX.json"));
   const byId = new Map(index.components.map((c) => [c.id, c]));
   for (const c of index.components) c.hash = crypto.createHash("sha256").update(fs.readFileSync(path.join(pkg, c.path))).digest("hex");
   for (const c of index.components) for (const dep of Object.keys(c.dependencies || {})) c.dependencies[dep] = byId.get(dep)?.hash ?? c.dependencies[dep];
@@ -334,7 +334,7 @@ test("M8 · re-initializing over index history is refused at the gate; a CLONE r
   commitAll(pkg, "wrong edit");
   assert.notEqual(gate(pkg).code, 0, "the gate demands the review");
   // the laundering path: delete the index and the external ledger, re-initialize
-  fs.rmSync(path.join(pkg, "metadata/COMPONENT_INDEX.json")); fs.rmSync(ledger, { recursive: true, force: true });
+  fs.rmSync(path.join(pkg, "private/coursewerk/COMPONENT_INDEX.json")); fs.rmSync(ledger, { recursive: true, force: true });
   commitAll(pkg, "delete index");
   assert.equal(cli("index_components.mjs", ["--root", pkg, "--initialize"]).code, 0);
   const laundered = gate(pkg);
@@ -353,6 +353,6 @@ test("M8 · re-initializing over index history is refused at the gate; a CLONE r
   // restore refuses when a ledger exists, and when the index is uncommitted
   assert.equal(cli("index_components.mjs", ["--root", clone, "--restore"]).code, 2);
   fs.rmSync(cloneLedger, { recursive: true, force: true });
-  fs.appendFileSync(path.join(clone, "metadata/COMPONENT_INDEX.json"), "\n");
+  fs.appendFileSync(path.join(clone, "private/coursewerk/COMPONENT_INDEX.json"), "\n");
   assert.equal(cli("index_components.mjs", ["--root", clone, "--restore"]).code, 2);
 });

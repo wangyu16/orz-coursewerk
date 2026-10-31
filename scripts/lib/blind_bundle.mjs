@@ -31,20 +31,20 @@ const DELIVERABLE_TOPS = new Set(["concepts", "study-guide", "slides", "assessme
 // Metadata files that are FACTUAL inputs a fact/rights reviewer needs to judge the criteria.
 // (Read as-is; source-of-truth for the licence/attribution/media/source-identity checks.)
 const LICENSE_FILE = "LICENSE";
-const ATTRIBUTION_FILE = "metadata/ATTRIBUTION.md";
-const SOURCE_RECORD_FILE = "metadata/SOURCE_RECORD.json";
-const MEDIA_PLAN_META = "metadata/MEDIA_PLAN.json";
-const FOUNDATION_FILE = "metadata/FOUNDATION.json";
+const ATTRIBUTION_FILE = "provenance/coursewerk/ATTRIBUTION.md";
+const SOURCE_RECORD_FILE = "private/coursewerk/SOURCE_RECORD.json";
+const MEDIA_PLAN_META = "private/coursewerk/MEDIA_PLAN.json";
+const FOUNDATION_FILE = "private/coursewerk/FOUNDATION.json";
 
 // Process-context files — the blind reviewer must NOT see how the result was produced.
 const PROCESS_FILES = new Map([
-  ["metadata/PROVENANCE.json", "generation log — how the package was produced"],
-  ["metadata/KEY_FACT_REVIEW.json", "a prior reviewer's verdicts — would anchor the fresh, independent judgement"],
+  ["private/coursewerk/PROVENANCE.json", "generation log — how the package was produced"],
+  ["private/coursewerk/KEY_FACT_REVIEW.json", "a prior reviewer's verdicts — would anchor the fresh, independent judgement"],
 ]);
 // Directory prefixes whose whole contents are process/tooling receipts.
 const PROCESS_DIR_PREFIXES = [
-  ["metadata/evidence/", "rights-evidence capture receipts — tooling/process artifacts"],
-  ["metadata/preflight/", "pre-ingestion receipts — tooling/process artifacts"],
+  ["private/coursewerk/evidence/", "rights-evidence capture receipts — tooling/process artifacts"],
+  ["private/coursewerk/preflight/", "pre-ingestion receipts — tooling/process artifacts"],
 ];
 
 function walk(root, symlinks = []) {
@@ -209,9 +209,9 @@ export function renderBlindBundle(bundle, digest) {
   L.push("", "## Declared sources (identity + rights facts only)", "");
   L.push("```json", JSON.stringify(bundle.sources, null, 2), "```", "");
   if (bundle.license != null) L.push("## LICENSE", "", "```", bundle.license.trimEnd(), "```", "");
-  if (bundle.attribution != null) L.push("## metadata/ATTRIBUTION.md", "", bundle.attribution.trimEnd(), "");
-  if (bundle.mediaPlan != null) L.push("## metadata/MEDIA_PLAN.json", "", "```json", JSON.stringify(bundle.mediaPlan, null, 2), "```", "");
-  if (bundle.sourceRecord != null) L.push("## metadata/SOURCE_RECORD.json", "", "```json", JSON.stringify(bundle.sourceRecord, null, 2), "```", "");
+  if (bundle.attribution != null) L.push("## provenance/coursewerk/ATTRIBUTION.md", "", bundle.attribution.trimEnd(), "");
+  if (bundle.mediaPlan != null) L.push("## private/coursewerk/MEDIA_PLAN.json", "", "```json", JSON.stringify(bundle.mediaPlan, null, 2), "```", "");
+  if (bundle.sourceRecord != null) L.push("## private/coursewerk/SOURCE_RECORD.json", "", "```json", JSON.stringify(bundle.sourceRecord, null, 2), "```", "");
   L.push("## Deliverables (the RESULT, verbatim)", "");
   for (const d of bundle.deliverables) L.push(`### ${d.path}`, "", "````markdown", d.text.trimEnd(), "````", "");
   L.push("## Withheld from this bundle (audit trail)", "");

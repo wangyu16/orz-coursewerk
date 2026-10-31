@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "metadata/OVERRIDES.json \u2014 instructor override of source (authorized divergence, NOT hallucination)",
+  "title": "private/coursewerk/OVERRIDES.json \u2014 instructor override of source (authorized divergence, NOT hallucination)",
   "type": "object",
   "required": [
     "schemaVersion",

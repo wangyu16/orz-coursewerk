@@ -12,7 +12,7 @@
 //                paragraph, a split and rewrite in ONE session, a write that drops the credit or the lineage, D35
 //                acceptance / asked changes / kept claims answered before a split
 //   R5-K11 (k5)  "applied" by a magic 8-character threshold: an accepted "kelvin" never settled ........ [req.knowledge.clarify]
-// Cause 2 — an unbound setting switched the gate off (F2: "spine": 1 in metadata/coursewerk.json).
+// Cause 2 — an unbound setting switched the gate off (F2: "spine": 1 in private/coursewerk/coursewerk.json).
 //   Fix: settings that change what is checked are bound to the log: spine (lowered/missing/unreadable → blocking
 //   defect, v2 core runs anyway), a registry demotion of a standard module, the retrieval destinations, the digest
 //   size ........................................................................................... [req.settings.bound]
@@ -319,7 +319,7 @@ test("[req.knowledge.clarify] R5-K11: an accepted clarification is applied when 
 // ============================================ CAUSE 2: BOUND SETTINGS ===========================================
 test("[req.settings.bound] F2: a lowered, deleted or unreadable spine setting is a blocking defect once the log shows v2 in force, and the core checks still run", (t) => {
   const c = course(t);
-  const cfg = path.join(c.root, "metadata/coursewerk.json");
+  const cfg = path.join(c.root, "private/coursewerk/coursewerk.json");
   const A6 = "u-practice-le-chatelier-questions-12";
   c.asAgent(() => c.edit("practice/le-chatelier.md", "is exothermic. The temperature is raised. Which way", "is exothermic. The temperature is lowered. Which way"));
   assert.ok(coreObligations(c.root, c.r(), "t").some((f) => f.kind === "reverify" && f.units.includes(A6)), "Answer 6 owes a re-check");
@@ -334,7 +334,7 @@ test("[req.settings.bound] F2: a lowered, deleted or unreadable spine setting is
   fs.writeFileSync(cfg, "{ not json");
   assert.equal(boundConfig(c.root).spine, 2); assert.match(boundConfig(c.root).problems[0], /cannot be read/);
   // a genuine v0.12 package (no v2 record in its log) still reads as one, and an unreadable file there still fails loud
-  fs.rmSync(path.join(c.root, "metadata/LOG.jsonl"));
+  fs.rmSync(path.join(c.root, "private/coursewerk/LOG.jsonl"));
   assert.throws(() => boundConfig(c.root), /requires schemaVersion 1|JSON/);
   fs.writeFileSync(cfg, JSON.stringify({ schemaVersion: 1, spine: 1 }));
   assert.deepEqual(boundConfig(c.root), { config: { schemaVersion: 1, spine: 1 }, spine: 1, problems: [] });
@@ -402,7 +402,7 @@ test("[req.version.scope-by-content] F4: a chapter's new version carries what te
   };
   c.asAgent(() => {
     for (const [rel, text] of Object.values(H)) { fs.mkdirSync(path.join(c.root, path.dirname(rel)), { recursive: true }); fs.writeFileSync(path.join(c.root, rel), doc(text)); }
-    fs.writeFileSync(path.join(c.root, "metadata/DOCUMENTS.json"), JSON.stringify({ schemaVersion: 1, documents: [
+    fs.writeFileSync(path.join(c.root, "private/coursewerk/DOCUMENTS.json"), JSON.stringify({ schemaVersion: 1, documents: [
       { id: "h1", title: "Handout", source: H.linked[0], carrier: "paged" },
       { id: "h2", title: "Week 9", source: H.declared[0], carrier: "paged", chapter: "le-chatelier" },
       { id: "h3", title: "Reading notes", source: H.unlinked[0], carrier: "paged" },
@@ -426,8 +426,8 @@ test("[req.version.scope-by-content] F4: a chapter's new version carries what te
 test("[req.records.carry-logged] other self-written marks: a correction's own `shown` flag does not hide it; the chapter of a handout's restated objectives and of its values is read from what it declares and links, not a path segment", (t) => {
   const c = course(t);
   // a correction record marked shown by its own field, never logged as shown: still shown
-  fs.mkdirSync(path.join(c.root, "metadata/corrections"), { recursive: true });
-  fs.writeFileSync(path.join(c.root, "metadata/corrections/c-forged.json"), JSON.stringify({ schemaVersion: 1, id: "c-forged", unit: "u-x", deliverable: SG, status: "applied", before: { text: "a" }, after: { text: "b" }, evidence: { quotes: [] }, shown: true }));
+  fs.mkdirSync(path.join(c.root, "private/coursewerk/corrections"), { recursive: true });
+  fs.writeFileSync(path.join(c.root, "private/coursewerk/corrections/c-forged.json"), JSON.stringify({ schemaVersion: 1, id: "c-forged", unit: "u-x", deliverable: SG, status: "applied", before: { text: "a" }, after: { text: "b" }, evidence: { quotes: [] }, shown: true }));
   assert.ok(correctionsToShow(c.root).some((x) => x.id === "c-forged"), "its own `shown: true` hides nothing");
   correctionsToShow(c.root, { mark: true });
   assert.ok(!correctionsToShow(c.root).some((x) => x.id === "c-forged"), "a logged showing does");
@@ -435,11 +435,11 @@ test("[req.records.carry-logged] other self-written marks: a correction's own `s
   const H = "current/fall-2026/le-chatelier-handout.md";
   fs.mkdirSync(path.join(c.root, path.dirname(H)), { recursive: true });
   fs.writeFileSync(path.join(c.root, H), "{{nyml\nkind: document\n}}\n\n# Handout\n\n## Learning objectives\n\n- Memorise the value of every equilibrium constant.\n\n## Part\n\nA catalyst speeds up the forward and reverse reactions equally.\n");
-  fs.writeFileSync(path.join(c.root, "metadata/DOCUMENTS.json"), JSON.stringify({ schemaVersion: 1, documents: [{ id: "h", title: "Handout", source: H, carrier: "paged" }] }));
+  fs.writeFileSync(path.join(c.root, "private/coursewerk/DOCUMENTS.json"), JSON.stringify({ schemaVersion: 1, documents: [{ id: "h", title: "Handout", source: H, carrier: "paged" }] }));
   assert.ok(restatedObjectiveFindings(c.r(), "b").some((f) => f.kind === "objective-restated-differently" && f.evidence.file === H), "the handout's restated objectives are checked");
   // MS7 reads a handout's values in the chapter its units link to, never in a chapter named by a path segment
   const sideOf = (units) => ({ deliverable: H, units });
-  const snap = { paths: ["metadata/units/x.json"], json: () => sideOf([{ id: "u-h-1", locator: { lines: [1, 1], section: "part" }, form: "paragraph", spineNodes: ["objective.le-chatelier.x"] }, { id: "u-h-2", locator: { lines: [1, 1], section: "part" }, form: "paragraph", spineNodes: [] }]), text: () => "x" };
+  const snap = { paths: ["private/coursewerk/units/x.json"], json: () => sideOf([{ id: "u-h-1", locator: { lines: [1, 1], section: "part" }, form: "paragraph", spineNodes: ["objective.le-chatelier.x"] }, { id: "u-h-2", locator: { lines: [1, 1], section: "part" }, form: "paragraph", spineNodes: [] }]), text: () => "x" };
   const claims = unitClaims(snap);
   assert.deepEqual(claims.map((x) => x.scope), ["le-chatelier", null]);
 });

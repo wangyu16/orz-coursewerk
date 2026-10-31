@@ -314,7 +314,7 @@ test("EXCLUDE PROOF: a package carrying the semantic artifacts still passes the 
   assert.equal(run.status, 0, `${run.stdout}\n${run.stderr}`);
   for (const rel of SEMANTIC_INDEX_PATHS) assert.ok(fs.existsSync(path.join(root, rel)), `${rel} written`);
 
-  // THE PROOF. Before EXCLUDE this produced `Git ??: metadata/SPINE.json` and "new component is
+  // THE PROOF. Before EXCLUDE this produced `Git ??: private/coursewerk/SPINE.json` and "new component is
   // not in the coherence index" -> criticalTotal > 0 -> pack exits 1: the package failing its own
   // gate for emitting its own index.
   const audit = auditCoherence(root);
@@ -344,11 +344,11 @@ test("EXCLUDE PROOF, the negative: the same file NOT excluded reproduces both fa
   // Identical position, identical bytes, identical everything — except the path is not in
   // EXCLUDE. This is the mechanism M11 reproduced; it proves the audit really would have failed,
   // so the passing test above is a fix and not an accident of a lenient gate.
-  const decoy = "metadata/NOT_EXCLUDED.json";
+  const decoy = "private/coursewerk/NOT_EXCLUDED.json";
   fs.writeFileSync(path.join(root, decoy), fs.readFileSync(path.join(FIXTURE, "concepts/course.md")));
 
   const untracked = auditCoherence(root).hardFailures.join("\n");
-  assert.match(untracked, /Git \?\?: metadata\/NOT_EXCLUDED\.json/, "failure 1: untracked");
+  assert.match(untracked, /Git \?\?: private\/coursewerk\/NOT_EXCLUDED\.json/, "failure 1: untracked");
 
   commitOutput(root, "test: commit the decoy, as index_semantic commits its own");
   const committed = auditCoherence(root).hardFailures.join("\n");
@@ -512,7 +512,7 @@ test("SEMANTIC_INDEX_PATHS has ONE home — coherence.mjs imports it, never resp
 // ---------------------------------------------------------------------------------------------
 
 test("a FIRST build warns nothing about the prior registry — silence is the correct answer", () => {
-  const root = tempPackage(); // no metadata/TERMS.json yet: loadSemanticIndex -> {index:null, error:null}
+  const root = tempPackage(); // no private/coursewerk/TERMS.json yet: loadSemanticIndex -> {index:null, error:null}
   const index = computeSemanticIndex(root);
   const priorWarnings = index.warnings.filter((w) => /prior term registry/i.test(w));
   assert.deepEqual(

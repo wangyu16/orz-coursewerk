@@ -14,7 +14,7 @@ function run(s) {
   for (const r of links.remoteMedia || []) out.push({ kind: "remote-media", units: [], evidence: { type: "rule", rule: "media is local and rights-recorded, not hot-linked", reference: r } });
   for (const m of q.attributionAudit().unmanifestedMedia || []) out.push({ kind: "asset-unrecorded", units: [], evidence: { type: "missing", what: `a provenance record for assets/${m}` } });
   // a resolution counts as the log records it (red-team round 5: LINK_RESOLUTIONS.json alone is a file anyone can write)
-  const resolved = loggedLinkResolutions(String(s.text("metadata/LOG.jsonl") || "").split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean));
+  const resolved = loggedLinkResolutions(String(s.text("private/coursewerk/LOG.jsonl") || "").split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean));
   const external = new Set();
   for (const f of q.mdFiles) for (const l of q.markdownLinks(q.read(f))) if (/^https?:/i.test(l.target)) external.add(l.target);
   for (const url of [...external].sort()) if (!resolved.has(url)) out.push({ kind: "external-link-unresolved", units: [], evidence: { type: "missing", what: `a recorded resolution of ${url}` } });

@@ -116,7 +116,7 @@ test("[req.control.structure-unprinted] C3-01, C3-02, C3-03: a credit-line parag
 
 test("[req.control.structure-unprinted] benign: a short single credit line, comments, `#`/`##` labels and a table header with data rows stay structure — the fixture's units are unchanged", () => {
   for (const rel of deliverablesOf(liveReader(C2))) {
-    const side = JSON.parse(fs.readFileSync(path.join(C2, "metadata/units", `${rel}.json`), "utf8"));
+    const side = JSON.parse(fs.readFileSync(path.join(C2, "private/coursewerk/units", `${rel}.json`), "utf8"));
     assert.deepEqual(segmentDeliverable(fs.readFileSync(path.join(C2, rel), "utf8"), rel).units.map((u) => unitHash(u.text)), side.units.map((u) => u.locator.contentHash), rel);
   }
   const doc = "*Adapted from the article \"X\" (<https://example.org/x>) by Wikipedia contributors, licensed CC-BY-SA-4.0. Adapted and reorganized for this teaching resource.*\n\n<!-- slide template=title -->\n\n## Next: the equilibrium constant\n\n| Change | Shift |\n|---|---|\n| add reactant | forward |\n";
@@ -145,7 +145,7 @@ test("[req.control.structure-unprinted] C3-05: of the {{nyml}} blocks, only the 
   const H = "current/fall-2026/le-chatelier-handout.md";
   const text = "{{nyml\nkind: document\ncarrier: paged\ntemplate: note\n}}\n\n# Handout\n\n{{nyml\nkind: abstract\ntext: A galvanic cell converts the chemical energy of a spontaneous redox reaction into electrical energy; a salt bridge keeps both half-cells neutral.\n}}\n\n{{nyml\nkind: question-open\nn: 1\nbody: In a galvanic cell, at which electrode does reduction take place?\nanswer: At the cathode.\n}}\n";
   c.write(H, text);
-  c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "h", title: "Handout", source: H, carrier: "paged" }] }, null, 2) + "\n");
+  c.write("private/coursewerk/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "h", title: "Handout", source: H, carrier: "paged" }] }, null, 2) + "\n");
   c.asAgent(() => {});
   // orz-paged prints both: they are element blocks of kinds it renders (its own token scanner finds them, D52)
   const { scanNymlBlocks } = require_("orz-markdown");
@@ -178,7 +178,7 @@ test("[req.ship.same-computation] C3-04: an {{md}} include renders another file 
   const p = packPublished(c.root, path.join(c.dir, "out"));
   assert.equal(p.ok, false); assert.match(p.error, /refusing to pack what nothing checked: .*le-chatelier-extension\.md/);
   // declared, the included file is a deliverable — segmented on its own, linked and reviewed — and the include stands
-  c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "ext", title: "Extension", source: INC, carrier: "lean" }] }, null, 2) + "\n");
+  c.write("private/coursewerk/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "ext", title: "Extension", source: INC, carrier: "lean" }] }, null, 2) + "\n");
   c.asAgent(() => {});
   assert.deepEqual(uncheckedShipped(c.root, c.r()), { documents: [], includes: [] });
   assert.ok(c.units().some((u) => u.locator.deliverable === INC && ELECTRO.test(u.text)));
@@ -205,7 +205,7 @@ test("[req.ship.administrative-instructor] C3-06: `role: administrative` exempts
   const c = course(t);
   const H = "current/fall-2026/le-chatelier-handout.md";
   c.write(H, "{{nyml\nkind: document\ncarrier: paged\n}}\n\n# Handout\n\n## Electrochemistry\n\nA galvanic cell converts the chemical energy of a spontaneous redox reaction into electrical energy.\n");
-  c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "h", title: "Handout", source: H, carrier: "paged", role: "administrative" }] }, null, 2) + "\n");
+  c.write("private/coursewerk/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ id: "h", title: "Handout", source: H, carrier: "paged", role: "administrative" }] }, null, 2) + "\n");
   c.asAgent(() => {});
   const lesson = c.units().find((u) => u.locator.deliverable === H && ELECTRO.test(u.text));
   assert.ok(lesson, "the agent's mark alone: still a deliverable, segmented");
@@ -327,7 +327,7 @@ test("[req.spine.blind-review-bound] C4-11: the review that lets a re-approval t
   assert.ok(pre().problem, "a re-approval waits for the review");
   // the forgery: a "no concerns" file for the current text, with no dispatch behind it
   const ch = changedSpineLines(c.root, c.r(), "chapter:le-chatelier");
-  c.write("metadata/spine/review/chapter-le-chatelier.json", JSON.stringify({ scope: "chapter:le-chatelier", textHash: ch.textHash, lines: ch.lines.length, dispatch: null, concerns: [], at: new Date().toISOString() }, null, 2) + "\n");
+  c.write("private/coursewerk/spine/review/chapter-le-chatelier.json", JSON.stringify({ scope: "chapter:le-chatelier", textHash: ch.textHash, lines: ch.lines.length, dispatch: null, concerns: [], at: new Date().toISOString() }, null, 2) + "\n");
   assert.equal(currentSpineReview(c.root, c.r(), "chapter:le-chatelier"), null);
   assert.ok(pre().problem, "the file is not the review");
   // the CLI agrees: a glance confirmation is refused
@@ -339,10 +339,10 @@ test("[req.spine.blind-review-bound] C4-11: the review that lets a re-approval t
   assert.equal(currentSpineReview(c.root, c.r(), "chapter:le-chatelier").concerns.length, 1);
   assert.equal(pre().problem, undefined);
   // rewriting the review file's concerns changes nothing: the preview reads the logged answer
-  c.write("metadata/spine/review/chapter-le-chatelier.json", JSON.stringify({ ...r, concerns: [] }, null, 2) + "\n");
+  c.write("private/coursewerk/spine/review/chapter-le-chatelier.json", JSON.stringify({ ...r, concerns: [] }, null, 2) + "\n");
   assert.match(c.cli("spine.mjs", "preview", "--root", c.root, "--chapter", "le-chatelier").stdout, /Possibly wrong/);
   // an edited verification record is not vouched for by the log
-  const recFile = c.file(`metadata/verification/${r.dispatch}.json`), rec = JSON.parse(fs.readFileSync(recFile, "utf8"));
+  const recFile = c.file(`private/coursewerk/verification/${r.dispatch}.json`), rec = JSON.parse(fs.readFileSync(recFile, "utf8"));
   fs.writeFileSync(recFile, JSON.stringify({ ...rec, linesHash: sha256(canonicalJson([])) }, null, 2) + "\n");
   assert.equal(currentSpineReview(c.root, c.r(), "chapter:le-chatelier"), null);
 });

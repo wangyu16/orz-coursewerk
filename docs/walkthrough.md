@@ -61,7 +61,7 @@ the format is optimized for a human to eyeball and fix, not for machine convenie
 index:semantic   ->  metadata/{SPINE,TERMS,CLAIMS}.json      the "BEFORE" (accept step)
    ...author edits a deliverable...
 check_oer        ->  fresh compute vs stored  ->  what moved, what it obliges
-                 ->  metadata/REVIEW_QUEUE.json               the human's worklist
+                 ->  private/coursewerk/REVIEW_QUEUE.json               the human's worklist
 ```
 
 ---

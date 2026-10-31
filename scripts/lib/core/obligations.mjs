@@ -64,7 +64,7 @@ export const ADMITTED_EVIDENCE = Object.freeze(["quote-verified", "instructor-co
 /** Instructor acts recorded in the log, by kind: confirmations (unit → fact hashes) and divergences (unit → corrections). */
 export function loggedInstructorActs(root) {
   const log = readLogText(root).split("\n").filter(Boolean).map((line) => { try { return JSON.parse(line); } catch { return null; } }).filter(Boolean);
-  const readRecord = (d) => { try { return JSON.parse(fs.readFileSync(recordFile(root, `metadata/verification/${d}.json`), "utf8")); } catch { return null; } };
+  const readRecord = (d) => { try { return JSON.parse(fs.readFileSync(recordFile(root, `private/coursewerk/verification/${d}.json`), "utf8")); } catch { return null; } };
   return instructorActsOf(log, { shownBefore: shownBeforeOf(log, readRecord) });
 }
 
@@ -169,7 +169,7 @@ export function leadOf(u, all) {
 export const recordLeads = (record) => { const lines = String(record.bundle?.prompt || "").split("\n"), i = lines.findIndex((l) => l.startsWith("CLAIM CONTEXT")); return i < 0 ? {} : Object.fromEntries(lines.slice(i + 1).map((l) => l.match(/^(\d+)\. (.*)$/)).filter(Boolean).map((m) => [Number(m[1]), m[2]])); };
 /** The lead-in a semi dispatch was verified with (null: none recorded), by dispatch id. */
 export function recordedLeads(root) {
-  const dir = recordFile(root, "metadata/verification"), out = new Map();
+  const dir = recordFile(root, "private/coursewerk/verification"), out = new Map();
   if (!fs.existsSync(dir)) return out;
   for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json"))) {
     let r; try { r = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")); } catch { continue; }
@@ -632,7 +632,7 @@ export function admitEvidence(root, reader, unitId, evidence) {
     if (!recs.some((r) => r.type === "revision" && r.payload?.event === "autocorrect" && r.payload?.correction === evidence.correction && r.payload?.unit === logged.payload.unit))
       throw new Error(`${unitId}: evidence names correction ${evidence.correction}, which no logged auto-correction of the checked unit made`);
   } else {
-    let rec = null; try { rec = JSON.parse(fs.readFileSync(recordFile(root, `metadata/verification/${evidence.dispatch}.json`), "utf8")); } catch { rec = null; }
+    let rec = null; try { rec = JSON.parse(fs.readFileSync(recordFile(root, `private/coursewerk/verification/${evidence.dispatch}.json`), "utf8")); } catch { rec = null; }
     const b = rec && boundRecord(rec, recs.filter((r) => r.type === "dispatch" && r.party?.role === "harness"));
     if (!b || b.unit !== unitId || logged.payload.unit !== unitId) throw new Error(`${unitId}: evidence must come from a logged fact check of this unit (${evidence.dispatch} is ${b ? `of ${b.unit}` : "not bound by the log"})`);
     if (b.hashed && b.factHash !== evidence.factHash) throw new Error(`${unitId}: ${evidence.dispatch} checked other facts than the unit states now`);
@@ -646,7 +646,7 @@ export function admitEvidence(root, reader, unitId, evidence) {
  *  the record's editable fields (absoluteReviewOf; red-team round 2). */
 export function reviewedAbsolutes(root) {
   const out = new Set();
-  const dir = recordFile(root, "metadata/verification");
+  const dir = recordFile(root, "private/coursewerk/verification");
   if (!fs.existsSync(dir)) return out;
   const log = [];
   for (const line of readLogText(root).split("\n").filter(Boolean)) { try { const r = JSON.parse(line); if (r.type === "dispatch" && r.party?.role === "harness") log.push(r); } catch { /* the log module reports it */ } }
@@ -663,7 +663,7 @@ export function reviewedAbsolutes(root) {
  * blocking: Level 2 is best effort (P11 K4 scenario: an agent that never ran the review saw nothing to tell it so).
  */
 export function unreviewedKnowledge(root, reader) {
-  const dir = recordFile(root, "metadata/verification"), seen = new Set();
+  const dir = recordFile(root, "private/coursewerk/verification"), seen = new Set();
   // keyed by the unit and the reader view of the passage reviewed (red team R6): an edit a reader cannot see leaves the
   // unit reviewed, and any change a reader can see makes it unreviewed
   const units = loadUnits(root, reader), textOf = new Map(units.map((u) => [`${u.id}|${readerKey(u.text)}`, u.text]));
@@ -683,7 +683,7 @@ export function unreviewedKnowledge(root, reader) {
 }
 /** The record of a logged knowledge review, when it is the one the log binds whole (null otherwise). */
 function boundKnowledge(root, logged) {
-  let r; try { r = JSON.parse(fs.readFileSync(recordFile(root, `metadata/verification/${logged.payload.dispatch}.json`), "utf8")); } catch { return null; }
+  let r; try { r = JSON.parse(fs.readFileSync(recordFile(root, `private/coursewerk/verification/${logged.payload.dispatch}.json`), "utf8")); } catch { return null; }
   return r && logged.payload.recordHash && recordHashOf(r) === logged.payload.recordHash ? r : null;
 }
 /** The harness's dispatch log records. */
@@ -697,7 +697,7 @@ function logDispatches(root) {
  *  a record bound whole is current at its factHash and contradicted by its admission; a legacy record is current when
  *  the claims its prompt printed are the unit's current claims, and contradicted by the status logged with it. */
 function liveContradictions(root, units) {
-  const dir = recordFile(root, "metadata/verification"), out = new Set();
+  const dir = recordFile(root, "private/coursewerk/verification"), out = new Set();
   if (!fs.existsSync(dir)) return out;
   const log = logDispatches(root), byId = new Map(units.map((u) => [u.id, u]));
   for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json"))) {
@@ -727,7 +727,7 @@ const sameClaims = (r, text) => {
  *  a review that cannot be scored — no readable answer, or a concern whose words the passage does not have — is never
  *  a clean re-check either (red-team round 2, R2-K10). */
 function wrongConcerns(root, dispatch, unitText) {
-  let r; try { r = JSON.parse(fs.readFileSync(recordFile(root, `metadata/verification/${dispatch}.json`), "utf8")); } catch { return [{ kind: "wrong", text: "(the review record is missing)", problem: "its record cannot be read" }]; }
+  let r; try { r = JSON.parse(fs.readFileSync(recordFile(root, `private/coursewerk/verification/${dispatch}.json`), "utf8")); } catch { return [{ kind: "wrong", text: "(the review record is missing)", problem: "its record cannot be read" }]; }
   if (sha256(r.answer?.raw ?? "") !== r.answer?.responseHash) return [{ kind: "wrong", text: "(the review record was edited)", problem: "its answer does not match the logged response" }];
   const k = readKnowledgeReview(r, unitText);
   if (!k.ok) return [{ kind: "wrong", text: "(the review cannot be read)", problem: `${k.reason}: run it again` }];
@@ -750,7 +750,7 @@ const shownForm = (t) => String(t || "").replace(/\s+/g, " ").trim();
  */
 export function reviewRecordProblem(root, logged, u, ctx) {
   const p = logged.payload || {};
-  let r; try { r = JSON.parse(fs.readFileSync(recordFile(root, `metadata/verification/${p.dispatch}.json`), "utf8")); } catch { return "its review record is missing or unreadable"; }
+  let r; try { r = JSON.parse(fs.readFileSync(recordFile(root, `private/coursewerk/verification/${p.dispatch}.json`), "utf8")); } catch { return "its review record is missing or unreadable"; }
   if (!p.recordHash || recordHashOf(r) !== p.recordHash) return "its review record is not the one the log vouches for";
   if (r.dispatch !== p.dispatch || r.unit !== u.id || r.kind !== p.kind || r.contentHash !== u.locator.contentHash) return "its review record is of other text";
   if (sha256(r.bundle?.prompt ?? "") !== r.bundle?.bundleHash || r.bundle?.bundleHash !== p.bundleHash) return "its review prompt does not match its logged hash";

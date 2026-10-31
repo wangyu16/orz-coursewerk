@@ -260,10 +260,10 @@ test("[req.control.media-ships-as-media] [req.control.shipped-equals-read] an SV
   assert.ok(!isMedia("slides/x.svg") && !isMedia("x.pdf") && !isMedia("assets/x.html") && !isMedia("assets/x.txt"));
   // covered by the visual review as an image is: every assets/ file re-owes the visual review when it changes, and a
   // deliverable that embeds one is tied to it
-  c.write("metadata/VISUAL_REVIEW.json", "{}\n");
+  c.write("private/coursewerk/VISUAL_REVIEW.json", "{}\n");
   c.edit(SG, ANCHOR, `${ANCHOR}\n\n![The shift on heating](../assets/le-chatelier-shift.svg)`);
   const rel = computeComponentGraph(c.root).relationships;
   const edge = (from, to) => rel.some((e) => e.from === `component:${from}` && e.to === `component:${to}`);
-  for (const a of ["assets/le-chatelier-shift.svg", "assets/figures/ammonia-plant.PDF", "assets/photo.png"]) assert.ok(edge(a, "metadata/VISUAL_REVIEW.json"), `visual review: ${a}`);
+  for (const a of ["assets/le-chatelier-shift.svg", "assets/figures/ammonia-plant.PDF", "assets/photo.png"]) assert.ok(edge(a, "private/coursewerk/VISUAL_REVIEW.json"), `visual review: ${a}`);
   assert.ok(edge("assets/le-chatelier-shift.svg", SG), "the study guide embeds it");
 });

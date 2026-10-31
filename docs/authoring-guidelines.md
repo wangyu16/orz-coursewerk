@@ -11,7 +11,7 @@ skeletons** live in `skills/courseguide-standards`; the **tool grammars** live i
 ## 1. Graphics — the preference ladder
 
 Pick the highest rung that fits; every figure gets a **caption**, **alt text**, and an **attribution row**
-in structured `metadata/PROVENANCE.json` and, for public work, `metadata/ATTRIBUTION.md`. Prefer **SVG** everywhere (crisp at any size, text-based, and it imports to
+in structured `private/coursewerk/PROVENANCE.json` and, for public work, `provenance/coursewerk/ATTRIBUTION.md`. Prefer **SVG** everywhere (crisp at any size, text-based, and it imports to
 Alembic cleanly — raster `.png`/`.jpg`/`.pdf` are skipped on a *trial* import and re-added after publish).
 
 1. **Self-generate — always clean + exact (first choice for anything scientific).**
@@ -32,8 +32,8 @@ Alembic cleanly — raster `.png`/`.jpg`/`.pdf` are skipped on a *trial* import 
    `oer-figures`' `fetch_open_image.py`, which **captures the attribution row for you**; **resize** to a
    web-friendly width (~800–900 px) so the package stays light. Aim for **at least one or two fetched real
    photos per chapter**. If a real photograph would not improve a chapter, record that accountable decision and
-   a substantive rationale in `metadata/MEDIA_PLAN.json`; silence is not a decision. Record each included photo
-   in `metadata/PROVENANCE.json` and public `ATTRIBUTION.md` with its own license (note: a CC-BY-SA image
+   a substantive rationale in `private/coursewerk/MEDIA_PLAN.json`; silence is not a decision. Record each included photo
+   in `private/coursewerk/PROVENANCE.json` and public `ATTRIBUTION.md` with its own license (note: a CC-BY-SA image
    keeps its ShareAlike license — attribute it as such; prefer CC-BY / CC0 / public-domain when you want the
    package cleanly CC-BY). Never embed a copyrighted, paywalled, or third-party-credited image. Never hot-link
    media in public work: fetch it into `assets/` so rights, accessibility, and availability remain inspectable.
@@ -47,7 +47,7 @@ Alembic cleanly — raster `.png`/`.jpg`/`.pdf` are skipped on a *trial* import 
      photos/micrographs, maps, or any figure a student would read values off. Those come from rungs 1–2.
    - **No text inside the image** — AI-rendered labels/equations are usually garbled. Put labels in the
      caption or overlay them as real text; keep generated art label-free.
-   - **Always disclose:** label the figure as an AI illustration and record it in structured provenance plus public `metadata/ATTRIBUTION.md`
+   - **Always disclose:** label the figure as an AI illustration and record it in structured provenance plus public `provenance/coursewerk/ATTRIBUTION.md`
      (e.g. `AI-generated illustration (<tool>, <date>) — no third-party rights; released under the package
      license`). AI-image copyright is unsettled; for an open package, treat it as your own contribution and
      disclose the tool.
@@ -175,7 +175,7 @@ media rights, attribution, output-license compatibility, and chapter key facts. 
 context-reset same-model pass; Full uses cross-model review. Bind the structured record only after the actual
 review—later evidence, license, attribution, or teaching-file edits make it stale.
 
-Public sources require a hashed rights-evidence snapshot under `metadata/evidence/` and
+Public sources require a hashed rights-evidence snapshot under `private/coursewerk/evidence/` and
 `inputs/SOURCE_CORPUS.json` binding each primary source ID to a hash-bound raw snapshot, canonical URL,
 retrieval/extractor metadata, hashed extracted text, or an explicit dated human comparison attestation. Capture
 and, for public preparation, deterministically scan the authoritative rights page before substantive source ingestion; an unresolved

@@ -54,7 +54,7 @@ try {
     // leaves every chapter ASSEMBLING with no approval — nothing publishes until the instructor approves the result
     let party = null, words = null;
     if (cmd === "migrate") {
-      if (boundConfig(root).spine === 2) fail("this package is already spine v2 (the decision log shows it; if metadata/coursewerk.json says otherwise, restore it: git checkout -- metadata/coursewerk.json)");
+      if (boundConfig(root).spine === 2) fail("this package is already spine v2 (the decision log shows it; if private/coursewerk/coursewerk.json says otherwise, restore it: git checkout -- private/coursewerk/coursewerk.json)");
       party = instructor(); words = opt("--words");
       if (!String(words || "").trim()) fail('--words "<the instructor\'s own words>" is required: a migration is the instructor\'s request');
       const st = spawnSync("git", ["-C", root, "status", "--porcelain"], { encoding: "utf8", maxBuffer: 1 << 30 });
@@ -121,7 +121,7 @@ try {
     const model = opt("--model") || fail("--model <model id> is required: a critique is the agent's");
     const chapter = opt("--chapter"); if (!chapters.includes(chapter)) fail(`--chapter must be one of ${chapters.join(", ")}`);
     const q = spineCritique({ kind: opt("--kind") || "other", ids: String(opt("--ids") || "").split(",").filter(Boolean), note: opt("--note"), recommendation: opt("--recommend") || null, basis: chapter });
-    const rel = `metadata/spine/critique/${chapter}.json`;
+    const rel = `private/coursewerk/spine/critique/${chapter}.json`;
     let list = []; try { list = JSON.parse(fs.readFileSync(path.join(root, rel), "utf8")); } catch { list = []; }
     if (!list.some((x) => x.id === q.id)) list.push(q);
     write(rel, JSON.stringify(list, null, 2) + "\n");
@@ -143,7 +143,7 @@ try {
   }
   if (cmd === "preview") {
     const chapter = opt("--chapter"); if (!chapters.includes(chapter)) fail(`--chapter must be one of ${chapters.join(", ")}`);
-    let critique = []; try { critique = JSON.parse(fs.readFileSync(path.join(root, `metadata/spine/critique/${chapter}.json`), "utf8")); } catch { critique = []; }
+    let critique = []; try { critique = JSON.parse(fs.readFileSync(path.join(root, `private/coursewerk/spine/critique/${chapter}.json`), "utf8")); } catch { critique = []; }
     // the blind review of the changed lines (D39): its concerns join the questions, a clarification as a one-line diff
     for (const c of currentSpineReview(root, reader, `chapter:${chapter}`)?.concerns || [])
       critique.push({ kind: "blind-review", evidence: { note: c.kind === "clarify" ? `Clarify (line ${c.lineNo}): "${c.text}" → "${c.suggestion}". ${c.problem}` : `Possibly wrong (line ${c.lineNo}): "${c.text}". ${c.problem}${c.suggestion ? ` Suggested: "${c.suggestion}".` : ""}` } });

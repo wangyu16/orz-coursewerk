@@ -166,8 +166,8 @@ test("[req.records.tamper] [req.records.log-chain] round P1-1 probes: malformed,
   assert.match(verifyLog(C + "null\n").join(), /not a record object/);
   // 3. no trailing newline: append refused, the file is not corrupted
   const root = pkg(t);
-  fs.mkdirSync(path.join(root, "metadata"), { recursive: true });
-  fs.writeFileSync(path.join(root, "metadata", "LOG.jsonl"), C.trimEnd());
+  fs.mkdirSync(path.join(root, "private", "coursewerk"), { recursive: true }); fs.mkdirSync(path.join(root, "provenance", "coursewerk"), { recursive: true });
+  (fs.mkdirSync(path.dirname(path.join(root, "private", "coursewerk", "LOG.jsonl")), { recursive: true }), fs.writeFileSync)(path.join(root, "private", "coursewerk", "LOG.jsonl"), C.trimEnd());
   assert.throws(() => appendLogRecord(root, { type: "intake", party: P, at }), /does not end with a newline/);
   assert.equal(readLogText(root), C.trimEnd());
   // 4. payloads that JSON rewrites are normalized before hashing; BigInt is refused clearly
@@ -242,7 +242,7 @@ test("[req.records.log-append] [req.records.tamper] round P1-3 probes: failed wr
     assert.deepEqual(verifyLog(readLogText(root)), []);
   }
   // 2. a stale lock (owner process gone) is cleared; a live foreign lock times out with its owner named
-  const lock = path.join(root, "metadata", "LOG.jsonl.lock");
+  const lock = path.join(root, "private", "coursewerk", "LOG.jsonl.lock");
   const dead = spawnSync(process.execPath, ["-e", "0"]).pid;
   fs.writeFileSync(lock, JSON.stringify({ pid: dead, token: "old", at: "2026-09-30T00:00:00Z" }));
   appendLogRecord(root, { type: "intake", party: P });
@@ -255,9 +255,9 @@ test("[req.records.log-append] [req.records.tamper] round P1-3 probes: failed wr
   fs.rmSync(lock);
   // 3. a symlinked log is refused
   const other = pkg(t);
-  fs.mkdirSync(path.join(other, "metadata"), { recursive: true });
+  fs.mkdirSync(path.join(other, "private", "coursewerk"), { recursive: true }); fs.mkdirSync(path.join(other, "provenance", "coursewerk"), { recursive: true });
   const outside = path.join(pkg(t), "elsewhere.jsonl"); fs.writeFileSync(outside, "");
-  fs.symlinkSync(outside, path.join(other, "metadata", "LOG.jsonl"));
+  fs.symlinkSync(outside, path.join(other, "private", "coursewerk", "LOG.jsonl"));
   assert.throws(() => appendLogRecord(other, { type: "intake", party: P }), /symbolic link/);
   // 4. the single acceptance rule checks both the working log and the committed prefix
   const committed = readLogText(root);

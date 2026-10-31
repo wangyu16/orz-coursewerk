@@ -3,7 +3,7 @@
 //   declared sources   inputs/SOURCE_CORPUS.json (MS1; prepared by prepare_source_corpus.mjs)
 //   retrieved refs     inputs/REFERENCES.json + inputs/.coursewerk-reference-text/<refId>.txt — fetched at
 //                      verification time from a declared destination ("cite after"), pinned before use.
-// The package carries the compact mirror metadata/REFERENCE_RECORD.json (url, time, hash; no text) of the references
+// The package carries the compact mirror private/coursewerk/REFERENCE_RECORD.json (url, time, hash; no text) of the references
 // its evidence CITES — not of every page retrieval looked at — so a published package names what its evidence quotes.
 import { deliverableOfSidecar, sidecarTrusted } from "../core/unit_records.mjs";
 import fs from "node:fs";
@@ -14,7 +14,7 @@ import { appendLogRecord, readLogText } from "../records/log.mjs";
 
 export const REFERENCES_FILE = "REFERENCES.json";
 export const REFERENCE_TEXT_DIR = ".coursewerk-reference-text";
-export const REFERENCE_RECORD = "metadata/REFERENCE_RECORD.json";
+export const REFERENCE_RECORD = "private/coursewerk/REFERENCE_RECORD.json";
 
 export function readReferences(inputsDir) {
   const f = inputsDir && path.join(inputsDir, REFERENCES_FILE);
@@ -97,7 +97,7 @@ export function admissiblePin(id, entry, ledger) {
 
 /** The references the package's unit evidence cites. */
 export function citedReferences(root) {
-  const dir = recordFile(root, "metadata/units"), out = new Set();
+  const dir = recordFile(root, "private/coursewerk/units"), out = new Set();
   // only records the log wrote are read (R7 H-04)
   const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const f = path.join(d, e.name); if (e.isDirectory()) walk(f); else if (e.name.endsWith(".json") && sidecarTrusted(root, deliverableOfSidecar(root, f))) for (const u of JSON.parse(fs.readFileSync(f, "utf8")).units || []) for (const ev of u.evidence || []) for (const q of [ev, ...(ev.quotes || [])]) if (q.source?.startsWith("ref-")) out.add(q.source); } };
   if (fs.existsSync(dir)) walk(dir);

@@ -131,15 +131,15 @@ test("[req.verdict.semi-mechanical] round P7-1 B11 B15 B19: invisible characters
 test("[req.verdict.semi-mechanical] round P7-1 B12 B13 B17 B21: hand-written evidence, records, confirmations and pins do not count", async (t) => {
   const p = copy(t);
   await honestNaming(p);
-  const side = "metadata/units/study-guide/le-chatelier.md.json";
+  const side = "private/coursewerk/units/study-guide/le-chatelier.md.json";
   // (a) a hand-written dispatch record, not in the log, offered to readmit
-  const rec = fs.readdirSync(path.join(p.root, "metadata", "verification"))[0];
-  const forged = JSON.parse(fs.readFileSync(path.join(p.root, "metadata", "verification", rec), "utf8"));
+  const rec = fs.readdirSync(path.join(p.root, "private", "coursewerk", "verification"))[0];
+  const forged = JSON.parse(fs.readFileSync(path.join(p.root, "private", "coursewerk", "verification", rec), "utf8"));
   forged.dispatch = "d-forged0000000000"; forged.unit = "u-study-guide-le-chatelier-the-principle-1";
-  fs.writeFileSync(path.join(p.root, "metadata", "verification", "d-forged0000000000.json"), JSON.stringify(forged));
+  (fs.mkdirSync(path.dirname(path.join(p.root, "private", "coursewerk", "verification", "d-forged0000000000.json")), { recursive: true }), fs.writeFileSync)(path.join(p.root, "private", "coursewerk", "verification", "d-forged0000000000.json"), JSON.stringify(forged));
   assert.deepEqual(readmitRecorded(p.root, p.reader, { texts: texts(p) }), [], "readmit ignores unlogged records");
   assert.ok(gate(p, T).findings.includes("dispatch-unlogged:defect"));
-  fs.rmSync(path.join(p.root, "metadata", "verification", "d-forged0000000000.json"));
+  fs.rmSync(path.join(p.root, "private", "coursewerk", "verification", "d-forged0000000000.json"));
   // (b) evidence quotes swapped for fragments the dispatch never admitted
   p.json(side, (s) => { const u = s.units.find((x) => x.id === T); u.evidence.find((e) => e.type === "quote-verified").quotes[0].span[1] -= 20; return s; });
   assert.ok(gate(p, T).blocked, "evidence that is not its dispatch's admission is a defect");
@@ -175,16 +175,16 @@ test("[req.autocorrect.guard] round P7-1 B14 B16 p22: no correction from an unan
   const q = copy(t);
   const wid = rewriteUnattributed(q, W, (x) => x.replace("-92\\ \\text{kJ mol}^{-1}$ are from", "-75\\ \\text{kJ mol}^{-1}$ are from"));
   claimAuthorship(q.root, { units: [wid], instructorWords: "That passage is mine." }, I);
-  q.json("metadata/units/study-guide/le-chatelier.md.json", (s) => { s.units.find((x) => x.id === wid).origin = { kind: "agent-knowledge", model: "m", step: "s", date: "2026-10-01" }; return s; });
+  q.json("private/coursewerk/units/study-guide/le-chatelier.md.json", (s) => { s.units.find((x) => x.id === wid).origin = { kind: "agent-knowledge", model: "m", step: "s", date: "2026-10-01" }; return s; });
   for (const url of ["https://openstax.org/books/chemistry-2e/pages/13-3-x", "https://openstax.org/books/chemistry-2e/pages/13-3-x?print=1"])
     pinReference(q.root, q.inputs, { url, title: "pin", destination: "openstax.org/books/chemistry-2e", text: HABER });
   for (let k = 0; k < 2; k++) await verifySemi(q.root, q.reader, { texts: texts(q), verifier: saying("contradicted", "the standard reaction enthalpy is −92.4 kJ per mole of reaction, so by Le Chatelier's principle raising the temperature shifts the reaction toward the reactants"), only: [wid] });
   const g = applyCorrection(q.root, q.reader, { unitId: wid, plainTexts: plain(q), meta: texts(q) }, AGENT);
   assert.equal(g.applied, false); assert.match(g.question.reason, /two agreeing sources/);
   // p22: deleting the contradicting record leaves a defect, and a batched confirmation cannot launder it
-  const rec = fs.readdirSync(path.join(q.root, "metadata", "verification"))[0];
+  const rec = fs.readdirSync(path.join(q.root, "private", "coursewerk", "verification"))[0];
   assert.throws(() => confirmUnits(q.root, q.reader, [wid], { what: "fact", instructorWords: "I confirm these." }, I), /contradicts the current text/);
-  fs.rmSync(path.join(q.root, "metadata", "verification", rec));
+  fs.rmSync(path.join(q.root, "private", "coursewerk", "verification", rec));
   assert.ok(gate(q, wid).findings.includes("dispatch-record-missing:defect"));
 });
 
@@ -194,7 +194,7 @@ test("[req.revert.double-confirm] round P7-1 B18: a correction record edited aft
   const wid = rewrite(p, W, (x) => x.replace("-92\\ \\text{kJ mol}^{-1}$ are from", "-75\\ \\text{kJ mol}^{-1}$ are from"));
   await verifySemi(p.root, p.reader, { texts: texts(p), verifier: saying("contradicted", "the standard reaction enthalpy is −92.4 kJ per mole of reaction, so by Le Chatelier's principle raising the temperature shifts the reaction toward the reactants"), only: [wid] });
   const c = applyCorrection(p.root, p.reader, { unitId: wid, plainTexts: plain(p) }, AGENT).correction;
-  p.json(`metadata/corrections/${c.id}.json`, (r) => { r.before.text = r.before.text.replace("-75", "-50"); return r; });
+  p.json(`private/coursewerk/corrections/${c.id}.json`, (r) => { r.before.text = r.before.text.replace("-75", "-50"); return r; });
   assert.throws(() => revertCorrection(p.root, p.reader, c.id, { note: "keep mine" }, I), /does not match its logged autocorrect record/);
 });
 

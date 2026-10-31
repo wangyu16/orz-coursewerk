@@ -38,14 +38,14 @@ const claim = (id, text, type = "fact", extra = {}) => ({ id, type, text, scope:
 test("R4-1 · a restated objective under `## Goals` (declared as a fact) does not cover it", (t) => {
   const { pkg } = pkgCopy(t);
   // remove objective 2's teaching claim, then restate the objective under a heading the old regex never knew
-  const sidecar = path.join(pkg, "metadata/claims/practice/melting.json");
+  const sidecar = path.join(pkg, "private/coursewerk/claims/practice/melting.json");
   const decl = JSON.parse(fs.readFileSync(sidecar, "utf8"));
   decl.claims = decl.claims.filter((c) => !(c.spineRefs || []).includes("objective.melting.2"));
   fs.writeFileSync(sidecar, JSON.stringify(decl, null, 2));
   const map = read(pkg, "concepts/melting.md");
   const objective2 = /## Objectives\n1\. .*\n2\. (.*)\n/.exec(map)[1].replace(/ \[anchor: [a-z0-9-]+\]$/, "");
   write(pkg, "study-guide/melting.md", read(pkg, "study-guide/melting.md") + `\n## Goals\n1. ${objective2}\n`);
-  const sg = path.join(pkg, "metadata/claims/study-guide/melting.json");
+  const sg = path.join(pkg, "private/coursewerk/claims/study-guide/melting.json");
   const sgDecl = JSON.parse(fs.readFileSync(sg, "utf8"));
   sgDecl.claims.push({ type: "fact", anchor: "goals#1", spineRefs: ["objective.melting.2"], sourceRefs: [], termRefs: ["term.latent-heat-of-fusion"] });
   fs.writeFileSync(sg, JSON.stringify(sgDecl, null, 2));
@@ -98,17 +98,17 @@ test("R4-5 · index:semantic refuses to accept a relabeled objective that still 
 
 test("R4-6 · a key fact that NEGATES the package is refused", (t) => {
   const { pkg } = pkgCopy(t, { indexed: false });
-  const foundation = JSON.parse(read(pkg, "metadata/FOUNDATION.json"));
+  const foundation = JSON.parse(read(pkg, "private/coursewerk/FOUNDATION.json"));
   const review = { schemaVersion: 1, mode: "light", reviewKind: "same-model-independent-pass", authoringSystem: "author", authoringModelId: "m1", reviewer: { type: "ai", name: "reviewer", modelId: "m1" },
     independence: { separatePass: true, contextReset: true, bundleSha256: blindBundleDigest(pkg), approach: "A fresh context reviewed only the assembled bundle after drafting ended." }, reviewedAt: "2026-09-05",
     checks: ["accountable-identity", "source-identity-version", "source-license-evidence", "external-media-rights", "output-license-compatibility", "attribution-obligations", "scientific-key-facts"].map((id) => ({ id, status: "passed", note: `Examined ${id} against the bundle; nothing to qualify.` })),
     keyFacts: [{ id: "fact-1", claim: "At standard pressure the melting point of pure water is not 0 °C.", status: "verified", evidenceSourceIds: [foundation.sources[0].id], usedIn: ["study-guide/melting.md"], note: "Traced against the bundle and the declared source; consistent." }] };
-  write(pkg, "metadata/KEY_FACT_REVIEW.json", JSON.stringify({ ...review, bindings: makeKeyFactBindings(pkg) }));
+  write(pkg, "private/coursewerk/KEY_FACT_REVIEW.json", JSON.stringify({ ...review, bindings: makeKeyFactBindings(pkg) }));
   const audit = auditKeyFactReview(pkg, foundation);
   assert.ok(audit.failures.some((f) => /NEGATION/.test(f)), audit.failures.join("\n"));
   review.keyFacts[0].claim = "At standard pressure the melting point of pure water is 0 °C.";
   review.checks[0].note = "Examined accountable-identity: no vendor or placeholder identity is present in the bundle.";
-  write(pkg, "metadata/KEY_FACT_REVIEW.json", JSON.stringify({ ...review, bindings: makeKeyFactBindings(pkg) }));
+  write(pkg, "private/coursewerk/KEY_FACT_REVIEW.json", JSON.stringify({ ...review, bindings: makeKeyFactBindings(pkg) }));
   assert.deepEqual(auditKeyFactReview(pkg, foundation).failures.filter((f) => /NEGATION|placeholder/.test(f)), [], "a genuine note may use the word placeholder");
 });
 

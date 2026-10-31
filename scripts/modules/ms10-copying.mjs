@@ -22,7 +22,7 @@ const wordsOf = (text) => { const out = []; for (const m of blankCitations(text)
 function shippedTexts(s) {
   const rels = new Set(["concepts/course.md"]);
   for (const ch of chaptersOf(s)) for (const d of ["study-guide", "slides", "practice", "concepts", "assessment-support"]) rels.add(chapterFile(d, ch, (p) => s.text(p) != null));
-  for (const d of s.json("metadata/DOCUMENTS.json")?.documents || []) if (typeof d?.source === "string") rels.add(d.source);
+  for (const d of s.json("private/coursewerk/DOCUMENTS.json")?.documents || []) if (typeof d?.source === "string") rels.add(d.source);
   return [...rels].map((rel) => [rel, s.text(rel)]).filter(([, t]) => t != null);
 }
 
@@ -47,7 +47,7 @@ export function shinglesOf(text, n = COPY_RUN) {
 
 function run(s) {
   const out = [];
-  const foundation = s.json("metadata/FOUNDATION.json");
+  const foundation = s.json("private/coursewerk/FOUNDATION.json");
   const refSources = (foundation?.sources || []).filter((x) => x?.use === "reference" && x.id);
   const pinned = pinnedTexts(snapshotInputReader(s));
   const corpus = s.json(`${IN}SOURCE_CORPUS.json`);

@@ -77,7 +77,7 @@ function fixtureTerms() {
 const SG = "study-guide/phase-change.md";
 const MP_ANCHOR = "melting-point-of-water#1";
 const LH_ANCHOR = "latent-heat#1";
-const SIDECAR = "metadata/claims/study-guide/phase-change.json";
+const SIDECAR = "private/coursewerk/claims/study-guide/phase-change.json";
 
 /** The two carriers, as text. */
 const frontMatter = (claims) => `---\n${JSON.stringify({ schemaVersion: 1, claims })}\n---\n`;
@@ -209,9 +209,9 @@ test("BOTH CARRIERS, AT THE SEAM: M2 honours a declaration from either one", () 
 
 test("the sidecar path is derived once, and it mirrors the deliverable's path", () => {
   assert.equal(claimSidecarPath(SG), SIDECAR);
-  assert.equal(claimSidecarPath("practice/gases.md"), "metadata/claims/practice/gases.json");
+  assert.equal(claimSidecarPath("practice/gases.md"), "private/coursewerk/claims/practice/gases.json");
   // Only the trailing extension goes: a slug containing ".md" mid-path is not a suffix.
-  assert.equal(claimSidecarPath("slides/a.md.b.md"), "metadata/claims/slides/a.md.b.json");
+  assert.equal(claimSidecarPath("slides/a.md.b.md"), "private/coursewerk/claims/slides/a.md.b.json");
 });
 
 // --- the precedence rule ------------------------------------------------------------------------

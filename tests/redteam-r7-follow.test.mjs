@@ -118,14 +118,14 @@ test("[req.coherence.version-scope-continuous] variants: a relink into the scope
   const docs = (chapters) => JSON.stringify({ schemaVersion: 1, documents: [{ id: "review", title: "Review handout", source: HANDOUT, carrier: "paged", ...(chapters ? { chapters } : {}) }] }, null, 2) + "\n";
   d.asAgent(() => {
     d.write(HANDOUT, "{{nyml\nkind: document\n}}\n\n# A one-page review\n\n## Equilibrium\n\nAt equilibrium the forward and reverse rates are equal, so the concentrations stay constant while both reactions go on.\n");
-    d.write("metadata/DOCUMENTS.json", docs(null));
+    d.write("private/coursewerk/DOCUMENTS.json", docs(null));
   });
   const h = d.units().filter((u) => u.locator.deliverable === HANDOUT);
   const ch1Objective = d.find((u) => u.locator.deliverable === SG1 && (u.spineNodes || []).some((n) => n.startsWith("objective.chemical-equilibrium."))).spineNodes.find((n) => n.startsWith("objective.chemical-equilibrium."));
   linkUnits(d.root, d.r(), Object.fromEntries(h.map((u) => [u.id, [ch1Objective]])), AGENT);
   openVersionCarrying(d.root, d.r(), OPEN_V2, I);
   assert.ok(h.every((u) => !d.unit(u.id).carried), "serving chapter 1 only: not in chapter 2's scope when it opened");
-  d.write("metadata/DOCUMENTS.json", docs(["chemical-equilibrium", "le-chatelier"]));
+  d.write("private/coursewerk/DOCUMENTS.json", docs(["chemical-equilibrium", "le-chatelier"]));
   const owed = d.ob(["version-carry-owed"]);
   assert.equal(owed.length, 1, "the gate holds the entrant as owed its carry");
   assert.deepEqual(owed[0].units.sort(), h.map((u) => u.id).sort());

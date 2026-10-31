@@ -14,7 +14,7 @@ import { recheckQuote } from "../lib/verify/admission.mjs";
 const IN = "@inputs/";
 function run(s) {
   const out = [];
-  const foundation = s.json("metadata/FOUNDATION.json");
+  const foundation = s.json("private/coursewerk/FOUNDATION.json");
   const declared = (foundation?.sources || []).map((x) => x.id).filter(Boolean);
   out.push(...evidenceSpans(s, declared));
   if (!declared.length) return out;
@@ -31,8 +31,8 @@ function run(s) {
     if (text == null) out.push({ kind: "source-snapshot-changed", units: [], evidence: { type: "rule", rule: "a pinned snapshot exists at its text path", source: id, path: e.textPath } });
     else if (sha256(text) !== e.sha256) out.push({ kind: "source-snapshot-changed", units: [], evidence: { type: "rule", rule: "a pinned snapshot matches its recorded hash", source: id, expected: e.sha256, actual: sha256(text) } });
   }
-  const record = s.json("metadata/SOURCE_RECORD.json");
-  if (!record) out.push({ kind: "source-record-missing", units: [], evidence: { type: "missing", what: "metadata/SOURCE_RECORD.json (npm run generate:source-record)" } });
+  const record = s.json("private/coursewerk/SOURCE_RECORD.json");
+  if (!record) out.push({ kind: "source-record-missing", units: [], evidence: { type: "missing", what: "private/coursewerk/SOURCE_RECORD.json (npm run generate:source-record)" } });
   else if (canonicalJson(record) !== canonicalJson(makeSourceRecord(corpus))) out.push({ kind: "source-record-mismatch", units: [], evidence: { type: "rule", rule: "SOURCE_RECORD.json mirrors the corpus manifest exactly" } });
   return out;
 }
@@ -47,8 +47,8 @@ function evidenceSpans(s, declared) {
   if (record && refs && canonicalJson(record) !== canonicalJson(makeReferenceRecord(refs, (record.references || []).map((r) => r.refId))))
     out.push({ kind: "reference-record-mismatch", units: [], evidence: { type: "rule", rule: "REFERENCE_RECORD.json mirrors the inputs' REFERENCES.json exactly" } });
   const known = new Set([...declared, ...refIds]);
-  const ledger = pinLedger(s.text("metadata/LOG.jsonl"));
-  for (const p of s.paths.filter((x) => x.startsWith("metadata/units/") && x.endsWith(".json")).filter(trustedSidecarPath(s.text("metadata/LOG.jsonl"))).sort()) {
+  const ledger = pinLedger(s.text("private/coursewerk/LOG.jsonl"));
+  for (const p of s.paths.filter((x) => x.startsWith("private/coursewerk/units/") && x.endsWith(".json")).filter(trustedSidecarPath(s.text("private/coursewerk/LOG.jsonl"))).sort()) {
     for (const u of s.json(p)?.units || []) {
       const cited = [...(u.origin?.kind === "source-derived" ? [u.origin.source] : []), ...(u.evidence || []).flatMap((e) => [e.source, ...(e.quotes || []).map((q) => q.source)]).filter(Boolean)];
       for (const c of [...new Set(cited)]) if (!known.has(c)) out.push({ kind: "evidence-source-undeclared", units: [u.id], evidence: { type: "rule", rule: "a unit cites only declared sources and pinned references", source: c } });

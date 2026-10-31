@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "metadata/CLAIMS.json \u2014 claim/assertion nodes (granularity fix; additive to COMPONENT_INDEX.json)",
+  "title": "private/coursewerk/CLAIMS.json \u2014 claim/assertion nodes (granularity fix; additive to COMPONENT_INDEX.json)",
   "type": "object",
   "required": [
     "schemaVersion",

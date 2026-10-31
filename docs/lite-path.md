@@ -24,15 +24,15 @@ The intended-use profile still determines whether output belongs in `personal/` 
    downloadable files. Save files under the selected root. Only public OER receives `alembic.json` and may
    enter the `package/` tree.
    Non-published authoring may use any source without a rights receipt while retaining identity/provenance and
-   publication warnings. Public work needs a cleared hash-bound `metadata/preflight/` receipt, a local rights-evidence snapshot, and `inputs/SOURCE_CORPUS.json`; when comparison text
+   publication warnings. Public work needs a cleared hash-bound `private/coursewerk/preflight/` receipt, a local rights-evidence snapshot, and `inputs/SOURCE_CORPUS.json`; when comparison text
    is unavailable, record an explicit dated human attestation instead of claiming an automated scan. Source
-   preparation must also create `metadata/SOURCE_RECORD.json`; verified external media needs a retained hashed
+   preparation must also create `private/coursewerk/SOURCE_RECORD.json`; verified external media needs a retained hashed
    description/license-page snapshot.
 3. **Validate + package.** You run the three helper steps once (they need Node.js, not an AI):
    ```bash
    bash bootstrap/init.sh            # installs builders + initializes output Git
    node scripts/check_assurance.mjs --root package --phase pre-ingestion
-   # After a separate same-model critique, bind metadata/KEY_FACT_REVIEW.json:
+   # After a separate same-model critique, bind private/coursewerk/KEY_FACT_REVIEW.json:
    npm run bind:key-fact-review -- --root package
    node scripts/check_oer.mjs --package package --inputs inputs --for-discovery --report reports/qa_report.md
    npm run generate:attribution      # regenerate the public attribution view

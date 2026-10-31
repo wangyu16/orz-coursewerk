@@ -5,7 +5,7 @@ import { spinePaths } from "./spine.mjs";
 
 export const ORIGINS = Object.freeze(["instructor", "standardized", "proposed"]);
 const LABEL = { instructor: "yours", standardized: "standardized from yours", proposed: "PROPOSED BY THE AGENT" };
-export const originsPath = (doc) => `metadata/spine/${doc}.origins.json`;
+export const originsPath = (doc) => `private/coursewerk/spine/${doc}.origins.json`;
 
 /** Origins sidecar: { schemaVersion: 1, items: { <anchor>: instructor|standardized|proposed } }. */
 export function readOrigins(reader, doc) {

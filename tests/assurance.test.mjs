@@ -95,7 +95,7 @@ function attachEvidence(root, foundation) {
   for (const source of foundation.sources || []) {
     if (!["open-license", "public-domain"].includes(source.rightsBasis?.type)) continue;
     const text = evidenceText(source.rightsBasis.license);
-    const rel = `metadata/evidence/${source.id}.txt`;
+    const rel = `private/coursewerk/evidence/${source.id}.txt`;
     fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
     fs.writeFileSync(path.join(root, rel), text);
     source.rightsBasis.evidenceSnapshot = rel;
@@ -112,7 +112,7 @@ function attachEvidence(root, foundation) {
 function attachOpenStaxRestriction(root, foundation) {
   for (const source of foundation.sources || []) {
     const text = `${evidenceText(source.rightsBasis.license)} This book may not be used in the training of large language models or otherwise be ingested into large language models or generative AI offerings without OpenStax's permission.`;
-    const rel = `metadata/evidence/${source.id}.txt`;
+    const rel = `private/coursewerk/evidence/${source.id}.txt`;
     fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
     fs.writeFileSync(path.join(root, rel), text);
     source.rightsBasis.evidenceSnapshot = rel;
@@ -130,10 +130,10 @@ function publicFixture({ sourceLicense = "CC-BY-4.0", manifestLicense = sourceLi
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-assurance-"));
   const m = manifest(manifestLicense);
   writeJson(path.join(root, "alembic.json"), m);
-  writeJson(path.join(root, "metadata", "FOUNDATION.json"), attachEvidence(root, publicFoundation(sourceLicense, outputLicense)));
+  writeJson(path.join(root, "private", "coursewerk", "FOUNDATION.json"), attachEvidence(root, publicFoundation(sourceLicense, outputLicense)));
   const provenance = { schemaVersion: 1, items: [] };
-  writeJson(path.join(root, "metadata", "PROVENANCE.json"), provenance);
-  fs.writeFileSync(path.join(root, "metadata", "ATTRIBUTION.md"), renderAttribution(provenance));
+  writeJson(path.join(root, "private", "coursewerk", "PROVENANCE.json"), provenance);
+  (fs.mkdirSync(path.dirname(path.join(root, "provenance", "coursewerk", "ATTRIBUTION.md")), { recursive: true }), fs.writeFileSync)(path.join(root, "provenance", "coursewerk", "ATTRIBUTION.md"), renderAttribution(provenance));
   fs.writeFileSync(path.join(root, "LICENSE"), shortLicense ? "Creative Commons Attribution 4.0 International" : fullLicense(manifestLicense));
   return { root, manifest: m };
 }
@@ -186,7 +186,7 @@ test("known OpenStax Chemistry 2e policy rejects CC BY", () => {
   foundation.sources[0].title = "Chemistry 2e";
   foundation.sources[0].publisher = "OpenStax";
   foundation.sources[0].canonicalUrl = "https://openstax.org/books/chemistry-2e/pages/preface";
-  writeJson(path.join(f.root, "metadata", "FOUNDATION.json"), attachOpenStaxRestriction(f.root, foundation));
+  writeJson(path.join(f.root, "private", "coursewerk", "FOUNDATION.json"), attachOpenStaxRestriction(f.root, foundation));
   const result = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.match(result.hardFailures.join("\n"), /requires CC-BY-NC-SA-4\.0/);
 });
@@ -209,7 +209,7 @@ test("known OpenStax attribution is required in every public deliverable", () =>
       verifiedAt: "2026-07-13",
     },
   };
-  writeJson(path.join(f.root, "metadata", "FOUNDATION.json"), attachEvidence(f.root, foundation));
+  writeJson(path.join(f.root, "private", "coursewerk", "FOUNDATION.json"), attachEvidence(f.root, foundation));
   fs.mkdirSync(path.join(f.root, "study-guide"), { recursive: true });
   fs.writeFileSync(path.join(f.root, "study-guide", "ch1.md"), "# Chapter 1\nNo source footer.\n");
   const result = auditAssurance({ root: f.root, manifest: f.manifest });
@@ -239,7 +239,7 @@ test("known OpenStax Chemistry 2e produces a nonblocking source-preference warni
       placement: "every-public-deliverable",
     },
   };
-  writeJson(path.join(f.root, "metadata", "FOUNDATION.json"), attachOpenStaxRestriction(f.root, foundation));
+  writeJson(path.join(f.root, "private", "coursewerk", "FOUNDATION.json"), attachOpenStaxRestriction(f.root, foundation));
   fs.mkdirSync(path.join(f.root, "study-guide"), { recursive: true });
   fs.writeFileSync(path.join(f.root, "study-guide", "ch1.md"), "# Chapter 1\nAccess for free at https://openstax.org/books/chemistry-2e/pages/1-introduction\n");
   const result = auditAssurance({ root: f.root, manifest: f.manifest });
@@ -252,21 +252,21 @@ test("public source requires an authoritative evidence type", () => {
   const f = publicFixture();
   const foundation = publicFoundation();
   delete foundation.sources[0].rightsBasis.evidenceType;
-  writeJson(path.join(f.root, "metadata", "FOUNDATION.json"), attachEvidence(f.root, foundation));
+  writeJson(path.join(f.root, "private", "coursewerk", "FOUNDATION.json"), attachEvidence(f.root, foundation));
   const result = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.match(result.hardFailures.join("\n"), /authoritative evidenceType is required/);
 });
 
 test("rights evidence snapshot hash is release-blocking", () => {
   const f = publicFixture();
-  fs.appendFileSync(path.join(f.root, "metadata", "evidence", "source-1.txt"), "tampered");
+  (fs.mkdirSync(path.dirname(path.join(f.root, "private", "coursewerk", "evidence", "source-1.txt")), { recursive: true }), fs.appendFileSync)(path.join(f.root, "private", "coursewerk", "evidence", "source-1.txt"), "tampered");
   const result = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.match(result.hardFailures.join("\n"), /evidenceSnapshot sha256/);
 });
 
 test("a generic AI-use notice is recorded but does not amend the copyright license", () => {
   const f = publicFixture();
-  const foundation = JSON.parse(fs.readFileSync(path.join(f.root, "metadata", "FOUNDATION.json"), "utf8"));
+  const foundation = JSON.parse(fs.readFileSync(path.join(f.root, "private", "coursewerk", "FOUNDATION.json"), "utf8"));
   const source = foundation.sources[0];
   const evidence = "Official evidence: Attribution 4.0 https://creativecommons.org/licenses/by/4.0/. This book may not be used in the training of large language models or otherwise be ingested into large language models or generative AI offerings without the publisher's permission.";
   const file = path.join(f.root, source.rightsBasis.evidenceSnapshot);
@@ -276,7 +276,7 @@ test("a generic AI-use notice is recorded but does not amend the copyright licen
   source.rightsBasis.evidenceRetrieval.byteLength = Buffer.byteLength(evidence);
   const receipt = buildPreflightReceipt({ source, evidenceBytes: Buffer.from(evidence), retrieval: source.rightsBasis.evidenceRetrieval, operator: source.rightsBasis.evidenceCapture.operator, generatedAt: "2026-07-13T00:00:00Z" });
   writePreflightReceipt(f.root, source, receipt);
-  writeJson(path.join(f.root, "metadata", "FOUNDATION.json"), foundation);
+  writeJson(path.join(f.root, "private", "coursewerk", "FOUNDATION.json"), foundation);
   const result = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.equal(result.canPack, true, result.hardFailures.join("\n"));
   assert.match(result.warnings.join("\n"), /legal effect is not determined by Coursewerk/);
@@ -306,8 +306,8 @@ test("a generic AI-use notice does not block private authoring readiness", () =>
   source.rightsBasis.evidenceRetrieval.byteLength = Buffer.byteLength(evidence);
   const receipt = buildPreflightReceipt({ source, evidenceBytes: Buffer.from(evidence), retrieval: source.rightsBasis.evidenceRetrieval, operator: source.rightsBasis.evidenceCapture.operator, generatedAt: "2026-07-13T00:00:00Z" });
   writePreflightReceipt(root, source, receipt);
-  writeJson(path.join(root, "metadata", "FOUNDATION.json"), foundation);
-  writeJson(path.join(root, "metadata", "PROVENANCE.json"), { schemaVersion: 1, items: [] });
+  writeJson(path.join(root, "private", "coursewerk", "FOUNDATION.json"), foundation);
+  writeJson(path.join(root, "private", "coursewerk", "PROVENANCE.json"), { schemaVersion: 1, items: [] });
   const result = auditAssurance({ root });
   assert.equal(result.authoringReady, true, result.privateFailures.join("\n"));
   assert.match(result.warnings.join("\n"), /legal effect is not determined by Coursewerk/);
@@ -323,8 +323,8 @@ test("private authoring does not require source-rights evidence", () => {
   delete foundation.outputLicense;
   delete foundation.outputAuthors;
   foundation.sources[0].rightsBasis = { type: "open-license", license: "CC-BY-4.0" };
-  writeJson(path.join(root, "metadata", "FOUNDATION.json"), foundation);
-  writeJson(path.join(root, "metadata", "PROVENANCE.json"), { schemaVersion: 1, items: [] });
+  writeJson(path.join(root, "private", "coursewerk", "FOUNDATION.json"), foundation);
+  writeJson(path.join(root, "private", "coursewerk", "PROVENANCE.json"), { schemaVersion: 1, items: [] });
   const result = auditAssurance({ root });
   assert.equal(result.authoringReady, true, result.privateFailures.join("\n"));
   assert.match(result.warnings.join("\n"), /no rights receipt; permitted for non-published authoring/);
@@ -333,41 +333,41 @@ test("private authoring does not require source-rights evidence", () => {
 
 test("public OER requires accountable authorship and rejects an AI agent as asset creator", () => {
   const f = publicFixture();
-  const foundation = JSON.parse(fs.readFileSync(path.join(f.root, "metadata", "FOUNDATION.json"), "utf8"));
+  const foundation = JSON.parse(fs.readFileSync(path.join(f.root, "private", "coursewerk", "FOUNDATION.json"), "utf8"));
   delete foundation.outputAuthors;
-  writeJson(path.join(f.root, "metadata", "FOUNDATION.json"), foundation);
+  writeJson(path.join(f.root, "private", "coursewerk", "FOUNDATION.json"), foundation);
   let result = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.match(result.hardFailures.join("\n"), /accountable output author/);
 
   foundation.outputAuthors = [{ name: "Avery Coursemaker", role: "author", rightsHolder: true, accountabilityConfirmedByUser: true }];
-  writeJson(path.join(f.root, "metadata", "FOUNDATION.json"), foundation);
+  writeJson(path.join(f.root, "private", "coursewerk", "FOUNDATION.json"), foundation);
   fs.mkdirSync(path.join(f.root, "assets"), { recursive: true });
   fs.mkdirSync(path.join(f.root, "study-guide"), { recursive: true });
   fs.writeFileSync(path.join(f.root, "assets", "ai.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>");
   fs.writeFileSync(path.join(f.root, "study-guide", "chapter.md"), "# Chapter\n\n![Figure](../assets/ai.svg)\n");
   const provenance = { schemaVersion: 1, items: [{ id: "ai-asset", type: "image", localPath: "assets/ai.svg", usedIn: ["study-guide/chapter.md"], title: "Figure", creator: "Coursewerk agent", attribution: "Generated by Coursewerk agent", license: "CC-BY-4.0", provenanceStatus: "self-generated", publicationStatus: "cleared" }] };
-  writeJson(path.join(f.root, "metadata", "PROVENANCE.json"), provenance);
-  fs.writeFileSync(path.join(f.root, "metadata", "ATTRIBUTION.md"), renderAttribution(provenance));
+  writeJson(path.join(f.root, "private", "coursewerk", "PROVENANCE.json"), provenance);
+  (fs.mkdirSync(path.dirname(path.join(f.root, "provenance", "coursewerk", "ATTRIBUTION.md")), { recursive: true }), fs.writeFileSync)(path.join(f.root, "provenance", "coursewerk", "ATTRIBUTION.md"), renderAttribution(provenance));
   result = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.match(result.hardFailures.join("\n"), /original asset creator must match an accountable outputAuthors name/);
 });
 
 test("public author identity must be final, explicit, and user-confirmed", () => {
   const f = publicFixture();
-  const foundation = JSON.parse(fs.readFileSync(path.join(f.root, "metadata", "FOUNDATION.json"), "utf8"));
+  const foundation = JSON.parse(fs.readFileSync(path.join(f.root, "private", "coursewerk", "FOUNDATION.json"), "utf8"));
   foundation.outputAuthors = [{ name: "Temporary course maintainer", role: "author", rightsHolder: true, accountabilityConfirmedByUser: true }];
-  writeJson(path.join(f.root, "metadata", "FOUNDATION.json"), foundation);
+  writeJson(path.join(f.root, "private", "coursewerk", "FOUNDATION.json"), foundation);
   let result = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.match(result.hardFailures.join("\n"), /placeholder or temporary public identities/);
 
   foundation.outputAuthors = [{ name: "Named Course Author", role: "author", rightsHolder: true, accountabilityConfirmedByUser: false }];
-  writeJson(path.join(f.root, "metadata", "FOUNDATION.json"), foundation);
+  writeJson(path.join(f.root, "private", "coursewerk", "FOUNDATION.json"), foundation);
   result = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.match(result.hardFailures.join("\n"), /accountabilityConfirmedByUser=true/);
 
   delete foundation.outputAuthors[0].rightsHolder;
   foundation.outputAuthors[0].accountabilityConfirmedByUser = true;
-  writeJson(path.join(f.root, "metadata", "FOUNDATION.json"), foundation);
+  writeJson(path.join(f.root, "private", "coursewerk", "FOUNDATION.json"), foundation);
   result = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.match(result.hardFailures.join("\n"), /rightsHolder must be recorded explicitly/);
 });
@@ -379,8 +379,8 @@ test("verified external media requires retained rights evidence", () => {
   fs.writeFileSync(path.join(f.root, "assets", "photo.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>\n");
   fs.writeFileSync(path.join(f.root, "study-guide", "chapter.md"), "# Chapter\n\nSource: https://example.org/book\n\n![Licensed photo](../assets/photo.svg)\n");
   const provenance = { schemaVersion: 1, items: [{ id: "photo-1", type: "image", localPath: "assets/photo.svg", usedIn: ["study-guide/chapter.md"], title: "Licensed photo", creator: "Example Photographer", sourceUrl: "https://example.org/photo", attribution: "Example Photographer, CC BY 4.0", license: "CC-BY-4.0", provenanceStatus: "verified", publicationStatus: "cleared" }] };
-  writeJson(path.join(f.root, "metadata", "PROVENANCE.json"), provenance);
-  fs.writeFileSync(path.join(f.root, "metadata", "ATTRIBUTION.md"), renderAttribution(provenance));
+  writeJson(path.join(f.root, "private", "coursewerk", "PROVENANCE.json"), provenance);
+  (fs.mkdirSync(path.dirname(path.join(f.root, "provenance", "coursewerk", "ATTRIBUTION.md")), { recursive: true }), fs.writeFileSync)(path.join(f.root, "provenance", "coursewerk", "ATTRIBUTION.md"), renderAttribution(provenance));
   let result = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.match(result.hardFailures.join("\n"), /verified external media requires an authoritative rightsEvidence/);
 
@@ -391,7 +391,7 @@ test("verified external media requires retained rights evidence", () => {
   result = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.equal(result.canPack, true, result.hardFailures.join("\n"));
 
-  const updated = JSON.parse(fs.readFileSync(path.join(f.root, "metadata", "PROVENANCE.json"), "utf8"));
+  const updated = JSON.parse(fs.readFileSync(path.join(f.root, "private", "coursewerk", "PROVENANCE.json"), "utf8"));
   fs.appendFileSync(path.join(f.root, updated.items[0].rightsEvidence.evidenceSnapshot), "tampered");
   result = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.match(result.hardFailures.join("\n"), /media rights-evidence snapshot sha256 is missing or stale/);
@@ -405,7 +405,7 @@ test("CC BY adaptation can use the explicit compatible CC BY-SA output", () => {
 
 test("public attribution must be generated exactly from provenance", () => {
   const f = publicFixture();
-  fs.writeFileSync(path.join(f.root, "metadata", "ATTRIBUTION.md"), "# Hand-edited attribution\n");
+  (fs.mkdirSync(path.dirname(path.join(f.root, "provenance", "coursewerk", "ATTRIBUTION.md")), { recursive: true }), fs.writeFileSync)(path.join(f.root, "provenance", "coursewerk", "ATTRIBUTION.md"), "# Hand-edited attribution\n");
   const result = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.match(result.hardFailures.join("\n"), /does not exactly match generated structured provenance/);
 });
@@ -413,8 +413,8 @@ test("public attribution must be generated exactly from provenance", () => {
 test("incorporated assets require existing paths and usedIn locations", () => {
   const f = publicFixture();
   const provenance = { schemaVersion: 1, items: [{ id: "asset-1", type: "image", localPath: "assets/missing.png", title: "Missing", creator: "Creator", sourceUrl: "https://example.org/image", license: "CC-BY-4.0", attribution: "Creator, CC BY 4.0", provenanceStatus: "verified", publicationStatus: "cleared", usedIn: [] }] };
-  writeJson(path.join(f.root, "metadata", "PROVENANCE.json"), provenance);
-  fs.writeFileSync(path.join(f.root, "metadata", "ATTRIBUTION.md"), renderAttribution(provenance));
+  writeJson(path.join(f.root, "private", "coursewerk", "PROVENANCE.json"), provenance);
+  (fs.mkdirSync(path.dirname(path.join(f.root, "provenance", "coursewerk", "ATTRIBUTION.md")), { recursive: true }), fs.writeFileSync)(path.join(f.root, "provenance", "coursewerk", "ATTRIBUTION.md"), renderAttribution(provenance));
   const result = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.match(result.hardFailures.join("\n"), /localPath does not exist/);
   assert.match(result.hardFailures.join("\n"), /usedIn must list/);
@@ -427,15 +427,15 @@ test("provenance usedIn must point to a document that actually references the as
   fs.writeFileSync(path.join(f.root, "assets", "figure.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>\n");
   fs.writeFileSync(path.join(f.root, "study-guide", "chapter.md"), "# Chapter\n\nNo figure is used here.\n");
   const provenance = { schemaVersion: 1, items: [{ id: "asset-1", type: "image", localPath: "assets/figure.svg", title: "Figure", creator: "Course author", attribution: "Course author, original figure", provenanceStatus: "self-generated", publicationStatus: "cleared", usedIn: ["study-guide/chapter.md"] }] };
-  writeJson(path.join(f.root, "metadata", "PROVENANCE.json"), provenance);
-  fs.writeFileSync(path.join(f.root, "metadata", "ATTRIBUTION.md"), renderAttribution(provenance));
+  writeJson(path.join(f.root, "private", "coursewerk", "PROVENANCE.json"), provenance);
+  (fs.mkdirSync(path.dirname(path.join(f.root, "provenance", "coursewerk", "ATTRIBUTION.md")), { recursive: true }), fs.writeFileSync)(path.join(f.root, "provenance", "coursewerk", "ATTRIBUTION.md"), renderAttribution(provenance));
   const result = auditAssurance({ root: f.root, manifest: f.manifest });
   assert.match(result.hardFailures.join("\n"), /does not actually reference assets\/figure\.svg/);
 });
 
 test("personal-private unknown provenance can pass private readiness but blocks publication", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-personal-"));
-  writeJson(path.join(root, "metadata", "FOUNDATION.json"), {
+  writeJson(path.join(root, "private", "coursewerk", "FOUNDATION.json"), {
     schemaVersion: 1,
     usageProfile: "personal-private",
     audience: "creator-only",
@@ -457,7 +457,7 @@ test("personal-private unknown provenance can pass private readiness but blocks 
       rightsBasis: { type: "unknown" },
     }],
   });
-  writeJson(path.join(root, "metadata", "PROVENANCE.json"), {
+  writeJson(path.join(root, "private", "coursewerk", "PROVENANCE.json"), {
     schemaVersion: 1,
     items: [{
       id: "asset-unknown-1",
@@ -483,13 +483,13 @@ test("personal-private unknown provenance can pass private readiness but blocks 
 
 test("unresolved private item must be visibly labelled", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-personal-label-"));
-  writeJson(path.join(root, "metadata", "FOUNDATION.json"), {
+  writeJson(path.join(root, "private", "coursewerk", "FOUNDATION.json"), {
     schemaVersion: 1, usageProfile: "personal-private", audience: "creator-only", access: "local-device",
     redistribution: "none", jurisdiction: "HK", outputLicense: null,
     privacy: { containsPersonalData: false, containsRestrictedContent: false },
     sources: [{ id: "s", title: "Source", publisher: "Unknown", canonicalUrl: "https://example.invalid", role: "primary", use: "reference", scope: ["one page"], usedIn: ["study-guide/x.md"], blockReason: "Unknown", rightsBasis: { type: "unknown" } }],
   });
-  writeJson(path.join(root, "metadata", "PROVENANCE.json"), {
+  writeJson(path.join(root, "private", "coursewerk", "PROVENANCE.json"), {
     schemaVersion: 1,
     items: [{ id: "x", localPath: "assets/x.png", usedIn: ["study-guide/x.md"], title: "X", attribution: "Unknown", provenanceStatus: "unknown", publicationStatus: "blocked", blockReason: "Unknown" }],
   });
@@ -540,8 +540,8 @@ test("pack succeeds only after a valid public assurance pass", () => {
   };
   writeJson(path.join(inputs, "SOURCE_CORPUS.json"), corpus);
   writeSourceRecord(f.root, corpus);
-  const foundation = JSON.parse(fs.readFileSync(path.join(f.root, "metadata", "FOUNDATION.json"), "utf8"));
-  writeJson(path.join(f.root, "metadata", "KEY_FACT_REVIEW.json"), {
+  const foundation = JSON.parse(fs.readFileSync(path.join(f.root, "private", "coursewerk", "FOUNDATION.json"), "utf8"));
+  writeJson(path.join(f.root, "private", "coursewerk", "KEY_FACT_REVIEW.json"), {
     schemaVersion: 1,
     mode: "light",
     reviewKind: "same-model-independent-pass",
@@ -632,7 +632,7 @@ function coherentChapterFixture() {
     fs.mkdirSync(path.dirname(path.join(f.root, rel)), { recursive: true });
     fs.writeFileSync(path.join(f.root, rel), text);
   }
-  writeJson(path.join(f.root, "metadata", "MEDIA_PLAN.json"), {
+  writeJson(path.join(f.root, "private", "coursewerk", "MEDIA_PLAN.json"), {
     schemaVersion: 1,
     chapters: [{
       slug: "ch1",
@@ -688,7 +688,7 @@ test("component-index initialization creates an automatic clean Git baseline", (
   const state = outputGitState(root);
   assert.ok(state.head);
   assert.equal(state.clean, true);
-  assert.ok(fs.existsSync(path.join(root, "metadata", "COMPONENT_INDEX.json")));
+  assert.ok(fs.existsSync(path.join(root, "private", "coursewerk", "COMPONENT_INDEX.json")));
 });
 
 test("declared chapters require all five indexed deliverable components", () => {
@@ -725,7 +725,7 @@ test("revision review becomes stale after any further edit", () => {
 
 // ---- D54: reference-only sources --------------------------------------------------------------------------------
 const addReference = (f, over = {}) => {
-  const file = path.join(f.root, "metadata", "FOUNDATION.json"), fd = JSON.parse(fs.readFileSync(file, "utf8"));
+  const file = path.join(f.root, "private", "coursewerk", "FOUNDATION.json"), fd = JSON.parse(fs.readFileSync(file, "utf8"));
   fd.sources.push({ id: "textbook-a", title: "A Polymer Textbook", authors: "A. Author", edition: "3rd", role: "supplemental", use: "reference", scope: ["chapters 1-13, for knowledge and fact checking"],
     rightsBasis: { type: "reference-only", statement: "The textbooks provide the knowledge and help to check the results, but contents should not be directly delivered." }, ...over });
   writeJson(file, fd);

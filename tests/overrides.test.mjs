@@ -363,5 +363,5 @@ test("pure + deterministic: no mutation of inputs, identical output for identica
 });
 
 test("OVERRIDES_PATH is the canonical package location", () => {
-  assert.equal(OVERRIDES_PATH, "metadata/OVERRIDES.json");
+  assert.equal(OVERRIDES_PATH, "private/coursewerk/OVERRIDES.json");
 });

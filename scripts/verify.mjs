@@ -159,8 +159,8 @@ try {
     out({ resolved: resolved.length, broken: resolved.filter((r) => !(r.status >= 200 && r.status < 400)).map((r) => r.url), skippedOutsideDestinations: skipped }); process.exit(0);
   }
   if (cmd === "status") {
-    const dir = recordFile(root, "metadata/verification");
-    const recs = fs.existsSync(dir) ? readDispatches((p) => fs.readFileSync(recordFile(root, p), "utf8"), fs.readdirSync(dir).map((f) => `metadata/verification/${f}`)) : [];
+    const dir = recordFile(root, "private/coursewerk/verification");
+    const recs = fs.existsSync(dir) ? readDispatches((p) => fs.readFileSync(recordFile(root, p), "utf8"), fs.readdirSync(dir).map((f) => `private/coursewerk/verification/${f}`)) : [];
     const acts = loggedInstructorActs(root);
     const units = loadUnits(root, reader).filter((u) => unitNeedsEvidence(u));
     const rows = units.map((u) => {

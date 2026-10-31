@@ -28,7 +28,7 @@ function accept(root) {
 
 function addReleaseReviews(root, foundation) {
   const carrierSources = ["practice/ch1.md", "slides/ch1.md", "study-guide/ch1.md"].sort();
-  writeJson(path.join(root, "metadata", "VISUAL_REVIEW.json"), {
+  writeJson(path.join(root, "private", "coursewerk", "VISUAL_REVIEW.json"), {
     schemaVersion: 1,
     status: "passed",
     reviewer: { type: "human", name: "QA Human Reviewer" },
@@ -44,7 +44,7 @@ function addReleaseReviews(root, foundation) {
       localAssetDigests: [],
     })),
   });
-  writeJson(path.join(root, "metadata", "KEY_FACT_REVIEW.json"), {
+  writeJson(path.join(root, "private", "coursewerk", "KEY_FACT_REVIEW.json"), {
     schemaVersion: 1,
     mode: "light",
     reviewKind: "same-model-independent-pass",
@@ -63,25 +63,25 @@ function cleanFixture() {
   const parent = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-qa-"));
   const root = path.join(parent, "package");
   const inputs = path.join(parent, "inputs");
-  fs.mkdirSync(path.join(root, "metadata", "evidence"), { recursive: true });
+  fs.mkdirSync(path.join(root, "private", "coursewerk", "evidence"), { recursive: true });
   fs.mkdirSync(inputs, { recursive: true });
   const evidence = "Official evidence: Attribution 4.0 https://creativecommons.org/licenses/by/4.0/";
-  fs.writeFileSync(path.join(root, "metadata", "evidence", "source-1.txt"), evidence);
+  (fs.mkdirSync(path.dirname(path.join(root, "private", "coursewerk", "evidence", "source-1.txt")), { recursive: true }), fs.writeFileSync)(path.join(root, "private", "coursewerk", "evidence", "source-1.txt"), evidence);
   const foundation = {
     schemaVersion: 1, usageProfile: "public-oer", audience: "public", access: "public-web", redistribution: "open-license", jurisdiction: "international", outputLicense: "CC-BY-4.0",
     outputAuthors: [{ name: "QA Course Author", role: "author", rightsHolder: true, accountabilityConfirmedByUser: true }],
     privacy: { containsPersonalData: false, containsRestrictedContent: false },
-    sources: [{ id: "source-1", title: "Example Source", edition: "1", publisher: "Example", canonicalUrl: "https://example.org/source", role: "primary", use: "reference", scope: ["chapter 1"], rightsBasis: { type: "open-license", license: "CC-BY-4.0", evidenceType: "official-publisher-page", evidenceUrl: "https://example.org/license", verifiedAt: "2026-07-13", evidenceSnapshot: "metadata/evidence/source-1.txt", evidenceSha256: sha(evidence), evidenceRetrieval: { captureMode: "local-file", claimedEvidenceUrl: "https://example.org/license", localFileName: "source-1.txt", retrievedAt: "2026-07-13T00:00:00Z", byteLength: Buffer.byteLength(evidence), contentType: "text/plain", tool: { name: "coursewerk", version: "test" } }, evidenceCapture: { operator: { type: "automation", name: "fixture" }, capturedAt: "2026-07-13T00:00:00Z", tool: { name: "coursewerk", version: "test" } }, processUseReview: { schemaVersion: 1, scannedAt: "2026-07-13T00:00:00Z", status: "no-notice-detected", legalEffectDetermined: false, notices: [] } }, requiredAttribution: { textIncludes: "Source:", url: "https://example.org/source", placement: "every-public-deliverable" } }],
+    sources: [{ id: "source-1", title: "Example Source", edition: "1", publisher: "Example", canonicalUrl: "https://example.org/source", role: "primary", use: "reference", scope: ["chapter 1"], rightsBasis: { type: "open-license", license: "CC-BY-4.0", evidenceType: "official-publisher-page", evidenceUrl: "https://example.org/license", verifiedAt: "2026-07-13", evidenceSnapshot: "private/coursewerk/evidence/source-1.txt", evidenceSha256: sha(evidence), evidenceRetrieval: { captureMode: "local-file", claimedEvidenceUrl: "https://example.org/license", localFileName: "source-1.txt", retrievedAt: "2026-07-13T00:00:00Z", byteLength: Buffer.byteLength(evidence), contentType: "text/plain", tool: { name: "coursewerk", version: "test" } }, evidenceCapture: { operator: { type: "automation", name: "fixture" }, capturedAt: "2026-07-13T00:00:00Z", tool: { name: "coursewerk", version: "test" } }, processUseReview: { schemaVersion: 1, scannedAt: "2026-07-13T00:00:00Z", status: "no-notice-detected", legalEffectDetermined: false, notices: [] } }, requiredAttribution: { textIncludes: "Source:", url: "https://example.org/source", placement: "every-public-deliverable" } }],
   };
   const receipt = buildPreflightReceipt({ source: foundation.sources[0], evidenceBytes: Buffer.from(evidence), retrieval: foundation.sources[0].rightsBasis.evidenceRetrieval, operator: foundation.sources[0].rightsBasis.evidenceCapture.operator, generatedAt: "2026-07-13T00:00:00Z" });
   writePreflightReceipt(root, foundation.sources[0], receipt);
   const manifest = { schemaVersion: 2, packageId: "pending", title: "QA Fixture", license: "CC-BY-4.0", description: "A complete fixture for testing Coursewerk quality and release behavior.", keywords: ["quality", "course", "fixture"], discipline: "testing", unitTerm: "chapter", courseContext: { courseName: "QA Course", level: "introductory" }, createdAt: "2026-07-13T00:00:00Z", chapters: [{ slug: "ch1", title: "Chapter 1" }] };
   const provenance = { schemaVersion: 1, items: [] };
   writeJson(path.join(root, "alembic.json"), manifest);
-  writeJson(path.join(root, "metadata", "FOUNDATION.json"), foundation);
-  writeJson(path.join(root, "metadata", "PROVENANCE.json"), provenance);
-  writeJson(path.join(root, "metadata", "MEDIA_PLAN.json"), { schemaVersion: 1, chapters: { ch1: { realImageDecision: "not-used", rationale: "This abstract QA fixture has no real-world subject for which a photograph would improve instruction.", reviewedBy: "QA Course Author", reviewedAt: "2026-07-13" } } });
-  fs.writeFileSync(path.join(root, "metadata", "ATTRIBUTION.md"), renderAttribution(provenance));
+  writeJson(path.join(root, "private", "coursewerk", "FOUNDATION.json"), foundation);
+  writeJson(path.join(root, "private", "coursewerk", "PROVENANCE.json"), provenance);
+  writeJson(path.join(root, "private", "coursewerk", "MEDIA_PLAN.json"), { schemaVersion: 1, chapters: { ch1: { realImageDecision: "not-used", rationale: "This abstract QA fixture has no real-world subject for which a photograph would improve instruction.", reviewedBy: "QA Course Author", reviewedAt: "2026-07-13" } } });
+  (fs.mkdirSync(path.dirname(path.join(root, "provenance", "coursewerk", "ATTRIBUTION.md")), { recursive: true }), fs.writeFileSync)(path.join(root, "provenance", "coursewerk", "ATTRIBUTION.md"), renderAttribution(provenance));
   fs.writeFileSync(path.join(root, "LICENSE"), fs.readFileSync(path.join(repo, "scripts", "data", "licenses", "CC-BY-4.0.txt")));
   const credit = "\nSource: https://example.org/source\n";
   const tabs = Array.from({ length: 10 }, (_, i) => `:::: tabs\n::: tab Q\nObjective 1: Question ${i + 1}\n:::\n::: tab Answer\nAnswer ${i + 1}\n:::\n::::`).join("\n");
@@ -153,7 +153,7 @@ test("release REQUIRES a stored semantic index — an un-indexed source-bearing 
 
 test("public release requires the mode-appropriate key-fact critique", () => {
   const f = cleanFixture();
-  fs.rmSync(path.join(f.root, "metadata", "KEY_FACT_REVIEW.json"));
+  fs.rmSync(path.join(f.root, "private", "coursewerk", "KEY_FACT_REVIEW.json"));
   accept(f.root);
   const { run, report } = runQa(f);
   assert.notEqual(run.status, 0);
@@ -221,7 +221,7 @@ test("runtime diagrams require visible text alternatives", () => {
 
 test("a chapter without a photograph requires a reviewed media rationale", () => {
   const f = cleanFixture();
-  fs.rmSync(path.join(f.root, "metadata", "MEDIA_PLAN.json"));
+  fs.rmSync(path.join(f.root, "private", "coursewerk", "MEDIA_PLAN.json"));
   accept(f.root);
   const { report } = runQa(f);
   assert.match(report.formatContracts.failures.map((item) => item.issue).join("\n"), /no real photograph/);
@@ -282,7 +282,7 @@ function indexSemantic(root) {
 // "Distinct source corpus prose for deterministic comparison and copyright review." repeated).
 const FAITHFUL_QUOTE = "Distinct source corpus prose for deterministic comparison and copyright review";
 const EDITED_QUOTE = FAITHFUL_QUOTE.replace("copyright", "trademark"); // one substituted word — absent from the source
-const quotationItems = (root) => JSON.parse(fs.readFileSync(path.join(root, "metadata", "REVIEW_QUEUE.json"), "utf8"))
+const quotationItems = (root) => JSON.parse(fs.readFileSync(path.join(root, "private", "coursewerk", "REVIEW_QUEUE.json"), "utf8"))
   .items.filter((it) => it.detectorKinds.includes("unverifiable-quotation"));
 
 test("a FAITHFUL quotation of the pinned source verifies — zero unverifiable-quotation flags (the FP budget)", () => {

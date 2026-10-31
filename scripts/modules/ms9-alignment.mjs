@@ -28,7 +28,7 @@ import { originIndex } from "../lib/core/authorship.mjs";
 
 function currentUnits(s, sides = []) {
   const out = [];
-  for (const p of s.paths.filter((x) => x.startsWith("metadata/units/") && x.endsWith(".json")).filter(trustedSidecarPath(s.text("metadata/LOG.jsonl"))).sort()) {
+  for (const p of s.paths.filter((x) => x.startsWith("private/coursewerk/units/") && x.endsWith(".json")).filter(trustedSidecarPath(s.text("private/coursewerk/LOG.jsonl"))).sort()) {
     const side = s.json(p); if (!Array.isArray(side?.units) || typeof side.deliverable !== "string") continue;
     sides.push(side);
     const seg = segmentDeliverable(s.text(side.deliverable) || "", side.deliverable, segmentOptions(s, side.deliverable)).units;
@@ -43,7 +43,7 @@ function run(s) {
   const out = [];
   const sides = [], all = currentUnits(s, sides), byId = new Map(all.map((u) => [u.id, u]));
   const ancestry = originIndex(sides); // whose text it is, by the one rule (authorship.mjs; red-team round 5)
-  const log = logRecordsOf(s.text("metadata/LOG.jsonl"));
+  const log = logRecordsOf(s.text("private/coursewerk/LOG.jsonl"));
   const plan = planOf(s), baseline = reviewBaselines(log), overrules = linkOverrules(log);
   const byUnit = new Map();
   for (const r of readDispatches((p) => s.text(p), s.paths).filter((x) => x.kind === "alignment")) {

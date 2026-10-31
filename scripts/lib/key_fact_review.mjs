@@ -6,7 +6,7 @@ import { REQUIRED_KEY_FACT_CHECKS } from "./key_fact_checks.mjs";
 import { blindBundleDigest } from "./blind_bundle.mjs";
 import { normalizeMarkdownForHash } from "./coherence.mjs";
 
-export const KEY_FACT_REVIEW_PATH = "metadata/KEY_FACT_REVIEW.json";
+export const KEY_FACT_REVIEW_PATH = "private/coursewerk/KEY_FACT_REVIEW.json";
 export { REQUIRED_KEY_FACT_CHECKS };
 const DELIVERABLE_TOPS = new Set(["concepts", "study-guide", "slides", "assessment-support", "practice"]);
 const sha256 = (value) => crypto.createHash("sha256").update(value).digest("hex");
@@ -39,10 +39,10 @@ export function makeKeyFactBindings(root) {
   return {
     manifestSha256: fileDigest(root, "alembic.json"),
     licenseSha256: fileDigest(root, "LICENSE"),
-    foundationSha256: fileDigest(root, "metadata/FOUNDATION.json"),
-    provenanceSha256: fileDigest(root, "metadata/PROVENANCE.json"),
-    attributionSha256: fileDigest(root, "metadata/ATTRIBUTION.md"),
-    sourceRecordSha256: fileDigest(root, "metadata/SOURCE_RECORD.json"),
+    foundationSha256: fileDigest(root, "private/coursewerk/FOUNDATION.json"),
+    provenanceSha256: fileDigest(root, "private/coursewerk/PROVENANCE.json"),
+    attributionSha256: fileDigest(root, "provenance/coursewerk/ATTRIBUTION.md"),
+    sourceRecordSha256: fileDigest(root, "private/coursewerk/SOURCE_RECORD.json"),
     deliverableTreeSha256: sha256(JSON.stringify(deliverables)),
   };
 }

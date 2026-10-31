@@ -40,7 +40,7 @@ const writeJson = (file, value) => {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, JSON.stringify(value, null, 2) + "\n");
 };
-const REVIEW_FILE = ["metadata", "KEY_FACT_REVIEW.json"];
+const REVIEW_FILE = ["private", "coursewerk", "KEY_FACT_REVIEW.json"];
 const staleness = (audit) => audit.failures.filter((failure) => /bindings are stale/.test(failure));
 
 /** A minimal package that PASSES the whole key-fact gate, so any later failure is the edit's doing. */
@@ -49,10 +49,10 @@ function fixture(temp) {
   const foundation = { schemaVersion: 1, sources: [{ id: "source-1" }] };
   writeJson(path.join(root, "alembic.json"), { schemaVersion: 2, license: "CC-BY-4.0", chapters: [{ slug: "one", title: "One" }] });
   fs.writeFileSync(path.join(root, "LICENSE"), "fixture license\n");
-  writeJson(path.join(root, "metadata", "FOUNDATION.json"), foundation);
-  writeJson(path.join(root, "metadata", "PROVENANCE.json"), { schemaVersion: 1, items: [] });
-  fs.writeFileSync(path.join(root, "metadata", "ATTRIBUTION.md"), "# Attribution\n");
-  writeJson(path.join(root, "metadata", "SOURCE_RECORD.json"), { schemaVersion: 1, sources: [] });
+  writeJson(path.join(root, "private", "coursewerk", "FOUNDATION.json"), foundation);
+  writeJson(path.join(root, "private", "coursewerk", "PROVENANCE.json"), { schemaVersion: 1, items: [] });
+  (fs.mkdirSync(path.dirname(path.join(root, "provenance", "coursewerk", "ATTRIBUTION.md")), { recursive: true }), fs.writeFileSync)(path.join(root, "provenance", "coursewerk", "ATTRIBUTION.md"), "# Attribution\n");
+  writeJson(path.join(root, "private", "coursewerk", "SOURCE_RECORD.json"), { schemaVersion: 1, sources: [] });
   fs.mkdirSync(path.join(root, "study-guide"), { recursive: true });
   fs.writeFileSync(path.join(root, "study-guide", "one.md"), "# One\n\nEvidence-based teaching content.\n");
   const review = {
@@ -87,10 +87,10 @@ function rebind(fixtureUnderTest) {
 const BOUND_RECORDS = [
   { binding: "manifestSha256", edit: (root) => writeJson(path.join(root, "alembic.json"), { schemaVersion: 2, license: "CC-BY-SA-4.0", chapters: [{ slug: "one", title: "One" }] }) },
   { binding: "licenseSha256", edit: (root) => fs.writeFileSync(path.join(root, "LICENSE"), "a different license text\n") },
-  { binding: "foundationSha256", edit: (root) => writeJson(path.join(root, "metadata", "FOUNDATION.json"), { schemaVersion: 1, sources: [{ id: "source-1" }, { id: "source-2" }] }) },
-  { binding: "provenanceSha256", edit: (root) => writeJson(path.join(root, "metadata", "PROVENANCE.json"), { schemaVersion: 1, items: [{ id: "item-1" }] }) },
-  { binding: "attributionSha256", edit: (root) => fs.writeFileSync(path.join(root, "metadata", "ATTRIBUTION.md"), "# Attribution\n\nAdded a required credit line.\n") },
-  { binding: "sourceRecordSha256", edit: (root) => writeJson(path.join(root, "metadata", "SOURCE_RECORD.json"), { schemaVersion: 1, sources: [{ id: "source-1", revision: "2026-07-15" }] }) },
+  { binding: "foundationSha256", edit: (root) => writeJson(path.join(root, "private", "coursewerk", "FOUNDATION.json"), { schemaVersion: 1, sources: [{ id: "source-1" }, { id: "source-2" }] }) },
+  { binding: "provenanceSha256", edit: (root) => writeJson(path.join(root, "private", "coursewerk", "PROVENANCE.json"), { schemaVersion: 1, items: [{ id: "item-1" }] }) },
+  { binding: "attributionSha256", edit: (root) => (fs.mkdirSync(path.dirname(path.join(root, "provenance", "coursewerk", "ATTRIBUTION.md")), { recursive: true }), fs.writeFileSync)(path.join(root, "provenance", "coursewerk", "ATTRIBUTION.md"), "# Attribution\n\nAdded a required credit line.\n") },
+  { binding: "sourceRecordSha256", edit: (root) => writeJson(path.join(root, "private", "coursewerk", "SOURCE_RECORD.json"), { schemaVersion: 1, sources: [{ id: "source-1", revision: "2026-07-15" }] }) },
   { binding: "deliverableTreeSha256", edit: (root) => fs.writeFileSync(path.join(root, "study-guide", "one.md"), "# One\n\nA reviewer corrected this teaching content.\n") },
 ];
 
@@ -169,7 +169,7 @@ test("the review's own content is not bound into itself, so recording a review c
 
   // The paired negative: the file's EXCLUSION is specific to the review, not a hole that swallows
   // metadata/ generally. A sibling metadata record in the same directory is still bound.
-  fs.writeFileSync(path.join(f.root, "metadata", "ATTRIBUTION.md"), "# Attribution\n\nChanged.\n");
+  (fs.mkdirSync(path.dirname(path.join(f.root, "provenance", "coursewerk", "ATTRIBUTION.md")), { recursive: true }), fs.writeFileSync)(path.join(f.root, "provenance", "coursewerk", "ATTRIBUTION.md"), "# Attribution\n\nChanged.\n");
   assert.equal(auditKeyFactReview(f.root, f.foundation).ready, false, "a sibling metadata record must still be bound");
 });
 

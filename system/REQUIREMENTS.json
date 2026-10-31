@@ -2677,7 +2677,7 @@
       "tiers": [
         "T1"
       ],
-      "statement": "The D39 review that lets a re-approval through is the logged spine-review dispatch — its record vouched for by the log (recordHash), made of the current text and exactly the current changed lines; its concerns are re-read from the answer. A file under metadata/spine/review/ is a copy and satisfies nothing. Its meaning answer is bound to its baseline: the full approval it diffed against (seq and hash) and exactly the lines it was asked about, changed and removed — a review answered against one approved text is never current against another.",
+      "statement": "The D39 review that lets a re-approval through is the logged spine-review dispatch — its record vouched for by the log (recordHash), made of the current text and exactly the current changed lines; its concerns are re-read from the answer. A file under private/coursewerk/spine/review/ is a copy and satisfies nothing. Its meaning answer is bound to its baseline: the full approval it diffed against (seq and hash) and exactly the lines it was asked about, changed and removed — a review answered against one approved text is never current against another.",
       "source": "3C red team round 2, CONTROL (studies/p11/redteam-r2/control, 2026-10-06) C4-11; R3 coherence F2",
       "status": "closed",
       "evidence": {
@@ -3044,7 +3044,7 @@
       "tiers": [
         "T1"
       ],
-      "statement": "What ships equals what is read (core/shipped.mjs): a shipped file is exempt only as a harness record named exactly — a list of known record files (the JSON records, metadata/ATTRIBUTION.md, alembic.json, LICENSE, CITATION.cff, .gitignore), record paths of known shapes (unit sidecars, verification dispatches, claim records, preflight receipts, spine origins and reviews, corrections) and the rights-evidence snapshots a record names — never by folder; every other markdown file must be a deliverable, the spine or a confirmed administrative document, and every other non-markdown file that can carry text (html, htm, txt, an svg or pdf outside assets/, json outside the records, any extension but image/audio/video/font media and an svg or pdf under assets/, D49) is refused as document-unchecked wherever it ships from; the pack refuses both.",
+      "statement": "What ships equals what is read (core/shipped.mjs): a shipped file is exempt only as a harness record named exactly — a list of known record files (the JSON records, provenance/coursewerk/ATTRIBUTION.md, alembic.json, LICENSE, CITATION.cff, .gitignore), record paths of known shapes (unit sidecars, verification dispatches, claim records, preflight receipts, spine origins and reviews, corrections) and the rights-evidence snapshots a record names — never by folder; every other markdown file must be a deliverable, the spine or a confirmed administrative document, and every other non-markdown file that can carry text (html, htm, txt, an svg or pdf outside assets/, json outside the records, any extension but image/audio/video/font media and an svg or pdf under assets/, D49) is refused as document-unchecked wherever it ships from; the pack refuses both.",
       "source": "3C red team round 6, CONTROL C1–C3 conformance (studies/p11/redteam-r6/control-c13, 2026-10-11) C3-04",
       "status": "closed",
       "evidence": {
@@ -3105,7 +3105,7 @@
       "tiers": [
         "T1"
       ],
-      "statement": "A setting that changes what is checked is bound to the decision log (R5 F2): once the log shows spine v2 in force, a lowered, missing or unreadable spine setting in metadata/coursewerk.json is a blocking defect (setting-lowered) and the v2 core runs regardless; a package registry may demote a standard module only by the instructor's logged module-change decision (else unlogged-demotion, run at standard maturity); retrieval destinations and the digest size are read from the instructor's logged acts, never the file.",
+      "statement": "A setting that changes what is checked is bound to the decision log (R5 F2): once the log shows spine v2 in force, a lowered, missing or unreadable spine setting in private/coursewerk/coursewerk.json is a blocking defect (setting-lowered) and the v2 core runs regardless; a package registry may demote a standard module only by the instructor's logged module-change decision (else unlogged-demotion, run at standard maturity); retrieval destinations and the digest size are read from the instructor's logged acts, never the file.",
       "source": "3C red team round 5 (studies/p11/redteam-r5/{confidence,coherence}, 2026-10-08), trust lane",
       "status": "closed",
       "evidence": {
@@ -3394,7 +3394,7 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Media files ship as media (D49, operator 2026-10-12): an SVG or PDF under assets/ counts as media like an image (core/shipped.mjs isMedia) — it is not refused as unread text — and is covered by the visual review as an image is (every assets/ component re-owes metadata/VISUAL_REVIEW.json when it changes; a deliverable that embeds it binds its digest). Other text-bearing files that ship (html, txt, json outside the records, an svg or pdf outside assets/ …) are still read or refused.",
+      "statement": "Media files ship as media (D49, operator 2026-10-12): an SVG or PDF under assets/ counts as media like an image (core/shipped.mjs isMedia) — it is not refused as unread text — and is covered by the visual review as an image is (every assets/ component re-owes private/coursewerk/VISUAL_REVIEW.json when it changes; a deliverable that embeds it binds its digest). Other text-bearing files that ship (html, txt, json outside the records, an svg or pdf outside assets/ …) are still read or refused.",
       "source": "operator D49 (2026-10-12), round-6 fix choices",
       "status": "closed",
       "evidence": {
@@ -3634,7 +3634,7 @@
       "tiers": [
         "T1"
       ],
-      "statement": "D53: the delivered package (pack) holds only what Alembic needs — the manifest of the published chapters, LICENSE, README.md/CITATION.cff, the published chapters' texts and checked declared documents, only the assets those texts use, private/, metadata/ATTRIBUTION.md and the pack's own metadata/PUBLISHED.json (decision, licence, accountable authors, AI-assistance disclosure). No working record ships (log, unit, verification and correction records, evidence and source snapshots, settings): no source text reaches Alembic. The release receipt counts what was left out and binds the archive to the local record (publish content hash, log head).",
+      "statement": "D53: the delivered package (pack) holds only what Alembic needs — the manifest of the published chapters, LICENSE, README.md/CITATION.cff, the published chapters' texts and checked declared documents, only the assets those texts use, private/, provenance/coursewerk/ATTRIBUTION.md and the pack's own provenance/coursewerk/PUBLISHED.json (decision, licence, accountable authors, AI-assistance disclosure). No working record ships (log, unit, verification and correction records, evidence and source snapshots, settings): no source text reaches Alembic. The release receipt counts what was left out and binds the archive to the local record (publish content hash, log head).",
       "source": "D53 (operator 2026-10-20)",
       "status": "closed",
       "evidence": {
@@ -3687,6 +3687,21 @@
       "evidence": {
         "T1": [
           "tests/site-export.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.layout",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Records layout (owner 2026-10-31; site-type contract \u00a75 records): one layout for a local package and an Alembic site \u2014 the working record under private/coursewerk/, the public record (ATTRIBUTION.md, PUBLISHED.json, CHECKED.json) under provenance/coursewerk/; the working record never ships, the public record does; scripts/records_move.mjs moves a pre-layout package once (clean git tree, git mv, records only, one logged harness record, the chain kept); a path stored inside an older record (metadata/\u2026) is read at its new place, never rewritten.",
+      "source": "owner 2026-10-31 (records should live where Alembic holds them; the two projects are siblings)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/records-layout.test.mjs"
         ]
       }
     }

@@ -19,7 +19,7 @@ function course(t, { study, pinBook = true, paper = true } = {}) {
   const root = path.join(dir, "package"), inputs = path.join(dir, "inputs");
   const w = (base, rel, text) => { fs.mkdirSync(path.dirname(path.join(base, rel)), { recursive: true }); fs.writeFileSync(path.join(base, rel), text); };
   w(root, "alembic.json", JSON.stringify({ schemaVersion: 2, packageId: "pending", title: "T", license: "CC-BY-4.0", createdAt: "2026-10-21T00:00:00Z", chapters: [{ slug: "ch", title: "Ch" }] }));
-  w(root, "metadata/FOUNDATION.json", JSON.stringify({ schemaVersion: 1, usageProfile: "public-oer", sources: [{ id: "textbook-a", title: "A Textbook", use: "reference", role: "supplemental", scope: ["all"], rightsBasis: { type: "reference-only", statement: "for ideas only" } }] }));
+  w(root, "private/coursewerk/FOUNDATION.json", JSON.stringify({ schemaVersion: 1, usageProfile: "public-oer", sources: [{ id: "textbook-a", title: "A Textbook", use: "reference", role: "supplemental", scope: ["all"], rightsBasis: { type: "reference-only", statement: "for ideas only" } }] }));
   w(root, "study-guide/ch.md", study);
   w(root, "concepts/ch.md", "# Concept Map — Ch\n");
   const sources = [];

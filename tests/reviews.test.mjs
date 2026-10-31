@@ -16,10 +16,10 @@ function keyFactFixture(chapters = ["one"]) {
   const foundation = { schemaVersion: 1, sources: [{ id: "source-1" }] };
   writeJson(path.join(root, "alembic.json"), { schemaVersion: 2, license: "CC-BY-4.0", chapters: chapters.map((slug) => ({ slug, title: slug })) });
   fs.writeFileSync(path.join(root, "LICENSE"), "fixture license\n");
-  writeJson(path.join(root, "metadata", "FOUNDATION.json"), foundation);
-  writeJson(path.join(root, "metadata", "PROVENANCE.json"), { schemaVersion: 1, items: [] });
-  fs.writeFileSync(path.join(root, "metadata", "ATTRIBUTION.md"), "# Attribution\n");
-  writeJson(path.join(root, "metadata", "SOURCE_RECORD.json"), { schemaVersion: 1, sources: [] });
+  writeJson(path.join(root, "private", "coursewerk", "FOUNDATION.json"), foundation);
+  writeJson(path.join(root, "private", "coursewerk", "PROVENANCE.json"), { schemaVersion: 1, items: [] });
+  (fs.mkdirSync(path.dirname(path.join(root, "provenance", "coursewerk", "ATTRIBUTION.md")), { recursive: true }), fs.writeFileSync)(path.join(root, "provenance", "coursewerk", "ATTRIBUTION.md"), "# Attribution\n");
+  writeJson(path.join(root, "private", "coursewerk", "SOURCE_RECORD.json"), { schemaVersion: 1, sources: [] });
   for (const slug of chapters) {
     fs.mkdirSync(path.join(root, "study-guide"), { recursive: true });
     fs.writeFileSync(path.join(root, "study-guide", `${slug}.md`), `# ${slug}\n\nEvidence-based teaching content.\n`);
@@ -37,7 +37,7 @@ function keyFactFixture(chapters = ["one"]) {
     checks: ["accountable-identity", "source-identity-version", "source-license-evidence", "external-media-rights", "output-license-compatibility", "attribution-obligations", "scientific-key-facts"].map((id) => ({ id, status: "passed", note: `The separate pass reviewed ${id} against the current bound records and teaching materials.` })),
     keyFacts: [{ id: "fact-one", claim: "Representative claim.", status: "verified", evidenceSourceIds: ["source-1"], usedIn: ["study-guide/one.md"], note: "The claim was traced independently to source-1 and checked in the chapter study guide." }],
   };
-  writeJson(path.join(root, "metadata", "KEY_FACT_REVIEW.json"), review);
+  writeJson(path.join(root, "private", "coursewerk", "KEY_FACT_REVIEW.json"), review);
   return { root, foundation, review };
 }
 
@@ -45,11 +45,11 @@ test("Light review requires a separate context-reset pass and current license bi
   const fixture = keyFactFixture();
   assert.equal(auditKeyFactReview(fixture.root, fixture.foundation).ready, true);
   fixture.review.independence.contextReset = false;
-  writeJson(path.join(fixture.root, "metadata", "KEY_FACT_REVIEW.json"), fixture.review);
+  writeJson(path.join(fixture.root, "private", "coursewerk", "KEY_FACT_REVIEW.json"), fixture.review);
   assert.match(auditKeyFactReview(fixture.root, fixture.foundation).failures.join("\n"), /contextReset=true/);
 
   fixture.review.independence.contextReset = true;
-  writeJson(path.join(fixture.root, "metadata", "KEY_FACT_REVIEW.json"), fixture.review);
+  writeJson(path.join(fixture.root, "private", "coursewerk", "KEY_FACT_REVIEW.json"), fixture.review);
   fs.appendFileSync(path.join(fixture.root, "LICENSE"), "changed after review\n");
   assert.match(auditKeyFactReview(fixture.root, fixture.foundation).failures.join("\n"), /bindings are stale/);
 });
@@ -65,11 +65,11 @@ test("Full review requires a different reviewer system", () => {
   const fixture = keyFactFixture();
   fixture.review.mode = "full";
   fixture.review.reviewKind = "cross-model";
-  writeJson(path.join(fixture.root, "metadata", "KEY_FACT_REVIEW.json"), fixture.review);
+  writeJson(path.join(fixture.root, "private", "coursewerk", "KEY_FACT_REVIEW.json"), fixture.review);
   assert.match(auditKeyFactReview(fixture.root, fixture.foundation).failures.join("\n"), /reviewer\/model must differ/);
   fixture.review.reviewer.name = "independent reviewer model";
   fixture.review.reviewer.modelId = "independent-reviewer-model-v2";
-  writeJson(path.join(fixture.root, "metadata", "KEY_FACT_REVIEW.json"), fixture.review);
+  writeJson(path.join(fixture.root, "private", "coursewerk", "KEY_FACT_REVIEW.json"), fixture.review);
   assert.equal(auditKeyFactReview(fixture.root, fixture.foundation).ready, true);
 });
 
@@ -89,7 +89,7 @@ test("visual review binds source, local asset, and stable rebuilt carrier finger
     reviewFingerprint: { algorithm: "sha256", normalization: "coursewerk-carrier-v1", value: "a".repeat(64) },
     sourceInspection: { localAssetDigests: [{ reference: "../assets/figure.svg", path: "assets/figure.svg", sha256: sha(asset) }] },
   }] };
-  writeJson(path.join(root, "metadata", "VISUAL_REVIEW.json"), {
+  writeJson(path.join(root, "private", "coursewerk", "VISUAL_REVIEW.json"), {
     schemaVersion: 1,
     status: "passed",
     reviewer: { type: "human", name: "Human Reviewer" },

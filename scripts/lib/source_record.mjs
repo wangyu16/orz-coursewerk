@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-export const SOURCE_RECORD_PATH = "metadata/SOURCE_RECORD.json";
+export const SOURCE_RECORD_PATH = "private/coursewerk/SOURCE_RECORD.json";
 
 export function findDuplicateSourceEntry(entries, candidate) {
   for (const entry of entries || []) {

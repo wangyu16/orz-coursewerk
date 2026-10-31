@@ -1,5 +1,6 @@
 // Round-3 PROBES — the unaudited surface (assurance kernel, source preparation, carriers, spine and
 // term registry, the queue, CLI arguments, idempotence). One per finding; each failed before its fix.
+import { relocate } from "../scripts/lib/records/paths.mjs";
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -37,10 +38,10 @@ function gate(pkg, extra = []) { const json = path.join(pkg, "..", `qa-${Math.ra
 test("H1 · a CC-BY-NC EXCERPT (or asset) cannot reach a CC-BY public pack; a pure reference is warned, not blocked", (t) => {
   const { pkg } = pkgCopy(t);
   const manifest = JSON.parse(read(pkg, "alembic.json"));
-  const foundation = JSON.parse(read(pkg, "metadata/FOUNDATION.json"));
+  const foundation = JSON.parse(read(pkg, "private/coursewerk/FOUNDATION.json"));
   const src = foundation.sources[0];
   src.rightsBasis.type = "open-license"; src.rightsBasis.license = "CC-BY-NC-4.0";
-  const audit = (use, role = "primary") => { src.use = use; src.role = role; write(pkg, "metadata/FOUNDATION.json", JSON.stringify(foundation)); return auditAssurance({ root: pkg, manifest }); };
+  const audit = (use, role = "primary") => { src.use = use; src.role = role; write(pkg, "private/coursewerk/FOUNDATION.json", JSON.stringify(foundation)); return auditAssurance({ root: pkg, manifest }); };
   for (const [use, role] of [["adaptation", "primary"], ["excerpt", "primary"], ["excerpt", "supplemental"], ["adaptation", "asset"]])
     assert.ok(audit(use, role).publicationBlockers.some((b) => /not compatible/.test(b)), `${use}/${role} under NC must block a CC-BY pack`);
   const ref = audit("reference");
@@ -100,16 +101,16 @@ test("M2/M3 · a license identifier beside a contradicting sentence, or hidden i
   const { pkg } = pkgCopy(t);
   const crypto = await import("node:crypto");
   const manifest = JSON.parse(read(pkg, "alembic.json"));
-  const foundation = JSON.parse(read(pkg, "metadata/FOUNDATION.json"));
+  const foundation = JSON.parse(read(pkg, "private/coursewerk/FOUNDATION.json"));
   const src = foundation.sources[0];
   const rb = src.rightsBasis;
   rb.type = "open-license"; rb.license = "CC-BY-4.0";
-  const snapshotRel = rb.evidenceSnapshot;
+  const snapshotRel = relocate(rb.evidenceSnapshot); // a stored pre-layout path, read at its place now
   const setSnapshot = (html) => {
     write(pkg, snapshotRel, html);
     rb.evidenceSha256 = crypto.createHash("sha256").update(fs.readFileSync(path.join(pkg, snapshotRel))).digest("hex");
     rb.evidenceRetrieval = { ...(rb.evidenceRetrieval || {}), byteLength: fs.statSync(path.join(pkg, snapshotRel)).size };
-    write(pkg, "metadata/FOUNDATION.json", JSON.stringify(foundation));
+    write(pkg, "private/coursewerk/FOUNDATION.json", JSON.stringify(foundation));
     return auditAssurance({ root: pkg, manifest });
   };
   const good = setSnapshot("<html><title>License</title><body><p>This work is licensed under a Creative Commons Attribution 4.0 International License.</p></body></html>");
@@ -121,7 +122,7 @@ test("M2/M3 · a license identifier beside a contradicting sentence, or hidden i
   assert.ok(hidden.publicationBlockers.some((b) => /visible text/.test(b)), "a needle inside a comment is not visible");
   setSnapshot("<html><title>License</title><body><p>Creative Commons Attribution 4.0 International.</p></body></html>");
   rb.evidenceRetrieval = { ...rb.evidenceRetrieval, captureMode: "network", requestedUrl: "https://publisher.example.org/license", finalUrl: "https://other.example.net/anything", httpStatus: 200, contentType: "text/html" };
-  write(pkg, "metadata/FOUNDATION.json", JSON.stringify(foundation));
+  write(pkg, "private/coursewerk/FOUNDATION.json", JSON.stringify(foundation));
   const redirected = auditAssurance({ root: pkg, manifest });
   assert.ok(redirected.warnings.some((w) => /DIFFERENT origin/.test(w)), redirected.warnings.join("\n"));
 });

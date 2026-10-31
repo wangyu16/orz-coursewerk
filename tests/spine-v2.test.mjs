@@ -74,7 +74,7 @@ function pkg(t, { map = MAP(), guide = GUIDE(), course = COURSE(), chapters = ["
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const w = (rel, text) => { fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true }); fs.writeFileSync(path.join(root, rel), text); };
   w("alembic.json", JSON.stringify({ chapters: chapters.map((slug) => ({ slug, title: slug })) }));
-  w("metadata/coursewerk.json", JSON.stringify({ schemaVersion: 1, spine: 2 }));
+  w("private/coursewerk/coursewerk.json", JSON.stringify({ schemaVersion: 1, spine: 2 }));
   w("concepts/course.md", course); w("concepts/melting.md", map); w("assessment-support/melting.md", guide);
   return { root, w, reader: liveReader(root) };
 }
@@ -140,7 +140,7 @@ test("[req.spine.wellformed] every well-formedness rule fires on its breach, and
 
 test("[req.spine.origin-marking] [req.approval.preview] the approval view shows whose words each item is, and previews what will be built", (t) => {
   const p = pkg(t);
-  p.w("metadata/spine/concepts/melting.md.origins.json", JSON.stringify({ schemaVersion: 1, items: { "state-melting-point": "instructor", "explain-mixture-range": "standardized", "pure-solid-melts": "proposed" } }));
+  p.w("private/coursewerk/spine/concepts/melting.md.origins.json", JSON.stringify({ schemaVersion: 1, items: { "state-melting-point": "instructor", "explain-mixture-range": "standardized", "pure-solid-melts": "proposed" } }));
   const v = approvalPreview(liveReader(p.root), parseSpine(liveReader(p.root), ["melting"]), "melting", { critique: [spineCritique({ kind: "level-mismatch", ids: ["guide.melting.recall-value"], note: "recall may be too low for this cohort", basis: "b" })] });
   assert.match(v.text, /0 °C at 1 atm\. \(yours\)/);
   assert.match(v.text, /range\. \(standardized from yours\)/);

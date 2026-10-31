@@ -13,15 +13,15 @@
 - **Two distinct index systems — do not conflate:**
   1. `system/*` (`CLAIMS.json`, `RELATIONSHIPS.json`, `COURSEWERK_INDEX.json`, `system_index.mjs`) —
      **Coursewerk indexing ITSELF** (product-claim → code/test/doc traceability). **Out of scope; untouched.**
-  2. `metadata/COMPONENT_INDEX.json` (built by `lib/coherence.mjs`) — the **generated COURSE-PACKAGE index**.
+  2. `private/coursewerk/COMPONENT_INDEX.json` (built by `lib/coherence.mjs`) — the **generated COURSE-PACKAGE index**.
      **This is what we extend.**
 - **What already exists in the course-package index (we build on, not replace):**
   - `lib/coherence.mjs` — component index + revision-coherence kernel: every output file is a component with a
     SHA-256 content hash and directed **source→dependent** edges; any edit invalidates until the impact set is
     reviewed and an attested refresh records the new coherent state.
-  - `lib/key_fact_review.mjs` (`metadata/KEY_FACT_REVIEW.json`) — the factual-review layer (the semantic hook).
+  - `lib/key_fact_review.mjs` (`private/coursewerk/KEY_FACT_REVIEW.json`) — the factual-review layer (the semantic hook).
   - `lib/verbatim.mjs` — near-verbatim/quote detector (reuse for immutable regions).
-  - `lib/source_record.mjs` (`metadata/SOURCE_RECORD.json`) — provenance (home for the override record).
+  - `lib/source_record.mjs` (`private/coursewerk/SOURCE_RECORD.json`) — provenance (home for the override record).
   - `revision_impact.mjs`, `accept_coursewerk_revision.mjs`, `check_oer.mjs` — impact reporting, attested
     refresh, and the gate.
   - `system/schemas/*.schema.json` — the schema-driven pattern to mirror for the new metadata files.
@@ -56,7 +56,7 @@ backstop recall; **the concept map IS the controlled vocabulary**; **backward co
 
 All under the package's `metadata/`, all `schemaVersion`-stamped, all plain JSON.
 
-### 2.1 `metadata/TERMS.json` — domain-term registry (built FROM the concept map)
+### 2.1 `private/coursewerk/TERMS.json` — domain-term registry (built FROM the concept map)
 ```jsonc
 { "schemaVersion": 1,
   "terms": [{
@@ -72,7 +72,7 @@ All under the package's `metadata/`, all `schemaVersion`-stamped, all plain JSON
 ```
 The concept map is the source; the instructor owns it → the vocabulary is human-authorized by construction.
 
-### 2.2 `metadata/CLAIMS.json` — claim/assertion nodes (the granularity fix)
+### 2.2 `private/coursewerk/CLAIMS.json` — claim/assertion nodes (the granularity fix)
 ```jsonc
 { "schemaVersion": 1,
   "claims": [{
@@ -89,7 +89,7 @@ The concept map is the source; the instructor owns it → the vocabulary is huma
   }] }
 ```
 
-### 2.3 `metadata/OVERRIDES.json` — instructor override of source (unblocks TRUST↔lifecycle collision)
+### 2.3 `private/coursewerk/OVERRIDES.json` — instructor override of source (unblocks TRUST↔lifecycle collision)
 ```jsonc
 { "schemaVersion": 1,
   "overrides": [{
@@ -114,7 +114,7 @@ A claim has **five** independent fingerprints so a change is classified by *whic
 - **`provenance`** — hash of sourceRefs + any override (moves on re-citation / source drift).
 
 > **Backward compatibility:** `COMPONENT_INDEX.json` stays as-is (file-level, byte-hash) so current consumers
-> keep working; the claim index is an **additive `metadata/CLAIMS.json`**. File-level components gain an
+> keep working; the claim index is an **additive `private/coursewerk/CLAIMS.json`**. File-level components gain an
 > optional `claims: [...]` roll-up. Migration: a package without CLAIMS.json falls back to today's behavior.
 
 ---
@@ -132,7 +132,7 @@ A claim has **five** independent fingerprints so a change is classified by *whic
 | M7 | override-manager | **extend `lib/source_record.mjs`** + new OVERRIDES.json | `isAuthorizedDivergence(claim)→bool` for the fidelity checker |
 | M8 | immutable-regions | **reuse `lib/verbatim.mjs`** | mark quotes/citations/source spans; forbid auto-rewrite there |
 | M9 | propagation-engine | new `lib/propagate.mjs` | for **authorized** change: re-derive dependents + emit review diff (never touch immutable/pedagogy) |
-| M10 | escalation-queue | new `lib/escalation.mjs` → `metadata/REVIEW_QUEUE.json` | flagged claims + evidence for the instructor (the recovery step) |
+| M10 | escalation-queue | new `lib/escalation.mjs` → `private/coursewerk/REVIEW_QUEUE.json` | flagged claims + evidence for the instructor (the recovery step) |
 | M11 | gate-integration | **extend `check_oer.mjs`** | undeclared claim-provenance = fail; **orphan claim** (no spine parent) = flag; prereq/coverage checks |
 | M12 | contract-change | **edit `format-contracts/deliverables.md`** + `lib/contract.mjs` | generator DECLARES claim provenance as it writes |
 

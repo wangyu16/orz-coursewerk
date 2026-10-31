@@ -77,7 +77,7 @@ function pkg(t) {
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const w = (rel, text) => { fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true }); fs.writeFileSync(path.join(root, rel), text); };
   w("alembic.json", JSON.stringify({ chapters: [{ slug: "melting", title: "Melting" }] }));
-  w("metadata/coursewerk.json", JSON.stringify({ schemaVersion: 1, spine: 2 }));
+  w("private/coursewerk/coursewerk.json", JSON.stringify({ schemaVersion: 1, spine: 2 }));
   w("concepts/course.md", "# Course\n\n## Concept sequence\n1. Phases. [anchor: phases]\n\n## Chapter sequence\n1. **melting** — Melting\n");
   w("concepts/melting.md", MAP); w("assessment-support/melting.md", GUIDE); w("study-guide/melting.md", SG); w("practice/melting.md", PR);
   const r = () => liveReader(root);

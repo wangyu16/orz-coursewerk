@@ -601,7 +601,7 @@ function definitionDrift(list, terms) {
  *
  * PURE and DETERMINISTIC. O(claims · terms), which is fine at course scale.
  *
- * @param {{claims:Array<object>}|Array<object>} claims CLAIMS (`metadata/CLAIMS.json`) or a bare
+ * @param {{claims:Array<object>}|Array<object>} claims CLAIMS (`private/coursewerk/CLAIMS.json`) or a bare
  *   claim array. Reads the required `text` and `scope` fields; `scope` is M2's, READ and never
  *   re-derived (interfaces §4a), and `scope: null` means package-wide.
  * @param {{terms:Array<object>}} terms TERMS (M1 `buildTerms`) — the vocabulary authority used
@@ -693,7 +693,7 @@ function rangeBreach(dim, canonical, value) {
  *
  * PURE and DETERMINISTIC. Reuses this module's quantity substrate; derives nothing new.
  *
- * @param {{claims:Array<object>}|Array<object>} claims CLAIMS (`metadata/CLAIMS.json`) or a bare
+ * @param {{claims:Array<object>}|Array<object>} claims CLAIMS (`private/coursewerk/CLAIMS.json`) or a bare
  *   claim array. Reads the required `text` field; a claim with no readable text is skipped in
  *   silence (a detector that invents the words it failed to read is worse than a quiet one).
  * @returns {Array<{kind:"implausible-quantity", claimIds:string[], evidence:string[]}>} findings,

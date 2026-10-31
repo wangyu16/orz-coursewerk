@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "metadata/TERMS.json \u2014 domain-term registry DERIVED from the concept map",
+  "title": "private/coursewerk/TERMS.json \u2014 domain-term registry DERIVED from the concept map",
   "type": "object",
   "required": [
     "schemaVersion",

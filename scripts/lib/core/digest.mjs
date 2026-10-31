@@ -17,7 +17,7 @@ import { linkOverruleItems } from "../verify/alignment.mjs";
 import { hasVisibleWords } from "../records/words.mjs";
 
 export const DEFAULT_CAP = 10;
-const STATE = "metadata/digest/state.json";
+const STATE = "private/coursewerk/digest/state.json";
 
 /** The basis a question is answered against: the finding, and the current content of the units it names. */
 export const basisOf = (f, unitHash) => f.evidence?.claimKey ? sha256(canonicalJson(["claim", f.evidence.claimKey])) : sha256(canonicalJson([f.id, (f.units || []).map((u) => unitHash.get(u) || null)]));
@@ -96,7 +96,7 @@ export function buildDigest(root, findings, unitInfo, { cap = DEFAULT_CAP, corre
 /** Deliver a digest: remember what was deferred (it goes first next time), and log the checkpoint. */
 export function deliverDigest(root, digest, party) {
   const st = readState(root);
-  fs.mkdirSync(recordFile(root, "metadata/digest"), { recursive: true });
+  fs.mkdirSync(recordFile(root, "private/coursewerk/digest"), { recursive: true });
   fs.writeFileSync(recordFile(root, STATE), JSON.stringify({ deferred: digest.deferred.keys, deliveries: (st.deliveries || 0) + 1, at: new Date().toISOString() }, null, 2) + "\n");
   return appendLogRecord(root, { type: "checkpoint", party, payload: { moment: "M4", shown: digest.entries.map((e) => e.key), deferred: digest.deferred.count, corrections: digest.corrections.map((c) => c.id), progress: digest.progress } });
 }

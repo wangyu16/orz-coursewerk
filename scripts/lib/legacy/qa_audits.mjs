@@ -195,9 +195,9 @@ export function createQaAudits(pkg, { forDiscovery = false } = {}) {
   // ============================ B. QUALITY ============================
 
   function attributionAudit() {
-    const file = path.join(pkg, "metadata", "ATTRIBUTION.md");
+    const file = path.join(pkg, "provenance", "coursewerk", "ATTRIBUTION.md");
     let provenance = { items: [] };
-    try { provenance = JSON.parse(read(path.join(pkg, "metadata", "PROVENANCE.json"))); } catch { /* assurance reports it */ }
+    try { provenance = JSON.parse(read(path.join(pkg, "private", "coursewerk", "PROVENANCE.json"))); } catch { /* assurance reports it */ }
     const items = Array.isArray(provenance.items) ? provenance.items : [];
     const paths = new Set(items.map((item) => String(item.localPath || "").replaceAll("\\", "/").replace(/^assets\//, "")));
     const unmanifestedMedia = mediaAssets.filter((name) => !paths.has(name));
@@ -473,7 +473,7 @@ export function createQaAudits(pkg, { forDiscovery = false } = {}) {
       // H7 (design audit): a JSON front-matter block is rendered by orz-markdown as a rule + heading —
       // the declaration becomes visible student-facing text. The sidecar carrier is the shippable one.
       if (frontMatterLength(text) > 0)
-        fail.push({ file: name, issue: "declarations in JSON front matter render in the carrier as visible text; move them to the sidecar metadata/claims/<folder>/<slug>.json" });
+        fail.push({ file: name, issue: "declarations in JSON front matter render in the carrier as visible text; move them to the sidecar private/coursewerk/claims/<folder>/<slug>.json" });
       if (t === "study-guide") {
         if (!/learning objectives?/i.test(text)) fail.push({ file: name, issue: "study guide is missing learning objectives" });
         if (!/^##\s+/m.test(text)) fail.push({ file: name, issue: "study guide needs section-level H2 content" });
@@ -556,8 +556,8 @@ export function createQaAudits(pkg, { forDiscovery = false } = {}) {
     }
     let provenance = { items: [] };
     let mediaPlan = null;
-    try { provenance = JSON.parse(read(path.join(pkg, "metadata", "PROVENANCE.json"))); } catch { /* assurance owns malformed provenance */ }
-    try { mediaPlan = JSON.parse(read(path.join(pkg, "metadata", "MEDIA_PLAN.json"))); } catch { /* handled below */ }
+    try { provenance = JSON.parse(read(path.join(pkg, "private", "coursewerk", "PROVENANCE.json"))); } catch { /* assurance owns malformed provenance */ }
+    try { mediaPlan = JSON.parse(read(path.join(pkg, "private", "coursewerk", "MEDIA_PLAN.json"))); } catch { /* handled below */ }
     for (const chapter of manifestRef.current?.chapters || []) {
       const studyPath = `study-guide/${chapter.slug}.md`;
       const hasPhoto = (provenance.items || []).some((item) => item.mediaKind === "photo" && (item.usedIn || []).includes(studyPath));
@@ -567,7 +567,7 @@ export function createQaAudits(pkg, { forDiscovery = false } = {}) {
         ? decisions.find((item) => item?.slug === chapter.slug)
         : decisions?.[chapter.slug];
       if (decision?.realImageDecision !== "not-used" || typeof decision?.rationale !== "string" || decision.rationale.trim().length < 40 || !decision.reviewedBy)
-        fail.push({ file: "metadata/MEDIA_PLAN.json", issue: `chapter ${chapter.slug} has no real photograph; record a reviewed, substantive not-used rationale or include a rights-cleared photo` });
+        fail.push({ file: "private/coursewerk/MEDIA_PLAN.json", issue: `chapter ${chapter.slug} has no real photograph; record a reviewed, substantive not-used rationale or include a rights-cleared photo` });
     }
     return { filesChecked: deliverableFiles.length, failures: fail, warnings: warn, failureCount: fail.length, warningCount: warn.length };
   }
@@ -679,7 +679,7 @@ export function createQaAudits(pkg, { forDiscovery = false } = {}) {
       automaticSourceIds.push(sourceId);
     }
     const corpusEvidence = entries.filter((entry) => primaryIds.includes(entry.sourceId)).map((entry) => ({ sourceId: entry.sourceId, comparisonMode: entry.comparisonMode, originalPath: entry.originalPath || null, originalSha256: entry.originalSha256 || null, canonicalUrl: entry.canonicalUrl || null, retrievedAt: entry.retrievedAt || null, retrieval: entry.retrieval || null, extractor: entry.extractor || null, textPath: entry.textPath || null, sha256: entry.sha256 || null, attestedBy: entry.attestedBy || null, attestedAt: entry.attestedAt || null, reason: entry.reason || null })).sort((a, b) => a.sourceId.localeCompare(b.sourceId));
-    const corpus = { ready: corpusFailures.length === 0 && primaryIds.length > 0, failures: [...new Set(corpusFailures)], primarySourceIds: primaryIds, automaticSourceIds, attestedSourceIds, evidence: corpusEvidence, corpusSha256: sha256(JSON.stringify(corpusEvidence)), manifest: "SOURCE_CORPUS.json", publicRecord: "metadata/SOURCE_RECORD.json" };
+    const corpus = { ready: corpusFailures.length === 0 && primaryIds.length > 0, failures: [...new Set(corpusFailures)], primarySourceIds: primaryIds, automaticSourceIds, attestedSourceIds, evidence: corpusEvidence, corpusSha256: sha256(JSON.stringify(corpusEvidence)), manifest: "SOURCE_CORPUS.json", publicRecord: "private/coursewerk/SOURCE_RECORD.json" };
     if (!corpus.ready) return empty("source corpus is incomplete", corpus);
     if (sourceTexts.length === 0) return empty("all source comparisons are human-attested", corpus);
     const TEXT = /\.(md|markdown|txt|csv|json|html?|tex|rtf)$/i;

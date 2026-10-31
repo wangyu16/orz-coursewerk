@@ -25,7 +25,7 @@ const count = (fs_) => Object.fromEntries([...new Set(fs_.map((f) => f.kind))].m
 const bindings = () => {
   const out = { q3: 0, q2: 0, legacy: 0, unitReader: 0, unitSource: 0 };
   const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else if (p.endsWith(".json")) for (const u of JSON.parse(fs.readFileSync(p, "utf8")).units || []) for (const [k, h] of Object.entries(u.stamp || {})) if (/^(question|ref):/.test(k)) out[String(h).startsWith("q3:") ? "q3" : String(h).startsWith("q2:") ? "q2" : "legacy"]++; else if (k.startsWith("unit:")) out[String(h).startsWith("v:") ? "unitReader" : "unitSource"]++; } };
-  walk(path.join(root, "metadata/units"));
+  walk(path.join(root, "private/coursewerk/units"));
   return out;
 };
 const reviewed = () => currentReviewsAt(root, liveReader(root), loadUnits(root, liveReader(root))).size;

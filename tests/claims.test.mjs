@@ -315,7 +315,7 @@ test("a sidecar is the artifact's declaration authority; front matter is not mer
     [SG]: studyGuide({
       head: frontMatter([{ type: "procedure", anchor: MP_ANCHOR, spineRefs: ["concept.phase-change.9"] }]),
     }),
-    "metadata/claims/study-guide/phase-change.json": JSON.stringify({
+    "private/coursewerk/claims/study-guide/phase-change.json": JSON.stringify({
       schemaVersion: 1,
       claims: [{ type: "definition", anchor: MP_ANCHOR, spineRefs: ["concept.phase-change.1"] }],
     }),

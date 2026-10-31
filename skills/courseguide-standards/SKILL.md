@@ -71,7 +71,7 @@ Ordered sections (exact skeleton):
    - worked example(s) in `:::: tabs` → `::: tab Problem` / `::: tab Solution`,
    - a short **Self-check:** bullet list (prompts only, NO answers).
 6. **`## Synthesis`** — a short integrative section tying the sections together (the single thread through the chapter).
-7. **`## Asset and License Record for This Chapter`** — a table `| Asset | Source URL | License | Attribution |` listing EVERY embedded image. Self-generated rows use the verified package-license decision where applicable. This table mirrors structured `metadata/PROVENANCE.json` and public `metadata/ATTRIBUTION.md`; never invent a license value.
+7. **`## Asset and License Record for This Chapter`** — a table `| Asset | Source URL | License | Attribution |` listing EVERY embedded image. Self-generated rows use the verified package-license decision where applicable. This table mirrors structured `private/coursewerk/PROVENANCE.json` and public `provenance/coursewerk/ATTRIBUTION.md`; never invent a license value.
 8. **NO practice-question section.** The study guide teaches; questions live in the assessment guide.
 
 Styling palette (use exactly this way every chapter):

@@ -135,7 +135,7 @@ test("[req.spine.blind-review-bound] [req.spine.meaning-covers-removed] F2: a me
   set(X0, XP); await c.review(() => ({ meaning: "changed" })); c.approve("le-chatelier", "Approved.");
   set(XP, X1); const s2 = await c.review(() => ({ meaning: "same" }));
   assert.equal(s2.meaning.same, true);
-  const rec = JSON.parse(fs.readFileSync(path.join(c.root, "metadata/verification", `${s2.dispatch}.json`), "utf8"));
+  const rec = JSON.parse(fs.readFileSync(path.join(c.root, "private/coursewerk/verification", `${s2.dispatch}.json`), "utf8"));
   assert.ok(Number.isInteger(rec.baseSeq) && rec.askedHash, "the record names the approval it diffed against and what it asked");
   // S3: corrected back to "constant volume" and approved in full; S4: the stale rewording returns
   set(X1, X0); c.approve("le-chatelier", "No: constant volume, as it was.");
@@ -280,7 +280,7 @@ test("[req.coherence.reference-binding] F8: a renumbering that re-targets \"the 
 // ============================================ history ================================================================
 test("[req.records.history-extends] F7: the history check ignores git object replacement and grafts, and a package whose git has either is log-broken", (t) => {
   const c = course(t);
-  const LOG = "metadata/LOG.jsonl", f = path.join(c.root, LOG);
+  const LOG = "private/coursewerk/LOG.jsonl", f = path.join(c.root, LOG);
   const text = fs.readFileSync(f, "utf8");
   // a past instructor record rewritten, the log re-chained, and the committed log blob replaced by the forgery
   const recs = text.trim().split("\n").map((l) => JSON.parse(l));

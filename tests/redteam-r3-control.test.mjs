@@ -142,7 +142,7 @@ test("[req.control.printed-by-parser] C3-06: a {{nyml}} block ends where orz-mar
 test("[req.control.printed-by-parser] benign: the fixture's units are byte-identical, and every line orz-markdown prints in them is a unit or a bounded label", () => {
   for (const rel of deliverablesOf(liveReader(C2))) {
     const text = fs.readFileSync(path.join(C2, rel), "utf8");
-    const side = JSON.parse(fs.readFileSync(path.join(C2, "metadata/units", `${rel}.json`), "utf8"));
+    const side = JSON.parse(fs.readFileSync(path.join(C2, "private/coursewerk/units", `${rel}.json`), "utf8"));
     const { seg, m, inUnit } = printedLinesRead(text, rel);
     assert.deepEqual(seg.units.map((u) => unitHash(u.text)), side.units.map((u) => u.locator.contentHash), rel);
     const lines = text.split("\n");

@@ -211,11 +211,11 @@ for (const [top, spec] of Object.entries(BUILDER_FOR)) {
   }
 }
 
-const documentsFile = path.join(pkg, "metadata", "DOCUMENTS.json");
+const documentsFile = path.join(pkg, "private", "coursewerk", "DOCUMENTS.json");
 if (fs.existsSync(documentsFile)) {
   let registry;
   try { registry = JSON.parse(fs.readFileSync(documentsFile, "utf8")); }
-  catch (e) { console.error(`build_carriers: metadata/DOCUMENTS.json is invalid: ${e.message}`); process.exit(2); }
+  catch (e) { console.error(`build_carriers: private/coursewerk/DOCUMENTS.json is invalid: ${e.message}`); process.exit(2); }
   for (const doc of registry.documents || []) {
     const rel = String(doc.source || "").replaceAll("\\", "/");
     if (!rel || path.isAbsolute(rel) || rel.split("/").includes("..")) { console.error(`build_carriers: invalid declared document source: ${rel}`); process.exit(2); }

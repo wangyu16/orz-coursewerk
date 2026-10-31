@@ -39,7 +39,7 @@ if (!path.relative(pkg, outDir).startsWith("..")) {
 // v0.12 release path, kept for packages not yet migrated.
 {
   let v2 = false;
-  try { v2 = JSON.parse(fs.readFileSync(path.join(pkg, "metadata", "coursewerk.json"), "utf8")).spine === 2; } catch { v2 = false; }
+  try { v2 = JSON.parse(fs.readFileSync(path.join(pkg, "private", "coursewerk", "coursewerk.json"), "utf8")).spine === 2; } catch { v2 = false; }
   if (v2) {
     // the newest Alembic contract, run by Alembic's own validator (D37); "--contract mirror" checks only the local
     // mirror the gate already applies (offline use, and the tests)
@@ -87,7 +87,7 @@ const buildScript = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 // there is no build theme: the look is each text's own header, which the attestation already binds through the
 // source hash. An attestation made under a 0.x `--theme` cannot be rebuilt as attested; it is said below, not guessed.
 let attestedTheme = null;
-try { attestedTheme = JSON.parse(fs.readFileSync(path.join(pkg, "metadata", "VISUAL_REVIEW.json"), "utf8")).theme || null; } catch { /* no attestation yet: the gate reports it */ }
+try { attestedTheme = JSON.parse(fs.readFileSync(path.join(pkg, "private", "coursewerk", "VISUAL_REVIEW.json"), "utf8")).theme || null; } catch { /* no attestation yet: the gate reports it */ }
 // v0.12 only: the attestation is bound to carrier bytes, so the rebuild uses the frames it was made with (the
 // harness's installed ones), not the newest (D36 applies to v2, which has no carrier attestation, D24).
 const build = spawnSync(process.execPath, [buildScript, "--frames", "installed", "--package", pkg, "--out", carrierPreview, "--receipt", carrierReceipt], { encoding: "utf8" });
@@ -131,7 +131,7 @@ for (const f of walk(pkg)) {
     continue;
   }
   // The review queue is a report of the last gate run, not course content (L6).
-  if (relPath === "metadata/REVIEW_QUEUE.json") { dropped += 1; continue; }
+  if (relPath === "private/coursewerk/REVIEW_QUEUE.json") { dropped += 1; continue; }
   const dest = path.join(staged, relPath);
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.copyFileSync(f, dest);
@@ -169,7 +169,7 @@ if (attestedPrimaries.length && !process.argv.includes("--accept-attested-source
 }
 let overridesByBasisLine = "none recorded";
 try {
-  const ov = JSON.parse(fs.readFileSync(path.join(pkg, "metadata", "OVERRIDES.json"), "utf8"));
+  const ov = JSON.parse(fs.readFileSync(path.join(pkg, "private", "coursewerk", "OVERRIDES.json"), "utf8"));
   const counts = {};
   for (const o of ov.overrides || []) counts[o.basis] = (counts[o.basis] || 0) + 1;
   overridesByBasisLine = Object.keys(counts).length ? Object.entries(counts).map(([b, n]) => `${b}: ${n}`).join(", ") : "none recorded";
@@ -224,13 +224,13 @@ const releaseReceipt = {
   sourceCorpusManifestSha256: fs.existsSync(path.join(inputsDir, "SOURCE_CORPUS.json"))
     ? crypto.createHash("sha256").update(fs.readFileSync(path.join(inputsDir, "SOURCE_CORPUS.json"))).digest("hex")
     : null,
-  sourceRecordSha256: fs.existsSync(path.join(pkg, "metadata", "SOURCE_RECORD.json"))
-    ? crypto.createHash("sha256").update(fs.readFileSync(path.join(pkg, "metadata", "SOURCE_RECORD.json"))).digest("hex")
+  sourceRecordSha256: fs.existsSync(path.join(pkg, "private", "coursewerk", "SOURCE_RECORD.json"))
+    ? crypto.createHash("sha256").update(fs.readFileSync(path.join(pkg, "private", "coursewerk", "SOURCE_RECORD.json"))).digest("hex")
     : null,
   sourceCorpus: qa.verbatim?.corpus || null,
   componentIndexHash: qa.coherence?.index ? digestJson(qa.coherence.index) : null,
-  keyFactReviewSha256: crypto.createHash("sha256").update(fs.readFileSync(path.join(pkg, "metadata", "KEY_FACT_REVIEW.json"))).digest("hex"),
-  visualReviewSha256: crypto.createHash("sha256").update(fs.readFileSync(path.join(pkg, "metadata", "VISUAL_REVIEW.json"))).digest("hex"),
+  keyFactReviewSha256: crypto.createHash("sha256").update(fs.readFileSync(path.join(pkg, "private", "coursewerk", "KEY_FACT_REVIEW.json"))).digest("hex"),
+  visualReviewSha256: crypto.createHash("sha256").update(fs.readFileSync(path.join(pkg, "private", "coursewerk", "VISUAL_REVIEW.json"))).digest("hex"),
   carrierReceipt: path.basename(persistedCarrierReceipt),
   carrierReceiptHash: crypto.createHash("sha256").update(fs.readFileSync(persistedCarrierReceipt)).digest("hex"),
   carrierBuilds: carriers.results,

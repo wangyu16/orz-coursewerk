@@ -243,16 +243,16 @@ Coursewerk is deliberately explicit about assurance boundaries:
 
 ## Main evidence artifacts
 
-- `metadata/FOUNDATION.json` — intended use, exact source identity, rights evidence, output license, and privacy.
-- `metadata/evidence/…` — hashed local snapshots plus structured retrieval/capture metadata for authoritative source-rights evidence.
-- `metadata/preflight/…` — hash-bound public-source receipts; non-published authoring records missing/stale evidence as advisory.
+- `private/coursewerk/FOUNDATION.json` — intended use, exact source identity, rights evidence, output license, and privacy.
+- `private/coursewerk/evidence/…` — hashed local snapshots plus structured retrieval/capture metadata for authoritative source-rights evidence.
+- `private/coursewerk/preflight/…` — hash-bound public-source receipts; non-published authoring records missing/stale evidence as advisory.
 - `inputs/SOURCE_CORPUS.json` — source IDs bound to raw and extracted hashes, canonical retrieval evidence, versioned extractors, or explicit attestation.
-- `metadata/SOURCE_RECORD.json` — compact deterministic mirror of the exact revisions, retrieval metadata, and hashes retained in the published package.
+- `private/coursewerk/SOURCE_RECORD.json` — compact deterministic mirror of the exact revisions, retrieval metadata, and hashes retained in the published package.
 - `scripts/prepare_wikipedia_topic.mjs` — serialized, revision-aware collection of several cleared English Wikipedia pages into a chapter-sized science corpus.
-- `metadata/PROVENANCE.json` and `metadata/ATTRIBUTION.md` — item-level origin, status, use, and public credit.
-- `metadata/KEY_FACT_REVIEW.json` — mode-appropriate independent identity/license/key-fact critique, bound to current evidence and teaching files.
-- `metadata/VISUAL_REVIEW.json` — identified human browser/DOM attestation bound to carrier-source, local-asset, and stable carrier fingerprints.
-- `metadata/COMPONENT_INDEX.json` — accepted component hashes and dependency snapshots.
+- `private/coursewerk/PROVENANCE.json` and `provenance/coursewerk/ATTRIBUTION.md` — item-level origin, status, use, and public credit.
+- `private/coursewerk/KEY_FACT_REVIEW.json` — mode-appropriate independent identity/license/key-fact critique, bound to current evidence and teaching files.
+- `private/coursewerk/VISUAL_REVIEW.json` — identified human browser/DOM attestation bound to carrier-source, local-asset, and stable carrier fingerprints.
+- `private/coursewerk/COMPONENT_INDEX.json` — accepted component hashes and dependency snapshots.
 - Output-root Git history — visible edit history and coherent baseline/revision commits.
 - `reports/revision-impact.json` — exact changed, downstream-review, and upstream-context sets.
 - `preview/*.md.html`, `preview/*.slides.html`, and `preview/*.paged.html` — browser-readable and browser-editable

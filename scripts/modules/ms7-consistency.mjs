@@ -17,7 +17,7 @@ const plain = (t) => decodeEntities(String(t)).replace(/\\Delta\s*/g, "Δ").repl
 
 export function unitClaims(s) {
   const claims = [];
-  for (const p of s.paths.filter((x) => x.startsWith("metadata/units/") && x.endsWith(".json")).filter(trustedSidecarPath(s.text("metadata/LOG.jsonl"))).sort()) {
+  for (const p of s.paths.filter((x) => x.startsWith("private/coursewerk/units/") && x.endsWith(".json")).filter(trustedSidecarPath(s.text("private/coursewerk/LOG.jsonl"))).sort()) {
     const side = s.json(p); if (!side || typeof side.deliverable !== "string" || !Array.isArray(side.units)) continue; // a malformed sidecar is the index's to report
     const lines = (s.text(side.deliverable) || "").split("\n");
     // the chapter a value is read in: a chapter deliverable's own (study-guide|slides|practice/<chapter>.md, by exact

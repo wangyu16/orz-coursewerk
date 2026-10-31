@@ -60,7 +60,7 @@ function freshPackage(t) {
 /** PROCEDURE Stage 4 — the STORED index is the "before". */
 function index(pkg) {
   // First baseline: the CLI directly. A re-baseline goes through the decision sheet (option 1).
-  if (!fs.existsSync(path.join(pkg, "metadata", "CLAIMS.json"))) {
+  if (!fs.existsSync(path.join(pkg, "private", "coursewerk", "CLAIMS.json"))) {
     const res = cli("index_semantic.mjs", ["--root", pkg]);
     assert.equal(res.code, 0, `index:semantic failed: ${res.stderr}`);
     return;
@@ -79,9 +79,9 @@ function gate(pkg) {
 
 const read = (pkg, rel) => fs.readFileSync(path.join(pkg, rel), "utf8");
 const write = (pkg, rel, text) => fs.writeFileSync(path.join(pkg, rel), text);
-const queueOf = (pkg) => JSON.parse(read(pkg, "metadata/REVIEW_QUEUE.json"));
+const queueOf = (pkg) => JSON.parse(read(pkg, "private/coursewerk/REVIEW_QUEUE.json"));
 const evidenceText = (q) => q.items.flatMap((i) => i.evidence).join("\n");
-const claimsOf = (pkg) => JSON.parse(read(pkg, "metadata/CLAIMS.json")).claims;
+const claimsOf = (pkg) => JSON.parse(read(pkg, "private/coursewerk/CLAIMS.json")).claims;
 
 /** The claim at a file+anchor. BOTH are required: `slides/melting.md` carries the SAME anchor as the
  *  study guide, so an anchor-only lookup silently returns a different artifact's claim. */
@@ -261,7 +261,7 @@ test("an AUTHORIZED divergence is not flagged as a suspected error", (t) => {
   // The instructor authorizes it. NOTE: this file writes OVERRIDES.json BY HAND because no product
   // code can — see F-C in tests/usage-e2e.test.mjs. `OVERRIDES_PATH` has a READER now (this is it)
   // and still has NO PRODUCER: there is no documented command to record an override.
-  write(pkg, "metadata/OVERRIDES.json", JSON.stringify({
+  write(pkg, "private/coursewerk/OVERRIDES.json", JSON.stringify({
     schemaVersion: 1,
     overrides: [{
       claimId: fact.id,
@@ -290,7 +290,7 @@ test("a CORRUPT overrides file is reported, never read as 'no overrides recorded
   const pkg = freshPackage(t);
   index(pkg);
   edit(pkg, SG, "is 0 °C.", "is 4 °C.");
-  write(pkg, "metadata/OVERRIDES.json", "{ not json");
+  write(pkg, "private/coursewerk/OVERRIDES.json", "{ not json");
 
   const g = gate(pkg);
   // Absence is an answer; corruption is a fault. Read as "no overrides", a corrupt file would
@@ -303,7 +303,7 @@ test("a CORRUPT overrides file is reported, never read as 'no overrides recorded
   assert.equal(g.json.semantic.revision.authorizedClaims, 0);
 
   // NEGATIVE: an ABSENT overrides file is NOT an error — it is the normal state of every package.
-  fs.rmSync(path.join(pkg, "metadata/OVERRIDES.json"));
+  fs.rmSync(path.join(pkg, "private/coursewerk/OVERRIDES.json"));
   assert.equal(gate(pkg).json.semantic.revision.overridesError, null,
     "an absent OVERRIDES.json was reported as a fault");
 });
@@ -319,9 +319,9 @@ test("determinism — the same package and the same edit produce a byte-identica
   renameTerm(pkg);
 
   gate(pkg);
-  const first = read(pkg, "metadata/REVIEW_QUEUE.json");
+  const first = read(pkg, "private/coursewerk/REVIEW_QUEUE.json");
   gate(pkg);
-  const second = read(pkg, "metadata/REVIEW_QUEUE.json");
+  const second = read(pkg, "private/coursewerk/REVIEW_QUEUE.json");
 
   // Byte-identical, not deep-equal: a flag a human acted on must be regenerable from git months
   // later, and "same object, different bytes" does not survive a diff.
@@ -335,7 +335,7 @@ test("determinism — the same package and the same edit produce a byte-identica
   edit(twin, SG, "is 0 °C.", "is 4 °C.");
   renameTerm(twin);
   gate(twin);
-  assert.equal(read(twin, "metadata/REVIEW_QUEUE.json"), first,
+  assert.equal(read(twin, "private/coursewerk/REVIEW_QUEUE.json"), first,
     "the same bytes in a different directory produced a different queue — something absolute leaked in");
 });
 
@@ -345,7 +345,7 @@ test("a package with NO stored index still contributes no semantic key and no qu
   // zeroed count, but zero bytes changed anywhere in the output.
   const g = gate(pkg);
   assert.equal("semantic" in g.json, false, "the JSON gained a semantic key for an unindexed package");
-  assert.equal(fs.existsSync(path.join(pkg, "metadata/REVIEW_QUEUE.json")), false,
+  assert.equal(fs.existsSync(path.join(pkg, "private/coursewerk/REVIEW_QUEUE.json")), false,
     "a queue was emitted for a package with no index");
   assert.match(g.report, /\*\*not run\*\*/, "the report does not say the layer did not run");
 });
@@ -353,7 +353,7 @@ test("a package with NO stored index still contributes no semantic key and no qu
 test("a stored index with no CLAIMS.json says the revision was NOT compared, and why", (t) => {
   const pkg = freshPackage(t);
   index(pkg);
-  fs.rmSync(path.join(pkg, "metadata/CLAIMS.json"));
+  fs.rmSync(path.join(pkg, "private/coursewerk/CLAIMS.json"));
   edit(pkg, SG, "is 0 °C.", "is 4 °C.");
 
   const g = gate(pkg);

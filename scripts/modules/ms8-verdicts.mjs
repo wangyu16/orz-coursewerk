@@ -53,7 +53,7 @@ const exerciseLike = (u) => ["question", "answer"].includes(u.form) || String(u.
 
 function currentUnits(s, sides = []) {
   const out = new Map();
-  for (const p of s.paths.filter((x) => x.startsWith("metadata/units/") && x.endsWith(".json")).filter(trustedSidecarPath(s.text("metadata/LOG.jsonl"))).sort()) {
+  for (const p of s.paths.filter((x) => x.startsWith("private/coursewerk/units/") && x.endsWith(".json")).filter(trustedSidecarPath(s.text("private/coursewerk/LOG.jsonl"))).sort()) {
     const side = s.json(p); if (!Array.isArray(side?.units) || typeof side.deliverable !== "string") continue; // malformed: the index reports it
     sides.push(side);
     const seg = segmentDeliverable(s.text(side.deliverable) || "", side.deliverable, segmentOptions(s, side.deliverable)).units;
@@ -74,13 +74,13 @@ function run(s) {
   // the records of every unit whose text it holds (live or retired), and the log's confirmations (authorship.mjs)
   const ancestry = originIndex(sides);
   const records = readDispatches((p) => s.text(p), s.paths);
-  const log = logRecordsOf(s.text("metadata/LOG.jsonl"));
+  const log = logRecordsOf(s.text("private/coursewerk/LOG.jsonl"));
   const pinned = pinnedTexts(snapshotInputReader(s));
   // what may be evidence (round 7, I16): a retrieved reference only inside a destination the instructor declares
   const ledger = pinLedger(log);
   const plain = new Map([...pinned].filter(([k, v]) => v.ok && admissiblePin(k, v, ledger)).map(([k, v]) => [k, v.text]));
   const byDispatch = new Map(records.map((r) => [r.dispatch, r]));
-  const corrections = new Map(s.paths.filter((p) => p.startsWith("metadata/corrections/") && p.endsWith(".json")).map((p) => s.json(p)).filter(Boolean).map((c) => [c.id, c]));
+  const corrections = new Map(s.paths.filter((p) => p.startsWith("private/coursewerk/corrections/") && p.endsWith(".json")).map((p) => s.json(p)).filter(Boolean).map((c) => [c.id, c]));
   const divergedLogged = (u, e) => log.some((l) => l.type === "divergence" && l.party?.role === "instructor" && l.payload?.unit === u.id && l.payload?.correction === e.correction);
   const diverged = (u) => (u.evidence || []).some((e) => e.type === "authorized-divergence" && e.factHash === factHash(u.text) && divergedLogged(u, e));
 
@@ -88,7 +88,7 @@ function run(s) {
   for (const r of records) if (!dispatchLogged(r, log))
     out.push({ kind: "dispatch-unlogged", units: units.has(r.unit) ? [r.unit] : [], evidence: { type: "rule", rule: "a verification record matches a dispatch in the decision log (bundle and answer hashes)", dispatch: r.dispatch ?? null } });
   for (const l of log.filter((x) => x.type === "dispatch" && x.payload?.dispatch)) if (!byDispatch.has(l.payload.dispatch))
-    out.push({ kind: "dispatch-record-missing", units: units.has(l.payload.unit) ? [l.payload.unit] : [], evidence: { type: "rule", rule: "every logged dispatch keeps its record in metadata/verification/", dispatch: l.payload.dispatch } });
+    out.push({ kind: "dispatch-record-missing", units: units.has(l.payload.unit) ? [l.payload.unit] : [], evidence: { type: "rule", rule: "every logged dispatch keeps its record in private/coursewerk/verification/", dispatch: l.payload.dispatch } });
 
   const kept = keptClaims(log);
   // the instructor's confirmations, bound to the text they were given (R6-K04; obligations.mjs confirmationStands)

@@ -46,7 +46,7 @@ async function run(s) {
   }
   // each orz text is read by its carrier's own public reader (D52): the carrier named by its header, else its place
   const defs = await frameworkDefinitions();
-  const docs = s.json("metadata/DOCUMENTS.json");
+  const docs = s.json("private/coursewerk/DOCUMENTS.json");
   const declared = new Map((Array.isArray(docs?.documents) ? docs.documents : []).map((d) => [String(d?.source || d?.path || ""), /paged/i.test(String(d?.carrier || d?.type || d?.framework || "")) ? "paged" : "page"]).filter(([f]) => f));
   const texts = [...new Set([...s.paths.filter((p) => /^(?:slides|study-guide|practice)\/[^/]+\.md$/.test(p)), ...[...declared.keys()].filter((f) => /\.md$/.test(f))])].filter((f) => s.text(f) != null).sort();
   for (const file of texts) {

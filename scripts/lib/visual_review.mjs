@@ -3,7 +3,7 @@ import fs from "node:fs";
 import { identityProblem } from "./identity.mjs";
 import path from "node:path";
 
-export const VISUAL_REVIEW_PATH = "metadata/VISUAL_REVIEW.json";
+export const VISUAL_REVIEW_PATH = "private/coursewerk/VISUAL_REVIEW.json";
 const sha256 = (value) => crypto.createHash("sha256").update(value).digest("hex");
 
 function walkMarkdown(dir, prefix) {
@@ -21,7 +21,7 @@ function expectedCarrierSources(root) {
   // M9 (round-3 audit): the builder walks recursively; the attestation walked one level, so a nested
   // deliverable could be built and attested yet "not match every current carrier source". One rule.
   for (const top of ["study-guide", "practice", "slides"]) out.push(...walkMarkdown(path.join(root, top), top));
-  const documents = path.join(root, "metadata", "DOCUMENTS.json");
+  const documents = path.join(root, "private", "coursewerk", "DOCUMENTS.json");
   if (fs.existsSync(documents)) {
     try { for (const item of JSON.parse(fs.readFileSync(documents, "utf8")).documents || []) if (item.source) out.push(String(item.source).replaceAll("\\", "/")); }
     catch { /* contract QA owns malformed DOCUMENTS */ }

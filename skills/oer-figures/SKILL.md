@@ -175,7 +175,7 @@ Embed with orz-markdown and a caption:
 ![Isotactic vs syndiotactic vs atactic polypropylene](../assets/pp_tacticity.svg)
 *Figure 3.2 — Tacticity of polypropylene. Source: Wikimedia Commons (RicHard-59), CC BY-SA 3.0.*
 ```
-Then record it in `metadata/ATTRIBUTION.md` (one row per external/reused asset):
+Then record it in `provenance/coursewerk/ATTRIBUTION.md` (one row per external/reused asset):
 
 | Asset | Local use | Source URL | License | Attribution |
 |---|---|---|---|---|

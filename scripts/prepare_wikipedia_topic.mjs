@@ -20,7 +20,7 @@ if (!contact) {
   process.exit(2);
 }
 
-const foundationFile = path.join(root, "metadata", "FOUNDATION.json");
+const foundationFile = path.join(root, "private", "coursewerk", "FOUNDATION.json");
 if (!fs.existsSync(foundationFile)) {
   console.error("prepare-wikipedia-topic: FOUNDATION.json is required");
   process.exit(2);

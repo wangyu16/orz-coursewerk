@@ -5,7 +5,7 @@
 //   headless  the harness runs the verifier command itself, in an empty temporary directory, prompt on stdin;
 //   courier   no headless command: the agent relays the same bundle to a fresh subagent and records its answer.
 // The command comes from the harness's environment (COURSEWERK_VERIFIER, a JSON array), never from the package:
-// the package is untrusted input (D23). Every dispatch is recorded in the package (metadata/verification/) with the
+// the package is untrusted input (D23). Every dispatch is recorded in the package (private/coursewerk/verification/) with the
 // exact prompt, passages and raw answer, and logged; tests replay recorded answers offline.
 import fs from "node:fs";
 import os from "node:os";
@@ -20,7 +20,7 @@ import { decodeEntities } from "../core/values.mjs";
 import { unitHash } from "../core/segment.mjs";
 import { factHash } from "../core/dependencies.mjs";
 
-export const VERIFICATION_DIR = "metadata/verification";
+export const VERIFICATION_DIR = "private/coursewerk/verification";
 const SYSTEM = "You are a context-blind fact verifier. You see only the material in the user message. Answer only from it, and reply with JSON only.";
 export const DEFAULT_COMMAND = ["claude", "-p", "--system-prompt", SYSTEM, "--setting-sources", "", "--strict-mcp-config", "--tools", "", "--no-session-persistence", "--output-format", "json"];
 

@@ -4,6 +4,7 @@
 // A source component points to the components that must remain consistent with
 // it. Any edit invalidates the index until the complete impact set is reviewed
 // and an attested refresh records the new coherent state.
+import { relocate } from "./records/paths.mjs";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -15,7 +16,7 @@ import { scanProjection } from "./units.mjs";
 import { SEMANTIC_INDEX_PATHS } from "./semantic_index.mjs";
 import { REVIEW_QUEUE_PATH } from "./escalation.mjs";
 
-export const COMPONENT_INDEX_PATH = "metadata/COMPONENT_INDEX.json";
+export const COMPONENT_INDEX_PATH = "private/coursewerk/COMPONENT_INDEX.json";
 // DERIVED INDEXES ARE NOT COMPONENTS — and this is not tidiness, it is the fix for a reproduced
 // bug. A gate that emits an artifact into the package it just accepted makes that package FAIL
 // ITS OWN GATE on the next run: the new file is untracked (`Git ??`) and absent from the index
@@ -80,11 +81,11 @@ function componentType(rel) {
   if (rel === "alembic.json") return "manifest";
   if (rel === "LICENSE") return "license";
   if (rel === "README.md") return "readme";
-  if (rel === "metadata/FOUNDATION.json") return "foundation";
-  if (rel === "metadata/PROVENANCE.json") return "provenance";
-  if (rel === "metadata/ATTRIBUTION.md") return "attribution";
-  if (rel === "metadata/SOURCE_RECORD.json") return "source-record";
-  if (["metadata/KEY_FACT_REVIEW.json", "metadata/VISUAL_REVIEW.json"].includes(rel)) return "review";
+  if (rel === "private/coursewerk/FOUNDATION.json") return "foundation";
+  if (rel === "private/coursewerk/PROVENANCE.json") return "provenance";
+  if (rel === "provenance/coursewerk/ATTRIBUTION.md") return "attribution";
+  if (rel === "private/coursewerk/SOURCE_RECORD.json") return "source-record";
+  if (["private/coursewerk/KEY_FACT_REVIEW.json", "private/coursewerk/VISUAL_REVIEW.json"].includes(rel)) return "review";
   if (rel.startsWith("assets/")) return "asset";
   if (rel.startsWith("private/")) return "private";
   const top = rel.split("/")[0];
@@ -152,23 +153,23 @@ export function computeComponentGraph(root) {
 
   // Foundation and manifest decisions can affect every public-facing component.
   for (const c of components) {
-    if (c.path !== "metadata/FOUNDATION.json")
-      addEdge(edges, byPath, "metadata/FOUNDATION.json", c.path, "foundation facts constrain component");
+    if (c.path !== "private/coursewerk/FOUNDATION.json")
+      addEdge(edges, byPath, "private/coursewerk/FOUNDATION.json", c.path, "foundation facts constrain component");
     if (DELIVERABLE_TOPS.has(c.type) || ["readme", "license", "attribution"].includes(c.type))
       addEdge(edges, byPath, "alembic.json", c.path, "manifest identity/scope/license constrains component");
   }
-  addEdge(edges, byPath, "metadata/PROVENANCE.json", "metadata/ATTRIBUTION.md", "human attribution mirrors provenance");
-  addEdge(edges, byPath, "alembic.json", "metadata/KEY_FACT_REVIEW.json", "output-license declaration is rechecked in the key-fact critique");
-  addEdge(edges, byPath, "LICENSE", "metadata/KEY_FACT_REVIEW.json", "canonical output-license text is rechecked in the key-fact critique");
-  addEdge(edges, byPath, "metadata/PROVENANCE.json", "metadata/KEY_FACT_REVIEW.json", "media provenance is rechecked in the key-fact critique");
-  addEdge(edges, byPath, "metadata/ATTRIBUTION.md", "metadata/KEY_FACT_REVIEW.json", "public attribution obligations are rechecked in the key-fact critique");
-  addEdge(edges, byPath, "metadata/SOURCE_RECORD.json", "metadata/KEY_FACT_REVIEW.json", "source revisions are rechecked in the key-fact critique");
-  const provenanceFile = path.join(root, "metadata", "PROVENANCE.json");
+  addEdge(edges, byPath, "private/coursewerk/PROVENANCE.json", "provenance/coursewerk/ATTRIBUTION.md", "human attribution mirrors provenance");
+  addEdge(edges, byPath, "alembic.json", "private/coursewerk/KEY_FACT_REVIEW.json", "output-license declaration is rechecked in the key-fact critique");
+  addEdge(edges, byPath, "LICENSE", "private/coursewerk/KEY_FACT_REVIEW.json", "canonical output-license text is rechecked in the key-fact critique");
+  addEdge(edges, byPath, "private/coursewerk/PROVENANCE.json", "private/coursewerk/KEY_FACT_REVIEW.json", "media provenance is rechecked in the key-fact critique");
+  addEdge(edges, byPath, "provenance/coursewerk/ATTRIBUTION.md", "private/coursewerk/KEY_FACT_REVIEW.json", "public attribution obligations are rechecked in the key-fact critique");
+  addEdge(edges, byPath, "private/coursewerk/SOURCE_RECORD.json", "private/coursewerk/KEY_FACT_REVIEW.json", "source revisions are rechecked in the key-fact critique");
+  const provenanceFile = path.join(root, "private", "coursewerk", "PROVENANCE.json");
   if (fs.existsSync(provenanceFile)) {
     try {
       const provenance = JSON.parse(fs.readFileSync(provenanceFile, "utf8"));
       for (const item of provenance.items || []) for (const used of item.usedIn || [])
-        addEdge(edges, byPath, "metadata/PROVENANCE.json", norm(used), `provenance item ${item.id || "unknown"} constrains incorporating document`);
+        addEdge(edges, byPath, "private/coursewerk/PROVENANCE.json", norm(used), `provenance item ${item.id || "unknown"} constrains incorporating document`);
     } catch { /* assurance kernel reports malformed provenance */ }
   }
 
@@ -184,13 +185,13 @@ export function computeComponentGraph(root) {
   }
 
   for (const component of components.filter((item) => DELIVERABLE_TOPS.has(item.type))) {
-    addEdge(edges, byPath, "metadata/SOURCE_RECORD.json", component.path, "revision-bound sources constrain teaching content");
-    addEdge(edges, byPath, component.path, "metadata/KEY_FACT_REVIEW.json", "teaching content must be rechecked in the key-fact critique");
+    addEdge(edges, byPath, "private/coursewerk/SOURCE_RECORD.json", component.path, "revision-bound sources constrain teaching content");
+    addEdge(edges, byPath, component.path, "private/coursewerk/KEY_FACT_REVIEW.json", "teaching content must be rechecked in the key-fact critique");
   }
   for (const component of components.filter((item) => ["study-guide", "practice", "slides"].includes(item.type)))
-    addEdge(edges, byPath, component.path, "metadata/VISUAL_REVIEW.json", "carrier source must be visually re-reviewed after change");
+    addEdge(edges, byPath, component.path, "private/coursewerk/VISUAL_REVIEW.json", "carrier source must be visually re-reviewed after change");
   for (const component of components.filter((item) => item.type === "asset"))
-    addEdge(edges, byPath, component.path, "metadata/VISUAL_REVIEW.json", "visual asset must be re-reviewed after change");
+    addEdge(edges, byPath, component.path, "private/coursewerk/VISUAL_REVIEW.json", "visual asset must be re-reviewed after change");
 
   // Asset edges are derived from actual references, including reuse across chapters.
   for (const c of components.filter((x) => x.path.endsWith(".md"))) {
@@ -217,13 +218,24 @@ export function makeComponentIndex(graph) {
   };
 }
 
+// an index written before the records layout names records at metadata/…: read at their place now (records/paths.mjs
+// relocate; the file itself is never rewritten, so its accepted hash still holds)
+const relocId = (id) => (typeof id === "string" && id.startsWith("component:") ? `component:${relocate(id.slice(10))}` : id);
+function relocatedIndex(index) {
+  if (!index || typeof index !== "object") return index;
+  return {
+    ...index,
+    components: (index.components || []).map((c) => ({ ...c, id: relocId(c.id), path: relocate(c.path), ...(c.dependencies ? { dependencies: Object.fromEntries(Object.entries(c.dependencies).map(([k, v]) => [relocId(k), v])) } : {}) })),
+    relationships: (index.relationships || []).map((e) => ({ ...e, ...(e.from ? { from: relocId(e.from) } : {}), ...(e.to ? { to: relocId(e.to) } : {}) })),
+  };
+}
 export function loadComponentIndex(root) {
   const file = path.join(path.resolve(root), COMPONENT_INDEX_PATH);
-  if (!fs.existsSync(file)) return { file, index: null, error: "metadata/COMPONENT_INDEX.json is missing; initialize the component index." };
+  if (!fs.existsSync(file)) return { file, index: null, error: "private/coursewerk/COMPONENT_INDEX.json is missing; initialize the component index." };
   try {
-    return { file, index: JSON.parse(fs.readFileSync(file, "utf8")), error: null };
+    return { file, index: relocatedIndex(JSON.parse(fs.readFileSync(file, "utf8"))), error: null };
   } catch (e) {
-    return { file, index: null, error: `metadata/COMPONENT_INDEX.json is invalid JSON: ${e.message}` };
+    return { file, index: null, error: `private/coursewerk/COMPONENT_INDEX.json is invalid JSON: ${e.message}` };
   }
 }
 

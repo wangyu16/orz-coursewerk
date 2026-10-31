@@ -10,6 +10,7 @@
 // `{{md …}}` include (orz-markdown's markdown-include, aliases `markdown`, `md`, `md-include`) renders another file
 // into the one that names it, so its target must itself be a deliverable — read on its own — and must print nothing
 // under the includer's frame that its own reading leaves out (round 6, C3-03), or the include is refused.
+import { relocate } from "../records/paths.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { isCarrierPath } from "../contract.mjs";
@@ -36,12 +37,12 @@ const CHAPTER_FILE = /^(?:study-guide|slides|practice|concepts|assessment-suppor
  *     is refused by its contract at pack);
  *   - under metadata/, only the attribution (ATTRIBUTION.md) and a document a student reads (a declared or
  *     administrative document placed there) — never a working record: the log, unit and verification records,
- *     corrections, evidence and source snapshots stay local (the pack writes metadata/PUBLISHED.json itself);
+ *     corrections, evidence and source snapshots stay local (the pack writes provenance/coursewerk/PUBLISHED.json itself);
  *   - under assets/, only the files a shipped text uses;
  * A stray file at the root is not part of the delivery.
  */
 const ROOT_SHIPPED = new Set(["alembic.json", "LICENSE", "README.md", "CITATION.cff"]);
-export const SHIPPED_RECORDS = Object.freeze(new Set(["metadata/ATTRIBUTION.md"]));
+export const SHIPPED_RECORDS = Object.freeze(new Set(["provenance/coursewerk/ATTRIBUTION.md"]));
 /** The asset paths a text refers to (resolved against the text's folder), and every asset file name it mentions: a
  *  figure is kept whether it is linked as `../assets/x.png`, `assets/x.png` or named in a directive. */
 function assetsUsedBy(rel, text) {
@@ -72,7 +73,10 @@ export function shippedFiles(pkg, { keep = () => true, course = true } = {}) {
     if ((ch && r !== COURSE_MAP && !keep(ch)) || (r === COURSE_MAP && !course)) { out("unpublished chapter"); continue; }
     if (!r.includes("/")) { if (ROOT_SHIPPED.has(r)) files.push(r); else out("root file"); continue; }
     if (r.startsWith("assets/")) { assets.push(r); continue; }
-    if (r.startsWith("metadata/")) { if (SHIPPED_RECORDS.has(r) || read.has(r)) files.push(r); else out("working record"); continue; }
+    // the working record never ships; the public record does (records layout: private/coursewerk/, provenance/coursewerk/)
+    if (r.startsWith("private/coursewerk/")) { out("working record"); continue; }
+    if (r.startsWith("provenance/coursewerk/")) { files.push(r); continue; }
+    if (r.startsWith("metadata/")) { if (read.has(r)) files.push(r); else out("working record"); continue; }
     files.push(r);
   }
   const used = new Set();
@@ -151,17 +155,17 @@ export function hiddenInText(text, file, declared = null) {
  *  is checked as the exact canonical licence text; CITATION.cff and .gitignore print nothing a student reads). */
 export const RECORD_FILES = Object.freeze(new Set([
   "alembic.json", "LICENSE", "CITATION.cff", ".gitignore",
-  "metadata/ATTRIBUTION.md", "metadata/CLAIMS.json", "metadata/COMPONENT_INDEX.json", "metadata/DOCUMENTS.json", "metadata/FOUNDATION.json",
-  "metadata/KEY_FACT_REVIEW.json", "metadata/LINK_RESOLUTIONS.json", "metadata/LOG.jsonl", "metadata/MEDIA_PLAN.json", "metadata/OVERRIDES.json",
-  "metadata/PROVENANCE.json", "metadata/REFERENCE_RECORD.json", "metadata/REVIEW_QUEUE.json", "metadata/SOURCE_RECORD.json", "metadata/SPINE.json",
-  "metadata/STEERING.json", "metadata/TERMS.json", "metadata/VISUAL_REVIEW.json", "metadata/coursewerk.json", "metadata/modules.json",
+  "provenance/coursewerk/ATTRIBUTION.md", "private/coursewerk/CLAIMS.json", "private/coursewerk/COMPONENT_INDEX.json", "private/coursewerk/DOCUMENTS.json", "private/coursewerk/FOUNDATION.json",
+  "private/coursewerk/KEY_FACT_REVIEW.json", "private/coursewerk/LINK_RESOLUTIONS.json", "private/coursewerk/LOG.jsonl", "private/coursewerk/MEDIA_PLAN.json", "private/coursewerk/OVERRIDES.json",
+  "private/coursewerk/PROVENANCE.json", "private/coursewerk/REFERENCE_RECORD.json", "private/coursewerk/REVIEW_QUEUE.json", "private/coursewerk/SOURCE_RECORD.json", "private/coursewerk/SPINE.json",
+  "private/coursewerk/STEERING.json", "private/coursewerk/TERMS.json", "private/coursewerk/VISUAL_REVIEW.json", "private/coursewerk/coursewerk.json", "private/coursewerk/modules.json",
 ]));
 /** Record paths, by shape: unit sidecars, review dispatches, claim records, preflight receipts, spine origins and
  *  reviews, auto-corrections — each a JSON record the harness writes and reads back. */
 export const RECORD_PATHS = Object.freeze([
-  /^metadata\/units\/(?:[^/]+\/)*[^/]+\.md\.json$/, /^metadata\/verification\/[^/]+\.json$/, /^metadata\/claims\/(?:[^/]+\/)*[^/]+\.json$/,
-  /^metadata\/preflight\/[^/]+\.json$/, /^metadata\/spine\/(?:[^/]+\/)*[^/]+\.origins\.json$/, /^metadata\/spine\/(?:review|critique)\/[^/]+\.json$/,
-  /^metadata\/corrections\/[^/]+\.json$/,
+  /^private\/coursewerk\/units\/(?:[^/]+\/)*[^/]+\.md\.json$/, /^private\/coursewerk\/verification\/[^/]+\.json$/, /^private\/coursewerk\/claims\/(?:[^/]+\/)*[^/]+\.json$/,
+  /^private\/coursewerk\/preflight\/[^/]+\.json$/, /^private\/coursewerk\/spine\/(?:[^/]+\/)*[^/]+\.origins\.json$/, /^private\/coursewerk\/spine\/(?:review|critique)\/[^/]+\.json$/,
+  /^private\/coursewerk\/corrections\/[^/]+\.json$/,
 ]);
 /** Media whose content is pixels or sound, never text a student reads as prose (an image's words are the visual
  *  review's: VISUAL_REVIEW.json). Every other file that ships can carry text, and is read or refused. */
@@ -178,9 +182,9 @@ export const isMedia = (rel) => MEDIA_EXTENSIONS.has(fileExt(rel)) || (/^assets\
  *  MEDIA_PLAN.json or PROVENANCE.json; assurance.mjs binds each to its sha256): only those are records. */
 export function namedEvidence(reader) {
   const out = new Set();
-  const walk = (v) => { if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) { if (k === "evidenceSnapshot" && typeof x === "string") out.add(path.posix.normalize(x.replace(/\\/g, "/"))); else walk(x); } };
-  for (const rel of ["metadata/FOUNDATION.json", "metadata/SOURCE_RECORD.json", "metadata/MEDIA_PLAN.json", "metadata/PROVENANCE.json"]) { try { walk(JSON.parse(reader.text(rel) || "null")); } catch { /* an unreadable record names nothing */ } }
-  return new Set([...out].filter((r) => /^metadata\/evidence\/[^/]+$/.test(r)));
+  const walk = (v) => { if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) { if (k === "evidenceSnapshot" && typeof x === "string") out.add(relocate(path.posix.normalize(x.replace(/\\/g, "/")))); else walk(x); } };
+  for (const rel of ["private/coursewerk/FOUNDATION.json", "private/coursewerk/SOURCE_RECORD.json", "private/coursewerk/MEDIA_PLAN.json", "private/coursewerk/PROVENANCE.json"]) { try { walk(JSON.parse(reader.text(rel) || "null")); } catch { /* an unreadable record names nothing */ } }
+  return new Set([...out].filter((r) => /^private\/coursewerk\/evidence\/[^/]+$/.test(r)));
 }
 const isMarkdown = (r) => /\.(?:md|markdown)$/i.test(r);
 /** Is a shipped file a harness record, named exactly? */
@@ -248,12 +252,12 @@ export function uncheckedShippedFindings(root, reader, basis) {
     ...hiddenContent(root, reader).map((x) => makeFinding({ module: "skeleton", kind: "content-hidden", units: [], statusClass: "defect", route: "agent", basis,
       evidence: { type: "rule", rule: "what is checked is what the student sees: no text hidden from the reader counts (round 3, C1-05)", file: x.file, line: x.line, detail: `${x.file} line ${x.line}: ${x.what} — it can hide text from the student that the review reads. Write it in orz-markdown (\`::: spoil <label>\` for a reveal, a container for a box), or remove it` } })),
     ...documents.filter(isMarkdown).map((rel) => makeFinding({ module: "skeleton", kind: "document-unchecked", units: [], statusClass: "defect", route: "agent", basis,
-      evidence: { type: "rule", rule: "everything that ships is checked (D42)", file: rel, detail: `${rel} would ship, but nothing reads it: declare it in metadata/DOCUMENTS.json (it is then segmented, linked and reviewed like a study guide), or move it out of the package` } })),
+      evidence: { type: "rule", rule: "everything that ships is checked (D42)", file: rel, detail: `${rel} would ship, but nothing reads it: declare it in private/coursewerk/DOCUMENTS.json (it is then segmented, linked and reviewed like a study guide), or move it out of the package` } })),
     ...documents.filter((r) => !isMarkdown(r)).map((rel) => makeFinding({ module: "skeleton", kind: "document-unchecked", units: [], statusClass: "defect", route: "agent", basis,
-      evidence: { type: "rule", rule: "what ships is what is read: a file that can carry text is read or refused, wherever it ships from (round 6, C3-04)", file: rel, detail: `${rel} would ship, and it can carry text a student reads, but nothing reads it (only markdown deliverables, the spine and named harness records are read): write it as a markdown document declared in metadata/DOCUMENTS.json, or move it out of the package` } })),
+      evidence: { type: "rule", rule: "what ships is what is read: a file that can carry text is read or refused, wherever it ships from (round 6, C3-04)", file: rel, detail: `${rel} would ship, and it can carry text a student reads, but nothing reads it (only markdown deliverables, the spine and named harness records are read): write it as a markdown document declared in private/coursewerk/DOCUMENTS.json, or move it out of the package` } })),
     ...includes.map((x) => makeFinding({ module: "skeleton", kind: "include-unchecked", units: [], statusClass: "defect", route: "agent", basis,
       evidence: x.why
         ? { type: "rule", rule: "an included file is read under the includer's frame: an include that prints what its target's own reading leaves out is refused (round 6, C3-03)", file: x.file, line: x.line, detail: `${x.file} line ${x.line} includes "${x.target}": ${x.why}. Write the content you want shown into ${x.file}, or include a document read under the same frame` }
-        : { type: "rule", rule: "an include renders another file into the deliverable: it must be a deliverable itself (D42)", file: x.file, line: x.line, detail: `${x.file} line ${x.line} includes "${x.target}"${x.resolved ? ` (${x.resolved})` : ""}, which is not a deliverable the harness reads: declare it in metadata/DOCUMENTS.json, or write its content into ${x.file}` } })),
+        : { type: "rule", rule: "an include renders another file into the deliverable: it must be a deliverable itself (D42)", file: x.file, line: x.line, detail: `${x.file} line ${x.line} includes "${x.target}"${x.resolved ? ` (${x.resolved})` : ""}, which is not a deliverable the harness reads: declare it in private/coursewerk/DOCUMENTS.json, or write its content into ${x.file}` } })),
   ];
 }

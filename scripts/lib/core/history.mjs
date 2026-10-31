@@ -38,7 +38,7 @@ export function issueHistory(root, units) {
     return "the text is unchanged (answered by the instructor, or still open)";
   };
   const issues = [];
-  for (const r of readDir(root, "metadata/verification")) {
+  for (const r of readDir(root, "private/coursewerk/verification")) {
     if (r.kind === "knowledge") for (const c of concernsOf(r)) issues.push({ at: r.at, foundBy: c.kind === "clarify" ? "blind conceptual review (a clarification)" : "blind conceptual review", unit: r.unit, issue: c.kind === "clarify" ? `"${c.text}" → "${c.suggestion}": ${c.problem}` : c.problem, suggestion: c.suggestion, settled: settle(r.unit, r.contentHash) });
     if (r.kind === "semi") for (const c of r.admission?.perClaim || []) {
       if (["contradicted", "disputed"].includes(c.status)) issues.push({ at: r.at, foundBy: "blind fact check against pinned sources", unit: r.unit, issue: `${c.status}: ${(c.conflicts || []).map((k) => `${k.claimed} vs ${k.source}`).join("; ")}`, settled: settle(r.unit, r.contentHash) });
@@ -49,7 +49,7 @@ export function issueHistory(root, units) {
       for (const x of v.ok ? v.results.filter((y) => y.class === "over-general") : []) issues.push({ at: r.at, foundBy: "context review of absolute statements", unit: r.unit, issue: `over-general: ${x.why}`, suggestion: x.suggestion, settled: settle(r.unit, r.contentHash) });
     }
   }
-  for (const c of readDir(root, "metadata/corrections")) issues.push({ at: c.at, foundBy: "harness auto-correction", unit: c.unit, issue: `corrected: ${c.edits?.map((e) => `${e.claimed} → ${e.replacement}`).join("; ")}`, settled: c.status === "reverted" ? `reverted by the instructor: "${c.note}"` : "corrected, shown as a diff" });
+  for (const c of readDir(root, "private/coursewerk/corrections")) issues.push({ at: c.at, foundBy: "harness auto-correction", unit: c.unit, issue: `corrected: ${c.edits?.map((e) => `${e.claimed} → ${e.replacement}`).join("; ")}`, settled: c.status === "reverted" ? `reverted by the instructor: "${c.note}"` : "corrected, shown as a diff" });
   for (const l of log) {
     if (l.type === "authorship-confirmation" && l.payload?.units) for (const u of l.payload.units) issues.push({ at: l.at, foundBy: "unit index (an edit outside any agent session)", unit: u, issue: "an edit of unknown authorship", settled: `claimed by ${l.party.name}${l.payload.instructorWords ? `: "${l.payload.instructorWords}"` : ""}` });
     if (l.type === "answer") issues.push({ at: l.at, foundBy: "the instructor, at a digest", unit: "—", issue: `${(l.payload?.answers || []).length} answer(s)`, settled: `"${l.payload?.instructorWords || ""}"` });

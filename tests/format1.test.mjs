@@ -82,7 +82,7 @@ test("[req.format1.kind] a text's kind is its header's carrier, else its place (
   // a package's declaration is read from DOCUMENTS.json, and only `carrier: paged` makes a print document
   const c = course(t);
   c.write("handouts/print.md", plain); c.write("handouts/page.md", plain);
-  c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ source: "handouts/print.md", carrier: "paged" }, { source: "handouts/page.md", carrier: "lean" }] }, null, 2) + "\n");
+  c.write("private/coursewerk/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ source: "handouts/print.md", carrier: "paged" }, { source: "handouts/page.md", carrier: "lean" }] }, null, 2) + "\n");
   assert.equal(declaredKind(c.r(), "handouts/print.md"), "paged");
   assert.equal(declaredKind(c.r(), "handouts/page.md"), null);
   // read as declared: a paged element prints in the print document; on a page it is a <script> (content-hidden)
@@ -171,7 +171,7 @@ test("[req.format1.deck-block] a 0.x deck block, or a deck without its `carrier:
   assert.match(issues, /format-contract: slides source does not open with the format-1 header/);
   assert.match(issues, /format-contract: slides source has a 0\.x `<!-- deck … -->` block/);
   c.write("handouts/print.md", "# Exam\n\nText.\n");
-  c.write("metadata/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ source: "handouts/print.md", carrier: "paged" }] }, null, 2) + "\n");
+  c.write("private/coursewerk/DOCUMENTS.json", JSON.stringify({ schemaVersion: 1, documents: [{ source: "handouts/print.md", carrier: "paged" }] }, null, 2) + "\n");
   assert.ok(c.ms3().some((f) => f.evidence?.rule === "framework-notation" && f.evidence.file === "handouts/print.md" && /carrier: paged/.test(f.evidence.issue)));
 });
 
