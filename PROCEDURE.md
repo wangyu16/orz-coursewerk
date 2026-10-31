@@ -208,6 +208,7 @@ To read or present the materials locally, assemble the framework shells: `script
 | verification | `scripts/verify.mjs` — destinations, search, fetch, semi, readmit, absolutes, knowledge, alignment, correct, revert, corrections, links, status |
 | gate | `scripts/gate.mjs` |
 | pack | `scripts/pack.mjs` (checks the newest Alembic contract first); `scripts/alembic_check.mjs` checks it on its own |
+| site export | `scripts/site_export.mjs --root <pkg> --out <dir>`: the records an Alembic site holds (`private/coursewerk/`, and the public `provenance/coursewerk/CHECKED.json` and `ATTRIBUTION.md`), for the hand-in; the package is not changed |
 
 ## Packages from v0.12
 

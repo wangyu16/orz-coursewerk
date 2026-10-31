@@ -191,7 +191,7 @@
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "44d8cd405d3a630062bd5023c217879fd2871ffcce271815880889d50a3f34c5"
+      "hash": "69a18d229c67bb69f4f01a6b4d04f554f7a084f532bfc281818950a661f36e1d"
     },
     {
       "id": "repo:README.md",
@@ -528,6 +528,12 @@
       "path": "scripts/lib/core/shipped.mjs",
       "type": "kernel",
       "hash": "1dab5b570fcabd94f7a4ad6e705b3bfd84544395208bd7c1765c20e08b8a12d5"
+    },
+    {
+      "id": "repo:scripts/lib/core/site_export.mjs",
+      "path": "scripts/lib/core/site_export.mjs",
+      "type": "kernel",
+      "hash": "328f7de41d476346f9ec84d8e8b06d5128ee8ca48408dc2490569ddb30c16ae6"
     },
     {
       "id": "repo:scripts/lib/core/spine_detail.mjs",
@@ -1010,6 +1016,12 @@
       "hash": "e96a1c999f2283b2ea7520fb1b5e2fd81bec4d81fd5e51225ee66b1986937e65"
     },
     {
+      "id": "repo:scripts/site_export.mjs",
+      "path": "scripts/site_export.mjs",
+      "type": "executable",
+      "hash": "b495bbc01bda2145f66b5edde6588dc1b99be595ff33eb11b13cfc591fae6171"
+    },
+    {
       "id": "repo:scripts/skills.mjs",
       "path": "scripts/skills.mjs",
       "type": "executable",
@@ -1253,7 +1265,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "b98da59a2c9135fdc238241fa6d9c63e5d8be747e16ab555bb518b9ab511236e"
+      "hash": "e85df0844f494f13ab4344834697cc9a25a798830fe8b9d2b664ac7ac59acec4"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -2094,6 +2106,12 @@
       "path": "tests/ship-lean.test.mjs",
       "type": "test",
       "hash": "1fa358e9293bfb6be029aed2a6391c2d833bee132b8a2d33acbde04bfc658433"
+    },
+    {
+      "id": "repo:tests/site-export.test.mjs",
+      "path": "tests/site-export.test.mjs",
+      "type": "test",
+      "hash": "800cd502f2363e57cf1a82076a01873a6e6cd1752b563ab517dae429020c905b"
     },
     {
       "id": "repo:tests/site.test.mjs",
@@ -4913,6 +4931,14 @@
       {
         "id": "req.records.registry-schema",
         "phase": "P1",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.records.site-export",
+        "phase": "P11",
         "tiers": [
           "T1"
         ],
