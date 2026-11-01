@@ -193,7 +193,9 @@ function relationParts(s) {
 }
 
 // a trailing unit: \text{…}/\mathrm{…} groups and unit-like words with exponents ("J mol^{-1}", "\,\text{kJ}", "%")
-const TRAIL_UNIT = /(?:\s|\\[,;:! ]|~)*((?:(?:\\(?:text|mathrm|rm)\s*\{[^{}]*\}|[A-Za-z°%µ]+)(?:\s*\^\s*(?:\{\s*[-−]?\d+\s*\}|[-−]?\d))?(?:\s|\\[,;:! ]|~|\/|\\cdot)*)+)$/;
+// a letter run ends at a non-letter ((?![A-Za-z°%µ])): without it a long phrase that fails to match splits each word
+// every possible way and the match never ends (GenChem 2026-11-01: \frac{\text{actual particles …}}{\text{formula …}})
+const TRAIL_UNIT = /(?:\s|\\[,;:! ]|~)*((?:(?:\\(?:text|mathrm|rm)\s*\{[^{}]*\}|[A-Za-z°%µ]+(?![A-Za-z°%µ]))(?:\s*\^\s*(?:\{\s*[-−]?\d+\s*\}|[-−]?\d))?(?:\s|\\[,;:! ]|~|\/|\\cdot)*)+)$/;
 const unitKey = (u) => String(u || "").replace(/\\(?:text|mathrm|rm)\s*\{([^{}]*)\}/g, "$1").replace(/\\[,;:! ]|~|\\cdot/g, " ").replace(/\s+/g, " ").replace(/\s*\^\s*\{?\s*([-−]?\d+)\s*\}?/g, "^$1").replace(/−/g, "-").trim();
 
 /** Strip a trailing unit: { body, unit }. The unit must not be a function name or a lone symbol inside arithmetic. */

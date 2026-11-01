@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "planId": "d471de972cf00cf6e059e483e267d4f75ce60602711c835381dfbb2426749383",
+  "baseRef": "HEAD",
+  "baseTip": "07e884d15148b1f43368f7721b5034801ba78983",
+  "baseCommit": "07e884d15148b1f43368f7721b5034801ba78983",
+  "reviewedHead": "07e884d15148b1f43368f7721b5034801ba78983",
+  "changed": [
+    "scripts/lib/verify/mechanical.mjs",
+    "tests/genchem-reeval.test.mjs"
+  ],
+  "requiredReview": [
+    "scripts/lib/verify/mechanical.mjs",
+    "tests/genchem-reeval.test.mjs"
+  ],
+  "reviewed": [
+    "scripts/lib/verify/mechanical.mjs",
+    "tests/genchem-reeval.test.mjs"
+  ],
+  "impactedClaims": [],
+  "testResults": [
+    {
+      "path": "tests/genchem-reeval.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r3-confidence.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r4-confidence-k2.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r5-readers.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r6-readers.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r7-exact.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/requirements.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "Mechanical recompute: the trailing-unit pattern ends a letter run at a non-letter, so a long \\text{} phrase that does not match fails at once instead of trying every split of its words (the check hung on a GenChem solutions unit, 2026-11-01). Regression test in genchem-reeval; it hangs on the old pattern and passes in milliseconds on the new one. Every test file that imports the mechanical checks passes, run one at a time.",
+  "generatedIndexHash": "82528881f0b60ea20fa7e063c89840e75ea75429e7753f6850e3157c1e903ea8",
+  "acceptedAt": "2026-11-01T04:19:30.956Z"
+}

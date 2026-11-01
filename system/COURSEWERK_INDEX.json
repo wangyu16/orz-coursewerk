@@ -863,7 +863,7 @@
       "id": "repo:scripts/lib/verify/mechanical.mjs",
       "path": "scripts/lib/verify/mechanical.mjs",
       "type": "kernel",
-      "hash": "4401f185014bc32b6181f7f0d35fdcc2938fb547289d55f48f5d461b5ba87071"
+      "hash": "70a2d142b5f644173cdf6e4ed9e3b2fcaa54bb90168bd1332d9e41bdad933a94"
     },
     {
       "id": "repo:scripts/lib/verify/references.mjs",
@@ -1835,7 +1835,7 @@
       "id": "repo:tests/genchem-reeval.test.mjs",
       "path": "tests/genchem-reeval.test.mjs",
       "type": "test",
-      "hash": "d746cf15dc2bae3ac4976ef364165628e257c418bd1089af15bf0fc314c67de9"
+      "hash": "58a93f326ea9263407066a572a8001310f289e6a7d2cd6a37352b1dfdd5e80bd"
     },
     {
       "id": "repo:tests/helpers/baseline.mjs",

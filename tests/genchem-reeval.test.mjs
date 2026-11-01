@@ -36,6 +36,13 @@ test("[req.mechanical.recompute] a written value ends a chain; pico steps and a 
   assert.equal(arithmeticMismatches("$$\\Delta H = -\\tfrac12(-571.6) = +285.8\\ \\text{kJ}$$\n\n$$\\Delta H = 2(-571.6) = -1043.2\\ \\text{kJ}$$").length, 1);
 });
 
+test("[req.mechanical.recompute] a long text unit that does not match ends at once, not after trying every split of its words", () => {
+  // GenChem 2026-11-01: the unit pattern split each letter run every possible way and the check never finished
+  const t0 = Date.now();
+  arithmeticMismatches("$$i = \\frac{\\text{actual particles in solution after dissociation of the solute}}{\\text{formula units of solute initially dissolved in water}}$$");
+  assert.ok(Date.now() - t0 < 2000, `took ${Date.now() - t0} ms`);
+});
+
 test("[req.mechanical.balance] a generic mechanism written in \\ce{} is schematic; a real reaction is still balanced", () => {
   assert.deepEqual(unbalancedEquations("One consistent mechanism: Step 1 (slow): $\\ce{A + B -> I}$; Step 2 (fast): $\\ce{I + B -> C}$."), []);
   assert.match(reactionsIn("Step 2 (fast): $\\ce{I + B -> C}$.")[0].unread, /schematic/);
