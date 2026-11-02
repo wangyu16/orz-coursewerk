@@ -15,7 +15,10 @@ const IN = "@inputs/";
 // a citation is not expression: web addresses and DOIs are blanked (keeping offsets) before words are read, so citing
 // the same paper as a reference does is never a copy
 const CITATION = /\b(?:https?:\/\/|www\.)[^\s)\]>"']+|\bdoi:\s*10\.\S+|\b10\.\d{4,9}\/[^\s)\]>"']+/giu;
-const blankCitations = (text) => String(text ?? "").replace(CITATION, (m) => " ".repeat(m.length));
+// an equation is a fact, like a citation: the rate law or the copolymer equation a textbook also prints is not copied
+// expression, so math spans ($…$, $$…$$) in the shipped text are blanked too (owner's course, 2026-11-02)
+const MATH = /\$\$[\s\S]*?\$\$|(?<!\\)\$(?!\$)(?:\\\$|[^$\n])+?(?<!\\)\$/g;
+const blankCitations = (text) => String(text ?? "").replace(CITATION, (m) => " ".repeat(m.length)).replace(MATH, (m) => m.replace(/[^\n]/g, " "));
 const wordsOf = (text) => { const out = []; for (const m of blankCitations(text).matchAll(/[\p{L}\p{N}]+/gu)) out.push({ w: m[0].toLowerCase(), at: m.index }); return out; };
 
 /** The texts the package ships that a reader reads (D42, D53): chapter deliverables and spine, course map, declared documents. */

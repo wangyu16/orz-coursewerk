@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "planId": "c4bbe77968919934dcb1111ef13f45f4557c9c0dd65623ede9905ffab7b34570",
+  "baseRef": "HEAD",
+  "baseTip": "02ecf55a5545be2eaf50b9096062a32717f10e94",
+  "baseCommit": "02ecf55a5545be2eaf50b9096062a32717f10e94",
+  "reviewedHead": "02ecf55a5545be2eaf50b9096062a32717f10e94",
+  "changed": [
+    "scripts/modules/ms10-copying.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/reference-copying.test.mjs"
+  ],
+  "requiredReview": [
+    "scripts/modules/ms10-copying.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/reference-copying.test.mjs"
+  ],
+  "reviewed": [
+    "scripts/modules/ms10-copying.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/reference-copying.test.mjs"
+  ],
+  "impactedClaims": [],
+  "testResults": [
+    {
+      "path": "tests/gate-cli.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/reference-copying.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/requirements.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/stable-modules.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/wiring-modules.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "MS10 copy check: math spans in the shipped text are blanked like citations, so a standard equation (a rate law, the copolymer equation) that a textbook also prints is not reported as copied expression; prose runs of 8 words are still caught. Found writing Chapters 2-3 of Chemistry of Macromolecules, where 11 of 15 hits were equations. Test added (fails without the change, passes with it); affected tests pass one at a time.",
+  "generatedIndexHash": "8161a7fa83126327460374ef162d45582c757496ef467498d5df6eab9ee1c692",
+  "acceptedAt": "2026-11-02T04:39:56.136Z"
+}

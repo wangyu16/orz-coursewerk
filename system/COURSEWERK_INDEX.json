@@ -923,7 +923,7 @@
       "id": "repo:scripts/modules/ms10-copying.mjs",
       "path": "scripts/modules/ms10-copying.mjs",
       "type": "executable",
-      "hash": "04ba06e3f50f6dbc5dc55e0fb9c05382087d31aec8ce4fb07fc9a74fb4160cb0"
+      "hash": "162dcde3996f9289ba10adca4b0d067511b97f923f883edd6707f501e174f3f5"
     },
     {
       "id": "repo:scripts/modules/ms2-rights.mjs",
@@ -1283,7 +1283,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "695ebdb6cd969672713293d1cb78197c710c34d5a8ed8e2c1fb882cb34ba38b1"
+      "hash": "e9a47fb654fe7e46a85144df83beb613a6fa8cefac26a26906f7d0016055be68"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -2099,7 +2099,7 @@
       "id": "repo:tests/reference-copying.test.mjs",
       "path": "tests/reference-copying.test.mjs",
       "type": "test",
-      "hash": "b8daef462aad1447c8e6e99058a70823a54e9c8b7d025d8231d4ff864bede520"
+      "hash": "9bf9501bb9774ebfcf00151d7ea87659346e1cbeda8d2f374c1e8d436bff0242"
     },
     {
       "id": "repo:tests/requirements.test.mjs",

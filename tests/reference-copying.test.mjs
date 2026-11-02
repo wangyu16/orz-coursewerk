@@ -13,7 +13,7 @@ import { COPY_RUN } from "../scripts/modules/ms10-copying.mjs";
 const BOOK = "Chapter 3. The glass transition is the temperature range in which an amorphous polymer changes from a hard, glassy solid to a soft, rubbery material, because the chains gain enough thermal energy for long-range segmental motion. Below it, only short-range vibrations remain.";
 const PAPER = "Here we report that the enzyme cleaves the ester bonds of the polymer within hours at mild temperatures, giving the two monomers in high yield.";
 
-function course(t, { study, pinBook = true, paper = true } = {}) {
+function course(t, { study, pinBook = true, paper = true, book = BOOK } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cw-copy-"));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const root = path.join(dir, "package"), inputs = path.join(dir, "inputs");
@@ -23,7 +23,7 @@ function course(t, { study, pinBook = true, paper = true } = {}) {
   w(root, "study-guide/ch.md", study);
   w(root, "concepts/ch.md", "# Concept Map — Ch\n");
   const sources = [];
-  if (pinBook) { w(inputs, "text/book.txt", BOOK); sources.push({ sourceId: "textbook-a", textPath: "text/book.txt", sha256: sha256(BOOK), retrievedAt: "2026-10-21T00:00:00Z" }); }
+  if (pinBook) { w(inputs, "text/book.txt", book); sources.push({ sourceId: "textbook-a", textPath: "text/book.txt", sha256: sha256(book), retrievedAt: "2026-10-21T00:00:00Z" }); }
   w(inputs, "SOURCE_CORPUS.json", JSON.stringify({ schemaVersion: 1, sources }));
   if (paper) { w(inputs, "refs/paper.txt", PAPER); w(inputs, "REFERENCES.json", JSON.stringify({ schemaVersion: 1, references: [{ refId: "ref-paper", url: "https://doi.org/10.0/x", textPath: "refs/paper.txt", sha256: sha256(PAPER) }] })); }
   return { root, inputs };
@@ -69,4 +69,14 @@ test("[req.rights.reference-copy-check] citing the same paper (its URL or DOI) i
   corpus.sources[0].sha256 = sha256(fs.readFileSync(path.join(c.inputs, "text/book.txt"), "utf8"));
   fs.writeFileSync(path.join(c.inputs, "SOURCE_CORPUS.json"), JSON.stringify(corpus));
   assert.deepEqual(copying(c), []);
+});
+
+test("[req.rights.reference-copy-check] an equation is a fact, not expression: math in the shipped text is not compared", (t) => {
+  // the book prints the rate law; the course writes the same law as math, and only the math is shared
+  const book = "In this treatment R p = k p [M] ( f k d [I] / k t ) 1/2 so that the rate depends on the initiator.";
+  const asMath = course(t, { book, study: "# Rate\n\nUnder the steady state, $R_p = k_p [M] (f k_d [I] / k_t)^{1/2}$ holds.\n" });
+  assert.deepEqual(copying(asMath).filter((f) => f.kind === "reference-copied"), [], "the equation itself is not compared");
+  // the same eight-word run written as prose is still a copy
+  const asWords = course(t, { book, study: "# Rate\n\nSo that the rate depends on the initiator, as stated.\n" });
+  assert.equal(copying(asWords).filter((f) => f.kind === "reference-copied").length, 1);
 });
