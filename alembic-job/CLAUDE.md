@@ -42,9 +42,10 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
    prints what it recorded and what it skipped, and why (for example, a plan that changed since it was asked, or an
    approval without the instructor's words). Never record an instructor's act any other way in a job.
 
-2. **See where the course stands.** Where `COURSEWERK.md` says `git status` and `git diff`, use
-   `alembic push work --dry-run`. It lists what has changed since the pull. Then run the usual steps with
-   `--root work`:
+2. **See where the course stands** with Coursewerk's own tools, with `--root work`. Where `COURSEWERK.md` says
+   `git status` and `git diff`, these take their place: the index finds any edit nobody recorded, and the status says
+   what each chapter needs. Do not use `alembic push work --dry-run` here: after the import the decision log is one
+   file, which can be larger than the 4 MB a file may hold in Alembic, so use it only after the hand-back (step 4).
 
    ```bash
    node assistant/scripts/units.mjs index --root work

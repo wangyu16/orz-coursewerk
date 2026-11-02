@@ -17,6 +17,7 @@ import { sha256 } from "../records/canonical.mjs";
 import { verifyLog, verifyAgainstCommitted, parseLog } from "../records/log.mjs";
 import { RECORDS } from "../records/paths.mjs";
 import { HOST_FILE, readHostRecord, writeHostRecord } from "../records/host.mjs";
+import { CONFIG_PATH, spineV2InForce, writeConfig } from "../records/config.mjs";
 import { ROLL_BYTES, recordWhen, monthOf } from "./site_export.mjs";
 
 const LOG_PART = /^LOG(?:\.(\d+))?\.jsonl$/;
@@ -63,7 +64,8 @@ function verificationPartsIn(root) {
 /**
  * Site layout → package layout, in place. Everything is read and checked before anything is written; a folder already
  * imported, a log that does not verify, or a verification line Coursewerk did not write is refused with nothing changed.
- * Returns { log: { parts, bytes, records }, verification: { parts, files }, host }.
+ * Returns { log: { parts, bytes, records }, verification: { parts, files }, host, [config] } — config: the path of a
+ * coursewerk.json written because it was missing while the log shows spine v2 in force.
  */
 export function importSite(root, { at = new Date().toISOString() } = {}) {
   root = path.resolve(root);
@@ -115,13 +117,18 @@ export function importSite(root, { at = new Date().toISOString() } = {}) {
     for (const p of logParts.slice(1)) fs.rmSync(path.join(root, p.path));
   }
   for (const p of vparts) fs.rmSync(path.join(root, p.path));
+  // private/coursewerk/coursewerk.json only mirrors the log (config.mjs boundConfig): a course whose log shows spine v2
+  // in force but arrived without the file (GenChem's 2026-11 deliveries) gets it back exactly as writeConfig writes
+  // it, so the commands do not refuse. An existing file is never overwritten.
+  const configWritten = !fs.existsSync(path.join(root, CONFIG_PATH)) && spineV2InForce(text);
+  if (configWritten) writeConfig(root, { schemaVersion: 1, spine: 2 });
   const record = {
     schemaVersion: 1, host: "alembic", state: "imported", importedAt: at,
     log: { sha256: sha256(joined), bytes: joined.length, parts: logParts.map((p) => ({ path: p.path, bytes: p.buf.length })) },
     verification: { parts: vparts },
   };
   writeHostRecord(root, record);
-  return { log: { parts: logParts.length, bytes: joined.length, records: parseLog(text).length }, verification: { parts: vparts.length, files: files.size }, host: HOST_FILE };
+  return { log: { parts: logParts.length, bytes: joined.length, records: parseLog(text).length }, verification: { parts: vparts.length, files: files.size }, host: HOST_FILE, ...(configWritten ? { config: CONFIG_PATH } : {}) };
 }
 
 /** Where `lines` go when appended to parts that roll at ROLL_BYTES: the last part while it holds them, then new parts. */

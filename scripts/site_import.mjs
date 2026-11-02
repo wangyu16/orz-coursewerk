@@ -13,5 +13,6 @@ if (!dir || process.argv.includes("--help")) { console.error("usage: node script
 try {
   const r = importSite(dir);
   console.log(`imported ${dir}: the decision log (${r.log.records} records from ${r.log.parts} part(s), ${r.log.bytes} bytes) is one private/coursewerk/LOG.jsonl and verifies; ${r.verification.files} verification records unwrapped from ${r.verification.parts} part(s); host record ${r.host} written.`);
+  if (r.config) console.log(`${r.config} was missing; the decision log shows spine v2 in force, so it was written as the log says ({"schemaVersion": 1, "spine": 2}).`);
   console.log(`Work in the package now (--root ${dir}); before pushing, run: node scripts/site_handback.mjs ${dir}`);
 } catch (e) { console.error(`site_import: ${e.message}`); process.exit(1); }

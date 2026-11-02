@@ -41,7 +41,7 @@
       "id": "repo:alembic-job/CLAUDE.md",
       "path": "alembic-job/CLAUDE.md",
       "type": "repository-support",
-      "hash": "1b3b714243e8a8789f9f08aa142c8619140244c9342a8c64dfd2f7796f1f7c9c"
+      "hash": "052960e608bc2ee73e6f7ce9aca2d5112351e8c11d10d7dd4a51f3b09eee87e9"
     },
     {
       "id": "repo:bootstrap/init.sh",
@@ -581,7 +581,7 @@
       "id": "repo:scripts/lib/core/site_host.mjs",
       "path": "scripts/lib/core/site_host.mjs",
       "type": "kernel",
-      "hash": "53a2930d824e69fc952c3e07c9a59d54973af8e660c129792cebb08ae1004377"
+      "hash": "f70ffe8722e27b20a067ac5bf233b640d1022d8199fccc95f9b740ce225bbb46"
     },
     {
       "id": "repo:scripts/lib/core/spine_detail.mjs",
@@ -1097,7 +1097,7 @@
       "id": "repo:scripts/site_import.mjs",
       "path": "scripts/site_import.mjs",
       "type": "executable",
-      "hash": "e62c602b21cae472bf4164dd105825d7eb87f5ef4ba2426ef0e451c6a399cbf5"
+      "hash": "bedcf4b6f9d1ed94e2d29cec4db4faad068b7a97737a2e40300f7e14d568d5b4"
     },
     {
       "id": "repo:scripts/skills.mjs",
@@ -1343,7 +1343,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "4efcf66f350912a5e7df35bac6882df1609d68821fd31f148e973ba09f9c0948"
+      "hash": "1304cf0e70648cf0c1d42151c19f6e70ddac5620b7effc1baa661cf607e7ae86"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1955,7 +1955,7 @@
       "id": "repo:tests/job-release.test.mjs",
       "path": "tests/job-release.test.mjs",
       "type": "test",
-      "hash": "af4d0668e13ff305999a2fdef5dc5daeda5e978dd1023c52b2053e92d887ff0d"
+      "hash": "22eeeebd4d8737c47f85b3a6559a8e76390b046a96cb0552e1ce446956f96044"
     },
     {
       "id": "repo:tests/key-fact-bindings.test.mjs",
@@ -2219,7 +2219,7 @@
       "id": "repo:tests/site-import.test.mjs",
       "path": "tests/site-import.test.mjs",
       "type": "test",
-      "hash": "7894108fa4dfab87bcf5da94879f72bbe8d197d27666ffec369deeeb7b9e819a"
+      "hash": "c252b5634e63ccc7896ee5a966d5928454f334166a5f160bc1680069713037b3"
     },
     {
       "id": "repo:tests/site.test.mjs",

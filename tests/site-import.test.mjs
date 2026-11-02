@@ -15,6 +15,7 @@ import { GENESIS, appendLogRecord, parseLog, recordHash, readLogText, verifyLog 
 import { boundRecord, recordDispatch, recordHashOf } from "../scripts/lib/verify/dispatch.mjs";
 import { evaluateGate, logFindings } from "../scripts/lib/skeleton/gate.mjs";
 import { createSnapshot } from "../scripts/lib/skeleton/snapshot.mjs";
+import { boundConfig } from "../scripts/lib/records/config.mjs";
 import { canonicalJson, sha256 } from "../scripts/lib/records/canonical.mjs";
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
@@ -264,6 +265,8 @@ test("[req.records.site-import] [req.records.site-handback] [req.gate.host-ancho
   assert.ok(pulled.has(`${REC}/LOG.3.jsonl`), "the delivery holds the log in parts");
   const r = importSite(root);
   assert.equal(r.log.parts, 3);
+  assert.equal(r.config, `${REC}/coursewerk.json`, "the delivery lacks coursewerk.json; its log shows spine v2 in force");
+  assert.deepEqual(boundConfig(root).problems, []);
   const log = readLogText(root);
   assert.ok(Buffer.byteLength(log) > 8 * 1024 * 1024, "the joined log is past the old 8 MB snapshot limit");
   assert.deepEqual(logFindings(root, "b"), [], "no git: anchored to the host, and it extends");
@@ -284,4 +287,25 @@ test("[req.records.site-import] [req.records.site-handback] [req.gate.host-ancho
   assert.ok(after.get(changed.find((k) => k.startsWith(VER))).toString().includes(d.dispatch));
   assert.equal(out.log.appended, 2); assert.equal(out.verification.appended, 1);
   t.diagnostic(`GenChem round trip: ${JSON.stringify(out)}`);
+});
+
+test("[req.records.site-import] a missing coursewerk.json is written back as the log says (spine v2 in force); an existing one is never overwritten; the export carries it", (t) => {
+  const CONFIG = `${REC}/coursewerk.json`;
+  const { out } = site(t);
+  assert.equal(fs.readFileSync(path.join(out, CONFIG), "utf8"), fs.readFileSync(path.join(C2, CONFIG), "utf8"), "site_export carries coursewerk.json like every other working record");
+  fs.rmSync(path.join(out, CONFIG));
+  const r = importSite(out);
+  assert.equal(r.config, CONFIG);
+  assert.equal(fs.readFileSync(path.join(out, CONFIG), "utf8"), JSON.stringify({ schemaVersion: 1, spine: 2 }, null, 2) + "\n", "exactly as writeConfig writes it");
+  assert.deepEqual(boundConfig(out).problems, []);
+  // an existing file is left as it is (even one the log disagrees with: boundConfig reports that, the import does not hide it)
+  const { out: out2 } = site(t);
+  fs.writeFileSync(path.join(out2, CONFIG), JSON.stringify({ schemaVersion: 1, spine: 2, digestCap: 7 }) + "\n");
+  assert.equal(importSite(out2).config, undefined);
+  assert.equal(fs.readFileSync(path.join(out2, CONFIG), "utf8"), JSON.stringify({ schemaVersion: 1, spine: 2, digestCap: 7 }) + "\n");
+  // a log that never showed spine v2: nothing is written
+  const dir = tmp(t, "cw-v1-");
+  appendLogRecord(dir, { type: "intake", party: harness, payload: {} });
+  assert.equal(importSite(dir).config, undefined);
+  assert.equal(fs.existsSync(path.join(dir, CONFIG)), false);
 });

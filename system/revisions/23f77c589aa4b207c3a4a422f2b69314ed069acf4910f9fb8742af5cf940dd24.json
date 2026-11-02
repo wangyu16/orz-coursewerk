@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "planId": "23f77c589aa4b207c3a4a422f2b69314ed069acf4910f9fb8742af5cf940dd24",
+  "baseRef": "HEAD",
+  "baseTip": "d91ff01ef0fb717032933c330dfc8d4f5689749c",
+  "baseCommit": "d91ff01ef0fb717032933c330dfc8d4f5689749c",
+  "reviewedHead": "d91ff01ef0fb717032933c330dfc8d4f5689749c",
+  "changed": [
+    "alembic-job/CLAUDE.md",
+    "scripts/lib/core/site_host.mjs",
+    "scripts/site_import.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/job-release.test.mjs",
+    "tests/site-import.test.mjs"
+  ],
+  "requiredReview": [
+    "alembic-job/CLAUDE.md",
+    "scripts/lib/core/site_host.mjs",
+    "scripts/site_import.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/job-release.test.mjs",
+    "tests/site-import.test.mjs"
+  ],
+  "reviewed": [
+    "alembic-job/CLAUDE.md",
+    "scripts/lib/core/site_host.mjs",
+    "scripts/site_import.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/job-release.test.mjs",
+    "tests/site-import.test.mjs"
+  ],
+  "impactedClaims": [],
+  "testResults": [
+    {
+      "path": "tests/site-import.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/job-release.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "Reviewed two fixes from the live GenChem job: site_import writes private/coursewerk/coursewerk.json as writeConfig would ({schemaVersion 1, spine 2}) when it is missing and the joined log shows spine v2 in force, never overwriting an existing one (site_export already carries the file; GenChem never had one because its log has no migration record and the file was never written); the job instructions use Coursewerk index and status to see where the course stands and advise alembic push --dry-run only after site_handback. site-import 8/8 (including the real GenChem round trip) and job-release 3/3 passed.",
+  "generatedIndexHash": "f60b479e0fa42ba879c72989088bd6c0106faf0265b9a9ce9fcbd3c0cd516a08",
+  "acceptedAt": "2026-11-02T22:53:43.892Z"
+}
