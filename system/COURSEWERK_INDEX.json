@@ -461,7 +461,7 @@
       "id": "repo:scripts/lib/core/house_notation.mjs",
       "path": "scripts/lib/core/house_notation.mjs",
       "type": "kernel",
-      "hash": "392991eefd303ecac500ca8b14f918a0a414813e9bc4c2641c0fd0fb1d26eea7"
+      "hash": "40adb95f233aa0300b87052b92eb86a7ed3350870e817f8948359447f2ead360"
     },
     {
       "id": "repo:scripts/lib/core/loop.mjs",
@@ -1865,7 +1865,7 @@
       "id": "repo:tests/house-notation.test.mjs",
       "path": "tests/house-notation.test.mjs",
       "type": "test",
-      "hash": "2b9228ddd14eb9fa9b35fc6d0bd691ceb303f019ec07db669388e4c2c8bb22b9"
+      "hash": "b5e0952d3ae70e4cdbc753b1847f123c0f91e9fd93355d2a842b8e86409e3527"
     },
     {
       "id": "repo:tests/immutable.test.mjs",

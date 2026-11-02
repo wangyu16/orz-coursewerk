@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "planId": "1bfe4168d97df3afdd628356afef77a6462f6fb41793674e032ac863236e4034",
+  "baseRef": "HEAD",
+  "baseTip": "f65824037d3128903c6ec88b9a398768d0cfd36f",
+  "baseCommit": "f65824037d3128903c6ec88b9a398768d0cfd36f",
+  "reviewedHead": "f65824037d3128903c6ec88b9a398768d0cfd36f",
+  "changed": [
+    "scripts/lib/core/house_notation.mjs",
+    "tests/house-notation.test.mjs"
+  ],
+  "requiredReview": [
+    "scripts/lib/core/house_notation.mjs",
+    "tests/house-notation.test.mjs"
+  ],
+  "reviewed": [
+    "scripts/lib/core/house_notation.mjs",
+    "tests/house-notation.test.mjs"
+  ],
+  "impactedClaims": [],
+  "testResults": [
+    {
+      "path": "tests/house-notation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/requirements.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/stable-modules.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "House notation: two more rules from the GenChem pass — a math span opening with a script glued to the text before it ([A]$_0$, M$^{-1}$), and units set as italic variables ($M^{-1}s^{-1}$). Tests added; the required test files pass, one at a time.",
+  "generatedIndexHash": "9e5677463fa4abf7c0e84c641756321e3bee2ef2c0aaaa90d17bb65b9a65b071",
+  "acceptedAt": "2026-11-02T02:39:20.204Z"
+}

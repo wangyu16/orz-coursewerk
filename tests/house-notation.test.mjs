@@ -36,6 +36,9 @@ test("[req.notation.house] inside math: Unicode where LaTeX belongs, a word subs
   assert.deepEqual(rules("one $x$ and a lone $ here"), ["unpaired-dollar"]);
   assert.deepEqual(rules("$K_{sp}$ = ($6.90\\times10^{-3}$)(2×$6.90\\times10^{-3}$)"), ["split-math", "split-math"], "one expression in several spans");
   assert.deepEqual(rules("$a$, $b$ and $c$"), [], "a list of separate symbols is not one expression");
+  assert.deepEqual(rules("[A]$_0$ falls"), ["script-glued-to-text"]);
+  assert.deepEqual(rules("$k$ carries $M^{-1}s^{-1}$"), ["unit-in-italics"]);
+  assert.deepEqual(rules("$k$ carries $\\text{M}^{-1}\\,\\text{s}^{-1}$"), []);
 });
 
 test("[req.notation.house] the house notation itself, code, diagrams, links and directive heads raise nothing", () => {

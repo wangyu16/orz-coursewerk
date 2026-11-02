@@ -43,6 +43,7 @@ const PROSE_RULES = [
 const MATH_RULES = [
   { rule: "unicode-in-math", re: /[₀-₉₊₋⁰¹²³⁴-⁹⁺⁻ⁿ×−]+/g, house: (m) => (/[×]/.test(m) ? "\\times" : /−/.test(m) ? "-" : /[⁰¹²³⁴-⁹⁺⁻ⁿ]/.test(m) ? "^{…}" : "_{…}") },
   { rule: "middle-dot-in-math", re: /·/g, house: () => "\\cdot (or keep it inside \\text{})" },
+  { rule: "unit-in-italics", re: /(?<![\\\w{])(?:mol|[MsLJKg])\^\{?-\d+\}?\s*(?:\\,\s*)?(?:mol|[MsLJKg])\^\{?-?\d+\}?/g, house: () => "units upright: \\text{M}^{-1}\\,\\text{s}^{-1}" },
   { rule: "word-subscript-in-math", re: /_\{[a-z]{3,}\}/g, house: (m) => `_\\text{${m.slice(2, -1)}} (a word as a subscript is a label, set upright)` },
 ];
 
@@ -72,6 +73,8 @@ export function houseNotationSpots(text) {
     const [a, ia] = maths[k - 1], [, ib] = maths[k], gap = src.slice(ia + a.length, ib);
     if (!/\n/.test(gap) && /^[\s()×·/−+\-=<>≈^\d.,]*$/.test(gap) && /[×^=≈]|\)\s*[×/·]?\s*\(|\d\s*[×/−+\-]|[×/−+\-]\s*\d/.test(gap)) spots.push({ at: ib, line: lineAt(ib), rule: "split-math", found: `${a}${gap}${maths[k][0]}`.slice(0, 80), house: "one math span for the whole expression" });
   }
+  // a math span that opens with a script glued to the text before it: [A]$_0$, M$^{1-n}$
+  for (const [m, i] of maths) if (/^\$[_^]/.test(m) && /[\])A-Za-z0-9]$/.test(src.slice(0, i))) spots.push({ at: i, line: lineAt(i), rule: "script-glued-to-text", found: `${src.slice(Math.max(0, i - 6), i)}${m}`.trim().slice(0, 80), house: "the base inside the math too: $[\\text{A}]_0$" });
   const prose = src.replace(MATH, blank);
   for (const r of PROSE_RULES) for (const x of prose.matchAll(r.re)) {
     if (r.keep && !r.keep(x)) continue;
