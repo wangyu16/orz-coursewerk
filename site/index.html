@@ -29,17 +29,17 @@
   <main id="main">
     <section class="hero" id="top">
       <div class="hero-copy">
-        <p class="eyebrow"><span class="status-dot"></span> Agent-native OER production system</p>
+        <p class="eyebrow"><span class="status-dot"></span> v1.0.0 · Agent-native OER production system</p>
         <h1>From source evidence <br>to <em>coherent</em> courseware.</h1>
-        <p class="lede">Coursewerk coordinates drafting, rich formatting, rights evidence, accessibility checks, cross-document consistency, and packaging—so educators can spend their attention on teaching decisions.</p>
+        <p class="lede">Coursewerk coordinates drafting, rich formatting, blind fact checks, rights evidence, cross-document consistency, and packaging—so educators spend their attention on the plan and the teaching decisions, and approve what ships.</p>
         <div class="hero-actions">
           <a class="button primary" href="#start">Run the pipeline <span aria-hidden="true">→</span></a>
           <a class="button ghost" href="https://github.com/wangyu16/orz-coursewerk/blob/main/FEATURES.md">See the evidence model</a>
         </div>
         <ul class="hero-facts" aria-label="Key characteristics">
           <li><strong>5</strong><span>aligned chapter deliverables</span></li>
-          <li><strong>3</strong><span>browser reading shapes</span></li>
-          <li><strong>1</strong><span>traceable source of truth</span></li>
+          <li><strong>1</strong><span>approved plan per chapter</span></li>
+          <li><strong>1</strong><span>decision log per package</span></li>
         </ul>
       </div>
 
@@ -47,19 +47,19 @@
         <div class="console-bar"><span></span><span></span><span></span><b>release / chapter-05</b></div>
         <div class="console-body">
           <p class="console-label">ASSURANCE KERNEL</p>
-          <div class="check"><i>01</i><span>rights preflight</span><b>PASS</b></div>
-          <div class="check"><i>02</i><span>source evidence</span><b>BOUND</b></div>
-          <div class="check"><i>03</i><span>attribution</span><b>VERIFIED</b></div>
-          <div class="check"><i>04</i><span>component coherence</span><b>CURRENT</b></div>
-          <div class="check"><i>05</i><span>package contract</span><b>READY</b></div>
-          <div class="console-output"><span>criticalTotal</span><strong>0</strong><small>release permitted</small></div>
+          <div class="check"><i>01</i><span>plan approved by instructor</span><b>APPROVED</b></div>
+          <div class="check"><i>02</i><span>every sentence indexed</span><b>TRACED</b></div>
+          <div class="check"><i>03</i><span>blind fact review</span><b>CONVERGED</b></div>
+          <div class="check"><i>04</i><span>ideas, never expression</span><b>CLEAN</b></div>
+          <div class="check"><i>05</i><span>rights &amp; package contract</span><b>READY</b></div>
+          <div class="console-output"><span>open defects</span><strong>0</strong><small>publish on the instructor’s word</small></div>
         </div>
         <div class="stamp">evidence <br>before <br>claims</div>
       </div>
     </section>
 
     <section class="signal-band" aria-label="Coursewerk principles">
-      <span>LEAN MARKDOWN</span><i>◆</i><span>RICH CARRIERS</span><i>◆</i><span>FAIL-CLOSED RIGHTS</span><i>◆</i><span>REVISION GRAPH</span><i>◆</i><span>HONEST RECEIPTS</span>
+      <span>LEAN TEXT</span><i>◆</i><span>BLIND REVIEW</span><i>◆</i><span>IDEAS, NEVER EXPRESSION</span><i>◆</i><span>DECISION LOG</span><i>◆</i><span>HONEST RECEIPTS</span>
     </section>
 
     <section class="section showcase" id="showcase">
@@ -99,6 +99,12 @@
         <div><dt>09</dt><dd>revision-bound Wikipedia pages</dd></div>
         <div><dt>CC</dt><dd>BY-SA 4.0 with traceable attribution</dd></div>
       </dl>
+
+      <div class="real-use">
+        <div class="real-use-intro"><p class="kicker">IN REAL USE</p><h3>Two courses taught by a working instructor</h3><p>Before this release, Coursewerk ran on real teaching material, with the instructor approving every plan and every decision that needed a person.</p></div>
+        <article><span>19 CHAPTERS</span><h3>General Chemistry</h3><p>An existing course re-evaluated end to end: 4,581 passages read blind, 739 corrections applied and rechecked until a pass raised nothing, the notation made consistent across every page, and the whole package handed to <a href="https://github.com/wangyu16/Alembic">Alembic</a> for hosting.</p></article>
+        <article><span>UPPER-LEVEL</span><h3>Chemistry of Macromolecules</h3><p>A new course written chapter by chapter from plans the instructor approved. Three reference textbooks are read for their ideas only, and an eight-word copy check keeps their expression out; original figures follow the instructor’s drawing rules.</p></article>
+      </div>
     </section>
 
     <section class="section" id="system">
@@ -110,10 +116,10 @@
 
       <div class="pipeline" aria-label="Coursewerk production sequence">
         <article class="pipeline-step"><span>00</span><b>FOUND</b><h3>Intended use &amp; rights</h3><p>Choose private, restricted, or public use. Capture evidence before ingestion.</p></article>
-        <article class="pipeline-step"><span>01</span><b>MAP</b><h3>Concept backbone</h3><p>Sequence concepts, prerequisites, objectives, and scope before prose expands.</p></article>
-        <article class="pipeline-step hot"><span>02</span><b>BUILD</b><h3>Five deliverables</h3><p>Draft instruction, slides, assessment design, and practice from one logic spine.</p></article>
-        <article class="pipeline-step"><span>03</span><b>PROVE</b><h3>QA &amp; coherence</h3><p>Check contracts, accessibility floor, provenance, source comparison, and impact.</p></article>
-        <article class="pipeline-step"><span>04</span><b>SHIP</b><h3>Lean package</h3><p>Rebuild previews, persist receipts, and pack only after hard gates pass.</p></article>
+        <article class="pipeline-step"><span>01</span><b>PLAN</b><h3>Concept backbone</h3><p>Concepts, prerequisites, objectives and an assessment guide, approved by the instructor before prose expands.</p></article>
+        <article class="pipeline-step hot"><span>02</span><b>BUILD</b><h3>Five deliverables</h3><p>Study guide, slides and practice from one spine; every sentence indexed with its origin.</p></article>
+        <article class="pipeline-step"><span>03</span><b>PROVE</b><h3>Checks that converge</h3><p>Blind fact review, recomputed arithmetic, copy and notation checks, links, rights and contracts.</p></article>
+        <article class="pipeline-step"><span>04</span><b>SHIP</b><h3>Lean package</h3><p>Lean text and its records, ready for Alembic to host; publish on the instructor’s word.</p></article>
       </div>
 
       <div class="pain-grid">
@@ -127,17 +133,17 @@
     <section class="section assurance" id="assurance">
       <div class="section-heading inverse">
         <p class="kicker">02 / ASSURANCE KERNEL</p>
-        <h2>Hard rules stay hard. <br>Even in Light mode.</h2>
-        <p>Review cost may change. Source identity, verified license facts, media rights, privacy, accountable authorship, key facts, provenance, attribution, and publication-clearance gates do not.</p>
+        <h2>Hard rules stay hard. <br>The instructor stays in charge.</h2>
+        <p>The agent does the production and brings back only the questions that need a person. Rights, accountable authorship, the approved plan, and the record of every decision are not negotiable.</p>
       </div>
 
       <div class="assurance-layout">
         <ol class="rules">
-          <li><span>01</span><div><h3>Preflight before public use</h3><p>A deterministic scan captures the authoritative rights page, asserts known-source facts, records separate AI-use notices without rewriting the license, and issues a hash-bound receipt. Private authoring stays open; publication receives verified facts and explicit warnings.</p></div></li>
-          <li><span>02</span><div><h3>Evidence, not a remembered label</h3><p>Raw snapshots, hashes, canonical URLs, retrieval metadata, exact source revisions, and separate media-rights receipts bind each decision to inspectable evidence.</p></div></li>
-          <li><span>03</span><div><h3>Accountable public authorship</h3><p>Public output names a final responsible non-AI person or institution, explicitly confirmed by the user. Placeholder identities and tools cannot masquerade as a rights holder.</p></div></li>
-          <li><span>04</span><div><h3>Focused critique in every mode</h3><p>Light mode uses a separate same-model pass for identity, licenses, attribution, media rights, and scientific key facts. Full mode uses cross-model review. Both records are hash-bound and become stale after edits.</p></div></li>
-          <li><span>05</span><div><h3>Fail-closed release</h3><p>Packing rebuilds carriers against an identified human visual review and refuses unresolved rights, provenance, attribution, source-comparison, accessibility-floor, contract, or coherence failures.</p></div></li>
+          <li><span>01</span><div><h3>The plan is the instructor’s</h3><p>Each chapter’s concept map and assessment guide are approved in the instructor’s own words before the chapter is written. An approval knows what it approved; a later change comes back as a reviewable diff.</p></div></li>
+          <li><span>02</span><div><h3>Every sentence has an origin</h3><p>The package is indexed into units, each with an id, an author, a link to what it teaches and the kind of check it needs. An edit nobody recorded is raised, never overwritten.</p></div></li>
+          <li><span>03</span><div><h3>Facts checked blind, until quiet</h3><p>A fresh, context-blind pass of your own AI engine reads each passage as a student would. Fixes are rechecked until a pass raises nothing; arithmetic is recomputed and reactions balanced mechanically.</p></div></li>
+          <li><span>04</span><div><h3>Ideas, never expression</h3><p>Reference textbooks and prior notes are read for their ideas. No run of eight words in common with any reference ships; citations and equations are facts, not copying.</p></div></li>
+          <li><span>05</span><div><h3>A log that cannot be rewritten</h3><p>Approvals, answers, review dispatches and publish decisions go into a hash-chained log inside the package. Publication needs rights evidence, an accountable author and the instructor’s word.</p></div></li>
         </ol>
 
         <aside class="boundary-card">
@@ -154,7 +160,7 @@
       <div class="section-heading">
         <p class="kicker">03 / OUTPUTS</p>
         <h2>Lean source. <br>Three expressive surfaces.</h2>
-        <p>Coursewerk authors readable Markdown and builds browser-editable carriers with the <a href="https://markdown.orz.how/">orz-markdown family</a>. Generated HTML remains a preview; lean source remains canonical.</p>
+        <p>Coursewerk authors readable text in the <a href="https://markdown.orz.how/">orz-markdown family</a>’s text format and assembles browser-editable carriers from it for preview. The text is the course; the carriers are checked clothes that give the text back exactly.</p>
       </div>
 
       <div class="carrier-grid">
@@ -163,7 +169,7 @@
         <article class="carrier print"><div class="carrier-number">.paged.html</div><p class="carrier-type">PRINT</p><h3>Print layouts without desktop publishing</h3><p>Page geometry, running furniture, templates, and browser print-to-PDF for collections and handouts.</p><span>orz-paged ↗</span></article>
       </div>
 
-      <p class="portability-note"><strong>Portability, stated precisely:</strong> the carrier embeds its Markdown and framework. If it references local media, the asset directory travels with it. Every release receipt reports the actual mode instead of promising a single file when dependencies remain.</p>
+      <p class="portability-note"><strong>Portability, stated precisely:</strong> the carrier embeds its text and framework, and gives the text back exactly. If it references local media, the asset directory travels with it. Every release receipt reports the actual mode instead of promising a single file when dependencies remain.</p>
 
       <div class="deliverables">
         <div class="deliverable-intro"><p class="kicker">PER CHAPTER</p><h3>Five views of the same learning design</h3></div>
@@ -203,8 +209,8 @@
         <h2>Automation is useful. <br>Overclaiming is not.</h2>
       </div>
       <div class="limits-grid">
-        <article><span>AUTO</span><h3>Coursewerk can verify</h3><ul><li>Package layout and required files</li><li>Rights evidence and declared obligations</li><li>Hashes, provenance, attribution, and links</li><li>Syntax and defined accessibility proxies</li><li>Structural alignment and revision freshness</li></ul></article>
-        <article><span>HUMAN</span><h3>Educators still decide</h3><ul><li>Factual and calculation correctness</li><li>Pedagogical fit for actual learners</li><li>Legal interpretation and permissions</li><li>Alt-text quality and assistive-tech behavior</li><li>Final browser, print, and projector aesthetics</li></ul></article>
+        <article><span>AUTO</span><h3>Coursewerk can verify</h3><ul><li>Coverage of the approved plan, in both directions</li><li>Facts by a blind pass, rechecked until quiet</li><li>Arithmetic chains and balanced reactions</li><li>Copying from references, notation, syntax and links</li><li>Rights evidence, provenance, attribution and the decision log</li></ul></article>
+        <article><span>HUMAN</span><h3>Educators still decide</h3><ul><li>The plan: what to teach, in what order, at what level</li><li>Pedagogical fit for actual learners</li><li>Questions a blind check cannot settle</li><li>Legal interpretation and permissions</li><li>When, and whether, to publish</li></ul></article>
       </div>
     </section>
 

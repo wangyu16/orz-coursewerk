@@ -1,5 +1,40 @@
 # Coursewerk changelog
 
+## v1.0.0 (2026-11-02)
+
+The redesign. Coursewerk is rebuilt around one idea: the instructor sets direction and standards, the agent does the
+production, and every claim the package makes is either checked or visibly open. Tried on two real courses before
+release: a 19-chapter General Chemistry course (re-evaluated, corrected and handed to Alembic) and an upper-level
+Chemistry of Macromolecules course written chapter by chapter from the instructor's approved plans.
+
+- **The instructor owns the spine.** Each chapter's plan (a concept map and an assessment guide, with stable anchors)
+  is approved in the instructor's own words before the chapter is written; an approval knows what it approved, and a
+  later change to the plan is brought back as a reviewable diff.
+- **Every sentence is a unit.** The package is indexed into units, each with an id, an origin (the instructor's or
+  the agent's), a link to what it teaches and the kind of check it needs. An edit nobody recorded is raised to the
+  instructor, never overwritten; the instructor's text is protected whatever route changes it.
+- **Facts are checked blind, by your own engine.** A context-blind pass reads each passage as a student would and
+  sorts concerns into wrong and clarify; fixes are rechecked until a pass raises nothing. Semi-mechanical facts go to
+  a blind verifier against pinned sources; arithmetic chains are recomputed and reactions balanced mechanically.
+- **Ideas, never expression (D54).** Reference textbooks and prior notes are read for their ideas: no run of eight
+  words in common with any reference ships. Citations and equations are facts, not expression.
+- **One way to write math and chemistry.** A light check names every spot written outside the house notation (math in
+  `$…$` with LaTeX inside, chemistry in `$\ce{}$`), including wording pasted in from a review.
+- **A deterministic core and seven stable modules,** each run in its own process by one runner that decides the
+  finding's class (defect, obligation, question) and route (agent, digest); the gate blocks on defects and
+  obligations, never on questions.
+- **A hash-chained decision log** inside every package records each approval, answer, review dispatch and publish
+  decision; records agree with it, and only what the log wrote is trusted.
+- **orz text format 1 (D52) and a lean delivery (D53).** The text is the course; carriers are checked clothes,
+  assembled with the newest orz frames for preview; the delivered package is lean and Alembic assembles it.
+- **Records where Alembic holds them.** The working record lives in `private/coursewerk/`, the public record
+  (attribution, publication, checked-page hashes) in `provenance/coursewerk/`; `site_export` hands them over within
+  Alembic's limits (verification records and the decision log in parts under 4 MB). The site type definition for
+  Alembic is included (`site-type/`, 1.0.0-dev.1).
+- **Seven adversarial red-team rounds,** each closed by root cause and re-tested (D46, D51). 1,131 tests.
+- **Migration.** Packages from v0.12 migrate on the instructor's request (`docs/migrating-from-v0.12.md`); records in
+  `metadata/` move once with `scripts/records_move.mjs`.
+
 ## v0.12.0 (2026-09-05)
 - **CONTROL is verified, not hoped for.** The gate checks the package against the instructor's concept map in both
   directions: a declared objective nothing teaches is a fail-closed `missing-coverage` block in every mode (a

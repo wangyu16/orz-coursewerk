@@ -17,10 +17,13 @@ test("Coursewerk site is a self-contained static information architecture", () =
   assert.match(html, /rel="icon" href="assets\/coursewerk-favicon\.svg"/);
   assert.doesNotMatch(html, /rel="icon" href="assets\/orz\.svg"/);
   assert.match(html, /alt="orz"/);
-  assert.match(html, /Preflight before public use/);
-  assert.match(html, /Focused critique in every mode/);
-  assert.match(html, /same-model pass/);
-  assert.match(html, /human visual review/);
+  // the v1.0.0 assurance claims: the plan is the instructor's, facts are checked blind, references give ideas only, the log
+  assert.match(html, /The plan is the instructor’s/);
+  assert.match(html, /Every sentence has an origin/);
+  assert.match(html, /Facts checked blind, until quiet/);
+  assert.match(html, /Ideas, never expression/);
+  assert.match(html, /hash-chained log inside the package/);
+  assert.match(html, /IN REAL USE/);
   assert.match(html, /A publisher’s AI-use notice is not automatically a copyright-license term/);
   assert.match(html, /asset directory travels with it/);
   assert.match(html, /DEMO ONLY/);

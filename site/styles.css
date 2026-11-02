@@ -112,6 +112,7 @@ h1 em { color: var(--orange-dark); font-family: Georgia, serif; font-weight: 500
 .pipeline-step.hot { background: var(--orange); transform: translateY(-12px); box-shadow: 0 12px 0 var(--ink); }
 .pipeline-step.hot p { color: var(--ink); }
 .pipeline-step.hot > b { color: var(--ink); }
+.pipeline-step.hot > span { color: var(--ink); }
 .pain-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; margin-top: 6rem; background: var(--line); border: 1px solid var(--line); }
 .pain-grid article { background: var(--paper); padding: 2rem; }
 .pain-grid .icon { font-size: 2rem; color: var(--orange-dark); }
@@ -148,7 +149,9 @@ h1 em { color: var(--orange-dark); font-family: Georgia, serif; font-weight: 500
 .deliverable-intro h3 { font-size: 2rem; line-height: 1.05; }
 .deliverables ol { margin: 0; padding: 0; list-style: none; border-top: 2px solid var(--ink); }
 .deliverables li { display: grid; grid-template-columns: 1fr 1fr; padding: 1.1rem 0; border-bottom: 1px solid var(--line); }
-.deliverables li b::before { content: counter(list-item, decimal-leading-zero) "  "; color: var(--orange-dark); font: 800 .7rem/1 var(--mono); }
+.deliverables ol { counter-reset: deliverable; }
+.deliverables li { counter-increment: deliverable; }
+.deliverables li b::before { content: counter(deliverable, decimal-leading-zero) "  "; color: var(--orange-dark); font: 800 .7rem/1 var(--mono); }
 .deliverables li span { color: var(--muted); }
 
 .revision-demo { display: grid; grid-template-columns: .8fr auto 1.2fr; gap: 2rem; align-items: center; max-width: 1000px; margin: 0 auto; }
@@ -247,3 +250,14 @@ footer > div:last-child { display: flex; justify-content: flex-end; gap: 1.2rem;
   .hero, .section { padding: 2rem; }
   .assurance, .revision, .start { color: black; background: white; }
 }
+
+/* in real use (v1.0.0) */
+.real-use { display: grid; grid-template-columns: .9fr 1fr 1fr; gap: 1px; margin-top: clamp(3rem, 6vw, 5rem); background: var(--ink); border: 1px solid var(--ink); }
+.real-use > * { background: var(--paper); padding: clamp(1.4rem, 2.5vw, 2.2rem); }
+.real-use-intro { background: var(--paper-2); }
+.real-use-intro .kicker { color: var(--orange-dark); }
+.real-use-intro h3 { margin: .8rem 0 .7rem; font-size: clamp(1.3rem, 2vw, 1.7rem); line-height: 1.1; letter-spacing: -.03em; }
+.real-use-intro p, .real-use article p { margin: 0; color: var(--muted); font-size: .93rem; }
+.real-use article span { color: var(--orange-dark); font: 800 .68rem/1 var(--mono); letter-spacing: .12em; }
+.real-use article h3 { margin: 1rem 0 .6rem; font-size: 1.15rem; }
+@media (max-width: 900px) { .real-use { grid-template-columns: 1fr; } }

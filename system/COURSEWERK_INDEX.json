@@ -47,7 +47,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "a110a5e235581560bef7e1c71495adb54cf7dbbe7fdc4a62801c7990720bb561"
+      "hash": "d1cac10383b99581c1b02a24bf395262b1ff50c6f676871d68ab0ac64bd8d380"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -185,7 +185,7 @@
       "id": "repo:package.json",
       "path": "package.json",
       "type": "release-metadata",
-      "hash": "e55008ddc26cc9d6c4565630939472bf39bc463e90406ef12797eb73379a0fed"
+      "hash": "b68e6c34b60f0d06c16c90a3b3aa561d5e78ffee75791b4985846a58c062074a"
     },
     {
       "id": "repo:PROCEDURE.md",
@@ -1211,13 +1211,13 @@
       "id": "repo:site/index.html",
       "path": "site/index.html",
       "type": "product-website",
-      "hash": "ddd64a38a2371ba2ed8b2cb85f7b3e9b720a4f50b73fa70206986d0fe04c071a"
+      "hash": "580027d645f5e935928d980c401b922ff657fb36d8557d7ce9a2cd35f024d818"
     },
     {
       "id": "repo:site/styles.css",
       "path": "site/styles.css",
       "type": "product-website",
-      "hash": "b3005d7d663464d47b2d1195d64ceb5ae3e3124ec350b2c3d49226eb062fb7d3"
+      "hash": "14fa2d837099569e975da9ab2a6fedf80868b2fd5323ecef31ade2404f362d52"
     },
     {
       "id": "repo:skills/courseguide-standards/SKILL.md",
@@ -2147,7 +2147,7 @@
       "id": "repo:tests/site.test.mjs",
       "path": "tests/site.test.mjs",
       "type": "test",
-      "hash": "b1b58a8088d517b779723e76be14dfc9cc6b3dbc8047c3e4fc7949a23c03d2de"
+      "hash": "6d1c40be2ebfcf6b7ac77418ec48e7079d77e068d5c77277bdec4aafa88ed893"
     },
     {
       "id": "repo:tests/skills.test.mjs",
@@ -2267,7 +2267,7 @@
       "id": "repo:VERSION",
       "path": "VERSION",
       "type": "release-metadata",
-      "hash": "a3f2c68bcd98fbd9d80baa8ab17a9db4213ae13882562913ef0a5f065c69cc63"
+      "hash": "86f0555bccd069ac54e4c54a19a0f1aed9d328e13aa34aa090f3f3d43aaad441"
     }
   ],
   "relationships": [
