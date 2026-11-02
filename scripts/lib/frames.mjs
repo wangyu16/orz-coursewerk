@@ -6,7 +6,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 export const FRAMES = Object.freeze(["orz-mdhtml", "orz-slides", "orz-paged", "orz-markdown"]);
 export const frameCache = () => path.join(process.env.XDG_CACHE_HOME || path.join(os.homedir(), ".cache"), "coursewerk", "frames");
@@ -35,11 +35,25 @@ function npmInstall(dir, specs) {
  * @returns { binDir, nodeModules, frames: { name: { version, newest, installed } }, harnessBehind, source, note }
  *   harnessBehind: the frames the harness itself has installed older than the newest (null when the newest is unknown)
  */
-/** The frames mode when none is asked: `COURSEWERK_FRAMES` (latest | installed), else the newest. Tests set "installed"
- *  so they never reach the registry (tests stay offline and deterministic); a build for the instructor uses the newest. */
-export const framesMode = () => (process.env.COURSEWERK_FRAMES === "installed" ? "installed" : "latest");
+/** The marker a job release carries at its root (pack_job_release.mjs; req.release.alembic-job): an Alembic job has
+ *  no npm registry and may run only plain commands, so the release itself says to use its own node_modules. */
+export const JOB_RELEASE = "JOB_RELEASE.json";
+export function isJobRelease(harnessRoot) {
+  if (!harnessRoot) return false;
+  try { return JSON.parse(fs.readFileSync(path.join(harnessRoot, JOB_RELEASE), "utf8"))?.frames === "installed"; } catch { return false; }
+}
+/** The frames mode when none is asked: `COURSEWERK_FRAMES` (latest | installed) when set; else "installed" inside a job
+ *  release (its JOB_RELEASE.json says frames: "installed"); else the newest. Tests set "installed" so they never reach
+ *  the registry (tests stay offline and deterministic); a build for the instructor uses the newest. */
+// this harness's root (scripts/lib/frames.mjs → ../..): a caller that names no root (build_carriers) asks about itself
+const HARNESS_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+export const framesMode = (harnessRoot = HARNESS_ROOT) => {
+  const env = process.env.COURSEWERK_FRAMES;
+  if (env === "installed" || env === "latest") return env;
+  return isJobRelease(harnessRoot) ? "installed" : "latest";
+};
 
-export function resolveFrames(harnessRoot, { mode = framesMode(), latest = npmLatest, install = npmInstall, cache = frameCache() } = {}) {
+export function resolveFrames(harnessRoot, { mode = framesMode(harnessRoot), latest = npmLatest, install = npmInstall, cache = frameCache() } = {}) {
   const local = path.join(harnessRoot, "node_modules");
   const at = (nodeModules, frames, source, note, harnessBehind = null) => ({ binDir: path.join(nodeModules, ".bin"), nodeModules, frames, harnessBehind, source, note });
   const localFrames = Object.fromEntries(FRAMES.map((n) => [n, { version: installedVersion(harnessRoot, n), newest: null, installed: installedVersion(harnessRoot, n) }]));

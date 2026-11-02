@@ -1,12 +1,13 @@
 // The job release for Alembic (req.release.alembic-job, owner 2026-11-02): the folder an Alembic assistant job mounts
 // read-only as `assistant/`. Its top-level CLAUDE.md is the job's instructions (alembic-job/CLAUDE.md); Coursewerk's own
-// CLAUDE.md travels as COURSEWERK.md. It holds what the scripts read at run time and production node_modules (the
+// CLAUDE.md travels as COURSEWERK.md, and JOB_RELEASE.json marks it as a job release. It holds what the scripts read at run time and production node_modules (the
 // four orz packages and katex), never the tests, the git history, the handover folder, the system index or the website.
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { JOB_RELEASE } from "../frames.mjs";
 
 export const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 export const RELEASE_DIRS = Object.freeze(["scripts", "skills", "docs", "format-contracts", "templates"]);
@@ -32,7 +33,7 @@ export function folderBytes(dir) {
  * Build the release into `outDir` (which must not exist or be empty). `install: false` leaves node_modules out (tests).
  * Returns { outDir, bytes, files: [top-level names], resolved: { pkg: true|error } }.
  */
-export function packJobRelease(outDir, { repo = REPO, install = true, npmEnv = process.env } = {}) {
+export function packJobRelease(outDir, { repo = REPO, install = true, npmEnv = process.env, builtAt = new Date().toISOString() } = {}) {
   outDir = path.resolve(outDir);
   if (fs.existsSync(outDir) && fs.readdirSync(outDir).length) throw new Error(`${outDir} is not empty`);
   fs.mkdirSync(outDir, { recursive: true });
@@ -40,6 +41,9 @@ export function packJobRelease(outDir, { repo = REPO, install = true, npmEnv = p
   fs.copyFileSync(path.join(repo, "CLAUDE.md"), path.join(outDir, "COURSEWERK.md"));
   for (const d of RELEASE_DIRS) copyTree(path.join(repo, d), path.join(outDir, d));
   for (const f of RELEASE_FILES) fs.copyFileSync(path.join(repo, f), path.join(outDir, f));
+  // the marker: inside this release, the frames are the ones in its own node_modules (frames.mjs framesMode), so a plain
+  // `node assistant/scripts/…` never waits on an npm registry the job cannot reach
+  fs.writeFileSync(path.join(outDir, JOB_RELEASE), JSON.stringify({ coursewerk: fs.readFileSync(path.join(repo, "VERSION"), "utf8").trim(), builtAt, frames: "installed" }, null, 2) + "\n");
   const resolved = {};
   if (install) {
     // production dependencies only, installed into a temporary copy so the repository's own node_modules is untouched

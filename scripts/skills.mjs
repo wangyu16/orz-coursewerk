@@ -14,21 +14,24 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { FRAMES, frameCache, installedVersion, newer, npmLatest, resolveFrames } from "./lib/frames.mjs";
+import { FRAMES, frameCache, installedVersion, isJobRelease, newer, npmLatest, resolveFrames } from "./lib/frames.mjs";
 
 export const SKILL_PACKAGES = FRAMES;
 export const RECORD = "COURSEWERK-SKILL.json";
 export const skillUrl = (pkg) => `https://cdn.jsdelivr.net/npm/${pkg}/${pkg}-skills/SKILL.md`;
 const HARNESS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+// Inside a job release (JOB_RELEASE.json) there is no registry to ask: the newest a job can have is the release's own.
+const latestFor = (harnessRoot) => (isJobRelease(harnessRoot) ? (pkg) => installedVersion(harnessRoot, pkg) : npmLatest);
 
 /** The newest published version of each package (null when the registry cannot be reached). */
-export function listSkills({ latest = npmLatest } = {}) {
+export function listSkills({ latest = latestFor(HARNESS) } = {}) {
   return SKILL_PACKAGES.map((pkg) => ({ package: pkg, newest: latest(pkg), url: skillUrl(pkg) }));
 }
 
 /** Install the newest skill of each package into `into`. Offline: the harness's installed packages' skills, said so. */
-export function installSkills(into, { harnessRoot = HARNESS, latest = npmLatest, install, cache = frameCache() } = {}) {
-  const frames = resolveFrames(harnessRoot, { mode: "latest", latest, cache, ...(install ? { install } : {}) }); // skills: always the newest
+export function installSkills(into, { harnessRoot = HARNESS, latest = latestFor(harnessRoot), install, cache = frameCache() } = {}) {
+  // skills: always the newest — except in a job release, which has only its own (and no registry to ask)
+  const frames = resolveFrames(harnessRoot, { mode: isJobRelease(harnessRoot) ? "installed" : "latest", latest, cache, ...(install ? { install } : {}) });
   const newestKnown = !/registry unreachable/.test(frames.source);
   const fresh = frames.source === "newest" || frames.source === "installed (already the newest)";
   const results = [];
@@ -49,7 +52,7 @@ export function installSkills(into, { harnessRoot = HARNESS, latest = npmLatest,
 }
 
 /** Report the skills in `into` that are missing or older than the newest. Changes nothing. */
-export function checkSkills(into, { latest = npmLatest } = {}) {
+export function checkSkills(into, { latest = latestFor(HARNESS) } = {}) {
   const results = SKILL_PACKAGES.map((pkg) => {
     const dir = path.join(into, pkg);
     const newest = latest(pkg);

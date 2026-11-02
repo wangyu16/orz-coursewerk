@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "planId": "edcfbedba2b9c3cc656118a267336b10093fa1a96c663bdf07bb8a265dd4e1fb",
+  "baseRef": "HEAD",
+  "baseTip": "e31c94d46fd6db8b97bb68b9ff224ab10f5b3edb",
+  "baseCommit": "e31c94d46fd6db8b97bb68b9ff224ab10f5b3edb",
+  "reviewedHead": "e31c94d46fd6db8b97bb68b9ff224ab10f5b3edb",
+  "changed": [
+    "alembic-job/CLAUDE.md",
+    "scripts/lib/core/job_release.mjs",
+    "scripts/lib/frames.mjs",
+    "scripts/skills.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/job-release.test.mjs"
+  ],
+  "requiredReview": [
+    "alembic-job/CLAUDE.md",
+    "scripts/lib/core/job_release.mjs",
+    "scripts/lib/frames.mjs",
+    "scripts/skills.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/job-release.test.mjs"
+  ],
+  "reviewed": [
+    "alembic-job/CLAUDE.md",
+    "scripts/lib/core/job_release.mjs",
+    "scripts/lib/frames.mjs",
+    "scripts/skills.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/job-release.test.mjs"
+  ],
+  "impactedClaims": [],
+  "testResults": [
+    {
+      "path": "tests/job-release.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/frames.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/skills.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "Reviewed the job-release frames marker: pack_job_release writes JOB_RELEASE.json {coursewerk, builtAt, frames: installed}; framesMode(harnessRoot) returns COURSEWERK_FRAMES when set, else installed under the marker (defaulting to its own harness root, so build_carriers needs no change), else latest; skills.mjs asks no registry inside a release; the job instructions now use plain node commands. Callers checked: resolveFrames, build_carriers, skills.mjs (install/list/check), alembic_contract (git ls-remote, pack/alembic_check only, not a job step).",
+  "generatedIndexHash": "e6a9988ed9f3ef0d128021ed30d2a1047617d453d2683a78fec9d28eec4172f1",
+  "acceptedAt": "2026-11-02T19:13:22.521Z"
+}

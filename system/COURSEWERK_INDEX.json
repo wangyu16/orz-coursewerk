@@ -41,7 +41,7 @@
       "id": "repo:alembic-job/CLAUDE.md",
       "path": "alembic-job/CLAUDE.md",
       "type": "repository-support",
-      "hash": "c8a39c4e2cf4d65b84d73eb231578241965116ad975f1801f96e251c337ce3bd"
+      "hash": "f4b84585eb30b3a5c990d277dd9b2006157d6f983ea8906112e4c4a8c1dba945"
     },
     {
       "id": "repo:bootstrap/init.sh",
@@ -479,7 +479,7 @@
       "id": "repo:scripts/lib/core/job_release.mjs",
       "path": "scripts/lib/core/job_release.mjs",
       "type": "kernel",
-      "hash": "c523d77552ba8422b699b4b759b0dd297fbff7358a786384114a7c06e4dfb950"
+      "hash": "7fbdc9eaf6bc29ab1ea0adfe3fadd473e5b6adce4e152b2debb23944e7e2ff67"
     },
     {
       "id": "repo:scripts/lib/core/loop.mjs",
@@ -647,7 +647,7 @@
       "id": "repo:scripts/lib/frames.mjs",
       "path": "scripts/lib/frames.mjs",
       "type": "kernel",
-      "hash": "50faf834b1d9e900ab5ccfc0298d9e47202dd9249b0fe9afc36936585ccd96e1"
+      "hash": "4395e73d2edac906529bac2527f8a70268ebdcc024119a9cc27e7347827246ea"
     },
     {
       "id": "repo:scripts/lib/identity.mjs",
@@ -1091,7 +1091,7 @@
       "id": "repo:scripts/skills.mjs",
       "path": "scripts/skills.mjs",
       "type": "executable",
-      "hash": "a6938f6f21f889eaf845a3a9c10df06c8a4eaa84903c50a237fea67f0c8659aa"
+      "hash": "178da0bbad038e23f9a5086511068d3f639e866080fe173b860cd1e9eb9bfb27"
     },
     {
       "id": "repo:scripts/spine.mjs",
@@ -1331,7 +1331,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "42155465bdefc4892bc30bc1242d1fd3f26426f4fb8bfec5a37f5ac2bcda38fb"
+      "hash": "688fa00ec10c1fc5d3fd2e11ab641797006994ecebd80814c8c0324475e78637"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1937,7 +1937,7 @@
       "id": "repo:tests/job-release.test.mjs",
       "path": "tests/job-release.test.mjs",
       "type": "test",
-      "hash": "d46409e7eb993d7e19c9c95302f0089259652a73a2aab9466001483a2df19eba"
+      "hash": "281cab214d6e26b2414cd7962fcda3ae45ab2fed614f330111710b7fe8f55672"
     },
     {
       "id": "repo:tests/key-fact-bindings.test.mjs",

@@ -10,8 +10,7 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
 - `assistant/` is read-only. Never change anything in it.
 - Never run `git`. There is no repository: Alembic keeps the course's history.
 - Never install packages (`npm install`, `pip install`, …). Everything Coursewerk needs is in `assistant/`.
-- Run every Coursewerk command with `COURSEWERK_FRAMES=installed`, so it uses the orz packages in
-  `assistant/node_modules` instead of looking for newer ones.
+- In a job, Coursewerk uses the orz packages in `assistant/node_modules` by itself.
 - The blind verifier uses the job's own model (Haiku 5.5 unless the job chose another). Do not set
   `COURSEWERK_VERIFIER`.
 - Write only inside `work/`, and only what the course needs. Do not fetch skills into `work/`: read the orz skills
@@ -24,7 +23,7 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
 
    ```bash
    alembic pull work
-   COURSEWERK_FRAMES=installed node assistant/scripts/site_import.mjs work
+   node assistant/scripts/site_import.mjs work
    ```
 
    The import turns the course from the way Alembic stores it into the way Coursewerk reads it. It joins the
@@ -37,17 +36,17 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
    `--root work`:
 
    ```bash
-   COURSEWERK_FRAMES=installed node assistant/scripts/units.mjs index --root work
-   COURSEWERK_FRAMES=installed node assistant/scripts/coursewerk.mjs status --root work
+   node assistant/scripts/units.mjs index --root work
+   node assistant/scripts/coursewerk.mjs status --root work
    ```
 
 3. **Do the work** as `COURSEWERK.md` and `PROCEDURE.md` say, always with `--root work`. Write course text only
    inside a units session:
 
    ```bash
-   COURSEWERK_FRAMES=installed node assistant/scripts/units.mjs begin --root work --model <your model id>
+   node assistant/scripts/units.mjs begin --root work --model <your model id>
    # … write …
-   COURSEWERK_FRAMES=installed node assistant/scripts/units.mjs index --root work --as agent --model <your model id>
+   node assistant/scripts/units.mjs index --root work --as agent --model <your model id>
    ```
 
    Run the gate and the verification tools as usual. The gate checks the decision log against the one Alembic
@@ -57,7 +56,7 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
 4. **Hand the course back.**
 
    ```bash
-   COURSEWERK_FRAMES=installed node assistant/scripts/site_handback.mjs work
+   node assistant/scripts/site_handback.mjs work
    alembic push work --dry-run
    alembic push work
    ```
