@@ -8,7 +8,7 @@ import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import crypto from "node:crypto";
-import { exportSite, checkedRecord, verificationLines, RECORD_LIMITS } from "../scripts/lib/core/site_export.mjs";
+import { exportSite, checkedRecord, verificationLines, logParts, RECORD_LIMITS } from "../scripts/lib/core/site_export.mjs";
 import { verifyLog } from "../scripts/lib/records/log.mjs";
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
@@ -79,4 +79,17 @@ test("[req.records.site-export] CHECKED.json counts what is open on each page", 
     assert.deepEqual(c.pages.find((p) => p.path === "practice/le-chatelier.md").open, { defects: 1, obligations: 0, questions: 1 });
     assert.deepEqual(c.pages.find((p) => p.path === "concepts/le-chatelier.md").open, { defects: 0, obligations: 1, questions: 0 });
   } finally { fs.rmSync(reader, { recursive: true, force: true }); }
+});
+
+test("[req.records.site-export] the decision log goes in parts under the cap; joined they are the log, and a later export only appends", () => {
+  const line = (i) => JSON.stringify({ seq: i, pad: "x".repeat(900) }) + "\n";
+  const log = Array.from({ length: 9000 }, (_, i) => line(i)).join("");
+  const parts = logParts(log), names = Object.keys(parts);
+  assert.ok(names.length >= 3 && names[0] === "LOG.jsonl" && names[1] === "LOG.2.jsonl", names.join(", "));
+  assert.ok(Object.values(parts).every((p) => Buffer.byteLength(p) <= RECORD_LIMITS.bytesPerFile && p.endsWith("\n")));
+  assert.equal(Object.values(parts).join(""), log, "joined in order, the log byte for byte");
+  const later = logParts(log + line(9000) + line(9001));
+  for (const n of names.slice(0, -1)) assert.equal(later[n], parts[n], `${n} is unchanged`);
+  assert.ok(later[names.at(-1)].startsWith(parts[names.at(-1)]), "the last part only grows");
+  assert.deepEqual(logParts(""), {});
 });

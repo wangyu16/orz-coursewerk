@@ -3,6 +3,7 @@
 // public record under provenance/coursewerk/ (contract §5 "records"). The export copies them, with:
 //   - the verification records consolidated into append-only monthly .jsonl parts (a review run touches one or two files
 //     instead of hundreds: the hand-in takes at most 200 record files per change, each at most 4 MB);
+//   - the decision log in parts of at most 4 MB (LOG.jsonl, LOG.2.jsonl, …; owner 2026-11-02), joined in order the log;
 //   - provenance/coursewerk/CHECKED.json built: for each page, the sha256 of the text Coursewerk checked and what was
 //     open on it; the spine approvals; the accountable authors and the AI-assistance disclosure. Anyone can then tell
 //     whether the version on the website is the one Coursewerk checked. No prompts, passages, source text or learner data.
@@ -52,6 +53,21 @@ export function verificationLines(root) {
   return out;
 }
 
+/** The decision log as the site holds it (owner 2026-11-02: a .jsonl log in parts of at most 4 MB): the package's one
+ *  LOG.jsonl cut at line ends into LOG.jsonl, LOG.2.jsonl, … each under the per-file cap. The cut depends only on what
+ *  came before, so a later export leaves every full part as it was and only appends; the parts joined in order are the
+ *  log byte for byte, and the hash chain runs across them. */
+export function logParts(text) {
+  const out = {}; let n = 1, cur = "";
+  for (const line of String(text ?? "").split(/(?<=\n)/)) {
+    if (!line) continue;
+    if (cur && Buffer.byteLength(cur) + Buffer.byteLength(line) > ROLL_BYTES) { out[n === 1 ? "LOG.jsonl" : `LOG.${n}.jsonl`] = cur; n++; cur = ""; }
+    cur += line;
+  }
+  if (cur) out[n === 1 ? "LOG.jsonl" : `LOG.${n}.jsonl`] = cur;
+  return out;
+}
+
 /** The site path of a package file: the deck as the site holds it (slides/<slug>.slides.md). */
 const sitePath = (rel, reader) => (/^slides\/[^/]+(?<!\.slides)\.md$/.test(rel) && reader.text(rel.replace(/\.md$/, ".slides.md")) == null ? rel.replace(/\.md$/, ".slides.md") : rel);
 
@@ -97,7 +113,8 @@ export function exportSite(root, outDir, { gateResult, at } = {}) {
   // the records already sit at the site's places (records layout); the export copies them, the verification records
   // consolidated, and builds CHECKED.json
   const priv = path.join(root, RECORDS);
-  for (const rel of walk(priv).filter((r) => !r.startsWith("verification/") && !r.endsWith(".lock"))) put(`${RECORDS}/${rel}`, fs.readFileSync(path.join(priv, rel)));
+  for (const rel of walk(priv).filter((r) => !r.startsWith("verification/") && !r.endsWith(".lock") && r !== "LOG.jsonl")) put(`${RECORDS}/${rel}`, fs.readFileSync(path.join(priv, rel)));
+  for (const [rel, text] of Object.entries(logParts(readLogText(root)))) put(`${RECORDS}/${rel}`, text);
   for (const [rel, text] of Object.entries(verificationLines(root))) put(`${RECORDS}/${rel}`, text);
   if (gateResult) put(`${PUBLIC_RECORDS}/CHECKED.json`, JSON.stringify(checkedRecord(root, gateResult, { at }), null, 2) + "\n");
   const reader = liveReader(root), attribution = reader.text(`${PUBLIC_RECORDS}/ATTRIBUTION.md`);

@@ -545,7 +545,7 @@
       "id": "repo:scripts/lib/core/site_export.mjs",
       "path": "scripts/lib/core/site_export.mjs",
       "type": "kernel",
-      "hash": "821f5acfb672c04b8aec4e74b3abd353d23eeb1d6b0a4edc8f8c456cef85d0cf"
+      "hash": "523e9486a81ca669248ba41094d5d097ba678d4c8fcb745247fcb7f3a8c913ca"
     },
     {
       "id": "repo:scripts/lib/core/spine_detail.mjs",
@@ -1283,7 +1283,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "cf62788584cc8dac9745072c7c5f2124e242e57ad5eca7708e76408157b1725d"
+      "hash": "695ebdb6cd969672713293d1cb78197c710c34d5a8ed8e2c1fb882cb34ba38b1"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -2141,7 +2141,7 @@
       "id": "repo:tests/site-export.test.mjs",
       "path": "tests/site-export.test.mjs",
       "type": "test",
-      "hash": "608fc577d1855fa23da02b88bd7214701ed28db0c893d76d6f166afb91982ccc"
+      "hash": "cd873b434524171a0a835c76119d744cbc1a7f395436f0a366344162ed2937e8"
     },
     {
       "id": "repo:tests/site.test.mjs",

@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "planId": "728cd91a0e2993885210ccaec0f339f3bae3a755fbe79e690fcef3b2cf3aecff",
+  "baseRef": "HEAD",
+  "baseTip": "0d4ca8ae67530572231e6b25ee12618371a636df",
+  "baseCommit": "0d4ca8ae67530572231e6b25ee12618371a636df",
+  "reviewedHead": "0d4ca8ae67530572231e6b25ee12618371a636df",
+  "changed": [
+    "scripts/lib/core/site_export.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/site-export.test.mjs"
+  ],
+  "requiredReview": [
+    "scripts/lib/core/site_export.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/site-export.test.mjs"
+  ],
+  "reviewed": [
+    "scripts/lib/core/site_export.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/site-export.test.mjs"
+  ],
+  "impactedClaims": [],
+  "testResults": [
+    {
+      "path": "tests/records-layout.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/requirements.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/site-export.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "Site export writes the decision log in parts of at most 4 MB (owner 2026-11-02, relayed by Alembic): LOG.jsonl, LOG.2.jsonl, … cut at line ends after 3.5 MB, so a later export only appends; the parts joined in order are the log byte for byte. The package keeps one LOG.jsonl. Test added to site-export; affected tests pass.",
+  "generatedIndexHash": "2522de1d150b6690605ab401a0308909e9e8a0d2e8247607a4c1dc01d909fb6d",
+  "acceptedAt": "2026-11-02T02:52:25.674Z"
+}
