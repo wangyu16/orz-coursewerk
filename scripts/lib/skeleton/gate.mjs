@@ -9,7 +9,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { blocksPublish, makeFinding } from "../records/findings.mjs";
 import { RECORD_PATHS } from "../records/paths.mjs";
-import { parseLog, readLogText, verifyAgainstCommitted, verifyExtends } from "../records/log.mjs";
+import { parseLog, readLogText, verifyAgainstCommitted, verifyExtends, verifyLog } from "../records/log.mjs";
+import { sha256 } from "../records/canonical.mjs";
+import { HOST_FILE, readHostRecord } from "../records/host.mjs";
 import { SKELETON } from "./runner.mjs";
 
 /** The committed log text, from the package's own git. A package without git history cannot be checked. */
@@ -150,8 +152,44 @@ function blobsOf(git, revs) {
   return out;
 }
 
+/**
+ * The host anchor (req.gate.host-anchor, owner 2026-11-02). In an Alembic assistant job the package is a plain folder
+ * with no git; site_import.mjs wrote `.coursewerk-host.json`, naming the decision log as Alembic held it when the job
+ * pulled it (its sha256 and length). There, the committed log IS that imported log: the working log must verify and
+ * its first `log.bytes` bytes must hash to `log.sha256`, i.e. it extends what the host holds.
+ *
+ * Why this is safe without git: Alembic is the history keeper of a site, and it refuses any change to an existing
+ * record file that is not a pure append at its end (and any deletion of one). Whatever the job hands back must
+ * therefore extend the log Alembic holds — the same rule git's committed log enforces locally. The host record lives
+ * in the job's working copy and could itself be edited; that only weakens this early check, never Alembic's: a
+ * rewritten history is refused at the hand-back (site_handback.mjs) and again by Alembic.
+ *
+ * The git-history checks (every committed version extending the one before, reflog and branch anchors, release
+ * receipts) have nothing to read in a job — the history is Alembic's — so they are skipped in host mode, and a
+ * finding says so. Returns null when the package is not in host mode (git present, or no host record).
+ */
+export function hostLogFailures(root) {
+  root = path.resolve(root);
+  if (fs.existsSync(path.join(root, ".git"))) return null;
+  const host = readHostRecord(root);
+  if (!host || host.host !== "alembic") return null;
+  if (host.error) return { unverifiable: host.error };
+  if (host.state !== "imported") return { unverifiable: `${HOST_FILE} says the folder was handed back to Alembic (site layout): pull it and run site_import.mjs before checking it` };
+  const file = path.join(root, RECORD_PATHS.log);
+  const working = fs.existsSync(file) ? fs.readFileSync(file) : Buffer.alloc(0);
+  const failures = [];
+  if (working.length < host.log.bytes || sha256(working.subarray(0, host.log.bytes)) !== host.log.sha256)
+    failures.push(`the decision log no longer extends the one Alembic holds (imported ${host.importedAt || ""}: ${host.log.bytes} bytes, sha256 ${host.log.sha256.slice(0, 12)}…): a record Alembic holds was changed, removed or reordered`);
+  failures.push(...verifyLog(working.toString("utf8")));
+  return { failures };
+}
+const HOST_NOTE = "host mode (Alembic job, no git): the log is checked against the one Alembic holds; the git-history checks (committed versions, reflog and branch anchors, release receipts) are skipped — Alembic keeps the history and accepts only appended records";
+
 /** The skeleton's own log check, run on every gate evaluation (req.gate.log-verified). */
 export function logFindings(root, basis) {
+  const hosted = hostLogFailures(root);
+  if (hosted?.unverifiable) return [makeFinding({ module: SKELETON, kind: "log-unverifiable", units: [], statusClass: "obligation", route: "agent", basis, evidence: { type: "missing", what: hosted.unverifiable } })];
+  if (hosted) return hosted.failures.length ? [makeFinding({ module: SKELETON, kind: "log-broken", units: [], statusClass: "defect", route: "agent", basis, evidence: { type: "rule", rule: "the decision log verifies and extends the log Alembic holds", failures: hosted.failures, note: HOST_NOTE } })] : [];
   const committed = committedLog(root);
   if (!committed.ok) return [makeFinding({ module: SKELETON, kind: "log-unverifiable", units: [], statusClass: "obligation", route: "agent", basis, evidence: { type: "missing", what: committed.reason } })];
   const failures = [...objectSubstitutions(root), ...verifyAgainstCommitted(committed.text, readLogText(root)), ...committedHistoryFailures(root), ...releaseAnchorFailures(root)];

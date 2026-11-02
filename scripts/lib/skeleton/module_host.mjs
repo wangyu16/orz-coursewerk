@@ -21,7 +21,7 @@ import path from "node:path";
 let materialized = null;
 /** A private, read-only-in-spirit copy of the snapshot on disk (package at <dir>/package, inputs at <dir>/inputs), for
  * modules that run proven file-based library code. Text and binary files are reproduced byte for byte (files over
- * 8 MB appear as empty placeholders). The copy lives in this host's own temp dir and is never the package. */
+ * 8 MB, the decision log over 64 MB, appear as empty placeholders). The copy lives in this host's own temp dir and is never the package. */
 function materialize() {
   if (materialized) return materialized;
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-materialized-"));

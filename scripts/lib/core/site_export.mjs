@@ -21,7 +21,7 @@ import { parseLog, readLogText } from "../records/log.mjs";
 import { RECORDS, PUBLIC_RECORDS } from "../records/paths.mjs";
 
 export const RECORD_LIMITS = Object.freeze({ filesPerChange: 200, bytesPerFile: 4 * 1024 * 1024, bytesPerSite: 50 * 1024 * 1024 });
-const ROLL_BYTES = 3.5 * 1024 * 1024; // a verification part stays well under the 4 MB a record file may hold
+export const ROLL_BYTES = 3.5 * 1024 * 1024; // a part (log or verification) stays well under the 4 MB a record file may hold
 const sha256 = (b) => crypto.createHash("sha256").update(b).digest("hex");
 
 
@@ -29,6 +29,11 @@ function walk(dir, base = dir) {
   if (!fs.existsSync(dir)) return [];
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(dir, e.name), base) : [path.relative(base, path.join(dir, e.name)).split(path.sep).join("/")])).sort();
 }
+
+/** When a verification record was made: its own time field (at/createdAt/dispatchedAt/time), else its file's
+ *  modification time. Its month ("2026-10", else "undated") names the part it goes to (site_handback uses the same). */
+export const recordWhen = (rec, file) => String(rec?.at || rec?.createdAt || rec?.dispatchedAt || rec?.time || "") || fs.statSync(file).mtime.toISOString();
+export const monthOf = (when) => /^\d{4}-\d{2}/.exec(when)?.[0] || "undated";
 
 /** The verification records as monthly lines: { "verification/2026-10.jsonl": "…\n" }. A record's month is that of its
  *  own time field (at/createdAt/dispatchedAt), else of the file's modification time; lines in dispatch order. */
@@ -38,10 +43,10 @@ export function verificationLines(root) {
   const recs = walk(dir).filter((f) => f.endsWith(".json")).map((rel) => {
     const raw = fs.readFileSync(path.join(dir, rel), "utf8");
     let rec; try { rec = JSON.parse(raw); } catch { rec = { unreadable: raw.length }; }
-    return { rel, rec, when: String(rec.at || rec.createdAt || rec.dispatchedAt || rec.time || "") || fs.statSync(path.join(dir, rel)).mtime.toISOString() };
+    return { rel, rec, when: recordWhen(rec, path.join(dir, rel)) };
   }).sort((a, b) => (a.when < b.when ? -1 : a.when > b.when ? 1 : a.rel < b.rel ? -1 : a.rel > b.rel ? 1 : 0));
   for (const { rel, rec, when } of recs) {
-    const month = /^\d{4}-\d{2}/.exec(when)?.[0] || "undated";
+    const month = monthOf(when);
     const line = JSON.stringify({ file: rel, record: rec }) + "\n";
     // a month rolls into numbered parts below the per-file cap (2026-10.jsonl, 2026-10.2.jsonl, …); still append-only:
     // new lines only ever go into the last part

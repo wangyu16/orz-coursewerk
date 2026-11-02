@@ -3719,6 +3719,66 @@
           "tests/house-notation.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.records.site-import",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Records under Alembic, step B (owner 2026-11-02): site_import turns a folder pulled from Alembic in site layout back into Coursewerk's package layout in place, with no git: the decision log parts (LOG.jsonl, LOG.2.jsonl, ...) are joined in order into one private/coursewerk/LOG.jsonl, which must verify (verifyLog) or nothing is changed; every line of the monthly verification parts is unwrapped into verification/<file> exactly as recordDispatch writes it, so every record still binds to its logged hash; the parts are removed; decks keep the slides/<slug>.slides.md the package already holds; a hidden host record .coursewerk-host.json (host alembic, the imported log's sha256, bytes and parts, the verification parts with their files and hashes) is written at the package root; a folder already imported is refused, and a malformed part or line is refused before anything is written.",
+      "source": "owner 2026-11-02 (Coursewerk runs inside an Alembic assistant job; HANDOVER: joining a site's log parts on import is not built yet)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/site-import.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.site-handback",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Records under Alembic, step B (owner 2026-11-02): site_handback returns an imported folder to site layout using only appends, because Alembic refuses any change to an existing .jsonl record that is not a pure append at its end: the working LOG.jsonl must verify and extend the imported log byte for byte (else nothing is written); the imported log parts are written back byte-identical, the new tail goes onto the end of the last part while it stays within 3.5 MB (cut at line ends) and then into new parts LOG.<n+1>.jsonl ...; a verification record not imported is appended, wrapped as verificationLines wraps it, to the last part of the month its own time gives (rolling at 3.5 MB into YYYY-MM.<n>.jsonl); an imported record changed or removed is refused; other files are untouched and CHECKED.json is not regenerated (a publish step); the host record is marked handed-back with the parts as written, so a fresh import works.",
+      "source": "owner 2026-11-02 (Alembic's hand-back sends a grown records file as an append and refuses any other change to it)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/site-import.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.gate.host-anchor",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Host anchor (owner 2026-11-02): in a package with no .git whose .coursewerk-host.json names host alembic and an imported log, the committed log is the one the host holds: the gate's log check requires the working log to verify and its first log.bytes bytes to hash to log.sha256; a mismatch is a blocking log-broken defect saying the decision log no longer extends the one Alembic holds, and no log-unverifiable obligation is raised when it extends. The git-history checks (committed history, reflog and release anchors) are skipped in host mode, and the finding says so. Without .git and without a host record the gate behaves as before. The host record is the job's bookkeeping, not a package file: it is left out of the snapshot the modules read. The snapshot the gate modules read never drops the decision log for its size (the log is read up to 64 MB; other texts keep the 8 MB limit).",
+      "source": "owner 2026-11-02 (an Alembic job has no git; Alembic, the history keeper, refuses any non-append change to a record)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/site-import.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.release.alembic-job",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Job release for Alembic (owner 2026-11-02): alembic-job/CLAUDE.md tells an agent in an Alembic assistant job how to work with Coursewerk there (alembic pull work; site_import; units sessions and the procedure with --root work; alembic push work --dry-run in place of git status/diff; site_handback before alembic push work; never git, never install packages; the verifier is the job's model; assistant/ is read-only); scripts/pack_job_release.mjs builds the release folder: that file as the top-level CLAUDE.md with Coursewerk's CLAUDE.md as COURSEWERK.md, the runtime files the scripts read and production node_modules in which the four orz packages and katex resolve, and no tests, .git, handover or website.",
+      "source": "owner 2026-11-02 (HANDOVER: the job release for Alembic)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/job-release.test.mjs"
+        ]
+      }
     }
   ]
 }

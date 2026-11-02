@@ -3,6 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { canonicalJson, sha256 } from "../records/canonical.mjs";
+import { HOST_FILE } from "../records/host.mjs";
 
 const SKIP_DIRS = new Set([".git", "node_modules"]); // for snapshot content; write detection also watches node_modules
 const LARGE = 64 * 1024 * 1024;
@@ -19,10 +20,14 @@ function fileMark(full) {
 const SKIP_FILES = new Set(["private/coursewerk/LOG.jsonl.lock"]);
 const TEXT_EXT = /\.(md|json|jsonl|txt|csv|yml|yaml|svg|html|mjs|js|css|bib|cff)$/i;
 const MAX_CONTENT = 8 * 1024 * 1024;
+// The decision log is never dropped for its size (req.gate.host-anchor, owner 2026-11-02): modules read it to know what
+// was decided, and a long-lived course outgrows 8 MB (GenChem's log is about 8.9 MB). It is read up to the 64 MB every
+// snapshot read is capped at; every other text keeps the 8 MB limit.
+const MAX_CONTENT_OF = new Map([["private/coursewerk/LOG.jsonl", LARGE]]);
 /** Text for anything that is UTF-8 without NUL bytes (LICENSE, CITATION…); base64 bytes for the rest, so a module's
  * materialized copy is faithful (round P6: an extensionless LICENSE arrived empty and failed its canonical-text check). */
 function contentOf(rel, buf) {
-  if (buf.length > MAX_CONTENT) return { text: null };
+  if (buf.length > (MAX_CONTENT_OF.get(rel) ?? MAX_CONTENT)) return { text: null };
   if (TEXT_EXT.test(rel) || (!buf.includes(0) && Buffer.from(buf.toString("utf8"), "utf8").equals(buf))) return { text: buf.toString("utf8") };
   return { text: null, b64: buf.toString("base64") };
 }
@@ -79,7 +84,10 @@ export function createSnapshot(root, { profile, checkpoint, inputsDir = null } =
       files[INPUTS_PREFIX + rel] = buf ? { hash: sha256(buf), text: buf.length < 32 * 1024 * 1024 ? buf.toString("utf8") : null } : { hash: fileMark(full), text: null };
     }
   }
-  for (const rel of walk(root).filter((e) => typeof e === "string").sort()) {
+  // The host record of an Alembic job (site_import.mjs; req.gate.host-anchor) is the job's own bookkeeping, hidden and
+  // never handed back or shipped: not package content, so no module judges it (the gate's log check reads it from disk).
+  // Write detection (treeId) still watches it.
+  for (const rel of walk(root).filter((e) => typeof e === "string" && e !== HOST_FILE).sort()) {
     const full = path.join(root, rel);
     let buf = null;
     try { if (fs.statSync(full).size <= LARGE) buf = fs.readFileSync(full); } catch { buf = null; }

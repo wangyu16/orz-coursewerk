@@ -58,10 +58,11 @@ Paths are relative to `~/Conductor-V2/var/projects/coursewerk-caeai/` unless abs
 - Plans and approvals for the course are a later step with the owner.
 
 **Coursewerk**
-- The job release for Alembic: `assistant/` with vendored orz packages and a no-git mode for `records_move`, the
-  revision checks and the "edit visible in git" claim — to be done in orz-family.
-- The site export now splits the decision log into ≤4 MB parts; the package itself keeps one `LOG.jsonl`. Reading a
-  site's parts back into a package (join on import) is not built yet.
+- The job release for Alembic: built (branch `alembic-job`: `alembic-job/CLAUDE.md`, `scripts/pack_job_release.mjs`,
+  `scripts/site_import.mjs` / `site_handback.mjs`, the gate's host anchor for the log). Still open: a no-git mode for
+  `records_move`, the revision checks and the "edit visible in git" claim.
+- The site export splits the decision log into parts of at most 3.5 MB; the package itself keeps one `LOG.jsonl`.
+  `site_import.mjs` joins a site's parts on import and `site_handback.mjs` splits them again, append-only.
 - Known false alarms of the mechanical arithmetic check: expressions with `a\times10^{x}/b\times10^{y}`, chained
   comparisons of two expressions, ratio lists separated by `\qquad`, and skeleton or half-reaction equations shown
   before balancing. They are notes, not defects, but they cost reading time.
