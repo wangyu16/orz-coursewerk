@@ -203,6 +203,9 @@ On Alembic, Coursewerk can run inside the course assistant's job, from a read-on
 is that release's entry). The course arrives as a plain folder in Alembic's layout. `scripts/site_import.mjs` turns it
 into Coursewerk's layout, and `scripts/site_handback.mjs` turns it back, adding only to the end of the records.
 `scripts/pack_job_release.mjs` builds the release.
+What needs the instructor reaches them only through the assistant's digest in Alembic's "Needs you":
+`scripts/alembic_needs.mjs export` writes the digest a job hands in (`alembic handin`), and `scripts/alembic_needs.mjs apply`
+records the instructor's answers from `alembic changes`, in their name and words.
 
 ## License
 

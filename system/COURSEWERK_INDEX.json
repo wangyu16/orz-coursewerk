@@ -41,7 +41,7 @@
       "id": "repo:alembic-job/CLAUDE.md",
       "path": "alembic-job/CLAUDE.md",
       "type": "repository-support",
-      "hash": "f4b84585eb30b3a5c990d277dd9b2006157d6f983ea8906112e4c4a8c1dba945"
+      "hash": "2d9c71f986f9e62f5c86f066580e8c436b8c4d93d17de8f3aa15626c085373ce"
     },
     {
       "id": "repo:bootstrap/init.sh",
@@ -209,7 +209,7 @@
       "id": "repo:README.md",
       "path": "README.md",
       "type": "product-claim",
-      "hash": "3004122d8342d1db46032d0367e209160ec29938bb7f391736e1db19cec8e56d"
+      "hash": "23924f4c6b447a76c8b6bbe33df4d4d9712c09f6a927cdd116c0e58deec3b4c1"
     },
     {
       "id": "repo:scripts/accept_coursewerk_revision.mjs",
@@ -222,6 +222,12 @@
       "path": "scripts/alembic_check.mjs",
       "type": "executable",
       "hash": "bd2d3f6bdb93dcb728e264699c790a8bbb351e48bcafc73b73baa54f9a8685f4"
+    },
+    {
+      "id": "repo:scripts/alembic_needs.mjs",
+      "path": "scripts/alembic_needs.mjs",
+      "type": "executable",
+      "hash": "48978cb5d830d7d895c7ce80f185cb63acb7ebabdddb53b3fdc82a893ce1bb93"
     },
     {
       "id": "repo:scripts/assemble_blind_bundle.mjs",
@@ -420,6 +426,12 @@
       "path": "scripts/lib/contract.mjs",
       "type": "kernel",
       "hash": "608c718cf81c6620a8c9ad908d447a57f1387ceb1fa048ca8cedbcd8f63aa90f"
+    },
+    {
+      "id": "repo:scripts/lib/core/alembic_needs.mjs",
+      "path": "scripts/lib/core/alembic_needs.mjs",
+      "type": "kernel",
+      "hash": "23e105ef16cdcc8599bc24f2c087bf712ea5bad19c00485f8ba21383c56b3577"
     },
     {
       "id": "repo:scripts/lib/core/approvals.mjs",
@@ -1331,7 +1343,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "688fa00ec10c1fc5d3fd2e11ab641797006994ecebd80814c8c0324475e78637"
+      "hash": "99339a3fdf40aa511e8167c52663abbaa24b435090180c4ee808371eb7899c49"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1518,6 +1530,12 @@
       "path": "templates/visual-review.example.json",
       "type": "template",
       "hash": "2c7afd5d5423364c1a414bc0c73b1c0d905af8aa851f257c4a2a6436bac43552"
+    },
+    {
+      "id": "repo:tests/alembic-needs.test.mjs",
+      "path": "tests/alembic-needs.test.mjs",
+      "type": "test",
+      "hash": "6bd47d432900f8e14954ad219a3084d895ea97261fbfd2a290ef32d46e1d1ee2"
     },
     {
       "id": "repo:tests/alignment.test.mjs",
@@ -1937,7 +1955,7 @@
       "id": "repo:tests/job-release.test.mjs",
       "path": "tests/job-release.test.mjs",
       "type": "test",
-      "hash": "281cab214d6e26b2414cd7962fcda3ae45ab2fed614f330111710b7fe8f55672"
+      "hash": "e4d2aac95bd915e9915f3b3a6a3fb206da88ec18153097e5f0758bd6221166cd"
     },
     {
       "id": "repo:tests/key-fact-bindings.test.mjs",
@@ -4569,6 +4587,22 @@
         "tiers": [
           "T1",
           "T2"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.host.alembic-needs-apply",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.host.alembic-needs-export",
+        "phase": "P11",
+        "tiers": [
+          "T1"
         ],
         "status": "closed"
       },

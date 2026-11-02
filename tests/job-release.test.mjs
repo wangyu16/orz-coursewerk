@@ -18,6 +18,8 @@ test("[req.release.alembic-job] the job instructions say how Coursewerk works in
     "alembic push work --dry-run", "alembic push work\n", "--root work", "units.mjs begin --root work", "uses the orz packages in `assistant/node_modules` by itself",
     "assistant/COURSEWERK.md", "assistant/PROCEDURE.md", "Never run `git`", "Never install packages", "`assistant/` is read-only",
     "COURSEWERK_VERIFIER", "Haiku 5.5", ".coursewerk-host.json",
+    "alembic changes > work/.alembic-changes.json", "node assistant/scripts/alembic_needs.mjs apply --root work --changes work/.alembic-changes.json",
+    "node assistant/scripts/alembic_needs.mjs export --root work", "alembic handin work/.alembic-needs.json",
   ]) assert.ok(JOB.includes(must), `the job instructions mention ${JSON.stringify(must)}`);
   assert.doesNotMatch(JOB, /COURSEWERK_FRAMES=/, "commands are plain `node …`, so the job's tool permissions match them");
 });

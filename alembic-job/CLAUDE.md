@@ -31,6 +31,17 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
    It writes a hidden file, `work/.coursewerk-host.json`, which remembers what Alembic holds. Do not edit or delete
    that file. If the import refuses, stop and report its message.
 
+   Then bring in what the instructor has answered in Alembic's "Needs you":
+
+   ```bash
+   alembic changes > work/.alembic-changes.json
+   node assistant/scripts/alembic_needs.mjs apply --root work --changes work/.alembic-changes.json
+   ```
+
+   It records each answer to a question Coursewerk asked, in the instructor's name and words, and only once. It
+   prints what it recorded and what it skipped, and why (for example, a plan that changed since it was asked, or an
+   approval without the instructor's words). Never record an instructor's act any other way in a job.
+
 2. **See where the course stands.** Where `COURSEWERK.md` says `git status` and `git diff`, use
    `alembic push work --dry-run`. It lists what has changed since the pull. Then run the usual steps with
    `--root work`:
@@ -53,7 +64,18 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
    holds, since there is no git history to check it against. If the gate says the decision log no longer extends the
    one Alembic holds, a past record was changed. Stop and report it. Never try to repair the log by hand.
 
-4. **Hand the course back.**
+4. **Bring what needs the instructor.** The instructor is reached only through "Needs you" in Alembic:
+
+   ```bash
+   node assistant/scripts/alembic_needs.mjs export --root work --out work/.alembic-needs.json --model <your model id>
+   alembic handin work/.alembic-needs.json
+   ```
+
+   The export collects interrupts, plans ready for approval, corrections to keep or undo, and the checkpoint digest,
+   at most 20 questions; it says how many wait for next time. It makes a new changeset id unless you give one
+   (`--changeset <id>`). Hand it in when it has questions; a new hand-in replaces the instructor's unanswered one.
+
+5. **Hand the course back.**
 
    ```bash
    node assistant/scripts/site_handback.mjs work
@@ -65,7 +87,7 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
    in new files. Alembic accepts nothing else, so never edit a record file yourself. If the hand-back refuses, do not
    push. Report its message instead.
 
-5. **To keep working after a push,** pull again and import again (step 1). Do not run the import twice without
+6. **To keep working after a push,** pull again and import again (step 1). Do not run the import twice without
    a pull in between; it will refuse.
 
 ## What stays the instructor's

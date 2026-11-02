@@ -3771,12 +3771,42 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Job release for Alembic (owner 2026-11-02): alembic-job/CLAUDE.md tells an agent in an Alembic assistant job how to work with Coursewerk there (plain node commands; alembic pull work; site_import; units sessions and the procedure with --root work; alembic push work --dry-run in place of git status/diff; site_handback before alembic push work; never git, never install packages; the verifier is the job's model; assistant/ is read-only); scripts/pack_job_release.mjs builds the release folder: that file as the top-level CLAUDE.md with Coursewerk's CLAUDE.md as COURSEWERK.md, the runtime files the scripts read and production node_modules in which the four orz packages and katex resolve, and no tests, .git, handover or website; the release carries JOB_RELEASE.json ({coursewerk, builtAt, frames: installed}), and inside it Coursewerk uses its own node_modules by itself (framesMode: COURSEWERK_FRAMES when set, else installed under the marker, else latest; skills.mjs asks no registry there), so the job's commands are plain `node assistant/scripts/...` that its tool permissions match.",
+      "statement": "Job release for Alembic (owner 2026-11-02): alembic-job/CLAUDE.md tells an agent in an Alembic assistant job how to work with Coursewerk there (plain node commands; alembic pull work; site_import; the instructor's answers from alembic changes applied with alembic_needs.mjs apply, and what needs them handed in with alembic_needs.mjs export and alembic handin; units sessions and the procedure with --root work; alembic push work --dry-run in place of git status/diff; site_handback before alembic push work; never git, never install packages; the verifier is the job's model; assistant/ is read-only); scripts/pack_job_release.mjs builds the release folder: that file as the top-level CLAUDE.md with Coursewerk's CLAUDE.md as COURSEWERK.md, the runtime files the scripts read and production node_modules in which the four orz packages and katex resolve, and no tests, .git, handover or website; the release carries JOB_RELEASE.json ({coursewerk, builtAt, frames: installed}), and inside it Coursewerk uses its own node_modules by itself (framesMode: COURSEWERK_FRAMES when set, else installed under the marker, else latest; skills.mjs asks no registry there), so the job's commands are plain `node assistant/scripts/...` that its tool permissions match.",
       "source": "owner 2026-11-02 (HANDOVER: the job release for Alembic)",
       "status": "closed",
       "evidence": {
         "T1": [
           "tests/job-release.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.host.alembic-needs-export",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "What needs the instructor reaches them on Alembic only through the assistant's digest (owner 2026-11-02; Alembic agent-runtime-v3 §22): alembic_needs.mjs export writes Alembic's hand-in file ({changesetId, digest: {questions}}) from Coursewerk's own state, in this order and capped at 20 (it says how many wait for next time): open interrupts (interrupt findings and M5 contacts not yet answered; free text, words optional); plan approvals ready by Coursewerk's own precondition (choices Approve / Not yet, words required, never suggested; the question id binds the content hash; refs the concept map and assessment guide); corrections not yet answered (Keep / Undo, Keep recommended, the diff as detail); and the checkpoint digest's entries within the instructor's digest cap (choices only where Coursewerk has a convention for the kind, with Later; recommended only when the recommendation is one of them; words required for a choice; no suggested words). Every question keeps Alembic's limits (id, one-line text up to 500, 2 to 6 unique choices up to 120, detail up to 2000, up to 10 refs, words rules); what was asked is kept in private/coursewerk/digest/alembic-needs.json, and with --model the digest is delivered as a checkpoint (corrections stay open until answered). Without --changeset the CLI makes a new id.",
+      "source": "owner 2026-11-02 (instructor needs only through Alembic's Needs you, never as a Publish gate); Alembic@043b89d",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/alembic-needs.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.host.alembic-needs-apply",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "alembic_needs.mjs apply records each answer from `alembic changes` to a question Coursewerk asked, with Coursewerk's own acts and the person's name (by.name, else by.id) and words: an interrupt answer as the instructor's answer to it; Approve through recordApproval, only with words, only while the plan's content hash is the one asked about (else skipped: the plan changed since it was asked) and Coursewerk's approval precondition holds; Undo through revertCorrection with the words as the note (words required), Keep as the correction shown; a digest choice through answerDigest (confirm, keep, accept as mine and later as Coursewerk defines them), words required for a choice. Not yet leaves the approval open. Each recorded answer is followed by a harness record carrying its Alembic provenance (host alembic, item, changeset, question, by, at), so the same Alembic answer is never recorded twice; an answer without required words, to another question, or no longer applicable is skipped and reported.",
+      "source": "owner 2026-11-02; Alembic@043b89d (answers through alembic changes)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/alembic-needs.test.mjs"
         ]
       }
     }
