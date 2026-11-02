@@ -197,6 +197,13 @@ Write facts so they can be checked — scoped, not absolute (`docs/writing-check
 Retrieval goes only to destinations the instructor declared; the verifier command is `COURSEWERK_VERIFIER` (a JSON array;
 default headless `claude -p` with no tools, settings or session, in an empty directory), or a fresh subagent in courier mode.
 
+## In an Alembic job
+
+On Alembic, Coursewerk can run inside the course assistant's job, from a read-only release (`alembic-job/CLAUDE.md`
+is that release's entry). The course arrives as a plain folder in Alembic's layout. `scripts/site_import.mjs` turns it
+into Coursewerk's layout, and `scripts/site_handback.mjs` turns it back, adding only to the end of the records.
+`scripts/pack_job_release.mjs` builds the release.
+
 ## License
 
 Coursewerk (the harness) is released under the MIT License. Teaching packages use an output license compatible
