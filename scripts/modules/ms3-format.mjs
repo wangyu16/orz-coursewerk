@@ -2,12 +2,14 @@
 // private copy. Retired here, by design: the word-presence tests standing in for coverage (the core owns coverage),
 // the concept-map and assessment-guide section rules (the spine core check owns the spine), W17 objective-tag
 // containment (replaced by unit links), and the photograph rule's mandatory human review (now a question, D1).
+// Added (owner 2026-11-02): the house notation, a light note per text (lib/core/house_notation.mjs).
 // Added (D25): every deliverable must carry valid notation for the framework that will assemble it — orz-slides for
 // slides, orz-paged for declared print documents, orz-mdhtml for the pages. Since D52 (text format 1) each text is read
 // by its carrier's own public readDocument: its errors are defects, its warnings notes (a `deck-block`, a slides text
 // without its `carrier: slides` header, a declared print document without `carrier: paged`, are defects).
 import { createQaAudits } from "../lib/legacy/qa_audits.mjs";
 import { checkPageNotation, checkPagedNotation, checkSlidesNotation, frameworkDefinitions } from "../lib/core/notations.mjs";
+import { houseNotationSpots, houseNotationNote } from "../lib/core/house_notation.mjs";
 import { base, recheckByRerun } from "./_shared.mjs";
 
 const RETIRED = [/practice sheet does not tag objective coverage/, /slides source is missing objective coverage/, /^assessment support is missing/,
@@ -43,6 +45,11 @@ async function run(s) {
     let open = 0, fence = false;
     lines.forEach((l, i) => { if (/^\s*(```|~~~)/.test(l)) fence = !fence; if (fence) return; for (const _ of l.matchAll(/\$\$/g)) open = open ? 0 : i + 1; });
     if (open) defect("math-delimiters", file, `line ${open}: a $$ display equation opens here and is never closed`);
+    // house notation (owner 2026-11-02): one way to write math and chemistry. Light — never a defect: one note per
+    // text, for the agent, so a fix pasted in from a review cannot leave the course in two notations unseen
+    // in what students read; the plans (concepts/) are the instructor's, listed by scripts/house_notation.mjs
+    const spots = file.startsWith("concepts/") ? [] : houseNotationSpots(lines.join("\n"));
+    if (spots.length) out.push({ kind: "house-notation", units: [], evidence: { type: "judgment", note: houseNotationNote(file, spots) } });
   }
   // each orz text is read by its carrier's own public reader (D52): the carrier named by its header, else its place
   const defs = await frameworkDefinitions();
@@ -63,6 +70,7 @@ export default {
       { kind: "format-contract", statusClass: "defect", evidenceType: "rule", route: "agent" },
       { kind: "no-photograph", statusClass: "question", evidenceType: "judgment", route: "digest" },
       { kind: "frame-name-unknown", statusClass: "question", evidenceType: "judgment", route: "agent" },
+      { kind: "house-notation", statusClass: "question", evidenceType: "judgment", route: "agent" },
     ] }),
   run, recheck: recheckByRerun(run),
 };

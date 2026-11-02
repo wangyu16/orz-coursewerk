@@ -87,7 +87,6 @@ loses no meaning, remove it. (Exact syntax: the orz-markdown skill.)
 | Columns | `:::: cols 1 1` | side-by-side compare/contrast (two mechanisms, before/after) |
 | Tabs | `:::: tabs` / `::: tab` | worked Problem/Solution, alternate representations (screen only) |
 | Spoiler | `:::spoil Reveal` | hide an answer/hint for self-test (screen only) |
-| Sub/super | `H~2~O`, `x^2^` | chemistry/math notation |
 
 **Restraint rules:** at most one highlight per passage; a small fixed set of colors with fixed meanings
 (not a rainbow); boxes used for their meaning, not variety. Tabs and spoilers are **screen-only** — never in
@@ -117,6 +116,10 @@ The single most important transformation. Full detail in the orz-slides skill; t
   a copyright problem (and the QA gate's `--inputs` scan flags it). A **short, attributed** quote (a sentence,
   cited) is fine as fair use; a paragraph lifted and lightly reworded is not.
 - **Math** in KaTeX (`$…$` / `$$…$$`); **chemistry** in mhchem (`$\ce{H2O}$`, `$\ce{Fe^{2+} + 2e- -> Fe}$`).
+- **One notation, everywhere** (the house notation): a symbol, constant, number in scientific notation or ion is
+  math or chemistry wherever it appears — prose, headings, tables, slides — with LaTeX inside the math: `$K_a = 2.9\times10^{3}$`,
+  not `K_a = 2.9×10³` or `$K_a = 2.9×10³$`; `$\ce{Ag+}$`, not `Ag+` or `Ag⁺`; `$E^\circ_\text{cell}$` (a word as a subscript
+  is upright). Diagram sources, where math cannot render, keep Unicode. `scripts/house_notation.mjs` lists what is not.
 - **IUPAC** naming; **units carried** through every step; **significant figures** respected.
 
 ---

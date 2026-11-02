@@ -132,6 +132,9 @@ Work in batches (one to three chapters, or a session's budget). In each batch:
        keeps the meaning (`clarification-owed`). In the instructor's text it comes to the digest as a one-line
        diff (`clarification-proposed`). Once they accept it, applying it is yours (`clarification-accepted`), and
        their credit stays.
+     A reviewer writes its wording as a reader sees it (K_a, 1.8×10⁻⁵, Ag⁺). Put it in the house notation as you
+     apply it ($K_a$, $1.8\times10^{-5}$, $\ce{Ag+}$); `node scripts/house_notation.mjs --root <package>` lists any
+     spot left, and the gate shows one `house-notation` note per text until none is.
    - `correct` (auto-correction of an admitted, uncontested contradiction, shown as a diff);
    - `alignment` (a blind link and level review, trial). It checks whether each linked unit teaches what it is
      linked to (answers are read with their question), and whether a practice question has the type and level of

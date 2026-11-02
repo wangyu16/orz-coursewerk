@@ -3704,6 +3704,21 @@
           "tests/records-layout.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.notation.house",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "House notation (owner 2026-11-02): one way to write math, chemistry and markup across a course \u2014 math in $\u2026$/$$\u2026$$ with LaTeX inside it, chemistry in $\\ce{}$. A light, deterministic check (lib/core/house_notation.mjs; scripts/house_notation.mjs) names every spot written another way, with its line and the house form: a subscript, constant, Unicode script, e-notation, caret, ion, \u0394/\u00b0 symbol, single-letter equation or LaTeX command outside math; Unicode scripts, \u00d7, \u2212 or a word subscript inside math; an unpaired $; and math KaTeX (with mhchem) cannot typeset. Code, diagram sources, comments, links and directive heads are skipped. It is never a defect: the gate shows one note per text, routed to the agent (ms3-format), so a fix applied from a review cannot leave the course in two notations unseen.",
+      "source": "owner 2026-11-02 (K_a, K_b shown as plain text; K_a = 2.9\u00d710\u00b3 mixed formats; GenChem fixes pasted reviewers' plain-text wording)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/house-notation.test.mjs"
+        ]
+      }
     }
   ]
 }

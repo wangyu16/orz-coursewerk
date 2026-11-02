@@ -77,7 +77,7 @@
       "id": "repo:docs/authoring-guidelines.md",
       "path": "docs/authoring-guidelines.md",
       "type": "documentation",
-      "hash": "80e219022b75cc921b1b810952637383c7414b4f17cb10b49d2d71dceac22a88"
+      "hash": "bcd904d1f091a0c075adc896dcc398dd4b02612ccf5229e1369ebc40c57ea4b8"
     },
     {
       "id": "repo:docs/closed-loop-rounds.md",
@@ -191,7 +191,7 @@
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "40245f2730e009e08067bf306fe5fde9569ed16d7e6ef24d7ee8d5431f5f5385"
+      "hash": "f4ad82e79cfd99aaacc1bb71dcdc10e634b1f05138ab2f7e612eda61dac337be"
     },
     {
       "id": "repo:README.md",
@@ -332,6 +332,12 @@
       "hash": "c8285b471d78871f8735ca1511559fb0c6041b00d18e052d97119fa09c60a90d"
     },
     {
+      "id": "repo:scripts/house_notation.mjs",
+      "path": "scripts/house_notation.mjs",
+      "type": "executable",
+      "hash": "7f3cc395f4944a6fe32190cdd0769b2598bc9d217bf3727e0cb594913d155e16"
+    },
+    {
       "id": "repo:scripts/index_components.mjs",
       "path": "scripts/index_components.mjs",
       "type": "executable",
@@ -450,6 +456,12 @@
       "path": "scripts/lib/core/history.mjs",
       "type": "kernel",
       "hash": "1b527ba242b61ddeee8c5bf1af8a9699902ddbe765f8e80fb622962d5a57b741"
+    },
+    {
+      "id": "repo:scripts/lib/core/house_notation.mjs",
+      "path": "scripts/lib/core/house_notation.mjs",
+      "type": "kernel",
+      "hash": "392991eefd303ecac500ca8b14f918a0a414813e9bc4c2641c0fd0fb1d26eea7"
     },
     {
       "id": "repo:scripts/lib/core/loop.mjs",
@@ -923,7 +935,7 @@
       "id": "repo:scripts/modules/ms3-format.mjs",
       "path": "scripts/modules/ms3-format.mjs",
       "type": "executable",
-      "hash": "4ae4d6e56fa9c60d0f1ce5ae0303eb6f2cb24c01d9340a6bab66b3db823eea4e"
+      "hash": "e7e69ee91af654457cb66ab880d91ab2791c16e1f0def802d4cca822e0def408"
     },
     {
       "id": "repo:scripts/modules/ms4-links.mjs",
@@ -1271,7 +1283,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "37db7f7e6f821d70cf04255ab4f8d50e570f5a6693d629d141090c8f12190723"
+      "hash": "cf62788584cc8dac9745072c7c5f2124e242e57ad5eca7708e76408157b1725d"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1848,6 +1860,12 @@
       "path": "tests/helpers/destinations.mjs",
       "type": "test",
       "hash": "a8ad97d1c64ad506ea93eb0bf87fc26f6bed1114c55b9da33e470429fd5a4104"
+    },
+    {
+      "id": "repo:tests/house-notation.test.mjs",
+      "path": "tests/house-notation.test.mjs",
+      "type": "test",
+      "hash": "2b9228ddd14eb9fa9b35fc6d0bd691ceb303f019ec07db669388e4c2c8bb22b9"
     },
     {
       "id": "repo:tests/immutable.test.mjs",
@@ -4773,6 +4791,14 @@
       {
         "id": "req.ms7.no-drift",
         "phase": "P6",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.notation.house",
+        "phase": "P11",
         "tiers": [
           "T1"
         ],
