@@ -170,6 +170,12 @@
       "hash": "4348b1d556ab794e17cc760b8ab1aee9323f25d652a295ec06a2cbcb792a4064"
     },
     {
+      "id": "repo:HANDOVER.md",
+      "path": "HANDOVER.md",
+      "type": "repository-support",
+      "hash": "7fb4f5879e69d2032c1bb068a854f2e60d3e38032d8df0f319cb9155fe1b29ef"
+    },
+    {
       "id": "repo:LICENSE",
       "path": "LICENSE",
       "type": "repository-support",

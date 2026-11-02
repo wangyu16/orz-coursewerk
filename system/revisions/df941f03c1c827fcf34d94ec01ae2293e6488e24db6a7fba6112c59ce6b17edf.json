@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "planId": "df941f03c1c827fcf34d94ec01ae2293e6488e24db6a7fba6112c59ce6b17edf",
+  "baseRef": "HEAD",
+  "baseTip": "c0c657a987f8f7853f76e5902a5f544b14f6ac3f",
+  "baseCommit": "c0c657a987f8f7853f76e5902a5f544b14f6ac3f",
+  "reviewedHead": "c0c657a987f8f7853f76e5902a5f544b14f6ac3f",
+  "changed": [
+    "HANDOVER.md"
+  ],
+  "requiredReview": [
+    "HANDOVER.md"
+  ],
+  "reviewed": [
+    "HANDOVER.md"
+  ],
+  "impactedClaims": [],
+  "testResults": [
+    {
+      "path": "tests/system-index.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "HANDOVER.md for the move of Coursewerk into orz-family: what lived outside git on the old machine and what to keep, the branch bundle, open tasks and decisions, known issues, and what a new session must know. Documentation only.",
+  "generatedIndexHash": "09ea7166c8ad188705dd1c6c5b95141bd1e930ef1e99eb7a23aa4dd4d10f23a0",
+  "acceptedAt": "2026-11-02T17:49:03.181Z"
+}
