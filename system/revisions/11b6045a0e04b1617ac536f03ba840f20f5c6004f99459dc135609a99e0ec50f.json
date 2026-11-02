@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "planId": "11b6045a0e04b1617ac536f03ba840f20f5c6004f99459dc135609a99e0ec50f",
+  "baseRef": "HEAD",
+  "baseTip": "6309aca00fd23779061d58e6bdbaf4f446df65c9",
+  "baseCommit": "6309aca00fd23779061d58e6bdbaf4f446df65c9",
+  "reviewedHead": "6309aca00fd23779061d58e6bdbaf4f446df65c9",
+  "changed": [
+    "alembic-job/CLAUDE.md",
+    "system/REQUIREMENTS.json",
+    "tests/alembic-needs.test.mjs",
+    "tests/job-release.test.mjs"
+  ],
+  "requiredReview": [
+    "alembic-job/CLAUDE.md",
+    "system/REQUIREMENTS.json",
+    "tests/alembic-needs.test.mjs",
+    "tests/job-release.test.mjs"
+  ],
+  "reviewed": [
+    "alembic-job/CLAUDE.md",
+    "system/REQUIREMENTS.json",
+    "tests/alembic-needs.test.mjs",
+    "tests/job-release.test.mjs"
+  ],
+  "impactedClaims": [],
+  "testResults": [
+    {
+      "path": "tests/alembic-needs.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/job-release.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "Reviewed the end-of-job order in alembic-job/CLAUDE.md: export (writing the record of what was asked), hand-back, push, and the hand-in only after a successful push, with a plain instruction not to hand in when the push fails; the job-release test checks that order. Added a test that Keep on a correction logs Coursewerk own corrections-shown record, needs no words, carries provenance and is not asked again. alembic-needs 4/4 and job-release 3/3 passed.",
+  "generatedIndexHash": "27b680697611b37ec9db5c94d7c19f597f71c29ff6805fc7b1b7cd84a55a0ae7",
+  "acceptedAt": "2026-11-02T22:40:29.663Z"
+}

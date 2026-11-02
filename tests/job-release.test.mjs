@@ -21,6 +21,10 @@ test("[req.release.alembic-job] the job instructions say how Coursewerk works in
     "alembic changes > work/.alembic-changes.json", "node assistant/scripts/alembic_needs.mjs apply --root work --changes work/.alembic-changes.json",
     "node assistant/scripts/alembic_needs.mjs export --root work", "alembic handin work/.alembic-needs.json",
   ]) assert.ok(JOB.includes(must), `the job instructions mention ${JSON.stringify(must)}`);
+  // the questions go out only after the record of what was asked has landed: export, hand-back, push, then hand-in
+  const order = ["alembic_needs.mjs export --root work --out work/.alembic-needs.json", "site_handback.mjs work", "alembic push work\n", "alembic handin work/.alembic-needs.json"].map((x) => JOB.indexOf(x));
+  assert.ok(order.every((i, k) => i >= 0 && (k === 0 || i > order[k - 1])), `export, hand-back, push, hand-in in that order (${order})`);
+  assert.match(JOB, /If\s+the push fails, do not hand in the questions/);
   assert.doesNotMatch(JOB, /COURSEWERK_FRAMES=/, "commands are plain `node …`, so the job's tool permissions match them");
 });
 

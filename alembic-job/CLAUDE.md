@@ -64,30 +64,29 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
    holds, since there is no git history to check it against. If the gate says the decision log no longer extends the
    one Alembic holds, a past record was changed. Stop and report it. Never try to repair the log by hand.
 
-4. **Bring what needs the instructor.** The instructor is reached only through "Needs you" in Alembic:
+4. **Finish the job in this order.** The instructor is reached only through "Needs you" in Alembic, and Coursewerk
+   must remember what it asked before the questions go out:
 
    ```bash
    node assistant/scripts/alembic_needs.mjs export --root work --out work/.alembic-needs.json --model <your model id>
-   alembic handin work/.alembic-needs.json
-   ```
-
-   The export collects interrupts, plans ready for approval, corrections to keep or undo, and the checkpoint digest,
-   at most 20 questions; it says how many wait for next time. It makes a new changeset id unless you give one
-   (`--changeset <id>`). Hand it in when it has questions; a new hand-in replaces the instructor's unanswered one.
-
-5. **Hand the course back.**
-
-   ```bash
    node assistant/scripts/site_handback.mjs work
    alembic push work --dry-run
    alembic push work
+   alembic handin work/.alembic-needs.json
    ```
 
-   The hand-back puts the course back the way Alembic stores it. It adds new records only at the end of a file, or
-   in new files. Alembic accepts nothing else, so never edit a record file yourself. If the hand-back refuses, do not
-   push. Report its message instead.
+   - The export collects interrupts, plans ready for approval, corrections to keep or undo, and the checkpoint
+     digest, at most 20 questions; it says how many wait for next time. It writes the questions to the hidden file
+     `work/.alembic-needs.json`, and the record of what was asked to `private/coursewerk/digest/alembic-needs.json`,
+     which the push carries. It makes a new changeset id unless you give one (`--changeset <id>`).
+   - The hand-back puts the course back the way Alembic stores it. It adds new records only at the end of a file, or
+     in new files. Alembic accepts nothing else, so never edit a record file yourself. If the hand-back refuses, do
+     not push. Report its message instead.
+   - Hand the questions in only after `alembic push work` succeeded, and only when the export found questions. If
+     the push fails, do not hand in the questions: they would be asked without Coursewerk remembering them. Report
+     the failure instead. A new hand-in replaces the instructor's unanswered one.
 
-6. **To keep working after a push,** pull again and import again (step 1). Do not run the import twice without
+5. **To keep working after a push,** pull again and import again (step 1). Do not run the import twice without
    a pull in between; it will refuse.
 
 ## What stays the instructor's

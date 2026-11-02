@@ -15,7 +15,7 @@ import { appendLogRecord, parseLog, readLogText } from "../scripts/lib/records/l
 import { makeFinding } from "../scripts/lib/records/findings.mjs";
 import { replayVerifier } from "../scripts/lib/verify/dispatch.mjs";
 import { fsInputReader, pinnedTexts } from "../scripts/lib/verify/references.mjs";
-import { applyCorrection, verifySemi } from "../scripts/lib/verify/verdicts.mjs";
+import { applyCorrection, correctionsToShow, verifySemi } from "../scripts/lib/verify/verdicts.mjs";
 import { pinDeclared as pinReference } from "./helpers/destinations.mjs";
 import { applyChanges, digestQuestion, exportNeeds, handinProblems, LIMITS, QUESTION_ID } from "../scripts/lib/core/alembic_needs.mjs";
 
@@ -149,4 +149,22 @@ test("[req.host.alembic-needs-export] Alembic's limits: at most 20 questions, th
   // the limits themselves
   const bad = { changesetId: "x", digest: { questions: [{ id: "a b", text: "two\nlines", choices: ["A"], recommended: "B", wordsSuggested: "w" }, { id: "a b", text: "ok" }] } };
   assert.equal(handinProblems(bad).length, 8, "changeset, id twice, repeated id, text, one choice, recommended, words suggested without words");
+});
+
+test("[req.host.alembic-needs-apply] Keep on a correction records Coursewerk's own record of it shown and settled; it is not asked again", async (t) => {
+  const p = copy(t);
+  const correction = await plantCorrection(p);
+  const r = await exportNeeds(p.root, { changesetId: "job-0005", gate: { findings: [] } });
+  const corr = r.handin.digest.questions.find((q) => q.id.startsWith("c."));
+  assert.ok(corr, "the correction is asked");
+  const a = applyChanges(p.root, { answers: [answer(r.handin, corr.id, "Keep")] });
+  assert.deepEqual(a.recorded.map((x) => x.outcome), ["kept"], "Keep needs no words");
+  const recs = log(p);
+  const shown = recs.find((x) => x.type === "revision" && x.payload.event === "corrections-shown" && x.payload.corrections.includes(correction.id));
+  assert.equal(shown.party.role, "harness"); assert.equal(shown.party.name, "corrections");
+  assert.equal(a.recorded[0].seq, shown.seq);
+  assert.equal(recs.find((x) => x.type === "contact" && x.payload.moment === "host-answer").payload.recorded, shown.seq);
+  assert.ok(!recs.some((x) => x.type === "divergence"), "the correction stands");
+  assert.equal(correctionsToShow(p.root).length, 0);
+  assert.equal((await exportNeeds(p.root, { changesetId: "job-0006", gate: { findings: [] } })).handin.digest.questions.filter((q) => q.id.startsWith("c.")).length, 0);
 });
