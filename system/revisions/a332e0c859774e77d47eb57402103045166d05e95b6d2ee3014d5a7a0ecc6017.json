@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "planId": "a332e0c859774e77d47eb57402103045166d05e95b6d2ee3014d5a7a0ecc6017",
+  "baseRef": "HEAD",
+  "baseTip": "e593d8e352a3413a17616e4f52ec56155a55fcef",
+  "baseCommit": "e593d8e352a3413a17616e4f52ec56155a55fcef",
+  "reviewedHead": "e593d8e352a3413a17616e4f52ec56155a55fcef",
+  "changed": [
+    "scripts/coursewerk.mjs",
+    "scripts/gate.mjs",
+    "scripts/lib/core/approvals.mjs",
+    "scripts/lib/core/carry_over.mjs",
+    "scripts/lib/core/site_export.mjs",
+    "scripts/lib/core/workflow.mjs",
+    "scripts/lib/skeleton/full_gate.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/carry-over.test.mjs"
+  ],
+  "requiredReview": [
+    "scripts/coursewerk.mjs",
+    "scripts/gate.mjs",
+    "scripts/lib/core/approvals.mjs",
+    "scripts/lib/core/carry_over.mjs",
+    "scripts/lib/core/site_export.mjs",
+    "scripts/lib/core/workflow.mjs",
+    "scripts/lib/skeleton/full_gate.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/carry-over.test.mjs"
+  ],
+  "reviewed": [
+    "scripts/coursewerk.mjs",
+    "scripts/gate.mjs",
+    "scripts/lib/core/approvals.mjs",
+    "scripts/lib/core/carry_over.mjs",
+    "scripts/lib/core/site_export.mjs",
+    "scripts/lib/core/workflow.mjs",
+    "scripts/lib/skeleton/full_gate.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/carry-over.test.mjs"
+  ],
+  "impactedClaims": [],
+  "testResults": [
+    {
+      "path": "tests/carry-over.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/site-export.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/gate-cli.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/workflow.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/alembic-needs.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/system-index.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "Reviewed the carry-over baseline: carry-over-baseline (harness tool) records plan sha256s and sidecar unit hashes of a baseline package; carry-over is the instructor act with visible words, logging one intake record binding the baseline hash and words, approving byte-identical plans through recordApproval (marked carriedOver, citing the record) and leaving differing plans for normal approval; the gate turns unit-unlinked, evidence-missing, absolute-unreviewed and reverify obligations on units still at their baseline hash into labelled non-blocking notes (a changed baseline file is a blocking defect); gate CLI, status, digest, publish and CHECKED.json count carried-over apart. Tests carry-over 2/2, site-export 4/4, gate-cli 5/5, workflow 18/18, alembic-needs 4/4, system-index 4/4; GenChem real substrate checked.",
+  "generatedIndexHash": "ba6c4cc3235ea3301408eaf391f54f669080f2200f05efb7d810daefebe7cc72",
+  "acceptedAt": "2026-11-03T03:42:28.013Z"
+}

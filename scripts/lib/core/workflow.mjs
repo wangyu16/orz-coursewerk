@@ -169,7 +169,10 @@ export function publishDecision(root, reader, { gateResult, unitInfo, instructor
   const recs = records(logText);
   const approvalOf = (sc) => { const r = recs.filter((x) => (x.type === "approval" || x.type === "glance-confirmation") && x.payload?.scope === sc).at(-1); return r ? { seq: r.seq, hash: r.hash, type: r.type } : null; };
   const answered = answeredBases(root);
-  const openQuestions = gateResult.gate.questions.filter((f) => !isAnswered(answered, f, unitHash)).map((f) => ({ id: f.id, module: f.module, kind: f.kind, units: f.units, question: f.evidence?.note || f.evidence?.what || f.evidence?.rule || f.kind }));
+  // notes carried over from earlier Coursewerk (req.gate.carried-over) were settled by the instructor's carry-over act:
+  // the publish record counts them, labelled so, rather than raising each again
+  const carriedNotes = gateResult.gate.questions.filter((f) => f.evidence?.carriedOver).length;
+  const openQuestions = gateResult.gate.questions.filter((f) => !f.evidence?.carriedOver && !isAnswered(answered, f, unitHash)).map((f) => ({ id: f.id, module: f.module, kind: f.kind, units: f.units, question: f.evidence?.note || f.evidence?.what || f.evidence?.rule || f.kind }));
   if (openQuestions.length && !overQuestions) {
     const e = new Error(`${openQuestions.length} open question(s) to raise with the instructor before publishing; they do not block — if the instructor still wants to publish, publish over them in their words`);
     e.openQuestions = openQuestions; throw e;
@@ -180,7 +183,7 @@ export function publishDecision(root, reader, { gateResult, unitInfo, instructor
     course: el.course.publishable ? { approval: approvalOf("course") } : null,
     excluded: asked.filter((c) => !included.includes(c) && !drafts.includes(c)).map((c) => ({ chapter: c, why: el.chapters[c].why })),
     drafts: drafts.map((c) => ({ chapter: c, note: "a draft: outside the package promises, private use only" })),
-    openQuestions, overQuestions: openQuestions.length > 0, ...(skippedReviews.length ? { withoutReview: skippedReviews } : {}), instructorWords,
+    openQuestions, overQuestions: openQuestions.length > 0, ...(carriedNotes ? { carriedOver: { notes: carriedNotes, label: "carried over from earlier Coursewerk" } } : {}), ...(skippedReviews.length ? { withoutReview: skippedReviews } : {}), instructorWords,
   };
   const rec = appendLogRecord(root, { type: "publish", party, payload });
   fs.mkdirSync(recordFile(root, "private/coursewerk/publish"), { recursive: true });

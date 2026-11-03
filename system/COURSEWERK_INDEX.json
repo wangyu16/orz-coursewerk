@@ -287,7 +287,7 @@
       "id": "repo:scripts/coursewerk.mjs",
       "path": "scripts/coursewerk.mjs",
       "type": "executable",
-      "hash": "60b769f38f079e6458409bd50f1442a3ace9c9caa571d6ae05197580381a1c4a"
+      "hash": "d44b5fbb015bbe1f76ddc21dc052b5cb5c8e46d248ff9b9bc70acc9ee5a2cda8"
     },
     {
       "id": "repo:scripts/data/license-texts.json",
@@ -335,7 +335,7 @@
       "id": "repo:scripts/gate.mjs",
       "path": "scripts/gate.mjs",
       "type": "executable",
-      "hash": "c277f30f18e22344e5dbeb49560884e55ad5df76148a008bd3f2d53dddb6b5b0"
+      "hash": "4aa1412f7a2bcdf4ed5dfdb1b576a4fd011c8d9f58debad0015ad34f6a7742e0"
     },
     {
       "id": "repo:scripts/generate_attribution.mjs",
@@ -437,13 +437,19 @@
       "id": "repo:scripts/lib/core/approvals.mjs",
       "path": "scripts/lib/core/approvals.mjs",
       "type": "kernel",
-      "hash": "c6796cd757ddb299103784d2fa3f6692984148dfa7c4baf0bd3bd8fd71cf7ac2"
+      "hash": "af2d73a8ec3e4e395e2271ede84c4ff46ce34b9774b0f74a99370d3d55d9e822"
     },
     {
       "id": "repo:scripts/lib/core/authorship.mjs",
       "path": "scripts/lib/core/authorship.mjs",
       "type": "kernel",
       "hash": "22c2ed74203e3f78eccfd43c77066a297c91df486a7376bbd8a077cb9b168147"
+    },
+    {
+      "id": "repo:scripts/lib/core/carry_over.mjs",
+      "path": "scripts/lib/core/carry_over.mjs",
+      "type": "kernel",
+      "hash": "2c77af30e3d7f2fb968805523bb33d48597e66531d59b4bba205f145ab4c2487"
     },
     {
       "id": "repo:scripts/lib/core/change.mjs",
@@ -575,7 +581,7 @@
       "id": "repo:scripts/lib/core/site_export.mjs",
       "path": "scripts/lib/core/site_export.mjs",
       "type": "kernel",
-      "hash": "c457ed271d67449bfd71687c6ab4f6e8f34167c0b4af69394f2d92a2ce23e436"
+      "hash": "7fb29feb0ce6026a0d9c5020329d6a27577672aea58bc62982e9cd047b68f6e1"
     },
     {
       "id": "repo:scripts/lib/core/site_host.mjs",
@@ -641,7 +647,7 @@
       "id": "repo:scripts/lib/core/workflow.mjs",
       "path": "scripts/lib/core/workflow.mjs",
       "type": "kernel",
-      "hash": "4eb48927bd76703831eaf31447c48fc9392344aa6161a3afa59d6fe2cb3fbe6a"
+      "hash": "1838023f7b44298c4d029e0991553b798ecd7f8a3d850d19e8cc9bb4283beab0"
     },
     {
       "id": "repo:scripts/lib/escalation.mjs",
@@ -797,7 +803,7 @@
       "id": "repo:scripts/lib/skeleton/full_gate.mjs",
       "path": "scripts/lib/skeleton/full_gate.mjs",
       "type": "kernel",
-      "hash": "43339d84a38997be722955ae2cd67ccf16b153cbee1d779280ac0075c07ebef6"
+      "hash": "42c471abea44ee2fb6b7a68d79673e1e34fd90c6fe0ecff505b8fbc9dbbe745c"
     },
     {
       "id": "repo:scripts/lib/skeleton/gate.mjs",
@@ -1343,7 +1349,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "3bbb61c6d82f9bf0e64ce1d0087fd998265e49fdb550f90e8d05a6ea14ddb9e3"
+      "hash": "9c6a6192e2030088f9700977efad0d10def8e21a2b1565a4d51ef7cb8d933074"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1596,6 +1602,12 @@
       "path": "tests/carriers.test.mjs",
       "type": "test",
       "hash": "3ba3a8aaeef1a2a09b82113a75e11aa904bb641d8541b8b65bae594fa05efbc1"
+    },
+    {
+      "id": "repo:tests/carry-over.test.mjs",
+      "path": "tests/carry-over.test.mjs",
+      "type": "test",
+      "hash": "34f9998d74040568ae3b648c1c39eea832b3f569131a64fa57da20f5211f5d09"
     },
     {
       "id": "repo:tests/check-oer-consistency.test.mjs",
@@ -4563,6 +4575,14 @@
         "status": "closed"
       },
       {
+        "id": "req.gate.carried-over",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.gate.host-anchor",
         "phase": "P11",
         "tiers": [
@@ -4979,6 +4999,14 @@
       },
       {
         "id": "req.records.carry-logged",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.records.carry-over-baseline",
         "phase": "P11",
         "tiers": [
           "T1"

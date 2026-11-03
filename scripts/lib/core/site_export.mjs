@@ -85,8 +85,9 @@ export function checkedRecord(root, gateResult, { at = new Date().toISOString() 
   const pages = [...deliverablesOf(reader), COURSE_MAP, ...chapters.flatMap((c) => Object.values(spinePaths(c)))].filter((rel, i, all) => reader.text(rel) != null && all.indexOf(rel) === i);
   const open = (rel) => {
     const mine = findings.filter((f) => f.status !== "answered" && ((f.units || []).some((u) => deliverableOf.get(u) === rel) || f.evidence?.file === rel));
-    const by = (c) => mine.filter((f) => f.statusClass === c).length;
-    return { defects: by("defect"), obligations: by("obligation"), questions: by("question") };
+    // carried over from earlier Coursewerk (req.gate.carried-over): counted apart, never as checked or as a question
+    const by = (c) => mine.filter((f) => f.statusClass === c && !f.evidence?.carriedOver).length, carried = mine.filter((f) => f.evidence?.carriedOver).length;
+    return { defects: by("defect"), obligations: by("obligation"), questions: by("question"), ...(carried ? { carriedOver: carried } : {}) };
   };
   const log = parseLog(readLogText(root)), last = log.at(-1);
   const approvals = approvalStatus(reader, chapters, readLogText(root)).scopes;
@@ -97,7 +98,8 @@ export function checkedRecord(root, gateResult, { at = new Date().toISOString() 
     checkedAt: at,
     log: last ? { seq: last.seq, hash: last.hash } : null,
     pages: pages.map((rel) => ({ path: sitePath(rel, reader), sha256: sha256(reader.text(rel)), open: open(rel), chapter: rel === COURSE_MAP ? null : chapterOfFile(rel) })),
-    approvals: Object.values(approvals).map((s) => ({ scope: s.scope, valid: !!s.valid, ...(s.record ? { by: s.record.party?.name ?? null, at: s.record.at ?? null, contentHash: s.record.payload?.contentHash ?? null } : {}) })),
+    approvals: Object.values(approvals).map((s) => ({ scope: s.scope, valid: !!s.valid, ...(s.record ? { by: s.record.party?.name ?? null, at: s.record.at ?? null, contentHash: s.record.payload?.contentHash ?? null, ...(s.record.payload?.carriedOver ? { carriedOver: "carried over from earlier Coursewerk" } : {}) } : {}) })),
+    ...(gateResult.carriedOver?.labels?.length ? { carriedOver: { label: "carried over from earlier Coursewerk", baselines: gateResult.carriedOver.labels, units: gateResult.carriedOver.units, plans: gateResult.carriedOver.plans, notes: gateResult.carriedOver.notes } } : {}),
     authors: (foundation?.outputAuthors || []).map((a) => ({ name: a.name, role: a.role ?? null })),
     aiAssistance: [...new Set((foundation?.outputAuthors || []).map((a) => a.aiAssistanceDisclosure).filter(Boolean))],
   };

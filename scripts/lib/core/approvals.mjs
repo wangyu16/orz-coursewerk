@@ -98,7 +98,9 @@ export function glanceProblem(root, reader, s, scope) {
 }
 
 /** Record an approval (full) or a glance confirmation (light, or a rephrasing that keeps its meaning) by the instructor. */
-export function recordApproval(root, reader, chapters, { chapter = null, glance = false, instructorWords, note = "" }, party) {
+// `carriedOver` (req.records.carry-over-baseline): the approval recorded by the instructor's carry-over act for a plan
+// byte-identical to the earlier Coursewerk's baseline — { label, record: <seq of the carry-over record> } — marked so.
+export function recordApproval(root, reader, chapters, { chapter = null, glance = false, instructorWords, note = "", carriedOver = null }, party) {
   if (party?.role !== "instructor") throw new Error("only the instructor approves the spine");
   if (!hasVisibleWords(instructorWords)) throw new Error("an approval quotes the instructor's words");
   const logText = readLogText(root);
@@ -119,6 +121,6 @@ export function recordApproval(root, reader, chapters, { chapter = null, glance 
     : { chapterSequence: status.spine.course.chapterSequence, nodes: status.spine.course.nodes };
   return appendLogRecord(root, { type: glance ? "glance-confirmation" : "approval", party, payload: {
     scope, covers: s.covers, version, contentHash: s.contentHash, ...(chapter ? { courseSliceHash: s.courseSliceHash } : {}),
-    instructorWords, note, change: s.change?.kind || "unapproved", ...(glance ? {} : { text: chapter ? texts : texts[COURSE_MAP], parsed }),
+    instructorWords, note, change: s.change?.kind || "unapproved", ...(glance ? {} : { text: chapter ? texts : texts[COURSE_MAP], parsed }), ...(carriedOver ? { carriedOver } : {}),
   } });
 }

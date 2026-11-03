@@ -12,6 +12,7 @@ import { answeredBases, basisOf, isAnswered } from "./lib/core/digest.mjs";
 import { unitInfoOf } from "./lib/core/workflow.mjs";
 import { liveReader } from "./lib/core/package_reader.mjs";
 import { unreviewedKnowledge } from "./lib/core/obligations.mjs";
+import { CARRIED_LABEL } from "./lib/core/carry_over.mjs";
 
 const args = process.argv.slice(2);
 const opt = (name, fallback) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -26,18 +27,23 @@ if (!["public", "private"].includes(profile)) { console.error("profile must be p
 // Modules load only from the harness's own scripts/modules/, by validated name (runner.moduleFile) — never from the
 // package. The registry is validated by the runner; an invalid one is a blocking obligation.
 try {
-  const { findings, approvalProblems, gate, wiring, basis, mechanical } = runGate(root, { checkpoint, profile, inputsDir: opt("--inputs") || null });
+  const { findings, approvalProblems, gate, wiring, basis, mechanical, carriedOver } = runGate(root, { checkpoint, profile, inputsDir: opt("--inputs") || null });
   // corrections the agent applied since they were last shown: listed with their diff at every checkpoint (D19-B)
   const corrections = correctionsToShow(root);
   // a question the instructor answered (at its current basis) is not open, though the module still raises it
   const answered = answeredBases(root), info = unitInfoOf(root, liveReader(root)), hashes = new Map([...info].map(([k, v]) => [k, v.contentHash]));
-  const openQuestions = gate.questions.filter((f) => !isAnswered(answered, f, hashes));
+  // carried over from earlier Coursewerk (req.gate.carried-over): its notes are counted and listed in the report apart
+  // from the open questions, labelled so — never as checked
+  const isCarried = (f) => !!f.evidence?.carriedOver;
+  const openQuestions = gate.questions.filter((f) => !isCarried(f) && !isAnswered(answered, f, hashes));
+  const carried = carriedOver && carriedOver.labels.length ? { label: CARRIED_LABEL, baselines: carriedOver.labels, units: carriedOver.units, plans: carriedOver.plans, notes: carriedOver.notes,
+    notesByKind: gate.questions.filter(isCarried).reduce((a, f) => ((a[f.kind] = (a[f.kind] || 0) + 1), a), {}) } : null;
   const unreviewed = unreviewedKnowledge(root, liveReader(root));
   const report = { checkpoint, profile, basis, canPublish: gate.canPublish, corrections, knowledgeUnreviewed: unreviewed,
-    counts: { blocking: gate.blocking.length, questions: openQuestions.length, answered: gate.questions.length - openQuestions.length, total: findings.length }, approvalProblems, findings, wiring, mechanical };
+    counts: { blocking: gate.blocking.length, questions: openQuestions.length, answered: gate.questions.filter((f) => !isCarried(f)).length - openQuestions.length, ...(carried ? { carriedOver: carried.notes } : {}), total: findings.length }, ...(carried ? { carriedOver: carried } : {}), approvalProblems, findings, wiring, mechanical };
   if (opt("--json")) fs.writeFileSync(opt("--json"), JSON.stringify(report, null, 2) + "\n");
   if (opt("--wiring")) fs.writeFileSync(opt("--wiring"), JSON.stringify(wiring, null, 2) + "\n");
-  console.log(JSON.stringify({ checkpoint, profile, canPublish: gate.canPublish, blocking: gate.blocking.map((f) => `${f.module}/${f.kind}`), approvalProblems, questions: openQuestions.length, corrections: corrections.map((c) => ({ id: c.id, unit: c.unit, diff: c.diff })),
+  console.log(JSON.stringify({ checkpoint, profile, canPublish: gate.canPublish, blocking: gate.blocking.map((f) => `${f.module}/${f.kind}`), approvalProblems, questions: openQuestions.length, ...(carried ? { carriedOver: carried } : {}), corrections: corrections.map((c) => ({ id: c.id, unit: c.unit, diff: c.diff })),
     // questions routed to the agent (clarifications owed, over-general absolutes, frame-name notes…): the agent's own
     // work, so they are listed, not just counted (P11 wiring sweep)
     forYou: openQuestions.filter((f) => f.route === "agent").map((f) => ({ module: f.module, kind: f.kind, units: f.units, note: String(f.evidence?.note || f.evidence?.what || f.evidence?.rule || "").slice(0, 240) })),

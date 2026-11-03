@@ -19,6 +19,7 @@ import { mechanicalCoverage, mechanicalFindings } from "../verify/mechanical.mjs
 import { unitRecordFindings } from "../core/unit_records.mjs";
 import { logRecordFindings } from "../core/reconcile.mjs";
 import { uncheckedShippedFindings } from "../core/shipped.mjs";
+import { applyCarriedOver } from "../core/carry_over.mjs";
 
 /** The package's use profile: the FOUNDATION's usageProfile ("public-oer" → public), unless given. */
 export function profileOf(root, given = null) {
@@ -39,7 +40,7 @@ export function runGate(root, { checkpoint = "V8", profile = null, inputsDir = n
   const core = bound.problems.map((detail) => makeFinding({ module: "skeleton", kind: "setting-lowered", units: [], statusClass: "defect", route: "agent", basis: run.snapshot.id,
     evidence: { type: "rule", rule: "a setting that changes what the gate checks is lowered only through the decision log", file: "private/coursewerk/coursewerk.json", detail } }));
   const approvalProblems = [];
-  let mechanical = null;
+  let mechanical = null, carriedOver = null;
   if (bound.spine === 2) {
     const reader = liveReader(root);
     if (["V1", "V8"].includes(checkpoint)) core.push(...spineCoreFindings(reader, run.snapshot.id));
@@ -66,10 +67,15 @@ export function runGate(root, { checkpoint = "V8", profile = null, inputsDir = n
     // a unit record that does not hold what the log says of it — a carry, a confirmation, a re-verification, a
     // retirement (R6 G3: the log is the truth; obligations are read from the records, so a gap must block)
     if (["V2", "V4", "V6", "V8"].includes(checkpoint)) core.push(...logRecordFindings(root, run.snapshot.id));
+    // carried over from earlier Coursewerk (req.gate.carried-over): a unit whose text is still the baseline's owes its
+    // links, evidence, absolute reviews and re-verifications as notes, labelled so, never as blocks; any edit ends it
+    const carried = applyCarriedOver(root, core, new Map(loadUnits(root, reader).map((u) => [u.id, unitHash(u.text)])), run.snapshot.id, { reader });
+    core.splice(0, core.length, ...carried.findings);
+    carriedOver = carried.carried;
   }
   const findings = [...run.findings, ...core, ...logFindings(root, run.snapshot.id)];
   const maturityOf = (name) => run.wiring.ran.find((r) => r.name === name)?.maturity || "stable";
   const gate = evaluateGate({ findings, maturityOf, approvalProblems });
   const wiring = buildWiringReport([{ ...run, findings }], { modules, registry });
-  return { checkpoint, profile, basis: run.snapshot.id, findings, approvalProblems, gate, wiring, maturityOf, mechanical };
+  return { checkpoint, profile, basis: run.snapshot.id, findings, approvalProblems, gate, wiring, maturityOf, mechanical, carriedOver };
 }

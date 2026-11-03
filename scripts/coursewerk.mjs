@@ -16,6 +16,11 @@
 //   node scripts/coursewerk.mjs administrative --root <pkg> --document <source> --name <instructor> --words "…"   the instructor confirms a
 //                                                                     document declared role: administrative (D42: only format and rights checks)
 //   node scripts/coursewerk.mjs interrupt --root <pkg> --reason <reason> --question "…" --model <id>                M5
+//   node scripts/coursewerk.mjs carry-over-baseline --from <baseline package> --out <file> [--label <label>]   the baseline
+//                                    record of a package developed under an earlier Coursewerk (a harness tool, no act)
+//   node scripts/coursewerk.mjs carry-over --root <pkg> --baseline private/coursewerk/carry-over/<label>.json --name <instructor> --words "…"
+//                                    the instructor records once that the package was developed, approved and checked
+//                                    under the earlier Coursewerk: unchanged plans approved, unchanged units carried over
 // Interrupt reasons (D14): spine-scope-conflict, missing-input, rights-blocker, spine-change-request.
 import fs from "node:fs";
 import { liveReader, manifestChapters } from "./lib/core/package_reader.mjs";
@@ -30,6 +35,7 @@ import { correctionsToShow, revertCorrection } from "./lib/verify/verdicts.mjs";
 import { boundConfig, loggedDigestCap, readConfig, writeConfig } from "./lib/records/config.mjs";
 import { appendLogRecord, readLogText } from "./lib/records/log.mjs";
 import { recordFile } from "./lib/records/paths.mjs";
+import { buildBaseline, carryOver, writeBaseline, CARRIED_LABEL } from "./lib/core/carry_over.mjs";
 
 export const INTERRUPT_REASONS = Object.freeze(["spine-scope-conflict", "missing-input", "rights-blocker", "spine-change-request"]);
 const [cmd, ...args] = process.argv.slice(2);
@@ -38,7 +44,18 @@ const flag = (n) => args.includes(n);
 const refuse = (m, next) => { console.error(`${cmd}: ${m}${next ? `\nnext: ${next}` : ""}`); process.exit(1); };
 const out = (x) => console.log(JSON.stringify(x, null, 2));
 const root = opt("--root");
-const USAGE = "usage: coursewerk.mjs <status|assemble|back-to-draft|approve|digest|digest-cap|recommend|answer|publish|revert|history|interrupt|administrative> --root <package> … (see the header of scripts/coursewerk.mjs)";
+if (cmd === "carry-over-baseline") {
+  // a harness tool, before any package is open: it reads the baseline delivery and writes its record
+  const from = opt("--from"), outFile = opt("--out");
+  if (!from || !outFile) { console.error("usage: coursewerk.mjs carry-over-baseline --from <baseline package> --out <file> [--label <label>]"); process.exit(2); }
+  try {
+    const b = buildBaseline(from, { label: opt("--label") || null }), w = writeBaseline(b, outFile);
+    out({ baseline: b.baseline, plans: Object.keys(b.plans).length, units: Object.keys(b.units).length, file: w.file, bytes: w.bytes,
+      next: "place it in the package under private/coursewerk/carry-over/, then the instructor's act: coursewerk.mjs carry-over --root <pkg> --baseline <that path> --name … --words \"…\"" });
+    process.exit(0);
+  } catch (e) { refuse(e.message); }
+}
+const USAGE = "usage: coursewerk.mjs <status|assemble|back-to-draft|approve|digest|digest-cap|recommend|answer|publish|revert|history|interrupt|administrative|carry-over|carry-over-baseline> --root <package> … (see the header of scripts/coursewerk.mjs)";
 if (!cmd || !root || !fs.existsSync(root)) { console.error(USAGE); process.exit(2); }
 try {
   // the spine setting is bound to the log (red-team round 5, F2): a v2 package whose file says otherwise is not a v0.12
@@ -66,7 +83,8 @@ try {
     const pub = latestPublish(root);
     out({ chapters: Object.fromEntries(Object.entries(states).map(([c, s]) => [c, { ...s, publishable: el.chapters[c].publishable, why: el.chapters[c].why }])),
       course: el.course, blocking: g.gate.blocking.length, questions: g.gate.questions.length, corrections: correctionsToShow(root).length,
-      lastPublish: pub ? { seq: pub.seq, chapters: pub.chapters.map((c) => c.chapter), stillCurrent: pub.current } : null });
+      lastPublish: pub ? { seq: pub.seq, chapters: pub.chapters.map((c) => c.chapter), stillCurrent: pub.current } : null,
+      ...(g.carriedOver?.labels.length ? { carriedOver: { label: CARRIED_LABEL, baselines: g.carriedOver.labels, units: g.carriedOver.units, plans: g.carriedOver.plans, notes: g.carriedOver.notes } } : {}) });
     process.exit(0);
   }
   if (cmd === "assemble" || cmd === "back-to-draft") {
@@ -138,7 +156,8 @@ try {
       correctionsToShow(root, { mark: true });
     }
     out({ entries: d.entries.map((e, i) => ({ n: i + 1, kind: e.kind, count: e.count, chapters: e.chapters, question: e.question, recommendation: e.recommendation, recommendedBy: e.recommendedBy, deferredBefore: e.deferredBefore })),
-      deferred: d.deferred.count, interrupts: d.interrupts.length, corrections: d.corrections.map((c) => ({ id: c.id, diff: c.diff })), progress: d.progress, delivered: flag("--deliver") });
+      deferred: d.deferred.count, interrupts: d.interrupts.length, corrections: d.corrections.map((c) => ({ id: c.id, diff: c.diff })), progress: d.progress, delivered: flag("--deliver"),
+      ...(g.carriedOver?.labels.length ? { carriedOver: { label: CARRIED_LABEL, units: g.carriedOver.units, plans: g.carriedOver.plans, notes: g.carriedOver.notes } } : {}) });
     process.exit(0);
   }
   if (cmd === "answer") {
@@ -183,6 +202,12 @@ try {
     const name = opt("--name") || refuse("a revert is the instructor's decision", '--name "<instructor>"');
     const r = revertCorrection(root, reader, id, { note: opt("--note") }, { role: "instructor", name });
     out(r); process.exit(0);
+  }
+  if (cmd === "carry-over") {
+    const baseline = opt("--baseline") || refuse("which baseline record?", "--baseline private/coursewerk/carry-over/<label>.json (written by carry-over-baseline)");
+    const { party, words } = instructor();
+    const r = carryOver(root, reader, { baseline, instructorWords: words }, party);
+    out({ carriedOver: r.label, means: CARRIED_LABEL, logged: r.record, units: r.units, plans: r.plans }); process.exit(0);
   }
   if (cmd === "interrupt") {
     const reason = opt("--reason");

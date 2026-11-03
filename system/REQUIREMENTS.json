@@ -3825,6 +3825,36 @@
           "tests/manifest-units.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.records.carry-over-baseline",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Carried over (owner 2026-11-03): a package developed, approved and checked under an earlier Coursewerk is carried over once, by the instructor's act in their words, bound to the exact text of a baseline delivery. `coursewerk.mjs carry-over-baseline --from <baseline package> --out <file>` (a harness tool, no instructor act) writes the baseline record from a package in site or package layout: its label, the sha256 of its SHA256SUMS when present, the sha256 of every plan text (concept maps, assessment guides, the course map) and every unit's content hash as its sidecar records it; it lives in the package under private/coursewerk/carry-over/ and stays under the 4 MB a record file may hold. `coursewerk.mjs carry-over --root <pkg> --baseline <that file> --name --words` is the instructor's act: refused without visible words, outside private/coursewerk/carry-over/, or for a baseline already carried; it logs one instructor intake record (event carry-over) binding the baseline record's sha256, label and the words; then each plan whose files are byte-identical to the baseline is approved as `approve` records it (recordApproval, Coursewerk's own approval precondition), its payload marked carriedOver and citing that record; a plan that differs (even in notation only: no mechanical rule tells a meaning-preserving change apart safely, and the glance rule needs a prior approval) or fails the precondition is left for the instructor's normal approval, and the act says which and why. Labelled always 'carried over from earlier Coursewerk', never verified.",
+      "source": "owner 2026-11-03 (General Chemistry: developed and approved under the earlier Coursewerk; its 1.0 gate reports 10,980 findings)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/carry-over.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.gate.carried-over",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The gate reads the carry-over from the log: for every instructor carry-over record whose baseline file still hashes to the logged sha256, a unit whose current text hashes to its baseline content hash is carried over, and its unit-unlinked, evidence-missing, absolute-unreviewed and reverify findings become non-blocking notes (question, routed to the agent) labelled carried over from earlier Coursewerk — still listed, never hidden; a unit that differs from the baseline, or is new, owes everything as usual, and any later edit ends its carried status by hash. A baseline file changed after it was carried over is a blocking defect and carries nothing. The gate result, the gate CLI, coursewerk.mjs status and digest say how many units and plans are carried over, and CHECKED.json (site_export) counts carried-over notes per page apart from what was checked and marks carried-over approvals.",
+      "source": "owner 2026-11-03",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/carry-over.test.mjs"
+        ]
+      }
     }
   ]
 }
