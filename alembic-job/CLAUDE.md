@@ -52,12 +52,15 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
    node assistant/scripts/coursewerk.mjs status --root work
    ```
 
-3. **Do the work** as `COURSEWERK.md` and `PROCEDURE.md` say, always with `--root work`. Write course text only
-   inside a units session:
+3. **Do the work** as `COURSEWERK.md` and `PROCEDURE.md` say, always with `--root work`. Keep ONE units session
+   open for all your writes in the job: begin it before your first edit of any course text (study guides, slides,
+   practice, concept maps, assessment guides), and index it only after your last. Never write course text outside
+   that session. If you find you must write more after indexing, begin a new session first, then write, then index
+   again.
 
    ```bash
    node assistant/scripts/units.mjs begin --root work --model <your model id>
-   # … write …
+   # … all your writes …
    node assistant/scripts/units.mjs index --root work --as agent --model <your model id>
    ```
 
@@ -83,6 +86,9 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
    - The hand-back puts the course back the way Alembic stores it. It adds new records only at the end of a file, or
      in new files. Alembic accepts nothing else, so never edit a record file yourself. If the hand-back refuses, do
      not push. Report its message instead.
+   - After the hand-back, run nothing but the push and the hand-in. The decision log is in parts again, and Coursewerk
+     refuses to read or write it in that layout. If you need to work again before pushing, run
+     `node assistant/scripts/site_import.mjs work` first, then finish again from the export.
    - Hand the questions in only after `alembic push work` succeeded, and only when the export found questions. If
      the push fails, do not hand in the questions: they would be asked without Coursewerk remembering them. Report
      the failure instead. A new hand-in replaces the instructor's unanswered one.

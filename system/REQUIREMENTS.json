@@ -3855,6 +3855,22 @@
           "tests/carry-over.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.records.site-layout-guard",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "No Coursewerk work on a folder in Alembic's site layout (live GenChem job 2026-11-03): while the decision log sits in parts (LOG.2.jsonl beside LOG.jsonl, as after site_handback or before site_import), reading the log (readLogText) and appending to it (appendLogRecord) refuse with the next step (site_import), and write nothing: read as one file, LOG.jsonl is only the first part — an old prefix that made every chapter look changed since its last logged digest — and an append to it forks the chain onto the first part and grows it past Alembic's 4 MB file limit. site_import after a hand-back (before a push) joins the parts again, so work can go on. The job instructions keep one units session open for all writes, never write course text outside it, and run nothing but the push and the hand-in after site_handback.",
+      "source": "live GenChem job aj (2026-11-03): LOG.jsonl 4.70 MB after the hand-back; units index refused all chapters",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/site-import.test.mjs",
+          "tests/job-release.test.mjs"
+        ]
+      }
     }
   ]
 }

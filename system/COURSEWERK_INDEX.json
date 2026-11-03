@@ -41,7 +41,7 @@
       "id": "repo:alembic-job/CLAUDE.md",
       "path": "alembic-job/CLAUDE.md",
       "type": "repository-support",
-      "hash": "052960e608bc2ee73e6f7ce9aca2d5112351e8c11d10d7dd4a51f3b09eee87e9"
+      "hash": "6a7581af1f1e385e8d3ec4f92047582e20f75d6d756b7481432542dd53cba4f8"
     },
     {
       "id": "repo:bootstrap/init.sh",
@@ -755,7 +755,7 @@
       "id": "repo:scripts/lib/records/log.mjs",
       "path": "scripts/lib/records/log.mjs",
       "type": "kernel",
-      "hash": "f2e08952fe3a8daa59317ff959aacdd98f6ecac62f60bb3c5dec8b017084ec61"
+      "hash": "bda4eae1b2198024f8c187fdbe09e88f34575332b630204e620715e92eb34a25"
     },
     {
       "id": "repo:scripts/lib/records/paths.mjs",
@@ -1349,7 +1349,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "06b0302d71269c6c0cd9650db014438233136771d41292eb0c82aa65978af85e"
+      "hash": "5bd00d0ebe6ee6b720e4ec26d961c0ccd770ce37e6fb41562c4c163cd9a70237"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1967,7 +1967,7 @@
       "id": "repo:tests/job-release.test.mjs",
       "path": "tests/job-release.test.mjs",
       "type": "test",
-      "hash": "22eeeebd4d8737c47f85b3a6559a8e76390b046a96cb0552e1ce446956f96044"
+      "hash": "bbb4fe8c8051029f5599f4b774b5a27f2c90d23f93b084ff3093988e5c26c71f"
     },
     {
       "id": "repo:tests/key-fact-bindings.test.mjs",
@@ -2237,7 +2237,7 @@
       "id": "repo:tests/site-import.test.mjs",
       "path": "tests/site-import.test.mjs",
       "type": "test",
-      "hash": "c252b5634e63ccc7896ee5a966d5928454f334166a5f160bc1680069713037b3"
+      "hash": "41367e7d88d739f805ac1ffc4c13de6e954c953918203fc063a8af940c3e9451"
     },
     {
       "id": "repo:tests/site.test.mjs",
@@ -5144,6 +5144,14 @@
       },
       {
         "id": "req.records.site-import",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.records.site-layout-guard",
         "phase": "P11",
         "tiers": [
           "T1"

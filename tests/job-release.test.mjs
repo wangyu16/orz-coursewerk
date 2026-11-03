@@ -12,7 +12,7 @@ import { framesMode, isJobRelease, JOB_RELEASE, resolveFrames } from "../scripts
 
 const JOB = fs.readFileSync(path.join(REPO, "alembic-job", "CLAUDE.md"), "utf8");
 
-test("[req.release.alembic-job] the job instructions say how Coursewerk works in an Alembic job", () => {
+test("[req.release.alembic-job] [req.records.site-layout-guard] the job instructions say how Coursewerk works in an Alembic job", () => {
   for (const must of [
     "alembic pull work", "node assistant/scripts/site_import.mjs work", "node assistant/scripts/site_handback.mjs work",
     "alembic push work --dry-run", "alembic push work\n", "--root work", "units.mjs begin --root work", "uses the orz packages in `assistant/node_modules` by itself",
@@ -30,6 +30,9 @@ test("[req.release.alembic-job] the job instructions say how Coursewerk works in
   const handback = JOB.indexOf("node assistant/scripts/site_handback.mjs work");
   assert.ok(dry.length && dry.every((i) => i > handback || /Do not use/.test(JOB.slice(i - 40, i))), "a dry run is advised only after site_handback");
   assert.ok(JOB.indexOf("node assistant/scripts/coursewerk.mjs status --root work") < handback, "where the course stands: Coursewerk's own status");
+  // one units session for all writes; nothing but the push and the hand-in after the hand-back (live GenChem job 2026-11-03)
+  assert.match(JOB, /Keep ONE units session\s+open for all your writes/); assert.match(JOB, /Never write course text outside\s+that session/);
+  assert.match(JOB, /After the hand-back, run nothing but the push and the hand-in/);
   assert.doesNotMatch(JOB, /COURSEWERK_FRAMES=/, "commands are plain `node …`, so the job's tool permissions match them");
 });
 

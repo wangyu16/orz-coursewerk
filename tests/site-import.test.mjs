@@ -309,3 +309,23 @@ test("[req.records.site-import] a missing coursewerk.json is written back as the
   assert.equal(importSite(dir).config, undefined);
   assert.equal(fs.existsSync(path.join(dir, CONFIG)), false);
 });
+
+test("[req.records.site-layout-guard] after the hand-back nothing reads or writes the log in its parts; importing again lets work go on", (t) => {
+  const { out } = site(t, { bigLog: true });
+  importSite(out);
+  appendLogRecord(out, { type: "checkpoint", party: harness, payload: { note: "work" } });
+  handbackSite(out);
+  const before = recordFiles(out);
+  assert.ok(before.has(`${REC}/LOG.2.jsonl`));
+  // the live GenChem job: a session begun after the hand-back forked the chain onto LOG.jsonl and grew it past 4 MB
+  assert.throws(() => appendLogRecord(out, { type: "checkpoint", party: harness, payload: { note: "after" } }), /site layout.*site_import/);
+  assert.throws(() => readLogText(out), /site layout/);
+  assert.deepEqual([...recordFiles(out)].map(([k, v]) => [k, sha(v)]), [...before].map(([k, v]) => [k, sha(v)]), "nothing written");
+  // import again (no pull in between): joined, and work goes on; the next hand-back appends at the end
+  importSite(out);
+  appendLogRecord(out, { type: "checkpoint", party: harness, payload: { note: "after re-import" } });
+  handbackSite(out);
+  const after = recordFiles(out);
+  assert.ok(after.get(`${REC}/LOG.jsonl`).equals(before.get(`${REC}/LOG.jsonl`)), "the first part is untouched");
+  assert.ok([...after.values()].every((b) => b.length <= 4 * 1024 * 1024));
+});

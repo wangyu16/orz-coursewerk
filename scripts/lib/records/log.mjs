@@ -176,10 +176,21 @@ function withLock(file, fn, waitMs = LOCK_WAIT_MS) {
   }
 }
 
+// The site layout (req.records.site-layout-guard): Alembic holds the log in parts (LOG.jsonl, LOG.2.jsonl, …; site
+// export, site_handback). Read alone, LOG.jsonl is then only the first part — an old prefix of the log — and an append
+// to it forks the chain onto that part. So while a second part sits beside it, the log is neither read nor written:
+// the folder is joined first (site_import), and after a hand-back only the push and the hand-in follow.
+export function siteLayoutProblem(root) {
+  const second = recordFile(root, RECORD_PATHS.log.replace(/LOG\.jsonl$/, "LOG.2.jsonl"));
+  return fs.existsSync(second) ? "the decision log is in Alembic's parts (LOG.jsonl, LOG.2.jsonl, …): this folder is in site layout, so nothing reads or writes its log. Join it first: node scripts/site_import.mjs <folder> (after site_handback, only push and hand in — or import again to keep working)" : null;
+}
+
 /** Append one record. Serialized by an owned lock file; any failure (verification, disk full, size limit) truncates
  * the file back to its exact previous length. A symlinked log is refused. */
 export function appendLogRecord(root, entry, { lockWaitMs } = {}) {
   const file = recordFile(root, RECORD_PATHS.log);
+  const site = siteLayoutProblem(root);
+  if (site) throw new Error(`refusing to append: ${site}`);
   fs.mkdirSync(path.dirname(file), { recursive: true });
   return withLock(file, () => {
     if (fs.existsSync(file) && fs.lstatSync(file).isSymbolicLink()) throw new Error("refusing to append: the decision log is a symbolic link");
@@ -204,6 +215,8 @@ export function verifyAgainstCommitted(committedText, workingText) {
 }
 
 export function readLogText(root) {
+  const site = siteLayoutProblem(root);
+  if (site) throw new Error(site);
   const file = recordFile(root, RECORD_PATHS.log);
   return fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
 }

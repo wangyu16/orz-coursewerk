@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "planId": "005666e11bf8ba69bb971029000d55d3d37da36226a26842833b377d87dfee08",
+  "baseRef": "HEAD",
+  "baseTip": "3e2367815cdebe43126b5c2906231b4af4ef5902",
+  "baseCommit": "3e2367815cdebe43126b5c2906231b4af4ef5902",
+  "reviewedHead": "3e2367815cdebe43126b5c2906231b4af4ef5902",
+  "changed": [
+    "alembic-job/CLAUDE.md",
+    "scripts/lib/records/log.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/job-release.test.mjs",
+    "tests/site-import.test.mjs"
+  ],
+  "requiredReview": [
+    "alembic-job/CLAUDE.md",
+    "scripts/lib/records/log.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/job-release.test.mjs",
+    "tests/site-import.test.mjs"
+  ],
+  "reviewed": [
+    "alembic-job/CLAUDE.md",
+    "scripts/lib/records/log.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/job-release.test.mjs",
+    "tests/site-import.test.mjs"
+  ],
+  "impactedClaims": [],
+  "testResults": [
+    {
+      "path": "tests/site-import.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/job-release.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/records.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/site-export.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/gate-cli.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "Reviewed the site-layout guard: readLogText and appendLogRecord refuse while LOG.2.jsonl sits beside LOG.jsonl (the folder is in Alembic parts), naming site_import as the next step; reproduced on the live GenChem copy: a units session begun after site_handback forked the chain onto LOG.jsonl (3,669,290 to 4,698,271 bytes) and made units index refuse every chapter (it read only the first part); with the guard nothing is written and the parts stay 3,669,290 / 3,410,992 / 2,266,492. Job instructions: one units session for all writes, nothing but push and hand-in after the hand-back. site-import 9/9, job-release 3/3, records 13/13, site-export 4/4, gate-cli 5/5.",
+  "generatedIndexHash": "c970ce8a05645dc4a04bf417de3d9ff997b8f7672a7a6da139bf789db4c88a5d",
+  "acceptedAt": "2026-11-03T14:13:08.597Z"
+}
