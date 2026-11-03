@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "planId": "e4964a03ac3966982ae346f16c06b19e12a06143ecabd0e365a53d590c58078a",
+  "baseRef": "HEAD",
+  "baseTip": "80e7d9ec0d33e6e9b921a1bd085e5d74e324c82b",
+  "baseCommit": "80e7d9ec0d33e6e9b921a1bd085e5d74e324c82b",
+  "reviewedHead": "80e7d9ec0d33e6e9b921a1bd085e5d74e324c82b",
+  "changed": [
+    "scripts/coursewerk.mjs",
+    "scripts/lib/core/carry_over.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/carry-over.test.mjs"
+  ],
+  "requiredReview": [
+    "scripts/coursewerk.mjs",
+    "scripts/lib/core/carry_over.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/carry-over.test.mjs"
+  ],
+  "reviewed": [
+    "scripts/coursewerk.mjs",
+    "scripts/lib/core/carry_over.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/carry-over.test.mjs"
+  ],
+  "impactedClaims": [],
+  "testResults": [
+    {
+      "path": "tests/carry-over.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "Reviewed --approve-current-plans: with the instructor words, plans differing from the baseline are approved at their current text through approvalPrecondition and recordApproval, marked carriedOver with the reason approved as it stands now; chapters with no recorded state end in PACKAGE by Coursewerk own approval record; plans failing the precondition stay left (never bypassed); without the flag nothing changes. carry-over 3/3 passed; on GenChem every plan fails the well-formed-spine precondition, so none is approved.",
+  "generatedIndexHash": "5c34c260f8cdf0e71c1dfb874e32e7920b6a6acd423965a4c824398f24b3fed7",
+  "acceptedAt": "2026-11-03T04:13:56.735Z"
+}

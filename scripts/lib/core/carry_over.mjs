@@ -68,7 +68,11 @@ const carryRecords = (logText) => (verifyLog(logText).length ? [] : parseLog(log
  * the package, sha256, label) and the instructor's words; then records the approval of every plan byte-identical to the
  * baseline, marked carried over. Returns { record, plans: { carried: [scope], left: [{ scope, why }] }, units }.
  */
-export function carryOver(root, reader, { baseline, instructorWords }, party) {
+export const AS_NOW = "approved as it stands now, in the carry-over statement";
+// `approveCurrentPlans` (owner 2026-11-03): the instructor's statement also approves every plan as it stands now — a
+// plan that differs from the baseline is approved at its current text, by the same act, marked so (AS_NOW). It goes
+// through Coursewerk's own approval precondition and recordApproval: a plan that fails the precondition stays left.
+export function carryOver(root, reader, { baseline, instructorWords, approveCurrentPlans = false }, party) {
   if (party?.role !== "instructor") throw new Error("carrying a package over is the instructor's act");
   if (!hasVisibleWords(instructorWords)) throw new Error("a carry-over quotes the instructor's words");
   const rel = String(baseline || "").split(path.sep).join("/");
@@ -83,23 +87,27 @@ export function carryOver(root, reader, { baseline, instructorWords }, party) {
   if (before) throw new Error(`this baseline (${b.baseline.label}) was already carried over (log record ${before.seq})`);
   const record = appendLogRecord(root, { type: "intake", party, payload: {
     event: "carry-over", label: b.baseline.label, baseline: rel, baselineHash: hash, sums: b.baseline.sums ?? null,
-    plans: Object.keys(b.plans).length, units: Object.keys(b.units).length, instructorWords, means: CARRIED_LABEL } });
-  const chapters = manifestChapters(reader), carried = [], left = [];
+    plans: Object.keys(b.plans).length, units: Object.keys(b.units).length, instructorWords, means: CARRIED_LABEL, ...(approveCurrentPlans ? { approvesCurrentPlans: true } : {}) } });
+  const chapters = manifestChapters(reader), carried = [], asNow = [], left = [];
   const status = approvalStatus(reader, chapters, readLogText(root));
   for (const ch of [...chapters, null]) {
     const scope = ch ? `chapter:${ch}` : "course", s = ch ? status.scopes[ch] : status.scopes.course;
     if (!s) continue;
     if (s.valid) { left.push({ scope, why: "already approved at its current content" }); continue; }
     const differ = s.covers.filter((p) => { const t = reader.text(p); return t == null || b.plans[p] !== sha256(Buffer.from(t, "utf8")); });
-    if (differ.length) { left.push({ scope, why: `differs from the baseline (${differ.join(", ")}): for the instructor's approval` }); continue; }
+    if (differ.length && !approveCurrentPlans) { left.push({ scope, why: `differs from the baseline (${differ.join(", ")}): for the instructor's approval` }); continue; }
+    if (s.covers.some((p) => reader.text(p) == null)) { left.push({ scope, why: `its plan is incomplete (${s.covers.filter((p) => reader.text(p) == null).join(", ")} missing)` }); continue; }
     const pre = approvalPrecondition(root, reader, chapters, { chapter: ch });
     if (pre.problem) { left.push({ scope, why: pre.problem }); continue; }
+    const reason = differ.length ? AS_NOW : "byte-identical to the baseline";
     try {
-      recordApproval(root, reader, chapters, { chapter: ch, instructorWords, note: [pre.note, `${CARRIED_LABEL}: ${b.baseline.label}`].filter(Boolean).join("; "), carriedOver: { label: b.baseline.label, record: record.seq } }, party);
-      carried.push(scope);
+      // an approval of a chapter with no state recorded yet moves it to PACKAGE (workflow.mjs chapterStates: approved
+      // before states were recorded) — the state an approved chapter has, by Coursewerk's own record
+      recordApproval(root, reader, chapters, { chapter: ch, instructorWords, note: [pre.note, `${CARRIED_LABEL}: ${b.baseline.label}; ${reason}`].filter(Boolean).join("; "), carriedOver: { label: b.baseline.label, record: record.seq, reason } }, party);
+      (differ.length ? asNow : carried).push(scope);
     } catch (e) { left.push({ scope, why: e.message }); }
   }
-  return { record: record.seq, label: b.baseline.label, plans: { carried, left }, units: Object.keys(b.units).length };
+  return { record: record.seq, label: b.baseline.label, plans: { carried, approvedAsNow: asNow, left }, units: Object.keys(b.units).length };
 }
 
 /**

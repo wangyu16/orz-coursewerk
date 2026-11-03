@@ -17,7 +17,9 @@ import { parseLog, readLogText } from "../scripts/lib/records/log.mjs";
 import { evaluateGate } from "../scripts/lib/skeleton/gate.mjs";
 import { runGate } from "../scripts/lib/skeleton/full_gate.mjs";
 import { checkedRecord } from "../scripts/lib/core/site_export.mjs";
-import { applyCarriedOver, buildBaseline, carryOver, writeBaseline, CARRIED_KINDS, CARRY_DIR } from "../scripts/lib/core/carry_over.mjs";
+import { applyCarriedOver, buildBaseline, carryOver, writeBaseline, AS_NOW, CARRIED_KINDS, CARRY_DIR } from "../scripts/lib/core/carry_over.mjs";
+import { chapterStates } from "../scripts/lib/core/workflow.mjs";
+import { GENESIS, recordHash, verifyLog } from "../scripts/lib/records/log.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..");
@@ -83,7 +85,7 @@ test("[req.records.carry-over-baseline] [req.gate.carried-over] carried over: un
   const rec = log.find((x) => x.type === "intake" && x.payload.event === "carry-over");
   assert.equal(rec.party.name, I.name); assert.equal(rec.payload.instructorWords, WORDS); assert.equal(rec.payload.means, "carried over from earlier Coursewerk");
   const approval = log.filter((x) => x.type === "approval" && x.payload.scope === "chapter:le-chatelier").at(-1);
-  assert.deepEqual(approval.payload.carriedOver, { label: "c2-baseline", record: rec.seq });
+  assert.deepEqual(approval.payload.carriedOver, { label: "c2-baseline", record: rec.seq, reason: "byte-identical to the baseline" });
   assert.equal(log.filter((x) => x.type === "approval" && x.payload.scope === "chapter:chemical-equilibrium" && x.payload.version === 2).length, 0);
 
   // units: the unchanged ones owe their obligations as notes, labelled; the changed one owes them as before
@@ -132,4 +134,49 @@ test("[req.gate.carried-over] the gate, CHECKED.json and the record size say wha
   const rep = JSON.parse(fs.readFileSync(json, "utf8"));
   assert.equal(rep.carriedOver.label, "carried over from earlier Coursewerk"); assert.equal(rep.counts.carriedOver, rep.carriedOver.notes);
   assert.ok(Object.keys(rep.carriedOver.notesByKind).every((k) => CARRIED_KINDS.includes(k)));
+});
+
+/** A package developed elsewhere: C2 with no approval in its log (the log re-chained without them), so its chapters
+ *  have no state recorded and read as DRAFT — as General Chemistry's do. */
+function developedElsewhere(t) {
+  const p = copy(t), file = path.join(p.root, "private/coursewerk/LOG.jsonl");
+  let prev = GENESIS, text = "";
+  for (const r of parseLog(fs.readFileSync(file, "utf8")).filter((x) => !["approval", "glance-confirmation", "transition"].includes(x.type))) {
+    const n = { seq: 0, prev, type: r.type, party: r.party, at: r.at, payload: r.payload };
+    n.seq = text ? text.split("\n").length : 1; n.hash = recordHash(n); prev = n.hash; text += JSON.stringify(n) + "\n";
+  }
+  assert.deepEqual(verifyLog(text), []);
+  fs.writeFileSync(file, text);
+  const b = buildBaseline(p.root, { label: "elsewhere" });
+  writeBaseline(b, path.join(p.root, CARRY_DIR, "elsewhere.json"));
+  // after the baseline, le-chatelier's plan changes (as GenChem's notation update changed every plan)
+  fs.appendFileSync(path.join(p.root, "concepts", "le-chatelier.md"), "\n");
+  return p;
+}
+
+test("[req.records.carry-over-baseline] --approve-current-plans: the statement also approves each plan as it stands now, and its chapter leaves DRAFT; without it the changed plan waits", (t) => {
+  const rel = `${CARRY_DIR}/elsewhere.json`;
+  const a = developedElsewhere(t);
+  assert.deepEqual(Object.values(chapterStates(a.root, a.reader)).map((s) => [s.state, s.approved]), [["DRAFT", false], ["DRAFT", false]]);
+  const without = carryOver(a.root, a.reader, { baseline: rel, instructorWords: WORDS }, I);
+  assert.deepEqual(without.plans.carried.sort(), ["chapter:chemical-equilibrium", "course"]);
+  assert.deepEqual(without.plans.approvedAsNow, []);
+  assert.match(without.plans.left.find((x) => x.scope === "chapter:le-chatelier").why, /differs from the baseline/);
+  const sa = chapterStates(a.root, a.reader);
+  assert.deepEqual([sa["chemical-equilibrium"].state, sa["chemical-equilibrium"].approved], ["PACKAGE", true]);
+  assert.deepEqual([sa["le-chatelier"].state, sa["le-chatelier"].approved], ["DRAFT", false], "without the flag, the changed plan waits");
+
+  const b = developedElsewhere(t);
+  assert.throws(() => carryOver(b.root, b.reader, { baseline: rel, instructorWords: "", approveCurrentPlans: true }, I), /words/);
+  const withFlag = carryOver(b.root, b.reader, { baseline: rel, instructorWords: WORDS, approveCurrentPlans: true }, I);
+  assert.deepEqual(withFlag.plans.approvedAsNow, ["chapter:le-chatelier"]);
+  assert.deepEqual(withFlag.plans.carried.sort(), ["chapter:chemical-equilibrium", "course"]);
+  assert.deepEqual(withFlag.plans.left, []);
+  const sb = chapterStates(b.root, b.reader);
+  assert.deepEqual(Object.values(sb).map((s) => [s.state, s.approved]), [["PACKAGE", true], ["PACKAGE", true]], "both chapters end where an approved chapter ends");
+  const log = parseLog(readLogText(b.root)), rec = log.find((x) => x.type === "intake" && x.payload.event === "carry-over");
+  assert.equal(rec.payload.approvesCurrentPlans, true);
+  const ap = log.filter((x) => x.type === "approval" && x.payload.scope === "chapter:le-chatelier").at(-1);
+  assert.deepEqual(ap.payload.carriedOver, { label: "elsewhere", record: rec.seq, reason: AS_NOW });
+  assert.equal(ap.party.role, "instructor"); assert.equal(ap.payload.instructorWords, WORDS);
 });

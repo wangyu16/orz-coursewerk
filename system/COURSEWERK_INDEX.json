@@ -287,7 +287,7 @@
       "id": "repo:scripts/coursewerk.mjs",
       "path": "scripts/coursewerk.mjs",
       "type": "executable",
-      "hash": "d44b5fbb015bbe1f76ddc21dc052b5cb5c8e46d248ff9b9bc70acc9ee5a2cda8"
+      "hash": "116f72a00cc3acf5aadda7745166ea54d931b378df1123f9bf778d19c51da11a"
     },
     {
       "id": "repo:scripts/data/license-texts.json",
@@ -449,7 +449,7 @@
       "id": "repo:scripts/lib/core/carry_over.mjs",
       "path": "scripts/lib/core/carry_over.mjs",
       "type": "kernel",
-      "hash": "2c77af30e3d7f2fb968805523bb33d48597e66531d59b4bba205f145ab4c2487"
+      "hash": "c7ecc700f5197fb7daf878469845c1a73865873595ef56a41c2985e13ab21083"
     },
     {
       "id": "repo:scripts/lib/core/change.mjs",
@@ -1349,7 +1349,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "9c6a6192e2030088f9700977efad0d10def8e21a2b1565a4d51ef7cb8d933074"
+      "hash": "06b0302d71269c6c0cd9650db014438233136771d41292eb0c82aa65978af85e"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1607,7 +1607,7 @@
       "id": "repo:tests/carry-over.test.mjs",
       "path": "tests/carry-over.test.mjs",
       "type": "test",
-      "hash": "34f9998d74040568ae3b648c1c39eea832b3f569131a64fa57da20f5211f5d09"
+      "hash": "e1389392de2d0456a41650f7ee9dda233e1ef16729ed8ef9524b5e71285d9fdf"
     },
     {
       "id": "repo:tests/check-oer-consistency.test.mjs",

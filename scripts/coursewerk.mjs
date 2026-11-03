@@ -18,9 +18,10 @@
 //   node scripts/coursewerk.mjs interrupt --root <pkg> --reason <reason> --question "…" --model <id>                M5
 //   node scripts/coursewerk.mjs carry-over-baseline --from <baseline package> --out <file> [--label <label>]   the baseline
 //                                    record of a package developed under an earlier Coursewerk (a harness tool, no act)
-//   node scripts/coursewerk.mjs carry-over --root <pkg> --baseline private/coursewerk/carry-over/<label>.json --name <instructor> --words "…"
+//   node scripts/coursewerk.mjs carry-over --root <pkg> --baseline private/coursewerk/carry-over/<label>.json [--approve-current-plans] --name <instructor> --words "…"
 //                                    the instructor records once that the package was developed, approved and checked
-//                                    under the earlier Coursewerk: unchanged plans approved, unchanged units carried over
+//                                    under the earlier Coursewerk: unchanged plans approved, unchanged units carried over;
+//                                    --approve-current-plans: the statement also approves every plan as it stands now
 // Interrupt reasons (D14): spine-scope-conflict, missing-input, rights-blocker, spine-change-request.
 import fs from "node:fs";
 import { liveReader, manifestChapters } from "./lib/core/package_reader.mjs";
@@ -206,7 +207,8 @@ try {
   if (cmd === "carry-over") {
     const baseline = opt("--baseline") || refuse("which baseline record?", "--baseline private/coursewerk/carry-over/<label>.json (written by carry-over-baseline)");
     const { party, words } = instructor();
-    const r = carryOver(root, reader, { baseline, instructorWords: words }, party);
+    // --approve-current-plans (owner 2026-11-03): the statement also approves each plan as it stands now
+    const r = carryOver(root, reader, { baseline, instructorWords: words, approveCurrentPlans: flag("--approve-current-plans") }, party);
     out({ carriedOver: r.label, means: CARRIED_LABEL, logged: r.record, units: r.units, plans: r.plans }); process.exit(0);
   }
   if (cmd === "interrupt") {
