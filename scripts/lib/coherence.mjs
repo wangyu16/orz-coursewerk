@@ -15,6 +15,7 @@ import { resolve as resolveTerm } from "./terms.mjs";
 import { scanProjection } from "./units.mjs";
 import { SEMANTIC_INDEX_PATHS } from "./semantic_index.mjs";
 import { REVIEW_QUEUE_PATH } from "./escalation.mjs";
+import { manifestUnits } from "./core/package_reader.mjs";
 
 export const COMPONENT_INDEX_PATH = "private/coursewerk/COMPONENT_INDEX.json";
 // DERIVED INDEXES ARE NOT COMPONENTS — and this is not tidiness, it is the fix for a reproduced
@@ -254,7 +255,7 @@ function structuralCoherenceFailures(root, graph) {
   let manifest;
   try { manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8")); }
   catch { return failures; } // manifest QA owns JSON diagnostics
-  const chapters = Array.isArray(manifest.chapters) ? manifest.chapters.filter((c) => c?.slug) : [];
+  const chapters = manifestUnits(manifest);
   const declared = new Set(chapters.map((c) => c.slug));
   const paths = new Set(graph.components.map((c) => c.path));
   if (chapters.length && !paths.has("concepts/course.md")) failures.push("concepts/course.md: course-wide coherence backbone is missing.");

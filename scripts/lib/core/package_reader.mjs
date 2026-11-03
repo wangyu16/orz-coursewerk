@@ -7,6 +7,15 @@ export function liveReader(root) {
   return { text: (rel) => { const f = path.join(root, rel); try { return fs.lstatSync(f).isFile() ? fs.readFileSync(f, "utf8") : null; } catch { return null; } } };
 }
 
+/**
+ * A manifest's units in order [req.host.alembic-units]. Alembic names them `units` since 2026-11-02 (its contract §14); manifests
+ * written before keep `chapters`. Read both, so a course pulled into an Alembic job keeps its chapters.
+ */
+export function manifestUnits(manifest) {
+  const list = Array.isArray(manifest?.units) ? manifest.units : Array.isArray(manifest?.chapters) ? manifest.chapters : [];
+  return list.filter((c) => c && typeof c === "object" && c.slug);
+}
+
 export function manifestChapters(reader) {
-  try { return (JSON.parse(reader.text("alembic.json")).chapters || []).map((c) => c.slug).filter(Boolean); } catch { return []; }
+  try { return manifestUnits(JSON.parse(reader.text("alembic.json"))).map((c) => c.slug); } catch { return []; }
 }

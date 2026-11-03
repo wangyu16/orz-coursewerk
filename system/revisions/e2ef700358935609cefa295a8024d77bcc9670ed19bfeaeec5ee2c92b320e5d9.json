@@ -1,0 +1,315 @@
+{
+  "schemaVersion": 1,
+  "planId": "e2ef700358935609cefa295a8024d77bcc9670ed19bfeaeec5ee2c92b320e5d9",
+  "baseRef": "HEAD",
+  "baseTip": "ee09d11ced5a58ba93e8c763cf52d31b97c7bd9b",
+  "baseCommit": "ee09d11ced5a58ba93e8c763cf52d31b97c7bd9b",
+  "reviewedHead": "ee09d11ced5a58ba93e8c763cf52d31b97c7bd9b",
+  "changed": [
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/core/alembic_needs.mjs",
+    "scripts/lib/core/pack_v2.mjs",
+    "scripts/lib/core/package_reader.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/manifest-units.test.mjs"
+  ],
+  "requiredReview": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "docs/coherence-index.md",
+    "format-contracts/deliverables.md",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/core/alembic_needs.mjs",
+    "scripts/lib/core/pack_v2.mjs",
+    "scripts/lib/core/package_reader.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/revision_impact.mjs",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "system/REQUIREMENTS.json",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/manifest-units.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site.test.mjs"
+  ],
+  "reviewed": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "docs/coherence-index.md",
+    "format-contracts/deliverables.md",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/core/alembic_needs.mjs",
+    "scripts/lib/core/pack_v2.mjs",
+    "scripts/lib/core/package_reader.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/revision_impact.mjs",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "system/REQUIREMENTS.json",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/manifest-units.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site.test.mjs"
+  ],
+  "impactedClaims": [
+    "claim.accessibility.floor",
+    "claim.authorship.accountable",
+    "claim.carriers.honest-portability",
+    "claim.carriers.three-shapes",
+    "claim.coherence.anchors",
+    "claim.coherence.claims",
+    "claim.coherence.index-fresh",
+    "claim.coherence.prerequisites",
+    "claim.coherence.revisions",
+    "claim.control.coverage",
+    "claim.control.overrides",
+    "claim.format.contracts",
+    "claim.git.visible-edits",
+    "claim.language.editorial",
+    "claim.media.decision",
+    "claim.provenance.complete",
+    "claim.release.fail-closed",
+    "claim.release.measured-vs-declared",
+    "claim.review.blind-bundle",
+    "claim.review.key-facts",
+    "claim.revision.propagation",
+    "claim.rights.verified",
+    "claim.source.comparison",
+    "claim.trust.consistency",
+    "claim.trust.immutable",
+    "claim.website.published",
+    "claim.website.showcase"
+  ],
+  "testResults": [
+    {
+      "path": "tests/anchors.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/assurance.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-2.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-3.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-4.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/blind_bundle.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/carriers.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-control.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-revision.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-semantic.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/classify.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/coherence-claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/escalation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/evidence-tools.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/fingerprint.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/immutable.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/index-freshness.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/integration-study-pairs.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/key-fact-bindings.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/overrides.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate-cli.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/qa.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/range.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/reviews.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/semantic-index-artifact.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/site.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/spine.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/terms.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/units.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/unverifiable_quotation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/usage-e2e.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/wiring.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "Units are read from `units` (Alembic's name since 2026-11-02) or `chapters` through one helper (manifestUnits) in the chapter list, the needs export, packing (keeps the manifest's own key), the key-fact review and the coherence check. Found on General Chemistry: with `units` the index saw 0 deliverables and would retire 4980 units; with the fix, 57 deliverables, 4980 kept, 0 retired. Required tests (36 files) plus manifest-units, alembic-needs and site-import: 580 passed, 0 failed.",
+  "generatedIndexHash": "787ab7276353544a69a520dade68d5db93fd7f3c80358585d87955ac698d9c73",
+  "acceptedAt": "2026-11-03T02:00:50.293Z"
+}

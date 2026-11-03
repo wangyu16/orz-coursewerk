@@ -16,7 +16,7 @@ import { sha256 } from "../records/canonical.mjs";
 import { appendLogRecord, parseLog, readLogText } from "../records/log.mjs";
 import { recordFile } from "../records/paths.mjs";
 import { hasVisibleWords } from "../records/words.mjs";
-import { liveReader, manifestChapters } from "./package_reader.mjs";
+import { liveReader, manifestChapters, manifestUnits } from "./package_reader.mjs";
 import { approvalStatus, recordApproval } from "./approvals.mjs";
 import { approvalPrecondition } from "./spine_review.mjs";
 import { chapterStates, unitInfoOf } from "./workflow.mjs";
@@ -142,7 +142,7 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
     if (!s || s.valid || (ch && (!states[ch] || states[ch].state === "DRAFT"))) continue;
     if (approvalPrecondition(root, reader, chapters, { chapter: ch }).problem) continue;
     const scope = ch ? `chapter:${ch}` : "course";
-    const title = ch ? (() => { try { return JSON.parse(reader.text("alembic.json")).chapters.find((c) => c.slug === ch)?.title || ch; } catch { return ch; } })() : "the course";
+    const title = ch ? (() => { try { return manifestUnits(JSON.parse(reader.text("alembic.json"))).find((c) => c.slug === ch)?.title || ch; } catch { return ch; } })() : "the course";
     const { map, guide } = ch ? spinePaths(ch) : { map: COURSE_MAP, guide: null };
     const why = s.change?.kind === "unapproved" ? "Not approved before." : s.change?.reasons?.[0]?.why ? `Changed since the last approval: ${s.change.reasons[0].why}.` : "Changed since the last approval.";
     items.push({ question: { id: `approve.${(ch || "course").slice(0, 42)}.${s.contentHash.slice(0, 12)}`, text: line(ch ? `Approve the plan for "${title}" (its concept map and assessment guide)?` : "Approve the course map?", LIMITS.text),

@@ -413,7 +413,7 @@
       "id": "repo:scripts/lib/coherence.mjs",
       "path": "scripts/lib/coherence.mjs",
       "type": "kernel",
-      "hash": "5dcfeed863cc9e922902455f602ce60435e76f1ac3f62c55fd5dc93f727db8c7"
+      "hash": "d2d42e08ea585f215fc479cf7c7cc1c3866bbd44c8029f5bc4238d44d353d959"
     },
     {
       "id": "repo:scripts/lib/consistency.mjs",
@@ -431,7 +431,7 @@
       "id": "repo:scripts/lib/core/alembic_needs.mjs",
       "path": "scripts/lib/core/alembic_needs.mjs",
       "type": "kernel",
-      "hash": "23e105ef16cdcc8599bc24f2c087bf712ea5bad19c00485f8ba21383c56b3577"
+      "hash": "b27f2f112aed5bf495e116d9f08d13fbdc1122985125104dae92607f590d7bd6"
     },
     {
       "id": "repo:scripts/lib/core/approvals.mjs",
@@ -527,13 +527,13 @@
       "id": "repo:scripts/lib/core/pack_v2.mjs",
       "path": "scripts/lib/core/pack_v2.mjs",
       "type": "kernel",
-      "hash": "50c32816fc9e341caa48202eedd05966cb35c7e471cf3037478afcccd877f706"
+      "hash": "5b5f388875e3b1525b0685a079f9bd47be05fd83a3174600cd3d28ba50165b5d"
     },
     {
       "id": "repo:scripts/lib/core/package_reader.mjs",
       "path": "scripts/lib/core/package_reader.mjs",
       "type": "kernel",
-      "hash": "edb870fae5bb7ab6eea468f373c9f2c7e65dd07ae9c86ecf8bae770cc3ce4ce9"
+      "hash": "1967ecc5464e73508a205f24832f70e938018c95602c5b9e51b9b2aa1395e7ec"
     },
     {
       "id": "repo:scripts/lib/core/preview.mjs",
@@ -683,7 +683,7 @@
       "id": "repo:scripts/lib/key_fact_review.mjs",
       "path": "scripts/lib/key_fact_review.mjs",
       "type": "kernel",
-      "hash": "7672c942e6dddb2952584729fd54a503aeedd7ecefed3ba27c3a66346ebb798f"
+      "hash": "ba8edac11894d9f3bb7766d63f86be77a7052294787c7edce3c847a404de0df3"
     },
     {
       "id": "repo:scripts/lib/legacy/qa_audits.mjs",
@@ -1343,7 +1343,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "1304cf0e70648cf0c1d42151c19f6e70ddac5620b7effc1baa661cf607e7ae86"
+      "hash": "3bbb61c6d82f9bf0e64ce1d0087fd998265e49fdb550f90e8d05a6ea14ddb9e3"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1962,6 +1962,12 @@
       "path": "tests/key-fact-bindings.test.mjs",
       "type": "test",
       "hash": "18655aa0c07fdb0bb4d0c432ce0a48a53874e0a2965d161e1d254f41386e6b5b"
+    },
+    {
+      "id": "repo:tests/manifest-units.test.mjs",
+      "path": "tests/manifest-units.test.mjs",
+      "type": "test",
+      "hash": "eb3fb12b3ecdb232e6335c658da03802edde5b5e04d0730e6d273ddd8637628d"
     },
     {
       "id": "repo:tests/overrides.test.mjs",
@@ -4600,6 +4606,14 @@
       },
       {
         "id": "req.host.alembic-needs-export",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.host.alembic-units",
         "phase": "P11",
         "tiers": [
           "T1"

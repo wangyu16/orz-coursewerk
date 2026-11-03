@@ -5,6 +5,7 @@ import path from "node:path";
 import { REQUIRED_KEY_FACT_CHECKS } from "./key_fact_checks.mjs";
 import { blindBundleDigest } from "./blind_bundle.mjs";
 import { normalizeMarkdownForHash } from "./coherence.mjs";
+import { manifestUnits } from "./core/package_reader.mjs";
 
 export const KEY_FACT_REVIEW_PATH = "private/coursewerk/KEY_FACT_REVIEW.json";
 export { REQUIRED_KEY_FACT_CHECKS };
@@ -172,7 +173,7 @@ export function auditKeyFactReview(root, foundation) {
   }
   let manifest = null;
   try { manifest = JSON.parse(fs.readFileSync(path.join(root, "alembic.json"), "utf8")); } catch { /* private roots may have no manifest */ }
-  for (const chapter of manifest?.chapters || []) {
+  for (const chapter of manifestUnits(manifest)) {
     const studyGuide = `study-guide/${chapter.slug}.md`;
     if (!(review.keyFacts || []).some((fact) => (fact.usedIn || []).includes(studyGuide)))
       failures.push(`${KEY_FACT_REVIEW_PATH}: chapter ${chapter.slug} requires at least one reviewed key fact traced to ${studyGuide}.`);

@@ -3681,7 +3681,7 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Records under Alembic, step A (design note 2026-10-31; site-type contract \u00a75 records): site_export maps the working record onto an Alembic site without changing the package \u2014 private/coursewerk/ (the decision log byte for byte; verification records as append-only monthly .jsonl parts in dispatch order, each under the 4 MB per-file cap) and provenance/coursewerk/CHECKED.json (each page's path as the site holds it, the sha256 of the text checked, its open defects/obligations/questions; the spine approvals; the accountable authors and AI-assistance disclosure; no prompt, passage or source text) and ATTRIBUTION.md with the site's deck paths; the decision log in parts of at most 4 MB (LOG.jsonl, LOG.2.jsonl, \u2026; owner 2026-11-02), cut at line ends so a later export only appends and the parts joined in order are the log byte for byte; it reports any breach of the records budget.",
+      "statement": "Records under Alembic, step A (design note 2026-10-31; site-type contract §5 records): site_export maps the working record onto an Alembic site without changing the package — private/coursewerk/ (the decision log byte for byte; verification records as append-only monthly .jsonl parts in dispatch order, each under the 4 MB per-file cap) and provenance/coursewerk/CHECKED.json (each page's path as the site holds it, the sha256 of the text checked, its open defects/obligations/questions; the spine approvals; the accountable authors and AI-assistance disclosure; no prompt, passage or source text) and ATTRIBUTION.md with the site's deck paths; the decision log in parts of at most 4 MB (LOG.jsonl, LOG.2.jsonl, …; owner 2026-11-02), cut at line ends so a later export only appends and the parts joined in order are the log byte for byte; it reports any breach of the records budget.",
       "source": "GenChem re-evaluation 2026-10-31; owner's go-ahead 2026-10-31",
       "status": "closed",
       "evidence": {
@@ -3696,7 +3696,7 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Records layout (owner 2026-10-31; site-type contract \u00a75 records): one layout for a local package and an Alembic site \u2014 the working record under private/coursewerk/, the public record (ATTRIBUTION.md, PUBLISHED.json, CHECKED.json) under provenance/coursewerk/; the working record never ships, the public record does; scripts/records_move.mjs moves a pre-layout package once (clean git tree, git mv, records only, one logged harness record, the chain kept); a path stored inside an older record (metadata/\u2026) is read at its new place, never rewritten.",
+      "statement": "Records layout (owner 2026-10-31; site-type contract §5 records): one layout for a local package and an Alembic site — the working record under private/coursewerk/, the public record (ATTRIBUTION.md, PUBLISHED.json, CHECKED.json) under provenance/coursewerk/; the working record never ships, the public record does; scripts/records_move.mjs moves a pre-layout package once (clean git tree, git mv, records only, one logged harness record, the chain kept); a path stored inside an older record (metadata/…) is read at its new place, never rewritten.",
       "source": "owner 2026-10-31 (records should live where Alembic holds them; the two projects are siblings)",
       "status": "closed",
       "evidence": {
@@ -3711,8 +3711,8 @@
       "tiers": [
         "T1"
       ],
-      "statement": "House notation (owner 2026-11-02): one way to write math, chemistry and markup across a course \u2014 math in $\u2026$/$$\u2026$$ with LaTeX inside it, chemistry in $\\ce{}$. A light, deterministic check (lib/core/house_notation.mjs; scripts/house_notation.mjs) names every spot written another way, with its line and the house form: a subscript, constant, Unicode script, e-notation, caret, ion, \u0394/\u00b0 symbol, single-letter equation or LaTeX command outside math; Unicode scripts, \u00d7, \u2212 or a word subscript inside math; an unpaired $; and math KaTeX (with mhchem) cannot typeset. Code, diagram sources, comments, links and directive heads are skipped. It is never a defect: the gate shows one note per text, routed to the agent (ms3-format), so a fix applied from a review cannot leave the course in two notations unseen.",
-      "source": "owner 2026-11-02 (K_a, K_b shown as plain text; K_a = 2.9\u00d710\u00b3 mixed formats; GenChem fixes pasted reviewers' plain-text wording)",
+      "statement": "House notation (owner 2026-11-02): one way to write math, chemistry and markup across a course — math in $…$/$$…$$ with LaTeX inside it, chemistry in $\\ce{}$. A light, deterministic check (lib/core/house_notation.mjs; scripts/house_notation.mjs) names every spot written another way, with its line and the house form: a subscript, constant, Unicode script, e-notation, caret, ion, Δ/° symbol, single-letter equation or LaTeX command outside math; Unicode scripts, ×, − or a word subscript inside math; an unpaired $; and math KaTeX (with mhchem) cannot typeset. Code, diagram sources, comments, links and directive heads are skipped. It is never a defect: the gate shows one note per text, routed to the agent (ms3-format), so a fix applied from a review cannot leave the course in two notations unseen.",
+      "source": "owner 2026-11-02 (K_a, K_b shown as plain text; K_a = 2.9×10³ mixed formats; GenChem fixes pasted reviewers' plain-text wording)",
       "status": "closed",
       "evidence": {
         "T1": [
@@ -3807,6 +3807,22 @@
       "evidence": {
         "T1": [
           "tests/alembic-needs.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.host.alembic-units",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A manifest's units are read from `units` (Alembic's name since 2026-11-02, its site type contract §14) or, in older manifests, `chapters`, through one helper (manifestUnits / manifestChapters): the chapter list, the needs export's titles, packing (which keeps the key the manifest uses), the key-fact review and the coherence check. A course pulled into an Alembic job therefore keeps its chapters; without this the units index finds no deliverables and would retire every unit.",
+      "source": "found 2026-11-02 in a local run on General Chemistry (index: 0 deliverables, 4980 units retired) after Alembic renamed the key",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "scripts/lib/core/package_reader.mjs",
+          "tests/manifest-units.test.mjs"
         ]
       }
     }

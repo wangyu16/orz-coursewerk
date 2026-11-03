@@ -11,7 +11,7 @@ import crypto from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { latestPublish } from "./workflow.mjs";
 import { hiddenContent, shippedFiles, uncheckedShipped } from "./shipped.mjs";
-import { liveReader } from "./package_reader.mjs";
+import { liveReader, manifestUnits } from "./package_reader.mjs";
 import { parseLog, readLogText } from "../records/log.mjs";
 import { canonicalJson } from "../records/canonical.mjs";
 import { committedHistoryFailures, releaseAnchorFailures } from "../skeleton/gate.mjs";
@@ -47,7 +47,9 @@ export function packPublished(pkg, outDir) {
     fs.mkdirSync(path.dirname(dest), { recursive: true });
     if (r === "alembic.json") {
       const m = JSON.parse(fs.readFileSync(path.join(pkg, r), "utf8"));
-      m.chapters = (m.chapters || []).filter((c) => keep(c.slug)).map((c) => (drafts.has(c.slug) ? { ...c, draft: true } : c));
+      // Alembic's name is `units` (its contract §14); older manifests say `chapters`: keep whichever the manifest uses.
+      const key = Array.isArray(m.units) ? "units" : "chapters";
+      m[key] = manifestUnits(m).filter((c) => keep(c.slug)).map((c) => (drafts.has(c.slug) ? { ...c, draft: true } : c));
       fs.writeFileSync(dest, JSON.stringify(m, null, 2) + "\n");
     } else fs.copyFileSync(path.join(pkg, r), dest);
     fs.utimesSync(dest, new Date("2000-01-01T00:00:00Z"), new Date("2000-01-01T00:00:00Z"));
