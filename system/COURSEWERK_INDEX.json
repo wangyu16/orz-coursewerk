@@ -41,7 +41,7 @@
       "id": "repo:alembic-job/CLAUDE.md",
       "path": "alembic-job/CLAUDE.md",
       "type": "repository-support",
-      "hash": "6a7581af1f1e385e8d3ec4f92047582e20f75d6d756b7481432542dd53cba4f8"
+      "hash": "b242759147c8a6c43bac61122012576535b7afad27cf541405fd34d3efd1a82e"
     },
     {
       "id": "repo:bootstrap/init.sh",
@@ -1349,7 +1349,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "5bd00d0ebe6ee6b720e4ec26d961c0ccd770ce37e6fb41562c4c163cd9a70237"
+      "hash": "c0c23cbbe93f64a8e562ab95a3234495f33c1e5e9054efebcdbbfa0e0d8e19e8"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1967,7 +1967,7 @@
       "id": "repo:tests/job-release.test.mjs",
       "path": "tests/job-release.test.mjs",
       "type": "test",
-      "hash": "bbb4fe8c8051029f5599f4b774b5a27f2c90d23f93b084ff3093988e5c26c71f"
+      "hash": "e10395734a53d7299c27e07bbce59bf2fe8c8c32a19bfc07d83e05e0b6c6ce2e"
     },
     {
       "id": "repo:tests/key-fact-bindings.test.mjs",

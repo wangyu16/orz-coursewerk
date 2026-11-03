@@ -13,6 +13,10 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
 - In a job, Coursewerk uses the orz packages in `assistant/node_modules` by itself.
 - The blind verifier uses the job's own model (Haiku 5.5 unless the job chose another). Do not set
   `COURSEWERK_VERIFIER`.
+- A job can't wait for anyone: nobody reads your questions while it runs, and everything not pushed is lost when it
+  ends. Never stop to ask. Decide by these instructions and the request; push what you're sure of; say in your last
+  message what you were unsure about. Questions for the instructor go only through "Needs you" (step 4).
+- Pull into `work/` (`alembic pull work`), never into the job folder itself.
 - Write only inside `work/`, and only what the course needs. Do not fetch skills into `work/`: read the orz skills
   in place, at `assistant/node_modules/<package>/<package>-skills/SKILL.md` (orz-markdown, orz-mdhtml, orz-slides,
   orz-paged), and Coursewerk's own skills in `assistant/skills/`.
@@ -69,7 +73,8 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
    one Alembic holds, a past record was changed. Stop and report it. Never try to repair the log by hand.
 
 4. **Finish the job in this order.** The instructor is reached only through "Needs you" in Alembic, and Coursewerk
-   must remember what it asked before the questions go out:
+   must remember what it asked before the questions go out. If the request says not to hand in questions, skip the
+   export and the hand-in (run only the hand-back and the pushes), so nothing is recorded as asked that wasn't:
 
    ```bash
    node assistant/scripts/alembic_needs.mjs export --root work --out work/.alembic-needs.json --model <your model id>

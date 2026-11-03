@@ -25,6 +25,10 @@ test("[req.release.alembic-job] [req.records.site-layout-guard] the job instruct
   const order = ["alembic_needs.mjs export --root work --out work/.alembic-needs.json", "site_handback.mjs work", "alembic push work\n", "alembic handin work/.alembic-needs.json"].map((x) => JOB.indexOf(x));
   assert.ok(order.every((i, k) => i >= 0 && (k === 0 || i > order[k - 1])), `export, hand-back, push, hand-in in that order (${order})`);
   assert.match(JOB, /If\s+the push fails, do not hand in the questions/);
+  // A job never stops to ask (nothing is read while it runs), and a request without questions records none as asked.
+  assert.match(JOB, /Never stop to ask/);
+  assert.match(JOB, /If the request says not to hand in questions, skip the\s+export and the hand-in/);
+  assert.match(JOB, /never into the job folder itself/);
   // the dry run only after the hand-back: imported, the joined log is larger than Alembic takes
   const dry = [...JOB.matchAll(/alembic push work --dry-run/g)].map((m) => m.index);
   const handback = JOB.indexOf("node assistant/scripts/site_handback.mjs work");

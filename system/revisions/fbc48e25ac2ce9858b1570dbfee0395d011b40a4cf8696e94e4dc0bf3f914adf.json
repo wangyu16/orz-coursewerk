@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "planId": "fbc48e25ac2ce9858b1570dbfee0395d011b40a4cf8696e94e4dc0bf3f914adf",
+  "baseRef": "HEAD",
+  "baseTip": "d2b3997e67b0454272cd3de3acc2be489570d420",
+  "baseCommit": "d2b3997e67b0454272cd3de3acc2be489570d420",
+  "reviewedHead": "d2b3997e67b0454272cd3de3acc2be489570d420",
+  "changed": [
+    "alembic-job/CLAUDE.md",
+    "system/REQUIREMENTS.json",
+    "tests/job-release.test.mjs"
+  ],
+  "requiredReview": [
+    "alembic-job/CLAUDE.md",
+    "system/REQUIREMENTS.json",
+    "tests/job-release.test.mjs"
+  ],
+  "reviewed": [
+    "alembic-job/CLAUDE.md",
+    "system/REQUIREMENTS.json",
+    "tests/job-release.test.mjs"
+  ],
+  "impactedClaims": [],
+  "testResults": [
+    {
+      "path": "tests/job-release.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "The Alembic job instructions gain three rules found in live jobs on General Chemistry: never stop to ask (a job can't wait; push what is sure, report the rest), pull into work/ only, and skip the needs export and hand-in when the request says not to hand in questions (an export without a hand-in recorded questions as asked). job-release: 3/3 passed.",
+  "generatedIndexHash": "6698e4ea8c73d73904a9ac72113be771a9480cf3dd459bc5919e2c33c98633a0",
+  "acceptedAt": "2026-11-03T17:22:37.743Z"
+}
