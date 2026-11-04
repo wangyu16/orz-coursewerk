@@ -3871,6 +3871,21 @@
           "tests/job-release.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.sitetype.assets",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Site type assets (family SITE-TYPE-CONTRACT draft 12, owner 2026-11-03): the definition names where a page's assets live as `assets` (formerly `figures`), with the same places (public assets/{doc}, private private/instructor/figures/{doc}); it never lists which file kinds an asset may be (Alembic's list, the same for every course); it does not also name `figures`.",
+      "source": "owner 2026-11-03 (assets, not figures; asset kinds are global to Alembic)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/site-type-assets.test.mjs"
+        ]
+      }
     }
   ]
 }

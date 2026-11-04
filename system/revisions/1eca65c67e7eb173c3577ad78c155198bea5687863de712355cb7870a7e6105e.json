@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "planId": "1eca65c67e7eb173c3577ad78c155198bea5687863de712355cb7870a7e6105e",
+  "baseRef": "HEAD",
+  "baseTip": "3c43e1e7a5cd93160fda0cfe14e87bc5249ab9ba",
+  "baseCommit": "3c43e1e7a5cd93160fda0cfe14e87bc5249ab9ba",
+  "reviewedHead": "3c43e1e7a5cd93160fda0cfe14e87bc5249ab9ba",
+  "changed": [
+    "site-type/site-type.json",
+    "system/REQUIREMENTS.json",
+    "tests/site-type-assets.test.mjs"
+  ],
+  "requiredReview": [
+    "site-type/site-type.json",
+    "system/REQUIREMENTS.json",
+    "tests/site-type-assets.test.mjs"
+  ],
+  "reviewed": [
+    "site-type/site-type.json",
+    "system/REQUIREMENTS.json",
+    "tests/site-type-assets.test.mjs"
+  ],
+  "impactedClaims": [],
+  "testResults": [
+    {
+      "path": "tests/site-type-assets.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/site-export.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/job-release.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "Renamed the site type definition's `figures` field to `assets` (family SITE-TYPE-CONTRACT draft 12, owner 2026-11-03) with the same places; no Coursewerk script reads that field (checked by search), so nothing else changes. Registered req.sitetype.assets with its T1 test; the site export and job release tests, which touch the site type, still pass.",
+  "generatedIndexHash": "d0cd0c9b39075efd4fce9652ddf81fe218b4bed9cf9c4751822fbb009849424f",
+  "acceptedAt": "2026-11-04T16:05:12.043Z"
+}

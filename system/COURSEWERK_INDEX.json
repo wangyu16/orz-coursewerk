@@ -1181,7 +1181,7 @@
       "id": "repo:site-type/site-type.json",
       "path": "site-type/site-type.json",
       "type": "repository-support",
-      "hash": "d47618c73311f67ab680308bbe0b6840f88e3e78e1e0d473b4bec20c98096ca5"
+      "hash": "b43f0d1c55ac081e9505b91d57b7bb24b181070e79e64cbe98566dd36ea8b9bb"
     },
     {
       "id": "repo:site-type/starters/assessment-guide.md",
@@ -1349,7 +1349,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "c0c23cbbe93f64a8e562ab95a3234495f33c1e5e9054efebcdbbfa0e0d8e19e8"
+      "hash": "2b90542d3712392a33c0989c0ea1ff0e7c1a91c1c717b353b81b0a0d1880a05d"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -2238,6 +2238,12 @@
       "path": "tests/site-import.test.mjs",
       "type": "test",
       "hash": "41367e7d88d739f805ac1ffc4c13de6e954c953918203fc063a8af940c3e9451"
+    },
+    {
+      "id": "repo:tests/site-type-assets.test.mjs",
+      "path": "tests/site-type-assets.test.mjs",
+      "type": "test",
+      "hash": "9773b94bc46cb129e19ca044872f105194d0bcc6dc86bc450265114983db6371"
     },
     {
       "id": "repo:tests/site.test.mjs",
@@ -5298,6 +5304,14 @@
       },
       {
         "id": "req.ship.same-computation",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.sitetype.assets",
         "phase": "P11",
         "tiers": [
           "T1"

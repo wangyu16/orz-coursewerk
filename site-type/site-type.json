@@ -46,7 +46,7 @@
   "folders": [
     { "path": "assets", "who": "editor" }
   ],
-  "figures": { "public": "assets/{doc}", "private": "private/instructor/figures/{doc}" },
+  "assets": { "public": "assets/{doc}", "private": "private/instructor/figures/{doc}" },
   "private": [
     { "path": "private/instructor", "who": "editor" },
     { "path": "private/legacy", "who": "fixed" },
