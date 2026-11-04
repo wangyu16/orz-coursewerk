@@ -1,5 +1,15 @@
 # Coursewerk changelog
 
+## v1.0.1 (2026-11-04)
+
+- **Site type: `figures` becomes `assets`** (family SITE-TYPE-CONTRACT draft 12, owner 2026-11-03). The definition
+  names where a page's assets live as `assets`; the places are unchanged, and which kinds of file an asset may be is
+  Alembic's list, the same for every course. Alembic may keep a description beside each asset
+  (`<asset>.about.json`: title, what it shows, subject, topic, source, credit, licence), which Coursewerk's tools may
+  read. Requirement `req.sitetype.assets`.
+- Since v1.0.0 on main: the site-layout guard and the job rules (never stop to ask; pull into `work/` only; no
+  needs export when no questions are handed in).
+
 ## v1.0.0 (2026-11-02)
 
 The redesign. Coursewerk is rebuilt around one idea: the instructor sets direction and standards, the agent does the
