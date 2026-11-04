@@ -3991,6 +3991,21 @@
           "tests/genchem-phase0.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.format.site-manifest",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "In an Alembic site — host mode, the one test records/host.mjs alembicHost (no .git, and a .coursewerk-host.json from Alembic), which the gate's log anchor also uses — alembic.json is Alembic's own file (family SITE-TYPE-CONTRACT §4: schema 3, units, discovery details held in Alembic), so MS3 does not apply the local package's manifest rule (alembic-manifest) to it; the snapshot carries the fact as `site` (the host record itself stays out of the snapshot's files). A local package, including one with a host record inside a git repository, keeps the rule unchanged.",
+      "source": "General Chemistry Phase 0 (coordinator 2026-11-04; SITE-TYPE-CONTRACT §4)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/genchem-phase0.test.mjs"
+        ]
+      }
     }
   ]
 }

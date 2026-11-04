@@ -53,7 +53,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "0ace0b338324b7902c0f6959495eec643d55d6d1da6dfbe660bd56d1d36a12ca"
+      "hash": "86fe62b816b49654ebf3bd14d6a7a91e6684fe75fd65441e2c2717ea42c86b66"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -767,7 +767,7 @@
       "id": "repo:scripts/lib/records/host.mjs",
       "path": "scripts/lib/records/host.mjs",
       "type": "kernel",
-      "hash": "305df4651baaa1b9e35466bd7a144f098b78a2ca1f57f16a76e9173fb49921fa"
+      "hash": "95ee10042f6533fc61f3463e9777566186ea3ca9353401cd58c8e25718a2a47b"
     },
     {
       "id": "repo:scripts/lib/records/log.mjs",
@@ -827,7 +827,7 @@
       "id": "repo:scripts/lib/skeleton/gate.mjs",
       "path": "scripts/lib/skeleton/gate.mjs",
       "type": "kernel",
-      "hash": "5ce5cb4b20b3455d5fd4746e6d81e1a2f3b507e2bd2eca24bb680e0dac1eb386"
+      "hash": "794bfa4348f7211ca40a4f24ba2cde96088051128a66c949cdf153beb74b2221"
     },
     {
       "id": "repo:scripts/lib/skeleton/manifest.mjs",
@@ -839,7 +839,7 @@
       "id": "repo:scripts/lib/skeleton/module_host.mjs",
       "path": "scripts/lib/skeleton/module_host.mjs",
       "type": "kernel",
-      "hash": "c8147bdf6a9f07b859b67c66e8a51b1cb61400ef334090e063fe978e18f7cf4d"
+      "hash": "3f74958e5d2b1ece7a5edbad3fa481e2519fa1c805eb767acb086aa99fa77b81"
     },
     {
       "id": "repo:scripts/lib/skeleton/promotion.mjs",
@@ -851,13 +851,13 @@
       "id": "repo:scripts/lib/skeleton/runner.mjs",
       "path": "scripts/lib/skeleton/runner.mjs",
       "type": "kernel",
-      "hash": "8a1d8c970688c0bbc63382193a53afcbbe3167379306cbabed08815a83d467ca"
+      "hash": "4f0807c7b6c77ee539444264657effb5f6c209c5fa81768077eed8d22d0e8d47"
     },
     {
       "id": "repo:scripts/lib/skeleton/snapshot.mjs",
       "path": "scripts/lib/skeleton/snapshot.mjs",
       "type": "kernel",
-      "hash": "045876382ee232d4dbabc70aa685e0529dfec4896f370116b774302bdba22326"
+      "hash": "7ebce57527ab95445f0ae545179e9e17718ac689aa74f85394d2fd4e48add20d"
     },
     {
       "id": "repo:scripts/lib/skeleton/wiring.mjs",
@@ -1001,7 +1001,7 @@
       "id": "repo:scripts/modules/ms3-format.mjs",
       "path": "scripts/modules/ms3-format.mjs",
       "type": "executable",
-      "hash": "e7e69ee91af654457cb66ab880d91ab2791c16e1f0def802d4cca822e0def408"
+      "hash": "07f89b1abe944f77aedf444aac24fde31063239c492839d3562d5f2dc86375db"
     },
     {
       "id": "repo:scripts/modules/ms4-links.mjs",
@@ -1373,7 +1373,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "ec0094e060fb5d274636dd1e5b3d1eb1fc5b56d340f40d936398af16c4761691"
+      "hash": "42e38f562f3cad1ff622c7b47d45a8d2c5ebc67369e1d7df9b3adb1d9ebb5141"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1949,7 +1949,7 @@
       "id": "repo:tests/genchem-phase0.test.mjs",
       "path": "tests/genchem-phase0.test.mjs",
       "type": "test",
-      "hash": "66853b8e96cab8bdfa74d5f4d7875271da0f7ead0208a2ae6acbec9caf7c0eea"
+      "hash": "b371dea32e976e8acc36c29773e5b794eda8f5dc80df4ca44c1c4d3bee94fc33"
     },
     {
       "id": "repo:tests/genchem-reeval.test.mjs",
@@ -4549,6 +4549,14 @@
       {
         "id": "req.findings.routing",
         "phase": "P2",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.format.site-manifest",
+        "phase": "P11",
         "tiers": [
           "T1"
         ],

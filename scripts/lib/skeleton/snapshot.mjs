@@ -3,7 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { canonicalJson, sha256 } from "../records/canonical.mjs";
-import { HOST_FILE } from "../records/host.mjs";
+import { HOST_FILE, alembicHost } from "../records/host.mjs";
 
 const SKIP_DIRS = new Set([".git", "node_modules"]); // for snapshot content; write detection also watches node_modules
 const LARGE = 64 * 1024 * 1024;
@@ -94,7 +94,11 @@ export function createSnapshot(root, { profile, checkpoint, inputsDir = null } =
     files[rel] = buf ? { hash: sha256(buf), ...contentOf(rel, buf) } : { hash: fileMark(full), text: null };
   }
   const id = sha256(canonicalJson(Object.entries(files).map(([rel, f]) => [rel, f.hash])));
-  const snap = { id, profile, checkpoint, files, paths: Object.keys(files) };
+  // the package is an Alembic site (records/host.mjs alembicHost; the host record itself stays out of the files): there
+  // alembic.json is Alembic's own file (SITE-TYPE-CONTRACT §4), which a module must not judge by the local contract
+  const host = alembicHost(root);
+  const site = host && !host.error ? "alembic" : null;
+  const snap = { id, profile, checkpoint, site, files, paths: Object.keys(files) };
   snap.text = (rel) => (Object.hasOwn(files, rel) ? files[rel].text : null);
   snap.json = (rel) => { const t = snap.text(rel); try { return t == null ? null : JSON.parse(t); } catch { return undefined; } };
   return deepFreeze(snap);

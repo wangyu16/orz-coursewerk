@@ -11,7 +11,7 @@ import { blocksPublish, makeFinding } from "../records/findings.mjs";
 import { RECORD_PATHS } from "../records/paths.mjs";
 import { parseLog, readLogText, verifyAgainstCommitted, verifyExtends, verifyLog } from "../records/log.mjs";
 import { sha256 } from "../records/canonical.mjs";
-import { HOST_FILE, readHostRecord } from "../records/host.mjs";
+import { HOST_FILE, alembicHost } from "../records/host.mjs";
 import { SKELETON } from "./runner.mjs";
 
 /** The committed log text, from the package's own git. A package without git history cannot be checked. */
@@ -170,9 +170,8 @@ function blobsOf(git, revs) {
  */
 export function hostLogFailures(root) {
   root = path.resolve(root);
-  if (fs.existsSync(path.join(root, ".git"))) return null;
-  const host = readHostRecord(root);
-  if (!host || host.host !== "alembic") return null;
+  const host = alembicHost(root);
+  if (!host) return null;
   if (host.error) return { unverifiable: host.error };
   if (host.state !== "imported") return { unverifiable: `${HOST_FILE} says the folder was handed back to Alembic (site layout): pull it and run site_import.mjs before checking it` };
   const file = path.join(root, RECORD_PATHS.log);

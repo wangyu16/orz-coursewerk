@@ -30,6 +30,15 @@ export function readHostRecord(root) {
   return rec;
 }
 
+/** The host record when the package is an Alembic job's folder (host mode: no git, and a host record from Alembic), else
+ *  null. The one test of "this folder is an Alembic site" — the gate's log anchor and the snapshot's `site` both use it. */
+export function alembicHost(root) {
+  root = path.resolve(root);
+  if (fs.existsSync(path.join(root, ".git"))) return null;
+  const host = readHostRecord(root);
+  return host && host.host === "alembic" ? host : null;
+}
+
 export function writeHostRecord(root, rec) {
   fs.writeFileSync(path.join(path.resolve(root), HOST_FILE), JSON.stringify(rec, null, 2) + "\n");
 }

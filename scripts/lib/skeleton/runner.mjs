@@ -139,7 +139,7 @@ export function runCheckpoint({ root, checkpoint, profile, registry = { schemaVe
       registry = { ...registry, modules: [...(registry.modules || []).filter((m) => m.name !== std.name), std] };
     }
   }
-  const snapshotText = JSON.stringify({ id: snapshot.id, profile, checkpoint, paths: snapshot.paths, files: snapshot.files });
+  const snapshotText = JSON.stringify({ id: snapshot.id, profile, checkpoint, site: snapshot.site ?? null, paths: snapshot.paths, files: snapshot.files });
   // lastTree = the tree as the previous module left it; a change between modules is unattributed, never blamed on
   // the next module.
   let lastTree = treeId(root), unattributed = false;

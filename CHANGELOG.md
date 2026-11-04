@@ -21,6 +21,9 @@ blocked on 2,130 items, and part of that was the harness's own.
 - **`units.mjs relink`**: after a pre-v0.12 plan was standardized, maps each chapter's old objective ids one to one, in
   order, onto the new objectives (refusing a chapter whose counts or texts do not correspond, with the reason) and links
   the units from the markers the materials carry, through `link`, logged; no text is edited. `req.units.relink-converted`.
+- **`alembic.json` in an Alembic site is Alembic's.** In host mode (an Alembic job's folder, the gate's existing test) the
+  local manifest rule no longer judges it (SITE-TYPE-CONTRACT §4: schema 3, `units`, discovery details in Alembic); a local
+  package keeps the rule. `req.format.site-manifest`.
 - **`scripts/records_paths.mjs`**: points paths stored in the media record (PROVENANCE.json) at renamed decks
   (`slides/<ch>.slides.md`), logs it and regenerates `ATTRIBUTION.md`. `req.records.paths-fix`.
 

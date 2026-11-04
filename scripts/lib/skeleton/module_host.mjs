@@ -37,7 +37,7 @@ function materialize() {
 }
 const snapshot = Object.freeze({
   materialize,
-  id: raw.id, profile: raw.profile, checkpoint: raw.checkpoint, files: Object.freeze(files), paths: Object.freeze([...raw.paths]),
+  id: raw.id, profile: raw.profile, checkpoint: raw.checkpoint, site: raw.site ?? null, files: Object.freeze(files), paths: Object.freeze([...raw.paths]),
   text: (rel) => (hasOwn(files, rel) ? files[rel].text : null),
   json: (rel) => { const t = hasOwn(files, rel) ? files[rel].text : null; try { return t == null ? null : JSON.parse(t); } catch { return undefined; } },
 });

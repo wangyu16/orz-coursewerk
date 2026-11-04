@@ -25,7 +25,10 @@ async function run(s) {
   // never a defect — the gate does not limit what an agent may use (D38). Grammar errors stay defects.
   const theme = (file, issue) => out.push({ kind: "frame-name-unknown", units: [], evidence: { type: "judgment", note: `${file}: ${issue} — fine if the frame in use has it; otherwise check for a typo` } });
   const man = q.manifestAudit();
-  for (const e of man.errors) defect("alembic-manifest", "alembic.json", e);
+  // In an Alembic site (s.site, from the host record) alembic.json is Alembic's own file (SITE-TYPE-CONTRACT §4: schema 3,
+  // `units`, discovery details in Alembic): the local package's manifest rule does not apply there (General Chemistry,
+  // 2026-11-04; req.format.site-manifest). A local package keeps it.
+  if (s.site !== "alembic") for (const e of man.errors) defect("alembic-manifest", "alembic.json", e);
   for (const e of q.layoutAudit(man.chapters).errors) defect("package-layout", null, e);
   for (const i of q.orzSyntaxAudit().issues || []) defect("orz-syntax", i.file, i.issue || i.message || JSON.stringify(i));
   for (const h of q.placeholdersAudit().hits || []) defect("placeholder", h.file, h.text || h.match || JSON.stringify(h));

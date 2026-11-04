@@ -23,6 +23,8 @@ import { relinkPlan, relinkAfterConversion, pairingProblem, oldObjectives } from
 import { renamedRecordPath } from "../scripts/lib/core/record_paths.mjs";
 import { renderAttribution } from "../scripts/lib/assurance.mjs";
 import { parseLog } from "../scripts/lib/records/log.mjs";
+import { createSnapshot } from "../scripts/lib/skeleton/snapshot.mjs";
+import { alembicHost } from "../scripts/lib/records/host.mjs";
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const tmp = (t, name) => { const d = fs.mkdtempSync(path.join(os.tmpdir(), `cw-p0-${name}-`)); t.after(() => fs.rmSync(d, { recursive: true, force: true })); return d; };
@@ -279,4 +281,29 @@ test("[req.records.paths-fix] records_paths points stored deck paths at the rena
   assert.equal(log.at(-1).payload.event, "record-paths-fixed");
   assert.equal(log.at(-1).party.role, "harness");
   assert.equal(JSON.parse(cli().stdout).fixed, 0, "run again: nothing left to fix");
+});
+
+// ---- 6. alembic.json in an Alembic site is Alembic's own file -----------------------------------------------------------
+test("[req.format.site-manifest] in an Alembic site (host mode) the local manifest rule does not judge alembic.json; a local package keeps it", (t) => {
+  const site = { schemaVersion: 3, type: "oer-course", title: "General Chemistry", units: [{ slug: "melting", title: "Melting" }] };
+  const make = (name, hosted, git = false) => {
+    const root = tmp(t, name);
+    write(root, "alembic.json", JSON.stringify(site));
+    write(root, "study-guide/melting.md", "# Melting\n\nIce melts at 0 °C at 1 atm.\n");
+    if (hosted) write(root, ".coursewerk-host.json", JSON.stringify({ schemaVersion: 1, host: "alembic", state: "imported", importedAt: "2026-11-04T00:00:00Z", log: { sha256: "0".repeat(64), bytes: 0, parts: [] }, verification: { parts: [] } }));
+    if (git) fs.mkdirSync(path.join(root, ".git"));
+    return root;
+  };
+  const reg = { schemaVersion: 1, modules: [{ name: "ms3-format", version: "1.0.0", maturity: "stable", enabled: true }] };
+  const manifestRule = (root) => runCheckpoint({ root, checkpoint: "V8", profile: "public", registry: reg }).findings.filter((f) => f.module === "ms3-format" && (f.evidence?.rule ?? f.evidence?.reported?.rule) === "alembic-manifest");
+  const hosted = make("site", true);
+  assert.equal(createSnapshot(hosted, { profile: "public", checkpoint: "V8" }).site, "alembic");
+  assert.deepEqual(manifestRule(hosted), [], "Alembic's alembic.json is not judged by the local contract");
+  const local = make("local", false);
+  assert.equal(createSnapshot(local, { profile: "public", checkpoint: "V8" }).site, null);
+  assert.ok(manifestRule(local).some((f) => /schemaVersion must be 1 or 2/.test(JSON.stringify(f.evidence))), "a local package keeps the rule");
+  // the one test of a site is the gate's host mode: a host record inside a git repository is a local package
+  const withGit = make("git", true, true);
+  assert.equal(alembicHost(withGit), null);
+  assert.ok(manifestRule(withGit).length > 0);
 });
