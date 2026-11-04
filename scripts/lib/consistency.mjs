@@ -304,12 +304,28 @@ const labelRe = (label) => labelMatcher(label);
  * Term ids mentioned in a text, alias- and scope-aware. The id always comes from M1's
  * `resolve` — this module recognizes surface forms but is not a second vocabulary authority.
  */
+// Within one scan the term registry does not change, so a label's resolution in a scope is computed once (General
+// Chemistry, 2026-11-04: resolving every label for every claim and sentence took minutes on a 19-chapter course, and MS7
+// timed out). The cache lives only for one scanConsistency call; outside a scan, `resolve` is called directly.
+let SCAN_RESOLVED = null;
+function resolveIn(terms, label, scope) {
+  if (!SCAN_RESOLVED || SCAN_RESOLVED.terms !== terms) return resolve(terms, label, scope);
+  const key = `${scope ?? "\u0000"}\u0001${label}`;
+  if (!SCAN_RESOLVED.map.has(key)) SCAN_RESOLVED.map.set(key, resolve(terms, label, scope));
+  return SCAN_RESOLVED.map.get(key);
+}
+// a cheap first test before the whole-word matcher: an ASCII label can only match a text that contains it, ignoring case
+// (lowerFold: the text lower-cased with the one non-ASCII letter /iu folds onto an ASCII one that toLowerCase does not,
+// the long s; the Kelvin sign lower-cases to k already)
+const lowerFold = (t) => String(t ?? "").toLowerCase().replace(/\u017f/g, "s");
+const mayContain = (lowerText, label) => !/^[\x00-\x7f]*$/.test(label) || lowerText.includes(label.toLowerCase());
 function termsInText(text, terms, scope) {
   const ids = new Set();
+  const lower = lowerFold(text);
   for (const term of terms?.terms ?? []) {
     for (const label of labelsOf(term)) {
-      if (!labelRe(label).test(text)) continue;
-      const id = resolve(terms, label, scope);
+      if (!mayContain(lower, label) || !labelRe(label).test(text)) continue;
+      const id = resolveIn(terms, label, scope);
       if (id) ids.add(id);
     }
   }
@@ -398,10 +414,11 @@ function governedQuantities(text, terms, scope) {
     // the sentence as the value parser reads it: term mentions and values index the same folded text
     const sentence = valueProse(t.slice(start, end));
     start = end;
-    const mentions = [];
+    const mentions = [], lower = lowerFold(sentence);
     for (const term of terms?.terms ?? []) {
       for (const label of labelsOf(term)) {
-        const id = resolve(terms, label, scope);
+        if (!mayContain(lower, label)) continue;
+        const id = resolveIn(terms, label, scope);
         if (!id) continue;
         for (const o of findLabelOccurrences(sentence, label)) mentions.push({ id, at: o.start });
       }
@@ -539,7 +556,7 @@ function definitionKey(text, terms, scope) {
   const labels = [];
   for (const term of terms?.terms ?? []) {
     for (const label of labelsOf(term)) {
-      const id = resolve(terms, label, scope);
+      const id = resolveIn(terms, label, scope);
       if (id) labels.push({ label, id });
     }
   }
@@ -615,7 +632,10 @@ function definitionDrift(list, terms) {
  */
 export function scanConsistency(claims, terms) {
   const list = claimList(claims);
-  return [...valueDisagreements(list, terms), ...definitionDrift(list, terms)]
+  SCAN_RESOLVED = { terms, map: new Map() };
+  let found;
+  try { found = [...valueDisagreements(list, terms), ...definitionDrift(list, terms)]; } finally { SCAN_RESOLVED = null; }
+  return found
     .sort(
       (a, b) =>
         byString(a.kind, b.kind) ||

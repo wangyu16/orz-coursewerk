@@ -207,11 +207,12 @@ To read or present the materials locally, assemble the framework shells: `script
 |---|---|
 | workflow | `scripts/coursewerk.mjs` — status, assemble, back-to-draft, approve, digest, recommend, answer, publish, revert, interrupt, digest-cap, history (how each issue was found and settled, rebuilt from the records) |
 | spine | `scripts/spine.mjs` — check, migrate, anchor, propose, critique, review, status, preview, approve, version, steering |
-| units | `scripts/units.mjs` — begin, index, claim, status, link, confirm, reverify, obligations, restamp |
+| units | `scripts/units.mjs` — begin, index, claim, status, link, relink (after a plan conversion), confirm, reverify, obligations, restamp |
 | verification | `scripts/verify.mjs` — destinations, search, fetch, semi, readmit, absolutes, knowledge, alignment, correct, revert, corrections, links, status |
 | gate | `scripts/gate.mjs` |
 | pack | `scripts/pack.mjs` (checks the newest Alembic contract first); `scripts/alembic_check.mjs` checks it on its own |
 | records move | `scripts/records_move.mjs --root <pkg>`: once, for a package written before the records layout (`metadata/` → `private/coursewerk/` and `provenance/coursewerk/`) |
+| record paths | `scripts/records_paths.mjs --root <pkg> [--dry-run]`: points paths stored in the media record (PROVENANCE.json) at renamed files (a deck `slides/<ch>.md` now `slides/<ch>.slides.md`), logs it, and regenerates `ATTRIBUTION.md`; nothing else changes |
 | site export | `scripts/site_export.mjs --root <pkg> --out <dir>`: the records an Alembic site holds (`private/coursewerk/`, and the public `provenance/coursewerk/CHECKED.json` and `ATTRIBUTION.md`), for the hand-in; the package is not changed |
 
 ## Packages from v0.12

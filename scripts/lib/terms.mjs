@@ -185,12 +185,23 @@ const SCHEMA_VERSION = 1;
 const KEY_TERMS = "key terms";
 
 /** Fold a label to its resolution key: case-insensitive, whitespace-collapsed. */
+// Memoized (General Chemistry, 2026-11-04): `resolve` folds every label of every term on each call, and the consistency
+// scan resolves per label per claim, so a 19-chapter course spent minutes here and MS7 never finished. The fold is a
+// pure function of the string, so a bounded cache changes nothing but the time.
+const LABEL_KEYS = new Map();
 function normalizeLabel(label) {
-  return String(label ?? "")
-    .normalize("NFC") // L9: NFC and NFD spellings of one label are one label
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
+  const s = String(label ?? "");
+  let key = LABEL_KEYS.get(s);
+  if (key === undefined) {
+    key = s
+      .normalize("NFC") // L9: NFC and NFD spellings of one label are one label
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
+    if (LABEL_KEYS.size > 50000) LABEL_KEYS.clear();
+    LABEL_KEYS.set(s, key);
+  }
+  return key;
 }
 
 /**

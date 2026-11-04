@@ -40,7 +40,13 @@ export const SKELETON = "skeleton";
 const RANK = { experimental: 0, trial: 1, stable: 2 };
 const HOST = path.join(path.dirname(fileURLToPath(import.meta.url)), "module_host.mjs");
 export const DEFAULT_MODULE_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "modules");
+// The time a module's process may take: a base, plus an allowance per snapshot file, so a large course is not cut off at a
+// limit sized for a small one (General Chemistry, 2026-11-04: 6,273 files, and MS7 hit the fixed 120 s and never ran).
+// A run that does not finish is never a pass: it is a blocking module-failed obligation that says it timed out, and
+// after how long (moduleTimeoutMs; req.runner.module-time).
 const MODULE_TIMEOUT_MS = 120000;
+const MODULE_TIMEOUT_PER_FILE_MS = 40;
+export const moduleTimeoutMs = (files) => MODULE_TIMEOUT_MS + MODULE_TIMEOUT_PER_FILE_MS * Math.max(0, Number(files) || 0);
 const MAX_OUTPUT_BYTES = 16 * 1024 * 1024;
 
 function skeletonFinding(basis, kind, statusClass, evidence, units = []) {
@@ -54,9 +60,9 @@ export function moduleFile(name, moduleDir = DEFAULT_MODULE_DIR) {
   return file.startsWith(dir + path.sep) && fs.existsSync(file) ? file : null;
 }
 
-function errorLine(res) {
+function errorLine(res, timeoutMs) {
   if (res.error?.code === "ENOBUFS") return "the module wrote more than 1 MB to stderr";
-  if (res.error?.code === "ETIMEDOUT" || res.signal === "SIGKILL") return "timed out";
+  if (res.error?.code === "ETIMEDOUT" || res.signal === "SIGKILL") return `timed out after ${Math.round(timeoutMs / 1000)} s`;
   const lines = String(res.stderr || "").split("\n").map((l) => l.trim()).filter(Boolean);
   return lines.find((l) => /^(\w*Error|Error)\b/.test(l)) || lines[0] || res.error?.message || `exit ${res.status}`;
 }
@@ -67,7 +73,7 @@ function host(mode, file, dir, timeoutMs, draftsFile) {
   const args = [HOST, mode, file, path.join(dir, "snapshot.json"), out, ...(draftsFile ? [draftsFile] : [])];
   const res = spawnSync(process.execPath, args, { encoding: "utf8", timeout: timeoutMs, killSignal: "SIGKILL", detached: true, stdio: ["ignore", "ignore", "pipe"], maxBuffer: 1024 * 1024 });
   if (res.pid) { try { process.kill(-res.pid, "SIGKILL"); } catch { /* group already gone */ } }
-  if (res.status !== 0 || !fs.existsSync(out)) return { error: errorLine(res) };
+  if (res.status !== 0 || !fs.existsSync(out)) return { error: errorLine(res, timeoutMs), timedOut: res.error?.code === "ETIMEDOUT" || res.signal === "SIGKILL" };
   if (fs.statSync(out).size > MAX_OUTPUT_BYTES) return { error: `output larger than ${MAX_OUTPUT_BYTES} bytes` };
   try { return { value: JSON.parse(fs.readFileSync(out, "utf8")) }; } catch (e) { return { error: `unreadable module output: ${e.message}` }; }
 }
@@ -78,7 +84,7 @@ function hostRun(file, snapshotText, timeoutMs) {
   try {
     fs.writeFileSync(path.join(dir, "snapshot.json"), snapshotText);
     const r = host("run", file, dir, timeoutMs);
-    if (r.error) return { error: r.error };
+    if (r.error) return { error: r.error, timedOut: r.timedOut, stage: "run" };
     const out = r.value || {};
     const defectKinds = new Set((out.manifest?.emits || []).filter((e) => e?.statusClass === "defect").map((e) => e.kind));
     const drafts = Array.isArray(out.drafts) ? out.drafts : [];
@@ -90,6 +96,8 @@ function hostRun(file, snapshotText, timeoutMs) {
       fs.writeFileSync(draftsFile, JSON.stringify(toCheck.map(([d]) => d)));
       const v = host("recheck", file, dir, timeoutMs, draftsFile);
       if (!v.error && Array.isArray(v.value)) toCheck.forEach(([d], j) => { d.__recheckOk = v.value[j] === true; });
+      // a recheck that did not finish is reported as such, not only as defects whose evidence "did not re-run"
+      else if (v.error) out.recheckFailed = { error: v.error, timedOut: !!v.timedOut };
     }
     return out;
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
@@ -103,8 +111,9 @@ function hostRun(file, snapshotText, timeoutMs) {
  * @param {object} o.registry    the package's module registry
  * @param {string} [o.moduleDir] where module files live (the harness's scripts/modules by default)
  */
-export function runCheckpoint({ root, checkpoint, profile, registry = { schemaVersion: 1, modules: [], __noStandard: true }, moduleDir = DEFAULT_MODULE_DIR, timeoutMs = MODULE_TIMEOUT_MS, inputsDir = null }) {
+export function runCheckpoint({ root, checkpoint, profile, registry = { schemaVersion: 1, modules: [], __noStandard: true }, moduleDir = DEFAULT_MODULE_DIR, timeoutMs = null, inputsDir = null }) {
   const snapshot = createSnapshot(root, { profile, checkpoint, inputsDir });
+  timeoutMs ??= moduleTimeoutMs(snapshot.paths.length);
   const findings = [];
   const wiring = { checkpoint, profile, basis: snapshot.id, ran: [], skipped: [], produced: {}, discarded: [], manifests: {} };
   const registryProblems = registry?.__readError ? [registry.__readError] : validateRegistry(registry);
@@ -148,9 +157,10 @@ export function runCheckpoint({ root, checkpoint, profile, registry = { schemaVe
       const wrote = after !== before;
       lastTree = after;
       if (out.error && !wrote) {
-        findings.push(skeletonFinding(snapshot.id, "module-failed", "obligation", { type: "missing", what: `a completed run of ${entry.name} at ${checkpoint} (${out.error})` }));
-        wiring.ran.push({ name: entry.name, ok: false }); continue;
+        findings.push(skeletonFinding(snapshot.id, "module-failed", "obligation", { type: "missing", what: `a completed run of ${entry.name} at ${checkpoint} (${out.error})${out.timedOut ? ": nothing it checks was checked" : ""}`, ...(out.timedOut ? { timedOut: true, limitSeconds: Math.round(timeoutMs / 1000) } : {}) }));
+        wiring.ran.push({ name: entry.name, ok: false, ...(out.timedOut ? { timedOut: true } : {}) }); continue;
       }
+      if (out.recheckFailed && !wrote) findings.push(skeletonFinding(snapshot.id, "module-failed", "obligation", { type: "missing", what: `a completed recheck of ${entry.name} at ${checkpoint} (${out.recheckFailed.error}): its defects are held as questions until their evidence re-runs`, ...(out.recheckFailed.timedOut ? { timedOut: true, limitSeconds: Math.round(timeoutMs / 1000) } : {}) }));
       if (wrote) {
         findings.push(skeletonFinding(snapshot.id, "module-wrote-package", "defect", { type: "rule", rule: "modules only emit findings", module: entry.name }));
         wiring.discarded.push({ name: entry.name, reason: "wrote to the package" }); wiring.ran.push({ name: entry.name, ok: false }); continue;

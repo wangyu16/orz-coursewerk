@@ -3886,6 +3886,111 @@
           "tests/site-type-assets.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.runner.module-time",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A module run is given time that grows with the package (120 s plus 40 ms per snapshot file), and a deterministic module's recheck re-runs it once per snapshot for all its drafts, so value consistency (MS7) completes on a 19-chapter course; its term resolution is computed once per scan, never per label per claim. A run or recheck that does not finish is never a pass: it is a blocking module-failed obligation whose evidence says it timed out (timedOut, limitSeconds) and that nothing it checks was checked, and the wiring marks the module as timed out.",
+      "source": "General Chemistry Phase 0 (owner approved 2026-11-04)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/genchem-phase0.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.mechanical.balance-intended",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "K2 equation balance reads what a text claims: a reaction a sentence asks to balance (\"Balance …\", \"to balance\", \"balancing\") or that stands alone under a heading about balancing is the task; an unbalanced reaction every species of which stands on the same side of a balanced reaction the unit writes later is a balancing step; in a text about oxidation, reduction or half-reactions, a reaction with one species on each side besides water, H+, OH- and electrons, with the same elements other than H and O, is a half-reaction skeleton; outside \\ce{}, in a text about periodic trends or atomic structure, an arrow between two different bare elements (Be→B) is a trend. Each is skipped and counted (mechanicalCoverage), never passed in silence; any other unbalanced reaction — a stated one, a full redox equation, a step never completed, \\ce{S -> P}, a plain S → P where nothing speaks of a trend, a noun 'balance' — is still a defect.",
+      "source": "General Chemistry Phase 0 (owner approved 2026-11-04)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/genchem-phase0.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.mechanical.recompute-readings",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "K2 worked chains are read as written: m×10^n and a bare 10^n (n an integer) are one number (so a×10^m/b×10^n is a quotient of two numbers), compared through the interval its mantissa allows (a whole mantissa is a measured value); a \\quad or \\qquad between two statements that each hold a relation ends the chain; a letter glued to a number is a unit only when commonly written so and not a variable of the text (2n^2, 4s^3, 2s are products); a unit word written just after the maths is the last value's unit; a written value with its unit then the same value through a written factor (734 mmHg = 734/760) is a change of unit, skipped and counted; an integer's trailing zeros are held to at least two significant figures (10^{2.5} = 320). Real mismatches in the same forms are still defects.",
+      "source": "General Chemistry Phase 0 (owner approved 2026-11-04)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/genchem-phase0.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.checked-record",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "provenance/coursewerk/CHECKED.json (written by site_export from a gate run) is a harness record named exactly: the gate does not raise it as a shipped file nothing reads; any other file under provenance/coursewerk/ is still read or refused.",
+      "source": "General Chemistry Phase 0 (owner approved 2026-11-04)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/genchem-phase0.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.asset-description",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "An asset's description, its path plus .about.json (family SITE-TYPE-CONTRACT draft 12), is no asset of its own: it needs no provenance record (no asset-unrecorded) and owes no visual review (component type asset-description); a real asset without a record is still raised.",
+      "source": "General Chemistry Phase 0 (owner approved 2026-11-04)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/genchem-phase0.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.units.relink-converted",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "units.mjs relink (lib/core/relink.mjs), after a pre-v0.12 plan was standardized: for each chapter, the old objective ids its study guide carries (\"Objective 5.1a\") are mapped one to one, in order, onto the plan's objectives only when the counts match and no swap of two partners raises the old texts' word overlap with the new by more than 0.3; otherwise the chapter is refused with the reason and none of it is linked. The links are built from the markers (study-guide sections, slide parts, a practice question to one guide entry of its objective, an answer to its question's links), only for units not already linked to the current plan, and applied through linkUnits; the mapping is logged (units-relinked-after-conversion) by the agent. No material's text is edited; --dry-run writes nothing.",
+      "source": "General Chemistry Phase 0 (owner approved 2026-11-04)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/genchem-phase0.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.paths-fix",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "scripts/records_paths.mjs points a path stored in the media record (PROVENANCE.json usedIn) at its renamed file only when the stored file is missing and the known rename (slides/<ch>.md → slides/<ch>.slides.md) exists; it changes nothing else in a record and no material, reports a path it cannot resolve (exit 1), regenerates ATTRIBUTION.md from the fixed PROVENANCE.json, logs one harness record of every change, and writes nothing with --dry-run.",
+      "source": "General Chemistry Phase 0 (owner approved 2026-11-04)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/genchem-phase0.test.mjs"
+        ]
+      }
     }
   ]
 }

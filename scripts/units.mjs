@@ -6,6 +6,11 @@
 //   node scripts/units.mjs claim  --root <pkg> --units <id,…> --name <instructor> --words "<their words>" [--author "<someone else>" | --author agent:<model>]
 //   node scripts/units.mjs status --root <pkg>                                             counts, origins, gaps, unindexed edits
 //   node scripts/units.mjs link   --root <pkg> --links <file.json> --model <model id>      { "<unit id>": ["<spine node id>", …] }
+//   node scripts/units.mjs relink --root <pkg> --model <model id> [--chapter <slug>[,<slug>…]] [--dry-run]
+//        after a plan conversion (a pre-v0.12 plan standardized to anchors): map each chapter's old objective ids
+//        ("Objective 5.1a" markers in the materials) one to one, in order, onto the converted plan's objectives, and link
+//        the unlinked units from those markers through `link`'s path (logged). A chapter whose ids and objectives do not
+//        correspond (counts, or texts that point another way) is refused with the reason. No material's text is edited.
 //   node scripts/units.mjs confirm --root <pkg> --units <id,…> --what fact|still-correct --name <instructor> --words "<their words>"
 //   node scripts/units.mjs obligations --root <pkg>                                        the core obligations, grouped
 //   node scripts/units.mjs reverify --root <pkg> --units <id,…> --model <model id>      record that units which owed
@@ -26,12 +31,13 @@ import { confirmUnits, coreObligations, indexAndStamp, linkUnits, loadUnits, res
 import { appendLogRecord } from "./lib/records/log.mjs";
 import { reconcileUnitRecords } from "./lib/core/reconcile.mjs";
 import { segmentDeliverable, uncoveredLines } from "./lib/core/segment.mjs";
+import { relinkAfterConversion } from "./lib/core/relink.mjs";
 
 const [cmd, ...args] = process.argv.slice(2);
 const opt = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : undefined; };
 const fail = (m, c = 2) => { console.error(m); process.exit(c); };
 const root = opt("--root");
-if (!cmd || !root || !fs.existsSync(root)) fail("usage: units.mjs <begin|index|claim|status|link|confirm|reverify|judge|obligations|reconcile|restamp> --root <package> … (see the header of scripts/units.mjs)");
+if (!cmd || !root || !fs.existsSync(root)) fail("usage: units.mjs <begin|index|claim|status|link|relink|confirm|reverify|judge|obligations|reconcile|restamp> --root <package> … (see the header of scripts/units.mjs)");
 const reader = liveReader(root);
 const agent = () => { const model = opt("--model"); if (!model) fail("--model <model id> is required for the agent"); return { role: "agent", name: "executor", model }; };
 try {
@@ -67,6 +73,13 @@ try {
     const links = JSON.parse(fs.readFileSync(opt("--links") || fail("--links <file.json> is required"), "utf8"));
     linkUnits(root, reader, links, agent());
     console.log(JSON.stringify({ linked: Object.keys(links).length }, null, 2)); process.exit(0);
+  }
+  if (cmd === "relink") {
+    const dryRun = args.includes("--dry-run");
+    const chapters = String(opt("--chapter") || "").split(",").filter(Boolean);
+    const r = relinkAfterConversion(root, reader, dryRun ? null : agent(), { chapters, dryRun });
+    console.log(JSON.stringify({ dryRun, linked: r.linked, chapters: r.chapters }, null, 2));
+    process.exit(Object.values(r.chapters).some((c) => c.status === "refused") ? 1 : 0);
   }
   if (cmd === "confirm") {
     const name = opt("--name") || fail("--name <instructor> is required");

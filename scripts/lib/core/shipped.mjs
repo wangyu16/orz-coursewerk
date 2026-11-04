@@ -151,11 +151,12 @@ export function hiddenInText(text, file, declared = null) {
 // A file is exempt from being read only as a HARNESS RECORD named exactly — a known record file, or a record path of a
 // known shape — never by its folder: `metadata/further-reading.md` is no record. The records and why each is exempt:
 /** Record files, by exact path: the harness's own JSON records, the generated attribution (assurance.mjs requires it to
- *  equal what PROVENANCE.json generates), the package manifest and the root files the Alembic contract allows (LICENSE
+ *  equal what PROVENANCE.json generates), the public record of what was checked (CHECKED.json, written by site_export
+ *  from a gate run: hashes and check results, no text a student reads; General Chemistry 2026-11-04), the package manifest and the root files the Alembic contract allows (LICENSE
  *  is checked as the exact canonical licence text; CITATION.cff and .gitignore print nothing a student reads). */
 export const RECORD_FILES = Object.freeze(new Set([
   "alembic.json", "LICENSE", "CITATION.cff", ".gitignore",
-  "provenance/coursewerk/ATTRIBUTION.md", "private/coursewerk/CLAIMS.json", "private/coursewerk/COMPONENT_INDEX.json", "private/coursewerk/DOCUMENTS.json", "private/coursewerk/FOUNDATION.json",
+  "provenance/coursewerk/ATTRIBUTION.md", "provenance/coursewerk/CHECKED.json", "private/coursewerk/CLAIMS.json", "private/coursewerk/COMPONENT_INDEX.json", "private/coursewerk/DOCUMENTS.json", "private/coursewerk/FOUNDATION.json",
   "private/coursewerk/KEY_FACT_REVIEW.json", "private/coursewerk/LINK_RESOLUTIONS.json", "private/coursewerk/LOG.jsonl", "private/coursewerk/MEDIA_PLAN.json", "private/coursewerk/OVERRIDES.json",
   "private/coursewerk/PROVENANCE.json", "private/coursewerk/REFERENCE_RECORD.json", "private/coursewerk/REVIEW_QUEUE.json", "private/coursewerk/SOURCE_RECORD.json", "private/coursewerk/SPINE.json",
   "private/coursewerk/STEERING.json", "private/coursewerk/TERMS.json", "private/coursewerk/VISUAL_REVIEW.json", "private/coursewerk/coursewerk.json", "private/coursewerk/modules.json",

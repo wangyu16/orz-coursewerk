@@ -2,6 +2,7 @@
 // that both the old gate and the new stable modules call the same code. Behaviour is unchanged: check_oer.mjs builds
 // these with createQaAudits(pkg, { forDiscovery }) and uses them exactly as before; modules call them on a private,
 // materialized copy of the package. Do not change behaviour here without changing it for both callers.
+import { isAssetDescription } from "../core/asset_description.mjs";
 import { withoutHeader } from "../core/printed.mjs";
 import fs from "node:fs";
 import path from "node:path";
@@ -63,7 +64,9 @@ export function createQaAudits(pkg, { forDiscovery = false } = {}) {
     .sort();
   const assetsDir = path.join(pkg, "assets");
   const allAssets = walk(assetsDir).map((f) => path.relative(assetsDir, f).replaceAll(path.sep, "/"));
-  const mediaAssets = allAssets.filter((n) => !n.endsWith(".attrib.json"));
+  // an asset's description (`<asset>.about.json`, family SITE-TYPE-CONTRACT draft 12: Alembic's title, alt text, subject,
+  // topic …) travels with its asset and is no asset of its own (General Chemistry 2026-11-04)
+  const mediaAssets = allAssets.filter((n) => !n.endsWith(".attrib.json") && !isAssetDescription(n));
 
   const isExternal = (t) => /^(https?:|mailto:|tel:|#|javascript:)/i.test(t) || t.startsWith("<http");
   function markdownLinks(text) {

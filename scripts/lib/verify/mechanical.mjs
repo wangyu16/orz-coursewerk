@@ -57,7 +57,17 @@ function prepMath(m) {
     // an arrow between parts ("\frac{0.040}{0.0027} \to 1.48") may state a result or a change; it is read as a link
     // that is COUNTED, never compared and never passed in silence (red-team round 7, R7-K08)
     .replace(/\\(?:to|rightarrow|longrightarrow|Longrightarrow|mapsto|longmapsto)(?![A-Za-z])|[→⟶↦]/g, ARROW)
-    .replace(/\\(?:leq?|geq?|leqslant|geqslant|ll|gg|neq?|lt|gt|lesssim|gtrsim|propto|Rightarrow|implies|Longrightarrow|iff)(?![A-Za-z])|[≤≥≠≪≫∝⇒]|(?<![<\\])<(?![=-])|(?<![-=])>/g, BREAK);
+    .replace(/\\(?:leq?|geq?|leqslant|geqslant|ll|gg|neq?|lt|gt|lesssim|gtrsim|propto|Rightarrow|implies|Longrightarrow|iff)(?![A-Za-z])|[≤≥≠≪≫∝⇒]|(?<![<\\])<(?![=-])|(?<![-=])>/g, BREAK)
+    .split(/\\q?quad(?![A-Za-z])/).reduce(quadJoin);
+}
+// A wide space between two statements that each hold their own relation ("\frac{1451}{738}=2.0 \qquad \frac{7733}{1451}=5.3",
+// General Chemistry 2026-11-04) separates them: the chain ends there. A space before or after a relation, or before a
+// unit or a remark with no relation of its own, is only spacing.
+const topRelation = (x) => relationParts(x).parts.length > 1;
+function quadJoin(acc, seg) {
+  const last = acc.split(BREAK).at(-1);
+  if (opensWithRelation(seg) || endsWithRelation(last) || !topRelation(last) || !topRelation(seg)) return `${acc} ${seg}`;
+  return `${acc}${BREAK}${seg}`;
 }
 const opensWithRelation = (s) => /^\s*(?:=|≈)/.test(s);
 const endsWithRelation = (s) => /(?:=|≈)\s*$/.test(s);
@@ -68,6 +78,8 @@ const endsWithRelation = (s) => /(?:=|≈)\s*$/.test(s);
 const CONNECTIVE = /^[\s,;:]*(?:(?:and|so|then|thus|hence|therefore|which|that is|is|are|was|equals|i\.e\.|viz\.|namely|giving|gives|to give|yielding|or|=|≈)[\s,;:]*){0,4}$/i;
 const subjectKey = (s) => String(s || "").replace(/\\(?:left|right|,|;|!| )/g, "").replace(/[\s{}]/g, "");
 
+const TRAILING_UNIT = /^[ \t]*([A-Za-zµ°][A-Za-z°µ\/·^0-9-]{0,12})(?![A-Za-z0-9])/;
+const NOT_A_UNIT = /^(?:a|an|and|as|at|by|in|is|it|of|on|or|per|so|the|to|if|be|we)$/i;
 const TRAILING_RESULT = /^[ \t]*(=|≈|≅|≃|≐)[ \t]*([-−]?\d[\d,]*(?:\.\d+)?(?:\s*[×x]\s*10\^?\{?[-−]?\d+\}?)?)(?![\d.]*\s*\$)([ \t]*[A-Za-zµ°%][A-Za-z°/·^0-9-]{0,12})?/;
 /** The chains of a text: [{ text }] — one per line of a derivation, continued across lines and adjacent spans. */
 function chainsOf(text) {
@@ -93,6 +105,12 @@ function chainsOf(text) {
     // relation and the value continue the span's chain — a reader sees one "Q = … = 1.48"
     const after = TRAILING_RESULT.exec(T.slice(lastEnd));
     if (after && open) { open.text += ` ${after[1].replace(/[≅≃≐]/, "≈")} ${after[2]}${after[3] && knownUnit(after[3].trim()) ? ` ${after[3].trim()}` : ""}`; lastEnd += after[0].length; }
+    // the unit written just after the maths ("$409\ \text{pm} = 4.09\times10^{-8}$ cm", General Chemistry 2026-11-04) is
+    // the last value's unit: a reader sees "4.09×10⁻⁸ cm"
+    else if (open) {
+      const u = TRAILING_UNIT.exec(T.slice(lastEnd)), last = relationParts(open.text).parts.at(-1);
+      if (u && knownUnit(u[1]) && !NOT_A_UNIT.test(u[1]) && /\d\s*\}?\s*$/.test(last) && !splitUnit(last).unit) open.text += ` \\text{${u[1]}}`;
+    }
   }
   return carried(chains);
 }
@@ -100,7 +118,7 @@ function chainsOf(text) {
 // a value as written, not arithmetic: a signed number or scientific notation ("+1", "-566.0", "3.4\times10^{-5}") — a
 // chain ending in one states its value, so a later chain on the same symbol is a new statement (GenChem re-evaluation
 // 2026-10-31: "$k = 3.4\times10^{-5}$ at 298 K and $k = 5.2\times10^{-4}$" was read as one chain)
-const writtenValue = (raw) => /^[-+−]?\s*\d+(?:\.\d+)?(?:\s*(?:\\times|×|\\cdot|·)\s*10\s*\^\s*\{?\s*[-+−]?\d+\s*\}?)?$/.test(String(raw || "").replace(/\{,\}/g, "").trim());
+const writtenValue = (raw) => /^[-+−]?\s*(?:\d+(?:\.\d+)?(?:\s*(?:\\times|×|\\cdot|·)\s*10\s*\^\s*\{?\s*[-+−]?\d+\s*\}?)?|10\s*\^\s*\{?\s*[-+−]?\d+\s*\}?)$/.test(String(raw || "").replace(/\{,\}/g, "").trim());
 
 /** A chain carried by its SYMBOL across spans (R5-K03): "$Q_r = \frac{…}{…}$, and therefore $Q_r = 148$" — an
  *  expression left without its value is completed by the next chain that names the same subject. Joined only when the
@@ -198,6 +216,19 @@ function relationParts(s) {
 const TRAIL_UNIT = /(?:\s|\\[,;:! ]|~)*((?:(?:\\(?:text|mathrm|rm)\s*\{[^{}]*\}|[A-Za-z°%µ]+(?![A-Za-z°%µ]))(?:\s*\^\s*(?:\{\s*[-−]?\d+\s*\}|[-−]?\d))?(?:\s|\\[,;:! ]|~|\/|\\cdot)*)+)$/;
 const unitKey = (u) => String(u || "").replace(/\\(?:text|mathrm|rm)\s*\{([^{}]*)\}/g, "$1").replace(/\\[,;:! ]|~|\\cdot/g, " ").replace(/\s+/g, " ").replace(/\s*\^\s*\{?\s*([-−]?\d+)\s*\}?/g, "^$1").replace(/−/g, "-").trim();
 
+// the single-letter variables of the text being read (set by workedLinks for the length of one call)
+let VARIABLES = new Set();
+/** Single letters a text uses as variables in its maths: a letter that is the subject of a relation ("s = …", "s^3 = …")
+ *  or stands with a coefficient in brackets ("(2s)"); \ce{} is chemistry and is not read. */
+function variablesOf(text) {
+  const out = new Set();
+  for (const m of String(text || "").matchAll(MATH)) {
+    const x = (m[1] ?? m[2] ?? m[3] ?? m[4]).replace(/\\ce\s*\{[^{}]*\}/g, " ");
+    for (const v of x.matchAll(/(?<![A-Za-z\\_^{])([A-Za-z])(?![A-Za-z({])\s*(?:\^\s*(?:\{[^{}]*\}|\d))?\s*=/g)) out.add(v[1]);
+    for (const v of x.matchAll(/\(\s*\d+(?:\.\d+)?\s*([A-Za-z])\s*\)/g)) out.add(v[1]);
+  }
+  return out;
+}
 /** Strip a trailing unit: { body, unit }. The unit must not be a function name or a lone symbol inside arithmetic. */
 function splitUnit(part) {
   const p = part.trim().replace(/[.,;:]+$/, "").trim();
@@ -207,7 +238,10 @@ function splitUnit(part) {
   if (!/[\d)}]\s*$/.test(body)) return { body: p, unit: "" }; // "x" alone is a symbol, not a value with a unit
   // one letter glued to the number ("1367.3T" in "1367.3T = 48,353 ⟹ T = 35.4") is a product with a symbol, unless it is
   // a unit commonly written that way ("298K", "5g"); GenChem re-evaluation 2026-10-31 (T was read as tesla)
-  if (/^[A-Za-z]$/.test(m[0]) && !/^[KgLmsJMVAWN]$/.test(m[0])) return { body: p, unit: "" };
+  // the same with an exponent ("2n^2", "4s^3": General Chemistry 2026-11-04, n and s were read as units), and a letter the
+  // text uses as a variable ("s = 2.1\times10^{-4}", "(2s)^2") is the variable wherever it is glued to a number
+  const glued = m[0].match(/^([A-Za-z])\s*(?:\^\s*(?:\{\s*[-−]?\d+\s*\}|[-−]?\d))?$/);
+  if (glued && (!/^[KgLmsJMVAWN]$/.test(glued[1]) || VARIABLES.has(glued[1]))) return { body: p, unit: "" };
   return { body, unit: unitKey(m[1]) };
 }
 
@@ -273,6 +307,39 @@ function tokens(src) {
     if (fn) { out.push({ t: "fn", v: fn[1] }); i += fn[0].length; continue; }
     if ("+-*/^(){}[]".includes(c)) { out.push({ t: c }); i++; continue; }
     return null; // a letter, a backslash command we do not know, a symbol: not arithmetic
+  }
+  return scientific(out);
+}
+/** "m × 10^{e}" and a bare "10^{e}" (e an integer) are ONE written number, as every reader takes them: "4.8×10^{-11}/9.3×10^{-5}"
+ *  is a quotient of two numbers, not ((4.8×10^{-11})/9.3)×10^{-5} (General Chemistry 2026-11-04). The number keeps its
+ *  mantissa's written precision. A power of ten that is itself an exponent, or has a non-integer exponent, stays arithmetic. */
+function scientific(toks) {
+  const exponent = (k) => {
+    let i = k, sign = 1;
+    const braced = toks[i]?.t === "{"; if (braced) i++;
+    if (toks[i]?.t === "-" || toks[i]?.t === "+") { if (toks[i].t === "-") sign = -1; i++; }
+    const n = toks[i];
+    if (n?.t !== "num" || !/^\d+$/.test(n.raw)) return null;
+    i++;
+    if (braced) { if (toks[i]?.t !== "}") return null; i++; }
+    return { e: sign * n.v, next: i };
+  };
+  const out = [];
+  for (let i = 0; i < toks.length; i++) {
+    const a = toks[i];
+    if (a.t === "num" && out.at(-1)?.t !== "^") {
+      if (toks[i + 1]?.t === "*" && toks[i + 2]?.t === "num" && toks[i + 2].raw === "10" && toks[i + 3]?.t === "^" && toks[i + 4]?.t !== "(") {
+        const x = exponent(i + 4);
+        // the mantissa is a measured value even when it is a whole number ("5\times10^{-7}" is one significant figure)
+        const decimals = (a.raw.split(".")[1] || "").length;
+        if (x && !/[eE]/.test(a.raw)) { out.push({ t: "num", v: Number(`${a.raw.replace(/,/g, "")}e${x.e}`), w: 0.5 * 10 ** (x.e - decimals), raw: `${a.raw}e${x.e}`, sci: x.e, mant: a.raw }); i = x.next - 1; continue; }
+      }
+      if (a.raw === "10" && toks[i + 1]?.t === "^" && out.at(-1)?.t !== "*") {
+        const x = exponent(i + 2);
+        if (x) { out.push({ t: "num", v: 10 ** x.e, w: 0, raw: `1e${x.e}`, sci: x.e, mant: "1" }); i = x.next - 1; continue; }
+      }
+    }
+    out.push(a);
   }
   return out;
 }
@@ -354,12 +421,20 @@ function literal(t) {
   if (nums.length === 2 && nums[0].v !== 10) return null; // n^n is arithmetic, not a literal
   const value = evaluate(t);
   if (!value || value === AMBIGUOUS) return null;
+  if (nums.length === 1 && nums[0].sci != null) { // one scientific number: one unit in its mantissa's last place
+    const decimals = (nums[0].mant.replace(/,/g, "").split(".")[1] || "").length;
+    return { value: value.v, ulp: 10 ** (nums[0].sci - decimals) };
+  }
   const mant = nums[0].raw.replace(/,/g, "");
   const decimals = (mant.split(/[eE]/)[0].split(".")[1] || "").length;
   const eNot = Number((mant.match(/[eE]([-+]?\d+)/) || [])[1] || 0);
   const exp = nums.length > 1 ? (t.some((x) => x.t === "-" && t.indexOf(x) > 0) ? -1 : 1) * nums[nums.length - 1].v : 0;
   const scale = nums.length === 2 && nums[0].v === 10 ? 10 ** exp : nums.length === 3 ? 10 ** exp : 1;
-  return { value: value.v, ulp: 10 ** (-decimals + eNot) * scale };
+  // an integer's trailing zeros are not a precision it claims (General Chemistry 2026-11-04: "10^{2.5} = 320", "≈ 220"):
+  // "320" is held to two significant figures, never fewer
+  const digits = nums.length === 1 && !decimals && !eNot ? mant.replace(/^-/, "").replace(/^0+/, "") : "";
+  const zeros = digits ? Math.max(0, Math.min(digits.length - digits.replace(/0+$/, "").length, digits.length - 2)) : 0;
+  return { value: value.v, ulp: 10 ** (-decimals + eNot + zeros) * scale };
 }
 
 const hasOperator = (toks) => toks.some((x, i) => ["*", "/", "+", "fn", "^"].includes(x.t) || (x.t === "-" && i > 0) || (x.t === "(" && i > 0 && ["num", ")"].includes(toks[i - 1].t)));
@@ -403,8 +478,9 @@ function partOf(raw0) {
     const v = evaluate(t);
     if (v === AMBIGUOUS) return { kind: "unread", reason: "an implicit product after \"/\": the precedence would be a guess", raw: body.trim() };
     if (v) {
-      const lit = hasOperator(t) ? null : literal(t);
-      return { kind: "num", raw: body.trim(), unit, v: v.v, lo: v.lo, hi: v.hi, op: hasOperator(t), lit };
+      // a scientific number is compared as before it was read as one number: through the interval its mantissa allows
+      const op = hasOperator(t) || t.some((k) => k.sci != null), lit = op ? null : literal(t);
+      return { kind: "num", raw: body.trim(), unit, v: v.v, lo: v.lo, hi: v.hi, op, lit };
     }
   }
   // not evaluable: a symbol makes it symbolic; otherwise it is a numeric form the reader cannot read
@@ -430,6 +506,11 @@ const scaled = (p, f) => ({ ...p, v: p.v * f, lo: p.lo * f, hi: p.hi * f, lit: p
 
 /** Every link of every worked chain in a text: { compared: [{ expression, written, recomputed, ok }], skipped: [{ link, reason }] }. */
 export function workedLinks(text) {
+  const outer = VARIABLES;
+  VARIABLES = variablesOf(text);
+  try { return workedLinksIn(text); } finally { VARIABLES = outer; }
+}
+function workedLinksIn(text) {
   const compared = [], skipped = [];
   const prose = proseChains(text);
   skipped.push(...prose.unread);
@@ -452,6 +533,10 @@ export function workedLinks(text) {
       if (!ok && rel === "one-sided") {
         const [x, w] = a.unit ? [b, a] : [a, b];
         if (PREFIX_STEPS.some((f) => agree(scaled(x, f), w))) { skipped.push({ link, reason: "a unit on one side only: it agrees only at a change of unit the text does not write" }); continue; }
+        // the value with its unit, then the same value through a conversion factor written out ("734 mmHg = \frac{734}{760}",
+        // "-2.377\times10^{-11} J = \frac{-2.377\times10^{-11}}{1.602\times10^{-13}}": General Chemistry 2026-11-04) — a change
+        // of unit whose new unit is not written: skipped and counted, never judged
+        if (convertedByFactor(x, w)) { skipped.push({ link, reason: "a change of unit written as a factor: the new unit is not written" }); continue; }
       }
       // the side recomputed is the arithmetic one (or the earlier, when both are); the other is what was written
       const [x, w] = !a.op && b.op ? [b, a] : [a, b];
@@ -459,6 +544,15 @@ export function workedLinks(text) {
     }
   }
   return { compared, skipped };
+}
+/** Is arithmetic `x` the written value `w` times or over one of x's own numbers (and nothing else)? */
+function convertedByFactor(x, w) {
+  if (!x.op || writtenValue(x.raw) || !(w.lit || writtenValue(w.raw)) || !w.v) return false;
+  const nums = (tokens(x.raw) || []).filter((k) => k.t === "num").map((k) => k.v);
+  const same = (p, q) => Math.abs(p - q) <= 1e-9 * Math.max(Math.abs(p), Math.abs(q));
+  if (nums.length !== 2 || !nums.some((n) => same(Math.abs(n), Math.abs(w.v)))) return false;
+  const factor = nums.find((n) => !same(Math.abs(n), Math.abs(w.v))) ?? nums[1], r = Math.abs(x.v / w.v);
+  return !same(r, 1) && (same(r, Math.abs(factor)) || same(r, 1 / Math.abs(factor)));
 }
 const PREFIX_STEPS = [1e-3, 1e3, 1e-6, 1e6, 1e-9, 1e9, 1e-2, 1e2, 1e-12, 1e12, 1e-15, 1e15];
 
@@ -669,7 +763,7 @@ const ELEMENT_NAMES = { H: "hydrogen", B: "boron", C: "carbon", N: "nitrogen", O
 const namesElement = (text, letters) => letters.some((l) => ELEMENT_NAMES[l] && new RegExp(`\\b(?:${ELEMENT_NAMES[l]})\\b`, "i").test(text));
 /** Every reaction a text writes, read or not: [{ e, raw } | { raw, unread: reason }]. */
 const SCHEMATIC_CONTEXT = /\b(?:steps?|mechanisms?|intermediates?|generic|schematic|overall reaction|rate law|rate-determining)\b/i;
-export function reactionsIn(text) {
+export function reactionsIn(text, { headings = [] } = {}) {
   const t = String(text || ""), out = [];
   for (const b of ceBlocks(t)) {
     const sides = ceSides(b.body);
@@ -684,7 +778,7 @@ export function reactionsIn(text) {
         out.push({ raw, unread: "schematic letters, not a formula (the unit names none of these elements)" }); continue;
       }
       const [l, r] = [sides[i], sides[i + 1]].map((s) => (s.trim() ? sideOf(s.trim().split(/\s+\+\s+/)) : null));
-      out.push(l && r ? { e: { left: l, right: r }, raw } : { raw, unread: "a species or side the reader does not parse" });
+      out.push(l && r ? { e: { left: l, right: r }, raw, at: b.at, before: t.slice(0, b.at) } : { raw, unread: "a species or side the reader does not parse" });
     }
   }
   const p = plainChem(t), covered = [];
@@ -699,7 +793,7 @@ export function reactionsIn(text) {
       out.push({ raw, unread: "schematic letters, not a formula (the unit names none of these elements)" }); continue;
     }
     const l = lp && sideOf(lp), r = rp && sideOf(rp);
-    out.push(l && r ? { e: { left: l, right: r }, raw } : { raw, unread: "a species the reader does not parse" });
+    out.push(l && r ? { e: { left: l, right: r }, raw, before: p.slice(0, m.index) } : { raw, unread: "a species the reader does not parse" });
   }
   // the wide net (R5-K04): any other arrow between formula-like tokens, in any notation, is a reaction the reader did
   // not read — counted, never silent
@@ -708,7 +802,54 @@ export function reactionsIn(text) {
     if (covered.some(([a, b]) => at >= a && at < b)) continue;
     if (formulaLike(m[1]) && formulaLike(m[3])) out.push({ raw: m[0].trim(), unread: "an arrow between formula-like tokens the reader does not parse" });
   }
-  return out.map((x) => { const b = x.e && balanceOf(x.e); return b?.status === "unread" ? { raw: x.raw, unread: b.reason } : x; });
+  const read = out.map((x) => { const b = x.e && balanceOf(x.e); return b?.status === "unread" ? { raw: x.raw, unread: b.reason } : x.e ? { ...x, balanced: b.status === "balanced" } : x; });
+  return read.map((x) => { if (!x.e || x.balanced) return clean(x); const why = intendedUnbalanced(x, read, t, headings); return why ? { raw: x.raw, unread: why } : clean(x); });
+}
+const clean = ({ e, raw, unread }) => (e ? { e, raw } : { raw, unread });
+
+// ---- reactions written unbalanced on purpose (General Chemistry 2026-11-04) ------------------------------------------
+// A reaction is a claim that it balances only where the text states it. Four forms are not that claim, and each is skipped
+// and counted (never passed in silence, never judged); every other unbalanced reaction is still a defect:
+//   1. the TASK: the reaction a sentence asks to balance ("Balance $\ce{CH4 + O2 -> CO2 + H2O}$"), or the reaction standing
+//      alone under a heading about balancing (a worked example's slide);
+//   2. a STEP of a balancing the unit completes: every species of it stands on the same side of a balanced reaction the
+//      unit writes later (\ce{} order) or anywhere (outside \ce{});
+//   3. a HALF-REACTION SKELETON in a text about oxidation, reduction or half-reactions: one species on each side besides
+//      water, H+, OH- and electrons, with the same elements other than H and O ("Fe^3+ -> Fe", "Cr2O7^2- -> Cr^3+");
+//   4. a TREND ARROW between two different bare elements, outside \ce{}, in a text about periodic trends or atomic
+//      structure ("the Be→B dip"): no reaction turns one element into another without a nuclear notation. Inside \ce{},
+//      or where nothing speaks of a trend, a named element's arrow stays chemistry and is balanced (R5-K07).
+// "Balance …" opening a sentence, a line or a labelled question; "to balance …"; "balancing …" (not "the charge balance")
+const BALANCE_TASK = /(?:(?:^|[.!?:\n)*·]\s*)balance|\bto balance|\bbalancing)\b[^.!?\n]*$/i;
+const TREND_TEXT = /\b(?:trends?|dips?|periods?|periodic|across|ioni[sz]ation|electron affinity|radius|radii|electronegativity|configurations?|orbitals?|subshells?|shield(?:ed|ing)?)\b/i;
+const REDOX_TEXT = /\bhalf[- ]reactions?\b|\boxidation\b|\breduction\b|\boxidi[sz]ed\b|\breduced\b/i;
+const SOLVENT_SPECIES = /^(?:H2O|H\^?\+|H3O\^?\+|OH\^?-|e\^?-)$/;
+const speciesKey = (sp) => String(sp).replace(/[\^{}\s]/g, "").replace(/\((?:g|l|s|aq|cr)\)/g, "");
+const elementsOf = (sp, but = []) => { const r = speciesReadings(sp)[0]; return r && !r.nuclear ? Object.keys(r.atoms).filter((el) => !but.includes(el)).sort().join(" ") : null; };
+function intendedUnbalanced(x, all, text, headings) {
+  const { left, right } = x.e;
+  const L = Object.keys(left), R = Object.keys(right);
+  // 1. the task
+  if (x.before != null && BALANCE_TASK.test(x.before)) return "a reaction the text asks to balance: the task, not a claim that it balances";
+  const alone = !String(text).replace(/\\ce\s*\{[\s\S]*\}/, "").replace(/[$\s.:;,*]/g, "");
+  if (alone && /\bbalanc/i.test(String(headings.at?.(-1) ?? ""))) return "a reaction set alone under a heading about balancing: the task, not a claim that it balances";
+  // 4. a trend arrow
+  if (x.at == null && TREND_TEXT.test(text) && L.length === 1 && R.length === 1 && left[L[0]] === 1 && right[R[0]] === 1 && ELEMENTS.has(L[0]) && ELEMENTS.has(R[0]) && L[0] !== R[0]) return "an arrow between two different elements: a comparison or a trend, not a reaction";
+  // 2. a step of a balancing completed later in the unit
+  const keys = (side) => new Set(Object.keys(side).map(speciesKey));
+  const done = all.find((y) => y !== x && y.e && y.balanced && (x.at == null || y.at == null || y.at > x.at) &&
+    L.every((sp) => keys(y.e.left).has(speciesKey(sp))) && R.every((sp) => keys(y.e.right).has(speciesKey(sp))));
+  if (done) return `a step of a balancing the unit completes (${done.raw})`;
+  // 3. a half-reaction skeleton
+  if (REDOX_TEXT.test(text)) {
+    const main = (side) => Object.keys(side).filter((sp) => !SOLVENT_SPECIES.test(speciesKey(sp)));
+    const [ml, mr] = [main(left), main(right)];
+    if (ml.length === 1 && mr.length === 1) {
+      const [el, er] = [elementsOf(ml[0], ["H", "O"]), elementsOf(mr[0], ["H", "O"])];
+      if (el && el === er) return "a half-reaction skeleton, shown before it is balanced";
+    }
+  }
+  return null;
 }
 /** Every reaction a text writes that the reader reads: [{ e, raw }]. */
 export const equationsIn = (text) => reactionsIn(text).filter((x) => x.e);
@@ -760,8 +901,8 @@ export function imbalanceOf(e) {
 }
 
 /** The unbalanced reactions of a text: [{ equation, element, left, right }]. */
-export function unbalancedEquations(text) {
-  return equationsIn(text).map(({ e, raw }) => ({ raw, x: imbalanceOf(e) })).filter((r) => r.x).map(({ raw, x }) => ({ equation: raw, ...x }));
+export function unbalancedEquations(text, ctx = {}) {
+  return reactionsIn(text, ctx).filter((x) => x.e).map(({ e, raw }) => ({ raw, x: imbalanceOf(e) })).filter((r) => r.x).map(({ raw, x }) => ({ equation: raw, ...x }));
 }
 
 // ---- coverage: what was read, what was skipped -------------------------------------------------------------------
@@ -772,7 +913,7 @@ export function mechanicalCoverage(units) {
     const w = workedLinks(u.text);
     out.compared += w.compared.length;
     for (const s of w.skipped) out.skipped.push({ unit: u.id, what: "worked link", form: s.link, reason: s.reason });
-    for (const r of reactionsIn(u.text)) {
+    for (const r of reactionsIn(u.text, { headings: u.headings || [] })) {
       if (r.e) out.balanced++;
       else out.skipped.push({ unit: u.id, what: "reaction", form: r.raw, reason: r.unread });
     }
@@ -794,7 +935,7 @@ export function mechanicalFindings(units, basis, { confirmed = new Set(), conten
       F.push(makeFinding({ module: "skeleton", kind: "computation-mismatch", units: [u.id], statusClass: "defect", route: "agent", basis,
         evidence: { type: "computation", rule: "every link of a worked chain computes, at the precision written", expression: x.expression, written: x.written, recomputed: x.recomputed, deliverable: u.locator?.deliverable },
         recommendation: `${u.id}: ${x.expression} recomputes to ${x.recomputed}, not ${x.written} — correct the arithmetic or the value` }));
-    for (const x of unbalancedEquations(u.text))
+    for (const x of unbalancedEquations(u.text, { headings: u.headings || [] }))
       F.push(makeFinding({ module: "skeleton", kind: "equation-unbalanced", units: [u.id], statusClass: "defect", route: "agent", basis,
         evidence: { type: "computation", rule: "a written reaction balances in every element and in charge (a nuclear one in mass and atomic number)", equation: x.equation, element: x.element, left: x.left, right: x.right, deliverable: u.locator?.deliverable },
         recommendation: `${u.id}: ${x.equation} is not balanced — ${x.element} ${x.left} on the left, ${x.right} on the right` }));

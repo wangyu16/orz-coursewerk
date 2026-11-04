@@ -4,6 +4,7 @@
 // A source component points to the components that must remain consistent with
 // it. Any edit invalidates the index until the complete impact set is reviewed
 // and an attested refresh records the new coherent state.
+import { isAssetDescription } from "./core/asset_description.mjs";
 import { relocate } from "./records/paths.mjs";
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -87,6 +88,7 @@ function componentType(rel) {
   if (rel === "provenance/coursewerk/ATTRIBUTION.md") return "attribution";
   if (rel === "private/coursewerk/SOURCE_RECORD.json") return "source-record";
   if (["private/coursewerk/KEY_FACT_REVIEW.json", "private/coursewerk/VISUAL_REVIEW.json"].includes(rel)) return "review";
+  if (rel.startsWith("assets/") && isAssetDescription(rel)) return "asset-description"; // words about an asset, no visual
   if (rel.startsWith("assets/")) return "asset";
   if (rel.startsWith("private/")) return "private";
   const top = rel.split("/")[0];

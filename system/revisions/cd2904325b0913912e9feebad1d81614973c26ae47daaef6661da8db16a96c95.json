@@ -1,0 +1,355 @@
+{
+  "schemaVersion": 1,
+  "planId": "cd2904325b0913912e9feebad1d81614973c26ae47daaef6661da8db16a96c95",
+  "baseRef": "main",
+  "baseTip": "c1ca62449187011f89a42fb89983d44496ab272e",
+  "baseCommit": "c1ca62449187011f89a42fb89983d44496ab272e",
+  "reviewedHead": "c1ca62449187011f89a42fb89983d44496ab272e",
+  "changed": [
+    "CHANGELOG.md",
+    "PROCEDURE.md",
+    "README.md",
+    "VERSION",
+    "docs/migrating-from-v0.12.md",
+    "format-contracts/deliverables.md",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/consistency.mjs",
+    "scripts/lib/core/asset_description.mjs",
+    "scripts/lib/core/record_paths.mjs",
+    "scripts/lib/core/relink.mjs",
+    "scripts/lib/core/shipped.mjs",
+    "scripts/lib/legacy/qa_audits.mjs",
+    "scripts/lib/skeleton/runner.mjs",
+    "scripts/lib/terms.mjs",
+    "scripts/lib/verify/mechanical.mjs",
+    "scripts/modules/_shared.mjs",
+    "scripts/records_paths.mjs",
+    "scripts/units.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/genchem-phase0.test.mjs"
+  ],
+  "requiredReview": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "VERSION",
+    "docs/coherence-index.md",
+    "docs/migrating-from-v0.12.md",
+    "format-contracts/deliverables.md",
+    "package.json",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/consistency.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/core/asset_description.mjs",
+    "scripts/lib/core/record_paths.mjs",
+    "scripts/lib/core/relink.mjs",
+    "scripts/lib/core/shipped.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/legacy/qa_audits.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/skeleton/runner.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/terms.mjs",
+    "scripts/lib/verify/mechanical.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/modules/_shared.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/records_paths.mjs",
+    "scripts/revision_impact.mjs",
+    "scripts/units.mjs",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "system/REQUIREMENTS.json",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/genchem-phase0.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site.test.mjs"
+  ],
+  "reviewed": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "VERSION",
+    "docs/coherence-index.md",
+    "docs/migrating-from-v0.12.md",
+    "format-contracts/deliverables.md",
+    "package.json",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/consistency.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/core/asset_description.mjs",
+    "scripts/lib/core/record_paths.mjs",
+    "scripts/lib/core/relink.mjs",
+    "scripts/lib/core/shipped.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/legacy/qa_audits.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/skeleton/runner.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/terms.mjs",
+    "scripts/lib/verify/mechanical.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/modules/_shared.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/records_paths.mjs",
+    "scripts/revision_impact.mjs",
+    "scripts/units.mjs",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "system/REQUIREMENTS.json",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/genchem-phase0.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site.test.mjs"
+  ],
+  "impactedClaims": [
+    "claim.accessibility.floor",
+    "claim.authorship.accountable",
+    "claim.carriers.honest-portability",
+    "claim.carriers.three-shapes",
+    "claim.coherence.anchors",
+    "claim.coherence.claims",
+    "claim.coherence.index-fresh",
+    "claim.coherence.prerequisites",
+    "claim.coherence.revisions",
+    "claim.control.coverage",
+    "claim.control.overrides",
+    "claim.format.contracts",
+    "claim.git.visible-edits",
+    "claim.language.editorial",
+    "claim.media.decision",
+    "claim.provenance.complete",
+    "claim.release.fail-closed",
+    "claim.release.measured-vs-declared",
+    "claim.review.blind-bundle",
+    "claim.review.key-facts",
+    "claim.revision.propagation",
+    "claim.rights.verified",
+    "claim.source.comparison",
+    "claim.trust.consistency",
+    "claim.trust.immutable",
+    "claim.website.published",
+    "claim.website.showcase"
+  ],
+  "testResults": [
+    {
+      "path": "tests/anchors.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/assurance.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-2.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-3.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-4.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/blind_bundle.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/carriers.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-control.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-revision.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-semantic.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/classify.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/coherence-claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/escalation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/evidence-tools.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/fingerprint.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/immutable.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/index-freshness.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/integration-study-pairs.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/key-fact-bindings.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/overrides.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate-cli.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/qa.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/range.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/reviews.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/semantic-index-artifact.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/site.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/spine.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/terms.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/units.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/unverifiable_quotation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/usage-e2e.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/wiring.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "General Chemistry Phase 0 (v1.0.2). Reviewed every required item for statements the change touches (version, units/records commands, the mechanical reader, consistency and module time limits, CHECKED.json, asset records and descriptions, attribution): updated PROCEDURE.md, README.md (units relink, records_paths), docs/migrating-from-v0.12.md (relink after a pre-v0.12 plan, record paths), format-contracts/deliverables.md (<asset>.about.json), CHANGELOG and VERSION; the templates, site pages and images, skills/oer-qa, docs/coherence-index.md, system claims and profiles, and the v0.12 scripts sharing qa_audits (check_oer: .about.json is not media there either) needed no change (site and package.json keep their version lines, as at v1.0.1). Code: runner time limit scales with snapshot files and a timed-out run or recheck is a blocking module-failed saying so; recheckByRerun runs once per snapshot; term resolution cached per consistency scan (findings identical to v1.0.1 on a 660-claim course sample, 27x faster; MS7 now 115 s through the runner on the 6,273-file course); mechanical reader changes checked against all 4,980 units of the course: the 37 equation and 23 computation misreads cleared, no new flag anywhere, 24 more links compared, every new skip counted; existing red-team reader tests (r3-r7, genchem-reeval) pass, including S -> P staying chemistry. New lib/core/relink.mjs reproduces the analysis's 4,760 links exactly; records_paths fixes 157 stored deck paths and regenerates ATTRIBUTION.md identically to generate_attribution. Tests: the 36 required plus genchem-phase0, runner, stable-modules, records-layout, redteam-r1/r2/r6-visible, d49, core-obligations, wiring-modules, site-type-assets, ship-lean, site-export (675/675 via xargs --test-concurrency=2, COURSEWERK_FRAMES=installed), then contract-declarations, skills, system-index, job-release one at a time. End to end on a copy of the course: gate 2,130 -> 2,112 (harness) -> 1,520 (records_paths + relink).",
+  "generatedIndexHash": "baddc1e7a0c61b09f617c52c47a7a4cade33da8e20af55920563a9f99383d08c",
+  "acceptedAt": "2026-11-04T22:29:29.506Z"
+}

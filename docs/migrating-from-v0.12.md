@@ -72,6 +72,20 @@ Then link every teaching unit and practice question to the spine (`units.mjs lin
 - review absolutes;
 - bring the digest.
 
+**A plan older than v0.12, standardized by hand.** Its materials still carry the old ids ("{{sp[info] Objective 5.1a}}"),
+while the new plan names objectives by anchor, so every unit is unlinked. Link them from those markers:
+
+```bash
+node scripts/units.mjs relink --root <pkg> --model <model id> --dry-run   # what would be mapped and linked
+node scripts/units.mjs relink --root <pkg> --model <model id> [--chapter <slug>]
+```
+
+Each chapter's old ids are mapped one to one, in order, onto its plan's objectives, but only when the counts match and the
+texts do not point another way; otherwise the chapter is refused with the reason, and you link it yourself. No text is
+edited; the links go through `units.mjs link` and the mapping is logged. Each relinked question owes its link review
+(`verify.mjs alignment`), as any new link does. If the decks were renamed to `slides/<ch>.slides.md`, point the media
+records at them: `node scripts/records_paths.mjs --root <pkg>` (it regenerates `ATTRIBUTION.md`).
+
 The v0.12 claim declarations in front matter are not needed any more. They do no harm and can be removed.
 
 ## 4. Records that no longer apply

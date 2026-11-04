@@ -1,5 +1,29 @@
 # Coursewerk changelog
 
+## v1.0.2 (2026-11-04)
+
+From the General Chemistry Phase 0 (owner approved 2026-11-04): a 19-chapter course converted from a pre-v0.12 plan
+blocked on 2,130 items, and part of that was the harness's own.
+
+- **Value consistency (MS7) finishes on a large course.** It timed out at the fixed 120 s limit and checked nothing. Term
+  resolution is now computed once per scan and the recheck re-runs a module once for all its findings (minutes to
+  seconds); the module time limit grows with the package (120 s plus 40 ms per file). A run or recheck that does not
+  finish is a blocking `module-failed` that says it timed out, and after how long. `req.runner.module-time`.
+- **The mechanical reader reads worked forms as written.** Not claims of balance (skipped and counted): a reaction a
+  sentence asks to balance, a balancing step the unit completes, a half-reaction skeleton in a redox text, a trend arrow
+  between two elements in a text about periodic trends (Be→B). Read as written: scientific notation as one number ("a×10^m / b×10^n"), statements set
+  apart by `\quad`, a variable glued to a number (2n², 4s³), a unit written just after the maths, a change of unit
+  written as a factor (734 mmHg = 734/760), an integer's trailing zeros (320 at two significant figures). Real errors
+  are still caught. `req.mechanical.balance-intended`, `req.mechanical.recompute-readings`.
+- **Two records are recognised.** `provenance/coursewerk/CHECKED.json` is a named harness record, not an unread shipped
+  file; an asset's description `<asset>.about.json` (SITE-TYPE-CONTRACT draft 12) is no asset of its own (no provenance
+  record, no visual review). `req.records.checked-record`, `req.records.asset-description`.
+- **`units.mjs relink`**: after a pre-v0.12 plan was standardized, maps each chapter's old objective ids one to one, in
+  order, onto the new objectives (refusing a chapter whose counts or texts do not correspond, with the reason) and links
+  the units from the markers the materials carry, through `link`, logged; no text is edited. `req.units.relink-converted`.
+- **`scripts/records_paths.mjs`**: points paths stored in the media record (PROVENANCE.json) at renamed decks
+  (`slides/<ch>.slides.md`), logs it and regenerates `ATTRIBUTION.md`. `req.records.paths-fix`.
+
 ## v1.0.1 (2026-11-04)
 
 - **Site type: `figures` becomes `assets`** (family SITE-TYPE-CONTRACT draft 12, owner 2026-11-03). The definition

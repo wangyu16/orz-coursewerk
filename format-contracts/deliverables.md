@@ -22,6 +22,7 @@ package/
   practice/<slug>.md           # per chapter — practice sheet (orz-markdown)
   assessment-support/<slug>.md # per chapter — assessment guide (plain markdown, no graphics)
   assets/…                     # figures/structures/plots/media (self-generated or open-licensed)
+  assets/…/<asset>.about.json  # optional: Alembic's description of an asset (SITE-TYPE-CONTRACT draft 12); travels with it, no asset of its own
   private/coursewerk/FOUNDATION.json     # intended use · sources · rights/license evidence · privacy (required)
   private/coursewerk/PROVENANCE.json     # structured record for every incorporated asset/item (required)
   private/coursewerk/MEDIA_PLAN.json     # reviewed decision for chapters without a real photograph
