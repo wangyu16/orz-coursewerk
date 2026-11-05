@@ -28,6 +28,9 @@ blocked on 2,130 items, and part of that was the harness's own.
   an unclosed `$$`; a display left open, or a `$$` printed as text, still is. `req.format.display-math`.
 - **`scripts/records_paths.mjs`**: points paths stored in the media record (PROVENANCE.json) at renamed decks
   (`slides/<ch>.slides.md`), logs it and regenerates `ATTRIBUTION.md`. `req.records.paths-fix`.
+- **Plans off the website** (family SITE-TYPE-CONTRACT draft 13, owner 2026-11-04): the concept map,
+  the assessment guide and the course map are marked `"website": false` (kept in the course, never published); the
+  website links each unit's study guide, slides and practice only. `req.sitetype.plans-off-website`.
 
 ## v1.0.1 (2026-11-04)
 

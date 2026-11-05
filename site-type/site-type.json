@@ -7,7 +7,7 @@
   "documents": [
     { "id": "concept-map", "scope": "unit", "label": "Concept map",
       "path": "concepts/{unit}.md", "format": "md", "required": true,
-      "starter": "starters/concept-map.md", "group": "plan", "edits": "keep-both" },
+      "starter": "starters/concept-map.md", "group": "plan", "edits": "keep-both", "website": false },
     { "id": "study-guide", "scope": "unit", "label": "Study guide",
       "path": "study-guide/{unit}.md", "format": "md", "required": true,
       "starter": "starters/study-guide.md", "group": "material", "edits": "sections" },
@@ -16,13 +16,13 @@
       "starter": "starters/slides.slides.md", "group": "material" },
     { "id": "assessment-guide", "scope": "unit", "label": "Assessment guide",
       "path": "assessment-support/{unit}.md", "format": "md", "required": true,
-      "starter": "starters/assessment-guide.md", "group": "plan", "edits": "keep-both" },
+      "starter": "starters/assessment-guide.md", "group": "plan", "edits": "keep-both", "website": false },
     { "id": "practice", "scope": "unit", "label": "Practice questions",
       "path": "practice/{unit}.md", "format": "md",
       "starter": "starters/practice.md", "group": "material", "edits": "sections" },
     { "id": "course-map", "scope": "site", "label": "Course map",
       "path": "concepts/course.md", "format": "md", "group": "course", "edits": "keep-both",
-      "starter": "starters/course-map.md" },
+      "starter": "starters/course-map.md", "website": false },
     { "id": "readme", "scope": "site", "label": "About this course",
       "path": "README.md", "format": "md", "group": "course", "who": "lead",
       "required": true, "starter": "starters/README.md" }
@@ -83,9 +83,8 @@
       { "show": "title" },
       { "show": "detail", "id": "description" },
       { "show": "units" },
-      { "show": "link", "doc": "readme" },
-      { "show": "link", "doc": "course-map" }
+      { "show": "link", "doc": "readme" }
     ],
-    "unitLinks": ["study-guide", "slides", "practice", "concept-map", "assessment-guide"]
+    "unitLinks": ["study-guide", "slides", "practice"]
   }
 }

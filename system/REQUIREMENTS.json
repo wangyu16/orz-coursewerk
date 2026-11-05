@@ -4021,6 +4021,21 @@
           "tests/genchem-phase0.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.sitetype.plans-off-website",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Plans off the website (family SITE-TYPE-CONTRACT draft 13, owner 2026-11-04): the concept map, the assessment guide and the course map are kept in the course but marked \"website\": false, so Alembic never publishes them; the website links only the study guide, slides and practice for each unit, and the front page does not link the course map.",
+      "source": "owner 2026-11-04 (concept maps and assessment guides are not secret, but on the website they only distract students)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/site-type-assets.test.mjs"
+        ]
+      }
     }
   ]
 }

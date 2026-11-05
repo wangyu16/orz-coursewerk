@@ -14,3 +14,10 @@ test("the definition names its asset places as `assets`, not `figures`", () => {
 test("the definition does not list asset kinds (they are Alembic's)", () => {
   for (const k of ["media", "kinds", "assetKinds"]) assert.equal(k in def, false);
 });
+
+test("the plans are kept off the website (req.sitetype.plans-off-website)", () => {
+  const off = def.documents.filter((d) => d.website === false).map((d) => d.id).sort();
+  assert.deepEqual(off, ["assessment-guide", "concept-map", "course-map"]);
+  assert.deepEqual(def.website.unitLinks, ["study-guide", "slides", "practice"]);
+  assert.equal(def.website.front.some((e) => e.doc === "course-map"), false);
+});
