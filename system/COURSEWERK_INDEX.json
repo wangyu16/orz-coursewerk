@@ -53,7 +53,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "86fe62b816b49654ebf3bd14d6a7a91e6684fe75fd65441e2c2717ea42c86b66"
+      "hash": "cedc42fe65008e1b834a1aa508e1eeb1b6533e6343ab7399e3e2d324466e6b5e"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -557,7 +557,7 @@
       "id": "repo:scripts/lib/core/printed.mjs",
       "path": "scripts/lib/core/printed.mjs",
       "type": "kernel",
-      "hash": "02cb7b2f4edd8d7e269be5fd11be1cf6d07fe23bcea475d9d4e4ee73fd3fa320"
+      "hash": "0f3c2083e3d7cda9bedf65a11b8dd09bd0c09aa66eb3d038b7f1ed86fb9028dd"
     },
     {
       "id": "repo:scripts/lib/core/reconcile.mjs",
@@ -1001,7 +1001,7 @@
       "id": "repo:scripts/modules/ms3-format.mjs",
       "path": "scripts/modules/ms3-format.mjs",
       "type": "executable",
-      "hash": "07f89b1abe944f77aedf444aac24fde31063239c492839d3562d5f2dc86375db"
+      "hash": "d9a7bc74cf464c45bb0b19b467a5068fbb8d817992f8d7a7f4aa7b3f81fa1cc9"
     },
     {
       "id": "repo:scripts/modules/ms4-links.mjs",
@@ -1373,7 +1373,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "42e38f562f3cad1ff622c7b47d45a8d2c5ebc67369e1d7df9b3adb1d9ebb5141"
+      "hash": "3921ffa7c1e37f421b50168dc4a3e56073f43f8c9b5dd7ff65cd1b6e857ae24c"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1949,7 +1949,7 @@
       "id": "repo:tests/genchem-phase0.test.mjs",
       "path": "tests/genchem-phase0.test.mjs",
       "type": "test",
-      "hash": "b371dea32e976e8acc36c29773e5b794eda8f5dc80df4ca44c1c4d3bee94fc33"
+      "hash": "337e828d664771a760260150898553bc053147cfe3673d03826fd28693adf1e0"
     },
     {
       "id": "repo:tests/genchem-reeval.test.mjs",
@@ -4549,6 +4549,14 @@
       {
         "id": "req.findings.routing",
         "phase": "P2",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.format.display-math",
+        "phase": "P11",
         "tiers": [
           "T1"
         ],

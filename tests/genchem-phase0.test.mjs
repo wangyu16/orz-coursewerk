@@ -25,6 +25,7 @@ import { renderAttribution } from "../scripts/lib/assurance.mjs";
 import { parseLog } from "../scripts/lib/records/log.mjs";
 import { createSnapshot } from "../scripts/lib/skeleton/snapshot.mjs";
 import { alembicHost } from "../scripts/lib/records/host.mjs";
+import { displayMathProblems } from "../scripts/lib/core/printed.mjs";
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const tmp = (t, name) => { const d = fs.mkdtempSync(path.join(os.tmpdir(), `cw-p0-${name}-`)); t.after(() => fs.rmSync(d, { recursive: true, force: true })); return d; };
@@ -306,4 +307,26 @@ test("[req.format.site-manifest] in an Alembic site (host mode) the local manife
   const withGit = make("git", true, true);
   assert.equal(alembicHost(withGit), null);
   assert.ok(manifestRule(withGit).length > 0);
+});
+
+// ---- 7. display maths is read as orz-markdown parses it ------------------------------------------------------------------
+test("[req.format.display-math] two inline spans written back to back are not a display delimiter; a $$ left open, or printed as text, still is", async (t) => {
+  // the course's own lines: both render as two inline spans
+  assert.deepEqual(displayMathProblems("the ion product $[\\ce{Ag+}]$$[\\ce{Cl-}]$ easily exceeds the tiny $K_{sp}$."), []);
+  assert.deepEqual(displayMathProblems("$\\ce{N2O4 <=> 2NO2}$, $K_c = 1.20\\times10^{-4}$, $[\\ce{N2O4}]$$_0 = 0.500$ M"), []);
+  assert.deepEqual(displayMathProblems("$$\nx = 1\n$$\n\nText.\n\n$$y = 2$$\n\n```\n$$\n```\nand `$$` in code"), [], "closed displays and code are fine");
+  // still caught
+  const open = displayMathProblems("# T\n\nBefore.\n\n$$\nx = 1\n\nAfter text here.\n");
+  assert.equal(open.length, 1); assert.equal(open[0].line, 5); assert.match(open[0].issue, /never closed/);
+  assert.match(displayMathProblems("$$x = 1$$ and words after it")[0].issue, /never closed/);
+  assert.match(displayMathProblems("$$x = 1\n\nProse the open display swallows.\n\n$$y = 2$$\n")[0].issue, /never closed/, "closed only by the next display's opening");
+  assert.match(displayMathProblems("It costs $$x = 1 and more text.")[0].issue, /printed as text/);
+  // wired into MS3
+  const root = tmp(t, "dm");
+  write(root, "alembic.json", JSON.stringify({ schemaVersion: 2, chapters: [{ slug: "m", title: "M" }] }));
+  write(root, "study-guide/m.md", "# M\n\nThe product $[\\ce{Ag+}]$$[\\ce{Cl-}]$ is small.\n\n$$\nx = 1\n\nNever closed.\n");
+  const reg = { schemaVersion: 1, modules: [{ name: "ms3-format", version: "1.0.0", maturity: "stable", enabled: true }] };
+  const math = runCheckpoint({ root, checkpoint: "V8", profile: "private", registry: reg }).findings.filter((f) => (f.evidence?.rule ?? f.evidence?.reported?.rule) === "math-delimiters");
+  assert.equal(math.length, 1);
+  assert.match(JSON.stringify(math[0].evidence), /line 5: a \$\$ display equation opens here and is never closed/);
 });

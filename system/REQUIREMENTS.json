@@ -4006,6 +4006,21 @@
           "tests/genchem-phase0.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.format.display-math",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "MS3's display-maths check (math-delimiters) reads each text with orz-markdown's own parser (core/printed.mjs displayMathProblems), never by counting \"$$\": two inline spans written back to back (\"$a$$b$\", \"$x$$_0 = …$\") are two spans, as they render, and raise nothing; a display block whose last line does not end in \"$$\" or that holds a blank line (it ran on to the next \"$$\", swallowing what follows into one equation) and a \"$$\" left in printed text are defects with their line; code is not maths.",
+      "source": "General Chemistry Phase 0 (coordinator 2026-11-04)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/genchem-phase0.test.mjs"
+        ]
+      }
     }
   ]
 }

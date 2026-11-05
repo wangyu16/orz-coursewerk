@@ -24,6 +24,8 @@ blocked on 2,130 items, and part of that was the harness's own.
 - **`alembic.json` in an Alembic site is Alembic's.** In host mode (an Alembic job's folder, the gate's existing test) the
   local manifest rule no longer judges it (SITE-TYPE-CONTRACT §4: schema 3, `units`, discovery details in Alembic); a local
   package keeps the rule. `req.format.site-manifest`.
+- **Display maths is read as orz-markdown parses it.** Two inline spans written back to back (`$a$$b$`) are no longer
+  an unclosed `$$`; a display left open, or a `$$` printed as text, still is. `req.format.display-math`.
 - **`scripts/records_paths.mjs`**: points paths stored in the media record (PROVENANCE.json) at renamed decks
   (`slides/<ch>.slides.md`), logs it and regenerates `ATTRIBUTION.md`. `req.records.paths-fix`.
 

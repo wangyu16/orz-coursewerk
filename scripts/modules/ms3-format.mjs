@@ -10,6 +10,7 @@
 import { createQaAudits } from "../lib/legacy/qa_audits.mjs";
 import { checkPageNotation, checkPagedNotation, checkSlidesNotation, frameworkDefinitions } from "../lib/core/notations.mjs";
 import { houseNotationSpots, houseNotationNote } from "../lib/core/house_notation.mjs";
+import { displayMathProblems } from "../lib/core/printed.mjs";
 import { base, recheckByRerun } from "./_shared.mjs";
 
 const RETIRED = [/practice sheet does not tag objective coverage/, /slides source is missing objective coverage/, /^assessment support is missing/,
@@ -44,10 +45,9 @@ async function run(s) {
     const lines = (s.text(file) || "").split("\n");
     lines.forEach((l, i) => { const m = l.replace(/^\uFEFF/, "").match(/[\u00AD\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]/); if (m) defect("invisible-character", file, `line ${i + 1}: U+${m[0].codePointAt(0).toString(16).toUpperCase().padStart(4, "0")} hides text from the checks — remove it`); });
     // an unclosed $$ swallows everything after it into one equation, and the units there lose their evidence (P11
-    // wiring sweep); fenced code is not math
-    let open = 0, fence = false;
-    lines.forEach((l, i) => { if (/^\s*(```|~~~)/.test(l)) fence = !fence; if (fence) return; for (const _ of l.matchAll(/\$\$/g)) open = open ? 0 : i + 1; });
-    if (open) defect("math-delimiters", file, `line ${open}: a $$ display equation opens here and is never closed`);
+    // wiring sweep); read from orz-markdown's own parse (printed.mjs displayMathProblems), so two inline spans written
+    // back to back ("$a$$b$") are two spans, as they render (req.format.display-math); code is not maths
+    for (const p of displayMathProblems(lines.join("\n"))) defect("math-delimiters", file, `line ${p.line}: ${p.issue}`);
     // house notation (owner 2026-11-02): one way to write math and chemistry. Light — never a defect: one note per
     // text, for the agent, so a fix pasted in from a review cannot leave the course in two notations unseen
     // in what students read; the plans (concepts/) are the instructor's, listed by scripts/house_notation.mjs

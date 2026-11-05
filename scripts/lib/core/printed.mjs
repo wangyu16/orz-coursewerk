@@ -863,3 +863,31 @@ export function listItemsOf(text) {
     return { start: it.start, lines, parts, text: parts.join(" ") };
   }).sort((a, b) => a.start - b.start);
 }
+
+/**
+ * Display maths that orz-markdown does not close (req.format.display-math), read from its own token stream, never by
+ * counting "$$" (General Chemistry 2026-11-04: "$[\ce{Ag+}]$$[\ce{Cl-}]$" and "$[\ce{N2O4}]$$_0 = 0.500$" are two inline
+ * spans written back to back, and render so, but an odd "$$" count called them unclosed): [{ line (1-based), issue }].
+ *   - a display block (math_block) whose last line does not end in "$$", or that holds a blank line (it ran on to the
+ *     next "$$"), swallows what follows into one equation;
+ *   - a "$$" left in printed text (orz-markdown read no maths there) prints as two dollar signs.
+ * Code (fenced or inline) is code, not maths.
+ */
+export function displayMathProblems(text) {
+  const src = String(text || ""), lines = src.split("\n"), out = [];
+  const walk = (tokens, line) => {
+    for (const t of tokens) {
+      const at = t.map ? t.map[0] : line;
+      if (t.type === "math_block") {
+        const [a, b] = t.map || [0, 0], last = (lines[b - 1] ?? "").trim();
+        const closed = b - 1 > a ? last.endsWith("$$") : /^\s*\$\$[\s\S]*\S[\s\S]*\$\$\s*$/.test(lines[a] ?? "") && (lines[a].match(/\$\$/g) || []).length >= 2;
+        // a blank line is a paragraph break, which display maths cannot hold: a block holding one ran past where its
+        // author closed it, to the next "$$" (often the next display's opening), swallowing the prose between
+        if (!closed || /\n[ \t]*\n/.test(t.content)) out.push({ line: a + 1, issue: `a $$ display equation opens here and is never closed: everything after it, to line ${Math.min(b, lines.length)}, is read as one equation` });
+      } else if (t.type === "text" && t.content.includes("$$")) out.push({ line: at + 1, issue: "a $$ is printed as text: no equation opens or closes here (write $…$ inline, or $$ on its own lines for a display)" });
+      if (t.children) walk(t.children, at);
+    }
+  };
+  walk(md.parse(src, {}), 0);
+  return out.filter((p, i) => out.findIndex((q) => q.line === p.line && q.issue === p.issue) === i);
+}
