@@ -1,6 +1,6 @@
 # Coursewerk changelog
 
-## Unreleased
+## v1.0.3 (2026-11-05)
 
 - **The update task** (family SITE-TYPE-CONTRACT draft 14, owner 2026-11-05: D5/D6). The site type declares one named
   task, `upgrade` ("Bring this course up to date"), which Alembic offers the owner and deputy when a course was last
