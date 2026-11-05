@@ -1,0 +1,326 @@
+{
+  "schemaVersion": 1,
+  "planId": "7d8da2fa24235488124f39f2736a80277d0e6072b7df1cdb804db8d15069d46d",
+  "baseRef": "main",
+  "baseTip": "87a3ba0dd857fdaf4836a39f077f2f7b29d7885d",
+  "baseCommit": "87a3ba0dd857fdaf4836a39f077f2f7b29d7885d",
+  "reviewedHead": "87a3ba0dd857fdaf4836a39f077f2f7b29d7885d",
+  "changed": [
+    "CHANGELOG.md",
+    "site-type/site-type.json",
+    "system/REQUIREMENTS.json",
+    "tests/site-type-assets.test.mjs"
+  ],
+  "requiredReview": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "VERSION",
+    "docs/coherence-index.md",
+    "format-contracts/deliverables.md",
+    "package.json",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/revision_impact.mjs",
+    "site-type/site-type.json",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "system/REQUIREMENTS.json",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site-type-assets.test.mjs",
+    "tests/site.test.mjs"
+  ],
+  "reviewed": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "VERSION",
+    "docs/coherence-index.md",
+    "format-contracts/deliverables.md",
+    "package.json",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/revision_impact.mjs",
+    "site-type/site-type.json",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "system/REQUIREMENTS.json",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site-type-assets.test.mjs",
+    "tests/site.test.mjs"
+  ],
+  "impactedClaims": [
+    "claim.accessibility.floor",
+    "claim.authorship.accountable",
+    "claim.carriers.honest-portability",
+    "claim.carriers.three-shapes",
+    "claim.coherence.anchors",
+    "claim.coherence.claims",
+    "claim.coherence.index-fresh",
+    "claim.coherence.prerequisites",
+    "claim.coherence.revisions",
+    "claim.control.coverage",
+    "claim.control.overrides",
+    "claim.format.contracts",
+    "claim.git.visible-edits",
+    "claim.language.editorial",
+    "claim.media.decision",
+    "claim.provenance.complete",
+    "claim.release.fail-closed",
+    "claim.release.measured-vs-declared",
+    "claim.review.blind-bundle",
+    "claim.review.key-facts",
+    "claim.revision.propagation",
+    "claim.rights.verified",
+    "claim.source.comparison",
+    "claim.trust.consistency",
+    "claim.trust.immutable",
+    "claim.website.published",
+    "claim.website.showcase"
+  ],
+  "testResults": [
+    {
+      "path": "tests/anchors.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/assurance.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-2.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-3.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-4.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/blind_bundle.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/carriers.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-control.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-revision.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-semantic.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/classify.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/coherence-claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/escalation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/evidence-tools.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/fingerprint.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/immutable.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/index-freshness.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/integration-study-pairs.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/key-fact-bindings.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/overrides.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate-cli.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/qa.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/range.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/reviews.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/semantic-index-artifact.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/site.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/spine.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/terms.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/units.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/unverifiable_quotation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/usage-e2e.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/wiring.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/site-type-assets.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/job-release.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/system-index.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "The update task (D5/D6, family SITE-TYPE-CONTRACT draft 14, owner approved 2026-11-05). Reviewed every required item: site-type/site-type.json gains one task, upgrade (who lead, offer, size large), checked against Alembic's site-type schema and cross-field rules (parseSiteType ok); its instruction names only this release's tools (records_move, the v0.12 migration guide section 1, units relink with --chapter, records_paths), each confirmed to exist with that usage, keeps course text unchanged beyond what those steps require, approves nothing and routes approvals to the instructor as questions; REQUIREMENTS gains req.sitetype.tasks with T1 evidence in tests/site-type-assets.test.mjs; CHANGELOG has an Unreleased entry (no version bump: the release is the owner's call). No script, record format or claim changed. Tests: the 36 required plus site-type-assets (570/570 via xargs --test-concurrency=2, COURSEWERK_FRAMES=installed), then system-index and job-release one at a time.",
+  "generatedIndexHash": "8b0fe4dc7dbfffb6ff7c011b42f58c291f0eb2a96a157daf13b0555966ca977f",
+  "acceptedAt": "2026-11-05T04:18:13.622Z"
+}

@@ -53,7 +53,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "9d4efeee4f0286573ed06ffd51c8d3d2f0f2e51f394d8c7e3b0a877cc17fd061"
+      "hash": "5efbb1d34b9a4f72fa567fd11940e6f6931a1ade34419ce4988009b721cd5c64"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -1205,7 +1205,7 @@
       "id": "repo:site-type/site-type.json",
       "path": "site-type/site-type.json",
       "type": "repository-support",
-      "hash": "10b419d1186337062a266e42654716190a539b4a252c463fd955ae8bbabc5c2e"
+      "hash": "c285381e66371cf13bd99d3155ed78b0af341b41f8da5b835b1443bb3ed4ddbc"
     },
     {
       "id": "repo:site-type/starters/assessment-guide.md",
@@ -1373,7 +1373,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "428591b4c09864baf24d5ca65f777cb830616e228efc14ac2fe407d5f1c177a4"
+      "hash": "f2c0b2ca7cc4b631023f4e604baf43621ec63263ac02cd3cc89954aaed82cc23"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -2273,7 +2273,7 @@
       "id": "repo:tests/site-type-assets.test.mjs",
       "path": "tests/site-type-assets.test.mjs",
       "type": "test",
-      "hash": "d6e397afcb601791df645d69e8713d03ed5c488cca8e371b0c417deb58700854"
+      "hash": "8f4de0441e61e827ac464616c68ac953940236ed83ce7f05a4922e9afb62fd31"
     },
     {
       "id": "repo:tests/site.test.mjs",
@@ -5414,6 +5414,14 @@
       },
       {
         "id": "req.sitetype.plans-off-website",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.sitetype.tasks",
         "phase": "P11",
         "tiers": [
           "T1"

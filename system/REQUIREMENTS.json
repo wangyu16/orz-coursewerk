@@ -4036,6 +4036,21 @@
           "tests/site-type-assets.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.sitetype.tasks",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The site type declares its named tasks (family SITE-TYPE-CONTRACT draft 14): one, \"upgrade\", offered to the owner and deputy when a course was last brought up to date by another release. Its instruction brings the course's records and plans to what this release reads with the release's own tools (records_move, the v0.12 migration guide, units relink, records_paths), changes no course text beyond what those steps require, approves nothing, and leaves every approval to the instructor as a question.",
+      "source": "owner 2026-11-05 (D5/D6 approved: the type package says what an update is; owner and deputy start it)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/site-type-assets.test.mjs"
+        ]
+      }
     }
   ]
 }

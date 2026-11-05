@@ -1,5 +1,14 @@
 # Coursewerk changelog
 
+## Unreleased
+
+- **The update task** (family SITE-TYPE-CONTRACT draft 14, owner 2026-11-05: D5/D6). The site type declares one named
+  task, `upgrade` ("Bring this course up to date"), which Alembic offers the owner and deputy when a course was last
+  brought up to date by another release, and keeps in the assistant's ready-made tasks. Its instruction runs only this
+  release's own tools (records move, the v0.12 migration guide, units relink, record paths), changes no course text
+  beyond what they require, approves nothing, and brings every approval to the instructor as a question.
+  `req.sitetype.tasks`.
+
 ## v1.0.2 (2026-11-04)
 
 From the General Chemistry Phase 0 (owner approved 2026-11-04): a 19-chapter course converted from a pre-v0.12 plan

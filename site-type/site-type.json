@@ -86,5 +86,16 @@
       { "show": "link", "doc": "readme" }
     ],
     "unitLinks": ["study-guide", "slides", "practice"]
-  }
+  },
+  "tasks": [
+    {
+      "id": "upgrade",
+      "title": "Bring this course up to date",
+      "summary": "Brings the course's records and plans up to this release of Coursewerk. The course text stays as it is; plans to approve come to you as questions.",
+      "instruction": "The instructor started this from Alembic: \"Bring this course up to date\", with the Coursewerk release in assistant/ (assistant/VERSION). Those words are their request to update the course: quote them where a tool asks for the words of the request, and nowhere else. Starting this approves nothing.\n\nFollow the job steps in assistant/CLAUDE.md. Then bring the course to what this release reads, in this order, doing only the steps the status or the tool shows are needed:\n1. Records in the old layout (a metadata/ folder): node assistant/scripts/records_move.mjs --root work.\n2. Plans in an older grammar: as assistant/docs/migrating-from-v0.12.md section 1 says (spine.mjs migrate, or standardize a plan older than v0.12 as the agent, marked as your proposal). Never approve a plan: approvals go to the instructor as questions, through the job's hand-in.\n3. Unit records that still point at old objective ids: node assistant/scripts/units.mjs relink --root work --model <your model id>, one chapter at a time (--chapter) if it refuses one.\n4. Media records that name renamed files: node assistant/scripts/records_paths.mjs --root work.\n5. Index (inside the one units session the job steps describe), then run coursewerk.mjs status and the gate.\n\nChange no course text except where one of these steps requires it, and never change what a sentence says. Do not remove old records: propose that as a question. In your last message say what you ran, what changed, what still blocks each chapter, and what waits for the instructor. Never run a command in the background, and never end your turn while one is running.",
+      "size": "large",
+      "who": "lead",
+      "offer": true
+    }
+  ]
 }
