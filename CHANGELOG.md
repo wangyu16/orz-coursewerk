@@ -1,5 +1,18 @@
 # Coursewerk changelog
 
+## Unreleased
+
+- **The chapter's own frame is framing** (owner 2026-11-06, from the General Chemistry relink). Units under a "Chapter
+  logic" or "About this chapter" section, the listed objectives of a "(Chapter) learning objectives" section (other prose
+  there stays teaching: red team r1 C3-06), a study guide's title area (what stands under the title before its first
+  `##` section), and a heading with no text under it (a chain of headings over nothing) are framing: still units, read
+  for off-plan content (`framing-review-owed`, D42), owing no spine link. A heading over text keeps its role (red team
+  r2 C3-03). Framing still carries no fact (D19-I): any of them the classifier reads as stating a value, date, name or
+  superlative stays teaching. A guide with no section has no title area. `req.units.framing-frame`.
+- **The reference box closes the study guide.** courseguide-standards and the deliverables contract put the `:::info`
+  Reference / Audience / Package license box last, under its own `## About this chapter`; the chapter objectives come
+  first.
+
 ## v1.0.3 (2026-11-05)
 
 - **The update task** (family SITE-TYPE-CONTRACT draft 14, owner 2026-11-05: D5/D6). The site type declares one named

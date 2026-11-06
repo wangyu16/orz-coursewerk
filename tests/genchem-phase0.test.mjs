@@ -178,7 +178,7 @@ test("[req.records.asset-description] an asset's .about.json is its description:
 const MAP = (objectives) => `# Concept Map — Melting\n\n## Objectives\n${objectives.map(([t, a], i) => `${i + 1}. ${t} [anchor: ${a}]`).join("\n")}\n\n## Concept sequence\n1. A pure solid melts at one temperature. [anchor: pure-melts]\n\n## Key terms\n- **melting point** — the temperature at which a solid melts [concept.melting.pure-melts]\n\n## Misconceptions to surface\n- Solids melt whenever they are warm. [anchor: warm]\n`;
 const OBJ = [["State the melting point of ice at standard pressure", "state-mp"], ["Explain why impurities broaden a melting range", "explain-range"]];
 const GUIDE = "# Guide\n## State [objective: state-mp]\n**Cognitive level:** remember.\n### Recall [anchor: recall]\n- **Type:** short answer\n- **Count:** 1\n## Explain [objective: explain-range]\n**Cognitive level:** understand.\n### Predict [anchor: predict]\n- **Type:** workout\n- **Count:** 1\n";
-const SG = "# Melting\n\n## Chapter logic\n\nThis chapter builds from one fact to one rule.\n\n## 1.1 The melting point\n\n### Learning Objectives\n\n- {{sp[info] Objective 1.1a}} State the melting point of ice.\n\nIce melts at 0 °C at 1 atm.\n\n## 1.2 Ranges\n\n- {{sp[info] Objective 1.2a}} Explain why impurities broaden the melting range.\n\nImpurities broaden the melting range of a solid.\n\n## Asset and License Record\n\nNo assets are used in this chapter.\n";
+const SG = "# Melting\n\n## Chapter logic\n\nThis chapter is a short one.\n\n## The thread\n\nThis chapter builds from one fact to one rule.\n\n## 1.1 The melting point\n\n### Learning Objectives\n\n- {{sp[info] Objective 1.1a}} State the melting point of ice.\n\nIce melts at 0 °C at 1 atm.\n\n## 1.2 Ranges\n\n- {{sp[info] Objective 1.2a}} Explain why impurities broaden the melting range.\n\nImpurities broaden the melting range of a solid.\n\n## Asset and License Record\n\nNo assets are used in this chapter.\n";
 const PR = "# Practice\n\n:::: tabs\n::: tab Q 1\n{{sp[info] Objective 1.1a}} · *short answer* At what temperature does ice melt at 1 atm?\n:::\n::: tab Answer\nAt 0 °C.\n:::\n::::\n\n:::: tabs\n::: tab Q 2\n{{sp[info] Objective 1.2a}} · *workout* A sample melts over 5 °C. Explain.\n:::\n::: tab Answer\nIt is impure.\n:::\n::::\n";
 function converted(t, { objectives = OBJ } = {}) {
   const root = tmp(t, "relink");
@@ -201,6 +201,9 @@ test("[req.units.relink-converted] old objective ids are mapped one to one onto 
   assert.deepEqual(unit(root, /^Ice melts/).spineNodes, ["objective.melting.state-mp"]);
   assert.deepEqual(unit(root, /^Impurities broaden/).spineNodes, ["objective.melting.explain-range"]);
   assert.deepEqual([...unit(root, /^This chapter builds/).spineNodes].sort(), ["objective.melting.explain-range", "objective.melting.state-mp"], "an overview links to every objective");
+  // the chapter logic is framing (owner 2026-11-06): it needs no link, and none is made
+  assert.equal(unit(root, /^This chapter is a short one/).role, "framing");
+  assert.deepEqual(unit(root, /^This chapter is a short one/).spineNodes, [], "framing is not linked");
   assert.deepEqual(unit(root, /^No assets are used/).spineNodes, [], "the asset record is not teaching: left unlinked");
   const q1 = unit(root, /At what temperature/), a1 = unit(root, /At 0 °C\./), q2 = unit(root, /melts over 5/);
   assert.deepEqual(q1.spineNodes, ["guide.melting.recall"]); assert.deepEqual(a1.spineNodes, ["guide.melting.recall"]);

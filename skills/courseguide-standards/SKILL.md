@@ -47,18 +47,9 @@ Two global rules:
 Ordered sections (exact skeleton):
 
 1. **`# Chapter N: <Title>`** — H1, the textbook chapter number + title.
-2. **Reference box** — a `:::info` container, always these lines:
-   ```
-   :::info
-   **Reference:** <Textbook, Edition>, Chapter N (<license>)
-   **Audience:** <one line>
-   **Package license:** <exact value from verified FOUNDATION.json; never infer or prefer a license>
-   **Note:** <optional — e.g. slug/indexing note; content is textbook Chapter N>
-   :::
-   ```
-3. **Chapter Learning Objectives** — a `:::success` container titled `**Chapter Learning Objectives**` + a bullet list (one bullet per objective).
-4. **`## Chapter Logic`** — 2–4 sentences of the chapter's conceptual arc + ONE mermaid flowchart (full ```mermaid``` / `{{mermaid}}` form, not `{{mm}}`) followed by a visible, substantive `**Visual description:**` + an optional `:::warning` for a model boundary. Every other Mermaid/chart block needs the same visible alternative (`**Data summary:**` for charts).
-5. **Sections**, one per textbook section, IN ORDER:
+2. **Chapter Learning Objectives** — a `:::success` container titled `**Chapter Learning Objectives**` + a bullet list (one bullet per objective).
+3. **`## Chapter Logic`** — 2–4 sentences of the chapter's conceptual arc + ONE mermaid flowchart (full ```mermaid``` / `{{mermaid}}` form, not `{{mm}}`) followed by a visible, substantive `**Visual description:**` + an optional `:::warning` for a model boundary. Every other Mermaid/chart block needs the same visible alternative (`**Data summary:**` for charts).
+4. **Sections**, one per textbook section, IN ORDER:
    - `## N.M <Section Title>` — the H2 section heading **MAY** carry a stable block ID marker
      appended to it: `## N.M <Section Title>{{attrs[#blk-a1b2c3d4]}}`, where the id is
      `#blk-` + 8+ lowercase base36 characters (`[0-9a-z]`), unique within the file. These block
@@ -70,12 +61,26 @@ Ordered sections (exact skeleton):
    - prose explaining the concepts along the logic, with figures (`![alt](../assets/..)` + caption), tables, inline `{{smiles}}`/`$\ce{}$` as needed,
    - worked example(s) in `:::: tabs` → `::: tab Problem` / `::: tab Solution`,
    - a short **Self-check:** bullet list (prompts only, NO answers).
-6. **`## Synthesis`** — a short integrative section tying the sections together (the single thread through the chapter).
-7. **`## Asset and License Record for This Chapter`** — a table `| Asset | Source URL | License | Attribution |` listing EVERY embedded image. Self-generated rows use the verified package-license decision where applicable. This table mirrors structured `private/coursewerk/PROVENANCE.json` and public `provenance/coursewerk/ATTRIBUTION.md`; never invent a license value.
+5. **`## Synthesis`** — a short integrative section tying the sections together (the single thread through the chapter).
+6. **`## Asset and License Record for This Chapter`** — a table `| Asset | Source URL | License | Attribution |` listing EVERY embedded image. Self-generated rows use the verified package-license decision where applicable. This table mirrors structured `private/coursewerk/PROVENANCE.json` and public `provenance/coursewerk/ATTRIBUTION.md`; never invent a license value.
+7. **`## About this chapter`** — the LAST section: the reference box, a `:::info` container, always these lines:
+   ```
+   ## About this chapter
+
+   :::info
+   **Reference:** <Textbook, Edition>, Chapter N (<license>)
+   **Audience:** <one line>
+   **Package license:** <exact value from verified FOUNDATION.json; never infer or prefer a license>
+   **Note:** <optional — e.g. slug/indexing note; content is textbook Chapter N>
+   :::
+   ```
+   It closes the guide, never opens it: the reader meets the objectives first. Like the title area and Chapter
+   Logic, the section is framing (read for off-plan content, no spine link needed), but framing
+   never carries a fact: a box that names a source or states a value is still teaching, wherever it stands.
 8. **NO practice-question section.** The study guide teaches; questions live in the assessment guide.
 
 Styling palette (use exactly this way every chapter):
-- `:::info` — the reference box + neutral factual asides. `:::success` — learning objectives (chapter & section) and a key "takeaway" link. `:::warning` — model boundaries, common mistakes, cautions. `:::danger` — only for genuinely critical/safety "do not".
+- `:::info` — the reference box (in `## About this chapter`) + neutral factual asides. `:::success` — learning objectives (chapter & section) and a key "takeaway" link. `:::warning` — model boundaries, common mistakes, cautions. `:::danger` — only for genuinely critical/safety "do not".
 - `:::: tabs` / `::: tab <Label>` — worked Problem/Solution pairs. **Colon counts: outer `tabs` = 4 colons, inner `tab` = 3; close each tab pane with `:::` (3) and close `tabs` with `::::` (4).** The outer fence MUST have more colons than the inner, and each close must match its open's count — otherwise the container silently fails to close. NEVER `{{tabs}}`.
 - `:::: cols` / `::: col` — side-by-side compare/contrast, sparingly.
 - `**bold**` — a defined term on first use, and key results. KaTeX `$…$`/`$$…$$` + `$\ce{…}$` (mhchem) for all formulae. Tables for data/comparison. mermaid for the chapter-logic flowchart + processes.
@@ -285,11 +290,12 @@ in range, satisfying the stated constraint; a chosen context; a specific format)
 notation, objective wording, headings, labels, and semantic formatting consistent with the course package · no
 unnecessary repetition · direct user edits preserved.
 
-**Study guide (`study-guide/<slug>.md`):** H1 title · `:::info` reference box (Reference/Audience/Package
-license) · `:::success` Chapter Learning Objectives · `## Chapter Logic` + mermaid · each section =
+**Study guide (`study-guide/<slug>.md`):** H1 title · `:::success` Chapter Learning Objectives ·
+`## Chapter Logic` + mermaid · each section =
 `## N.M` (optional stable `{{attrs[#blk-…]}}` id) + `:::success` section objectives + prose +
 `:::: tabs` worked example + Self-check · `## Synthesis` · `## Asset and License Record` table covering
-every image · NO practice-question section · tabs use container syntax (not `{{tabs}}`) · figures
+every image · `## About this chapter` last, holding the `:::info` reference box (Reference/Audience/Package
+license) · NO practice-question section · tabs use container syntax (not `{{tabs}}`) · figures
 captioned via `../assets/`, grids non-overlapping.
 
 **Slides (`slides/<slug>.md`):** `{{nyml kind: document}}` header first (`carrier: slides`, title, ratio, the chosen theme; no uid) · `<!-- slide -->`

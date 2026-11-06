@@ -53,7 +53,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "d8a8384c2de4f0429ee44fbe40de0d2e5670f63935dc61bb247c3bd18c2e7069"
+      "hash": "5f331683803cb399ed0ca7ed3a9f21b18b6e7faf1be5206090d9135fe9832b89"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -167,7 +167,7 @@
       "id": "repo:format-contracts/deliverables.md",
       "path": "format-contracts/deliverables.md",
       "type": "documentation",
-      "hash": "1d56340f4f639e053d9f69e0248a7e25d7a65d78609c776d9f1ca4c075cf8513"
+      "hash": "0833c50ebc2306d194e41fcf14c5c2cd12c584a7f443e86ce5b90fcbdcdedcee"
     },
     {
       "id": "repo:GEMINI.md",
@@ -587,7 +587,7 @@
       "id": "repo:scripts/lib/core/segment.mjs",
       "path": "scripts/lib/core/segment.mjs",
       "type": "kernel",
-      "hash": "874d6599894370a8bd7841dfeab47ddc0681b441f03ec6f6fb52137695909b30"
+      "hash": "0d016406579627c9217d8b6fb38aded20877ca1562de0e60db4c30eca3be2124"
     },
     {
       "id": "repo:scripts/lib/core/shipped.mjs",
@@ -1313,7 +1313,7 @@
       "id": "repo:skills/courseguide-standards/SKILL.md",
       "path": "skills/courseguide-standards/SKILL.md",
       "type": "skill",
-      "hash": "17261e40fa5c767d180576a7c28857c57fc6245850dbd25e43c97ed548bdf82e"
+      "hash": "d514f4e2e3f59875a445f6d35464984e4d3c9844d0fc5ae5e9b47cf064cb8326"
     },
     {
       "id": "repo:skills/oer-figures/scripts/draw_chem.py",
@@ -1373,7 +1373,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "f2c0b2ca7cc4b631023f4e604baf43621ec63263ac02cd3cc89954aaed82cc23"
+      "hash": "127571e2c3c7fc9215877459df857f6be187c19fbcefd6244c6fb4e07e4abd9e"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1940,6 +1940,12 @@
       "hash": "2c2e88c58deb8ed950a301c79136023491b4e70a9a758c548c65c2cf6d659fd1"
     },
     {
+      "id": "repo:tests/framing-frame.test.mjs",
+      "path": "tests/framing-frame.test.mjs",
+      "type": "test",
+      "hash": "356fff44a34023c6cfe6e18c631ff93ba1da55653a22acc0882f085b93f44d3a"
+    },
+    {
       "id": "repo:tests/gate-cli.test.mjs",
       "path": "tests/gate-cli.test.mjs",
       "type": "test",
@@ -1949,7 +1955,7 @@
       "id": "repo:tests/genchem-phase0.test.mjs",
       "path": "tests/genchem-phase0.test.mjs",
       "type": "test",
-      "hash": "337e828d664771a760260150898553bc053147cfe3673d03826fd28693adf1e0"
+      "hash": "8dbe17461e987e2535783c645b9e1a89c9e0a22862dacf3b2ffe912f71cc687b"
     },
     {
       "id": "repo:tests/genchem-reeval.test.mjs",
@@ -2105,7 +2111,7 @@
       "id": "repo:tests/redteam-r3-control.test.mjs",
       "path": "tests/redteam-r3-control.test.mjs",
       "type": "test",
-      "hash": "e75330098ee0bd37c1159081a91d0f5f1095e6d37034db1a459d8f7f1964bc13"
+      "hash": "36a77e87d2826b8c8d4cc268fb89f4f23b1b710afe61c0c62c3e360d1732a9e7"
     },
     {
       "id": "repo:tests/redteam-r4-coherence.test.mjs",
@@ -5609,6 +5615,14 @@
       {
         "id": "req.units.framing",
         "phase": "P4",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.units.framing-frame",
+        "phase": "P11",
         "tiers": [
           "T1"
         ],

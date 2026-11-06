@@ -4051,6 +4051,21 @@
           "tests/site-type-assets.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.units.framing-frame",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "The chapter's own frame is framing: units under a \"Chapter logic\" or \"About this chapter\" section (any deliverable); the list items and bullet groups of a \"Learning objectives\" or \"Chapter learning objectives\" section (other prose there stays teaching, redteam r1 C3-06); units in a study guide's title area (before its first `##` heading or a second `#` heading; a guide with neither has no title area); and a heading with no text under it (a heading-form unit that is an orz-markdown heading and heads no unit other than a heading, and no restated objective, before the next heading of its level or higher or a slide marker; a heading over text keeps its role, redteam r2 C3-03). They stay units, are read for off-plan content (D42) and owe no spine link; any of them that states a fact (judgment other than knowledge-based) stays teaching (D19-I). The study-guide reference box (courseguide-standards) closes the guide under its own last section `## About this chapter`.",
+      "source": "owner 2026-11-06 (framing question from the General Chemistry relink: headings, chapter logic, learning objectives, title area; the reference box moves to the end)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/framing-frame.test.mjs"
+        ]
+      }
     }
   ]
 }

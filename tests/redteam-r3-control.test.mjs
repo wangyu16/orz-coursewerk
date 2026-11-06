@@ -65,7 +65,7 @@ function publishRecord(c) {
 }
 
 // ==================================== 1. what prints is orz-markdown's call =========================================
-test("[req.control.printed-by-parser] C3-03: a chain of one-sentence \"Sources: …\" paragraphs and of `##` statement headings over nothing is read — each is a unit, owed a link and a review", (t) => {
+test("[req.control.printed-by-parser] C3-03: a chain of one-sentence \"Sources: …\" paragraphs and of `##` statement headings over nothing is read — each is a unit, owed a link and a review (a heading: the framing review)", (t) => {
   const c = course(t);
   const LESSON = "Sources: in a galvanic cell the spontaneous redox reaction drives electrons through an external wire from the anode, where oxidation occurs, to the cathode, where reduction occurs; the cell potential is positive.\n\nSources: an electrolytic cell runs the same chemistry in reverse, using an external power supply to force a non-spontaneous reaction.\n\n## Electrons flow from the anode to the cathode through the wire\n\n## The salt bridge keeps each half-cell electrically neutral during operation\n\n";
   c.asAgent(() => c.edit(SG, "## Common misconceptions", LESSON + "## Common misconceptions"));
@@ -74,7 +74,12 @@ test("[req.control.printed-by-parser] C3-03: a chain of one-sentence \"Sources: 
   const lesson = c.units().filter((u) => ELECTRO.test(u.text));
   assert.deepEqual(lesson.map((u) => u.form).sort(), ["heading", "heading", "paragraph", "paragraph"], lesson.map((u) => u.text.slice(0, 40)).join(" | "));
   const unlinked = unlinkedOf(c);
-  assert.ok(lesson.every((u) => u.role === "teaching" && unlinked.has(u.id)), "each must be linked (and so reviewed) before publishing");
+  // the paragraphs teach: each must be linked (and so reviewed) before publishing. A heading carries no text of its own,
+  // so a statement heading over nothing is framing (owner 2026-11-06): still read — it owes the off-plan review (D42)
+  const paras = lesson.filter((u) => u.form === "paragraph"), heads = lesson.filter((u) => u.form === "heading");
+  assert.ok(paras.every((u) => u.role === "teaching" && unlinked.has(u.id)), "each must be linked (and so reviewed) before publishing");
+  const unread = new Set(c.core().filter((f) => f.kind === "framing-review-owed").flatMap((f) => f.units));
+  assert.ok(heads.every((u) => u.role === "framing" && unread.has(u.id)), "each heading is read for off-plan content");
   // the honest attribution footer stays the deliverable's one credit line … and a second credit line makes both read
   const one = "Intro text.\n\n*Adapted from OpenStax, Chemistry 2e (<https://openstax.org>), licensed CC-BY-4.0.*\n";
   assert.deepEqual(segmentDeliverable(one, "study-guide/x.md").units.map((u) => u.text), ["Intro text."]);
