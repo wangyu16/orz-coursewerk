@@ -15,7 +15,7 @@ import { randomBytes } from "node:crypto";
 import { readLogText, parseLog } from "../records/log.mjs";
 import { recordFile } from "../records/paths.mjs";
 import { canonicalJson, sha256 } from "../records/canonical.mjs";
-import { recordDispatch } from "../verify/dispatch.mjs";
+import { readDispatchFile, recordDispatch } from "../verify/dispatch.mjs";
 import { dispatchLogEntry } from "../verify/verdicts.mjs";
 import { COURSE_MAP, checkSpine, parseSpine, spinePaths } from "./spine.mjs";
 import { meaningKey } from "./rendered.mjs";
@@ -226,7 +226,7 @@ export function currentSpineReview(root, reader, scope) {
   const log = parseLog(readLogText(root));
   const recs = [];
   for (const e of log.filter((r) => r.type === "dispatch" && r.party?.role === "harness" && r.payload?.kind === "spine-review" && r.payload?.unit === `spine:${scope}`)) {
-    let rec = null; try { rec = JSON.parse(fs.readFileSync(path.join(recordFile(root, "private/coursewerk/verification"), `${e.payload.dispatch}.json`), "utf8")); } catch { continue; }
+    let rec = null; try { rec = readDispatchFile(root, e.payload.dispatch); } catch { continue; }
     if (!dispatchLogEntry(rec, log) || rec.kind !== "spine-review") continue;
     recs.push({ rec, seq: Number(e.seq ?? 0), asked: [...(rec.lines || []), ...(rec.removed || []).map((l) => ({ ...l, removed: true }))] });
   }

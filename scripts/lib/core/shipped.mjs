@@ -161,10 +161,11 @@ export const RECORD_FILES = Object.freeze(new Set([
   "private/coursewerk/PROVENANCE.json", "private/coursewerk/REFERENCE_RECORD.json", "private/coursewerk/REVIEW_QUEUE.json", "private/coursewerk/SOURCE_RECORD.json", "private/coursewerk/SPINE.json",
   "private/coursewerk/STEERING.json", "private/coursewerk/TERMS.json", "private/coursewerk/VISUAL_REVIEW.json", "private/coursewerk/coursewerk.json", "private/coursewerk/modules.json",
 ]));
-/** Record paths, by shape: unit sidecars, review dispatches, claim records, preflight receipts, spine origins and
- *  reviews, auto-corrections — each a JSON record the harness writes and reads back. */
+/** Record paths, by shape: unit sidecars, review dispatches and the prompt parts they share (named by their content
+ *  hash: dispatch.mjs, req.records.compact-review), claim records, preflight receipts, spine origins and reviews,
+ *  auto-corrections — each a JSON record the harness writes and reads back. */
 export const RECORD_PATHS = Object.freeze([
-  /^private\/coursewerk\/units\/(?:[^/]+\/)*[^/]+\.md\.json$/, /^private\/coursewerk\/verification\/[^/]+\.json$/, /^private\/coursewerk\/claims\/(?:[^/]+\/)*[^/]+\.json$/,
+  /^private\/coursewerk\/units\/(?:[^/]+\/)*[^/]+\.md\.json$/, /^private\/coursewerk\/verification\/[^/]+\.json$/, /^private\/coursewerk\/verification\/parts\/[0-9a-f]{64}\.json$/, /^private\/coursewerk\/claims\/(?:[^/]+\/)*[^/]+\.json$/,
   /^private\/coursewerk\/preflight\/[^/]+\.json$/, /^private\/coursewerk\/spine\/(?:[^/]+\/)*[^/]+\.origins\.json$/, /^private\/coursewerk\/spine\/(?:review|critique)\/[^/]+\.json$/,
   /^private\/coursewerk\/corrections\/[^/]+\.json$/,
 ]);

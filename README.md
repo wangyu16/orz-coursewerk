@@ -202,6 +202,8 @@ default headless `claude -p` with no tools, settings or session, in an empty dir
 On Alembic, Coursewerk can run inside the course assistant's job, from a read-only release (`alembic-job/CLAUDE.md`
 is that release's entry). The course arrives as a plain folder in Alembic's layout. `scripts/site_import.mjs` turns it
 into Coursewerk's layout, and `scripts/site_handback.mjs` turns it back, adding only to the end of the records.
+`scripts/records_check.mjs --root <pkg> --extends <earlier log>` tells Alembic whether a returned package's decision log
+continues the one it held (JSON `{ok, problems}`; `format-contracts/deliverables.md`).
 `scripts/pack_job_release.mjs` builds the release.
 What needs the instructor reaches them only through the assistant's digest in Alembic's "Needs you":
 `scripts/alembic_needs.mjs export` writes the digest a job hands in (`alembic handin`), and `scripts/alembic_needs.mjs apply`

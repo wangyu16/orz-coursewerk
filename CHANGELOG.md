@@ -1,5 +1,19 @@
 # Coursewerk changelog
 
+## Unreleased
+
+- **Compact review records** (owner 2026-11-07: General Chemistry's verification records reached 56 MB, over the 50 MB
+  an Alembic site's records may hold). A new dispatch record stores its prompt's large, repeated blocks — the reviewer's
+  instructions and an alignment review's whole chapter plan — once, by content hash, in
+  `private/coursewerk/verification/parts/`, and keeps its prompt as `promptParts`. The log binds exactly what the
+  reviewer was shown, with the same hashes as before; every reader puts the prompt back and gets the same answers;
+  records written before read unchanged; a missing or altered part makes the record unreadable (a blocking defect).
+  On a copy of General Chemistry a new alignment record is about 3 KB instead of 11 KB, a knowledge record about
+  3 KB instead of 3.9 KB. `req.records.compact-review`.
+- **The chain check** (Alembic Door E): `scripts/records_check.mjs --root <pkg> [--extends <earlier log>]` prints
+  `{ok, problems}`: the decision log verifies and continues the one last held, in either layout. Reads only.
+  `req.records.chain-check`.
+
 ## v1.0.4 (2026-11-07)
 
 - **The chapter's own frame is framing** (owner 2026-11-06, from the General Chemistry relink; narrowed after an

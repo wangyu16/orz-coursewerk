@@ -38,6 +38,7 @@ package/
   private/coursewerk/units/…             # the unit index: every unit's id, origin, spine links, evidence
   private/coursewerk/spine/…             # who proposed each spine item (standardized from the instructor, or the agent's)
   private/coursewerk/verification/…      # every verifier and review dispatch, with its exact prompt and answer
+  private/coursewerk/verification/parts/<sha256>.json # prompt blocks shared by many records, stored once (see below)
   private/coursewerk/corrections/…       # every auto-correction, with its before and after
   private/coursewerk/REFERENCE_RECORD.json # the retrieved references the evidence cites (url, time, hash)
   private/coursewerk/LINK_RESOLUTIONS.json # recorded resolution of external links
@@ -47,6 +48,26 @@ package/
 
 v0.12 records (`KEY_FACT_REVIEW.json`, `VISUAL_REVIEW.json`, `COMPONENT_INDEX.json`, `CLAIMS.json`, `claims/`, `TERMS.json`,
 `SPINE.json`, `REVIEW_QUEUE.json`, `OVERRIDES.json`) are not part of a spine-v2 package; see `docs/migrating-from-v0.12.md`.
+
+**Compact review records** (req.records.compact-review). A dispatch record written by Coursewerk after v1.0.4 keeps the large,
+repeated blocks of its prompt (the reviewer's instructions; an alignment review's whole chapter plan) once, in
+`verification/parts/<sha256>.json` (`{"schemaVersion": 1, "kind": "prompt-part", "sha256", "at", "text"}`, named by the
+sha256 of its text), and its prompt as `bundle.promptParts`: literal text and `{"part": "<sha256>"}` entries in order,
+which joined are the prompt byte for byte. The log binds the record as it reads with its whole prompt put back: its
+`bundleHash` is the sha256 of that prompt and its `recordHash` the hash of that whole record, exactly as for a record
+stored whole. A record written before stays as it is and reads as it always did. A part that is missing, altered or not
+the one named makes every record using it unreadable (a logged dispatch without a readable record is a blocking
+defect). Parts are records like the rest: never edit or delete one; Alembic carries them in the verification parts.
+
+**Checking that a log continues the one last held** (req.records.chain-check; Alembic's hand-out and hand-back):
+`node scripts/records_check.mjs --root <package> [--extends <earlier log>]` prints `{"ok", "problems", "log",
+["extends"]}` and exits 0 when ok, 1 when not, 2 on a usage error. `<earlier log>` is the decision log as it was last
+held: a `LOG.jsonl` text, or a folder holding one. Either folder may be in either layout: one `LOG.jsonl`, or Alembic's
+parts (`LOG.jsonl`, `LOG.2.jsonl`, …, cut at line ends) joined in order. `ok` only when the log verifies (every record
+well formed, numbered in order, hashed and chained to the one before) and, with `--extends`, holds every earlier record
+byte for byte and in order with only new records after them: a record changed, dropped or reordered, a broken earlier
+log, a gap in the parts or an unreadable input is a problem, never an empty log. It reads only. `log` gives the joined
+log's `parts`, `bytes`, `sha256`, `records` and `head` (the last record's hash).
 
 **Folder → repo is decided by the top-level folder and is total.** `study-guide/ slides/ practice/
 concepts/ assessment-support/ assets/ provenance/` are **public** (shared with the world);

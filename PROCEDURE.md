@@ -213,6 +213,7 @@ To read or present the materials locally, assemble the framework shells: `script
 | pack | `scripts/pack.mjs` (checks the newest Alembic contract first); `scripts/alembic_check.mjs` checks it on its own |
 | records move | `scripts/records_move.mjs --root <pkg>`: once, for a package written before the records layout (`metadata/` → `private/coursewerk/` and `provenance/coursewerk/`) |
 | record paths | `scripts/records_paths.mjs --root <pkg> [--dry-run]`: points paths stored in the media record (PROVENANCE.json) at renamed files (a deck `slides/<ch>.md` now `slides/<ch>.slides.md`), logs it, and regenerates `ATTRIBUTION.md`; nothing else changes |
+| records check | `scripts/records_check.mjs --root <pkg> [--extends <earlier LOG.jsonl or folder>]`: JSON `{ok, problems}` — the decision log verifies and continues the one last held (every earlier record unchanged and in order, only appended); either layout; reads only (`format-contracts/deliverables.md`) |
 | site export | `scripts/site_export.mjs --root <pkg> --out <dir>`: the records an Alembic site holds (`private/coursewerk/`, and the public `provenance/coursewerk/CHECKED.json` and `ATTRIBUTION.md`), for the hand-in; the package is not changed |
 
 ## Packages from v0.12

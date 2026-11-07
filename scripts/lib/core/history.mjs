@@ -7,8 +7,10 @@ import path from "node:path";
 import { parseLog, readLogText, verifyLog } from "../records/log.mjs";
 import { recordFile } from "../records/paths.mjs";
 import { readAbsoluteReview } from "../verify/absolutes.mjs";
+import { loadDispatch } from "../verify/dispatch.mjs";
 
-const readDir = (root, rel) => { const d = recordFile(root, rel); return fs.existsSync(d) ? fs.readdirSync(d).filter((f) => f.endsWith(".json")).map((f) => { try { return JSON.parse(fs.readFileSync(path.join(d, f), "utf8")); } catch { return null; } }).filter(Boolean) : []; };
+// a verification record is read whole (dispatch.mjs loadDispatch: a compact record with its prompt put back)
+const readDir = (root, rel, load = (file) => JSON.parse(fs.readFileSync(file, "utf8"))) => { const d = recordFile(root, rel); return fs.existsSync(d) ? fs.readdirSync(d).filter((f) => f.endsWith(".json")).map((f) => { try { return load(path.join(d, f)); } catch { return null; } }).filter(Boolean) : []; };
 
 /** Concerns in a knowledge record, read against the passage the reviewer saw. */
 function concernsOf(r) {
@@ -38,7 +40,7 @@ export function issueHistory(root, units) {
     return "the text is unchanged (answered by the instructor, or still open)";
   };
   const issues = [];
-  for (const r of readDir(root, "private/coursewerk/verification")) {
+  for (const r of readDir(root, "private/coursewerk/verification", (file) => loadDispatch(root, file))) {
     if (r.kind === "knowledge") for (const c of concernsOf(r)) issues.push({ at: r.at, foundBy: c.kind === "clarify" ? "blind conceptual review (a clarification)" : "blind conceptual review", unit: r.unit, issue: c.kind === "clarify" ? `"${c.text}" → "${c.suggestion}": ${c.problem}` : c.problem, suggestion: c.suggestion, settled: settle(r.unit, r.contentHash) });
     if (r.kind === "semi") for (const c of r.admission?.perClaim || []) {
       if (["contradicted", "disputed"].includes(c.status)) issues.push({ at: r.at, foundBy: "blind fact check against pinned sources", unit: r.unit, issue: `${c.status}: ${(c.conflicts || []).map((k) => `${k.claimed} vs ${k.source}`).join("; ")}`, settled: settle(r.unit, r.contentHash) });

@@ -53,7 +53,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "5d47f14c9b47017227f9abef24806d4a74e532985e496a6e1c6b8b9eaef310d0"
+      "hash": "7a4c74774e24dfc89fbf8b9b988a5bc3dc140ba43bafa35fa40ad288d92cef63"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -167,7 +167,7 @@
       "id": "repo:format-contracts/deliverables.md",
       "path": "format-contracts/deliverables.md",
       "type": "documentation",
-      "hash": "91b0ef421de3e000edc57b0c9b0884271e36b500df886d5a2c812a78ea2478e3"
+      "hash": "c1c0088e62cc6afb5d2b4bea3ffb915e7c489a53857ab189d7d30c268bcd2b28"
     },
     {
       "id": "repo:GEMINI.md",
@@ -203,13 +203,13 @@
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "5cf3b0c4498dc05b6457fe5edcb413387bc301320d212c851221f26bbccd3de7"
+      "hash": "36dafaa4db6b7dc3826ca93d3303f0f4d68d0443659fa75cd7578ddb5bebbf12"
     },
     {
       "id": "repo:README.md",
       "path": "README.md",
       "type": "product-claim",
-      "hash": "a189939334593311424ce60cac42bfaf99e9405598e3887705e60e009b70a8bd"
+      "hash": "8736781a307f4edfebc3b32108ef18a3ed6af7d59486492081999e79e912a339"
     },
     {
       "id": "repo:scripts/accept_coursewerk_revision.mjs",
@@ -491,7 +491,7 @@
       "id": "repo:scripts/lib/core/history.mjs",
       "path": "scripts/lib/core/history.mjs",
       "type": "kernel",
-      "hash": "1b527ba242b61ddeee8c5bf1af8a9699902ddbe765f8e80fb622962d5a57b741"
+      "hash": "365a9ac95639ce700f169dd8dea3b4a1876e7b73f80372a8cdecca575ccd0949"
     },
     {
       "id": "repo:scripts/lib/core/house_notation.mjs",
@@ -533,7 +533,7 @@
       "id": "repo:scripts/lib/core/obligations.mjs",
       "path": "scripts/lib/core/obligations.mjs",
       "type": "kernel",
-      "hash": "2adeb8ba53aace692e0a3a921d8a82ea5766ceeb9ebf05d74c27fcf9937f5fcd"
+      "hash": "4d86d80277eb61acb373e31c5896f9f174f50bc54b21484e8c4a5b58b756d2b7"
     },
     {
       "id": "repo:scripts/lib/core/pack_v2.mjs",
@@ -593,7 +593,7 @@
       "id": "repo:scripts/lib/core/shipped.mjs",
       "path": "scripts/lib/core/shipped.mjs",
       "type": "kernel",
-      "hash": "36ed1db52efc1fd6561af95ba8d039192bf41755766addd3c4095641b04cbcae"
+      "hash": "fd995269bc34d6f14d1b48200f949e47fa348c558aec030e58046ffc2104ee9c"
     },
     {
       "id": "repo:scripts/lib/core/site_export.mjs",
@@ -617,7 +617,7 @@
       "id": "repo:scripts/lib/core/spine_review.mjs",
       "path": "scripts/lib/core/spine_review.mjs",
       "type": "kernel",
-      "hash": "88356f9387f36704ddb46d6136dd40b8c0188e4af0697ae41e9b6ee46dc0849b"
+      "hash": "830afea51a4e35cb79a64c8570f9ba4a88788602f88a4d0db3c465483e56034f"
     },
     {
       "id": "repo:scripts/lib/core/spine.mjs",
@@ -782,6 +782,12 @@
       "hash": "35eddda3b31e37b48de957dc14602a707783f9683c12c525361615197f2efad3"
     },
     {
+      "id": "repo:scripts/lib/records/records_check.mjs",
+      "path": "scripts/lib/records/records_check.mjs",
+      "type": "kernel",
+      "hash": "8763e0d1a1ce180cac6b5ab868986251a1043777ce81b0881dec9d1a88e81af0"
+    },
+    {
       "id": "repo:scripts/lib/records/registry.mjs",
       "path": "scripts/lib/records/registry.mjs",
       "type": "kernel",
@@ -935,7 +941,7 @@
       "id": "repo:scripts/lib/verify/dispatch.mjs",
       "path": "scripts/lib/verify/dispatch.mjs",
       "type": "kernel",
-      "hash": "3372e0709d955d21386d19a2d09c5b7092ba5f5ce574b8d53636a97326f44865"
+      "hash": "186f60af500c4427c1be16e4a9a42468235e38fdc43092d550bfd5730be2006a"
     },
     {
       "id": "repo:scripts/lib/verify/mechanical.mjs",
@@ -1092,6 +1098,12 @@
       "path": "scripts/record_override.mjs",
       "type": "executable",
       "hash": "772e1b89957d6fef0f5eac584cc88dfe0047ea3aae0241eda260d78e9e57e117"
+    },
+    {
+      "id": "repo:scripts/records_check.mjs",
+      "path": "scripts/records_check.mjs",
+      "type": "executable",
+      "hash": "52e994a3b6eaa620a25cbc7da41993801395ed314e2f0916482a932c484c1067"
     },
     {
       "id": "repo:scripts/records_move.mjs",
@@ -1373,7 +1385,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "17cea2984834c9d7f4c655e5b92f4e8b4197a0946d0b26a35896f114cf68e0f7"
+      "hash": "c39827bbe5aa66e98bf23f1579911ac9ed461e0a5eb1eda60d0c198a60010fa9"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -2060,6 +2072,18 @@
       "hash": "a80f70832a5f2c8a75c90c550b95e39313c39d355289d2290d69ef8c47390bc0"
     },
     {
+      "id": "repo:tests/records-check.test.mjs",
+      "path": "tests/records-check.test.mjs",
+      "type": "test",
+      "hash": "967caae3071227771a52feedbde9538299808836998003ad09ca84eae6a55f7d"
+    },
+    {
+      "id": "repo:tests/records-compact.test.mjs",
+      "path": "tests/records-compact.test.mjs",
+      "type": "test",
+      "hash": "584c3955faa0d0d7b1d044c88d8e60bcf7adede8f9c22e9243e19436958234d4"
+    },
+    {
       "id": "repo:tests/records-layout.test.mjs",
       "path": "tests/records-layout.test.mjs",
       "type": "test",
@@ -2177,7 +2201,7 @@
       "id": "repo:tests/redteam-r6-instructor.test.mjs",
       "path": "tests/redteam-r6-instructor.test.mjs",
       "type": "test",
-      "hash": "9d2d8f79f78e5045024aa65d97bd9fab833975372bccb4279713f71cfabf6ef1"
+      "hash": "0f8eff92026665d3c4698cb9cc75d5144d6c378aa3c97decd3865d3ba19f825c"
     },
     {
       "id": "repo:tests/redteam-r6-readers.test.mjs",
@@ -2387,7 +2411,7 @@
       "id": "repo:tests/verdict-path.test.mjs",
       "path": "tests/verdict-path.test.mjs",
       "type": "test",
-      "hash": "22ca9076ab364b0976ed897bb0d4ee7addd08364895c1ee2a08f6de681f34216"
+      "hash": "204dece87557ae17e8506f8e49c77a5904dac7fa5a01871e810c9a5e41772055"
     },
     {
       "id": "repo:tests/verdict-redteam.test.mjs",
@@ -5108,6 +5132,14 @@
         "status": "closed"
       },
       {
+        "id": "req.records.chain-check",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.records.checked-record",
         "phase": "P11",
         "tiers": [
@@ -5117,6 +5149,14 @@
       },
       {
         "id": "req.records.clearing-evidence",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.records.compact-review",
         "phase": "P11",
         "tiers": [
           "T1"

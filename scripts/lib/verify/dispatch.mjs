@@ -261,8 +261,111 @@ export function replayVerifier(answers) {
   };
 }
 
-// ---- records -----------------------------------------------------------------------------------------------------
-/** Write a dispatch record into the package and log it. Returns the record. */
+// ---- records ----------------------------------------------------------------------------------------------------
+// Compact records (req.records.compact-review, owner 2026-11-07): a course's records grew to 56 MB because every record
+// stored its whole prompt, and most of a prompt repeats from record to record — the instructions, and an alignment
+// review's whole chapter plan. A record written since stores such a block ONCE, by content hash, in the shared store
+// (verification/parts/<sha256>.json), and keeps its prompt as `bundle.promptParts`: literal text and { part } refs in
+// order. Nothing else changes:
+//   - what the log binds is the record as it reads, with its whole prompt (expandDispatch): the bundleHash over the exact
+//     prompt the reviewer was shown, and the recordHash over the whole record — the same hashes the full record has;
+//   - every reader reads a record through expandDispatch (readDispatches, loadDispatch, readDispatchFile), so it gets the
+//     full record, the same answers, and a record written before reads as it always did;
+//   - a part that is missing, edited, or not the one named, or a prompt that does not hash to its bundleHash, makes the
+//     record unreadable, as a missing record is: never "no problem" (ms8 dispatch-record-missing; every reader's
+//     unreadable path).
+// The store sits inside verification/, so site_export, site_import and site_handback carry it as they carry the records
+// (append-only; a part is content-addressed and never rewritten).
+export const PARTS_DIR = `${VERIFICATION_DIR}/parts`;
+const PART_MIN = 512; // a block shorter than this stays in the record
+const PART_NAME = /^[0-9a-f]{64}$/;
+/** The record files of the verification folder (never the shared store under it). */
+export const isDispatchPath = (rel) => rel.startsWith(VERIFICATION_DIR + "/") && rel.endsWith(".json") && !rel.slice(VERIFICATION_DIR.length + 1).includes("/");
+
+/** The blocks of a prompt worth storing once: its instructions (every line before "Reply with JSON only", which carries
+ *  the nonce), and an alignment review's chapter plan ("THE CHAPTER'S PLAN" up to the blank line after it). */
+export function sharedBlocks(prompt) {
+  const p = String(prompt), out = [];
+  const reply = p.indexOf("\nReply with JSON only");
+  if (reply > 0) out.push(p.slice(0, reply + 1));
+  const plan = p.indexOf("\nTHE CHAPTER'S PLAN\n");
+  if (plan >= 0) { const end = p.indexOf("\n\n", plan + 1); out.push(p.slice(plan + 1, end < 0 ? p.length : end + 1)); }
+  return out.filter((b) => b.length >= PART_MIN);
+}
+
+const partText = (record) => JSON.stringify(record, null, 2) + "\n";
+/** A stored part's text, or null when it is missing or is not the part named (fails closed). */
+function readPart(readText, hash) {
+  if (!PART_NAME.test(hash)) return null;
+  let raw; try { raw = readText(`${PARTS_DIR}/${hash}.json`); } catch { return null; }
+  let p; try { p = JSON.parse(raw); } catch { return null; }
+  return p && p.kind === "prompt-part" && p.sha256 === hash && typeof p.text === "string" && sha256(p.text) === hash ? p.text : null;
+}
+
+/** The prompt of a compact record, put back together; throws when a part is missing or altered. */
+function joinPrompt(parts, readText) {
+  if (!Array.isArray(parts)) throw new Error("its promptParts is not a list");
+  let out = "";
+  for (const x of parts) {
+    if (typeof x === "string") { out += x; continue; }
+    if (!x || typeof x !== "object" || Array.isArray(x) || Object.keys(x).join(",") !== "part") throw new Error("its promptParts holds an entry that is neither text nor a part");
+    const t = readPart(readText, x.part);
+    if (t == null) throw new Error(`its prompt part ${String(x.part).slice(0, 12)}… is missing or altered`);
+    out += t;
+  }
+  return out;
+}
+
+/**
+ * A dispatch record as it reads: a compact record with its whole prompt put back (bundle.prompt), exactly the record
+ * recordDispatch logged; any other record as it is. `readText(rel)` reads a package-relative file. Throws when the
+ * record cannot be read whole: a part missing or altered, or the prompt not the one its bundleHash names.
+ */
+export function expandDispatch(record, readText) {
+  const b = record?.bundle;
+  if (!b || typeof b !== "object" || !Object.hasOwn(b, "promptParts")) return record;
+  if (Object.hasOwn(b, "prompt")) throw new Error("the record holds both a prompt and promptParts");
+  const prompt = joinPrompt(b.promptParts, readText);
+  if (sha256(prompt) !== b.bundleHash) throw new Error("its prompt, put back together, is not the one its bundleHash names");
+  const { promptParts, ...rest } = b;
+  return { ...record, bundle: { ...rest, prompt } };
+}
+const rootReader = (root) => (rel) => fs.readFileSync(recordFile(root, rel), "utf8");
+/** A record file (an absolute path) read whole: JSON, expanded. Throws when unreadable. */
+export const loadDispatch = (root, file) => expandDispatch(JSON.parse(fs.readFileSync(file, "utf8")), rootReader(root));
+/** The record of a dispatch (d-…), read whole. Throws when missing or unreadable. */
+export const readDispatchFile = (root, dispatch) => loadDispatch(root, recordFile(root, `${VERIFICATION_DIR}/${dispatch}.json`));
+
+/** Store a record's large blocks once and return its compact promptParts, or null to keep the prompt whole (nothing
+ *  worth sharing, or the store cannot be written or read back exactly). An existing part is reused only when it is
+ *  the part named; one that is not is left alone and the block stays in the record. */
+function compactPrompt(root, prompt, at) {
+  const blocks = sharedBlocks(prompt);
+  if (!blocks.length) return null;
+  let segs = [prompt];
+  const readText = rootReader(root);
+  for (const block of blocks) {
+    const hash = sha256(block), file = recordFile(root, `${PARTS_DIR}/${hash}.json`);
+    try {
+      if (!fs.existsSync(file)) {
+        fs.mkdirSync(recordFile(root, PARTS_DIR), { recursive: true });
+        const tmp = `${file}.${process.pid}.tmp`;
+        fs.writeFileSync(tmp, partText({ schemaVersion: 1, kind: "prompt-part", sha256: hash, at, text: block }));
+        fs.renameSync(tmp, file);
+      }
+    } catch { continue; }
+    if (readPart(readText, hash) !== block) continue;
+    const i = segs.findIndex((x) => typeof x === "string" && x.includes(block));
+    if (i < 0) continue;
+    const at0 = segs[i].indexOf(block);
+    segs.splice(i, 1, segs[i].slice(0, at0), { part: hash }, segs[i].slice(at0 + block.length));
+  }
+  segs = segs.filter((x) => x !== "");
+  if (!segs.some((x) => typeof x === "object")) return null;
+  try { return joinPrompt(segs, readText) === prompt ? segs : null; } catch { return null; }
+}
+
+/** Write a dispatch record into the package and log it. Returns the record (whole, as it reads). */
 // `deps`: the hash of the unit's dependencies when it was reviewed. Logged with the unit's content hash, so a review
 // can later count as a re-verification of exactly that text against exactly those dependencies (units.mjs reverify).
 export function recordDispatch(root, { kind, unit, factHash, contentHash, bundle, passages = [], texts, answer, admission = null, claims = null, extra = {}, deps = null }) {
@@ -278,9 +381,11 @@ export function recordDispatch(root, { kind, unit, factHash, contentHash, bundle
   };
   const dir = recordFile(root, VERIFICATION_DIR);
   fs.mkdirSync(dir, { recursive: true });
-  const text = JSON.stringify(record, null, 2) + "\n";
-  fs.writeFileSync(path.join(dir, `${dispatch}.json`), text);
-  appendLogRecord(root, { type: "dispatch", party: { role: "harness", name: "verify" }, payload: { dispatch, kind, unit, bundleHash: bundle.bundleHash, responseHash: record.answer.responseHash, recordHash: recordHashOf(JSON.parse(text)), mode: answer.mode, status: admission?.status ?? null, ...(deps ? { contentHash, deps } : {}) } });
+  const whole = JSON.parse(JSON.stringify(record)); // the record as it reads: what the log binds
+  const parts = sha256(String(bundle.prompt)) === bundle.bundleHash ? compactPrompt(root, String(bundle.prompt), record.at) : null;
+  const stored = parts ? { ...whole, bundle: { nonce: whole.bundle.nonce, bundleHash: whole.bundle.bundleHash, promptParts: parts } } : whole;
+  fs.writeFileSync(path.join(dir, `${dispatch}.json`), JSON.stringify(stored, null, 2) + "\n");
+  appendLogRecord(root, { type: "dispatch", party: { role: "harness", name: "verify" }, payload: { dispatch, kind, unit, bundleHash: bundle.bundleHash, responseHash: record.answer.responseHash, recordHash: recordHashOf(whole), mode: answer.mode, status: admission?.status ?? null, ...(deps ? { contentHash, deps } : {}) } });
   return record;
 }
 
@@ -328,8 +433,11 @@ export function boundRecord(record, logRecords) {
   return { ...base, hashed: false, contentHash: null, factHash: null, status: p.status ?? null };
 }
 
+/** The dispatch records among `paths`, each read whole (expandDispatch); one that cannot be read is left out, as a
+ *  missing one is (a logged dispatch without its record is a blocking defect: ms8 dispatch-record-missing). */
 export function readDispatches(readText, paths) {
-  return paths.filter((p) => p.startsWith(VERIFICATION_DIR + "/") && p.endsWith(".json")).sort().map((p) => { try { return JSON.parse(readText(p)); } catch { return null; } }).filter(Boolean);
+  const strict = (rel) => { const t = readText(rel); if (t == null) throw new Error(`${rel} is missing`); return t; };
+  return paths.filter(isDispatchPath).sort().map((p) => { try { return expandDispatch(JSON.parse(strict(p)), strict); } catch { return null; } }).filter(Boolean);
 }
 
 /** The blind-bundle allowlist: a bundle may not name the unit, its file, its origin, or the course. */

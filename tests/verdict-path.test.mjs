@@ -14,7 +14,7 @@ import { readLogText } from "../scripts/lib/records/log.mjs";
 import { runCheckpoint } from "../scripts/lib/skeleton/runner.mjs";
 import { semiClaims, namesIn, checkableClaims as checkableClaimsOf } from "../scripts/lib/verify/claims.mjs";
 import { admit, locate } from "../scripts/lib/verify/admission.mjs";
-import { bundleLeaks, replayVerifier, selectPassages, semiBundle } from "../scripts/lib/verify/dispatch.mjs";
+import { bundleLeaks, loadDispatch, replayVerifier, selectPassages, semiBundle } from "../scripts/lib/verify/dispatch.mjs";
 import { fsInputReader, pinnedTexts, readReferences, syncReferenceRecord } from "../scripts/lib/verify/references.mjs";
 import { pinDeclared as pinReference } from "./helpers/destinations.mjs";
 import { allowed, declareRetrieval, fetchAndPin, recordLinkResolutions, queryFor, resolveLinks, searchWikipedia } from "../scripts/lib/verify/retrieval.mjs";
@@ -113,7 +113,8 @@ test("[req.dispatch.blind] one blind bundle per unit, recorded in the package an
   const res = await verifySemi(p.root, p.reader, { texts: texts(p), verifier, only: [target] });
   assert.equal(res.length, 1); assert.equal(prompts.length, 1, "one dispatch per unit");
   // the fixture carries earlier records (its round-1 question-binding re-checks): count this unit's semi dispatches
-  const recs = fs.readdirSync(path.join(p.root, "private", "coursewerk", "verification")).map((f) => JSON.parse(fs.readFileSync(path.join(p.root, "private", "coursewerk", "verification", f), "utf8"))).filter((r) => r.kind === "semi" && r.unit === target);
+  // records read whole (a compact record's prompt put back: req.records.compact-review); the shared parts are no records
+  const recs = fs.readdirSync(path.join(p.root, "private", "coursewerk", "verification")).filter((f) => f.endsWith(".json")).map((f) => loadDispatch(p.root, path.join(p.root, "private", "coursewerk", "verification", f))).filter((r) => r.kind === "semi" && r.unit === target);
   assert.equal(recs.length, 1);
   const rec = recs[0];
   assert.equal(rec.bundle.prompt, prompts[0]); assert.equal(rec.unit, target); assert.ok(rec.answer.responseHash);
@@ -402,7 +403,7 @@ test("[req.absolute.review] D30: casual usage passes; 'accurate in context' must
   await reviewAbsolutes(p.root, p.reader, { verifier: replayVerifier(() => "I think these are fine."), only: [c] });
   assert.equal(waiting(), n0 - 1, "only the well-formed casual review counts");
   // a hand-written review record (not in the log) does not count either
-  const recs = fs.readdirSync(path.join(p.root, "private", "coursewerk", "verification")).map((f) => JSON.parse(fs.readFileSync(path.join(p.root, "private", "coursewerk", "verification", f), "utf8")));
+  const recs = fs.readdirSync(path.join(p.root, "private", "coursewerk", "verification")).filter((f) => f.endsWith(".json")).map((f) => loadDispatch(p.root, path.join(p.root, "private", "coursewerk", "verification", f)));
   const forged = { ...recs.find((r) => r.unit === a), unit: b, dispatch: "d-forgedabsolute00" };
   (fs.mkdirSync(path.dirname(path.join(p.root, "private", "coursewerk", "verification", "d-forgedabsolute00.json")), { recursive: true }), fs.writeFileSync)(path.join(p.root, "private", "coursewerk", "verification", "d-forgedabsolute00.json"), JSON.stringify(forged));
   assert.equal(waiting(), n0 - 1);

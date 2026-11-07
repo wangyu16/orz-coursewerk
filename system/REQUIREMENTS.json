@@ -4068,6 +4068,36 @@
           "tests/framing-frame.audit2.test.mjs"
         ]
       }
+    },
+    {
+      "id": "req.records.compact-review",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "A dispatch record stores the large, repeated blocks of its prompt once (owner 2026-11-07: a 19-chapter course's verification records reached 56 MB, over Alembic's 50 MB records budget): the reviewer's instructions (every line before \"Reply with JSON only\") and an alignment review's chapter plan (\"THE CHAPTER'S PLAN\" up to the blank line after it), each of at least 512 characters, go to the shared store private/coursewerk/verification/parts/<sha256>.json ({schemaVersion 1, kind prompt-part, sha256, at, text}, named by the sha256 of its text, written once and never rewritten), and the record keeps bundle.promptParts (literal text and {part} entries that joined are the prompt byte for byte) in place of bundle.prompt. The log binds the record as it reads: bundleHash is the sha256 of the whole prompt the reviewer was shown and recordHash the hash of the whole record with that prompt, the same hashes the record has stored whole. Every reader (readDispatches, loadDispatch, readDispatchFile; the gate's snapshot, obligations, history, spine review, alignment, verdicts) reads a record through expandDispatch, so a compact record gives the same answers as the record stored whole, and a record written before reads unchanged. A part that is missing, altered or not the one named, a prompt that does not hash to its bundleHash, or a record holding both prompt and promptParts makes the record unreadable, as a missing record is (dispatch-record-missing, a blocking defect; a review that no longer counts) — never \"no problem\". A block whose part cannot be written or read back exactly stays in the record. The parts are harness records (shipped.mjs) and travel inside the verification folder (site_export, site_import, site_handback, append-only).",
+      "source": "owner 2026-11-07 (General Chemistry: private/coursewerk/verification 56 MB; each record held its chapter's whole plan)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/records-compact.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.chain-check",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Coursewerk provides the check that a package's decision log continues the one last held (Alembic's hand-out and hand-back, Door E, owner 2026-11-07): scripts/records_check.mjs --root <package> [--extends <earlier LOG.jsonl, or a folder holding it>] prints JSON {ok, problems, log {parts, bytes, sha256, records, head}, [extends]} and exits 0 when ok, 1 when not, 2 on a usage error. The log is read in either layout (one LOG.jsonl, or Alembic's parts LOG.jsonl, LOG.2.jsonl, ... joined in order; a gap, a part not ending at a line end or bytes that are not UTF-8 is a problem); ok only when it verifies (verifyLog) and, with --extends, holds the earlier log byte for byte with only appended records after it (verifyExtends: a record changed, dropped or reordered, or an earlier log that does not itself verify, is a problem). A missing or unreadable input is a problem, never an empty log. It reads only, and changes nothing in how logs are written.",
+      "source": "owner 2026-11-07 (Alembic needs a Coursewerk-provided chain check for Door E)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/records-check.test.mjs"
+        ]
+      }
     }
   ]
 }

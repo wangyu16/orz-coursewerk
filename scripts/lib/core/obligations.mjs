@@ -53,7 +53,7 @@ import { allSidecars, deliverableOfSidecar, UNIT_RECORDS_EVENT, unitRecordWriteR
 import { pendingCarry, pendingClear, recordsOnDisk } from "./reconcile.mjs";
 import { carryLateEntrants, knownUnitKeys, versionScopeGaps } from "./version_scope.mjs";
 import { currentReviewsAt } from "../verify/alignment.mjs";
-import { boundRecord, readKnowledgeReview, recordHashOf, reviewedPassage } from "../verify/dispatch.mjs";
+import { boundRecord, loadDispatch, readDispatchFile, readKnowledgeReview, recordHashOf, reviewedPassage } from "../verify/dispatch.mjs";
 import { concernStands, readerKey, semiClaimCurrent, semiReviewCurrent, standingOf } from "../verify/standing.mjs";
 import { hasVisibleWords } from "../records/words.mjs";
 
@@ -64,7 +64,7 @@ export const ADMITTED_EVIDENCE = Object.freeze(["quote-verified", "instructor-co
 /** Instructor acts recorded in the log, by kind: confirmations (unit → fact hashes) and divergences (unit → corrections). */
 export function loggedInstructorActs(root) {
   const log = readLogText(root).split("\n").filter(Boolean).map((line) => { try { return JSON.parse(line); } catch { return null; } }).filter(Boolean);
-  const readRecord = (d) => { try { return JSON.parse(fs.readFileSync(recordFile(root, `private/coursewerk/verification/${d}.json`), "utf8")); } catch { return null; } };
+  const readRecord = (d) => { try { return readDispatchFile(root, d); } catch { return null; } };
   return instructorActsOf(log, { shownBefore: shownBeforeOf(log, readRecord) });
 }
 
@@ -172,7 +172,7 @@ export function recordedLeads(root) {
   const dir = recordFile(root, "private/coursewerk/verification"), out = new Map();
   if (!fs.existsSync(dir)) return out;
   for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json"))) {
-    let r; try { r = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")); } catch { continue; }
+    let r; try { r = loadDispatch(root, path.join(dir, f)); } catch { continue; }
     if (r?.kind === "semi" && r.dispatch) out.set(r.dispatch, Object.values(recordLeads(r))[0] ?? null);
   }
   return out;
@@ -632,7 +632,7 @@ export function admitEvidence(root, reader, unitId, evidence) {
     if (!recs.some((r) => r.type === "revision" && r.payload?.event === "autocorrect" && r.payload?.correction === evidence.correction && r.payload?.unit === logged.payload.unit))
       throw new Error(`${unitId}: evidence names correction ${evidence.correction}, which no logged auto-correction of the checked unit made`);
   } else {
-    let rec = null; try { rec = JSON.parse(fs.readFileSync(recordFile(root, `private/coursewerk/verification/${evidence.dispatch}.json`), "utf8")); } catch { rec = null; }
+    let rec = null; try { rec = readDispatchFile(root, evidence.dispatch); } catch { rec = null; }
     const b = rec && boundRecord(rec, recs.filter((r) => r.type === "dispatch" && r.party?.role === "harness"));
     if (!b || b.unit !== unitId || logged.payload.unit !== unitId) throw new Error(`${unitId}: evidence must come from a logged fact check of this unit (${evidence.dispatch} is ${b ? `of ${b.unit}` : "not bound by the log"})`);
     if (b.hashed && b.factHash !== evidence.factHash) throw new Error(`${unitId}: ${evidence.dispatch} checked other facts than the unit states now`);
@@ -651,7 +651,7 @@ export function reviewedAbsolutes(root) {
   const log = [];
   for (const line of readLogText(root).split("\n").filter(Boolean)) { try { const r = JSON.parse(line); if (r.type === "dispatch" && r.party?.role === "harness") log.push(r); } catch { /* the log module reports it */ } }
   for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json"))) {
-    let r; try { r = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")); } catch { continue; }
+    let r; try { r = loadDispatch(root, path.join(dir, f)); } catch { continue; }
     const a = absoluteReviewOf(r, log);
     if (a?.review.ok) out.add(`${a.unit}|${a.absolutesHash}`);
   }
@@ -669,7 +669,7 @@ export function unreviewedKnowledge(root, reader) {
   const units = loadUnits(root, reader), textOf = new Map(units.map((u) => [`${u.id}|${readerKey(u.text)}`, u.text]));
   const log = logDispatches(root);
   if (fs.existsSync(dir)) for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json"))) {
-    let r; try { r = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")); } catch { continue; }
+    let r; try { r = loadDispatch(root, path.join(dir, f)); } catch { continue; }
     // the unit and the text reviewed are what the log binds (red-team round 3, R3-K08): a legacy record's contentHash
     // is derived from the passage its logged prompt showed, never read from the record
     const b = r.kind === "knowledge" ? boundRecord(r, log) : null;
@@ -684,7 +684,7 @@ export function unreviewedKnowledge(root, reader) {
 }
 /** The record of a logged knowledge review, when it is the one the log binds whole (null otherwise). */
 function boundKnowledge(root, logged) {
-  let r; try { r = JSON.parse(fs.readFileSync(recordFile(root, `private/coursewerk/verification/${logged.payload.dispatch}.json`), "utf8")); } catch { return null; }
+  let r; try { r = readDispatchFile(root, logged.payload.dispatch); } catch { return null; }
   return r && logged.payload.recordHash && recordHashOf(r) === logged.payload.recordHash ? r : null;
 }
 /** The harness's dispatch log records. */
@@ -702,7 +702,7 @@ function liveContradictions(root, units) {
   if (!fs.existsSync(dir)) return out;
   const log = logDispatches(root), byId = new Map(units.map((u) => [u.id, u]));
   for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json"))) {
-    let r; try { r = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")); } catch { continue; }
+    let r; try { r = loadDispatch(root, path.join(dir, f)); } catch { continue; }
     if (r.kind !== "semi") continue;
     const b = boundRecord(r, log), u = b && byId.get(b.unit);
     if (!u || b.status !== "contradicted") continue;
@@ -728,7 +728,7 @@ const sameClaims = (r, text) => {
  *  a review that cannot be scored — no readable answer, or a concern whose words the passage does not have — is never
  *  a clean re-check either (red-team round 2, R2-K10). */
 function wrongConcerns(root, dispatch, unitText) {
-  let r; try { r = JSON.parse(fs.readFileSync(recordFile(root, `private/coursewerk/verification/${dispatch}.json`), "utf8")); } catch { return [{ kind: "wrong", text: "(the review record is missing)", problem: "its record cannot be read" }]; }
+  let r; try { r = readDispatchFile(root, dispatch); } catch { return [{ kind: "wrong", text: "(the review record is missing)", problem: "its record cannot be read" }]; }
   if (sha256(r.answer?.raw ?? "") !== r.answer?.responseHash) return [{ kind: "wrong", text: "(the review record was edited)", problem: "its answer does not match the logged response" }];
   const k = readKnowledgeReview(r, unitText);
   if (!k.ok) return [{ kind: "wrong", text: "(the review cannot be read)", problem: `${k.reason}: run it again` }];
@@ -751,7 +751,7 @@ const shownForm = (t) => String(t || "").replace(/\s+/g, " ").trim();
  */
 export function reviewRecordProblem(root, logged, u, ctx) {
   const p = logged.payload || {};
-  let r; try { r = JSON.parse(fs.readFileSync(recordFile(root, `private/coursewerk/verification/${p.dispatch}.json`), "utf8")); } catch { return "its review record is missing or unreadable"; }
+  let r; try { r = readDispatchFile(root, p.dispatch); } catch { return "its review record is missing or unreadable"; }
   if (!p.recordHash || recordHashOf(r) !== p.recordHash) return "its review record is not the one the log vouches for";
   if (r.dispatch !== p.dispatch || r.unit !== u.id || r.kind !== p.kind || r.contentHash !== u.locator.contentHash) return "its review record is of other text";
   if (sha256(r.bundle?.prompt ?? "") !== r.bundle?.bundleHash || r.bundle?.bundleHash !== p.bundleHash) return "its review prompt does not match its logged hash";
