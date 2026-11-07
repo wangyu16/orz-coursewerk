@@ -5,9 +5,12 @@
 - **The chapter's own frame is framing** (owner 2026-11-06, from the General Chemistry relink; narrowed after an
   independent audit). Framing now also covers: units under a section titled exactly "Chapter logic" or "About this
   chapter"; the objectives listed under an exact "(Chapter) learning objectives" title, where the restated-objective
-  check passes each one; the boxes under a study guide's `#` title before its next heading; and a `###`-or-deeper label
-  heading with no text under it. Framing units are read for off-plan content (`framing-review-owed`, D42) and owe no
-  spine link. A knowledge claim in framing still gets the blind knowledge review (best effort, as for teaching).
+  check passes each one; a chapter-objectives box directly under a study guide's `#` title, when every item it lists
+  passes the same check; and a `###`-or-deeper label heading with no text under it. Framing units are read for off-plan
+  content (`framing-review-owed`, D42) and owe no spine link. A knowledge claim in framing still gets the blind
+  knowledge review (best effort, as for teaching); that review now also covers framing units that existed before this
+  change (Summary, Introduction and the like). Known limit, as for those titles: a section's title decides framing, so
+  knowledge-only lesson prose put under "Chapter logic" or "About this chapter" is framing (still read, owing no link).
   Unchanged: framing still carries no fact (D19-I); prose among the objectives stays teaching (red team r1 C3-06);
   `#`/`##` heading units and headings over text stay teaching (r2/r3 C3-03); practice files gain no new framing.
   `objective-uncovered` now names the framing units an uncovered objective is linked from. `req.units.framing-frame`.

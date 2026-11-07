@@ -53,7 +53,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "68f70cc0b3ed6e8b0c2fd7adaeb696dd97d7a242836a9348aa56768f5a5e7ce4"
+      "hash": "0ba757a0fa757c28521ea640d1fc198a8bece1c467200532db37f4537dbd33d5"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -587,7 +587,7 @@
       "id": "repo:scripts/lib/core/segment.mjs",
       "path": "scripts/lib/core/segment.mjs",
       "type": "kernel",
-      "hash": "6dd1ea9e6c01fedb920cf52e0a223431297e10ed9a08652abb2bbbe170810099"
+      "hash": "ab93f2dd069e26800b2eaceb3c8ef146df6fff8ee3f0fb8c917c6ad2c8017c76"
     },
     {
       "id": "repo:scripts/lib/core/shipped.mjs",
@@ -641,7 +641,7 @@
       "id": "repo:scripts/lib/core/units_index.mjs",
       "path": "scripts/lib/core/units_index.mjs",
       "type": "kernel",
-      "hash": "2c9da4d8c628bf7f1a2eee1e6ecd3e38715185172222fde72f68770d404d33cb"
+      "hash": "273a101625ff74ba5348354a700a80f469990402cd53ef2c72ebe89f3062d0de"
     },
     {
       "id": "repo:scripts/lib/core/values.mjs",
@@ -1373,7 +1373,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "14d72712dea5820d78558a4fee3925dc08e66ceca940535bef7fabc5cb908a42"
+      "hash": "17cea2984834c9d7f4c655e5b92f4e8b4197a0946d0b26a35896f114cf68e0f7"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1946,10 +1946,16 @@
       "hash": "6ffebcd671b9fba3f27ddd935df3a419b94905d4ef5e991ba6e8f05de0c28094"
     },
     {
+      "id": "repo:tests/framing-frame.audit2.test.mjs",
+      "path": "tests/framing-frame.audit2.test.mjs",
+      "type": "test",
+      "hash": "2daa619b84b5c7e49d471ef384799e9b82bc99166f9575fe34ad1db8fd002bf1"
+    },
+    {
       "id": "repo:tests/framing-frame.test.mjs",
       "path": "tests/framing-frame.test.mjs",
       "type": "test",
-      "hash": "5a6ca742055a7b5a417aa40fdb4f86ff1dc9f3deeb31a578f1500c3110a0e920"
+      "hash": "3cc2213aaa83d262a3f2b0cb3ef910b856549685209a51a6dceb97929e895506"
     },
     {
       "id": "repo:tests/gate-cli.test.mjs",

@@ -73,14 +73,14 @@ export function declaredKind(reader, rel) {
 }
 /** segmentDeliverable's options for a deliverable of a package (its declared kind). */
 // the approved objectives a chapter file may restate (the restated-objective check's own test, core_checks.mjs), read
-// once per reader and plan text: an objective listed under "Chapter learning objectives" is framing only where it passes
+// once per reader, manifest and plan text: an objective listed under "Chapter learning objectives" is framing only where it passes
 // that check (no practice file frames by section title: L3)
 const restatesCache = new WeakMap();
 function objectiveTest(reader, rel) {
   const ch = chapterOfFile(rel);
   if (!ch || /^practice\//.test(rel)) return null;
   if (!restatesCache.has(reader)) restatesCache.set(reader, new Map());
-  const cache = restatesCache.get(reader), key = `${ch}\u0000${reader.text(`concepts/${ch}.md`) ?? ""}`; // a plan edit is a new key
+  const cache = restatesCache.get(reader), key = `${ch}\u0000${reader.text("alembic.json") ?? ""}\u0000${reader.text(`concepts/${ch}.md`) ?? ""}`; // a manifest or plan edit is a new key (A2-L1)
   if (!cache.has(key)) {
     let test = null;
     try {

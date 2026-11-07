@@ -1,5 +1,5 @@
 // THE CHAPTER'S OWN FRAME IS FRAMING (owner 2026-11-06; req.units.framing-frame; audit 2026-11-06 F1–F5, L1–L3). A
-// study guide's title-area containers, its exact "Chapter logic" and closing "About this chapter" sections, the approved
+// study guide's title-area objectives box, its exact "Chapter logic" and closing "About this chapter" sections, the approved
 // objectives a "(Chapter) learning objectives" section lists, and a `###`+ label heading with no text under it teach
 // nothing themselves: they are framing — still units, read for off-plan content (D42: framing-review-owed) and, when
 // they make a knowledge claim, owed the knowledge review (F4); never owed a spine link. The guarantees they keep:
@@ -74,25 +74,33 @@ test("[req.units.framing-frame] objectives listed under \"(Chapter) learning obj
   assert.equal(roleOf(seg(guide, "practice/x.md"), /Describe the general behavior/), "teaching");
 });
 
-test("[req.units.framing-frame] a study guide's title area is its containers under the `#` title, up to the next heading of any level", () => {
-  const guide = "# Chapter 5: Gases\n\n:::success\n**Chapter learning objectives**\n- Describe the physical characteristics of gases.\n- Explain how gases mix.\n:::\n\nThis chapter is about gases.\n\n"
-    + ":::info\nBoyle measured the pressure of trapped air in 1662.\n:::\n\n## 5.1 Pressure\n\nPressure is a force spread over an area.\n";
-  const u = roles(guide);
-  assert.equal(roleOf(u, /Chapter learning objectives/), "framing", "the chapter objectives box");
-  assert.equal(roleOf(roles(guide.replace("Chapter learning objectives", "Chapter Learning Objectives")), /Chapter Learning Objectives/), "teaching", "the classifier reads title-case \"Learning Objectives\" as a name (D19-I)");
-  assert.equal(roleOf(u, /^This chapter is about gases/), "teaching", "audit F1: a paragraph in the title area is lesson text");
-  assert.equal(roleOf(u, /Boyle measured/), "teaching", "a fact in the title area stays teaching (D19-I)");
-  // audit F1: a guide whose sections are `###` (or bold) and that closes with `## About this chapter`
-  const lesson = "# Gases\n\n:::info\nRead this chapter after the mole.\n:::\n\n### 5.1 Pressure\n\nGases expand to fill their container.\n\n:::info\nA gas fills any container.\n:::\n\n**5.2 Volume**\n\n:::info\nVolume is the space a gas fills.\n:::\n\n## About this chapter\n\n:::info\n**Audience:** students\n:::\n";
-  const l = roles(lesson);
-  assert.equal(roleOf(l, /^Read this chapter after/), "framing");
-  assert.equal(roleOf(l, /^Gases expand/), "teaching");
-  assert.equal(roleOf(l, /^A gas fills any/), "teaching", "the title area ends at the first heading of any level");
+test("[req.units.framing-frame] a study guide's title area is the contiguous containers under its `#` title; only an objectives box whose every item restates an approved objective is framing there", () => {
+  const APPROVED = new Set(["Describe the physical characteristics of gases.", "Explain how gases mix."]);
+  const isObjective = (t) => APPROVED.has(t.trim());
+  const rolesO = (text, rel = "study-guide/x.md") => segmentDeliverable(text, rel, { isObjective }).units.map((u) => ({ text: u.text, role: derivedRole(u.role, classifyUnit(u)) }));
+  const box = (title, items) => `:::success\n**${title}**\n${items.map((x) => `- ${x}`).join("\n")}\n:::\n\n`;
+  const guide = "# Chapter 5: Gases\n\n" + box("Chapter learning objectives", [...APPROVED]) + ":::info\nRead this chapter after the mole.\n:::\n\n"
+    + "This chapter is about gases.\n\n" + box("Chapter learning objectives", [...APPROVED]) + "## 5.1 Pressure\n\nPressure is a force spread over an area.\n";
+  const u = rolesO(guide);
+  assert.equal(u[0].role, "framing", "the chapter objectives box, every item an approved objective");
+  assert.equal(roleOf(u, /^Read this chapter after/), "teaching", "round 2, A2-M1: a box that lists no objectives is not framing");
+  assert.equal(roleOf(u, /^This chapter is about gases/), "teaching", "audit F1: a paragraph is lesson text");
+  assert.equal(u.at(-2).role, "teaching", "A2-M2: a box after the first non-container unit is no title area");
+  // A2-M1: one item that restates no approved objective, prose in the box, no plan, or the title-case title (D19-I)
+  assert.equal(rolesO("# G\n\n" + box("Chapter learning objectives", ["Describe the physical characteristics of gases.", "Gases expand to fill any container."]) + "## 5.1\n\nx.\n")[0].role, "teaching");
+  assert.equal(rolesO("# G\n\n:::success\nGases expand to fill any container.\n- Explain how gases mix.\n:::\n\n## 5.1\n\nx.\n")[0].role, "teaching");
+  assert.equal(roles(guide)[0].role, "teaching", "without a plan to check against, nothing is framed");
+  assert.equal(rolesO(guide.replace("Chapter learning objectives", "Chapter Learning Objectives"))[0].role, "teaching", "the classifier reads title-case \"Learning Objectives\" as a name (D19-I)");
+  // audit F1 / A2-M2: a guide whose sections are `###` or bold and that closes with `## About this chapter`
+  const lesson = "# Gases\n\n" + box("Chapter learning objectives", [...APPROVED]) + "**5.1 Pressure**\n\nPressure is force per area.\n\n:::warning\nA gas fills any container.\n:::\n\n### 5.2 Volume\n\n:::info\nVolume is the space a gas fills.\n:::\n\n## About this chapter\n\n:::info\n**Audience:** students\n:::\n";
+  const l = rolesO(lesson);
+  assert.equal(l[0].role, "framing");
+  assert.equal(roleOf(l, /^A gas fills any/), "teaching", "a lesson callout under a bold section");
   assert.equal(roleOf(l, /^Volume is the space/), "teaching");
-  // no `#` title, or nothing after it: no title area; practice and slides have none
-  assert.equal(roleOf(roles(":::info\nRead this first.\n:::\n\n## 5.1\n\nText.\n"), /^Read this first/), "teaching");
-  assert.equal(roleOf(roles("# Gases\n\n:::info\nRead this first.\n:::\n"), /^Read this first/), "teaching");
-  assert.equal(roleOf(roles("# Practice\n\n:::info\nWork these after the guide.\n:::\n\n## Set 1\n\nText.\n", "practice/x.md"), /^Work these/), "teaching");
+  // no `#` title, or nothing after it: no title area; practice has none
+  assert.equal(rolesO(box("Chapter learning objectives", [...APPROVED]) + "## 5.1\n\nText.\n")[0].role, "teaching");
+  assert.equal(rolesO("# Gases\n\n" + box("Chapter learning objectives", [...APPROVED]))[0].role, "teaching");
+  assert.equal(rolesO("# Practice\n\n" + box("Chapter learning objectives", [...APPROVED]) + "## Set 1\n\nText.\n", "practice/x.md")[0].role, "teaching");
 });
 
 test("[req.units.framing-frame] a `###`+ label heading with no text under it is framing; a `#`/`##` heading unit, a statement heading and a heading over text stay teaching", () => {
@@ -162,10 +170,12 @@ test("[req.units.framing-frame] in a course: a fact-free box at the end is frami
   const unc = c.core().filter((f) => f.kind === "objective-uncovered" && new RegExp(O).test(f.evidence.what));
   assert.equal(unc.length, 1);
   assert.match(unc[0].evidence.what, new RegExp(`linked only from framing.*${logic.id}`));
-  // the same fact-free box at the top of the guide, under its title, is the title area: framing too
+  // under the guide's title, the fact-free box is no objectives box: teaching (round 2, A2-M1); a box restating an
+  // approved objective, checked against the course's own plan, is framing
   const top = course(t);
-  top.asAgent(() => top.edit(SG, "# Le Chatelier's Principle\n", "# Le Chatelier's Principle\n\n:::info\n**Audience:** students in a general chemistry course\n:::\n"));
-  assert.equal(top.units().find((u) => /\*\*Audience:\*\*/.test(u.text)).role, "framing");
+  top.asAgent(() => top.edit(SG, "# Le Chatelier's Principle\n", `# Le Chatelier's Principle\n\n:::success\n**Chapter learning objectives**\n- ${OBJ5}\n:::\n\n:::info\n**Audience:** students in a general chemistry course\n:::\n`));
+  assert.equal(top.units().find((u) => /\*\*Audience:\*\*/.test(u.text)).role, "teaching");
+  assert.equal(top.units().find((u) => /\*\*Chapter learning objectives\*\*/.test(u.text)).role, "framing");
 });
 
 test("[req.units.framing-frame] courseguide-standards puts the reference box last, under its own `## About this chapter`, and says both boxes stay teaching and owe a link (audit F5: D19-I is not relaxed)", () => {

@@ -4,7 +4,7 @@
 // A unit is the smallest piece that can be checked on its own: a paragraph, a list item (on slides: a whole bullet
 // group), a table row, an equation block, a callout, a figure (image, Mermaid, chart, structure), a question and each
 // worked answer. Title, outline, section and closing slides, and summary-like sections, are framing; so are (owner
-// 2026-11-06) a study guide's title-area containers, its "Chapter logic" and "About this chapter" sections, the
+// 2026-11-06) a study guide's title-area objectives box, its "Chapter logic" and "About this chapter" sections, the
 // approved objectives a "(Chapter) learning objectives" section lists, and a `###`+ label heading with no text under it.
 // Framing may not carry facts (D19-I), is still read (D42) and still owes the knowledge review when it makes a
 // knowledge claim (audit F4).
@@ -146,21 +146,35 @@ export function segmentDeliverable(text, deliverable, { declared = null, isObjec
   // why each structure line is structure, and the section it stands in (read again once every unit is known)
   const why = new Map(), ctx = new Map();
   const over = new Map(); // a unit's first line → the label line over it (a table header, a container label)
-  // a study guide's title area (owner 2026-11-06): the containers under its `#` title, before the next heading of any
-  // level — the chapter objectives box, the reference box of older guides — are framing. Only containers (callouts):
-  // a paragraph or list there is lesson text (audit F1: a guide with `###` or bold sections and a closing `##` section).
+  // a study guide's title area (owner 2026-11-06): the contiguous containers directly under its `#` title — before the
+  // next heading of any level or the first unit that is no container (audit F1; round 2, A2-M2: a bold pseudo-section's
+  // lesson callouts are no title area). Of these, only a chapter-objectives box is framing, and only when every
+  // objective it lists passes the restated-objective check (A2-M1, as F2): a list, under at most a bold label line.
   const titleArea = (() => {
     if (!/^study-guide\//.test(String(deliverable || ""))) return null;
     const hs = [...orz.headings].sort((a, b) => a[0] - b[0]);
     return hs.length > 1 && hs[0][1] === 1 ? [hs[0][0], hs[1][0]] : null;
   })();
+  let titleOpen = !!titleArea;
+  const objectivesBox = (body) => {
+    if (!isObjective) return false;
+    const items = [];
+    for (const l of String(body).split("\n")) {
+      const t = l.trim();
+      if (!t) continue;
+      if (LIST_ITEM.test(t)) items.push(t.replace(LIST_ITEM, ""));
+      else if (items.length) items[items.length - 1] += ` ${t}`; // a continuation is part of the item it follows
+      else if (!(/^\*\*[^*]+\*\*:?$/.test(t) && isLabel(t))) return false; // only a bold label may stand above the list
+    }
+    return items.length > 0 && items.every((x) => isObjective(x));
+  };
   const practice = /^practice\//.test(String(deliverable || ""));
   const struct = (i, reason = "silent") => { covered.add(i); if (!why.has(i)) { why.set(i, reason); ctx.set(i, { section, role: roleFor(i), slideTemplate }); } };
   const roleFor = (at = i, form = null, body = null) => {
     if ((isSlides && FRAMING_TEMPLATES.has(slideTemplate)) || FRAMING_SECTION.test(sectionTitle)) return "framing";
     const title = titleText(sectionTitle);
     if (!practice && FRAME_SECTION.test(title)) return "framing";
-    if (form === "callout" && titleArea && at > titleArea[0] && at < titleArea[1]) return "framing";
+    if (form === "callout" && titleOpen && at > titleArea[0] && at < titleArea[1] && body != null && objectivesBox(body)) return "framing";
     if (!practice && LIST_FORMS.has(form) && body != null && isObjective && OBJECTIVES_SECTION.test(title)) {
       const items = listItemTexts(body);
       if (items.length && items.every((x) => isObjective(x))) return "framing";
@@ -172,6 +186,7 @@ export function segmentDeliverable(text, deliverable, { declared = null, isObjec
     for (let k = a; k <= b; k++) covered.add(k);
     if (!body) return;
     role ??= roleFor(a, form, body);
+    if (titleOpen && form !== "callout" && a > titleArea[0]) titleOpen = false; // the title area is contiguous containers
     units.push({ form, role, section, text: body, startLine: a + 1, endLine: b + 1, ...(label ? { label } : {}) });
   };
   let i = 0;
