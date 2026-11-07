@@ -32,6 +32,7 @@ cannot accept or verify a Coursewerk harness revision by itself.
 A package's records are read by the Coursewerk version that works on it, so a package written by a newer version may
 need that version:
 
+<!-- RELEASE PLACEHOLDER: at release, after the owner approves, replace "this version" / "this Coursewerk version" / "after v1.0.4" in this entry with the released version number (e.g. v1.0.5). -->
 - **Compact review records** (after v1.0.4, `req.records.compact-review`): a review record written by this version stores
   its prompt's repeated blocks once, in `private/coursewerk/verification/parts/`. A package holding such records needs
   this version or later. v1.0.4 and earlier read the parts as unlogged records and cannot put a compact record's prompt

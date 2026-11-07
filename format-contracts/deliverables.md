@@ -49,6 +49,7 @@ package/
 v0.12 records (`KEY_FACT_REVIEW.json`, `VISUAL_REVIEW.json`, `COMPONENT_INDEX.json`, `CLAIMS.json`, `claims/`, `TERMS.json`,
 `SPINE.json`, `REVIEW_QUEUE.json`, `OVERRIDES.json`) are not part of a spine-v2 package; see `docs/migrating-from-v0.12.md`.
 
+<!-- RELEASE PLACEHOLDER: at release, after the owner approves, replace "this version" / "this Coursewerk version" / "after v1.0.4" in this entry with the released version number (e.g. v1.0.5). -->
 **Compact review records** (req.records.compact-review). A dispatch record written by Coursewerk after v1.0.4 keeps the large,
 repeated blocks of its prompt (the reviewer's instructions; an alignment review's whole chapter plan) once, in
 `verification/parts/<sha256>.json` (`{"schemaVersion": 1, "kind": "prompt-part", "sha256", "at", "text"}`, named by the
@@ -57,7 +58,8 @@ which joined are the prompt byte for byte. The log binds the record as it reads 
 `bundleHash` is the sha256 of that prompt and its `recordHash` the hash of that whole record, exactly as for a record
 stored whole. A record written before stays as it is and reads as it always did. A part that is missing, altered or not
 the one named makes every record using it unreadable (a logged dispatch without a readable record is a blocking
-defect), and so is any other file in a folder under `verification/`. Parts are records like the rest: never edit or
+defect), and so is any other file in a folder under `verification/`, including a file under a part's name that is not
+that part. Parts are records like the rest: never edit or
 delete one; Alembic carries them in the verification parts. A package with compact records needs this Coursewerk version
 or later (`COMPATIBILITY.md`).
 
@@ -68,8 +70,8 @@ held: a `LOG.jsonl` text, or a folder holding one. Either folder may be in eithe
 parts (`LOG.jsonl`, `LOG.2.jsonl`, …, cut at line ends) joined in order. `ok` only when the log verifies (every record
 well formed, numbered in order, hashed and chained to the one before) and, with `--extends`, holds every earlier record
 byte for byte and in order with only new records after them: a record changed, dropped or reordered, a broken earlier
-log, a gap in the parts or an unreadable input is a problem, never an empty log; checked alone, a log with no records is
-refused (an empty earlier log may still be continued). It reads only. `log` gives the joined
+log, a gap in the parts or an unreadable input is a problem, never an empty log; a log with no records is refused,
+alone or under `--extends` (an empty earlier log may still be continued by a log that has records). It reads only. `log` gives the joined
 log's `parts`, `bytes`, `sha256`, `records` and `head` (the last record's hash).
 
 **Folder → repo is decided by the top-level folder and is total.** `study-guide/ slides/ practice/

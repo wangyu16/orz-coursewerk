@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+<!-- RELEASE PLACEHOLDER: at release, after the owner approves, replace "this version" / "this Coursewerk version" / "after v1.0.4" in this entry with the released version number (e.g. v1.0.5). -->
+
 - **Compact review records** (owner 2026-11-07: General Chemistry's verification records reached 56 MB, over the 50 MB
   an Alembic site's records may hold). A new dispatch record stores its prompt's large, repeated blocks — the reviewer's
   instructions and an alignment review's whole chapter plan — once, by content hash, in
@@ -10,13 +12,14 @@
   records written before read unchanged; a missing or altered part makes the record unreadable (a blocking defect).
   On a copy of General Chemistry a new alignment record is about 3 KB instead of 11 KB, a knowledge record about
   3 KB instead of 3.9 KB. A file in a folder under `verification/` that is not a hash-named part is a blocking defect
-  (`dispatch-unlogged`). `req.records.compact-review`.
+  (`dispatch-unlogged`), as is a file under a part's name that is not that part; a part write that fails leaves no
+  temp file behind. `req.records.compact-review`.
   **Compatibility:** a package with compact records needs this version or later. v1.0.4 and earlier read a part as an
   unlogged record and cannot put a compact record's prompt back, so they block such a package (they fail closed; nothing
   is wrongly cleared). A host (Alembic) must move to this version before any compact record is written.
 - **The chain check** (Alembic Door E): `scripts/records_check.mjs --root <pkg> [--extends <earlier log>]` prints
-  `{ok, problems}`: the decision log verifies and continues the one last held, in either layout; a log with no records,
-  checked alone, is refused. Reads only.
+  `{ok, problems}`: the decision log verifies and continues the one last held, in either layout; a log with no records is
+  refused, with or without `--extends`. Reads only.
   `req.records.chain-check`.
 
 ## v1.0.4 (2026-11-07)

@@ -294,8 +294,9 @@ export function sharedBlocks(prompt) {
 }
 
 const partText = (record) => JSON.stringify(record, null, 2) + "\n";
-/** A stored part's text, or null when it is missing or is not the part named (fails closed). */
-function readPart(readText, hash) {
+/** A stored part's text, or null when it is missing or is not the part named (fails closed). `readText(rel)` reads a
+ *  package-relative file (null or a throw: missing). */
+export function readPart(readText, hash) {
   if (!PART_NAME.test(hash)) return null;
   let raw; try { raw = readText(`${PARTS_DIR}/${hash}.json`); } catch { return null; }
   let p; try { p = JSON.parse(raw); } catch { return null; }
@@ -346,14 +347,18 @@ function compactPrompt(root, prompt, at) {
   const readText = rootReader(root);
   for (const block of blocks) {
     const hash = sha256(block), file = recordFile(root, `${PARTS_DIR}/${hash}.json`);
+    const tmp = `${file}.${process.pid}.tmp`;
     try {
       if (!fs.existsSync(file)) {
         fs.mkdirSync(recordFile(root, PARTS_DIR), { recursive: true });
-        const tmp = `${file}.${process.pid}.tmp`;
         fs.writeFileSync(tmp, partText({ schemaVersion: 1, kind: "prompt-part", sha256: hash, at, text: block }));
         fs.renameSync(tmp, file);
       }
-    } catch { continue; }
+    } catch {
+      // a failed write leaves no temp file behind (a stray file under verification/ is a defect: audit2 LOW-C)
+      try { fs.rmSync(tmp, { force: true }); } catch { /* nothing more to do: the block stays in the record */ }
+      continue;
+    }
     if (readPart(readText, hash) !== block) continue;
     const i = segs.findIndex((x) => typeof x === "string" && x.includes(block));
     if (i < 0) continue;

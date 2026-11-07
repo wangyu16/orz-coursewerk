@@ -45,16 +45,17 @@ export function readJoinedLog(root) {
 
 /**
  * Check a folder's decision log; with `extends` (the text of the log last held), check that it continues that log.
- * `extends: undefined` checks the log alone; an empty string is an empty earlier log (anything that verifies extends it).
+ * `extends: undefined` checks the log alone; an empty string is an empty earlier log (any log with records that verifies extends it).
  */
 export function checkRecords(root, { extends: earlier } = {}) {
   const { text, parts, problems } = readJoinedLog(root);
   if (!problems.length) {
     problems.push(...verifyLog(text));
     if (earlier !== undefined) problems.push(...verifyExtends(String(earlier), text));
-    // a package always has a decision log with records (its intake at least): checked alone, an empty one is a log lost,
-    // never one that verifies (audit LOW-2). With --extends an empty earlier log may still be continued by a real one.
-    if (!parseLog(text).length && earlier === undefined) problems.push(`${RECORDS}/LOG.jsonl holds no records: an empty decision log is not a log that verifies`);
+    // a package always has a decision log with records (its intake at least): an empty one is a log lost, never one that
+    // verifies, alone or under --extends (audit LOW-2, audit2 LOW-B). An empty earlier log may still be continued by a
+    // log that has records.
+    if (!parseLog(text).length) problems.push(`${RECORDS}/LOG.jsonl holds no records: an empty decision log is not a log that verifies`);
   }
   const records = problems.length ? null : parseLog(text);
   return {

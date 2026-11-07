@@ -33,7 +33,7 @@ import { segmentOptions } from "../lib/core/units_index.mjs";
 import { factHash } from "../lib/core/dependencies.mjs";
 import { checkableClaims, claimsHash } from "../lib/verify/claims.mjs";
 import { supports } from "../lib/verify/admission.mjs";
-import { PARTS_DIR, VERIFICATION_DIR, boundRecord, readDispatches, readKnowledgeReview, reviewedPassage, settledBySuggestion, suggestionAt } from "../lib/verify/dispatch.mjs";
+import { PARTS_DIR, VERIFICATION_DIR, boundRecord, readPart, readDispatches, readKnowledgeReview, reviewedPassage, settledBySuggestion, suggestionAt } from "../lib/verify/dispatch.mjs";
 const PART_FILE = new RegExp(`^${PARTS_DIR}/[0-9a-f]{64}\\.json$`);
 import { holdOtherText, holdersOf, holdsInstructorText, instructorTextChange, instructorTextRegister, originIndex, textIds } from "../lib/core/authorship.mjs";
 import { confirmationStands, instructorActsOf, shownBeforeOf } from "../lib/core/obligations.mjs";
@@ -91,9 +91,11 @@ function run(s) {
     out.push({ kind: "dispatch-unlogged", units: units.has(r.unit) ? [r.unit] : [], evidence: { type: "rule", rule: "a verification record matches a dispatch in the decision log (bundle and answer hashes)", dispatch: r.dispatch ?? null } });
   // a file inside a folder under verification/ is either a shared prompt part named by its hash (dispatch.mjs PARTS_DIR)
   // or nothing the harness wrote: never silently ignored (req.records.compact-review; audit LOW-1 — before compact
-  // records, readDispatches read such a .json as a record and reported it unlogged)
-  for (const p of s.paths) if (p.startsWith(`${VERIFICATION_DIR}/`) && p.slice(VERIFICATION_DIR.length + 1).includes("/") && !PART_FILE.test(p))
-    out.push({ kind: "dispatch-unlogged", units: [], evidence: { type: "rule", rule: "the verification folder holds only dispatch records and the prompt parts they share (parts/<sha256>.json)", file: p, dispatch: null } });
+  // records, readDispatches read such a .json as a record and reported it unlogged). A file under a part's name must be
+  // that part (kind prompt-part, its sha256 the name, its text hashing to it: audit2 LOW-A), not anything so named.
+  const isPart = (p) => PART_FILE.test(p) && readPart((rel) => s.text(rel), p.slice(PARTS_DIR.length + 1, -".json".length)) != null;
+  for (const p of s.paths) if (p.startsWith(`${VERIFICATION_DIR}/`) && p.slice(VERIFICATION_DIR.length + 1).includes("/") && !isPart(p))
+    out.push({ kind: "dispatch-unlogged", units: [], evidence: { type: "rule", rule: "the verification folder holds only dispatch records and the prompt parts they share (parts/<sha256>.json, each the part its name says)", file: p, dispatch: null } });
   for (const l of log.filter((x) => x.type === "dispatch" && x.payload?.dispatch)) if (!byDispatch.has(l.payload.dispatch))
     out.push({ kind: "dispatch-record-missing", units: units.has(l.payload.unit) ? [l.payload.unit] : [], evidence: { type: "rule", rule: "every logged dispatch keeps its record in private/coursewerk/verification/", dispatch: l.payload.dispatch } });
 
