@@ -659,7 +659,7 @@ export function reviewedAbsolutes(root) {
 }
 
 /**
- * Knowledge-based teaching units that no logged blind review has read at their current text. Reported, not
+ * Knowledge-based units (teaching or framing) that no logged blind review has read at their current text. Reported, not
  * blocking: Level 2 is best effort (P11 K4 scenario: an agent that never ran the review saw nothing to tell it so).
  */
 export function unreviewedKnowledge(root, reader) {
@@ -679,7 +679,8 @@ export function unreviewedKnowledge(root, reader) {
     const key = `${b.unit}|${readerKey(reviewedPassage(r.bundle?.prompt))}`, k = textOf.has(key) && readKnowledgeReview(r, textOf.get(key));
     if (k && k.ok && !k.unlocated.length) seen.add(key);
   }
-  return units.filter((u) => u.judgment.includes("knowledge-based") && u.role === "teaching" && !seen.has(`${u.id}|${readerKey(u.text)}`)).map((u) => u.id);
+  // teaching and framing alike (audit F4): framing owes no link, but its knowledge claims are still read (best effort)
+  return units.filter((u) => u.judgment.includes("knowledge-based") && !seen.has(`${u.id}|${readerKey(u.text)}`)).map((u) => u.id);
 }
 /** The record of a logged knowledge review, when it is the one the log binds whole (null otherwise). */
 function boundKnowledge(root, logged) {
@@ -1155,7 +1156,12 @@ export function coreObligations(root, reader, basis) {
     // passing" or "no" do not cover (C2-01, C1-09).
     for (const o of s.map.nodes.filter((n) => n.kind === "objective" && n.id)) {
       const teachers = units.filter((u) => teachesInDeliverable(u, o.id));
-      if (!teachers.length) { ob("objective-uncovered", [], `a teaching unit (study guide or slides) that serves ${o.id}`); continue; }
+      if (!teachers.length) {
+        // a link on a framing unit covers nothing (D41): say where it is, so the link is moved to the text that teaches
+        const framed = units.filter((u) => u.role === "framing" && /^(study-guide|slides)\//.test(u.locator.deliverable) && (u.spineNodes || []).includes(o.id)).map((u) => u.id);
+        ob("objective-uncovered", [], `a teaching unit (study guide or slides) that serves ${o.id}${framed.length ? ` (linked only from framing, which covers nothing: ${framed.slice(0, 5).join(", ")}${framed.length > 5 ? ` and ${framed.length - 5} more` : ""} — link the text that teaches it)` : ""}`);
+        continue;
+      }
       if (teachers.some((u) => reviews.get(u.id)?.verdicts.get(o.id) === "yes")) continue;
       const unreviewed = teachers.filter((u) => !reviews.get(u.id)?.verdicts.has(o.id));
       if (unreviewed.length) ob("link-review-owed", unreviewed.map((u) => u.id), `a blind link review of the units that would teach ${o.id} (node scripts/verify.mjs alignment --units ${unreviewed.map((u) => u.id).join(",")})`);

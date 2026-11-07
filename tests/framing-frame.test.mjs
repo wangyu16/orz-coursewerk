@@ -1,7 +1,8 @@
-// THE CHAPTER'S OWN FRAME IS FRAMING (owner 2026-11-06; req.units.framing-frame). A study guide's title area, its
-// "Chapter logic" and closing "About this chapter" sections, the lists of a "(Chapter) learning objectives" section, and
-// a heading with no text under it teach nothing themselves: they are framing — still units, still read for off-plan content (D42: framing-review-owed),
-// never owed a spine link. The guarantees they keep:
+// THE CHAPTER'S OWN FRAME IS FRAMING (owner 2026-11-06; req.units.framing-frame; audit 2026-11-06 F1–F5, L1–L3). A
+// study guide's title-area containers, its exact "Chapter logic" and closing "About this chapter" sections, the approved
+// objectives a "(Chapter) learning objectives" section lists, and a `###`+ label heading with no text under it teach
+// nothing themselves: they are framing — still units, read for off-plan content (D42: framing-review-owed) and, when
+// they make a knowledge claim, owed the knowledge review (F4); never owed a spine link. The guarantees they keep:
 //   - framing may not carry facts (D19-I): whatever under these titles, in the title area or in a heading states a value,
 //     a date, a name or a superlative stays teaching;
 //   - the role is derived from the text and its structure, never from a sidecar (redteam r1 C3-15);
@@ -18,7 +19,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { classifyUnit, derivedRole, segmentDeliverable } from "../scripts/lib/core/segment.mjs";
-import { coreObligations, indexAndStamp, loadUnits } from "../scripts/lib/core/obligations.mjs";
+import { coreObligations, indexAndStamp, linkUnits, loadUnits, unreviewedKnowledge } from "../scripts/lib/core/obligations.mjs";
 import { beginSession } from "../scripts/lib/core/units_index.mjs";
 import { liveReader } from "../scripts/lib/core/package_reader.mjs";
 
@@ -31,78 +32,88 @@ const SG = "study-guide/le-chatelier.md";
 const roles = (text, rel = "study-guide/x.md") => segmentDeliverable(text, rel).units.map((u) => ({ text: u.text, form: u.form, role: derivedRole(u.role, classifyUnit(u)) }));
 const roleOf = (units, re) => { const u = units.find((x) => re.test(x.text)); assert.ok(u, `no unit ${re}`); return u.role; };
 
-test("[req.units.framing-frame] \"Chapter logic\" and \"About this chapter\" sections, and the lists of a \"(Chapter) learning objectives\" section, are framing; prose among the objectives and a fact stay teaching", () => {
+test("[req.units.framing-frame] exact \"Chapter logic\" and \"About this chapter\" sections are framing; a fact under them stays teaching; prefixes, Synthesis and practice files are not", () => {
   const guide = "# Gases\n\n## Chapter Logic\n\nGases are the simplest state of matter to describe.\n\nThe ideal gas law was stated by Clapeyron in 1834.\n\n"
-    + "## Chapter learning objectives\n\nRead these before the sections below.\n\n- Describe the general behavior of gases.\n\n"
-    + "## Learning objectives\n\nEach objective is practised in the sheet.\n\n- Explain why gases mix completely.\n\n"
+    + "## Chapter logic and the gas laws\n\nGases expand to fill their container.\n\n"
     + "## 5.1 Pressure\n\nPressure is a force spread over an area.\n\n## Synthesis\n\nThe chapter ties one equation to its limits.\n\n"
-    + "## About this chapter\n\n:::info\n**Audience:** students in a general chemistry course\n**Note:** builds on the equilibrium chapter.\n:::\n\n"
-    + ":::info\n**Audience:** students in a general chemistry course\n**Package license:** CC BY 4.0\n:::\n";
+    + "## About this chapter{{attrs[#blk-abc12345]}}\n\n:::info\n**Audience:** students in a general chemistry course\n**Note:** builds on the equilibrium chapter.\n:::\n\nAbout this chapter, gases are simple.\n";
   const u = roles(guide);
   assert.equal(roleOf(u, /^Gases are the simplest/), "framing", "chapter logic");
-  assert.equal(roleOf(u, /Describe the general behavior/), "framing", "a chapter-objectives list item (not a restated-objectives section) is framing");
-  // C3-06: prose in an objectives section is content, owed a link like any other
-  assert.equal(roleOf(u, /^Read these before/), "teaching");
-  assert.equal(roleOf(u, /^Each objective is practised/), "teaching");
-  assert.ok(!u.some((x) => /Explain why gases mix/.test(x.text)), "the restated objectives stay structure");
-  assert.equal(roleOf(u, /Audience.*\n\*\*Note/), "framing", "the reference box under About this chapter");
-  // the classifier reads "… course Package" as a name: what it reads as a fact is teaching wherever it stands (D19-I)
-  assert.equal(roleOf(u, /Package license/), "teaching");
-  // D19-I: a fact under a framing title is teaching
-  assert.equal(roleOf(u, /Clapeyron in 1834/), "teaching");
-  // the lesson and the other closing sections are untouched
+  assert.equal(roleOf(u, /Clapeyron in 1834/), "teaching", "D19-I: a fact under a framing title is teaching");
+  assert.equal(roleOf(u, /^Gases expand to fill/), "teaching", "L1: the title is exact — a lesson under \"Chapter logic and …\" is no frame");
+  assert.equal(roleOf(u, /Audience.*\n\*\*Note/), "framing", "a fact-free box under About this chapter (a block id after the title is no part of it)");
   assert.equal(roleOf(u, /^Pressure is a force/), "teaching");
   assert.equal(roleOf(u, /^The chapter ties/), "teaching", "Synthesis is not a framing title");
   // the same titles frame a deck's slides
-  const deck = "<!-- slide -->\n## Chapter Logic\n- One equation describes every gas\n\n<!-- slide -->\n## Chapter Learning Objectives\n- Describe how gases behave\n\n<!-- slide -->\n## Pressure\n- Pressure is force per area\n";
-  const s = roles(deck, "slides/x.md");
-  assert.deepEqual(s.map((x) => x.role), ["framing", "framing", "teaching"]);
+  assert.deepEqual(roles("<!-- slide -->\n## Chapter Logic\n- One equation describes every gas\n\n<!-- slide -->\n## Pressure\n- Pressure is force per area\n", "slides/x.md").map((x) => x.role), ["framing", "teaching"]);
+  // L3: no framing by these titles in a practice file
+  assert.equal(roleOf(roles("# Practice\n\n## Chapter logic\n\nGases expand to fill their container.\n", "practice/x.md"), /^Gases expand/), "teaching");
 });
 
-test("[req.units.framing-frame] a study guide's title area (before its first `##`) is framing; no section, no title area; only a study guide has one", () => {
+test("[req.units.framing-frame] objectives listed under \"(Chapter) learning objectives\" are framing only where the restated-objective check passes them; other items and prose stay teaching", () => {
+  const APPROVED = new Set(["Describe the general behavior of gases.", "Explain why gases mix completely."]);
+  const isObjective = (t) => APPROVED.has(t.trim());
+  const seg = (text, rel = "study-guide/x.md", opts = { isObjective }) => segmentDeliverable(text, rel, opts).units.map((u) => ({ text: u.text, role: derivedRole(u.role, classifyUnit(u)) }));
+  const guide = "# Gases\n\n## Chapter learning objectives\n\nRead these before the sections below.\n\n- Describe the general behavior of gases.\n- Gases expand to fill their container because their molecules move freely.\n\n"
+    + "## Learning objectives\n\nEach objective is practised in the sheet.\n\n- Explain why gases mix completely.\n\n## 5.1 Pressure\n\nText.\n";
+  const u = seg(guide);
+  assert.equal(roleOf(u, /Describe the general behavior/), "framing", "an approved objective, restated");
+  assert.equal(roleOf(u, /Gases expand to fill/), "teaching", "audit F2: an item the check would not pass is content, owed a link");
+  assert.equal(roleOf(u, /^Read these before/), "teaching", "C3-06: prose among the objectives is content");
+  assert.equal(roleOf(u, /^Each objective is practised/), "teaching");
+  assert.ok(!u.some((x) => /Explain why gases mix/.test(x.text)), "the restated objectives stay structure");
+  // without a plan to check against, or under a title that is not exactly the objectives title, nothing is framed
+  assert.equal(roleOf(seg(guide, "study-guide/x.md", {}), /Describe the general behavior/), "teaching");
+  for (const title of ["Learning objectives and key ideas", "Learning Objectives — and the mechanism"])
+    assert.equal(roleOf(seg(guide.replace("Chapter learning objectives", title)), /Describe the general behavior/), "teaching", title);
+  // a slide's bullet group is framing only when every item restates an approved objective
+  const deck = (b) => seg(`<!-- slide -->\n## Chapter Learning Objectives\n${b}\n\n<!-- slide -->\n## Pressure\n- Force per area\n`, "slides/x.md");
+  assert.equal(deck("- Describe the general behavior of gases.\n- Explain why gases mix completely.")[0].role, "framing");
+  assert.equal(deck("- Describe the general behavior of gases.\n- **Objective 5.1a** — gases expand to fill their container.")[0].role, "teaching");
+  // L3: never in a practice file
+  assert.equal(roleOf(seg(guide, "practice/x.md"), /Describe the general behavior/), "teaching");
+});
+
+test("[req.units.framing-frame] a study guide's title area is its containers under the `#` title, up to the next heading of any level", () => {
   const guide = "# Chapter 5: Gases\n\n:::success\n**Chapter learning objectives**\n- Describe the physical characteristics of gases.\n- Explain how gases mix.\n:::\n\nThis chapter is about gases.\n\n"
     + ":::info\nBoyle measured the pressure of trapped air in 1662.\n:::\n\n## 5.1 Pressure\n\nPressure is a force spread over an area.\n";
   const u = roles(guide);
   assert.equal(roleOf(u, /Chapter learning objectives/), "framing", "the chapter objectives box");
-  // the classifier reads a title-case "Learning Objectives" as a name: then the box is teaching (D19-I holds)
-  assert.equal(roleOf(roles(guide.replace("Chapter learning objectives", "Chapter Learning Objectives")), /Chapter Learning Objectives/), "teaching");
-  assert.equal(roleOf(u, /^This chapter is about gases/), "framing");
+  assert.equal(roleOf(roles(guide.replace("Chapter learning objectives", "Chapter Learning Objectives")), /Chapter Learning Objectives/), "teaching", "the classifier reads title-case \"Learning Objectives\" as a name (D19-I)");
+  assert.equal(roleOf(u, /^This chapter is about gases/), "teaching", "audit F1: a paragraph in the title area is lesson text");
   assert.equal(roleOf(u, /Boyle measured/), "teaching", "a fact in the title area stays teaching (D19-I)");
-  assert.equal(roleOf(u, /^Pressure is a force/), "teaching");
-  // a guide with no `##` section: its text is the lesson
-  assert.deepEqual(roles("# Gases\n\nGases fill their container.\n\nThey mix completely.\n").map((x) => x.role), ["teaching", "teaching"]);
-  // the title area ends at a second `#` heading too
-  const two = roles("# Gases\n\nThis chapter is about gases.\n\n# Part one\n\nGases fill their container.\n\n## 5.1 Pressure\n\nPressure is force per area.\n");
-  assert.equal(roleOf(two, /^This chapter is about/), "framing");
-  assert.equal(roleOf(two, /^Gases fill their/), "teaching", "a lesson under a second `#` is no title area");
-  // practice and slides have no title area
-  assert.equal(roleOf(roles("# Practice\n\nWork these after the guide.\n\n## Set 1\n\nText.\n", "practice/x.md"), /^Work these/), "teaching");
-  assert.equal(roleOf(roles("<!-- slide -->\nIntro words for the deck.\n\n<!-- slide -->\n## Pressure\n- Force per area\n", "slides/x.md"), /^Intro words/), "teaching");
+  // audit F1: a guide whose sections are `###` (or bold) and that closes with `## About this chapter`
+  const lesson = "# Gases\n\n:::info\nRead this chapter after the mole.\n:::\n\n### 5.1 Pressure\n\nGases expand to fill their container.\n\n:::info\nA gas fills any container.\n:::\n\n**5.2 Volume**\n\n:::info\nVolume is the space a gas fills.\n:::\n\n## About this chapter\n\n:::info\n**Audience:** students\n:::\n";
+  const l = roles(lesson);
+  assert.equal(roleOf(l, /^Read this chapter after/), "framing");
+  assert.equal(roleOf(l, /^Gases expand/), "teaching");
+  assert.equal(roleOf(l, /^A gas fills any/), "teaching", "the title area ends at the first heading of any level");
+  assert.equal(roleOf(l, /^Volume is the space/), "teaching");
+  // no `#` title, or nothing after it: no title area; practice and slides have none
+  assert.equal(roleOf(roles(":::info\nRead this first.\n:::\n\n## 5.1\n\nText.\n"), /^Read this first/), "teaching");
+  assert.equal(roleOf(roles("# Gases\n\n:::info\nRead this first.\n:::\n"), /^Read this first/), "teaching");
+  assert.equal(roleOf(roles("# Practice\n\n:::info\nWork these after the guide.\n:::\n\n## Set 1\n\nText.\n", "practice/x.md"), /^Work these/), "teaching");
 });
 
-test("[req.units.framing-frame] a heading with no text under it is framing, unless it states a fact; a heading over text keeps its role", () => {
+test("[req.units.framing-frame] a `###`+ label heading with no text under it is framing; a `#`/`##` heading unit, a statement heading and a heading over text stay teaching", () => {
   const guide = "# Gases\n\n## 5.1 Pressure\n\n### What makes a gas different\n\nThe molecules of a gas are far apart.\n\n### Bare\n\n### Boyle's law of 1662\n\n### Worked examples\n\n#### More\n\n### Over a sub-heading\n\n#### Detail\n\nPressure and volume are inversely related.\n\n"
+    + "### Gases expand. They fill any container they are in.\n\n"
     + "## Electrons flow from the anode to the cathode\n\n## The salt bridge keeps each half-cell neutral\n\n## Catalysts\n\nA catalyst does not shift the equilibrium.\n";
   const seg = segmentDeliverable(guide, "study-guide/x.md");
   const u = roles(guide);
-  assert.equal(roleOf(u, /^### What makes a gas different/), "teaching", "a `###` heading over text is linked and reviewed (round 2, C3-03)");
-  assert.equal(roleOf(u, /^## Electrons flow/), "framing", "a chain of statement headings over nothing");
-  assert.equal(roleOf(u, /^## The salt bridge/), "framing");
-  assert.equal(roleOf(u, /^### Bare/), "framing", "a `###` heading over nothing");
+  assert.equal(roleOf(u, /^### Bare/), "framing", "a `###` label over nothing");
   assert.equal(roleOf(u, /^### Worked examples/), "framing", "a heading over only a heading is over nothing");
   assert.equal(roleOf(u, /^#### More/), "framing");
+  assert.equal(roleOf(u, /^### What makes a gas different/), "teaching", "a `###` heading over text (round 2, C3-03)");
   assert.equal(roleOf(u, /^### Over a sub-heading/), "teaching", "a heading over a sub-heading with text heads that text");
-  assert.equal(roleOf(u, /Boyle's law of 1662/), "teaching", "a heading over nothing that states a fact stays teaching (D19-I)");
-  // on slides a heading's scope ends at the next slide marker
-  const deck = roles("<!-- slide -->\n## Pressure\n\n<!-- slide -->\n## Volume\n- Volume is the space a gas fills\n", "slides/x.md");
-  assert.deepEqual(deck.map((x) => [x.form, x.role]), [["heading", "framing"], ["slide-group", "teaching"]]);
-  assert.equal(roleOf(u, /^The molecules of a gas/), "teaching");
+  assert.equal(roleOf(u, /Boyle's law of 1662/), "teaching", "a heading that states a fact stays teaching (D19-I)");
+  assert.equal(roleOf(u, /^### Gases expand\. They fill/), "teaching", "a statement heading is no label");
+  assert.equal(roleOf(u, /^## Electrons flow/), "teaching", "audit F3: a `##` statement heading over nothing is owed a link and the knowledge review (round 3, C3-03)");
+  assert.equal(roleOf(u, /^## The salt bridge/), "teaching");
   assert.ok(!seg.units.some((x) => /^## Catalysts/.test(x.text)), "a heading over content stays its section's label");
-  assert.ok(!seg.units.some((x) => /^## 5\.1/.test(x.text)));
-  // a container label that is no label is a heading-form unit but no heading: untouched
-  const box = segmentDeliverable(":::: tabs\n::: tab Q 1\n:::\n::::\n\n::: spoil Why does a gas expand to fill its container? It does.\nBecause its molecules move freely.\n:::\n", "study-guide/x.md");
-  const label = box.units.find((x) => /Why does a gas/.test(x.text));
-  assert.ok(!label || label.role === "teaching", "a container label keeps its role");
+  // on slides a heading's scope ends at the next slide marker; a `##` slide heading over nothing stays teaching
+  const deck = roles("<!-- slide -->\n### Pressure\n\n<!-- slide -->\n## Lonely\n\n<!-- slide -->\n## Volume\n- Volume is the space a gas fills\n", "slides/x.md");
+  assert.deepEqual(deck.map((x) => [x.form, x.role]), [["heading", "framing"], ["heading", "teaching"], ["slide-group", "teaching"]]);
 });
 
 function course(t) {
@@ -120,26 +131,44 @@ function course(t) {
 }
 const unitsOf = (core, kind) => new Set(core.filter((f) => f.kind === kind).flatMap((f) => f.units || []));
 
-test("[req.units.framing-frame] the reference box at the end, under `## About this chapter`: framing, read for off-plan content, owing no link — a box that names a source or states a value stays teaching", (t) => {
+test("[req.units.framing-frame] in a course: a fact-free box at the end is framing, read for off-plan content and for correctness (F4), owing no link; a named source stays teaching; an approved objective under \"Chapter learning objectives\" is framing; a link on framing covers nothing and says so (L2)", (t) => {
   const c = course(t);
   const BOX = "## About this chapter\n\n:::info\n**Audience:** students in a general chemistry course\n**Note:** builds on the equilibrium chapter.\n:::\n";
   const NAMED = "\n\n:::info\n**Reference:** OpenStax Chemistry 2e, Chapter 15 (CC BY 4.0)\n:::\n";
-  c.asAgent(() => { const f = path.join(c.root, SG); fs.writeFileSync(f, fs.readFileSync(f, "utf8").trimEnd() + "\n\n" + BOX + NAMED); });
-  const all = c.units(), box = all.find((u) => /\*\*Audience:\*\*/.test(u.text)), named = all.find((u) => /OpenStax/.test(u.text));
-  assert.equal(box.role, "framing");
-  assert.equal(box.locator.section, "about-this-chapter");
+  const OBJ5 = "Explain why adding an inert gas at constant volume, and why adding a catalyst, do not shift the equilibrium.";
+  const LOGIC = "## Chapter logic\n\nA catalyst moves the equilibrium position toward the products by speeding up the forward reaction.\n\n";
+  const LIST = `## Chapter learning objectives\n\n- ${OBJ5}\n- A catalyst lowers the activation energy of both directions equally.\n\n`;
+  c.asAgent(() => { const f = path.join(c.root, SG); fs.writeFileSync(f, fs.readFileSync(f, "utf8").trimEnd() + "\n\n" + LOGIC + LIST + BOX + NAMED); });
+  const all = c.units(), find = (re) => { const u = all.find((x) => re.test(x.text)); assert.ok(u, `no unit ${re}`); return u; };
+  const box = find(/\*\*Audience:\*\*/), named = find(/OpenStax/), logic = find(/^A catalyst moves the equilibrium/);
+  const obj = find(new RegExp(`^- ${OBJ5.slice(0, 30)}`)), other = find(/^- A catalyst lowers/);
+  assert.equal(box.role, "framing"); assert.equal(box.locator.section, "about-this-chapter");
   assert.equal(named.role, "teaching", "a named source is a fact (D19-I)");
+  assert.equal(logic.role, "framing");
+  assert.equal(obj.role, "framing", "an approved objective, restated: the restated-objective check passes it");
+  assert.equal(other.role, "teaching", "a lesson line in the list is content (audit F2)");
   const core = c.core();
   assert.ok(unitsOf(core, "framing-review-owed").has(box.id), "the box is read for off-plan content (D42)");
-  assert.ok(!unitsOf(core, "unit-unlinked").has(box.id), "framing owes no link");
-  assert.ok(unitsOf(core, "unit-unlinked").has(named.id), "the named source owes its link");
-  // the same box at the top of the guide, before its first section, is the title area: framing too
+  assert.ok(!unitsOf(core, "unit-unlinked").has(box.id) && !unitsOf(core, "unit-unlinked").has(logic.id), "framing owes no link");
+  assert.ok(unitsOf(core, "unit-unlinked").has(named.id) && unitsOf(core, "unit-unlinked").has(other.id), "teaching owes its link");
+  // F4: a knowledge claim in framing is still owed the blind knowledge review (best effort, as for teaching)
+  const kn = unreviewedKnowledge(c.root, liveReader(c.root));
+  assert.deepEqual(logic.judgment, ["knowledge-based"]);
+  assert.ok(kn.includes(logic.id) && kn.includes(box.id), "framing knowledge claims are in the knowledge review set");
+  // L2: an objective linked only from framing is uncovered, and the finding names the framing unit
+  const O = "objective.le-chatelier.explain-inert-and-catalyst";
+  const teachers = c.units().filter((u) => (u.spineNodes || []).includes(O));
+  linkUnits(c.root, liveReader(c.root), { ...Object.fromEntries(teachers.map((u) => [u.id, u.spineNodes.filter((n) => n !== O)])), [logic.id]: [O] }, AGENT);
+  const unc = c.core().filter((f) => f.kind === "objective-uncovered" && new RegExp(O).test(f.evidence.what));
+  assert.equal(unc.length, 1);
+  assert.match(unc[0].evidence.what, new RegExp(`linked only from framing.*${logic.id}`));
+  // the same fact-free box at the top of the guide, under its title, is the title area: framing too
   const top = course(t);
   top.asAgent(() => top.edit(SG, "# Le Chatelier's Principle\n", "# Le Chatelier's Principle\n\n:::info\n**Audience:** students in a general chemistry course\n:::\n"));
   assert.equal(top.units().find((u) => /\*\*Audience:\*\*/.test(u.text)).role, "framing");
 });
 
-test("[req.units.framing-frame] courseguide-standards puts the reference box last, under its own `## About this chapter`", () => {
+test("[req.units.framing-frame] courseguide-standards puts the reference box last, under its own `## About this chapter`, and says both boxes stay teaching and owe a link (audit F5: D19-I is not relaxed)", () => {
   const skill = fs.readFileSync(path.join(HERE, "..", "skills", "courseguide-standards", "SKILL.md"), "utf8");
   const sg = skill.slice(skill.indexOf("## 1. STUDY GUIDE"), skill.indexOf("Styling palette"));
   const at = (s) => { const k = sg.indexOf(s); assert.ok(k >= 0, s); return k; };
@@ -148,4 +177,8 @@ test("[req.units.framing-frame] courseguide-standards puts the reference box las
   assert.match(sg, /`## About this chapter`\*\* — the LAST section/);
   const contract = fs.readFileSync(path.join(HERE, "..", "format-contracts", "deliverables.md"), "utf8");
   assert.match(contract, /reference box .* closes it, under its own last section `## About this chapter`/);
+  assert.match(contract, /stay teaching units and each owes a spine link/);
+  assert.match(sg, /\*\*The box stays teaching and owes a\s+spine link\.\*\*/);
+  assert.match(sg, /Chapter Learning Objectives\*\*` \+ a bullet list[^\n]*stays teaching and owes a spine link/);
+  assert.ok(!/section is framing \(read for off-plan content, no spine link needed\)/.test(sg), "the guide does not promise the boxes are framing");
 });

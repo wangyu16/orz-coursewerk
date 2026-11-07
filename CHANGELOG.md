@@ -2,16 +2,18 @@
 
 ## Unreleased
 
-- **The chapter's own frame is framing** (owner 2026-11-06, from the General Chemistry relink). Units under a "Chapter
-  logic" or "About this chapter" section, the listed objectives of a "(Chapter) learning objectives" section (other prose
-  there stays teaching: red team r1 C3-06), a study guide's title area (what stands under the title before its first
-  `##` section), and a heading with no text under it (a chain of headings over nothing) are framing: still units, read
-  for off-plan content (`framing-review-owed`, D42), owing no spine link. A heading over text keeps its role (red team
-  r2 C3-03). Framing still carries no fact (D19-I): any of them the classifier reads as stating a value, date, name or
-  superlative stays teaching. A guide with no section has no title area. `req.units.framing-frame`.
+- **The chapter's own frame is framing** (owner 2026-11-06, from the General Chemistry relink; narrowed after an
+  independent audit). Framing now also covers: units under a section titled exactly "Chapter logic" or "About this
+  chapter"; the objectives listed under an exact "(Chapter) learning objectives" title, where the restated-objective
+  check passes each one; the boxes under a study guide's `#` title before its next heading; and a `###`-or-deeper label
+  heading with no text under it. Framing units are read for off-plan content (`framing-review-owed`, D42) and owe no
+  spine link. A knowledge claim in framing still gets the blind knowledge review (best effort, as for teaching).
+  Unchanged: framing still carries no fact (D19-I); prose among the objectives stays teaching (red team r1 C3-06);
+  `#`/`##` heading units and headings over text stay teaching (r2/r3 C3-03); practice files gain no new framing.
+  `objective-uncovered` now names the framing units an uncovered objective is linked from. `req.units.framing-frame`.
 - **The reference box closes the study guide.** courseguide-standards and the deliverables contract put the `:::info`
   Reference / Audience / Package license box last, under its own `## About this chapter`; the chapter objectives come
-  first.
+  first. Both boxes carry facts, so they stay teaching and each owes a spine link to the chapter's objectives.
 
 ## v1.0.3 (2026-11-05)
 

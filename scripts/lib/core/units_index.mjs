@@ -28,8 +28,10 @@ import { sha256 } from "../records/canonical.mjs";
 import { unitsPathFor, recordFile } from "../records/paths.mjs";
 import { JUDGMENT_KINDS, validateUnitSidecar } from "../records/units.mjs";
 import { makeFinding } from "../records/findings.mjs";
-import { DELIVERABLE_DIRS, classifyUnit, creditBaseline, creditKey, derivedRole, headingsKey, labelBaseline, segmentDeliverable, slugify, tokensOf, unitHash, chapterFile } from "./segment.mjs";
+import { DELIVERABLE_DIRS, chapterOfFile, classifyUnit, creditBaseline, creditKey, derivedRole, headingsKey, labelBaseline, segmentDeliverable, slugify, tokensOf, unitHash, chapterFile } from "./segment.mjs";
 import { manifestChapters } from "./package_reader.mjs";
+import { parseSpine } from "./spine.mjs";
+import { restatedObjective } from "./core_checks.mjs";
 import { loadUnits, migrateUnitRecords, upgradeStamps } from "./obligations.mjs";
 import { allSidecars, assertUnaltered, deliverableOfSidecar, sidecarTrusted, upgradeUnitRecordDigests, writeUnitRecords } from "./unit_records.mjs";
 import { reconcileUnitRecords } from "./reconcile.mjs";
@@ -70,7 +72,29 @@ export function declaredKind(reader, rel) {
   return d && /paged/i.test(d.carrier) ? "paged" : null;
 }
 /** segmentDeliverable's options for a deliverable of a package (its declared kind). */
-export const segmentOptions = (reader, rel) => ({ declared: declaredKind(reader, rel) });
+// the approved objectives a chapter file may restate (the restated-objective check's own test, core_checks.mjs), read
+// once per reader and plan text: an objective listed under "Chapter learning objectives" is framing only where it passes
+// that check (no practice file frames by section title: L3)
+const restatesCache = new WeakMap();
+function objectiveTest(reader, rel) {
+  const ch = chapterOfFile(rel);
+  if (!ch || /^practice\//.test(rel)) return null;
+  if (!restatesCache.has(reader)) restatesCache.set(reader, new Map());
+  const cache = restatesCache.get(reader), key = `${ch}\u0000${reader.text(`concepts/${ch}.md`) ?? ""}`; // a plan edit is a new key
+  if (!cache.has(key)) {
+    let test = null;
+    try {
+      const chapters = manifestChapters(reader);
+      if (chapters.includes(ch)) {
+        const objectives = (parseSpine(reader, [ch]).chapters[ch]?.map.nodes || []).filter((n) => n.kind === "objective");
+        if (objectives.length) { const restates = restatedObjective(objectives); test = (t) => !!restates(t); }
+      }
+    } catch { test = null; } // no readable plan: no objective is framing
+    cache.set(key, test);
+  }
+  return cache.get(key);
+}
+export const segmentOptions = (reader, rel) => ({ declared: declaredKind(reader, rel), isObjective: objectiveTest(reader, rel) });
 const docHash = (text) => sha256(String(text ?? ""));
 /** Declared documents the instructor confirmed as administrative, at their current content (source paths). */
 export function administrativeDocuments(reader) {

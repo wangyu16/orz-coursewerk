@@ -47,7 +47,7 @@ Two global rules:
 Ordered sections (exact skeleton):
 
 1. **`# Chapter N: <Title>`** — H1, the textbook chapter number + title.
-2. **Chapter Learning Objectives** — a `:::success` container titled `**Chapter Learning Objectives**` + a bullet list (one bullet per objective).
+2. **Chapter Learning Objectives** — a `:::success` container titled `**Chapter Learning Objectives**` + a bullet list (one bullet per objective). The box stays teaching and owes a spine link (the title-case title reads as a name, and an objective may state a value): link it with `units.mjs link` to the objectives it lists.
 3. **`## Chapter Logic`** — 2–4 sentences of the chapter's conceptual arc + ONE mermaid flowchart (full ```mermaid``` / `{{mermaid}}` form, not `{{mm}}`) followed by a visible, substantive `**Visual description:**` + an optional `:::warning` for a model boundary. Every other Mermaid/chart block needs the same visible alternative (`**Data summary:**` for charts).
 4. **Sections**, one per textbook section, IN ORDER:
    - `## N.M <Section Title>` — the H2 section heading **MAY** carry a stable block ID marker
@@ -74,9 +74,10 @@ Ordered sections (exact skeleton):
    **Note:** <optional — e.g. slug/indexing note; content is textbook Chapter N>
    :::
    ```
-   It closes the guide, never opens it: the reader meets the objectives first. Like the title area and Chapter
-   Logic, the section is framing (read for off-plan content, no spine link needed), but framing
-   never carries a fact: a box that names a source or states a value is still teaching, wherever it stands.
+   It closes the guide, never opens it: the reader meets the objectives first. **The box stays teaching and owes a
+   spine link.** It names a source, an edition, a chapter and a licence, and the harness reads each as a fact: framing
+   never carries one (D19-I), so the section title does not make the box framing. Link it with `units.mjs link` to
+   the chapter's objectives (it states what the whole chapter rests on); its facts are checked like any other.
 8. **NO practice-question section.** The study guide teaches; questions live in the assessment guide.
 
 Styling palette (use exactly this way every chapter):

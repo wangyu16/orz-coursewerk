@@ -154,9 +154,11 @@ export async function reviewAbsolutes(root, reader, { verifier, only = null, onP
 
 export async function verifyKnowledge(root, reader, { verifier, only = null, onProgress = () => {} }) {
   const all = loadUnits(root, reader), deps = unitDepsHashes(root, reader), movedOf = recheckShown(root, reader);
-  // by default the knowledge-based teaching units; a unit NAMED (--units) is reviewed whatever its kind — that is how
-  // an answer that owes re-verification is re-read with its question (units.mjs reverify, R1 coherence)
-  const units = all.filter((u) => (only ? only.includes(u.id) : u.judgment.includes("knowledge-based") && u.role === "teaching"));
+  // by default the knowledge-based units, teaching and framing alike (audit F4: framing — a chapter logic, a heading —
+  // owes no link, but a conceptual claim in it is still read for correctness); a unit NAMED (--units) is reviewed
+  // whatever its kind — that is how an answer that owes re-verification is re-read with its question (units.mjs
+  // reverify, R1 coherence)
+  const units = all.filter((u) => (only ? only.includes(u.id) : u.judgment.includes("knowledge-based")));
   // neighbours in the same section, in order: up to two units before (an answer's question) and one after
   const place = (u) => `${u.locator.deliverable}|${u.locator.section}`;
   const sections = new Map();

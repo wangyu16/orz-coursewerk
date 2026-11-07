@@ -45,6 +45,16 @@ export const objectiveKey = (t) => String(t)
   .replace(/[\s.,;:!?'"“”‘’()]/g, "");
 /** A restated objective's text and the trailing bracket groups the spine grammar reads (anchor, prerequisites). */
 export const restatedParts = (t) => { const p = itemParts(String(t)); return { key: objectiveKey(p.text), anchor: p.anchor, prereqs: [...p.prereqs].sort(), other: p.parent || p.aliases.length }; };
+/** The restated-objective check's one test (round 2, C4-09): the approved node a list item restates — its text, case
+ *  kept, and any [anchor: …]/[prereq: …] it carries must be that node's — or null. `objectives`: the approved objective
+ *  nodes. Also read by the segmenter (segmentOptions), so an objective is framing only where this check would pass it. */
+export function restatedObjective(objectives) {
+  const approved = new Map(objectives.map((n) => [objectiveKey(n.text), n]));
+  return (text) => {
+    const p = restatedParts(text), n = approved.get(p.key);
+    return n && !p.other && (!p.anchor || p.anchor === n.anchor) && (!p.prereqs.length || JSON.stringify(p.prereqs) === JSON.stringify([...(n.prereqs || [])].sort())) ? n : null;
+  };
+}
 
 export function restatedObjectiveFindings(reader, basis) {
   const chapters = manifestChapters(reader), spine = parseSpine(reader, chapters), out = [];
@@ -61,12 +71,11 @@ export function restatedObjectiveFindings(reader, basis) {
     const objectives = chs.flatMap((c) => (spine.chapters[c]?.map.nodes || []).filter((n) => n.kind === "objective"));
     const sections = learningObjectiveSections(reader.text(rel));
     if (!sections.length || !objectives.length) continue;
-    const approved = new Map(objectives.map((n) => [objectiveKey(n.text), n])), restated = new Set();
+    const approved = new Map(objectives.map((n) => [objectiveKey(n.text), n])), restated = new Set(), restates = restatedObjective(objectives);
     for (const it of sections.flatMap((s) => s.items)) {
       // the text, case kept, and any [anchor: …]/[prereq: …] it restates must be the approved node's (round 2, C4-09)
-      const p = restatedParts(it.text), n = approved.get(p.key), key = p.key;
-      const groupsOk = n && !p.other && (!p.anchor || p.anchor === n.anchor) && (!p.prereqs.length || JSON.stringify(p.prereqs) === JSON.stringify([...(n.prereqs || [])].sort()));
-      if (groupsOk) restated.add(key);
+      const n = restates(it.text);
+      if (n) restated.add(objectiveKey(n.text));
       else defect("objective-restated-differently", rel, it.line + 1, `"${it.text.trim()}" is not an approved objective of ${ch}; restate the approved wording (${chs.map((c) => `concepts/${c}.md`).join(" or ")})`);
     }
     if (own) for (const [key, n] of approved) if (!restated.has(key))

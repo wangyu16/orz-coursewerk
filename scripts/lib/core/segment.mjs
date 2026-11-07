@@ -4,9 +4,10 @@
 // A unit is the smallest piece that can be checked on its own: a paragraph, a list item (on slides: a whole bullet
 // group), a table row, an equation block, a callout, a figure (image, Mermaid, chart, structure), a question and each
 // worked answer. Title, outline, section and closing slides, and summary-like sections, are framing; so are (owner
-// 2026-11-06) a study guide's title area, its "Chapter logic" and "About this chapter" sections, the lists of a
-// "(Chapter) learning objectives" section, and a heading with no text under it. Framing may not carry facts (D19-I)
-// and is still read (D42).
+// 2026-11-06) a study guide's title-area containers, its "Chapter logic" and "About this chapter" sections, the
+// approved objectives a "(Chapter) learning objectives" section lists, and a `###`+ label heading with no text under it.
+// Framing may not carry facts (D19-I), is still read (D42) and still owes the knowledge review when it makes a
+// knowledge claim (audit F4).
 //
 // STRUCTURE IS ONLY WHAT THE FRAME DOES NOT PRINT (red team round 2, CONTROL C3-01/02/03/05). A line is structure only
 // when no reader of the rendered deliverable sees it as content:
@@ -33,8 +34,8 @@
 // unless it is one of the few printed labels, each bounded:
 //   - a `#`/`##` label heading only if it is a heading: it heads content (a unit, or the restated objectives) before the
 //     next heading of its level or a slide marker (a section-template slide heads the slides up to the next
-//     framing-template slide); a chain of headings over nothing is a chain of units — framing units (owner 2026-11-06),
-//     each still read for off-plan content, and teaching when it states a fact;
+//     framing-template slide); a chain of headings over nothing is a chain of units (a `###`+ label among them is
+//     framing: owner 2026-11-06);
 //   - a container label that prints (`::: spoil <label>` → its <summary>, `::: tab <label>` → its tab button) only as
 //     a label over a non-empty body;
 //   - the credit line only as THE attribution: one per deliverable (two or more are each a unit);
@@ -56,15 +57,23 @@ export function chapterFile(dir, ch, exists = () => false) {
 }
 /** The chapter of a chapter file ("slides/gases.slides.md" and "slides/gases.md" are both gases), or null. */
 export const chapterOfFile = (rel) => /^(?:study-guide|slides|practice|concepts|assessment-support)\/([^/]+?)(?:\.slides)?\.md$/.exec(rel || "")?.[1] ?? null;
-// framing section titles (owner 2026-11-06 adds the chapter's own frame: its logic and the closing "About this chapter"
-// section that holds the reference box). Framing still owes the off-plan read (D42) and may not carry facts (D19-I:
-// derivedRole): a fact under any of these titles stays teaching.
-const FRAMING_SECTION = /^(summary|overview|introduction|what we will cover|key takeaways|looking ahead|recap|outline|chapter logic|about this chapter)\b/i;
-// a "(Chapter) learning objectives" section frames only its LISTS (owner 2026-11-06): the objectives it lists, where they
-// are not already the restated objectives (structure, below), are framing list items or bullet groups; any other prose
-// in it stays content, owed a link like any other (redteam r1 C3-06: a lesson hidden in the objectives section)
-const OBJECTIVES_SECTION = /^(?:chapter )?learning objectives\b/i;
+const FRAMING_SECTION = /^(summary|overview|introduction|what we will cover|key takeaways|looking ahead|recap|outline)\b/i;
+// the chapter's own frame (owner 2026-11-06): a section titled exactly "Chapter logic" or "About this chapter" (the
+// closing section that holds the reference box), less a trailing block id. Framing still owes the off-plan read (D42)
+// and may not carry facts (D19-I: derivedRole). Never in a practice file (L3): there a title frames nothing new.
+const FRAME_SECTION = /^(?:chapter logic|about this chapter)\s*:?\s*$/i;
+// a "(Chapter) learning objectives" section (the exact title, as learningObjectiveSections reads it) frames only the
+// objectives it LISTS, and only an item the restated-objective check passes (it restates an approved objective of the
+// chapter: segmentOptions' isObjective); any other item or prose stays content, owed a link (redteam r1 C3-06; audit F2)
+const OBJECTIVES_SECTION = /^(?:chapter )?learning objectives\s*:?\s*$/i;
 const LIST_FORMS = new Set(["list-item", "slide-group"]);
+const titleText = (t) => String(t).replace(/\{\{attrs\[[^\]]*\]\}\}\s*$/, "").trim();
+/** The items of a list unit (a list item, or a slide's bullet group), each with its continuation lines. */
+const listItemTexts = (body) => {
+  const items = [];
+  for (const l of String(body).split("\n")) { const t = l.trim(); if (LIST_ITEM.test(t)) items.push(t.replace(LIST_ITEM, "")); else if (t && items.length) items[items.length - 1] += ` ${t}`; }
+  return items;
+};
 const FRAMING_TEMPLATES = new Set(["title", "outline", "section", "closing"]);
 
 export const LIST_ITEM = /^(?:[-*+]|\d+[.)])\s+/;
@@ -127,7 +136,7 @@ export const tokensOf = (t) => [...new Set(normalizeUnit(t).toLowerCase().match(
  * Segment one deliverable. Returns [{ form, role, section, text, startLine, endLine }] in document order, plus
  * `covered` — the set of line numbers that belong to a unit or to structure (every other non-blank line is a gap).
  */
-export function segmentDeliverable(text, deliverable, { declared = null } = {}) {
+export function segmentDeliverable(text, deliverable, { declared = null, isObjective = null } = {}) {
   const lines = String(text || "").split("\n");
   const units = [], covered = new Set();
   const orz = printedModel(text, { frame: frameOf(deliverable, text, declared) });
@@ -137,22 +146,32 @@ export function segmentDeliverable(text, deliverable, { declared = null } = {}) 
   // why each structure line is structure, and the section it stands in (read again once every unit is known)
   const why = new Map(), ctx = new Map();
   const over = new Map(); // a unit's first line → the label line over it (a table header, a container label)
-  // a study guide's title area (owner 2026-11-06): what stands under the title before its first section — the chapter
-  // objectives box, the reference box of older guides — is framing. It runs to the first `##` heading or a second `#`
-  // heading (orz-markdown's own headings), and a guide with no such heading has no title area (its text is the lesson).
-  const titleEnd = (() => {
-    if (!/^study-guide\//.test(String(deliverable || ""))) return -1;
-    let h1 = 0;
-    for (const [k, lvl] of [...orz.headings].sort((a, b) => a[0] - b[0])) { if (lvl === 2 || (lvl === 1 && ++h1 > 1)) return k; }
-    return -1;
+  // a study guide's title area (owner 2026-11-06): the containers under its `#` title, before the next heading of any
+  // level — the chapter objectives box, the reference box of older guides — are framing. Only containers (callouts):
+  // a paragraph or list there is lesson text (audit F1: a guide with `###` or bold sections and a closing `##` section).
+  const titleArea = (() => {
+    if (!/^study-guide\//.test(String(deliverable || ""))) return null;
+    const hs = [...orz.headings].sort((a, b) => a[0] - b[0]);
+    return hs.length > 1 && hs[0][1] === 1 ? [hs[0][0], hs[1][0]] : null;
   })();
+  const practice = /^practice\//.test(String(deliverable || ""));
   const struct = (i, reason = "silent") => { covered.add(i); if (!why.has(i)) { why.set(i, reason); ctx.set(i, { section, role: roleFor(i), slideTemplate }); } };
-  const roleFor = (at = i, form = null) => (isSlides && FRAMING_TEMPLATES.has(slideTemplate)) || FRAMING_SECTION.test(sectionTitle) || at < titleEnd
-    || (LIST_FORMS.has(form) && OBJECTIVES_SECTION.test(sectionTitle)) ? "framing" : "teaching";
-  const push = (form, a, b, role = roleFor(a, form), label = null, text = null) => {
+  const roleFor = (at = i, form = null, body = null) => {
+    if ((isSlides && FRAMING_TEMPLATES.has(slideTemplate)) || FRAMING_SECTION.test(sectionTitle)) return "framing";
+    const title = titleText(sectionTitle);
+    if (!practice && FRAME_SECTION.test(title)) return "framing";
+    if (form === "callout" && titleArea && at > titleArea[0] && at < titleArea[1]) return "framing";
+    if (!practice && LIST_FORMS.has(form) && body != null && isObjective && OBJECTIVES_SECTION.test(title)) {
+      const items = listItemTexts(body);
+      if (items.length && items.every((x) => isObjective(x))) return "framing";
+    }
+    return "teaching";
+  };
+  const push = (form, a, b, role = null, label = null, text = null) => {
     const body = (text ?? lines.slice(a, b + 1).join("\n")).trim();
     for (let k = a; k <= b; k++) covered.add(k);
     if (!body) return;
+    role ??= roleFor(a, form, body);
     units.push({ form, role, section, text: body, startLine: a + 1, endLine: b + 1, ...(label ? { label } : {}) });
   };
   let i = 0;
@@ -329,12 +348,12 @@ export function segmentDeliverable(text, deliverable, { declared = null } = {}) 
 }
 
 /**
- * A heading with no text under it is framing (owner 2026-11-06): a heading-form unit that is an orz-markdown heading and
- * heads no content — no unit other than a heading, and no restated objective — before the next heading of its level or
- * higher or a slide marker (a chain of headings over nothing is a chain of framing units). It is still a unit, and still
- * read: framing owes the off-plan review (D42), and a heading that states a fact stays teaching (D19-I: the role is
- * derivedRole of this one and the unit's judgment). A heading over content keeps its role (red team round 2, C3-03: a
- * `###`+ heading is linked and reviewed like any other unit). Roles are set in place.
+ * A `###`-and-deeper label heading with no text under it is framing (owner 2026-11-06; audit F3): a heading-form unit
+ * that is an orz-markdown heading of level 3 or more, reads as a label (isLabel), and heads no content — no unit other
+ * than a heading, and no restated objective — before the next heading of its level or higher or a slide marker. It is
+ * still a unit, read for off-plan content (D42), and teaching when it states a fact (D19-I). A `#`/`##` heading-form
+ * unit — a statement heading, or a label over nothing — stays teaching, owed a link and the knowledge review (red team
+ * round 3, C3-03); so does a heading over text (round 2, C3-03). Roles are set in place.
  */
 function headingsOverNothing({ lines, units, why, orz }) {
   const content = new Set();
@@ -342,7 +361,7 @@ function headingsOverNothing({ lines, units, why, orz }) {
   for (const [k, reason] of why) if (reason === "restated") content.add(k);
   for (const u of units) {
     const k = u.startLine - 1, level = orz.headings.get(k);
-    if (u.form !== "heading" || u.role === "framing" || !level || u.endLine !== u.startLine) continue;
+    if (u.form !== "heading" || u.role === "framing" || !level || level < 3 || u.endLine !== u.startLine || !isLabel(u.text.replace(/^#+\s*/, ""))) continue;
     let heads = false;
     for (let m = k + 1; m < lines.length && !heads; m++) {
       if (SLIDE_MARKER.test(lines[m].trim()) || (orz.headings.has(m) && orz.headings.get(m) <= level)) break;
