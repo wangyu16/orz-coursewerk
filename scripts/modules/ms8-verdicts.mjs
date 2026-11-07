@@ -24,7 +24,8 @@
 //   evidence-unsupported (defect)  quote-verified evidence that does not re-derive: no dispatch record, a record that
 //                                  does not admit, or quotes that do not carry the unit's current facts.
 //   dispatch-unlogged / dispatch-record-missing (defect) a verification record the log does not vouch for, or a
-//                                  logged dispatch whose record is gone (round P7-1).
+//                                  logged dispatch whose record is gone (round P7-1); also any file in a folder under
+//                                  verification/ other than a hash-named prompt part (req.records.compact-review).
 // Verdicts concern the unit's CURRENT claims only: a record of other claims is history.
 import { trustedSidecarPath } from "../lib/core/unit_records.mjs"; // only records the log wrote are read (R7 H-04)
 import { segmentDeliverable } from "../lib/core/segment.mjs";
@@ -32,7 +33,8 @@ import { segmentOptions } from "../lib/core/units_index.mjs";
 import { factHash } from "../lib/core/dependencies.mjs";
 import { checkableClaims, claimsHash } from "../lib/verify/claims.mjs";
 import { supports } from "../lib/verify/admission.mjs";
-import { boundRecord, readDispatches, readKnowledgeReview, reviewedPassage, settledBySuggestion, suggestionAt } from "../lib/verify/dispatch.mjs";
+import { PARTS_DIR, VERIFICATION_DIR, boundRecord, readDispatches, readKnowledgeReview, reviewedPassage, settledBySuggestion, suggestionAt } from "../lib/verify/dispatch.mjs";
+const PART_FILE = new RegExp(`^${PARTS_DIR}/[0-9a-f]{64}\\.json$`);
 import { holdOtherText, holdersOf, holdsInstructorText, instructorTextChange, instructorTextRegister, originIndex, textIds } from "../lib/core/authorship.mjs";
 import { confirmationStands, instructorActsOf, shownBeforeOf } from "../lib/core/obligations.mjs";
 import { tokensOf } from "../lib/core/segment.mjs";
@@ -87,6 +89,11 @@ function run(s) {
   // every record is a logged dispatch, and every logged dispatch still has its record (B12, B13, p22)
   for (const r of records) if (!dispatchLogged(r, log))
     out.push({ kind: "dispatch-unlogged", units: units.has(r.unit) ? [r.unit] : [], evidence: { type: "rule", rule: "a verification record matches a dispatch in the decision log (bundle and answer hashes)", dispatch: r.dispatch ?? null } });
+  // a file inside a folder under verification/ is either a shared prompt part named by its hash (dispatch.mjs PARTS_DIR)
+  // or nothing the harness wrote: never silently ignored (req.records.compact-review; audit LOW-1 — before compact
+  // records, readDispatches read such a .json as a record and reported it unlogged)
+  for (const p of s.paths) if (p.startsWith(`${VERIFICATION_DIR}/`) && p.slice(VERIFICATION_DIR.length + 1).includes("/") && !PART_FILE.test(p))
+    out.push({ kind: "dispatch-unlogged", units: [], evidence: { type: "rule", rule: "the verification folder holds only dispatch records and the prompt parts they share (parts/<sha256>.json)", file: p, dispatch: null } });
   for (const l of log.filter((x) => x.type === "dispatch" && x.payload?.dispatch)) if (!byDispatch.has(l.payload.dispatch))
     out.push({ kind: "dispatch-record-missing", units: units.has(l.payload.unit) ? [l.payload.unit] : [], evidence: { type: "rule", rule: "every logged dispatch keeps its record in private/coursewerk/verification/", dispatch: l.payload.dispatch } });
 

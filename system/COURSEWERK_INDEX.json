@@ -53,7 +53,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "7a4c74774e24dfc89fbf8b9b988a5bc3dc140ba43bafa35fa40ad288d92cef63"
+      "hash": "0fa67a973d943aaf3b3eb31edbe0ebc59e76634fba29349fcbb3157049c24662"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -65,7 +65,7 @@
       "id": "repo:COMPATIBILITY.md",
       "path": "COMPATIBILITY.md",
       "type": "agent-constitution",
-      "hash": "8cad17fa1a4eb49ed9fb3ecc56bc217fdcadf818eecb96fec0f1ff41e345f98f"
+      "hash": "55e6f8174e0b8b871bb9f0c46eed0dcef8688e3410a3cf523c44793398045a8d"
     },
     {
       "id": "repo:docs/assembling-carriers.md",
@@ -167,7 +167,7 @@
       "id": "repo:format-contracts/deliverables.md",
       "path": "format-contracts/deliverables.md",
       "type": "documentation",
-      "hash": "c1c0088e62cc6afb5d2b4bea3ffb915e7c489a53857ab189d7d30c268bcd2b28"
+      "hash": "05b40cd45e28cbb74049b3988364fc0966590172ab60b2ffa56334d01e6df7f4"
     },
     {
       "id": "repo:GEMINI.md",
@@ -785,7 +785,7 @@
       "id": "repo:scripts/lib/records/records_check.mjs",
       "path": "scripts/lib/records/records_check.mjs",
       "type": "kernel",
-      "hash": "8763e0d1a1ce180cac6b5ab868986251a1043777ce81b0881dec9d1a88e81af0"
+      "hash": "2c89aad6236b324fb3dbf78d99f8ccaefbdf2764e3b6b8acf1f3e67be130c97c"
     },
     {
       "id": "repo:scripts/lib/records/registry.mjs",
@@ -1037,7 +1037,7 @@
       "id": "repo:scripts/modules/ms8-verdicts.mjs",
       "path": "scripts/modules/ms8-verdicts.mjs",
       "type": "executable",
-      "hash": "3d13236a5cbb96d41820eba9a29857c9e7265bf8277a9be79bd1b5d5bd760830"
+      "hash": "1a0dddab377fcdbe8c2831417fe6e7216b984fc5336e1fb463514277bfc70d3a"
     },
     {
       "id": "repo:scripts/modules/ms9-alignment.mjs",
@@ -1385,7 +1385,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "c39827bbe5aa66e98bf23f1579911ac9ed461e0a5eb1eda60d0c198a60010fa9"
+      "hash": "5b61b6ad593330bb925003347f273f29f730b343c15d5afa4f67ff620ab8d2d2"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -2076,6 +2076,12 @@
       "path": "tests/records-check.test.mjs",
       "type": "test",
       "hash": "967caae3071227771a52feedbde9538299808836998003ad09ca84eae6a55f7d"
+    },
+    {
+      "id": "repo:tests/records-compact.audit.test.mjs",
+      "path": "tests/records-compact.audit.test.mjs",
+      "type": "test",
+      "hash": "c6bba148cc40494a2d7b6821ccaae4cfae74719f47863e59a3ad4a297c2c9ab4"
     },
     {
       "id": "repo:tests/records-compact.test.mjs",

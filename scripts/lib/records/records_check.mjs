@@ -52,6 +52,9 @@ export function checkRecords(root, { extends: earlier } = {}) {
   if (!problems.length) {
     problems.push(...verifyLog(text));
     if (earlier !== undefined) problems.push(...verifyExtends(String(earlier), text));
+    // a package always has a decision log with records (its intake at least): checked alone, an empty one is a log lost,
+    // never one that verifies (audit LOW-2). With --extends an empty earlier log may still be continued by a real one.
+    if (!parseLog(text).length && earlier === undefined) problems.push(`${RECORDS}/LOG.jsonl holds no records: an empty decision log is not a log that verifies`);
   }
   const records = problems.length ? null : parseLog(text);
   return {

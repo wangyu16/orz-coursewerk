@@ -9,9 +9,14 @@
   reviewer was shown, with the same hashes as before; every reader puts the prompt back and gets the same answers;
   records written before read unchanged; a missing or altered part makes the record unreadable (a blocking defect).
   On a copy of General Chemistry a new alignment record is about 3 KB instead of 11 KB, a knowledge record about
-  3 KB instead of 3.9 KB. `req.records.compact-review`.
+  3 KB instead of 3.9 KB. A file in a folder under `verification/` that is not a hash-named part is a blocking defect
+  (`dispatch-unlogged`). `req.records.compact-review`.
+  **Compatibility:** a package with compact records needs this version or later. v1.0.4 and earlier read a part as an
+  unlogged record and cannot put a compact record's prompt back, so they block such a package (they fail closed; nothing
+  is wrongly cleared). A host (Alembic) must move to this version before any compact record is written.
 - **The chain check** (Alembic Door E): `scripts/records_check.mjs --root <pkg> [--extends <earlier log>]` prints
-  `{ok, problems}`: the decision log verifies and continues the one last held, in either layout. Reads only.
+  `{ok, problems}`: the decision log verifies and continues the one last held, in either layout; a log with no records,
+  checked alone, is refused. Reads only.
   `req.records.chain-check`.
 
 ## v1.0.4 (2026-11-07)

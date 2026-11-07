@@ -28,6 +28,17 @@ history used by full terminal agents, so Light mode does not weaken edit visibil
 Repository maintainers use the branch-aware Coursewerk system index in every terminal-capable agent; pure chat
 cannot accept or verify a Coursewerk harness revision by itself.
 
+## Package records across Coursewerk versions
+A package's records are read by the Coursewerk version that works on it, so a package written by a newer version may
+need that version:
+
+- **Compact review records** (after v1.0.4, `req.records.compact-review`): a review record written by this version stores
+  its prompt's repeated blocks once, in `private/coursewerk/verification/parts/`. A package holding such records needs
+  this version or later. v1.0.4 and earlier read the parts as unlogged records and cannot put a compact record's prompt
+  back, so they block the package (they fail closed: nothing is wrongly cleared). A host that runs Coursewerk on
+  packages, such as Alembic's assistant job, must move to this version before any compact record is written, and must
+  not go back to an earlier one for those packages.
+
 ## Keeping them in sync
 The per-tool files are thin pointers, so drift is low. Longer term, consider generating all of them from a
 single canonical source at release time. Until then, `CLAUDE.md` is authoritative and every other entry

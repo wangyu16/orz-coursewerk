@@ -57,7 +57,9 @@ which joined are the prompt byte for byte. The log binds the record as it reads 
 `bundleHash` is the sha256 of that prompt and its `recordHash` the hash of that whole record, exactly as for a record
 stored whole. A record written before stays as it is and reads as it always did. A part that is missing, altered or not
 the one named makes every record using it unreadable (a logged dispatch without a readable record is a blocking
-defect). Parts are records like the rest: never edit or delete one; Alembic carries them in the verification parts.
+defect), and so is any other file in a folder under `verification/`. Parts are records like the rest: never edit or
+delete one; Alembic carries them in the verification parts. A package with compact records needs this Coursewerk version
+or later (`COMPATIBILITY.md`).
 
 **Checking that a log continues the one last held** (req.records.chain-check; Alembic's hand-out and hand-back):
 `node scripts/records_check.mjs --root <package> [--extends <earlier log>]` prints `{"ok", "problems", "log",
@@ -66,7 +68,8 @@ held: a `LOG.jsonl` text, or a folder holding one. Either folder may be in eithe
 parts (`LOG.jsonl`, `LOG.2.jsonl`, …, cut at line ends) joined in order. `ok` only when the log verifies (every record
 well formed, numbered in order, hashed and chained to the one before) and, with `--extends`, holds every earlier record
 byte for byte and in order with only new records after them: a record changed, dropped or reordered, a broken earlier
-log, a gap in the parts or an unreadable input is a problem, never an empty log. It reads only. `log` gives the joined
+log, a gap in the parts or an unreadable input is a problem, never an empty log; checked alone, a log with no records is
+refused (an empty earlier log may still be continued). It reads only. `log` gives the joined
 log's `parts`, `bytes`, `sha256`, `records` and `head` (the last record's hash).
 
 **Folder → repo is decided by the top-level folder and is total.** `study-guide/ slides/ practice/
