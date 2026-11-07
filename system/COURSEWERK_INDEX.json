@@ -53,7 +53,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "0ba757a0fa757c28521ea640d1fc198a8bece1c467200532db37f4537dbd33d5"
+      "hash": "5d47f14c9b47017227f9abef24806d4a74e532985e496a6e1c6b8b9eaef310d0"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -2417,7 +2417,7 @@
       "id": "repo:VERSION",
       "path": "VERSION",
       "type": "release-metadata",
-      "hash": "49a83c617e37f8a9fb1f3f393f1d17399cf63a911cb43eba0493389f84d02d61"
+      "hash": "47ae8e548b5a4b52db1502221b2a4a889528773b07bd237371cc475c36b5e4ab"
     }
   ],
   "relationships": [

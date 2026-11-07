@@ -1,6 +1,6 @@
 # Coursewerk changelog
 
-## Unreleased
+## v1.0.4 (2026-11-07)
 
 - **The chapter's own frame is framing** (owner 2026-11-06, from the General Chemistry relink; narrowed after an
   independent audit). Framing now also covers: units under a section titled exactly "Chapter logic" or "About this
