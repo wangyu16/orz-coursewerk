@@ -21,7 +21,7 @@ import { fsInputReader, pinnedTexts } from "../scripts/lib/verify/references.mjs
 import { applyCorrection, verifySemi } from "../scripts/lib/verify/verdicts.mjs";
 import { pinDeclared as pinReference } from "./helpers/destinations.mjs";
 import { applyChanges, exportNeeds, handinProblems, NEEDS_FILE } from "../scripts/lib/core/alembic_needs.mjs";
-import { forInstructor, harnessTraces, plainText, SUGGESTION_CHOICES, wordEntry } from "../scripts/lib/core/needs_wording.mjs";
+import { forInstructor, harnessTraces, MOVE_CHOICES, plainText, SUGGESTION_CHOICES, wordEntry } from "../scripts/lib/core/needs_wording.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const C2 = path.join(HERE, "fixtures", "c2-chemistry-v2", "package");
@@ -97,7 +97,7 @@ function digestFindings(p) {
     F("ms7-consistency", "ambiguous-answer", [U2], { type: "judgment", note: `${SG1}: the answer states two different values of one dimension (0.50 M; 1.5 M) — it cannot be compared and a student cannot tell which is the answer. ${U2} (answer) at ${SG1}: "K_c = 0.50 M or 1.5 M" Leave exactly one value as the answer, or move the other into the question or an explanation outside the answer.` }),
     F("ms3-format", "no-photograph", [], { type: "judgment", note: "chapter le-chatelier has no real photograph; record a reviewed, substantive not-used rationale or include a rights-cleared photo" }),
     F("ms5-carriers", "carrier-build-failed", [], { type: "judgment", note: "slides/chemical-equilibrium.md did not build with orz-slides: line 12: unclosed {{nyml}} block" }),
-    spineCritique({ kind: "level-mismatch", ids: [], note: "objective.chemical-equilibrium.define-equilibrium asks only to define, but guide.chemical-equilibrium.evidence-design tests analysis (D31); the spine may need a higher objective.", recommendation: "raise the objective to explain", basis: "b" }),
+    spineCritique({ kind: "level-mismatch", ids: [], note: "objective.chemical-equilibrium.define-equilibrium asks only to define, but guide.chemical-equilibrium.evidence-design tests analysis (D31); the plan may need a higher objective.", recommendation: "raise the objective to explain", basis: "b" }),
   ];
 }
 
@@ -169,7 +169,7 @@ test("[req.host.alembic-needs-wording] every kind of question reads as the instr
   assert.deepEqual(one("knowledge-concern", (q) => q.text.includes("exponent")).choices, SUGGESTION_CHOICES);
   assert.equal(one("knowledge-concern", (q) => q.text.includes("Heat is a product")).choices, undefined, "no suggestion: the instructor says what it should be");
   assert.deepEqual(one("clarification-proposed").choices, SUGGESTION_CHOICES);
-  assert.deepEqual(one("detail-in-spine").choices, SUGGESTION_CHOICES);
+  assert.deepEqual(one("detail-in-spine").choices, MOVE_CHOICES);
   assert.deepEqual(one("off-spine").choices, ["Keep it", "Drop it", "Later"]);
   assert.deepEqual(one("exercise-data-confirm").choices, ["Confirm", "Later"]); assert.equal(one("exercise-data-confirm").recommended, "Confirm");
   const fact = one("instructor-edit-unasked", (q) => q.text.includes("a value changed"));
@@ -195,18 +195,25 @@ test("[req.host.alembic-needs-wording] content reads as it renders: orz markup, 
   const cases = [
     ["- {{sp[info] Objective 18.5a}} Explain the **equilibrium** constant [anchor: k]", "Objective 18.5a Explain the equilibrium constant"],
     ["the reaction and $\\Delta H = -92\\ \\text{kJ mol}^{-1}$ are from the source", "the reaction and ΔH = −92 kJ mol⁻¹ are from the source"],
-    ["H~2~O and 10^3^ and $\\ce{N2 + 3H2 <=> 2NH3}$", "H₂O and 10³ and N₂ + 3H₂ ⇌ 2NH₃"],
+    ["H~2~O and 10^3^ and $\\ce{N2 + 3H2 <=> 2NH3}$", "H₂O and 10³ and N₂ + 3 H₂ ⇌ 2 NH₃"], // mhchem sets a coefficient apart,
     ["$\\ce{SO4^2-}$, $\\ce{Ag+}$ and $K_a = 1.8\\times10^{-5}$", "SO₄²⁻, Ag⁺ and Kₐ = 1.8 × 10⁻⁵"],
     ["at 25 $^\\circ$C, ~~not this~~ [a link](https://x.org) `K_sp` <!-- note -->", "at 25 °C, a link K_sp"],
   ];
   for (const [src, want] of cases) assert.equal(plainText(src), want);
+  // ions as mhchem reads them (audit round 1, HIGH-2): without a caret only the last sign is the charge, its digits
+  // stay subscripts (mhchem itself prints \ce{Fe3+} as Fe₃⁺; Fe³⁺ is written Fe^3+); a state symbol may follow
+  const ions = { "NO3-": "NO₃⁻", "NH4+": "NH₄⁺", "SO4^2-": "SO₄²⁻", "PO4^3-": "PO₄³⁻", "Fe^3+": "Fe³⁺", "Fe3+": "Fe₃⁺", "Cu^2+": "Cu²⁺", "H3O+": "H₃O⁺",
+    "OH-": "OH⁻", "Cr2O7^2-": "Cr₂O₇²⁻", "[Fe(CN)6]^3-": "[Fe(CN)₆]³⁻", "MnO4-": "MnO₄⁻", "Cl-(aq)": "Cl⁻(aq)", "Ca^2+(aq)": "Ca²⁺(aq)", "HSO4-": "HSO₄⁻",
+    "CH3COO-": "CH₃COO⁻", "e-": "e⁻", "H2PO4-": "H₂PO₄⁻", "O^2-": "O²⁻", "HCO3-(aq)": "HCO₃⁻(aq)", "^{14}C": "¹⁴C", "CO2(g)": "CO₂(g)" };
+  for (const [ce, want] of Object.entries(ions)) assert.equal(plainText(`$\\ce{${ce}}$`), want, ce);
+  assert.equal(plainText("$\\Delta G^\\ominus \\neq 0$"), "ΔG⊖ ≠ 0");
 });
 
 test("[req.host.alembic-needs-wording] the subject's own words are never taken for codes", () => {
   // a reviewer's words are content: "spine", V1 and M2 are an anatomy or chemistry course's own
   const e = { key: "k", kind: "knowledge-concern", units: [], chapters: [], question: "The spine has 33 vertebrae, and M1V1 = M2V2 holds only for a dilution.", evidence: { note: "The spine has 33 vertebrae, and M1V1 = M2V2 holds only for a dilution.", quote: "the spine has 24 vertebrae" } };
   const w = wordEntry(e, {});
-  assert.match(w.text, /“the spine has 24 vertebrae” may be wrong — The spine has 33 vertebrae, and M1V1 = M2V2 holds only for a dilution\./);
+  assert.match(w.text, /a reviewer raised a point about “the spine has 24 vertebrae”: The spine has 33 vertebrae, and M1V1 = M2V2 holds only for a dilution\./);
   // the harness's own sentences lose their codes, and keep content values
   assert.equal(forInstructor("The spine is not source-checked (D48); M1V1 = M2V2 stays (node scripts/gate.mjs --root pkg)."), "The plan is not source-checked; M1V1 = M2V2 stays.");
 });

@@ -16,6 +16,11 @@
   for a passage off the plan. Kinds with choices of their own keep them, and a digest choice still records the
   instructor's words. Wording only: every finding, basis, key and answer means what it meant. The hand-in format is
   unchanged. `req.host.alembic-needs-wording`.
+  After an independent audit: an instructor never adopts or confirms words they cannot see (whatever an answer adopts
+  or confirms is shown in full; if it cannot be, no one-click choice); maths and chemistry read exactly as KaTeX and
+  mhchem typeset them (NO₃⁻, NH₄⁺, Na⁺(aq), J K⁻¹ mol⁻¹); the agent's and a reviewer's own words keep every word (only
+  exact harness codes go); a concern without a suggestion is worded neutrally; a suggestion also offers "Change it
+  differently", with the instructor's words.
 
 ## v1.0.5 (2026-11-07)
 

@@ -8,87 +8,108 @@
 //     node id is said as the plan's own words, and the codes go to the assistant's hidden copy (assistantCodes);
 //   - content is quoted as it reads: orz markup, maths and sub/superscripts rendered to plain text (plainText);
 //   - one sentence on what is wrong, one on the suggestion.
+import { createRequire } from "node:module";
 import { renderedParts } from "./rendered.mjs";
 
 // ---- content as it reads ----------------------------------------------------------------------------------------
+// Maths and chemistry are read from KaTeX's own MathML — the typesetter orz-markdown renders with, with mhchem
+// registered — so a formula reads as it prints (audit round 1, HIGH-2): \ce{NO3-} is NO₃⁻ and \ce{Fe3+} is Fe₃⁺ exactly
+// as mhchem typesets them, \pu{J K-1} is J K⁻¹. A readable rendering, never a key (the keys are rendered.mjs's).
+const require_ = createRequire(import.meta.url);
+require_("orz-markdown"); // registers mhchem on its KaTeX
+const katex = createRequire(createRequire(require_.resolve("orz-markdown")).resolve("@traptitech/markdown-it-katex"))("katex");
+
 const SUP = Object.fromEntries([..."0123456789+-−=()ni"].map((c, i) => [c, "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁻⁼⁽⁾ⁿⁱ"[i]]));
 const SUB = Object.fromEntries([..."0123456789+-−=()aeoxhklmnpst"].map((c, i) => [c, "₀₁₂₃₄₅₆₇₈₉₊₋₋₌₍₎ₐₑₒₓₕₖₗₘₙₚₛₜ"[i]]));
 /** A sub- or superscript as Unicode where every character has one, else written out ("^(…)" reads as typed). */
 function script(s, sup) {
-  const t = String(s).trim(), map = sup ? SUP : SUB;
+  const t = String(s).replace(/\s+/g, " ").trim(), map = sup ? SUP : SUB;
   if (!t) return "";
-  if (sup && /^(?:\\?circ|°|∘)$/.test(t)) return "°";
+  if (sup && /^(?:∘|°|\\circ)$/.test(t)) return "°";
+  if (sup && /^[′″‴⊖⦵∗*†‡]$/.test(t)) return t; // a prime, a standard-state or a starred sign prints beside its base
   return [...t].every((c) => map[c]) ? [...t].map((c) => map[c]).join("") : `${sup ? "^" : "_"}${t.length > 1 ? `(${t})` : t}`;
 }
 
-const GREEK = { alpha: "α", beta: "β", gamma: "γ", delta: "δ", epsilon: "ε", varepsilon: "ε", zeta: "ζ", eta: "η", theta: "θ", vartheta: "ϑ", iota: "ι", kappa: "κ", lambda: "λ", mu: "μ", nu: "ν", xi: "ξ", pi: "π", rho: "ρ", sigma: "σ", tau: "τ", upsilon: "υ", phi: "φ", varphi: "φ", chi: "χ", psi: "ψ", omega: "ω",
-  Gamma: "Γ", Delta: "Δ", Theta: "Θ", Lambda: "Λ", Xi: "Ξ", Pi: "Π", Sigma: "Σ", Upsilon: "Υ", Phi: "Φ", Psi: "Ψ", Omega: "Ω" };
-const SYMBOL = { times: "×", cdot: "·", pm: "±", mp: "∓", div: "÷", le: "≤", leq: "≤", ge: "≥", geq: "≥", ne: "≠", neq: "≠", approx: "≈", sim: "∼", simeq: "≃", equiv: "≡", propto: "∝",
-  infty: "∞", to: "→", rightarrow: "→", leftarrow: "←", longrightarrow: "→", Rightarrow: "⇒", leftrightarrow: "↔", rightleftharpoons: "⇌", leftrightharpoons: "⇋", uparrow: "↑", downarrow: "↓",
-  degree: "°", circ: "∘", partial: "∂", nabla: "∇", sum: "Σ", prod: "Π", int: "∫", ll: "≪", gg: "≫", ldots: "…", cdots: "⋯", dots: "…", hbar: "ħ", ell: "ℓ", AA: "Å", angstrom: "Å",
-  lbrace: "{", rbrace: "}", langle: "⟨", rangle: "⟩", "%": "%", "#": "#", "&": "&", "$": "$", "_": "_", "{": "{", "}": "}" };
-const SPACE = new Set([",", ";", ":", "!", " ", "quad", "qquad", "enspace", "thinspace", "medspace", "thickspace", "hspace", "left", "right", "big", "Big", "bigg", "Bigg", "displaystyle", "textstyle", "limits", "nolimits"]);
-// a text box keeps its spaces; everything else in maths is typeset without the source's spaces
-const TEXT = new Set(["text", "textrm", "textit", "textbf", "mbox", "operatorname"]);
-const WRAP = new Set(["text", "mathrm", "mathit", "mathbf", "mathsf", "mathtt", "textrm", "textit", "textbf", "operatorname", "mathnormal", "boldsymbol", "bm", "mbox", "unit", "pu", "vec", "bar", "hat", "overline", "underline", "tilde", "dot"]);
-
-/** One brace group (or one token) from s at i: [content, next index]. */
-function group(s, i) {
-  while (s[i] === " ") i++;
-  if (s[i] === "{") {
-    let d = 0, j = i;
-    for (; j < s.length; j++) { if (s[j] === "\\") { j++; continue; } if (s[j] === "{") d++; else if (s[j] === "}" && --d === 0) break; }
-    return [s.slice(i + 1, j), j + 1];
+const DECODE = { lt: "<", gt: ">", amp: "&", quot: '"', apos: "'", nbsp: " " };
+const decode = (s) => String(s).replace(/&(#x[0-9a-f]+|#\d+|\w+);/gi, (m, e) => (e[0] === "#" ? String.fromCodePoint(e[1] === "x" || e[1] === "X" ? parseInt(e.slice(2), 16) : Number(e.slice(1))) : DECODE[e] ?? m));
+function parseMathml(html) {
+  const root = { name: "#root", attrs: {}, children: [] }, stack = [root];
+  for (const m of String(html).matchAll(/<(\/?)([A-Za-z][\w:-]*)((?:\s+[\w:-]+="[^"]*")*)\s*(\/?)>|([^<]+)/g)) {
+    if (m[5] != null) { stack.at(-1).children.push(decode(m[5])); continue; }
+    if (m[1]) { if (stack.length > 1) stack.pop(); continue; }
+    const node = { name: m[2], attrs: Object.fromEntries([...m[3].matchAll(/([\w:-]+)="([^"]*)"/g)].map((x) => [x[1], decode(x[2])])), children: [] };
+    stack.at(-1).children.push(node);
+    if (!m[4]) stack.push(node);
   }
-  if (s[i] === "\\") { const m = /^\\([A-Za-z]+|.)/.exec(s.slice(i)); return [m ? m[0] : "\\", i + (m ? m[0].length : 1)]; }
-  return [s[i] ?? "", i + 1];
+  return root;
 }
-
-/** mhchem's \ce{…} as it prints: N2 + 3H2 <=> 2NH3 → N₂ + 3H₂ ⇌ 2NH₃; Ag+ → Ag⁺; SO4^2- → SO₄²⁻. */
-function cePlain(src) {
-  const arrows = (t) => t.replace(/<=>>|<<=>|<=>/g, "⇌").replace(/<->/g, "↔").replace(/->/g, "→").replace(/<-/g, "←");
-  return arrows(String(src)).split(/(\s+)/).map((tok) => {
-    if (/^\s+$/.test(tok) || /^[+⇌↔→←=]$/.test(tok)) return tok;
-    let t = tok.replace(/\^\{([^}]*)\}|\^(\S?[+-]|\d+|\S)/g, (_, a, b) => script(a ?? b, true));
-    const charge = /^(.*?[A-Za-z)\]])(\d*[+-])$/.exec(t);
-    if (charge) t = charge[1] + script(charge[2], true);
-    const coef = /^(\d+(?:\/\d+)?)(?=[A-Z(\[])/.exec(t);
-    const head = coef ? coef[1] : "", body = t.slice(head.length);
-    return head + body.replace(/_\{([^}]*)\}|_(\d+)/g, (_, a, b) => script(a ?? b, false)).replace(/(?<=[A-Za-z)\]])(\d+)/g, (d) => script(d, false));
-  }).join("");
-}
-
-/** A TeX formula as a reader sees it, in plain text (a readable approximation, never a key). */
-export function texPlain(tex) {
-  const s = String(tex ?? "");
-  let out = "", i = 0;
-  while (i < s.length) {
-    const c = s[i];
-    if (c === "\\") {
-      const m = /^\\([A-Za-z]+|.)/.exec(s.slice(i)); const name = m ? m[1] : ""; i += m ? m[0].length : 1;
-      if (name === "ce") { const [g, j] = group(s, i); out += cePlain(g); i = j; }
-      else if (name === "frac" || name === "dfrac" || name === "tfrac") {
-        const [a, j] = group(s, i), [b, k] = group(s, j); i = k;
-        const pa = texPlain(a), pb = texPlain(b), wrap = (x) => (/^[\p{L}\p{N}.,·×]+$/u.test(x) ? x : `(${x})`);
-        out += `${wrap(pa)}/${wrap(pb)}`;
-      } else if (name === "sqrt") { const [a, j] = group(s, i); i = j; const p = texPlain(a); out += `√${/^[\p{L}\p{N}.]+$/u.test(p) ? p : `(${p})`}`; }
-      else if (TEXT.has(name)) { const [a, j] = group(s, i); i = j; out += ` ${texPlain(a.replace(/ /g, "\\ "))} `; }
-      else if (WRAP.has(name)) { const [a, j] = group(s, i); i = j; out += texPlain(a); }
-      else if (name === "hspace" || name === "vspace") { const [, j] = group(s, i); i = j; out += " "; }
-      else if (SPACE.has(name)) out += name === "!" ? "" : " ";
-      else if (GREEK[name]) out += GREEK[name];
-      else if (SYMBOL[name]) out += SYMBOL[name];
-      else if (/^(ln|log|exp|sin|cos|tan|lim|max|min|det)$/.test(name)) out += ` ${name} `;
-      else out += name; // an unknown command: its name, never a backslash
-    } else if (c === "^" || c === "_") {
-      const [g, j] = group(s, i + 1); i = j;
-      out += script(texPlain(g).replace(/\s+/g, ""), c === "^");
-    } else if (c === "{" || c === "}" || c === " " || c === "\n" || c === "\t") i++;
-    else if (c === "~") { out += " "; i++; }
-    else if (c === "-") { out += "−"; i++; }
-    else { out += c; i++; }
+const REL = new Set([..."=<>≤≥≠≈≡∼≃≅∝⇌⇋⇄→←↔⇒⇐⇔⟶⟵⟷↑↓∈∉⊂⊆⊃⊇:"]);
+const BIN = new Set([..."+−-±∓×·÷⊕⊗∗"]);
+const FUNC = /^(?:ln|log|lg|exp|sin|cos|tan|sec|csc|cot|sinh|cosh|tanh|arcsin|arccos|arctan|lim|max|min|det|deg|dim|gcd|sup|inf|Pr|arg)$/;
+const kids = (n) => (n.children || []).filter((c) => typeof c !== "string" || c.trim() || n.name === "mtext");
+const textOf = (n) => (typeof n === "string" ? n : (n.children || []).map(textOf).join(""));
+/** A MathML node as plain text; `sc`: inside a sub- or superscript (no operator spacing there). */
+function mathNode(n, sc) {
+  if (typeof n === "string") return n;
+  const c = kids(n), at = (i) => (c[i] ? mathNode(c[i], sc) : "");
+  const wrap = (x) => (/^[\p{L}\p{N}.,·×′⁰-⁹₀-₉⁺⁻]+$/u.test(x) ? x : `(${x})`);
+  switch (n.name) {
+    case "annotation": case "annotation-xml": case "mphantom": return "";
+    case "mspace": { const w = parseFloat(n.attrs.width || "0"); return w >= 0.15 ? " " : ""; }
+    case "mtext": return textOf(n).replace(/ /g, " ");
+    case "mi": case "mn": case "ms": { const t = textOf(n); return FUNC.test(t) && !sc ? ` ${t}` : t; }
+    case "mo": {
+      const t = textOf(n);
+      if (t === "⁡") return " "; // function application: "ln K"
+      if (sc) return t;
+      if (REL.has(t)) return `\u0001${t}\u0001`;
+      if (BIN.has(t)) return `\u0002${t}\u0002`;
+      return t;
+    }
+    case "msub": return at(0) + script(mathNode(c[1], true), false);
+    case "msup": return at(0) + script(mathNode(c[1], true), true);
+    case "msubsup": return at(0) + script(mathNode(c[1], true), false) + script(mathNode(c[2], true), true);
+    case "mover": case "munder": case "munderover": {
+      const base = at(0), extra = c.slice(1).map((x) => mathNode(x, true).trim()).filter(Boolean);
+      if (n.attrs.accent === "true" || n.attrs.accentunder === "true" || !extra.length) return base;
+      return REL.has(base.replace(/[\u0001\s]/g, "")) ? `${base.replace(/\u0001$/, "")}(${extra.join(", ")})\u0001` : base;
+    }
+    case "mfrac": { const a = finishMath(at(0)), b = finishMath(at(1)); return n.attrs.linethickness === "0px" ? `(${a} ${b})` : `${wrap(a)}/${wrap(b)}`; }
+    case "msqrt": return `√${wrap(finishMath(c.map((x) => mathNode(x, sc)).join("")))}`;
+    case "mroot": return `${script(mathNode(c[1], true), true)}√${wrap(finishMath(at(0)))}`;
+    case "mtable": return c.map((r) => kids(r).map((x) => finishMath(mathNode(x, sc))).join(" ")).join("; ");
+    default: return c.map((x) => mathNode(x, sc)).join("");
   }
-  return out.replace(/\s+/g, " ").replace(/ ?([=<>≤≥≈±×→⇌+]) ?/g, " $1 ").replace(/\s+/g, " ").replace(/ ([⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻₀₁₂₃₄₅₆₇₈₉°])/g, "$1").trim();
+}
+/** Operator spacing: a relation always spaced; + − × spaced as a binary operator, kept tight as a sign. */
+function finishMath(s) {
+  let out = "";
+  for (const part of String(s).split(/(\u0001[^\u0001]*\u0001|\u0002[^\u0002]*\u0002)/)) {
+    if (part.startsWith("\u0001")) out = `${out.trimEnd()} ${part.slice(1, -1)} `;
+    else if (part.startsWith("\u0002")) {
+      const sign = !out.trim() || /[(\[{,;:=<>≤≥≠≈≡∝⇌→←↔⇒−+±∓×·÷]$/.test(out.trimEnd()); // after nothing, an opening or an operator
+      out = sign ? out + part.slice(1, -1) : `${out.trimEnd()} ${part.slice(1, -1)} `;
+    } else out += part;
+  }
+  return out.replace(/\s+/g, " ").replace(/\( /g, "(").replace(/ \)/g, ")").trim();
+}
+/** A TeX formula (with mhchem's \ce and \pu) as a reader sees it, in plain text. */
+export function mathPlain(tex) {
+  const src = String(tex ?? "");
+  let html;
+  try { html = katex.renderToString(src, { output: "mathml", throwOnError: true, strict: "ignore" }); }
+  catch { return src.replace(/\\([A-Za-z]+)/g, "$1").replace(/[{}]/g, "").replace(/\s+/g, " ").trim(); } // as the reader sees a formula KaTeX cannot typeset: its source
+  return finishMath(mathNode(parseMathml(html), false));
+}
+/** Text a reviewer or the agent wrote (plain words, not markdown): only its `$…$` maths and orz inline markup rendered,
+ *  so "2*3*4" stays as written (audit round 1, LOW-3). */
+export function lightText(src) {
+  return String(src ?? "")
+    .replace(/\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$/g, (m, a, b) => mathPlain(a ?? b))
+    .replace(/\{\{\s*[\w-]+(?:\[[^\]]*\])?\s+([^{}]*?)\}\}/g, "$1")
+    .replace(/\*\*(?=\S)([^*\n]*?\S)\*\*|__(?=\S)([^_\n]*?\S)__/g, (m, x, y) => x ?? y) // strong emphasis; a lone * is the text's own
+    .replace(/\s*\[(?:anchor|prereq|prerequisites?)\s*:[^\]\n]*\]/gi, "")
+    .replace(/\s+/g, " ").trim();
 }
 
 /**
@@ -105,7 +126,7 @@ export function plainText(src) {
       continue;
     }
     if (p.kind === "hint") continue;
-    const t = p.kind === "math" ? texPlain(p.text) : p.kind === "prose" ? p.seen : p.text;
+    const t = p.kind === "math" ? mathPlain(p.text) : p.kind === "prose" ? p.seen : p.text;
     if (scriptOpen !== null) buf += t; else out += p.kind === "math" ? ` ${t} ` : t;
   }
   return out.replace(/\{\{[^{}]*?\}\}/g, (m) => m.replace(/^\{\{\s*[\w-]+(?:\[[^\]]*\])?\s*/, "").replace(/\}\}$/, "")) // markup left by a fragment the parser could not close
@@ -119,8 +140,6 @@ export function shorten(s, n) {
   const cut = t.slice(0, n - 1), at = cut.lastIndexOf(" ");
   return `${(at > n * 0.6 ? cut.slice(0, at) : cut).replace(/[\s,;:.–—-]+$/, "")}…`;
 }
-// a quoted sentence loses its own full stop: the sentence around it ends it
-const quote = (s, n = 140) => `“${shorten(plainText(s), n).replace(/(?<!\.)\.$/, "")}”`;
 const firstSentence = (s) => { const t = String(s ?? "").trim(), m = /^([\s\S]*?[.!?])(?=\s+[A-Z“"(]|$)/.exec(t); return m ? m[1] : t; };
 export const sentence = (s) => { const t = String(s ?? "").trim().replace(/\s+/g, " "); return !t ? "" : /[.!?…”"]$/.test(t) ? t : `${t}.`; };
 const capital = (s) => String(s).replace(/^(\s*[“"(]?)(\p{Ll})/u, (_, a, b) => a + b.toUpperCase());
@@ -161,9 +180,13 @@ const inPlace = (w) => (w.place ? `In ${w.place}` : "In the course");
 // ---- harness codes, out of the instructor's text ------------------------------------------------------------------
 const FILE = /(?<![\w@/.-])(?:[\w-]+\/)*[\w.-]+\.(?:slides\.md|paged\.md|md|jsonl|json|mjs|js|png|jpe?g|gif|svg|webp|pdf|html)(?![\w/-])/gi;
 const NODE = /\b(?:objective|concept|misconception|guide|term|prereq)\.[a-z0-9][a-z0-9-]*(?:\.[a-z0-9][a-z0-9-]*)+/g;
-const UNIT = /\bu-[a-z0-9][a-z0-9-]*[a-z0-9]\b/g;
-// a decision or red-team code (D48, R6-K04, C4-01). Narrow on purpose: content has V1, M2, R1 and D2 of its own.
-const DECISION = /\b(?:D\d{2,3}[a-z]?|R\d{1,2}-[A-Z]\d{1,3}|[CF]\d-\d{2})\b/g;
+// a unit id as the index makes it: u-<deliverable>-<section>-<ordinal> ("u-tube" is a word, not a unit)
+const UNIT = /\bu-[a-z0-9]+(?:-[a-z0-9]+)*-\d+\b/g;
+// a decision or red-team code (D48, R6-K04, C4-01). Narrow on purpose: content has V1, M2, R1, D2 and D50 of its own.
+const CODE = String.raw`(?:D\d{2,3}[a-z]?|R\d{1,2}-[A-Z]\d{1,3}|[CF]\d-\d{2})`;
+const DECISION = new RegExp(String.raw`\b${CODE}\b`, "g");
+// a parenthesis or bracket that holds nothing but codes: "(D48)", "[D49, R6-K04]"
+const CODES_ONLY = new RegExp(String.raw`\s*[(\[]\s*${CODE}(?:\s*[,;]\s*${CODE})*\s*[)\]]`, "g");
 const COMMAND = /`?\b(?:node\s+)?(?:<harness>\/)?scripts\/[\w./-]+(?:\s+(?:--?[\w-]+|<[^>]*>|[\w.,:/-]+))*`?/g;
 
 /**
@@ -179,37 +202,50 @@ export function harnessTraces(text) {
   return out;
 }
 
-/** The codes a harness text carries, for the assistant's hidden copy (never shown to the instructor). */
+/** The codes a harness text carries, for the assistant's hidden copy (never shown to the instructor). Each list holds
+ *  at most 20 entries of at most 160 characters (audit round 1, LOW-2). */
+export const CODE_LIMITS = Object.freeze({ items: 20, chars: 160 });
 export function assistantCodes(...texts) {
-  const t = texts.filter(Boolean).map(String).join("\n"), uniq = (re) => [...new Set([...t.matchAll(re)].map((m) => m[0]))];
+  const t = texts.filter(Boolean).map(String).join("\n");
+  const uniq = (list) => [...new Set(list)].slice(0, CODE_LIMITS.items).map((x) => (x.length > CODE_LIMITS.chars ? `${x.slice(0, CODE_LIMITS.chars - 1)}…` : x));
+  const all = (re) => [...t.matchAll(re)].map((m) => m[0]);
   const lines = [...t.matchAll(/((?:[\w-]+\/)*[\w.-]+\.(?:slides\.md|paged\.md|md)),? lines? (\d+)/g)].map((m) => `${m[1]}:${m[2]}`);
-  return Object.fromEntries(Object.entries({ files: uniq(FILE), lines: [...new Set(lines)], nodes: uniq(NODE), units: uniq(UNIT), decisions: uniq(DECISION), commands: uniq(COMMAND).map((c) => c.replace(/`/g, "").trim()) }).filter(([, v]) => v.length));
+  return Object.fromEntries(Object.entries({ files: uniq(all(FILE)), lines: uniq(lines), nodes: uniq(all(NODE)), units: uniq(all(UNIT)), decisions: uniq(all(DECISION)), commands: uniq(all(COMMAND).map((c) => c.replace(/`/g, "").trim())) }).filter(([, v]) => v.length));
 }
 
 /**
- * A harness sentence made the instructor's: commands and decision codes dropped, a path said as its page, a unit id as
- * its passage, a plan-node id as the plan's own words, "the spine" as "the plan", markup rendered. The safety net
- * under every question; the per-kind wordings below rarely leave it anything to do.
+ * A sentence made the instructor's. In every text, only exact harness codes go: a command, a parenthesis of codes only
+ * ("(D48)"), a path (with the line right after it) said as its page, a unit id as its passage, a plan-node id as the
+ * plan's own words, a chapter slug as its title. `from: "harness"` (a note Coursewerk's code wrote) also drops a bare
+ * decision code and a line number, says "the spine" as "the plan", and renders the note as markdown; `from: "agent"`
+ * (the agent's or a reviewer's own words) keeps every word, and renders only its maths and orz inline markup
+ * (audit round 1, MEDIUM-2, LOW-3).
  */
-export function forInstructor(text, ctx = {}) {
+export function forInstructor(text, ctx = {}, { from = "harness" } = {}) {
+  const harness = from === "harness";
   let t = String(text ?? "");
-  t = t.replace(/\s*\((?:[^()]*\bscripts\/[^()]*|run it again[^()]*)\)/g, "").replace(/\s*[—:-]\s*run it again\b/gi, "").replace(COMMAND, "")
-    .replace(/\s*\((?:(?:red[- ]team|operator|owner|control|coherence|round)[^()]*|[^()]*\b(?:D\d{1,3}|R\d{1,2}(?:-[A-Z]\d+)?)\b[^()]*)\)/gi, "")
-    .replace(/\s*\[[^\]]*\b(?:D\d{1,3}|R\d)\b[^\]]*\]/g, "");
+  t = t.replace(/\s*\([^()]*\bscripts\/[^()]*\)/g, "").replace(COMMAND, "").replace(CODES_ONLY, "");
+  if (harness) t = t.replace(/\s*[—:-]\s*run it again\b/gi, "");
   t = t.replace(new RegExp(`(${FILE.source})(?:,? (?:at |on )?lines? (\\d+)(?:\\s*[–-]\\s*\\d+)?)?`, "gi"), (m, file) => placeOf(file, ctx));
   t = t.replace(UNIT, (id) => passageOf(id, ctx) || "this passage");
   t = t.replace(NODE, (id) => { const n = ctx.nodes?.get?.(id); return n ? `“${shorten(plainText(n.text || n.title || ""), 80)}”` : "a point in the plan"; });
   // a chapter's slug (le-chatelier) as its title; only a hyphenated slug, so a plain word of the text is never taken
   for (const [slug, title] of ctx.titles || []) if (slug.includes("-")) t = t.replace(new RegExp(`(?<![\\w/.-])${slug.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w/-])`, "g"), `“${title}”`);
-  t = t.replace(DECISION, "").replace(/\b(?:the )?spine'?s?\b/gi, (m) => (/^the/i.test(m) ? `${m[0]}he plan` : m[0] === "S" ? "Plan" : "plan")).replace(/,? (?:at |on )?lines? \d+(?:\s*[–-]\s*\d+)?/gi, "");
-  t = plainText(t.replace(/\$(?=\s|$)/g, "")); // a stray dollar left by a cut quote
+  if (harness) {
+    t = t.replace(DECISION, "").replace(/\b(?:the )?spine'?s?\b/gi, (m) => (/^the/i.test(m) ? `${m[0]}he plan` : m[0] === "S" ? "Plan" : "plan")).replace(/,? (?:at |on )?lines? \d+(?:\s*[–-]\s*\d+)?/gi, "");
+    t = plainText(t.replace(/\$(?=\s|$)/g, "")); // a stray dollar left by a cut quote
+  } else t = lightText(t);
   return t.replace(/\(\s*\)/g, "").replace(/\s+([,.;:])/g, "$1").replace(/([,;:])(?=[,.;:])/g, "").replace(/\s{2,}/g, " ").trim();
 }
 
 // ---- the question, kind by kind -----------------------------------------------------------------------------------
-/** The one-click choices for a kind that has none of its own (owner D-133). "Apply" is Coursewerk's word for taking a
- *  reviewer's suggestion (ms8-verdicts acceptedBy reads /^apply/), "Keep" for leaving the text as it is, "Later" defers. */
-export const SUGGESTION_CHOICES = Object.freeze(["Apply the suggestion", "Keep it", "Later"]);
+/** The one-click choices for a reviewer's suggestion (owner D-133). "Apply" is Coursewerk's word for taking a
+ *  reviewer's suggestion (ms8-verdicts acceptedBy reads /^apply/); "Change it differently" asks for another change, in
+ *  the instructor's words (audit round 1, MEDIUM-4), as fact-disputed's "Change it" does; "Keep" leaves the text as it
+ *  is; "Later" defers. */
+export const SUGGESTION_CHOICES = Object.freeze(["Apply the suggestion", "Change it differently", "Keep it", "Later"]);
+/** Detail in the plan: move it, or keep it. */
+export const MOVE_CHOICES = Object.freeze(["Apply the suggestion", "Keep it", "Later"]);
 const REASONS = { "spine-scope-conflict": "Outside the plan", "missing-input": "Missing input", "rights-blocker": "Rights", "spine-change-request": "A change to the plan" };
 /** An interrupt's reason as the instructor reads it. */
 export const reasonLabel = (r) => REASONS[r] || capital(String(r || "").replace(/-/g, " "));
@@ -225,85 +261,108 @@ function fidelityParts(note) {
 }
 
 /**
- * A digest entry as the instructor reads it: { text, detail, choices? }. `ctx`: placeOf's context (titles, nodes,
- * units, deliverableOf). Choices are offered only where an answer's meaning is Coursewerk's own (see SUGGESTION_CHOICES).
+ * A digest entry as the instructor reads it: { text, detail, choices?, shown }. `ctx`: placeOf's context (titles,
+ * nodes, units, deliverableOf). Choices are offered only where an answer's meaning is Coursewerk's own.
+ * `shown`: the words an answer would adopt or confirm, in full, for every one the text had to shorten — an instructor
+ * never adopts or confirms words they cannot see (audit round 1, HIGH-1); the question puts them first in its detail.
  */
 export function wordEntry(e, ctx = {}) {
   const ev = e.evidence || {}, note = String(e.question ?? ""), w = where(e.units || [], ctx, ev.file);
   const at = w.passage ? `${inPlace(w)}, ${w.passage}` : inPlace(w);
-  const sugg = ev.suggestion ? quote(ev.suggestion, 160) : "";
-  // a harness note is made the instructor's (forInstructor); a reviewer's words are content-level and only rendered:
-  // "spine", "V1" or "R1" in them may be the subject's own words
-  const fi = (s) => forInstructor(s, ctx), rv = (s) => sentence(plainText(s));
+  const shown = [];
+  // content is rendered as markdown (plainText); the reviewer's and the agent's own words only for their maths
+  // (lightText): "spine", "V1", "2*3*4" in them are the subject's own
+  const show = (label, src, n, render = plainText) => {
+    const full = render(src ?? "").replace(/\s+/g, " ").trim(), cut = shorten(full, n);
+    if (cut !== full) shown.push(`${label}: “${full}”`);
+    return `“${cut.replace(/(?<!\.)\.$/, "")}”`;
+  };
+  const out = (o) => ({ ...o, shown });
+  const fi = (s) => forInstructor(s, ctx), rv = (s) => sentence(lightText(s));
+  const sugg = (n = 160) => (ev.suggestion ? show("The suggestion in full", ev.suggestion, n, lightText) : "");
   switch (e.kind) {
     case "detail-in-spine": {
       const kinds = [...new Set((ev.detail || []).map((x) => x.kind))], list = kinds.length > 1 ? `${kinds.slice(0, -1).join(", ")} and ${kinds.at(-1)}` : kinds[0] || "detail";
       const what = (ev.detail || []).map((x) => `“${shorten(plainText(x.what), 40)}”`).slice(0, 3).join(", ");
       const target = ev.target?.deliverable ? placeOf(ev.target.deliverable, ctx) : "the study guide";
-      return { text: `${inPlace(w)}, the line ${quote(ev.text, 120)} also gives ${list}${what ? ` (${what})` : ""}, more than the plan needs to say. Suggestion: move it to ${target}${ev.target?.section ? `, section “${plainText(ev.target.section)}”` : ""}, and keep the line to what to teach.`,
+      return out({ text: `${inPlace(w)}, the line ${show("The whole line", ev.text, 120)} also gives ${list}${what ? ` (${what})` : ""}, more than the plan needs to say. Suggestion: move it to ${target}${ev.target?.section ? `, section “${plainText(ev.target.section)}”` : ""}, and keep the line to what to teach.`,
         detail: "The plan says what to teach, to what level and how to assess. It isn't checked against the sources, so a detail left there is checked only against the other materials; in the study guide it is checked like any fact.",
-        choices: SUGGESTION_CHOICES };
+        choices: MOVE_CHOICES });
     }
     case "spine-review-concern": {
       const pre = /^Possibly wrong \([^)]*\): "/.exec(note), rest = pre ? note.slice(pre[0].length + String(ev.text ?? "").length).replace(/^"\.\s*/, "") : note;
       const sm = /\s*Suggested: "([\s\S]*)"\.\s*$/.exec(rest), problem = sm ? rest.slice(0, sm.index) : rest, s = sm ? sm[1] : "";
-      return { text: `${inPlace(w)}, the line ${quote(ev.text, 120)} may be wrong — ${rv(firstSentence(problem))} ${s ? `Suggestion: change it to ${quote(s, 160)}.` : "Suggestion: check the line, and say what it should be."}`,
+      return out({ text: `${inPlace(w)}, the line ${show("The whole line", ev.text, 120)} may be wrong — ${rv(firstSentence(problem))} ${s ? `Suggestion: change it to ${show("The suggestion in full", s, 160, lightText)}.` : "Suggestion: check the line, and say what it should be."}`,
         detail: [rv(problem) !== rv(firstSentence(problem)) ? `The reviewer: ${rv(problem)}` : "", "A blind reviewer read the lines changed since your last approval."].filter(Boolean).join("\n"),
-        ...(s ? { choices: SUGGESTION_CHOICES } : {}) };
+        ...(s ? { choices: SUGGESTION_CHOICES } : {}) });
     }
-    case "knowledge-concern":
-      return { text: `${inPlace(w)}, ${quote(ev.quote, 140)} may be wrong — ${rv(firstSentence(note))} ${sugg ? `Suggestion: ${sugg}.` : "Suggestion: check it, and say what it should be."}`,
-        detail: [rv(note) !== rv(firstSentence(note)) ? `The reviewer: ${rv(note)}` : "", "A blind reviewer raised this about your text, so it is yours to decide."].filter(Boolean).join("\n"), ...(sugg ? { choices: SUGGESTION_CHOICES } : {}) };
+    case "knowledge-concern": {
+      const q = show("The text in full", ev.quote, 140), s = sugg();
+      // with a suggestion the reviewer found it wrong (a clarification of the instructor's text comes as
+      // clarification-proposed); without one it may be a clarification (ms8-verdicts): worded neutrally (MEDIUM-3)
+      return out({ text: s ? `${inPlace(w)}, ${q} may be wrong — ${rv(firstSentence(note))} Suggestion: ${s}.`
+        : `${inPlace(w)}, a reviewer raised a point about ${q}: ${rv(firstSentence(note))} Suggestion: check it, and say whether it should change.`,
+        detail: [rv(note) !== rv(firstSentence(note)) ? `The reviewer: ${rv(note)}` : "", "A blind reviewer raised this about your text, so it is yours to decide."].filter(Boolean).join("\n"), ...(s ? { choices: SUGGESTION_CHOICES } : {}) });
+    }
     case "clarification-proposed": {
       const problem = note.replace(/^Clarify: "[\s\S]*?" → "[\s\S]*?"\.\s*/, (m) => (ev.quote != null && ev.suggestion != null && m.startsWith(`Clarify: "${ev.quote}" → "${ev.suggestion}".`) ? "" : m));
-      return { text: `${inPlace(w)}, ${quote(ev.quote, 140)} is right as meant but could be clearer — ${rv(firstSentence(problem))} Suggestion: ${sugg}.`,
-        detail: [rv(problem) !== rv(firstSentence(problem)) ? `The reviewer: ${rv(problem)}` : "", "Your wording stays unless you apply the suggestion; your credit for the text stays either way."].filter(Boolean).join("\n"), choices: SUGGESTION_CHOICES };
+      const s = sugg();
+      return out({ text: `${inPlace(w)}, ${show("The text in full", ev.quote, 140)} is right as meant but could be clearer — ${rv(firstSentence(problem))} ${s ? `Suggestion: ${s}.` : "Suggestion: say how it should read."}`,
+        detail: [rv(problem) !== rv(firstSentence(problem)) ? `The reviewer: ${rv(problem)}` : "", "Your wording stays unless you apply the suggestion; your credit for the text stays either way."].filter(Boolean).join("\n"), ...(s ? { choices: SUGGESTION_CHOICES } : {}) });
     }
     case "instructor-edit-unasked": {
       const removed = ev.now === "" && ev.after === "";
       const fact = /a fact changed \(/.test(note) ? " (a value changed)" : "";
       const text = ev.suggestion
-        ? `${at}: your text was changed without asking you: ${quote(ev.quote, 120)} was replaced by the reviewer's suggestion ${sugg}. Keep the change, or have your text put back?`
-        : removed ? `${inPlace(w)}, a passage you wrote was removed without asking you: ${quote(ev.quote, 160)}. Keep it removed, or have it put back?`
-        : `${at}: your text was changed without asking you${fact}: ${quote(ev.quote, 120)} now reads ${quote(ev.now, 120)}. Keep the change, or have your text put back?`;
-      return { text, detail: "“Revert” puts your own text back." };
+        ? `${at}: your text was changed without asking you: ${show("Your text was", ev.quote, 120)} was replaced by the reviewer's suggestion ${show("It now reads", ev.suggestion, 160, lightText)}. Keep the change, or have your text put back?`
+        : removed ? `${inPlace(w)}, a passage you wrote was removed without asking you: ${show("The removed passage", ev.quote, 160)}. Keep it removed, or have it put back?`
+        : `${at}: your text was changed without asking you${fact}: ${show("Your text was", ev.quote, 120)} now reads ${show("It now reads", ev.now, 120)}. Keep the change, or have your text put back?`;
+      return out({ text, detail: "“Revert” puts your own text back." });
     }
-    case "exercise-data-confirm":
-      return { text: `${at}: the values ${quote(String(ev.quote || "").split(" | ")[0], 140)} read as made-up exercise data, which no source can check. Confirm them as teaching examples?`,
-        detail: String(ev.quote || "").includes(" | ") ? `All of them: ${String(ev.quote).split(" | ").map((x) => quote(x, 200)).join("; ")}` : "" };
+    case "exercise-data-confirm": {
+      const all = String(ev.quote || "").split(" | ").filter((x) => x.trim()), first = show("The values in full", all[0] || "", 140);
+      if (all.length > 1) shown.splice(0, shown.length, `All of them: ${all.map((x) => `“${plainText(x)}”`).join("; ")}`);
+      return out({ text: `${at}: the values ${first} read as made-up exercise data, which no source can check. Confirm them as teaching examples?`, detail: "" });
+    }
     case "confirmation-stale":
-      return { text: `${at}: you confirmed its facts before, but the text has changed since. It now reads ${quote(ev.quote, 200)} — confirm it as it reads now?`, detail: "" };
+      return out({ text: `${at}: you confirmed its facts before, but the text has changed since. It now reads ${show("It now reads, in full", ev.quote, 200)} — confirm it as it reads now?`, detail: "" });
     case "fact-disputed": {
       const c = (ev.conflicts || [])[0];
-      return { text: `${at}: a source disagrees with ${quote(ev.claimText || ev.quote || "", 140)}${c ? `: the text says ${shorten(plainText(c.claimed), 60)}, a source says ${shorten(plainText(c.source), 60)}` : ""}. Keep it as written, or change it?`,
-        detail: (ev.conflicts || []).filter((x) => x.sentence).map((x) => `The source: ${quote(x.sentence, 300)}`).join("\n") };
+      return out({ text: `${at}: a source disagrees with ${show("The text in full", ev.claimText || ev.quote || "", 140)}${c ? `: the text says ${shorten(plainText(c.claimed), 60)}, a source says ${shorten(plainText(c.source), 60)}` : ""}. Keep it as written, or change it?`,
+        detail: (ev.conflicts || []).filter((x) => x.sentence).map((x) => `The source: “${plainText(x.sentence)}”`).join("\n") });
     }
     case "unit-unknown-authorship": {
       const n = (e.units || []).length || 1;
-      return { text: `${inPlace(w)}, ${n === 1 ? "a passage was" : `${n} passages were`} changed outside the assistant's work${w.passage ? ` (${n === 1 ? "" : "the first is "}${w.passage})` : ""}. If you wrote ${n === 1 ? "it" : "them"}, accept ${n === 1 ? "it" : "them"} as yours; otherwise say who did, or have ${n === 1 ? "it" : "them"} reverted.`, detail: "" };
+      // "Accept as mine" claims every passage: each is shown as it reads
+      const texts = (e.units || []).map((u) => ctx.units?.get?.(u)?.text).filter((x) => x && x.trim());
+      if (texts.length) shown.push(...texts.map((x, i) => `${texts.length > 1 ? `Passage ${i + 1}` : "The passage"}: “${plainText(x)}”`));
+      return out({ text: `${inPlace(w)}, ${n === 1 ? "a passage was" : `${n} passages were`} changed outside the assistant's work${w.passage ? ` (${n === 1 ? "" : "the first is "}${w.passage})` : ""}. If you wrote ${n === 1 ? "it" : "them"}, accept ${n === 1 ? "it" : "them"} as yours; otherwise say who did, or have ${n === 1 ? "it" : "them"} reverted.`, detail: "" });
     }
-    case "off-spine":
-      return { text: `${at}: a reviewer found that it teaches nothing in the chapter's approved plan. Keep it (the plan may need it), or drop it?`,
-        detail: /Reviews of this same text disagree/.test(note) ? "Two reviews of this text disagree; the one that found it off the plan stands until the text changes or you answer." : "", choices: ["Keep it", "Drop it", "Later"] };
+    case "off-spine": {
+      const t = ctx.units?.get?.((e.units || [])[0])?.text;
+      if (t && t.trim()) shown.push(`The passage: “${plainText(t)}”`);
+      return out({ text: `${at}: a reviewer found that it teaches nothing in the chapter's approved plan. Keep it (the plan may need it), or drop it?`,
+        detail: /Reviews of this same text disagree/.test(note) ? "Two reviews of this text disagree; the one that found it off the plan stands until the text changes or you answer." : "", choices: ["Keep it", "Drop it", "Later"] });
+    }
     case "assessment-fidelity-instructor": {
       const f = fidelityParts(note);
-      return { text: `${at}: ${f ? `it is not ${f.what} its assessment-guide entry asks for (${fi(f.ask)})` : "it does not match its assessment-guide entry"}. Suggestion: revise it to match the entry, or keep it and say why.`,
-        detail: f ? `The reviewer: ${rv(f.why.replace(/\s*\(Reviews of this same text disagree[\s\S]*\)\s*$/, ""))}` : sentence(fi(note)) };
+      return out({ text: `${at}: ${f ? `it is not ${f.what} its assessment-guide entry asks for (${fi(f.ask)})` : "it does not match its assessment-guide entry"}. Suggestion: revise it to match the entry, or keep it and say why.`,
+        detail: f ? `The reviewer: ${rv(f.why.replace(/\s*\(Reviews of this same text disagree[\s\S]*\)\s*$/, ""))}` : sentence(fi(note)) });
     }
     case "ambiguous-answer": {
       const vals = /two different values of one dimension \(([^)]*)\)/.exec(note)?.[1], snip = /: "([^"]*)"/.exec(note)?.[1];
-      return { text: `${inPlace(w)}, the answer ${snip ? `${quote(snip, 120)} ` : ""}gives two different values${vals ? ` (${plainText(vals)})` : ""}, so a student cannot tell which is the answer. Suggestion: leave one value as the answer, and move the other into the question or an explanation.`, detail: "" };
+      return out({ text: `${inPlace(w)}, the answer ${snip ? `${show("The answer in full", snip, 120)} ` : ""}gives two different values${vals ? ` (${plainText(vals)})` : ""}, so a student cannot tell which is the answer. Suggestion: leave one value as the answer, and move the other into the question or an explanation.`, detail: "" });
     }
     case "no-photograph": {
       const ch = /chapter (\S+) has no real photograph/.exec(note)?.[1];
-      return { text: `${ch ? `The chapter “${ctx.titles?.get?.(ch) || words(ch)}”` : "A chapter"} has no real photograph. Suggestion: add a photograph you have the rights to use, or say why the chapter does without one.`, detail: "" };
+      return out({ text: `${ch ? `The chapter “${ctx.titles?.get?.(ch) || words(ch)}”` : "A chapter"} has no real photograph. Suggestion: add a photograph you have the rights to use, or say why the chapter does without one.`, detail: "" });
     }
     case "carrier-build-failed":
-      return { text: `A preview could not be built — ${sentence(fi(note.replace(/^the carrier preview did not build:\s*/, "")))} Suggestion: let the assistant fix it, or say what to change.`, detail: "" };
+      return out({ text: `A preview could not be built — ${sentence(fi(note.replace(/^the carrier preview did not build:\s*/, "")))} Suggestion: let the assistant fix it, or say what to change.`, detail: "" });
     default: {
-      // the agent's own critique of the plan, or a kind worded nowhere above: its sentence, made the instructor's
-      const body = sentence(fi(note));
-      return { text: w.place && !body.toLowerCase().includes(w.place.toLowerCase()) ? `${at}: ${body}` : capital(body), detail: "" };
+      // the agent's own critique of the plan is the agent's words; any other kind is a harness note
+      const body = sentence(e.module === "spine-critique" ? forInstructor(note, ctx, { from: "agent" }) : fi(note));
+      return out({ text: w.place && !body.toLowerCase().includes(w.place.toLowerCase()) ? `${at}: ${body}` : capital(body), detail: "" });
     }
   }
 }
@@ -312,7 +371,7 @@ export function wordEntry(e, ctx = {}) {
 export function recommendationLine(e, ctx = {}) {
   const rec = e.recommendation == null ? "" : String(e.recommendation).trim();
   if (!rec || e.recommendedBy === "check" || /^revise:/i.test(rec)) return ""; // a check's or a reviewer's: already the suggestion
-  return `Recommended${String(e.recommendedBy || "").startsWith("agent") ? " by the assistant" : ""}: ${sentence(forInstructor(rec, ctx))}`;
+  return `Recommended${String(e.recommendedBy || "").startsWith("agent") ? " by the assistant" : ""}: ${sentence(forInstructor(rec, ctx, { from: "agent" }))}`;
 }
 
 /** What a correction changed, as it reads: the changed words with a little context on each side. */

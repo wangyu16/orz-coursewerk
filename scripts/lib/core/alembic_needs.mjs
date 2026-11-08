@@ -87,6 +87,10 @@ export const DIGEST_CHOICES = Object.freeze({
   "unit-unknown-authorship": ["Accept as mine", "Later"],
 });
 
+/** A recommendation is pre-chosen only when it is that choice, or that choice and more words after it ("Keep it, as
+ *  …"), never another word that starts the same ("Keep items 1 and 2", audit round 1, LOW-1). */
+const isChoice = (rec, choice) => { const r = rec.toLowerCase(), c = choice.toLowerCase(); return r === c || (r.startsWith(c) && !/[\p{L}\p{N}]/u.test(r[c.length])); };
+
 /**
  * One digest entry as Alembic's question, and what apply needs to answer it. Worded for the instructor
  * (needs_wording.mjs, D-133): the place as they see it, content as it reads, no harness code; `ctx` is needsContext's
@@ -95,14 +99,18 @@ export const DIGEST_CHOICES = Object.freeze({
 export function digestQuestion(e, deliverableOf = new Map(), ctx = {}) {
   const c = { ...ctx, deliverableOf: ctx.deliverableOf || deliverableOf };
   const worded = wordEntry(e, c);
-  const choices = DIGEST_CHOICES[e.kind] || worded.choices || null;
-  const rec = e.recommendation == null ? null : String(e.recommendation).trim();
-  const recommended = choices && rec ? choices.find((x) => x.toLowerCase() === rec.toLowerCase() || rec.toLowerCase().startsWith(x.toLowerCase())) : undefined;
-  const ev = e.evidence || {};
   const text = String(worded.text).replace(/\s+/g, " ").trim();
+  // what an answer adopts or confirms is shown in full, first (audit round 1, HIGH-1); if it cannot all be shown, the
+  // question offers no one-click choice: the instructor reads the page (the links) and answers in their words
+  const shown = [text.length > LIMITS.text ? text : "", ...(worded.shown || [])].filter(Boolean).join("\n");
+  const fits = shown.length <= LIMITS.detail - 200;
+  const choices = fits ? DIGEST_CHOICES[e.kind] || worded.choices || null : null;
+  const rec = e.recommendation == null ? null : String(e.recommendation).trim();
+  const recommended = choices && rec ? choices.find((x) => isChoice(rec, x)) : undefined;
+  const ev = e.evidence || {};
   const places = [...new Set((e.chapters || []).filter((x) => x !== "package").map((x) => `“${c.titles?.get?.(x) || x}”`))];
   const detail = [
-    text.length > LIMITS.text ? text : "",
+    fits ? shown : "The full text is too long to show here: read it on the page (the link), and answer in your own words.",
     worded.detail,
     e.count > 1 ? `This comes up in ${e.count} places${places.length ? ` (${places.join(", ")})` : ""}; one answer settles them all.` : "",
     !recommended ? recommendationLine(e, c) : "",
@@ -141,7 +149,18 @@ export function needsContext(root, reader, chapters = manifestChapters(reader)) 
 }
 
 /** The harness's own words and codes for a question, kept for the assistant in the needs record (never handed in). */
-const assistantPart = (text, ...more) => ({ text: line(text, 2000), codes: assistantCodes(text, ...more) });
+// bounded (audit round 1, LOW-2): the record keeps 50 hand-ins of 20 questions within Alembic's per-file limit
+const ASSISTANT_LIMIT = 6000;
+function assistantPart(text, ...more) {
+  const part = { text: line(text, 2000), codes: assistantCodes(text, ...more) };
+  while (JSON.stringify(part).length > ASSISTANT_LIMIT) {
+    const [k, v] = Object.entries(part.codes).sort((a, b) => JSON.stringify(b[1]).length - JSON.stringify(a[1]).length)[0] || [];
+    if (k && v.length > 1) part.codes[k] = v.slice(0, Math.ceil(v.length / 2));
+    else if (part.text.length > 200) part.text = line(part.text, Math.max(200, part.text.length - 500));
+    else break;
+  }
+  return part;
+}
 
 const markers = (logText) => parseLog(logText).filter((r) => r.type === "contact" && r.party?.role === "harness" && r.payload?.moment === "host-answer" && r.payload?.host === "alembic");
 function readNeeds(root) { try { return JSON.parse(fs.readFileSync(recordFile(root, NEEDS_FILE), "utf8")); } catch { return { schemaVersion: 1, handins: [] }; } }
@@ -174,7 +193,7 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
   for (const r of parseLog(logText).filter((x) => x.type === "contact" && x.payload?.moment === "M5")) {
     const finding = `contact:${r.seq}`, basis = sha256(String(r.payload.question || ""));
     if (answered.has(`${finding}|${basis}`)) continue;
-    items.push({ question: { id: `m5.${r.seq}`, text: line(`${reasonLabel(r.payload.reason)}: ${sentence(fi(r.payload.question))}`, LIMITS.text), words: "optional" }, ref: { kind: "interrupt", finding, basis },
+    items.push({ question: { id: `m5.${r.seq}`, text: line(`${reasonLabel(r.payload.reason)}: ${sentence(forInstructor(r.payload.question, ctx, { from: "agent" }))}`, LIMITS.text), words: "optional" }, ref: { kind: "interrupt", finding, basis },
       assistant: { kind: "M5", ...assistantPart(`${String(r.payload.reason || "").replace(/-/g, " ")}: ${r.payload.question}`) } });
   }
 
@@ -200,10 +219,13 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
   for (const c of correctionsToShow(root)) {
     const lines = String(c.diff || "").split("\n"), side = (m) => lines.filter((l) => l.startsWith(`${m} `) || l === m).map((l) => l.slice(2)).join("\n");
     const span = changedSpan(side("-"), side("+")), src = c.evidence?.[0];
+    const full = `Before: “${plainText(side("-"))}”\nAfter: “${plainText(side("+"))}”\n${src ? `The source says: “${shorten(plainText(src.quote), 400)}”\n` : ""}To undo it, say why your text stands.`;
     items.push({ question: { id: `c.${String(c.id).replace(/[^A-Za-z0-9_.-]/g, "-").slice(0, 60)}`,
       text: line(`In ${placeOf(c.deliverable, ctx) || "the course"}, the assistant corrected “${span.was}” to “${span.now}”, because a source contradicted it. Keep the correction, or undo it?`, LIMITS.text),
-      choices: ["Keep", "Undo"], recommended: "Keep",
-      detail: block(`Before: “${shorten(plainText(side("-")), 600)}”\nAfter: “${shorten(plainText(side("+")), 600)}”\n${src ? `The source says: “${shorten(plainText(src.quote), 500)}”\n` : ""}To undo it, say why your text stands.`, LIMITS.detail),
+      // "Keep" adopts the corrected text: before and after in full (HIGH-1), then the source; when they cannot be shown
+      // in full, no one-click Keep (apply records any answer but "Undo" as kept)
+      ...(full.length <= LIMITS.detail ? { choices: ["Keep", "Undo"], recommended: "Keep", detail: full }
+        : { detail: block(`The text is too long to show here: read it on the page (the link). Answer "Keep" or "Undo".\n${src ? `The source says: “${shorten(plainText(src.quote), 400)}”\n` : ""}To undo it, say why your text stands.`, LIMITS.detail) }),
       refs: refsOf([c.deliverable]), words: "optional" },
       ref: { kind: "correction", correction: c.id }, assistant: { kind: "correction", unit: c.unit, ...assistantPart(`A correction was made in ${c.deliverable} (${c.unit}):\n${c.diff}${src ? `\nSource (${src.source})` : ""}`) } });
   }
