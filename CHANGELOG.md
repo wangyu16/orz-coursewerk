@@ -1,5 +1,22 @@
 # Coursewerk changelog
 
+## Unreleased
+
+- **"Needs you" questions read as the instructor's** (owner 2026-11-03, family STATUS D-133). The questions
+  `alembic_needs.mjs export` hands to Alembic were written for the harness: file and line ("concepts/course.md, line
+  67"), internal codes (D48, "spine", unit and plan-node ids) and raw markup (`{{sp[info] Objective 18.5a}}`). Now each
+  question names its place as the instructor sees it ("In the course map, the line “…”", "In the study guide for
+  “Gases”, the passage beginning “…”"), quotes content as it reads (orz markup, maths, chemistry and sub/superscripts
+  rendered to plain text), and says in one sentence what is wrong and in one what is suggested. The paths stay in the
+  question's refs (Alembic shows them as page names); the harness's own wording and codes are kept for the assistant
+  in the record of what was asked (`private/coursewerk/digest/alembic-needs.json`, each question's `assistant`), never
+  in the hand-in. One-click choices where an answer's meaning is Coursewerk's own: Apply the suggestion / Keep it /
+  Later for a reviewer's suggestion about the instructor's text (a knowledge concern or a clarification, where
+  "apply" is Coursewerk's acceptance), a plan line that may be wrong, and detail in the plan; Keep it / Drop it / Later
+  for a passage off the plan. Kinds with choices of their own keep them, and a digest choice still records the
+  instructor's words. Wording only: every finding, basis, key and answer means what it meant. The hand-in format is
+  unchanged. `req.host.alembic-needs-wording`.
+
 ## v1.0.5 (2026-11-07)
 
 - **Compact review records** (owner 2026-11-07: General Chemistry's verification records reached 56 MB, over the 50 MB

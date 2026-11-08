@@ -73,11 +73,11 @@ test("[req.host.alembic-needs-export] [req.host.alembic-needs-apply] the hand-in
   const kinds = qs.map((q) => q.id.split(".")[0]);
   assert.deepEqual([...new Set(kinds)], ["m5", "approve", "c", "d"], "interrupts, approvals, corrections, then the digest");
   const m5 = qs.find((q) => q.id.startsWith("m5.")), approve = qs.find((q) => q.id.startsWith("approve.")), corr = qs.find((q) => q.id.startsWith("c.")), dq = qs.find((q) => q.id.startsWith("d."));
-  assert.equal(m5.words, "optional"); assert.equal(m5.choices, undefined); assert.match(m5.text, /^missing input: Which edition/);
+  assert.equal(m5.words, "optional"); assert.equal(m5.choices, undefined); assert.match(m5.text, /^Missing input: Which edition/);
   assert.match(approve.id, /^approve\.le-chatelier\.[0-9a-f]{12}$/); assert.deepEqual(approve.choices, ["Approve", "Not yet"]);
   assert.equal(approve.words, "required"); assert.equal(approve.wordsSuggested, undefined, "an approval's words are never suggested");
   assert.deepEqual(approve.refs, ["concepts/le-chatelier.md", "assessment-support/le-chatelier.md"]);
-  assert.deepEqual(corr.choices, ["Keep", "Undo"]); assert.equal(corr.recommended, "Keep"); assert.match(corr.detail, /-75.*\n.*-92\.4/s); assert.deepEqual(corr.refs, ["study-guide/le-chatelier.md"]);
+  assert.deepEqual(corr.choices, ["Keep", "Undo"]); assert.equal(corr.recommended, "Keep"); assert.match(corr.detail, /[-−]75.*\n.*[-−]92\.4/s); assert.deepEqual(corr.refs, ["study-guide/le-chatelier.md"]);
   assert.ok(qs.filter((q) => q.id.startsWith("d.")).every((q) => q.wordsSuggested === undefined));
   assert.ok(log(p).some((x) => x.type === "checkpoint" && x.payload?.moment === "M4"), "with --model the digest is delivered");
   t.diagnostic(JSON.stringify({ m5, approve, corr, dq }));
@@ -89,7 +89,7 @@ test("[req.host.alembic-needs-export] [req.host.alembic-needs-apply] the hand-in
     answer(r.handin, corr.id, "Undo"), // no words: skipped
     answer(r.handin, corr.id, "Undo", { words: "Our lab manual uses -75 on purpose." }),
     answer(r.handin, m5.id, "The 2024 edition.", { via: "email" }),
-    answer(r.handin, dq.id, "Keep it in the spine.", { words: "Keep the attribution in the key term." }),
+    answer(r.handin, dq.id, "Keep it", { words: "Keep the attribution in the key term." }),
     { ...answer(r.handin, "d.other", "x"), changesetId: "someone-else" },
   ], decisions: [{ id: "x" }] };
   const a = applyChanges(p.root, changes);

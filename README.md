@@ -207,7 +207,9 @@ continues the one it held (JSON `{ok, problems}`; `format-contracts/deliverables
 `scripts/pack_job_release.mjs` builds the release.
 What needs the instructor reaches them only through the assistant's digest in Alembic's "Needs you":
 `scripts/alembic_needs.mjs export` writes the digest a job hands in (`alembic handin`), and `scripts/alembic_needs.mjs apply`
-records the instructor's answers from `alembic changes`, in their name and words.
+records the instructor's answers from `alembic changes`, in their name and words. The questions are written for the
+instructor (places as they see them, content as it reads, no paths or harness codes); the harness's own wording stays
+with the assistant in the record of what was asked.
 
 ## License
 

@@ -88,6 +88,9 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
      digest, at most 20 questions; it says how many wait for next time. It writes the questions to the hidden file
      `work/.alembic-needs.json`, and the record of what was asked to `private/coursewerk/digest/alembic-needs.json`,
      which the push carries. It makes a new changeset id unless you give one (`--changeset <id>`).
+   - The questions are worded for the instructor: places as they see them, content as it reads, no file paths, line
+     numbers or harness codes. When you need the harness's own wording (the file and line, the unit and plan-node ids,
+     the decision codes), read the question's `assistant` entry in `private/coursewerk/digest/alembic-needs.json`.
    - The hand-back puts the course back the way Alembic stores it. It adds new records only at the end of a file, or
      in new files. Alembic accepts nothing else, so never edit a record file yourself. If the hand-back refuses, do
      not push. Report its message instead.

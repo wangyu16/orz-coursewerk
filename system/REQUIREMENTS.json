@@ -3786,7 +3786,7 @@
       "tiers": [
         "T1"
       ],
-      "statement": "What needs the instructor reaches them on Alembic only through the assistant's digest (owner 2026-11-02; Alembic agent-runtime-v3 §22): alembic_needs.mjs export writes Alembic's hand-in file ({changesetId, digest: {questions}}) from Coursewerk's own state, in this order and capped at 20 (it says how many wait for next time): open interrupts (interrupt findings and M5 contacts not yet answered; free text, words optional); plan approvals ready by Coursewerk's own precondition (choices Approve / Not yet, words required, never suggested; the question id binds the content hash; refs the concept map and assessment guide); corrections not yet answered (Keep / Undo, Keep recommended, the diff as detail); and the checkpoint digest's entries within the instructor's digest cap (choices only where Coursewerk has a convention for the kind, with Later; recommended only when the recommendation is one of them; words required for a choice; no suggested words). Every question keeps Alembic's limits (id, one-line text up to 500, 2 to 6 unique choices up to 120, detail up to 2000, up to 10 refs, words rules); what was asked is kept in private/coursewerk/digest/alembic-needs.json, and with --model the digest is delivered as a checkpoint (corrections stay open until answered). Without --changeset the CLI makes a new id.",
+      "statement": "What needs the instructor reaches them on Alembic only through the assistant's digest (owner 2026-11-02; Alembic agent-runtime-v3 §22): alembic_needs.mjs export writes Alembic's hand-in file ({changesetId, digest: {questions}}) from Coursewerk's own state, in this order and capped at 20 (it says how many wait for next time): open interrupts (interrupt findings and M5 contacts not yet answered; free text, words optional); plan approvals ready by Coursewerk's own precondition (choices Approve / Not yet, words required, never suggested; the question id binds the content hash; refs the concept map and assessment guide); corrections not yet answered (Keep / Undo, Keep recommended, the diff as detail); and the checkpoint digest's entries within the instructor's digest cap (choices only where Coursewerk has a convention for the kind, with Later — the kind's own, else the wording's Apply the suggestion / Keep it / Later or Keep it / Drop it / Later where the answer's meaning is Coursewerk's own (req.host.alembic-needs-wording); recommended only when the recommendation is one of them; words required for a choice; no suggested words). Every question keeps Alembic's limits (id, one-line text up to 500, 2 to 6 unique choices up to 120, detail up to 2000, up to 10 refs, words rules); what was asked is kept in private/coursewerk/digest/alembic-needs.json, and with --model the digest is delivered as a checkpoint (corrections stay open until answered). Without --changeset the CLI makes a new id.",
       "source": "owner 2026-11-02 (instructor needs only through Alembic's Needs you, never as a Publish gate); Alembic@043b89d",
       "status": "closed",
       "evidence": {
@@ -3807,6 +3807,21 @@
       "evidence": {
         "T1": [
           "tests/alembic-needs.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.host.alembic-needs-wording",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Every question alembic_needs.mjs export hands to Alembic is written for the instructor, not the harness (owner 2026-11-03, family STATUS D-133; scripts/lib/core/needs_wording.mjs): its text, detail and choices carry no file path, no line number, no harness code (decision codes such as D48, unit ids, plan-node ids, 'spine', commands) and no raw markup. A place is named as the instructor sees it (the course map; the concept map, assessment guide, study guide, slides or practice questions for a chapter by its title; the passage, question or answer by its first words; a plan-node id as the plan's own words); content is quoted as it reads (orz markup, emphasis, links and plan annotations gone; maths, mhchem and sub/superscripts rendered to plain text); a reviewer's words are only rendered, never stripped of words ('spine', V1, M2 are the subject's own). Each digest kind says in one sentence what is wrong and in one what is suggested. The paths stay in the question's refs; the harness's own wording and its codes (files, file:line, nodes, units, decisions, commands) are kept for the assistant as the question's `assistant` in private/coursewerk/digest/alembic-needs.json, never in the hand-in, whose fields stay those of Alembic agent-runtime-v3 §22. One-click choices are offered only where an answer's meaning is Coursewerk's own: Apply the suggestion / Keep it / Later for a knowledge concern or clarification with a suggestion ('apply' is ms8-verdicts' acceptance), a plan line a review found possibly wrong with a suggestion, and detail in the plan; Keep it / Drop it / Later for a passage off the plan; kinds with Coursewerk's own choices keep them; a reviewer's suggestion is never pre-chosen. Wording only: findings, bases, keys, what apply records and the meaning of every answer are unchanged.",
+      "source": "owner 2026-11-03 (family STATUS D-133); Alembic@97b845a (agent-runtime-v3 §22, needs-you view)",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/alembic-needs-wording.test.mjs"
         ]
       }
     },

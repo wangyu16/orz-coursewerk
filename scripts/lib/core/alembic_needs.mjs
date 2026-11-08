@@ -11,6 +11,9 @@
 //
 // What was asked is kept with the package (private/coursewerk/digest/alembic-needs.json), so an answer that arrives in
 // a later job is applied to exactly the question that was asked — an approval only while the plan is the one asked about.
+// Every question is worded for the instructor (needs_wording.mjs; STATUS D-133, req.host.alembic-needs-wording): places
+// as they see them, content as it reads, no path, line or harness code. The harness's own wording and codes are kept in
+// that record, as each question's `assistant`, for the assistant — never in the hand-in.
 import fs from "node:fs";
 import { sha256 } from "../records/canonical.mjs";
 import { appendLogRecord, parseLog, readLogText } from "../records/log.mjs";
@@ -22,9 +25,11 @@ import { approvalPrecondition } from "./spine_review.mjs";
 import { chapterStates, unitInfoOf } from "./workflow.mjs";
 import { answerDigest, answeredBases, answerKeyOf, basisOf, buildDigest, deliverDigest, DEFAULT_CAP, isAnswered } from "./digest.mjs";
 import { currentVersion } from "./versions.mjs";
-import { COURSE_MAP, spinePaths } from "./spine.mjs";
+import { COURSE_MAP, nodeIndex, parseSpine, spinePaths } from "./spine.mjs";
 import { loggedDigestCap } from "../records/config.mjs";
 import { correctionsToShow, revertCorrection } from "../verify/verdicts.mjs";
+import { deliverablesOf, readSidecar } from "./units_index.mjs";
+import { assistantCodes, changedSpan, forInstructor, placeOf, plainText, reasonLabel, recommendationLine, sentence, shorten, wordEntry } from "./needs_wording.mjs";
 
 // ---- Alembic's limits for a hand-in (agent-runtime-v3 §22) -------------------------------------------------------
 export const LIMITS = Object.freeze({ questions: 20, text: 500, choice: 120, minChoices: 2, maxChoices: 6, detail: 2000, refs: 10, wordsSuggested: 500 });
@@ -69,7 +74,9 @@ const refsOf = (paths) => [...new Set(paths.filter(Boolean))].slice(0, LIMITS.re
 /**
  * The choices Coursewerk itself gives an answer to a digest entry of each kind (digest.mjs answerDigest: "confirm"
  * records a confirmation, "keep" keeps the instructor's edited text or a disputed fact as written, "accept as mine"
- * records authorship, "later" defers; the kinds' own notes ask exactly these). A kind not listed is answered in words.
+ * records authorship, "later" defers; the kinds' own notes ask exactly these). A kind not listed takes the wording's
+ * choices where an answer's meaning is Coursewerk's own (needs_wording.mjs wordEntry: "Apply the suggestion" is
+ * ms8-verdicts' acceptance), else it is answered in words.
  */
 export const DIGEST_CHOICES = Object.freeze({
   "exercise-data-confirm": ["Confirm", "Later"],
@@ -80,29 +87,61 @@ export const DIGEST_CHOICES = Object.freeze({
   "unit-unknown-authorship": ["Accept as mine", "Later"],
 });
 
-/** One digest entry as Alembic's question, and what apply needs to answer it. */
-export function digestQuestion(e, deliverableOf = new Map()) {
-  const choices = DIGEST_CHOICES[e.kind] || null;
+/**
+ * One digest entry as Alembic's question, and what apply needs to answer it. Worded for the instructor
+ * (needs_wording.mjs, D-133): the place as they see it, content as it reads, no harness code; `ctx` is needsContext's
+ * (without it, the place is said from the refs alone). The harness's own wording goes to the assistant (assistantPart).
+ */
+export function digestQuestion(e, deliverableOf = new Map(), ctx = {}) {
+  const c = { ...ctx, deliverableOf: ctx.deliverableOf || deliverableOf };
+  const worded = wordEntry(e, c);
+  const choices = DIGEST_CHOICES[e.kind] || worded.choices || null;
   const rec = e.recommendation == null ? null : String(e.recommendation).trim();
-  const recommended = choices && rec ? choices.find((c) => c.toLowerCase() === rec.toLowerCase() || rec.toLowerCase().startsWith(c.toLowerCase())) : undefined;
+  const recommended = choices && rec ? choices.find((x) => x.toLowerCase() === rec.toLowerCase() || rec.toLowerCase().startsWith(x.toLowerCase())) : undefined;
   const ev = e.evidence || {};
+  const text = String(worded.text).replace(/\s+/g, " ").trim();
+  const places = [...new Set((e.chapters || []).filter((x) => x !== "package").map((x) => `“${c.titles?.get?.(x) || x}”`))];
   const detail = [
-    String(e.question ?? "").length > LIMITS.text ? String(e.question) : "",
-    e.count > 1 ? `${e.count} places raise this (chapters: ${e.chapters.join(", ")}).` : e.chapters?.length ? `Chapter: ${e.chapters.join(", ")}.` : "",
-    ev.quote ? `The text: "${ev.quote}"` : "", ev.suggestion ? `Suggested: "${ev.suggestion}"` : "",
-    ev.rule && ev.rule !== e.question ? `Check: ${ev.rule}` : "",
-    rec && !recommended ? `Recommended${e.recommendedBy ? ` (${e.recommendedBy})` : ""}: ${rec}` : "",
-    e.deferredBefore ? "Asked before and deferred." : "",
+    text.length > LIMITS.text ? text : "",
+    worded.detail,
+    e.count > 1 ? `This comes up in ${e.count} places${places.length ? ` (${places.join(", ")})` : ""}; one answer settles them all.` : "",
+    !recommended ? recommendationLine(e, c) : "",
+    e.deferredBefore ? "You chose Later last time." : "",
   ].filter(Boolean).join("\n");
   return {
-    id: qid("d", e.key), text: line(e.question, LIMITS.text),
+    id: qid("d", e.key), text: line(text, LIMITS.text),
     ...(choices ? { choices, ...(recommended ? { recommended } : {}) } : {}),
     ...(detail ? { detail: block(detail, LIMITS.detail) } : {}),
-    refs: refsOf((e.units || []).map((u) => deliverableOf.get(u)).concat(ev.file || [])),
+    refs: refsOf((e.units || []).map((u) => c.deliverableOf.get(u)).concat(ev.file || [])),
     // an answer quotes the instructor's words (answerDigest); a free-text answer is itself their words
     words: choices ? "required" : "optional",
   };
 }
+
+/**
+ * What the wording reads (D-133): chapter titles, the plan's nodes (id → its words) and each unit's place, form and
+ * text. Read-only, from the package as it stands; a part that cannot be read is simply left out.
+ */
+export function needsContext(root, reader, chapters = manifestChapters(reader)) {
+  const titles = new Map();
+  try { for (const c of manifestUnits(JSON.parse(reader.text("alembic.json")))) if (c.title) titles.set(c.slug, String(c.title)); } catch { /* no titles: slugs read as words */ }
+  let nodes = new Map(); try { nodes = nodeIndex(parseSpine(reader, chapters)); } catch { nodes = new Map(); }
+  const units = new Map(), deliverableOf = new Map();
+  let rels = []; try { rels = deliverablesOf(reader); } catch { rels = []; }
+  for (const rel of rels) {
+    let lines = null;
+    for (const u of readSidecar(root, rel)?.units || []) {
+      deliverableOf.set(u.id, rel);
+      const [a, b] = u.locator?.lines || [];
+      if (lines === null) { try { lines = String(reader.text(rel) ?? "").split("\n"); } catch { lines = []; } }
+      units.set(u.id, { deliverable: rel, form: u.form, text: a ? lines.slice(a - 1, b || a).join("\n") : "" });
+    }
+  }
+  return { titles, nodes, units, deliverableOf };
+}
+
+/** The harness's own words and codes for a question, kept for the assistant in the needs record (never handed in). */
+const assistantPart = (text, ...more) => ({ text: line(text, 2000), codes: assistantCodes(text, ...more) });
 
 const markers = (logText) => parseLog(logText).filter((r) => r.type === "contact" && r.party?.role === "harness" && r.payload?.moment === "host-answer" && r.payload?.host === "alembic");
 function readNeeds(root) { try { return JSON.parse(fs.readFileSync(recordFile(root, NEEDS_FILE), "utf8")); } catch { return { schemaVersion: 1, handins: [] }; } }
@@ -120,19 +159,23 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
   const info = unitInfoOf(root, reader);
   const deliverableOf = new Map([...info].map(([k, v]) => [k, v.deliverable])), hash = new Map([...info].map(([k, v]) => [k, v.contentHash]));
   const answered = answeredBases(root);
-  const items = []; // [{ question, ref }]
+  const ctx = needsContext(root, reader, chapters);
+  const fi = (t) => forInstructor(t, ctx);
+  const items = []; // [{ question, ref, assistant }]
 
   // 1. interrupts: what cannot wait (D14) — interrupt findings, and the agent's M5 contacts, not yet answered
   for (const f of gate.findings.filter((x) => x.route === "interrupt" && !["resolved", "answered"].includes(x.status) && !isAnswered(answered, x, hash))) {
-    const ev = f.evidence || {};
-    items.push({ question: { id: qid("i", f.id), text: line(`${f.interruptReason ? `${f.interruptReason.replace(/-/g, " ")}: ` : ""}${ev.what || ev.note || ev.rule || f.kind}`, LIMITS.text),
-      ...(ev.detail || ev.quote ? { detail: block(ev.detail || ev.quote, LIMITS.detail) } : {}), refs: refsOf((f.units || []).map((u) => deliverableOf.get(u)).concat(ev.file || [])), words: "optional" },
-      ref: { kind: "interrupt", finding: answerKeyOf(f), basis: basisOf(f, hash) } });
+    const ev = f.evidence || {}, raw = `${f.interruptReason ? `${f.interruptReason.replace(/-/g, " ")}: ` : ""}${ev.what || ev.note || ev.rule || f.kind}`;
+    const said = fi(ev.what || ev.note || ev.rule || f.kind.replace(/-/g, " ")), more = typeof ev.detail === "string" ? fi(ev.detail) : ev.quote ? `The text: “${shorten(plainText(ev.quote), 400)}”` : "";
+    items.push({ question: { id: qid("i", f.id), text: line(`${f.interruptReason ? `${reasonLabel(f.interruptReason)}: ` : ""}${sentence(said.replace(/^\p{Ll}/u, (x) => x.toUpperCase()))}`, LIMITS.text),
+      ...(more ? { detail: block(more, LIMITS.detail) } : {}), refs: refsOf((f.units || []).map((u) => deliverableOf.get(u)).concat(ev.file || [])), words: "optional" },
+      ref: { kind: "interrupt", finding: answerKeyOf(f), basis: basisOf(f, hash) }, assistant: { kind: f.kind, units: f.units || [], ...assistantPart(raw, typeof ev.detail === "string" ? ev.detail : "") } });
   }
   for (const r of parseLog(logText).filter((x) => x.type === "contact" && x.payload?.moment === "M5")) {
     const finding = `contact:${r.seq}`, basis = sha256(String(r.payload.question || ""));
     if (answered.has(`${finding}|${basis}`)) continue;
-    items.push({ question: { id: `m5.${r.seq}`, text: line(`${String(r.payload.reason || "").replace(/-/g, " ")}: ${r.payload.question}`, LIMITS.text), words: "optional" }, ref: { kind: "interrupt", finding, basis } });
+    items.push({ question: { id: `m5.${r.seq}`, text: line(`${reasonLabel(r.payload.reason)}: ${sentence(fi(r.payload.question))}`, LIMITS.text), words: "optional" }, ref: { kind: "interrupt", finding, basis },
+      assistant: { kind: "M5", ...assistantPart(`${String(r.payload.reason || "").replace(/-/g, " ")}: ${r.payload.question}`) } });
   }
 
   // 2. plan approvals ready by Coursewerk's own precondition (the same as `coursewerk.mjs approve`, without --without-review)
@@ -145,20 +188,24 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
     const title = ch ? (() => { try { return manifestUnits(JSON.parse(reader.text("alembic.json"))).find((c) => c.slug === ch)?.title || ch; } catch { return ch; } })() : "the course";
     const { map, guide } = ch ? spinePaths(ch) : { map: COURSE_MAP, guide: null };
     const why = s.change?.kind === "unapproved" ? "Not approved before." : s.change?.reasons?.[0]?.why ? `Changed since the last approval: ${s.change.reasons[0].why}.` : "Changed since the last approval.";
-    items.push({ question: { id: `approve.${(ch || "course").slice(0, 42)}.${s.contentHash.slice(0, 12)}`, text: line(ch ? `Approve the plan for "${title}" (its concept map and assessment guide)?` : "Approve the course map?", LIMITS.text),
+    items.push({ question: { id: `approve.${(ch || "course").slice(0, 42)}.${s.contentHash.slice(0, 12)}`, text: line(ch ? `Approve the plan for “${title}” (its concept map and assessment guide)?` : "Approve the course map?", LIMITS.text),
       choices: ["Approve", "Not yet"],
-      detail: block(`Covers: ${s.covers.join(", ")}.\nVersion ${currentVersion(logText, scope)}. ${why}\nAn approval quotes your words; read the plan first (the links).`, LIMITS.detail),
+      detail: block(`${fi(why)}${currentVersion(logText, scope) > 1 ? ` This is version ${currentVersion(logText, scope)} of the plan.` : ""}\nAn approval quotes your words; read the plan first (the links).`, LIMITS.detail),
       refs: refsOf([map, guide]), words: "required" },
-      ref: { kind: "approval", chapter: ch, contentHash: s.contentHash, courseSliceHash: s.courseSliceHash ?? null } });
+      ref: { kind: "approval", chapter: ch, contentHash: s.contentHash, courseSliceHash: s.courseSliceHash ?? null },
+      assistant: { kind: "approval", scope, ...assistantPart(`Covers: ${s.covers.join(", ")}. Version ${currentVersion(logText, scope)}. ${why}`) } });
   }
 
   // 3. corrections the agent made, to keep or undo (outside the digest's budget, as in the checkpoint digest)
   for (const c of correctionsToShow(root)) {
-    items.push({ question: { id: `c.${String(c.id).replace(/[^A-Za-z0-9_.-]/g, "-").slice(0, 60)}`, text: line(`A correction was made in ${c.deliverable}: keep it, or undo it?`, LIMITS.text),
+    const lines = String(c.diff || "").split("\n"), side = (m) => lines.filter((l) => l.startsWith(`${m} `) || l === m).map((l) => l.slice(2)).join("\n");
+    const span = changedSpan(side("-"), side("+")), src = c.evidence?.[0];
+    items.push({ question: { id: `c.${String(c.id).replace(/[^A-Za-z0-9_.-]/g, "-").slice(0, 60)}`,
+      text: line(`In ${placeOf(c.deliverable, ctx) || "the course"}, the assistant corrected “${span.was}” to “${span.now}”, because a source contradicted it. Keep the correction, or undo it?`, LIMITS.text),
       choices: ["Keep", "Undo"], recommended: "Keep",
-      detail: block(`${c.diff}${c.evidence?.[0] ? `\nSource (${c.evidence[0].source}): "${c.evidence[0].quote}"` : ""}\nTo undo it, say why your text stands.`, LIMITS.detail),
+      detail: block(`Before: “${shorten(plainText(side("-")), 600)}”\nAfter: “${shorten(plainText(side("+")), 600)}”\n${src ? `The source says: “${shorten(plainText(src.quote), 500)}”\n` : ""}To undo it, say why your text stands.`, LIMITS.detail),
       refs: refsOf([c.deliverable]), words: "optional" },
-      ref: { kind: "correction", correction: c.id } });
+      ref: { kind: "correction", correction: c.id }, assistant: { kind: "correction", unit: c.unit, ...assistantPart(`A correction was made in ${c.deliverable} (${c.unit}):\n${c.diff}${src ? `\nSource (${src.source})` : ""}`) } });
   }
 
   // 4. the checkpoint digest, within the instructor's digest cap and what is left of the 20
@@ -166,7 +213,8 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
   const d = buildDigest(root, gate.findings, info, { cap: Math.min(Number(loggedDigestCap(logText) || DEFAULT_CAP), room), corrections: [] });
   let prev = null; try { prev = JSON.parse(fs.readFileSync(recordFile(root, DIGEST_FILE), "utf8")); } catch { prev = null; }
   for (const e of d.entries) { const p = prev?.entries?.find((x) => x.key === e.key && String(x.recommendedBy || "").startsWith("agent")); if (p) { e.recommendation = p.recommendation; e.recommendedBy = p.recommendedBy; } }
-  for (const e of d.entries) items.push({ question: digestQuestion(e, deliverableOf), ref: { kind: "digest", entry: e } });
+  for (const e of d.entries) items.push({ question: digestQuestion(e, deliverableOf, ctx), ref: { kind: "digest", entry: e },
+    assistant: { kind: e.kind, module: e.module, units: e.units || [], ...assistantPart(String(e.question ?? ""), e.evidence?.rule, e.recommendation, e.evidence?.file && e.evidence?.line ? `${e.evidence.file} line ${e.evidence.line}` : "") } });
 
   const shown = items.slice(0, LIMITS.questions), left = items.length - shown.length + d.deferred.count;
   const handin = { changesetId, digest: { questions: shown.map((x) => x.question) } };
@@ -174,7 +222,7 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
   if (problems.length) throw new Error(`the hand-in would break Alembic's limits: ${problems.slice(0, 3).join("; ")}`);
 
   const needs = readNeeds(root);
-  needs.handins = [...(needs.handins || []).filter((h) => h.changesetId !== changesetId), { changesetId, at, questions: Object.fromEntries(shown.map((x) => [x.question.id, { ...x.ref, choices: x.question.choices || null, words: x.question.words }])) }].slice(-KEEP_HANDINS);
+  needs.handins = [...(needs.handins || []).filter((h) => h.changesetId !== changesetId), { changesetId, at, questions: Object.fromEntries(shown.map((x) => [x.question.id, { ...x.ref, choices: x.question.choices || null, words: x.question.words, ...(x.assistant ? { assistant: x.assistant } : {}) }])) }].slice(-KEEP_HANDINS);
   fs.mkdirSync(recordFile(root, "private/coursewerk/digest"), { recursive: true });
   fs.writeFileSync(recordFile(root, NEEDS_FILE), JSON.stringify(needs, null, 2) + "\n");
   fs.writeFileSync(recordFile(root, DIGEST_FILE), JSON.stringify({ at, ...d }, null, 2) + "\n");
