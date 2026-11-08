@@ -141,10 +141,13 @@ test("[req.host.alembic-needs-export] Alembic's limits: at most 20 questions, th
   assert.ok(r.handin.digest.questions.every((q) => q.text.length <= LIMITS.text && q.words === "optional" && q.choices === undefined), "free text: the answer is the words");
   // a kind Coursewerk answers by choice
   const e = { key: "k", kind: "exercise-data-confirm", count: 1, chapters: ["le-chatelier"], units: ["u-1"], question: "u-1: the values read as invented exercise data — confirm them?", evidence: { quote: "x = 3 mol" }, recommendation: "confirm", recommendedBy: "check" };
-  const q = digestQuestion(e, new Map([["u-1", "practice/le-chatelier.md"]]));
+  // the passage the answer confirms is shown whole (P2): the context reads it
+  const ctx = { units: new Map([["u-1", { deliverable: "practice/le-chatelier.md", form: "question", text: "Take x = 3 mol." }]]) };
+  const q = digestQuestion(e, new Map([["u-1", "practice/le-chatelier.md"]]), ctx);
   assert.deepEqual(q.choices, ["Confirm", "Later"]); assert.equal(q.recommended, "Confirm"); assert.equal(q.words, "required"); assert.equal(q.wordsSuggested, undefined);
   assert.deepEqual(q.refs, ["practice/le-chatelier.md"]);
-  assert.equal(digestQuestion({ ...e, kind: "instructor-edit-unasked", recommendation: "revert" }).recommended, "Revert");
+  assert.equal(digestQuestion({ ...e, kind: "instructor-edit-unasked", recommendation: "revert" }, new Map(), ctx).recommended, "Revert");
+  assert.equal(digestQuestion(e).choices, undefined, "a passage the question cannot show is confirmed only in the instructor's words, from the page");
   assert.equal(digestQuestion({ ...e, kind: "fact-disputed", recommendation: "revise: say -92.4" }).recommended, undefined, "a recommendation that is no choice goes in the detail");
   // the limits themselves
   const bad = { changesetId: "x", digest: { questions: [{ id: "a b", text: "two\nlines", choices: ["A"], recommended: "B", wordsSuggested: "w" }, { id: "a b", text: "ok" }] } };

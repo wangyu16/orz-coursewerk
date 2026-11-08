@@ -21,6 +21,21 @@
   mhchem typeset them (NO₃⁻, NH₄⁺, Na⁺(aq), J K⁻¹ mol⁻¹); the agent's and a reviewer's own words keep every word (only
   exact harness codes go); a concern without a suggestion is worded neutrally; a suggestion also offers "Change it
   differently", with the instructor's words.
+  After a second audit:
+  - **Mechanism change (narrow, fail-safe):** `alembic_needs.mjs apply` records a correction as kept only on an exact
+    "Keep" and undone only on an exact "Undo", and a plan approval only on an exact "Approve" or "Not yet". Any other
+    answer is skipped and asked again, never silently kept: an answer Coursewerk does not recognise never counts as keep,
+    accept or confirm. Before, any correction answer other than "Undo" was recorded as kept. A correction always offers
+    Keep / Undo.
+  - **What an answer binds is shown.** "Confirm", "Keep as written", "Accept as mine" and keeping an unasked edit bind
+    the whole passage, so the question shows each whole passage. If it cannot (too long, or unreadable), the question
+    offers no one-click choice and says the page holds the exact text. A reviewer's suggestion, which no page holds, is
+    always shown in full. Applying a suggestion and claiming authorship are never pre-chosen. A recommendation's own words
+    are shown whenever they say more than the choice.
+  - Maths keeps its accents and enclosures (x̄, Ĥ, F⃗, ν̃, Å, struck and boxed terms), reads arrow conditions top
+    first, uses orz-markdown's guards (a formula too long, or one that defines macros, reads as its source, as does one
+    KaTeX rejects) and checks it uses orz-markdown's KaTeX. The agent's and a reviewer's own words keep values that
+    look like codes ("(D65)"), amounts ("$25 … $40") and file names. The hidden copy's unit list is bounded.
 
 ## v1.0.5 (2026-11-07)
 

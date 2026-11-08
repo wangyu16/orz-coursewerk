@@ -97,7 +97,7 @@ function digestFindings(p) {
     F("ms7-consistency", "ambiguous-answer", [U2], { type: "judgment", note: `${SG1}: the answer states two different values of one dimension (0.50 M; 1.5 M) — it cannot be compared and a student cannot tell which is the answer. ${U2} (answer) at ${SG1}: "K_c = 0.50 M or 1.5 M" Leave exactly one value as the answer, or move the other into the question or an explanation outside the answer.` }),
     F("ms3-format", "no-photograph", [], { type: "judgment", note: "chapter le-chatelier has no real photograph; record a reviewed, substantive not-used rationale or include a rights-cleared photo" }),
     F("ms5-carriers", "carrier-build-failed", [], { type: "judgment", note: "slides/chemical-equilibrium.md did not build with orz-slides: line 12: unclosed {{nyml}} block" }),
-    spineCritique({ kind: "level-mismatch", ids: [], note: "objective.chemical-equilibrium.define-equilibrium asks only to define, but guide.chemical-equilibrium.evidence-design tests analysis (D31); the plan may need a higher objective.", recommendation: "raise the objective to explain", basis: "b" }),
+    spineCritique({ kind: "level-mismatch", ids: [], note: "objective.chemical-equilibrium.define-equilibrium asks only to define, but guide.chemical-equilibrium.evidence-design tests analysis; the plan may need a higher objective.", recommendation: "raise the objective to explain", basis: "b" }),
   ];
 }
 
@@ -110,7 +110,7 @@ test("[req.host.alembic-needs-wording] every kind of question reads as the instr
   appendLogRecord(p.root, { type: "steering", party: I, payload: { event: "digest-cap", cap: 50, instructorWords: "Up to fifty." } });
   openVersionCarrying(p.root, p.reader, { scopes: ["chapter:le-chatelier"], reason: "objectives split", instructorWords: "Open version 2: the objectives split." }, I);
   await plantCorrection(p);
-  appendLogRecord(p.root, { type: "contact", party: AGENT, payload: { moment: "M5", reason: "spine-change-request", question: "concepts/course.md, line 67 lists {{sp[info] Objective 18.5a}} under the wrong chapter (D48): move it to le-chatelier (objective.le-chatelier.predict-shift)?" } });
+  appendLogRecord(p.root, { type: "contact", party: AGENT, payload: { moment: "M5", reason: "spine-change-request", question: "concepts/course.md, line 67 lists {{sp[info] Objective 18.5a}} under the wrong chapter: move it to le-chatelier (objective.le-chatelier.predict-shift)?" } });
   const interrupt = makeFinding({ module: "ms2-rights", kind: "rights-source-blocker", units: [], statusClass: "obligation", route: "interrupt", interruptReason: "rights-blocker", basis: "b",
     evidence: { type: "missing", what: "inputs/sources/openstax-13-3.md has no captured rights evidence (run node scripts/capture_rights_evidence.mjs --source openstax-13-3)" } });
   const all = digestFindings(p);
@@ -145,7 +145,7 @@ test("[req.host.alembic-needs-wording] every kind of question reads as the instr
   assert.ok(dis.codes.files.includes("concepts/chemical-equilibrium.md") && dis.codes.decisions.includes("D48") && dis.codes.lines.length, JSON.stringify(dis.codes));
   assert.ok(harnessTraces(dis.text).length > 0, "the harness's own wording is what the check finds");
   const m5 = rec[one("M5").id].assistant;
-  assert.deepEqual(m5.codes.lines, ["concepts/course.md:67"]); assert.deepEqual(m5.codes.nodes, ["objective.le-chatelier.predict-shift"]); assert.deepEqual(m5.codes.decisions, ["D48"]);
+  assert.deepEqual(m5.codes.lines, ["concepts/course.md:67"]); assert.deepEqual(m5.codes.nodes, ["objective.le-chatelier.predict-shift"]);
   assert.deepEqual(rec[one("knowledge-concern", (q) => q.choices).id].assistant.units, [U1]);
   assert.ok(rec[one("correction").id].assistant.codes.units.includes(PLANTED));
   assert.ok(rec[one("rights-source-blocker").id].assistant.codes.commands[0].startsWith("node scripts/capture_rights_evidence.mjs"));

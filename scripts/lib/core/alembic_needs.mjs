@@ -102,18 +102,25 @@ export function digestQuestion(e, deliverableOf = new Map(), ctx = {}) {
   const text = String(worded.text).replace(/\s+/g, " ").trim();
   // what an answer adopts or confirms is shown in full, first (audit round 1, HIGH-1); if it cannot all be shown, the
   // question offers no one-click choice: the instructor reads the page (the links) and answers in their words
-  const shown = [text.length > LIMITS.text ? text : "", ...(worded.shown || [])].filter(Boolean).join("\n");
-  const fits = shown.length <= LIMITS.detail - 200;
+  // P2 (rounds 1, 2): what is on no page (a suggestion, a removed passage) always first and in full; then the texts the
+  // page holds. Only when all of it is shown, and every unit the answer binds could be read, is a one-click choice offered;
+  // otherwise the question says the page holds the exact text, and the answer is in the instructor's words
+  const off = (worded.shown || []).filter((x) => !x.page).map((x) => x.text), on = (worded.shown || []).filter((x) => x.page).map((x) => x.text);
+  const head = [text.length > LIMITS.text ? text : "", ...off].filter(Boolean).join("\n");
+  const shown = [head, ...on].filter(Boolean).join("\n");
+  const fits = shown.length <= LIMITS.detail - 200 && !worded.unseen;
   const choices = fits ? DIGEST_CHOICES[e.kind] || worded.choices || null : null;
   const rec = e.recommendation == null ? null : String(e.recommendation).trim();
-  const recommended = choices && rec ? choices.find((x) => isChoice(rec, x)) : undefined;
+  // never pre-chosen: applying a reviewer's suggestion, or claiming authorship (round 2, MEDIUM-D, MEDIUM-F)
+  const recommended = choices && rec ? choices.find((x) => isChoice(rec, x) && !/^(?:apply|accept as mine)\b/i.test(x)) : undefined;
   const ev = e.evidence || {};
   const places = [...new Set((e.chapters || []).filter((x) => x !== "package").map((x) => `“${c.titles?.get?.(x) || x}”`))];
   const detail = [
-    fits ? shown : "The full text is too long to show here: read it on the page (the link), and answer in your own words.",
+    fits ? shown : [head, "The whole passage is too long to show here (or could not be read): it is on the page (the link), and your answer applies to it exactly as it reads there. Answer in your own words."].filter(Boolean).join("\n"),
     worded.detail,
     e.count > 1 ? `This comes up in ${e.count} places${places.length ? ` (${places.join(", ")})` : ""}; one answer settles them all.` : "",
-    !recommended ? recommendationLine(e, c) : "",
+    // the recommendation's own words whenever they say more than the choice pre-chosen (MEDIUM-F)
+    !recommended || rec.toLowerCase() !== recommended.toLowerCase() ? recommendationLine(e, c) : "",
     e.deferredBefore ? "You chose Later last time." : "",
   ].filter(Boolean).join("\n");
   return {
@@ -224,8 +231,10 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
       text: line(`In ${placeOf(c.deliverable, ctx) || "the course"}, the assistant corrected “${span.was}” to “${span.now}”, because a source contradicted it. Keep the correction, or undo it?`, LIMITS.text),
       // "Keep" adopts the corrected text: before and after in full (HIGH-1), then the source; when they cannot be shown
       // in full, no one-click Keep (apply records any answer but "Undo" as kept)
-      ...(full.length <= LIMITS.detail ? { choices: ["Keep", "Undo"], recommended: "Keep", detail: full }
-        : { detail: block(`The text is too long to show here: read it on the page (the link). Answer "Keep" or "Undo".\n${src ? `The source says: “${shorten(plainText(src.quote), 400)}”\n` : ""}To undo it, say why your text stands.`, LIMITS.detail) }),
+      // when they cannot be shown in full, the page holds the corrected passage exactly as Keep leaves it (it is applied
+      // there): the question says so, and Keep / Undo stay the only answers (round 2, HIGH-B)
+      choices: ["Keep", "Undo"], recommended: "Keep",
+      detail: full.length <= LIMITS.detail ? full : block(`The corrected passage is too long to show here: it is on the page (the link), exactly as Keep leaves it. The change: “${span.was}” → “${span.now}”.\n${src ? `The source says: “${shorten(plainText(src.quote), 400)}”\n` : ""}To undo it, say why your text stands.`, LIMITS.detail),
       refs: refsOf([c.deliverable]), words: "optional" },
       ref: { kind: "correction", correction: c.id }, assistant: { kind: "correction", unit: c.unit, ...assistantPart(`A correction was made in ${c.deliverable} (${c.unit}):\n${c.diff}${src ? `\nSource (${src.source})` : ""}`) } });
   }
@@ -236,7 +245,8 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
   let prev = null; try { prev = JSON.parse(fs.readFileSync(recordFile(root, DIGEST_FILE), "utf8")); } catch { prev = null; }
   for (const e of d.entries) { const p = prev?.entries?.find((x) => x.key === e.key && String(x.recommendedBy || "").startsWith("agent")); if (p) { e.recommendation = p.recommendation; e.recommendedBy = p.recommendedBy; } }
   for (const e of d.entries) items.push({ question: digestQuestion(e, deliverableOf, ctx), ref: { kind: "digest", entry: e },
-    assistant: { kind: e.kind, module: e.module, units: e.units || [], ...assistantPart(String(e.question ?? ""), e.evidence?.rule, e.recommendation, e.evidence?.file && e.evidence?.line ? `${e.evidence.file} line ${e.evidence.line}` : "") } });
+    // bounded (round 2, LOW-K): the entry itself (in ref) keeps every unit
+    assistant: { kind: e.kind, module: e.module, units: (e.units || []).slice(0, 20), ...((e.units || []).length > 20 ? { unitCount: e.units.length } : {}), ...assistantPart(String(e.question ?? ""), e.evidence?.rule, e.recommendation, e.evidence?.file && e.evidence?.line ? `${e.evidence.file} line ${e.evidence.line}` : "") } });
 
   const shown = items.slice(0, LIMITS.questions), left = items.length - shown.length + d.deferred.count;
   const handin = { changesetId, digest: { questions: shown.map((x) => x.question) } };
@@ -281,6 +291,8 @@ export function applyChanges(root, changes) {
         seq = appendLogRecord(root, { type: "answer", party, payload: { answers: [{ finding: q.finding, basis: q.basis, choice: answer, entry: `interrupt:${q.finding}` }], acceptAll: false, instructorWords: words || answer } }).seq;
         outcome = "answered";
       } else if (q.kind === "approval") {
+        // P1 (round 2): only the exact answers Coursewerk asked for; anything else is asked again
+        if (answer !== "Approve" && answer !== "Not yet") { skip(`"${line(answer, 60)}" is neither Approve nor Not yet: it is asked again`); continue; }
         if (answer === "Not yet") outcome = "left open";
         else {
           const chapters = manifestChapters(reader), s = approvalStatus(reader, chapters, readLogText(root)).scopes[q.chapter || "course"];
@@ -294,6 +306,9 @@ export function applyChanges(root, changes) {
           outcome = "approved";
         }
       } else if (q.kind === "correction") {
+        // P1 (round 2): kept only on an exact Keep, undone only on an exact Undo; any other answer (a hand-in made with
+        // no choices) is asked again, never silently kept
+        if (answer !== "Keep" && answer !== "Undo") { skip(`"${line(answer, 60)}" is neither Keep nor Undo: it is asked again`); continue; }
         if (answer === "Undo") {
           if (!words) { skip("an undo records why the text stands: the instructor's words are required"); continue; }
           revertCorrection(root, reader, q.correction, { note: words }, party);

@@ -1,0 +1,350 @@
+{
+  "schemaVersion": 1,
+  "planId": "febcfb69dd040ba44a256e41703785396b861ec2a310822cfd7493639546cacd",
+  "baseRef": "main",
+  "baseTip": "75e808f2a9649de609ad9bac69400f102f172f6d",
+  "baseCommit": "75e808f2a9649de609ad9bac69400f102f172f6d",
+  "reviewedHead": "6c159a3fef21618b6cd46ae17014f462b9684969",
+  "changed": [
+    "CHANGELOG.md",
+    "README.md",
+    "alembic-job/CLAUDE.md",
+    "scripts/lib/core/alembic_needs.mjs",
+    "scripts/lib/core/needs_wording.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/alembic-needs-wording.test.mjs",
+    "tests/alembic-needs.test.mjs",
+    "tests/needs-wording.audit.test.mjs",
+    "tests/needs-wording.audit2.test.mjs"
+  ],
+  "requiredReview": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "VERSION",
+    "alembic-job/CLAUDE.md",
+    "docs/coherence-index.md",
+    "format-contracts/deliverables.md",
+    "package.json",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/core/alembic_needs.mjs",
+    "scripts/lib/core/needs_wording.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/revision_impact.mjs",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "system/REQUIREMENTS.json",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/alembic-needs-wording.test.mjs",
+    "tests/alembic-needs.test.mjs",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/needs-wording.audit.test.mjs",
+    "tests/needs-wording.audit2.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site.test.mjs"
+  ],
+  "reviewed": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "VERSION",
+    "alembic-job/CLAUDE.md",
+    "docs/coherence-index.md",
+    "format-contracts/deliverables.md",
+    "package.json",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/core/alembic_needs.mjs",
+    "scripts/lib/core/needs_wording.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/revision_impact.mjs",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "system/REQUIREMENTS.json",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/alembic-needs-wording.test.mjs",
+    "tests/alembic-needs.test.mjs",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/needs-wording.audit.test.mjs",
+    "tests/needs-wording.audit2.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site.test.mjs"
+  ],
+  "impactedClaims": [
+    "claim.accessibility.floor",
+    "claim.authorship.accountable",
+    "claim.carriers.honest-portability",
+    "claim.carriers.three-shapes",
+    "claim.coherence.anchors",
+    "claim.coherence.claims",
+    "claim.coherence.index-fresh",
+    "claim.coherence.prerequisites",
+    "claim.coherence.revisions",
+    "claim.control.coverage",
+    "claim.control.overrides",
+    "claim.format.contracts",
+    "claim.git.visible-edits",
+    "claim.language.editorial",
+    "claim.media.decision",
+    "claim.provenance.complete",
+    "claim.release.fail-closed",
+    "claim.release.measured-vs-declared",
+    "claim.review.blind-bundle",
+    "claim.review.key-facts",
+    "claim.revision.propagation",
+    "claim.rights.verified",
+    "claim.source.comparison",
+    "claim.trust.consistency",
+    "claim.trust.immutable",
+    "claim.website.published",
+    "claim.website.showcase"
+  ],
+  "testResults": [
+    {
+      "path": "tests/anchors.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/assurance.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-2.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-3.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-4.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/blind_bundle.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/carriers.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-control.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-revision.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-semantic.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/classify.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/coherence-claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/escalation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/evidence-tools.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/fingerprint.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/immutable.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/index-freshness.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/integration-study-pairs.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/key-fact-bindings.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/overrides.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate-cli.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/qa.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/range.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/reviews.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/semantic-index-artifact.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/site.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/spine.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/terms.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/units.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/unverifiable_quotation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/usage-e2e.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/wiring.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/alembic-needs.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/alembic-needs-wording.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/needs-wording.audit.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/needs-wording.audit2.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/job-release.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "D-133 closed-loop round 2 fixes on needs-wording (audit of 6c159a3: 3 HIGH, 6 MEDIUM, 4 LOW), held to two principles across every kind. P1 (narrow, fail-safe mechanism change in alembic_needs.mjs apply): a correction is kept only on an exact Keep and undone only on an exact Undo, an approval only on an exact Approve or Not yet; any other answer is skipped and asked again, never silently kept (before, any correction answer other than Undo was kept); digest answers are read exactly as before (removing choices never changes how answerDigest reads an answer); interrupts record any answer as the answer. HIGH-B: a correction always offers Keep/Undo; when before/after cannot be shown the detail says the page holds the corrected passage exactly as Keep leaves it. P2: an answer that confirms or adopts what units hold (Confirm on exercise data or a stale confirmation, Keep as written, Accept as mine, Keep on an unasked edit) shows each whole unit text; when one cannot be shown or read, no one-click choice and the question says the page holds the exact text (HIGH-C, MEDIUM-D, MEDIUM-L); a reviewer suggestion and a removed passage, on no page, are always shown in full (MEDIUM-E); applying a suggestion and accept as mine are never pre-chosen, and the recommendation line is kept whenever it says more than the choice (MEDIUM-F). HIGH-A: accents become combining marks (x bar, H hat, F vec, nu tilde, A ring as the angstrom sign), menclose stays visible (struck, boxed, circled). MEDIUM-G and LOW-I: orz-markdown MAX_TEX and TEX_DEFINES mirrored (not exported); such a formula, or one KaTeX rejects, reads as its source; KaTeX version checked against orz-markdown KATEX_VERSION. MEDIUM-H: decision codes are removed only from harness notes; an assessment-guide entry title is rendered, not passed through the harness pass. LOW-J: arrow conditions top first; binomial without double parentheses. LOW-K: assistant units capped at 20 with a count. LOW-M: orz-markdown dollar rule in light text; in agent words only a path with a folder reads as a page. Probes adopted as tests/needs-wording.audit2.test.mjs (HIGH-B adapted to the fix asked for: Keep/Undo always offered; it checks a non-choice undo is not kept, and that a record from a hand-in without choices keeps only on an exact Keep), registered as evidence of req.host.alembic-needs-wording and req.host.alembic-needs-apply, both statements updated. Earlier tests updated for P2 (a confirmation of a passage the context cannot read offers no choice) and agent words keeping codes. CHANGELOG Unreleased states the mechanism change plainly; VERSION unchanged. Reviewed every required item. Tests: the 36 required plus alembic-needs, alembic-needs-wording, needs-wording.audit, needs-wording.audit2 and job-release: 598 passed, 0 failed (COURSEWERK_FRAMES=installed, concurrency 2, one test process under the shared lock).",
+  "generatedIndexHash": "85a2dc7c2d1759a1ddc6fe13a361a740c36482b858fb93ee3f6a1e8b9c70fc3f",
+  "acceptedAt": "2026-11-08T23:07:07.241Z"
+}
