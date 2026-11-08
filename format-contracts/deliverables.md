@@ -49,8 +49,7 @@ package/
 v0.12 records (`KEY_FACT_REVIEW.json`, `VISUAL_REVIEW.json`, `COMPONENT_INDEX.json`, `CLAIMS.json`, `claims/`, `TERMS.json`,
 `SPINE.json`, `REVIEW_QUEUE.json`, `OVERRIDES.json`) are not part of a spine-v2 package; see `docs/migrating-from-v0.12.md`.
 
-<!-- RELEASE PLACEHOLDER: at release, after the owner approves, replace "this version" / "this Coursewerk version" / "after v1.0.4" in this entry with the released version number (e.g. v1.0.5). -->
-**Compact review records** (req.records.compact-review). A dispatch record written by Coursewerk after v1.0.4 keeps the large,
+**Compact review records** (req.records.compact-review). A dispatch record written by Coursewerk v1.0.5 or later keeps the large,
 repeated blocks of its prompt (the reviewer's instructions; an alignment review's whole chapter plan) once, in
 `verification/parts/<sha256>.json` (`{"schemaVersion": 1, "kind": "prompt-part", "sha256", "at", "text"}`, named by the
 sha256 of its text), and its prompt as `bundle.promptParts`: literal text and `{"part": "<sha256>"}` entries in order,
@@ -60,7 +59,7 @@ stored whole. A record written before stays as it is and reads as it always did.
 the one named makes every record using it unreadable (a logged dispatch without a readable record is a blocking
 defect), and so is any other file in a folder under `verification/`, including a file under a part's name that is not
 that part. Parts are records like the rest: never edit or
-delete one; Alembic carries them in the verification parts. A package with compact records needs this Coursewerk version
+delete one; Alembic carries them in the verification parts. A package with compact records needs Coursewerk v1.0.5
 or later (`COMPATIBILITY.md`).
 
 **Checking that a log continues the one last held** (req.records.chain-check; Alembic's hand-out and hand-back):

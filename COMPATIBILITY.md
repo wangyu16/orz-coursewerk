@@ -32,12 +32,11 @@ cannot accept or verify a Coursewerk harness revision by itself.
 A package's records are read by the Coursewerk version that works on it, so a package written by a newer version may
 need that version:
 
-<!-- RELEASE PLACEHOLDER: at release, after the owner approves, replace "this version" / "this Coursewerk version" / "after v1.0.4" in this entry with the released version number (e.g. v1.0.5). -->
-- **Compact review records** (after v1.0.4, `req.records.compact-review`): a review record written by this version stores
+- **Compact review records** (v1.0.5, `req.records.compact-review`): a review record written by v1.0.5 or later stores
   its prompt's repeated blocks once, in `private/coursewerk/verification/parts/`. A package holding such records needs
-  this version or later. v1.0.4 and earlier read the parts as unlogged records and cannot put a compact record's prompt
+  v1.0.5 or later. v1.0.4 and earlier read the parts as unlogged records and cannot put a compact record's prompt
   back, so they block the package (they fail closed: nothing is wrongly cleared). A host that runs Coursewerk on
-  packages, such as Alembic's assistant job, must move to this version before any compact record is written, and must
+  packages, such as Alembic's assistant job, must move to v1.0.5 before any compact record is written, and must
   not go back to an earlier one for those packages.
 
 ## Keeping them in sync

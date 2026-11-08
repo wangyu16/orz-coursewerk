@@ -53,7 +53,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "0ce7e777fb73f047b67e69c51b6cb07f5e715b6cc0ea3299f7df2116ec3b1932"
+      "hash": "406f03dc955fc8a44dc9a5af74a7d8b9623b74267062060f55c6439b9ab1138d"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -65,7 +65,7 @@
       "id": "repo:COMPATIBILITY.md",
       "path": "COMPATIBILITY.md",
       "type": "agent-constitution",
-      "hash": "5b78ced3c57a0076fa268ae6d6d7bb0d24f9795daaeac7d14c3ad79e80a94145"
+      "hash": "0f110e01f4bfe5784c7575fcddc9cf053f2992891486b7d128fdda2960141182"
     },
     {
       "id": "repo:docs/assembling-carriers.md",
@@ -167,7 +167,7 @@
       "id": "repo:format-contracts/deliverables.md",
       "path": "format-contracts/deliverables.md",
       "type": "documentation",
-      "hash": "daa0775c53f7739a8e0ab4afe9e93aed64b3d49890b181a306b73d0bf22ee2bb"
+      "hash": "0b38326fa21c8a3b547c936e47a1b2e15382d0ad05b2f69e719f80c5ab19ff2c"
     },
     {
       "id": "repo:GEMINI.md",
@@ -2453,7 +2453,7 @@
       "id": "repo:VERSION",
       "path": "VERSION",
       "type": "release-metadata",
-      "hash": "47ae8e548b5a4b52db1502221b2a4a889528773b07bd237371cc475c36b5e4ab"
+      "hash": "688de25e1482a1543834e8e389c20aac2fa34fd6abdb28138a00847c8d49f1a0"
     }
   ],
   "relationships": [
