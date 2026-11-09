@@ -123,6 +123,10 @@ function run(s) {
   // index as the retired register keeps what it owed) — and there it speaks for the words the piece holds
   const heirs = new Map();
   for (const u of units.values()) for (const from of u.lineage || []) { if (!heirs.has(from)) heirs.set(from, []); heirs.get(from).push(u.id); }
+  // the units a "keep" of an unasked edit adopts (units_index.mjs adoptInstructorText): every holder of a registered text
+  // the edited unit holds — the question names them all, as the generic path does (D-133 audit round 3)
+  const regAll = instructorTextRegister(log, { corrections, correctionOk: (c) => correctionLogged(c, log) }), holdAll = holdersOf(regAll, [...units.values()]);
+  const adoptedWith = (u) => [...new Set([u.id, ...textIds(u).filter((id) => holdAll.has(id)).flatMap((id) => holdAll.get(id).map((x) => x.id))])].sort();
   const add = (id, x) => { if (!reviewsOf.has(id)) reviewsOf.set(id, []); reviewsOf.get(id).push(x); };
   for (const r of records) {
     const b = bound.get(r);
@@ -245,7 +249,7 @@ function run(s) {
         if (list.some(askedAs)) continue;
         flagged.add(`${c.text}|${c.suggestion}`);
         unaskedRaised.add(u.id);
-        out.push({ kind: "instructor-edit-unasked", units: [u.id], evidence: { type: "judgment", note: `Your text was edited without your answer: the agent wrote the reviewer's suggestion "${c.suggestion}" in place of "${c.text}" (${c.kind === "wrong" ? "a concern that it is wrong" : "a clarification"}: ${c.problem}). Keep the edit, or have it reverted?`, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch, revisedBy: (u.origin?.revisedBy || []).at(-1) || null }, recommendation: "keep" });
+        out.push({ kind: "instructor-edit-unasked", units: adoptedWith(u), evidence: { type: "judgment", note: `Your text was edited without your answer: the agent wrote the reviewer's suggestion "${c.suggestion}" in place of "${c.text}" (${c.kind === "wrong" ? "a concern that it is wrong" : "a clarification"}: ${c.problem}). Keep the edit, or have it reverted?`, quote: c.text, suggestion: c.suggestion, dispatch: r.dispatch, revisedBy: (u.origin?.revisedBy || []).at(-1) || null }, recommendation: "keep" });
       }
     }
   }

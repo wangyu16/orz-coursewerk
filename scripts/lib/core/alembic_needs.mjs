@@ -15,7 +15,7 @@
 // as they see them, content as it reads, no path, line or harness code. The harness's own wording and codes are kept in
 // that record, as each question's `assistant`, for the assistant — never in the hand-in.
 import fs from "node:fs";
-import { sha256 } from "../records/canonical.mjs";
+import { canonicalJson, sha256 } from "../records/canonical.mjs";
 import { appendLogRecord, parseLog, readLogText } from "../records/log.mjs";
 import { recordFile } from "../records/paths.mjs";
 import { hasVisibleWords } from "../records/words.mjs";
@@ -29,7 +29,7 @@ import { COURSE_MAP, nodeIndex, parseSpine, spinePaths } from "./spine.mjs";
 import { loggedDigestCap } from "../records/config.mjs";
 import { correctionsToShow, revertCorrection } from "../verify/verdicts.mjs";
 import { deliverablesOf, readSidecar } from "./units_index.mjs";
-import { assistantCodes, changedSpan, forInstructor, placeOf, plainText, reasonLabel, recommendationLine, sentence, shorten, wordEntry } from "./needs_wording.mjs";
+import { assistantCodes, changedSpan, CONTROL, forInstructor, placeOf, plainText, reasonLabel, recommendationLine, sentence, shorten, wordEntry } from "./needs_wording.mjs";
 
 // ---- Alembic's limits for a hand-in (agent-runtime-v3 §22) -------------------------------------------------------
 export const LIMITS = Object.freeze({ questions: 20, text: 500, choice: 120, minChoices: 2, maxChoices: 6, detail: 2000, refs: 10, wordsSuggested: 500 });
@@ -38,7 +38,15 @@ export const CHANGESET_ID = /^[A-Za-z0-9_-]{8,64}$/;
 export const NEEDS_FILE = "private/coursewerk/digest/alembic-needs.json";
 const DIGEST_FILE = "private/coursewerk/digest/current.json";
 const KEEP_HANDINS = 50;
+const NEEDS_BYTES = 3 * 1024 * 1024;
 
+/** A course path as Alembic's normalizePath takes it (package-contract contract-v3.ts): NFC, no leading slash, backslash,
+ *  percent sign, control or format character, empty or dot segment; at most 1,024 bytes, 255 per segment. */
+export function coursePath(p) {
+  if (typeof p !== "string" || !p || p.normalize("NFC") !== p || p.startsWith("/") || /[\\%]/.test(p) || /[\u0000-\u001f\u007f]|\p{Cf}/u.test(p)) return false;
+  if (Buffer.byteLength(p, "utf8") > 1024) return false;
+  return p.split("/").every((seg) => seg && seg !== "." && seg !== ".." && Buffer.byteLength(seg, "utf8") <= 255);
+}
 /** Every way a hand-in breaks Alembic's limits (empty: it will be accepted). */
 export function handinProblems(h) {
   const out = [], q = h?.digest?.questions;
@@ -46,7 +54,7 @@ export function handinProblems(h) {
   if (!Array.isArray(q)) return [...out, "digest.questions must be a list"];
   if (q.length > LIMITS.questions) out.push(`more than ${LIMITS.questions} questions`);
   const ids = new Set();
-  const oneLine = (s, n) => typeof s === "string" && s.trim() && !/[\r\n]/.test(s) && s.length <= n;
+  const oneLine = (s, n) => typeof s === "string" && s.trim() && !/[\r\n]/.test(s) && !/[\u0000-\u0008\u000b-\u001f\u007f]/.test(s) && s.length <= n;
   q.forEach((x, i) => {
     const at = `question ${i + 1} (${x?.id})`;
     if (!QUESTION_ID.test(String(x?.id ?? ""))) out.push(`${at}: id`);
@@ -58,7 +66,7 @@ export function handinProblems(h) {
     }
     if (x.recommended !== undefined && !(x.choices || []).includes(x.recommended)) out.push(`${at}: recommended must be one of the choices`);
     if (x.detail !== undefined && (typeof x.detail !== "string" || x.detail.length > LIMITS.detail)) out.push(`${at}: detail of at most ${LIMITS.detail}`);
-    if (x.refs !== undefined && (!Array.isArray(x.refs) || x.refs.length > LIMITS.refs || !x.refs.every((r) => typeof r === "string" && r && !r.startsWith("/") && !r.split("/").includes("..")))) out.push(`${at}: at most ${LIMITS.refs} course paths as refs`);
+    if (x.refs !== undefined && (!Array.isArray(x.refs) || x.refs.length > LIMITS.refs || !x.refs.every(coursePath))) out.push(`${at}: at most ${LIMITS.refs} course paths as refs`);
     if (x.words !== undefined && !["required", "optional"].includes(x.words)) out.push(`${at}: words is "required" or "optional"`);
     if (x.wordsSuggested !== undefined && (x.words === undefined || typeof x.wordsSuggested !== "string" || x.wordsSuggested.length > LIMITS.wordsSuggested)) out.push(`${at}: wordsSuggested only with words, at most ${LIMITS.wordsSuggested}`);
     for (const k of Object.keys(x || {})) if (!["id", "text", "choices", "recommended", "detail", "refs", "words", "wordsSuggested"].includes(k)) out.push(`${at}: unknown field ${k}`);
@@ -66,10 +74,11 @@ export function handinProblems(h) {
   return out;
 }
 
-const line = (s, n) => { const t = String(s ?? "").replace(/\s+/g, " ").trim(); return t.length > n ? `${t.slice(0, n - 1).trimEnd()}…` : t; };
-const block = (s, n) => { const t = String(s ?? "").trim(); return t.length > n ? `${t.slice(0, n - 1).trimEnd()}…` : t; };
+// what Alembic refuses (agent-api.ts oneLine) never reaches a hand-in: control characters are spaces (round 3, MEDIUM-3)
+const line = (s, n) => { const t = String(s ?? "").replace(CONTROL, " ").replace(/\s+/g, " ").trim(); return t.length > n ? `${t.slice(0, n - 1).trimEnd()}…` : t; };
+const block = (s, n) => { const t = String(s ?? "").replace(CONTROL, " ").trim(); return t.length > n ? `${t.slice(0, n - 1).trimEnd()}…` : t; };
 const qid = (prefix, key) => `${prefix}.${sha256(String(key)).slice(0, 16)}`;
-const refsOf = (paths) => [...new Set(paths.filter(Boolean))].slice(0, LIMITS.refs);
+const refsOf = (paths) => [...new Set(paths.filter((p) => p && coursePath(p)))].slice(0, LIMITS.refs);
 
 /**
  * The choices Coursewerk itself gives an answer to a digest entry of each kind (digest.mjs answerDigest: "confirm"
@@ -105,18 +114,34 @@ export function digestQuestion(e, deliverableOf = new Map(), ctx = {}) {
   // P2 (rounds 1, 2): what is on no page (a suggestion, a removed passage) always first and in full; then the texts the
   // page holds. Only when all of it is shown, and every unit the answer binds could be read, is a one-click choice offered;
   // otherwise the question says the page holds the exact text, and the answer is in the instructor's words
-  const off = (worded.shown || []).filter((x) => !x.page).map((x) => x.text), on = (worded.shown || []).filter((x) => x.page).map((x) => x.text);
-  const head = [text.length > LIMITS.text ? text : "", ...off].filter(Boolean).join("\n");
-  const shown = [head, ...on].filter(Boolean).join("\n");
-  const fits = shown.length <= LIMITS.detail - 200 && !worded.unseen;
-  const choices = fits ? DIGEST_CHOICES[e.kind] || worded.choices || null : null;
+  // Round 3: the off-page texts (a suggestion, a removed passage; on no page) are budgeted first. What the page holds is
+  // shown when it fits; when it does not, the choices stay (the answer binds the passage only as it was asked: apply
+  // checks it is unchanged, HIGH-2) and the question says the page holds the exact text — but nothing is pre-chosen, so
+  // "Accept all" never takes an answer about text the question could not show. A unit the context could not read, or an
+  // off-page text that cannot be shown, offers no choice that binds it (a suggestion: no "Apply", said plainly: MEDIUM-7).
+  const sh = worded.shown || [], off = sh.filter((x) => !x.page), on = sh.filter((x) => x.page).map((x) => x.text);
+  const head = [text.length > LIMITS.text ? text : "", ...off.map((x) => x.text)].filter(Boolean).join("\n");
+  const offFits = head.length <= LIMITS.detail - 400, shown = [head, ...on].filter(Boolean).join("\n");
+  const allFits = offFits && shown.length <= LIMITS.detail - 200;
+  let choices = worded.unseen ? null : DIGEST_CHOICES[e.kind] || worded.choices || null;
+  let tooLong = "";
+  if (choices && !offFits) {
+    if (off.some((x) => x.suggestion) && !off.some((x) => !x.suggestion)) {
+      choices = choices.filter((x) => !/^apply\b/i.test(x));
+      tooLong = "This suggestion is too long to show here in full, so it can't be applied from Alembic: choose another answer, or ask the assistant in your own words to apply it in a job.";
+    } else choices = null;
+    if (choices && choices.length < LIMITS.minChoices) choices = null;
+  }
   const rec = e.recommendation == null ? null : String(e.recommendation).trim();
-  // never pre-chosen: applying a reviewer's suggestion, or claiming authorship (round 2, MEDIUM-D, MEDIUM-F)
-  const recommended = choices && rec ? choices.find((x) => isChoice(rec, x) && !/^(?:apply|accept as mine)\b/i.test(x)) : undefined;
+  // never pre-chosen: applying a reviewer's suggestion, or claiming authorship (round 2, MEDIUM-D, MEDIUM-F), nor any
+  // answer about text the question could not show in full (round 3)
+  const recommended = allFits && choices && rec ? choices.find((x) => isChoice(rec, x) && !/^(?:apply|accept as mine)\b/i.test(x)) : undefined;
   const ev = e.evidence || {};
   const places = [...new Set((e.chapters || []).filter((x) => x !== "package").map((x) => `“${c.titles?.get?.(x) || x}”`))];
   const detail = [
-    fits ? shown : [head, "The whole passage is too long to show here (or could not be read): it is on the page (the link), and your answer applies to it exactly as it reads there. Answer in your own words."].filter(Boolean).join("\n"),
+    allFits ? shown
+      : offFits ? [head, worded.unseen ? "The passage could not be read here: it is on the page (the link). Answer in your own words; the assistant brings it back with its choices." : "The whole passage is too long to show here: the page (the link) holds the exact text, and your answer applies to it as it reads there. If it changes before your answer is recorded, you are asked again."].filter(Boolean).join("\n")
+      : [tooLong || "The text this answer would adopt is too long to show here: answer in your own words, and the assistant takes it up.", shorten(head, LIMITS.detail - 600)].join("\n"),
     worded.detail,
     e.count > 1 ? `This comes up in ${e.count} places${places.length ? ` (${places.join(", ")})` : ""}; one answer settles them all.` : "",
     // the recommendation's own words whenever they say more than the choice pre-chosen (MEDIUM-F)
@@ -157,10 +182,12 @@ export function needsContext(root, reader, chapters = manifestChapters(reader)) 
 
 /** The harness's own words and codes for a question, kept for the assistant in the needs record (never handed in). */
 // bounded (audit round 1, LOW-2): the record keeps 50 hand-ins of 20 questions within Alembic's per-file limit
-const ASSISTANT_LIMIT = 6000;
+// (round 3, MEDIUM-4: 20 questions x 50 hand-ins under Alembic's 4 MB, measured in UTF-8 bytes as written)
+const ASSISTANT_LIMIT = 2400;
+const bytes = (x) => Buffer.byteLength(JSON.stringify(x, null, 2), "utf8");
 function assistantPart(text, ...more) {
-  const part = { text: line(text, 2000), codes: assistantCodes(text, ...more) };
-  while (JSON.stringify(part).length > ASSISTANT_LIMIT) {
+  const part = { text: line(text, 1200), codes: assistantCodes(text, ...more) };
+  while (bytes(part) > ASSISTANT_LIMIT) {
     const [k, v] = Object.entries(part.codes).sort((a, b) => JSON.stringify(b[1]).length - JSON.stringify(a[1]).length)[0] || [];
     if (k && v.length > 1) part.codes[k] = v.slice(0, Math.ceil(v.length / 2));
     else if (part.text.length > 200) part.text = line(part.text, Math.max(200, part.text.length - 500));
@@ -225,7 +252,7 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
   // 3. corrections the agent made, to keep or undo (outside the digest's budget, as in the checkpoint digest)
   for (const c of correctionsToShow(root)) {
     const lines = String(c.diff || "").split("\n"), side = (m) => lines.filter((l) => l.startsWith(`${m} `) || l === m).map((l) => l.slice(2)).join("\n");
-    const span = changedSpan(side("-"), side("+")), src = c.evidence?.[0];
+    const span = changedSpan(side("-"), side("+")), whole = changedSpan(side("-"), side("+"), 4, { full: true }), src = c.evidence?.[0];
     const full = `Before: “${plainText(side("-"))}”\nAfter: “${plainText(side("+"))}”\n${src ? `The source says: “${shorten(plainText(src.quote), 400)}”\n` : ""}To undo it, say why your text stands.`;
     items.push({ question: { id: `c.${String(c.id).replace(/[^A-Za-z0-9_.-]/g, "-").slice(0, 60)}`,
       text: line(`In ${placeOf(c.deliverable, ctx) || "the course"}, the assistant corrected “${span.was}” to “${span.now}”, because a source contradicted it. Keep the correction, or undo it?`, LIMITS.text),
@@ -233,8 +260,10 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
       // in full, no one-click Keep (apply records any answer but "Undo" as kept)
       // when they cannot be shown in full, the page holds the corrected passage exactly as Keep leaves it (it is applied
       // there): the question says so, and Keep / Undo stay the only answers (round 2, HIGH-B)
-      choices: ["Keep", "Undo"], recommended: "Keep",
-      detail: full.length <= LIMITS.detail ? full : block(`The corrected passage is too long to show here: it is on the page (the link), exactly as Keep leaves it. The change: “${span.was}” → “${span.now}”.\n${src ? `The source says: “${shorten(plainText(src.quote), 400)}”\n` : ""}To undo it, say why your text stands.`, LIMITS.detail),
+      // round 3 (MEDIUM-5): the words a correction removes are on no page: shown whole when they fit, and a long correction
+      // is never pre-chosen (so "Accept all" leaves it to the instructor)
+      choices: ["Keep", "Undo"], ...(full.length <= LIMITS.detail ? { recommended: "Keep" } : {}),
+      detail: full.length <= LIMITS.detail ? full : block(`The corrected passage is too long to show here: it is on the page (the link), exactly as Keep leaves it. ${`It removed: “${whole.was}”`.length <= LIMITS.detail - 600 ? `It removed: “${whole.was}”\nIn its place: “${whole.now}”` : `The change, in part: “${span.was}” → “${span.now}” (the removed words are too long to show here; they are in the correction's record)`}\n${src ? `The source says: “${shorten(plainText(src.quote), 300)}”\n` : ""}To undo it, say why your text stands.`, LIMITS.detail),
       refs: refsOf([c.deliverable]), words: "optional" },
       ref: { kind: "correction", correction: c.id }, assistant: { kind: "correction", unit: c.unit, ...assistantPart(`A correction was made in ${c.deliverable} (${c.unit}):\n${c.diff}${src ? `\nSource (${src.source})` : ""}`) } });
   }
@@ -254,13 +283,35 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
   if (problems.length) throw new Error(`the hand-in would break Alembic's limits: ${problems.slice(0, 3).join("; ")}`);
 
   const needs = readNeeds(root);
-  needs.handins = [...(needs.handins || []).filter((h) => h.changesetId !== changesetId), { changesetId, at, questions: Object.fromEntries(shown.map((x) => [x.question.id, { ...x.ref, choices: x.question.choices || null, words: x.question.words, ...(x.assistant ? { assistant: x.assistant } : {}) }])) }].slice(-KEEP_HANDINS);
+  needs.handins = [...(needs.handins || []).filter((h) => h.changesetId !== changesetId), { changesetId, at, questions: Object.fromEntries(shown.map((x) => [x.question.id, { ...boundRef(x.ref, hash), choices: x.question.choices || null, words: x.question.words, ...(x.assistant ? { assistant: x.assistant } : {}) }])) }].slice(-KEEP_HANDINS);
+  // within Alembic's 4 MB a record file may hold: the oldest hand-ins go first, never the one just made (MEDIUM-4)
+  while (needs.handins.length > 1 && Buffer.byteLength(JSON.stringify(needs), "utf8") > NEEDS_BYTES) needs.handins.shift();
   fs.mkdirSync(recordFile(root, "private/coursewerk/digest"), { recursive: true });
-  fs.writeFileSync(recordFile(root, NEEDS_FILE), JSON.stringify(needs, null, 2) + "\n");
+  fs.writeFileSync(recordFile(root, NEEDS_FILE), JSON.stringify(needs) + "\n");
   fs.writeFileSync(recordFile(root, DIGEST_FILE), JSON.stringify({ at, ...d }, null, 2) + "\n");
   if (model) deliverDigest(root, d, { role: "agent", name: "executor", model });
   const by = (k) => shown.filter((x) => x.ref.kind === k).length;
   return { handin, left, delivered: !!model, counts: { interrupts: by("interrupt"), approvals: by("approval"), corrections: by("correction"), digest: by("digest") } };
+}
+
+/** The kinds whose answer confirms, claims or adopts what units hold (digest.mjs CONFIRMS, CLAIMS, ADOPTS). */
+const BINDING_KINDS = new Set(["exercise-data-confirm", "confirmation-stale", "answer-still-correct", "fact-disputed", "instructor-edit-unasked", "unit-unknown-authorship"]);
+/** What the record keeps of a question: a digest entry with the content hash of each unit as asked (`seen`, HIGH-2), and
+ *  its evidence bounded (apply reads its key, kind, units and bases, never its evidence: MEDIUM-4). */
+function boundRef(ref, hash) {
+  if (ref.kind !== "digest") return ref;
+  const e = ref.entry, ev = e.evidence || {};
+  const evidence = JSON.stringify(ev).length <= 1500 ? ev : Object.fromEntries(Object.entries(ev).filter(([, v]) => typeof v !== "object" && String(v).length <= 200).concat([["bounded", sha256(JSON.stringify(ev))]]));
+  return { ...ref, entry: { ...e, evidence }, seen: Object.fromEntries((e.units || []).map((u) => [u, hash.get(u) ?? null])) };
+}
+/** Is every unit the entry names as it was when asked? Without `seen` (a hand-in before round 3) only a one-finding entry
+ *  can be checked, by its basis; anything else is asked again (fail-safe). */
+function askedAsNow(q, e, info) {
+  const now = (u) => info.get(u)?.contentHash ?? null;
+  if (q.seen) return Object.entries(q.seen).every(([u, h]) => now(u) === h);
+  const b = e.bases || [];
+  if ((e.findings || []).length !== 1 || b.length !== 1 || b[0].claimKey) return false;
+  return b[0].basis === sha256(canonicalJson([e.findings[0], (e.units || []).map((u) => now(u))]));
 }
 
 /**
@@ -321,8 +372,19 @@ export function applyChanges(root, changes) {
         }
       } else if (q.kind === "digest") {
         const e = q.entry;
-        answerDigest(root, { entries: [e] }, { answers: { [e.key]: answer }, instructorWords: words || answer, reader }, party);
-        outcome = /^\s*later\b/i.test(answer) ? "deferred" : "answered";
+        // HIGH-2 (round 3): an answer binds the passage as it was asked; one that changed since is asked again
+        if (!askedAsNow(q, e, unitInfoOf(root, reader))) { skip("the passage changed since it was asked (or the question predates that check): it is asked again"); continue; }
+        // HIGH-1 (round 3, fail-safe): only an exact choice can mean yes (confirm, claim, adopt, apply, keep, revert). Free
+        // words are recorded as said, so no reading of an answer takes them for a yes, and the agent takes them up; a
+        // question that confirms or adopts what units hold is asked again with its choices instead
+        let choice = answer;
+        if (!q.choices) {
+          if (/^\s*later\s*\.?\s*$/i.test(answer)) choice = "Later";
+          else if (BINDING_KINDS.has(e.kind)) { skip("free words where this question needs one of its choices: it is asked again"); continue; }
+          else choice = `said: ${answer}`;
+        }
+        answerDigest(root, { entries: [e] }, { answers: { [e.key]: choice }, instructorWords: words || answer, reader }, party);
+        outcome = choice === "Later" || (q.choices && /^\s*later\b/i.test(choice)) ? "deferred" : "answered";
       } else { skip(`unknown question kind ${q.kind}`); continue; }
     } catch (err) { skip(err.message); continue; }
     // the answer's Alembic provenance, after it: never recorded twice

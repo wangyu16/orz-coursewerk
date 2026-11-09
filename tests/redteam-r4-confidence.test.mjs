@@ -228,6 +228,23 @@ test("[req.knowledge.clarify] R4-K16: on the instructor's text a suggestion the 
   assert.deepEqual(mineOf(o.gate(), oid).filter((f) => f.module === "ms8-verdicts").map((f) => f.kind), []);
 });
 
+test("[req.knowledge.clarify] R4-K16 (D-133 audit round 3): the unasked-edit question names every unit a 'keep' adopts — all the holders of the instructor's text, not only the edited piece", async (t) => {
+  const REL = "study-guide/chemical-equilibrium.md";
+  const c = course(t);
+  c.edit(REL, "(products favoured), and a positive", "(products favoured), and so a positive"); indexAndStamp(c.root, c.r(), {}); // the instructor's own edit
+  const id = c.units().find((u) => u.text.includes("(products favoured), and so a positive")).id;
+  claimAuthorship(c.root, { units: [id], instructorWords: "That paragraph is mine." }, I);
+  await verifyKnowledge(c.root, c.r(), { only: [id], verifier: review([{ kind: "wrong", text: "and so a positive", problem: "test double: the reviewer reads 'so' as a causal claim.", suggestion: "and a positive" }]) });
+  // the agent splits their paragraph (no word changed), then writes the suggestion into one piece, unasked
+  c.asAgent(() => c.edit(REL, "absolute temperature. A negative", "absolute temperature.\n\nA negative"));
+  c.asAgent(() => c.edit(REL, "(products favoured), and so a positive", "(products favoured), and a positive"));
+  const pieces = c.units().filter((u) => u.text.includes("the absolute temperature.") || u.text.includes("(products favoured), and a positive")).map((u) => u.id).sort();
+  assert.equal(pieces.length, 2, "two pieces hold the instructor's text");
+  const asked = c.gate().findings.filter((f) => f.kind === "instructor-edit-unasked" && (f.units || []).some((u) => pieces.includes(u)));
+  assert.ok(asked.length, "the edit is raised");
+  for (const f of asked) assert.deepEqual(pieces.filter((u) => f.units.includes(u)), pieces, `the question names every holder a keep adopts: ${JSON.stringify(f.units)}`);
+});
+
 // ================================================ K6: CONCERNS TRAVEL WITH THE TEXT ==============================
 test("[req.knowledge.travels] R4-K17: a reviewed unit split or merged hands its open concerns to the pieces holding the quoted words", async (t) => {
   const T = "Changing the total pressure by compressing a gas-phase mixture shifts the equilibrium toward the side with fewer moles of gas.";

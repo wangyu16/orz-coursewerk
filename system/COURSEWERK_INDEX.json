@@ -53,7 +53,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "6b994cf36d9a8a878031b3bf760eb781556fb62a0124bb24464e38d8994fe805"
+      "hash": "8d4f22b6751668e9502288a6badcf5054cbef7dbdde87c1b88e2a9072bc085c9"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -431,7 +431,7 @@
       "id": "repo:scripts/lib/core/alembic_needs.mjs",
       "path": "scripts/lib/core/alembic_needs.mjs",
       "type": "kernel",
-      "hash": "522562e4bb55b219f816d8c4b4cfd3f51dc4c5d9916be63c6942774bce8f97cc"
+      "hash": "4acdc574a563ed74f52c4689f7c1d61981948dcdc49e9ffc7ee865788245bf48"
     },
     {
       "id": "repo:scripts/lib/core/approvals.mjs",
@@ -527,7 +527,7 @@
       "id": "repo:scripts/lib/core/needs_wording.mjs",
       "path": "scripts/lib/core/needs_wording.mjs",
       "type": "kernel",
-      "hash": "d4a0ec672952fefe72419eaa27c1a1d3e8aa381b3b751054afd9d0ea5054064d"
+      "hash": "a58e54f5f408fce73e4b35b78ef00b8e6244d16af7b1f7fddd2952c3687d5de7"
     },
     {
       "id": "repo:scripts/lib/core/notations.mjs",
@@ -1043,7 +1043,7 @@
       "id": "repo:scripts/modules/ms8-verdicts.mjs",
       "path": "scripts/modules/ms8-verdicts.mjs",
       "type": "executable",
-      "hash": "eb494706e27fdfdb93556f39a0ab3124f27004c54a1d8616bf6fb770fdd14f36"
+      "hash": "5238e06d99c56f251a88a4c97d4809f99f71ef7c140b6c040480450948f2f19d"
     },
     {
       "id": "repo:scripts/modules/ms9-alignment.mjs",
@@ -1391,7 +1391,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "1f68c837a7e0d5ade6e622cfc4f43e3341e9e9c56a198c93b1b7e37011b6a6bb"
+      "hash": "d26e28ba40eb3c1a05130138137226f7211c8c32d95e86f78dce108991d2853c"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1583,7 +1583,7 @@
       "id": "repo:tests/alembic-needs-wording.test.mjs",
       "path": "tests/alembic-needs-wording.test.mjs",
       "type": "test",
-      "hash": "6c9840507f9aa564fc6347025eee14833d2f50c343df6944b15e5a2cc84a0336"
+      "hash": "30b5547b1a50ac76af4bdbe3a3500062848aa53ceed5fa92fe17ca100009a334"
     },
     {
       "id": "repo:tests/alembic-needs.test.mjs",
@@ -2066,6 +2066,12 @@
       "hash": "90065bf1f2bba954f81f15eccce31750c90128862b9930af53a81582c60b004e"
     },
     {
+      "id": "repo:tests/needs-wording.audit3.test.mjs",
+      "path": "tests/needs-wording.audit3.test.mjs",
+      "type": "test",
+      "hash": "2739c30fe854fb922703c64a4af01de0b708f745266adb7d0e97113b195cea5a"
+    },
+    {
       "id": "repo:tests/overrides.test.mjs",
       "path": "tests/overrides.test.mjs",
       "type": "test",
@@ -2201,7 +2207,7 @@
       "id": "repo:tests/redteam-r4-confidence.test.mjs",
       "path": "tests/redteam-r4-confidence.test.mjs",
       "type": "test",
-      "hash": "6e81799e107709af8b782ba5847a613afaf0906f77df023a9feabfe293f2a215"
+      "hash": "016b139f335ce402d0136e0c15af679da3a4e5312024ed71bc81c10dc6d3dfab"
     },
     {
       "id": "repo:tests/redteam-r4-control.test.mjs",

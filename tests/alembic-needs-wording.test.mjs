@@ -217,3 +217,25 @@ test("[req.host.alembic-needs-wording] the subject's own words are never taken f
   // the harness's own sentences lose their codes, and keep content values
   assert.equal(forInstructor("The spine is not source-checked (D48); M1V1 = M2V2 stays (node scripts/gate.mjs --root pkg)."), "The plan is not source-checked; M1V1 = M2V2 stays.");
 });
+
+test("[req.host.alembic-needs-apply] an answer binds the passage as it was asked: edited since, it is asked again (round 3, HIGH-2)", async (t) => {
+  const p = copy(t);
+  const f = F("skeleton", "confirmation-stale", [U2], { type: "judgment", note: "You confirmed the facts in it, but its text has changed since — confirm it as it reads now?", quote: "Write the equilibrium constant expression." }, { recommendation: "confirm" });
+  const r = await exportNeeds(p.root, { changesetId: "seen-0001", gate: { findings: [f] } });
+  const q = r.handin.digest.questions.find((x) => x.id.startsWith("d."));
+  assert.deepEqual(q.choices, ["Confirm", "Later"]);
+  assert.ok(needs(p).handins.at(-1).questions[q.id].seen?.[U2], "the record keeps the passage's hash as asked");
+  // the passage changes before the answer is read (same unit id)
+  beginSession(p.root, p.reader, AGENT);
+  const file = path.join(p.root, SG1), src = fs.readFileSync(file, "utf8");
+  fs.writeFileSync(file, src.replace("Write the equilibrium constant expression for the ammonia synthesis", "Write the equilibrium constant expression (at 500 K) for the ammonia synthesis"));
+  indexAndStamp(p.root, p.reader, { as: "agent", party: AGENT });
+  const a = applyChanges(p.root, { answers: [answer(r.handin, q.id, "Confirm", { words: "Confirmed." })] });
+  assert.deepEqual(a.recorded, []); assert.match(a.skipped[0].reason, /the passage changed since it was asked/);
+  assert.ok(!parseLog(readLogText(p.root)).some((x) => x.type === "confirmation"), "nothing confirmed");
+  // unchanged, the same answer is recorded
+  const p2 = copy(t);
+  const r2 = await exportNeeds(p2.root, { changesetId: "seen-0002", gate: { findings: [f] } });
+  const q2 = r2.handin.digest.questions.find((x) => x.id.startsWith("d."));
+  assert.deepEqual(applyChanges(p2.root, { answers: [answer(r2.handin, q2.id, "Confirm", { words: "Confirmed." })] }).recorded.map((x) => x.outcome), ["answered"]);
+});

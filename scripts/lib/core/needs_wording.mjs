@@ -83,7 +83,8 @@ function mathNode(n, sc) {
       const parts = n.name === "munderover" ? [c[2], c[1]] : [c[1]];
       const extra = parts.map((x) => (x ? finishMath(mathNode(x, true)) : "")).filter(Boolean);
       if (!extra.length) return base;
-      return REL.has(base.replace(/[\u0001\s]/g, "")) ? `${base.replace(/\u0001$/, "")}(${extra.join(", ")})\u0001` : `${base}(${extra.join(", ")})`;
+      // inside a script no spacing sentinel was opened, so none is closed (audit round 3, MEDIUM-3)
+      return !sc && REL.has(base.replace(/[\u0001\s]/g, "")) ? `${base.replace(/\u0001$/, "")}(${extra.join(", ")})\u0001` : `${base.replace(/[\u0001\u0002]/g, "")}(${extra.join(", ")})`;
     }
     case "menclose": {
       // an enclosure stays visible: a strike as struck letters, a box or a circle around its content
@@ -122,31 +123,54 @@ function finishMath(s) {
       out = sign ? out + part.slice(1, -1) : `${out.trimEnd()} ${part.slice(1, -1)} `;
     } else out += part;
   }
-  return out.replace(/\s+/g, " ").replace(/\( /g, "(").replace(/ \)/g, ")").trim();
+  return out.replace(/[\u0001\u0002]/g, "").replace(/\s+/g, " ").replace(/\( /g, "(").replace(/ \)/g, ")").trim();
 }
-/** A TeX formula (with mhchem's \ce and \pu) as a reader sees it, in plain text. */
-export function mathPlain(tex) {
+// orz-markdown's per-document budgets (exported: MAX_TEX_TOTAL, MAX_CHEM_TOTAL, MAX_KATEX_OUTPUT): past them the page
+// shows a formula as its source, and so does the wording (audit round 3, LOW-6). chemLength mirrors orz-markdown's:
+// the characters inside every \ce{…}/\pu{…}, nested ones counted once.
+function chemLength(tex) {
+  let total = 0;
+  const re = /\\(?:ce|pu)(?![A-Za-z])\s*\{/g;
+  for (let m = re.exec(tex); m; m = re.exec(tex)) {
+    let depth = 1, i = m.index + m[0].length;
+    const start = i;
+    for (; i < tex.length && depth > 0; i++) { const c = tex[i]; if (c === "\\") i++; else if (c === "{") depth++; else if (c === "}") depth--; }
+    total += i - start; re.lastIndex = i;
+  }
+  return total;
+}
+/** A fresh per-document budget (one passage, one note). */
+export const mathBudget = () => ({ tex: 0, chem: 0, out: 0 });
+/** A TeX formula (with mhchem's \ce and \pu) as a reader sees it, in plain text. `budget`: the document's (plainText's). */
+export function mathPlain(tex, budget = mathBudget()) {
   const src = String(tex ?? "");
-  // a formula the page shows as its source (too long, a macro definition, or one KaTeX cannot typeset) reads as its
-  // source, as written (MEDIUM-G, LOW-I)
+  // a formula the page shows as its source (too long, a macro definition, past the document's budget, or one KaTeX
+  // cannot typeset) reads as its source, as written (MEDIUM-G, LOW-I, LOW-6)
   if (src.length > MAX_TEX || TEX_DEFINES.test(src)) return src.trim();
+  const chem = chemLength(src);
+  if (budget.tex + src.length > orz.MAX_TEX_TOTAL || budget.chem + chem > orz.MAX_CHEM_TOTAL || budget.out > orz.MAX_KATEX_OUTPUT) return src.trim();
+  budget.tex += src.length; budget.chem += chem;
   let html;
   try { html = katex.renderToString(src, { output: "mathml", throwOnError: true, strict: "ignore" }); }
   catch { return src.trim(); }
+  budget.out += html.length;
   return finishMath(mathNode(parseMathml(html), false)).normalize("NFC");
 }
 /** Text a reviewer or the agent wrote (plain words, not markdown): only its `$…$` maths and orz inline markup rendered,
  *  so "2*3*4" stays as written (audit round 1, LOW-3). */
 export function lightText(src) {
+  const budget = mathBudget();
   return String(src ?? "")
     // orz-markdown's dollar rule (markdown-it-katex): an opening $ not followed by a space, a closing $ not after a
     // space nor before a digit — "$25 per student and $40" is money, not a formula (LOW-M)
-    .replace(/\$\$([\s\S]+?)\$\$|\$(?=\S)([^$\n]*?[^\s\\])\$(?!\d)/g, (m, a, b) => mathPlain(a ?? b))
+    .replace(/\$\$([\s\S]+?)\$\$|\$(?=\S)([^$\n]*?[^\s\\])\$(?!\d)/g, (m, a, b) => mathPlain(a ?? b, budget))
     .replace(/\{\{\s*[\w-]+(?:\[[^\]]*\])?\s+([^{}]*?)\}\}/g, "$1")
     .replace(/\*\*(?=\S)([^*\n]*?\S)\*\*|__(?=\S)([^_\n]*?\S)__/g, (m, x, y) => x ?? y) // strong emphasis; a lone * is the text's own
     .replace(/\s*\[(?:anchor|prereq|prerequisites?)\s*:[^\]\n]*\]/gi, "")
-    .replace(/\s+/g, " ").trim();
+    .replace(CONTROL, " ").replace(/\s+/g, " ").trim();
 }
+/** What Alembic refuses in a line of plain text (agent-api.ts oneLine): control characters but tab and newline. */
+export const CONTROL = /[\u0000-\u0008\u000b-\u001f\u007f]/g;
 
 /**
  * Text as the instructor reads it: orz markup (inline plugins, emphasis, links, lists), comments, struck and hidden
@@ -155,6 +179,7 @@ export function lightText(src) {
  */
 export function plainText(src) {
   let out = "", scriptOpen = null, buf = "";
+  const budget = mathBudget();
   for (const p of renderedParts(String(src ?? "").replace(/\s*\[(?:anchor|prereq|prerequisites?|level|type|count|targets?)\s*:[^\]\n]*\]/gi, ""))) {
     if (p.kind === "mark") {
       if (p.text === "^(" || p.text === "_(") { scriptOpen = p.text[0] === "^"; buf = ""; }
@@ -162,10 +187,10 @@ export function plainText(src) {
       continue;
     }
     if (p.kind === "hint") continue;
-    const t = p.kind === "math" ? mathPlain(p.text) : p.kind === "prose" ? p.seen : p.text;
+    const t = p.kind === "math" ? mathPlain(p.text, budget) : p.kind === "prose" ? p.seen : p.text;
     if (scriptOpen !== null) buf += t; else out += p.kind === "math" ? ` ${t} ` : t;
   }
-  return out.replace(/\{\{[^{}]*?\}\}/g, (m) => m.replace(/^\{\{\s*[\w-]+(?:\[[^\]]*\])?\s*/, "").replace(/\}\}$/, "")) // markup left by a fragment the parser could not close
+  return out.replace(CONTROL, " ").replace(/\{\{[^{}]*?\}\}/g, (m) => m.replace(/^\{\{\s*[\w-]+(?:\[[^\]]*\])?\s*/, "").replace(/\}\}$/, "")) // markup left by a fragment the parser could not close
     .replace(/[ \t]+/g, " ").replace(/ *\n+ */g, " ").replace(/ ([,.;:!?)])/g, "$1").replace(/\( /g, "(").replace(/ ?° ?(?=[CFK]\b)/g, " °").trim();
 }
 
@@ -321,9 +346,9 @@ export function wordEntry(e, ctx = {}) {
     if (cut !== full) shown.push({ text: `${label}: “${full}”`, page: true });
     return `“${cut.replace(/(?<!\.)\.$/, "")}”`;
   };
-  const offPage = (label, src, n, render = plainText) => {
+  const offPage = (label, src, n, render = plainText, suggestion = false) => {
     const full = render(src ?? "").replace(/\s+/g, " ").trim();
-    shown.push({ text: `${label}: “${full}”`, page: false });
+    shown.push({ text: `${label}: “${full}”`, page: false, ...(suggestion ? { suggestion: true } : {}) });
     return `“${shorten(full, n).replace(/(?<!\.)\.$/, "")}”`;
   };
   // P2 (round 2): an answer that confirms or adopts what the units hold binds each unit's WHOLE text (confirmUnits,
@@ -341,7 +366,7 @@ export function wordEntry(e, ctx = {}) {
   };
   const out = (o) => ({ ...o, shown, unseen });
   const fi = (s) => forInstructor(s, ctx), rv = (s) => sentence(lightText(s));
-  const sugg = (n = 160) => (ev.suggestion ? offPage("The suggestion in full", ev.suggestion, n, lightText) : "");
+  const sugg = (n = 160) => (ev.suggestion ? offPage("The suggestion in full", ev.suggestion, n, lightText, true) : "");
   switch (e.kind) {
     case "detail-in-spine": {
       const kinds = [...new Set((ev.detail || []).map((x) => x.kind))], list = kinds.length > 1 ? `${kinds.slice(0, -1).join(", ")} and ${kinds.at(-1)}` : kinds[0] || "detail";
@@ -354,7 +379,7 @@ export function wordEntry(e, ctx = {}) {
     case "spine-review-concern": {
       const pre = /^Possibly wrong \([^)]*\): "/.exec(note), rest = pre ? note.slice(pre[0].length + String(ev.text ?? "").length).replace(/^"\.\s*/, "") : note;
       const sm = /\s*Suggested: "([\s\S]*)"\.\s*$/.exec(rest), problem = sm ? rest.slice(0, sm.index) : rest, s = sm ? sm[1] : "";
-      return out({ text: `${inPlace(w)}, the line ${show("The whole line", ev.text, 120)} may be wrong — ${rv(firstSentence(problem))} ${s ? `Suggestion: change it to ${offPage("The suggestion in full", s, 160, lightText)}.` : "Suggestion: check the line, and say what it should be."}`,
+      return out({ text: `${inPlace(w)}, the line ${show("The whole line", ev.text, 120)} may be wrong — ${rv(firstSentence(problem))} ${s ? `Suggestion: change it to ${offPage("The suggestion in full", s, 160, lightText, true)}.` : "Suggestion: check the line, and say what it should be."}`,
         detail: [rv(problem) !== rv(firstSentence(problem)) ? `The reviewer: ${rv(problem)}` : "", "A blind reviewer read the lines changed since your last approval."].filter(Boolean).join("\n"),
         ...(s ? { choices: SUGGESTION_CHOICES } : {}) });
     }
@@ -444,11 +469,12 @@ export function recommendationLine(e, ctx = {}) {
 }
 
 /** What a correction changed, as it reads: the changed words with a little context on each side. */
-export function changedSpan(before, after, context = 4) {
+export function changedSpan(before, after, context = 4, { full = false } = {}) {
   const a = plainText(before).split(" "), b = plainText(after).split(" ");
   let i = 0; while (i < a.length && i < b.length && a[i] === b[i]) i++;
   let j = 0; while (j < a.length - i && j < b.length - i && a[a.length - 1 - j] === b[b.length - 1 - j]) j++;
   const from = Math.max(0, i - context), cut = (x) => x.slice(from, Math.min(x.length, x.length - j + context)).join(" ");
   const pre = from > 0 ? "…" : "", post = (x) => (x.length - j + context < x.length ? "…" : "");
+  if (full) return { was: `${pre}${cut(a)}${post(a)}`, now: `${pre}${cut(b)}${post(b)}` };
   return { was: `${pre}${shorten(cut(a), 160)}${post(a)}`, now: `${pre}${shorten(cut(b), 160)}${post(b)}` };
 }

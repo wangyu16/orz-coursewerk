@@ -36,6 +36,21 @@
     first, uses orz-markdown's guards (a formula too long, or one that defines macros, reads as its source, as does one
     KaTeX rejects) and checks it uses orz-markdown's KaTeX. The agent's and a reviewer's own words keep values that
     look like codes ("(D65)"), amounts ("$25 … $40") and file names. The hidden copy's unit list is bounded.
+  After a third audit, two more deliberate changes to how answers from Alembic are recorded (narrow, fail-safe boundary
+  rules; both close gaps older than this change):
+  - **Only an exact choice means yes.** A digest answer counts as confirm, claim, adopt, apply, keep or revert only
+    when it is one of the question's exact choices. Free words are recorded as said (`said: …`), so no reading of an
+    answer can take them for a yes, and the assistant takes them up. A question that confirms, claims or adopts what
+    passages hold is asked again with its choices instead. Before, a typed "Confirmation must wait…" counted as a
+    confirmation, because answers were read by their first word.
+  - **An answer binds the passage as it was asked.** The record keeps each passage's hash as asked. If a passage
+    changed before the answer is read, the answer is skipped and the question asked again. A question asked before
+    this check is asked again unless its one finding can be checked. Because of this, a passage too long to show again
+    offers its one-click choices, never pre-chosen, and says the page holds the exact text.
+  - Also: a long suggestion that cannot be shown is said plainly to be unappliable from Alembic (no Apply); a long
+    correction shows the words it removes and is never pre-chosen; control characters never reach a hand-in, and refs
+    pass Alembic's path checks; the record stays under 3 MB; maths follows orz-markdown's per-page budgets; the
+    question about an unasked edit of the instructor's text names every passage that "Keep" adopts (ms8).
 
 ## v1.0.5 (2026-11-07)
 
