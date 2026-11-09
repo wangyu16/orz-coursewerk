@@ -68,6 +68,14 @@
     red-team suites unchanged). The other holders a "Keep" adopts are shown and checked only in Needs you.
   - A quote cut inside orz markup reads without the stray braces; table rows read as text; a rights interrupt no longer
     shows the check's field names.
+  After a fifth audit (narrow, fail-safe):
+  - "Keep it removed" never adopts anything: the answer is checked against whatever holds the removed words now, and is
+    asked again once any passage holds them again.
+  - Words on a disputed claim are never read as a change the instructor asked for.
+  - Words still owed to the assistant are listed again in every later job (apply `owed`, export `owedToYou`, status
+    `owedWords`), and can be taken up even after the hand-in has left the record. Words taken up on a question only the
+    instructor's choice can settle (confirm, keep, accept as theirs) leave it to be asked again with its choices.
+  - An answer to a question asked before the passage check is reported "asked again" once, not in every later job.
 
 ## v1.0.5 (2026-11-07)
 

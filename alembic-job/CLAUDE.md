@@ -55,7 +55,11 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
    node assistant/scripts/alembic_needs.mjs taken-up --root work --changeset <id> --question <id> --note "<what you did>" --model <your model id>
    ```
 
-   Until you record it, the question stays open as yours, and is not asked again.
+   Until you record it, the question stays open as yours, and is not asked again. Words owed from an earlier job (one
+   that stopped before it took them up) are listed again: in `apply`'s `owed`, in the export's `owedToYou`, and in
+   `coursewerk.mjs status` (`owedWords`). At the start of every job, take up each one listed. A question that only the
+   instructor's choice can settle (to confirm, keep, accept as theirs) is asked again with its choices once you have
+   taken the words up; say so in your note.
 
 2. **See where the course stands** with Coursewerk's own tools, with `--root work`. Where `COURSEWERK.md` says
    `git status` and `git diff`, these take their place: the index finds any edit nobody recorded, and the status says

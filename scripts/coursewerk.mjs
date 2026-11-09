@@ -29,6 +29,7 @@ import { glanceProblem, recordApproval, approvalStatus } from "./lib/core/approv
 import { approvalPrecondition } from "./lib/core/spine_review.mjs";
 import { chapterStates, eligibility, latestPublish, publishDecision, transition, transitionProblems, unitInfoOf } from "./lib/core/workflow.mjs";
 import { answerDigest, buildDigest, deliverDigest, recommendDigest, DEFAULT_CAP } from "./lib/core/digest.mjs";
+import { owedWords } from "./lib/core/alembic_needs.mjs";
 import { runGate } from "./lib/skeleton/full_gate.mjs";
 import { issueHistory, historyMarkdown } from "./lib/core/history.mjs";
 import { confirmAdministrative, deliverablesOf, readSidecar } from "./lib/core/units_index.mjs";
@@ -81,11 +82,13 @@ try {
     const g = runGate(root, { inputsDir: opt("--inputs") || null });
     const info = unitInfoOf(root, reader);
     const el = eligibility(root, reader, g, new Map([...info].map(([k, v]) => [k, v.deliverable])));
-    const pub = latestPublish(root);
+    const pub = latestPublish(root), owed = owedWords(root);
     out({ chapters: Object.fromEntries(Object.entries(states).map(([c, s]) => [c, { ...s, publishable: el.chapters[c].publishable, why: el.chapters[c].why }])),
       course: el.course, blocking: g.gate.blocking.length, questions: g.gate.questions.length, corrections: correctionsToShow(root).length,
       lastPublish: pub ? { seq: pub.seq, chapters: pub.chapters.map((c) => c.chapter), stillCurrent: pub.current } : null,
-      ...(g.carriedOver?.labels.length ? { carriedOver: { label: CARRIED_LABEL, baselines: g.carriedOver.labels, units: g.carriedOver.units, plans: g.carriedOver.plans, notes: g.carriedOver.notes } } : {}) });
+      ...(g.carriedOver?.labels.length ? { carriedOver: { label: CARRIED_LABEL, baselines: g.carriedOver.labels, units: g.carriedOver.units, plans: g.carriedOver.plans, notes: g.carriedOver.notes } } : {}),
+      // the instructor's words, answered in Alembic, that the agent still owes action on (alembic_needs.mjs taken-up)
+      ...(owed.length ? { owedWords: owed.map(({ changesetId, question, words }) => ({ changesetId, question, words })) } : {}) });
     process.exit(0);
   }
   if (cmd === "assemble" || cmd === "back-to-draft") {

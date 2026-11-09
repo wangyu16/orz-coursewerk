@@ -114,7 +114,9 @@ export function confirmationStands(acts, u, fh = factHash(u.text)) {
   return binds.some((b) => (b.seen && b.seen === seenKey(u.text)) || (b.content && b.content === unitHash(u.text)) || (b.claims && b.claims === printedClaimsKey(u.text)));
 }
 /** An answer to a disputed claim that asks for a change ("change it to 1865"): anything but keep, confirm or later. */
-export const asksChange = (choice) => !/^\s*(?:keep|confirm|later|still correct|accept)\b/i.test(String(choice || ""));
+// words the instructor answered in through Alembic ("said: …") ask for nothing here: they reach the agent as owed words
+// (digest.mjs saidOwed), never as a change asked for (D-133 audit round 5, MEDIUM-2)
+export const asksChange = (choice) => !/^said: /.test(String(choice || "")) && !/^\s*(?:keep|confirm|later|still correct|accept)\b/i.test(String(choice || ""));
 const normClaim = (t) => String(t || "").replace(/\s+/g, " ").trim();
 /** The same, from parsed log records. `changes`: unit → Map(claim text → the instructor's answer) — the changes the
  *  instructor asked for on disputed claims (red-team round 1, F15); a later "keep" on the same claim withdraws one. */

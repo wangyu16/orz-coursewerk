@@ -32,6 +32,8 @@ try {
     fs.mkdirSync(path.dirname(path.resolve(out)), { recursive: true });
     fs.writeFileSync(out, JSON.stringify(r.handin, null, 2) + "\n");
     console.log(JSON.stringify({ out, changesetId, questions: r.handin.digest.questions.length, ...r.counts, leftForNextTime: r.left, delivered: r.delivered,
+      // the instructor's words still owed to you: take each up (round 5, MEDIUM-3)
+      ...(r.owed.length ? { owedToYou: r.owed.map(({ changesetId: c, question, words }) => ({ changesetId: c, question, words })) } : {}),
       next: r.handin.digest.questions.length ? `alembic handin ${out}` : "nothing needs the instructor now" }, null, 2));
   } else if (cmd === "taken-up") {
     const model = opt("--model") || fail("which model are you? --model <id>");

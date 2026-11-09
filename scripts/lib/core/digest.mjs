@@ -39,7 +39,7 @@ export function answeredBases(root) {
   const text = readLogText(root);
   const out = new Map();
   if (verifyLog(text).length) return out;
-  const records = parseLog(text), taken = takenUpKeys(records);
+  const records = parseLog(text), taken = answeringKeys(records);
   // words the instructor answered in through Alembic ("said: …") answer the question only once the agent has recorded
   // what it did with them (D-133 audit round 4): until then the finding stays open, owed to the agent (saidOwed)
   for (const r of records) if (r.type === "answer" && r.party?.role === "instructor") for (const a of r.payload?.answers || []) if (!LATER.test(a.choice) && (!SAID.test(a.choice) || taken.has(`${a.finding}|${a.basis}`))) out.set(`${a.finding}|${a.basis}`, { choice: a.choice, seq: r.seq });
@@ -47,7 +47,11 @@ export function answeredBases(root) {
 }
 /** An answer in the instructor's own words, through Alembic (alembic_needs.mjs): never a yes to anything. */
 export const SAID = /^said: /;
-const takenUpKeys = (records) => new Set(records.filter((r) => r.type === "revision" && r.party?.role === "agent" && r.payload?.event === "said-taken-up").flatMap((r) => r.payload.keys || []));
+const takenUp = (records) => records.filter((r) => r.type === "revision" && r.party?.role === "agent" && r.payload?.event === "said-taken-up");
+const takenUpKeys = (records) => new Set(takenUp(records).flatMap((r) => r.payload.keys || []));
+// a question that confirms, claims or adopts is answered only by the instructor's choice: words taken up on it leave it to
+// be asked again (round 5, MEDIUM-5)
+const answeringKeys = (records) => new Set(takenUp(records).filter((r) => !r.payload.binding).flatMap((r) => r.payload.keys || []));
 /** The instructor's words the agent owes action on: "finding|basis" → { words, seq, entry }. */
 export function saidOwed(root) {
   const text = readLogText(root), out = new Map();

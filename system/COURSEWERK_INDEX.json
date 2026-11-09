@@ -41,7 +41,7 @@
       "id": "repo:alembic-job/CLAUDE.md",
       "path": "alembic-job/CLAUDE.md",
       "type": "repository-support",
-      "hash": "4feafe1875fbcd7707cea8ac83df7b672c604a09a188752b43a50d7c3a369b6f"
+      "hash": "3fa5414ca69c61caf41886ebaf717fa7cc4e19aede544208e20d21d6b92e3e63"
     },
     {
       "id": "repo:bootstrap/init.sh",
@@ -53,7 +53,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "0f090e9249da40ac75c44d22b9edc1c34df34080c59800ffcee7a86350f93957"
+      "hash": "5f197de5c9ccb9a62dd622bb35e71e65b51a800cfde74d552b271c2729f35679"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -227,7 +227,7 @@
       "id": "repo:scripts/alembic_needs.mjs",
       "path": "scripts/alembic_needs.mjs",
       "type": "executable",
-      "hash": "0c31730b018efbc8783fbbe0c50c93ada6e2ebdf1a49a531a5aa0e066599184d"
+      "hash": "bddd468f086d0ca71b6d415ead168baaf230d50ec97cfd10495929c2848f17bb"
     },
     {
       "id": "repo:scripts/assemble_blind_bundle.mjs",
@@ -287,7 +287,7 @@
       "id": "repo:scripts/coursewerk.mjs",
       "path": "scripts/coursewerk.mjs",
       "type": "executable",
-      "hash": "116f72a00cc3acf5aadda7745166ea54d931b378df1123f9bf778d19c51da11a"
+      "hash": "b69f11638d5702f5401f7c94083a1cb2e69715d4bd0cf831c1b2d33c1a55e677"
     },
     {
       "id": "repo:scripts/data/license-texts.json",
@@ -431,7 +431,7 @@
       "id": "repo:scripts/lib/core/alembic_needs.mjs",
       "path": "scripts/lib/core/alembic_needs.mjs",
       "type": "kernel",
-      "hash": "cbc1313551878b360e024b4f9c58db164b506ad6a2b15e64c5503026c87f24f2"
+      "hash": "9b8db8e9f100b4d20da048da61fa353e957b836448ced86697a89e8249c03219"
     },
     {
       "id": "repo:scripts/lib/core/approvals.mjs",
@@ -485,7 +485,7 @@
       "id": "repo:scripts/lib/core/digest.mjs",
       "path": "scripts/lib/core/digest.mjs",
       "type": "kernel",
-      "hash": "c4ff762f6ccba38c24564e6aab8a11ceb273a3ac05c6f2b091ef75576c5b524c"
+      "hash": "d35896f37e3ef85224162f24a5277c413230c51db7a4cad52dbc04d0aef39f91"
     },
     {
       "id": "repo:scripts/lib/core/history.mjs",
@@ -539,7 +539,7 @@
       "id": "repo:scripts/lib/core/obligations.mjs",
       "path": "scripts/lib/core/obligations.mjs",
       "type": "kernel",
-      "hash": "4d86d80277eb61acb373e31c5896f9f174f50bc54b21484e8c4a5b58b756d2b7"
+      "hash": "12e91dae3d647718e1ab79549df1244f63656b3df45aa5d9a5a86f70fc2f9c27"
     },
     {
       "id": "repo:scripts/lib/core/pack_v2.mjs",
@@ -1391,7 +1391,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "0e96dde4d4f5c12c05aabf2a1973aa48902494bb505b10d91d02c5ff7da8884a"
+      "hash": "aadca3c07e81ab9f482457df57bd69992d56911d237d3889939e49fee2d919df"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -2076,6 +2076,12 @@
       "path": "tests/needs-wording.audit4.test.mjs",
       "type": "test",
       "hash": "797708576306931cf16a8846e887675d18111fdc71e1a88ee0c73f52767a5766"
+    },
+    {
+      "id": "repo:tests/needs-wording.audit5.test.mjs",
+      "path": "tests/needs-wording.audit5.test.mjs",
+      "type": "test",
+      "hash": "b2d2a7c3d5a0c1e1fc75d18485737a8ae24cf1afac7c5f2493d9600b468c7b12"
     },
     {
       "id": "repo:tests/overrides.test.mjs",
