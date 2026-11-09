@@ -172,6 +172,20 @@ export function lightText(src) {
 /** What Alembic refuses in a line of plain text (agent-api.ts oneLine): control characters but tab and newline. */
 export const CONTROL = /[\u0000-\u0008\u000b-\u001f\u007f]/g;
 
+/** A quote cut from inside orz markup, or a table row, read as text (D-133 audit round 4, LOW-5): an unmatched "}}"
+ *  (the quote began inside `{{sp[info] …}}`) and an unclosed "{{name[…] " (it ended inside) are dropped; a table's
+ *  separator row goes, and its cells read as "a; b; c". */
+function cutMarkup(src) {
+  let t = src;
+  // an unclosed opening: "{{name" or "{{name[args]" with no "}}" after it
+  t = t.replace(/\{\{\s*[\w-]+(?:\[[^\]\n]*\]?)?\s*(?![^{}]*\}\})/g, "");
+  // an unmatched closing: "}}" with no "{{" before it
+  let depth = 0;
+  t = t.replace(/\{\{|\}\}/g, (m) => (m === "{{" ? (depth++, m) : depth > 0 ? (depth--, m) : ""));
+  return t.split("\n").filter((l) => !/^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(l))
+    .map((l) => (/^\s*\|.*\|\s*$/.test(l) ? l.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim()).filter(Boolean).join("; ") : l)).join("\n");
+}
+
 /**
  * Text as the instructor reads it: orz markup (inline plugins, emphasis, links, lists), comments, struck and hidden
  * text gone; maths and chemistry typeset to plain text; sub/superscripts as Unicode; plan annotations ([anchor: …])
@@ -180,7 +194,7 @@ export const CONTROL = /[\u0000-\u0008\u000b-\u001f\u007f]/g;
 export function plainText(src) {
   let out = "", scriptOpen = null, buf = "";
   const budget = mathBudget();
-  for (const p of renderedParts(String(src ?? "").replace(/\s*\[(?:anchor|prereq|prerequisites?|level|type|count|targets?)\s*:[^\]\n]*\]/gi, ""))) {
+  for (const p of renderedParts(cutMarkup(String(src ?? "")).replace(/\s*\[(?:anchor|prereq|prerequisites?|level|type|count|targets?)\s*:[^\]\n]*\]/gi, ""))) {
     if (p.kind === "mark") {
       if (p.text === "^(" || p.text === "_(") { scriptOpen = p.text[0] === "^"; buf = ""; }
       else if (p.text === ")" && scriptOpen !== null) { out += script(buf, scriptOpen); scriptOpen = null; }
@@ -220,6 +234,7 @@ export function placeOf(rel, ctx = {}) {
   const slug = slugOf(rel), title = ctx.titles?.get?.(slug) || words(slug);
   for (const [dir, name] of PARTS) if (String(rel).startsWith(dir)) return `the ${name} for “${title}”`;
   if (/^(?:inputs\/|sources\/|.*\/sources\/)/.test(String(rel))) return `the source “${slug}”`;
+  if (/^private\//.test(String(rel))) return `“${slug}” (in the assistant's records)`;
   return `the page “${ctx.titles?.get?.(rel) || words(slug)}”`;
 }
 /** "the passage beginning “…”" (or the question, the answer) for a unit the context knows. */
@@ -288,7 +303,11 @@ export function forInstructor(text, ctx = {}, { from = "harness" } = {}) {
   t = t.replace(/\s*\([^()]*\bscripts\/[^()]*\)/g, "").replace(COMMAND, "");
   // a decision code is the harness's only in its own notes: in the agent's or a reviewer's words "(D65)" is a value
   // (audit round 2, MEDIUM-H); the hidden copy keeps every code either way
-  if (harness) t = t.replace(CODES_ONLY, "").replace(/\s*[—:-]\s*run it again\b/gi, "");
+  if (harness) t = t.replace(CODES_ONLY, "").replace(/\s*[—:-]\s*run it again\b/gi, "")
+    // a check's index and field names (ms2-rights: "source[2]: evidenceSnapshot does not exist") (round 4, LOW-6)
+    .replace(/\bsource\[\d+\]:\s*evidenceSnapshot does not exist:?\s*/gi, "the saved copy of a source's licence page is missing: ")
+    .replace(/\b(?:source|item|entry|unit)\[\d+\]:\s*/gi, "")
+    .replace(/\b[a-z]{2,}(?:[A-Z][a-z]+)+\b/g, (m) => m.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase());
   // a course path (with the line right after it) as its page; in the agent's words only a path with a folder, so a
   // file name such as "fig-2.png" stays as written (LOW-M)
   t = t.replace(new RegExp(`(${FILE.source})(?:,? (?:at |on )?lines? (\\d+)(?:\\s*[–-]\\s*\\d+)?)?`, "gi"), (m, file) => (harness || file.includes("/") ? placeOf(file, ctx) : m));
@@ -356,7 +375,8 @@ export function wordEntry(e, ctx = {}) {
   // without a one-click choice (`unseen`)
   const binds = () => {
     shown.splice(0, shown.length, ...shown.filter((x) => !x.page));
-    const units = e.units || [];
+    // an unasked edit's "keep" adopts every holder of the instructor's text (adoptInstructorText): all are shown (round 4)
+    const units = [...new Set((e.units || []).flatMap((u) => (e.kind === "instructor-edit-unasked" ? ctx.adopts?.get?.(u) || [u] : [u])))];
     if (!units.length) unseen = true;
     units.forEach((u, i) => {
       const t = ctx.units?.get?.(u)?.text;

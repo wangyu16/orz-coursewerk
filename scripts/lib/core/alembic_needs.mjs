@@ -23,12 +23,15 @@ import { liveReader, manifestChapters, manifestUnits } from "./package_reader.mj
 import { approvalStatus, recordApproval } from "./approvals.mjs";
 import { approvalPrecondition } from "./spine_review.mjs";
 import { chapterStates, unitInfoOf } from "./workflow.mjs";
-import { answerDigest, answeredBases, answerKeyOf, basisOf, buildDigest, deliverDigest, DEFAULT_CAP, isAnswered } from "./digest.mjs";
+import { SAID, saidOwed, answerDigest, answeredBases, answerKeyOf, basisOf, buildDigest, deliverDigest, DEFAULT_CAP, isAnswered } from "./digest.mjs";
 import { currentVersion } from "./versions.mjs";
 import { COURSE_MAP, nodeIndex, parseSpine, spinePaths } from "./spine.mjs";
 import { loggedDigestCap } from "../records/config.mjs";
 import { correctionsToShow, revertCorrection } from "../verify/verdicts.mjs";
-import { deliverablesOf, readSidecar } from "./units_index.mjs";
+import { instructorRegister } from "./units_index.mjs";
+import { holdersOf } from "./authorship.mjs";
+import { loadUnits } from "./obligations.mjs";
+import { unitHash } from "./segment.mjs";
 import { assistantCodes, changedSpan, CONTROL, forInstructor, placeOf, plainText, reasonLabel, recommendationLine, sentence, shorten, wordEntry } from "./needs_wording.mjs";
 
 // ---- Alembic's limits for a hand-in (agent-runtime-v3 §22) -------------------------------------------------------
@@ -126,7 +129,10 @@ export function digestQuestion(e, deliverableOf = new Map(), ctx = {}) {
   let choices = worded.unseen ? null : DIGEST_CHOICES[e.kind] || worded.choices || null;
   let tooLong = "";
   if (choices && !offFits) {
-    if (off.some((x) => x.suggestion) && !off.some((x) => !x.suggestion)) {
+    // a kind whose answer confirms, claims or adopts (round 4, MEDIUM-2): its own choices stay, never pre-chosen — the
+    // answer is checked against the passage as asked (askedAsNow), and the words it removed are in the assistant's record
+    if (BINDING_KINDS.has(e.kind)) tooLong = "The words this question is about are too long to show here in full; they are kept in the assistant's record. Your answer applies to the text exactly as it was when asked; if it has changed, you are asked again.";
+    else if (off.some((x) => x.suggestion) && !off.some((x) => !x.suggestion)) {
       choices = choices.filter((x) => !/^apply\b/i.test(x));
       tooLong = "This suggestion is too long to show here in full, so it can't be applied from Alembic: choose another answer, or ask the assistant in your own words to apply it in a job.";
     } else choices = null;
@@ -140,7 +146,7 @@ export function digestQuestion(e, deliverableOf = new Map(), ctx = {}) {
   const places = [...new Set((e.chapters || []).filter((x) => x !== "package").map((x) => `“${c.titles?.get?.(x) || x}”`))];
   const detail = [
     allFits ? shown
-      : offFits ? [head, worded.unseen ? "The passage could not be read here: it is on the page (the link). Answer in your own words; the assistant brings it back with its choices." : "The whole passage is too long to show here: the page (the link) holds the exact text, and your answer applies to it as it reads there. If it changes before your answer is recorded, you are asked again."].filter(Boolean).join("\n")
+      : offFits ? [head, worded.unseen ? "The passage could not be read here. Answer in your own words: they go to the assistant, which takes them up; nothing is confirmed or kept from words alone." : "The whole passage is too long to show here: the page (the link) holds the exact text, and your answer applies to it as it reads there. If it changes before your answer is recorded, you are asked again."].filter(Boolean).join("\n")
       : [tooLong || "The text this answer would adopt is too long to show here: answer in your own words, and the assistant takes it up.", shorten(head, LIMITS.detail - 600)].join("\n"),
     worded.detail,
     e.count > 1 ? `This comes up in ${e.count} places${places.length ? ` (${places.join(", ")})` : ""}; one answer settles them all.` : "",
@@ -166,19 +172,26 @@ export function needsContext(root, reader, chapters = manifestChapters(reader)) 
   const titles = new Map();
   try { for (const c of manifestUnits(JSON.parse(reader.text("alembic.json")))) if (c.title) titles.set(c.slug, String(c.title)); } catch { /* no titles: slugs read as words */ }
   let nodes = new Map(); try { nodes = nodeIndex(parseSpine(reader, chapters)); } catch { nodes = new Map(); }
-  const units = new Map(), deliverableOf = new Map();
-  let rels = []; try { rels = deliverablesOf(reader); } catch { rels = []; }
-  for (const rel of rels) {
-    let lines = null;
-    for (const u of readSidecar(root, rel)?.units || []) {
-      deliverableOf.set(u.id, rel);
-      const [a, b] = u.locator?.lines || [];
-      if (lines === null) { try { lines = String(reader.text(rel) ?? "").split("\n"); } catch { lines = []; } }
-      units.set(u.id, { deliverable: rel, form: u.form, text: a ? lines.slice(a - 1, b || a).join("\n") : "" });
-    }
+  // the units as they read NOW (loadUnits re-segments the files: what confirmUnits, claimAuthorship and
+  // adoptInstructorText bind), never the sidecar as last indexed (D-133 audit round 4, HIGH-1)
+  const units = new Map(), deliverableOf = new Map(), live = new Map(), adopts = new Map();
+  let all = []; try { all = loadUnits(root, reader); } catch { all = []; }
+  for (const u of all) {
+    units.set(u.id, { deliverable: u.locator?.deliverable, form: u.form, text: u.text });
+    deliverableOf.set(u.id, u.locator?.deliverable); live.set(u.id, unitHash(u.text));
   }
-  return { titles, nodes, units, deliverableOf };
+  // what a "keep" of an unasked edit adopts (units_index.mjs adoptInstructorText): every holder of a registered text the
+  // unit holds — shown, and checked as asked, with it (round 4, MEDIUM-7; the finding itself names the unit only)
+  try {
+    for (const hs of holdersOf(instructorRegister(root), all).values()) {
+      const ids = hs.map((u) => u.id);
+      for (const id of ids) adopts.set(id, [...new Set([...(adopts.get(id) || [id]), ...ids])].sort());
+    }
+  } catch { /* no register: a unit adopts itself */ }
+  return { titles, nodes, units, deliverableOf, live, adopts };
 }
+/** The units an answer to this entry binds: an unasked edit's "keep" adopts every holder of the text (adopts). */
+export const boundUnits = (e, ctx) => [...new Set((e.units || []).flatMap((u) => (e.kind === "instructor-edit-unasked" ? ctx.adopts?.get?.(u) || [u] : [u])))];
 
 /** The harness's own words and codes for a question, kept for the assistant in the needs record (never handed in). */
 // bounded (audit round 1, LOW-2): the record keeps 50 hand-ins of 20 questions within Alembic's per-file limit
@@ -283,7 +296,7 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
   if (problems.length) throw new Error(`the hand-in would break Alembic's limits: ${problems.slice(0, 3).join("; ")}`);
 
   const needs = readNeeds(root);
-  needs.handins = [...(needs.handins || []).filter((h) => h.changesetId !== changesetId), { changesetId, at, questions: Object.fromEntries(shown.map((x) => [x.question.id, { ...boundRef(x.ref, hash), choices: x.question.choices || null, words: x.question.words, ...(x.assistant ? { assistant: x.assistant } : {}) }])) }].slice(-KEEP_HANDINS);
+  needs.handins = [...(needs.handins || []).filter((h) => h.changesetId !== changesetId), { changesetId, at, questions: Object.fromEntries(shown.map((x) => [x.question.id, { ...boundRef(x.ref, ctx), choices: x.question.choices || null, words: x.question.words, ...(x.assistant ? { assistant: x.assistant } : {}) }])) }].slice(-KEEP_HANDINS);
   // within Alembic's 4 MB a record file may hold: the oldest hand-ins go first, never the one just made (MEDIUM-4)
   while (needs.handins.length > 1 && Buffer.byteLength(JSON.stringify(needs), "utf8") > NEEDS_BYTES) needs.handins.shift();
   fs.mkdirSync(recordFile(root, "private/coursewerk/digest"), { recursive: true });
@@ -298,20 +311,36 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
 const BINDING_KINDS = new Set(["exercise-data-confirm", "confirmation-stale", "answer-still-correct", "fact-disputed", "instructor-edit-unasked", "unit-unknown-authorship"]);
 /** What the record keeps of a question: a digest entry with the content hash of each unit as asked (`seen`, HIGH-2), and
  *  its evidence bounded (apply reads its key, kind, units and bases, never its evidence: MEDIUM-4). */
-function boundRef(ref, hash) {
+function boundRef(ref, ctx) {
   if (ref.kind !== "digest") return ref;
   const e = ref.entry, ev = e.evidence || {};
   const evidence = JSON.stringify(ev).length <= 1500 ? ev : Object.fromEntries(Object.entries(ev).filter(([, v]) => typeof v !== "object" && String(v).length <= 200).concat([["bounded", sha256(JSON.stringify(ev))]]));
-  return { ...ref, entry: { ...e, evidence }, seen: Object.fromEntries((e.units || []).map((u) => [u, hash.get(u) ?? null])) };
+  // round 4 (HIGH-1): the hash of each bound unit's LIVE text (unitHash), or "absent" for a unit no file holds now
+  return { ...ref, entry: { ...e, evidence }, seen: Object.fromEntries(boundUnits(e, ctx).map((u) => [u, ctx.live.get(u) ?? "absent"])) };
 }
-/** Is every unit the entry names as it was when asked? Without `seen` (a hand-in before round 3) only a one-finding entry
- *  can be checked, by its basis; anything else is asked again (fail-safe). */
-function askedAsNow(q, e, info) {
-  const now = (u) => info.get(u)?.contentHash ?? null;
-  if (q.seen) return Object.entries(q.seen).every(([u, h]) => now(u) === h);
-  const b = e.bases || [];
-  if ((e.findings || []).length !== 1 || b.length !== 1 || b[0].claimKey) return false;
-  return b[0].basis === sha256(canonicalJson([e.findings[0], (e.units || []).map((u) => now(u))]));
+/** Does every unit the answer binds read now as it did when asked? Checked against the live text (loadUnits, what the
+ *  binding acts read), never the sidecar, so an edit made in Alembic before the next index is caught (round 4, HIGH-1).
+ *  Fail-safe: no `seen` (a hand-in before round 3), a bound unit `seen` does not name (LOW-4), or a hash that is not
+ *  there to compare, is asked again; only an explicit "absent" that is still absent passes. */
+function askedAsNow(q, e, ctx) {
+  const seen = q.seen;
+  if (!seen || typeof seen !== "object") return false;
+  if (!boundUnits(e, ctx).every((u) => Object.hasOwn(seen, u)) || !(e.units || []).every((u) => Object.hasOwn(seen, u))) return false;
+  return Object.entries(seen).every(([u, h]) => (h === "absent" ? !ctx.live.has(u) : typeof h === "string" && h.length > 0 && ctx.live.get(u) === h));
+}
+
+/**
+ * The agent records what it did with words the instructor answered in ("said: …"): the question is then answered
+ * (digest.mjs answeredBases). `note`: what was done, in the agent's words. Returns the log record.
+ */
+export function takenUp(root, { changesetId, question, note }, party) {
+  if (party?.role !== "agent") throw new Error("taking up the instructor's words is the agent's record");
+  if (!hasVisibleWords(note)) throw new Error("say what you did with the instructor's words: --note \"…\"");
+  const q = readNeeds(root).handins?.find((h) => h.changesetId === changesetId)?.questions?.[question];
+  if (!q || q.kind !== "digest") throw new Error(`no digest question ${question} in hand-in ${changesetId}`);
+  const owed = saidOwed(root), keys = (q.entry.bases || []).map((b) => `${b.finding}|${b.basis}`).filter((k) => owed.has(k));
+  if (!keys.length) throw new Error("no words of the instructor's are owed on that question");
+  return appendLogRecord(root, { type: "revision", party, payload: { event: "said-taken-up", keys, changesetId, question, note: String(note).trim(), words: keys.map((k) => owed.get(k).words) } });
 }
 
 /**
@@ -335,6 +364,7 @@ export function applyChanges(root, changes) {
     if (q.choices && !q.choices.includes(answer)) { skip(`"${line(answer, 60)}" is not one of the choices`); continue; }
     if (q.words === "required" && !words && !(q.kind === "approval" && answer === "Not yet")) { skip("the instructor's words are required and were not given"); continue; }
     const party = { role: "instructor", name };
+    let said = null;
     const reader = liveReader(root);
     let outcome, seq = null;
     try {
@@ -372,19 +402,16 @@ export function applyChanges(root, changes) {
         }
       } else if (q.kind === "digest") {
         const e = q.entry;
-        // HIGH-2 (round 3): an answer binds the passage as it was asked; one that changed since is asked again
-        if (!askedAsNow(q, e, unitInfoOf(root, reader))) { skip("the passage changed since it was asked (or the question predates that check): it is asked again"); continue; }
-        // HIGH-1 (round 3, fail-safe): only an exact choice can mean yes (confirm, claim, adopt, apply, keep, revert). Free
-        // words are recorded as said, so no reading of an answer takes them for a yes, and the agent takes them up; a
-        // question that confirms or adopts what units hold is asked again with its choices instead
+        // HIGH-1 (round 3, fail-safe): only an exact choice can mean yes (confirm, claim, adopt, apply, keep, revert).
+        // Free words, for any kind, are recorded as said ("said: …", which no reading takes for a yes): the question is
+        // then owed to the agent, which acts on the words and records it (takenUp), and is not asked again (round 4)
         let choice = answer;
-        if (!q.choices) {
-          if (/^\s*later\s*\.?\s*$/i.test(answer)) choice = "Later";
-          else if (BINDING_KINDS.has(e.kind)) { skip("free words where this question needs one of its choices: it is asked again"); continue; }
-          else choice = `said: ${answer}`;
-        }
+        if (!q.choices) choice = /^\s*later\s*\.?\s*$/i.test(answer) ? "Later" : `said: ${answer}`;
+        // HIGH-2 (rounds 3, 4): a choice binds the passage as it was asked, read live; one that changed is asked again
+        if (!SAID.test(choice) && choice !== "Later" && !askedAsNow(q, e, needsContext(root, reader))) { skip("the passage changed since it was asked (or the question predates that check): it is asked again"); continue; }
         answerDigest(root, { entries: [e] }, { answers: { [e.key]: choice }, instructorWords: words || answer, reader }, party);
-        outcome = choice === "Later" || (q.choices && /^\s*later\b/i.test(choice)) ? "deferred" : "answered";
+        outcome = SAID.test(choice) ? "said" : choice === "Later" || /^\s*later\b/i.test(choice) ? "deferred" : "answered";
+        if (SAID.test(choice)) said = { said: answer, owed: `act on these words, then record it: node scripts/alembic_needs.mjs taken-up --root <pkg> --changeset ${a.changesetId} --question ${a.question} --note "<what you did>" --model <id>` };
       } else { skip(`unknown question kind ${q.kind}`); continue; }
     } catch (err) { skip(err.message); continue; }
     // the answer's Alembic provenance, after it: never recorded twice
@@ -392,7 +419,7 @@ export function applyChanges(root, changes) {
       moment: "host-answer", host: "alembic", item: a.item, changesetId: a.changesetId, question: a.question, answer, outcome,
       by: { id: a.by?.id ?? null, name: a.by?.name ?? null }, at: a.at ?? null, ...(a.via ? { via: a.via } : {}), ...(seq ? { recorded: seq } : {}) } });
     done.add(a.item);
-    recorded.push({ question: a.question, item: a.item, outcome, ...(seq ? { seq } : {}) });
+    recorded.push({ question: a.question, item: a.item, outcome, ...(seq ? { seq } : {}), ...(said || {}) });
   }
   return { recorded, skipped, ignored };
 }

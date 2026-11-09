@@ -46,6 +46,17 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
    prints what it recorded and what it skipped, and why (for example, a plan that changed since it was asked, or an
    approval without the instructor's words). Never record an instructor's act any other way in a job.
 
+   An answer the instructor gave in their own words, not by a choice, comes back with outcome `said` and the words
+   (`said`). Words never confirm, keep or apply anything. They are yours to act on in this job: make the change they
+   ask for, or explain why not in a message, and bring a decision only they can make back as a question. Then record
+   what you did, so the question closes:
+
+   ```bash
+   node assistant/scripts/alembic_needs.mjs taken-up --root work --changeset <id> --question <id> --note "<what you did>" --model <your model id>
+   ```
+
+   Until you record it, the question stays open as yours, and is not asked again.
+
 2. **See where the course stands** with Coursewerk's own tools, with `--root work`. Where `COURSEWERK.md` says
    `git status` and `git diff`, these take their place: the index finds any edit nobody recorded, and the status says
    what each chapter needs. Do not use `alembic push work --dry-run` here: after the import the decision log is one

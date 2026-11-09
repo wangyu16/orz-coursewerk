@@ -1,0 +1,489 @@
+{
+  "schemaVersion": 1,
+  "planId": "eb0792ab07adc8c9e57d64cbac4c26213c2a46a9a30ab60b7cd2d0580dd8ff84",
+  "baseRef": "main",
+  "baseTip": "75e808f2a9649de609ad9bac69400f102f172f6d",
+  "baseCommit": "75e808f2a9649de609ad9bac69400f102f172f6d",
+  "reviewedHead": "e6a88d1be2cb51f58a09da9566d93ebeb89240d7",
+  "changed": [
+    "CHANGELOG.md",
+    "README.md",
+    "alembic-job/CLAUDE.md",
+    "scripts/alembic_needs.mjs",
+    "scripts/lib/core/alembic_needs.mjs",
+    "scripts/lib/core/digest.mjs",
+    "scripts/lib/core/needs_wording.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/alembic-needs-wording.test.mjs",
+    "tests/alembic-needs.test.mjs",
+    "tests/needs-wording.audit.test.mjs",
+    "tests/needs-wording.audit2.test.mjs",
+    "tests/needs-wording.audit3.test.mjs",
+    "tests/needs-wording.audit4.test.mjs",
+    "tests/redteam-r4-confidence.test.mjs"
+  ],
+  "requiredReview": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "VERSION",
+    "alembic-job/CLAUDE.md",
+    "docs/coherence-index.md",
+    "format-contracts/deliverables.md",
+    "package.json",
+    "scripts/alembic_needs.mjs",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/core/alembic_needs.mjs",
+    "scripts/lib/core/digest.mjs",
+    "scripts/lib/core/needs_wording.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/revision_impact.mjs",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "system/REQUIREMENTS.json",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/alembic-needs-wording.test.mjs",
+    "tests/alembic-needs.test.mjs",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/needs-wording.audit.test.mjs",
+    "tests/needs-wording.audit2.test.mjs",
+    "tests/needs-wording.audit3.test.mjs",
+    "tests/needs-wording.audit4.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/redteam-r4-confidence.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site.test.mjs"
+  ],
+  "reviewed": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "VERSION",
+    "alembic-job/CLAUDE.md",
+    "docs/coherence-index.md",
+    "format-contracts/deliverables.md",
+    "package.json",
+    "scripts/alembic_needs.mjs",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/core/alembic_needs.mjs",
+    "scripts/lib/core/digest.mjs",
+    "scripts/lib/core/needs_wording.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/revision_impact.mjs",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "system/REQUIREMENTS.json",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/alembic-needs-wording.test.mjs",
+    "tests/alembic-needs.test.mjs",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/needs-wording.audit.test.mjs",
+    "tests/needs-wording.audit2.test.mjs",
+    "tests/needs-wording.audit3.test.mjs",
+    "tests/needs-wording.audit4.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/redteam-r4-confidence.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site.test.mjs"
+  ],
+  "impactedClaims": [
+    "claim.accessibility.floor",
+    "claim.authorship.accountable",
+    "claim.carriers.honest-portability",
+    "claim.carriers.three-shapes",
+    "claim.coherence.anchors",
+    "claim.coherence.claims",
+    "claim.coherence.index-fresh",
+    "claim.coherence.prerequisites",
+    "claim.coherence.revisions",
+    "claim.control.coverage",
+    "claim.control.overrides",
+    "claim.format.contracts",
+    "claim.git.visible-edits",
+    "claim.language.editorial",
+    "claim.media.decision",
+    "claim.provenance.complete",
+    "claim.release.fail-closed",
+    "claim.release.measured-vs-declared",
+    "claim.review.blind-bundle",
+    "claim.review.key-facts",
+    "claim.revision.propagation",
+    "claim.rights.verified",
+    "claim.source.comparison",
+    "claim.trust.consistency",
+    "claim.trust.immutable",
+    "claim.website.published",
+    "claim.website.showcase"
+  ],
+  "testResults": [
+    {
+      "path": "tests/anchors.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/assurance.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-2.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-3.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-4.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/blind_bundle.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/carriers.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-control.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-revision.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-semantic.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/classify.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/coherence-claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/escalation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/evidence-tools.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/fingerprint.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/immutable.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/index-freshness.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/integration-study-pairs.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/key-fact-bindings.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/overrides.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate-cli.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/qa.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/range.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/reviews.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/semantic-index-artifact.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/site.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/spine.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/terms.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/units.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/unverifiable_quotation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/usage-e2e.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/wiring.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/alembic-needs.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/alembic-needs-wording.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/needs-wording.audit.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/needs-wording.audit2.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/needs-wording.audit3.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/needs-wording.audit4.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/job-release.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/verdict-path.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/d49-decisions.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r1-coherence.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r1-confidence.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r1-control.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r2-coherence.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r2-confidence.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r2-control.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r3-coherence.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r3-confidence.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r3-control.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r4-coherence.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r4-confidence-k2.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r4-confidence.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r4-control.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r5-reader-view.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r5-readers.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r5-trust.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r5-visible.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r6-instructor.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r6-readers.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r6-records.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r6-reviews.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r6-visible.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r7-exact.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r7-follow.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r7-judged.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r7-logged.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r7-order.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "D-133 closed-loop round 4 fixes on needs-wording (audit of e6a88d1: 1 HIGH, 3 MEDIUM, 3 LOW), each narrow and fail-safe. HIGH-1: seen is written and checked against unitHash of each bound unit live text (loadUnits, what confirmUnits, claimAuthorship and adoptInstructorText read), not the sidecar, so an edit made in Alembic between jobs is caught in the job order (apply before index); a missing hash, a seen that does not name every bound unit (LOW-4) or a record without seen is asked again; a unit absent when asked is recorded as absent and passes only while still absent. MEDIUM-7: the round-3 ms8 change is reverted (the finding names [u.id]; ids, logged answers and R5-K10 unchanged); the other holders a keep adopts are shown (binds) and bound in seen, from needsContext adopts (instructorRegister and holdersOf, as adoptInstructorText); the round-3 red-team test now asserts that contract. MEDIUM-3: free words for any digest kind are recorded as said (no reader takes them for a yes); answeredBases counts a said answer only once the agent records said-taken-up (a revision record, new alembic_needs.mjs taken-up command); until then buildDigest does not ask it again (saidOwed) and the gate keeps it open; the apply output carries outcome said with the words and the command; alembic-job/CLAUDE.md tells the agent to act on them and record it; an old typed Apply the suggestion now goes the same way, never closing a concern. MEDIUM-2: a binding kind keeps its own choices when its off-page words do not fit (never pre-chosen, the answer checked as asked); a binding kind whose unit cannot be read offers no choice and its words go to the agent. LOW-5: cut orz markup fragments dropped, table rows read as text. LOW-6: source[n] indexes and camelCase field names dropped from harness notes, a missing licence snapshot said plainly, private record paths named as the assistant records. Probes adopted as tests/needs-wording.audit4.test.mjs (MEDIUM-3 follows the fix asked for: outcome said, owed, not asked again, answered after taken-up) and registered for req.host.alembic-needs-wording and req.host.alembic-needs-apply; audit3 HIGH-1 expectations follow the said rule. CHANGELOG Unreleased records both answer rules plainly; VERSION unchanged. Reviewed every required item. Tests, the full suite: the 36 required plus alembic-needs, alembic-needs-wording, needs-wording audits 1-4, job-release, verdict-path, d49-decisions and all 27 red-team suites: 957 passed, 0 failed (COURSEWERK_FRAMES=installed, concurrency 2, one test process under the shared lock).",
+  "generatedIndexHash": "5f50443238a557e1790d86f11ccfa984206e6039793b9035577dd09313c62510",
+  "acceptedAt": "2026-11-09T09:46:59.736Z"
+}

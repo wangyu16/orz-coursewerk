@@ -50,7 +50,24 @@
   - Also: a long suggestion that cannot be shown is said plainly to be unappliable from Alembic (no Apply); a long
     correction shows the words it removes and is never pre-chosen; control characters never reach a hand-in, and refs
     pass Alembic's path checks; the record stays under 3 MB; maths follows orz-markdown's per-page budgets; the
-    question about an unasked edit of the instructor's text names every passage that "Keep" adopts (ms8).
+    question about an unasked edit of the instructor's text shows every passage that "Keep" adopts.
+  After a fourth audit (narrow, fail-safe):
+  - **An answer is checked against the passage as it reads now, not as last indexed.** The record keeps the hash of
+    each bound passage's live text; Alembic's job applies answers before it re-indexes, so an edit made on the page
+    between jobs is now caught and the question asked again. A passage that is missing, or a record that does not name
+    every passage the answer binds, is asked again, never passed. A passage that was absent when asked passes only if
+    it is still absent.
+  - **Words the instructor answered in are the assistant's to act on.** They come back in the apply output with
+    outcome `said`. The question stays open and owed to the assistant, and is not asked again, until the assistant
+    records what it did (`alembic_needs.mjs taken-up`). An old typed "Apply the suggestion" no longer closes a
+    concern.
+  - A question that confirms, keeps or adopts text keeps its own choices even when the words it is about are too long
+    to show; nothing is pre-chosen and the answer is checked as asked. A question whose passage cannot be read takes the
+    instructor's words for the assistant.
+  - The ms8 change of the third audit is withdrawn: the finding names the edited unit, as before (finding ids and the
+    red-team suites unchanged). The other holders a "Keep" adopts are shown and checked only in Needs you.
+  - A quote cut inside orz markup reads without the stray braces; table rows read as text; a rights interrupt no longer
+    shows the check's field names.
 
 ## v1.0.5 (2026-11-07)
 

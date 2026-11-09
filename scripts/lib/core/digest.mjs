@@ -39,7 +39,24 @@ export function answeredBases(root) {
   const text = readLogText(root);
   const out = new Map();
   if (verifyLog(text).length) return out;
-  for (const r of parseLog(text)) if (r.type === "answer" && r.party?.role === "instructor") for (const a of r.payload?.answers || []) if (!LATER.test(a.choice)) out.set(`${a.finding}|${a.basis}`, { choice: a.choice, seq: r.seq });
+  const records = parseLog(text), taken = takenUpKeys(records);
+  // words the instructor answered in through Alembic ("said: …") answer the question only once the agent has recorded
+  // what it did with them (D-133 audit round 4): until then the finding stays open, owed to the agent (saidOwed)
+  for (const r of records) if (r.type === "answer" && r.party?.role === "instructor") for (const a of r.payload?.answers || []) if (!LATER.test(a.choice) && (!SAID.test(a.choice) || taken.has(`${a.finding}|${a.basis}`))) out.set(`${a.finding}|${a.basis}`, { choice: a.choice, seq: r.seq });
+  return out;
+}
+/** An answer in the instructor's own words, through Alembic (alembic_needs.mjs): never a yes to anything. */
+export const SAID = /^said: /;
+const takenUpKeys = (records) => new Set(records.filter((r) => r.type === "revision" && r.party?.role === "agent" && r.payload?.event === "said-taken-up").flatMap((r) => r.payload.keys || []));
+/** The instructor's words the agent owes action on: "finding|basis" → { words, seq, entry }. */
+export function saidOwed(root) {
+  const text = readLogText(root), out = new Map();
+  if (verifyLog(text).length) return out;
+  const records = parseLog(text), taken = takenUpKeys(records);
+  for (const r of records) if (r.type === "answer" && r.party?.role === "instructor") for (const a of r.payload?.answers || []) {
+    const k = `${a.finding}|${a.basis}`;
+    if (SAID.test(a.choice) && !taken.has(k)) out.set(k, { words: a.choice.replace(SAID, ""), seq: r.seq, entry: a.entry ?? null });
+  }
   return out;
 }
 /** "Later" is a deferral by the instructor, not an answer: the entry stays open and comes back first, marked as owed. */
@@ -60,7 +77,9 @@ export function buildDigest(root, findings, unitInfo, { cap = DEFAULT_CAP, corre
   const deliverable = new Map([...unitInfo].map(([k, v]) => [k, v.deliverable])), hash = new Map([...unitInfo].map(([k, v]) => [k, v.contentHash]));
   const answered = answeredBases(root);
   const isOpen = (f) => !["resolved", "answered"].includes(f.status) && !isAnswered(answered, f, hash);
-  const asked = findings.filter((f) => f.statusClass === "question" && f.route === "digest" && isOpen(f));
+  // a question the instructor answered in words is the agent's until it records what it did: not asked again meanwhile
+  const owed = saidOwed(root), owedFor = (f) => owed.has(`${answerKeyOf(f)}|${basisOf(f, hash)}`);
+  const asked = findings.filter((f) => f.statusClass === "question" && f.route === "digest" && isOpen(f) && !owedFor(f));
   const interrupts = findings.filter((f) => f.route === "interrupt" && isOpen(f));
   const clusters = new Map();
   for (const f of asked) {

@@ -25,6 +25,7 @@ import { runGate } from "../scripts/lib/skeleton/full_gate.mjs";
 import { classifyUnit } from "../scripts/lib/core/segment.mjs";
 import { wordsValue } from "../scripts/lib/core/values.mjs";
 import { buildDigest, answerDigest } from "../scripts/lib/core/digest.mjs";
+import { exportNeeds, NEEDS_FILE } from "../scripts/lib/core/alembic_needs.mjs";
 import { unitInfoOf } from "../scripts/lib/core/workflow.mjs";
 import { replayVerifier } from "../scripts/lib/verify/dispatch.mjs";
 import { applyCorrection, verifyKnowledge, verifySemi } from "../scripts/lib/verify/verdicts.mjs";
@@ -228,7 +229,7 @@ test("[req.knowledge.clarify] R4-K16: on the instructor's text a suggestion the 
   assert.deepEqual(mineOf(o.gate(), oid).filter((f) => f.module === "ms8-verdicts").map((f) => f.kind), []);
 });
 
-test("[req.knowledge.clarify] R4-K16 (D-133 audit round 3): the unasked-edit question names every unit a 'keep' adopts — all the holders of the instructor's text, not only the edited piece", async (t) => {
+test("[req.knowledge.clarify] [req.host.alembic-needs-wording] R4-K16 (D-133 audit rounds 3, 4): the unasked-edit finding names the edited piece only (R5-K10, ids unchanged); the question shows, and binds as asked, every holder a 'keep' adopts", async (t) => {
   const REL = "study-guide/chemical-equilibrium.md";
   const c = course(t);
   c.edit(REL, "(products favoured), and a positive", "(products favoured), and so a positive"); indexAndStamp(c.root, c.r(), {}); // the instructor's own edit
@@ -240,9 +241,17 @@ test("[req.knowledge.clarify] R4-K16 (D-133 audit round 3): the unasked-edit que
   c.asAgent(() => c.edit(REL, "(products favoured), and so a positive", "(products favoured), and a positive"));
   const pieces = c.units().filter((u) => u.text.includes("the absolute temperature.") || u.text.includes("(products favoured), and a positive")).map((u) => u.id).sort();
   assert.equal(pieces.length, 2, "two pieces hold the instructor's text");
-  const asked = c.gate().findings.filter((f) => f.kind === "instructor-edit-unasked" && (f.units || []).some((u) => pieces.includes(u)));
+  const g = c.gate(), edited = c.units().find((u) => u.text.includes("(products favoured), and a positive")).id;
+  const asked = g.findings.filter((f) => f.kind === "instructor-edit-unasked" && (f.units || []).some((u) => pieces.includes(u)));
   assert.ok(asked.length, "the edit is raised");
-  for (const f of asked) assert.deepEqual(pieces.filter((u) => f.units.includes(u)), pieces, `the question names every holder a keep adopts: ${JSON.stringify(f.units)}`);
+  for (const f of asked) assert.deepEqual(f.units, [edited], "the finding (and its id) names the edited piece only, as before");
+  // what the instructor is asked: both pieces shown whole, and the answer checked against both as asked
+  const r = await exportNeeds(c.root, { changesetId: "r4k16-holders", gate: g });
+  const q = r.handin.digest.questions.find((x) => /changed without asking you/.test(x.text));
+  assert.ok(q, "asked in Needs you");
+  assert.match(q.detail, /Passage 1: .*\n?Passage 2: /s, "both holders are shown");
+  const rec = JSON.parse(fs.readFileSync(path.join(c.root, NEEDS_FILE), "utf8")).handins.at(-1).questions[q.id];
+  assert.deepEqual(Object.keys(rec.seen).sort(), pieces, "the answer is checked against every holder it adopts");
 });
 
 // ================================================ K6: CONCERNS TRAVEL WITH THE TEXT ==============================

@@ -65,12 +65,13 @@ test("[req.host.alembic-needs-apply] audit3 HIGH-1: a typed digest answer that i
   // (b) the instructor's typed answer means "not yet"
   const r = applyChanges(p.root, { answers: [answer("audit3-words", q.id, "i-1", "Confirmation must wait until I find where these values came from.")] });
   assert.deepEqual(confirmations(p.root), [], `a "not yet" in words was recorded as a confirmation: ${JSON.stringify(r)}`);
-  assert.match(r.skipped[0]?.reason || "", /asked again/, "a binding question answered in words is asked again");
+  // round 4: the words go to the agent (outcome "said", the words in the output), never as a yes
+  assert.equal(r.recorded[0]?.outcome, "said"); assert.match(r.recorded[0]?.said || "", /Confirmation must wait/);
   // (c) a kind that binds nothing: the words are recorded as said, never as an "apply" (ms8 reads /^apply/)
   const k = entry("knowledge-concern", { type: "judgment", note: "x", quote: "y", suggestion: "z" }, { units: [U3], findings: ["f-kc"] });
   ask(p.root, "audit3-kc", "d.kc", { kind: "digest", entry: k, choices: null, words: "optional", seen: { [U3]: hash } });
   const r2 = applyChanges(p.root, { answers: [answer("audit3-kc", "d.kc", "i-2", "Apply? No — keep my wording.")] });
-  assert.deepEqual(r2.recorded.map((x) => x.outcome), ["answered"]);
+  assert.deepEqual(r2.recorded.map((x) => x.outcome), ["said"]);
   const said = parseLog(readLogText(p.root)).filter((x) => x.type === "answer").at(-1).payload.answers[0].choice;
   assert.equal(said, "said: Apply? No — keep my wording."); assert.ok(!/^\s*(?:apply|keep|confirm|accept|revert)/i.test(said));
 });
