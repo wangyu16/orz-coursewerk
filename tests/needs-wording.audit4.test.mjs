@@ -120,7 +120,8 @@ test("[req.host.alembic-needs-apply] audit4 MEDIUM-3: words recorded as said rea
   assert.equal(a.recorded[0]?.outcome, "said", "owed to the assistant");
   assert.ok(JSON.stringify(a.recorded[0]).includes(words), `the apply output the agent reads drops the instructor's request (the finding is now answered, nothing owes it): ${JSON.stringify(a.recorded[0])}`);
   const { answeredBases, saidOwed } = await import("../scripts/lib/core/digest.mjs");
-  const key = `${f.id}|`, owedKeys = [...saidOwed(p.root).keys()];
+  // round 6: owed per said answer (its seq), each listing the finding|basis keys it answers
+  const key = `${f.id}|`, owedKeys = [...saidOwed(p.root).values()].flatMap((o) => o.keys);
   assert.ok(owedKeys.some((k) => k.startsWith(key)), "owed to the agent");
   assert.ok(![...answeredBases(p.root).keys()].some((k) => k.startsWith(key)), "not answered yet");
   assert.equal((await exportNeeds(p.root, { changesetId: "audit4-said-02", gate: { findings: [f] } })).handin.digest.questions.filter((x) => x.id.startsWith("d.")).length, 0, "not asked again");

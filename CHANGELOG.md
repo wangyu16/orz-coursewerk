@@ -76,6 +76,16 @@
     `owedWords`), and can be taken up even after the hand-in has left the record. Words taken up on a question only the
     instructor's choice can settle (confirm, keep, accept as theirs) leave it to be asked again with its choices.
   - An answer to a question asked before the passage check is reported "asked again" once, not in every later job.
+  After a sixth audit:
+  - **One binding guard (narrow, fail-safe).** Every choice that acts on text from Alembic (confirm, keep, adopt,
+    accept as mine, revert, apply) runs only when, for every passage it touches, the text as indexed, the text as it
+    reads now and the text the question showed are the same; otherwise it is asked again. The acts read different
+    representations of a passage (the index, the live text, the index's holders); this rule makes them agree, for every
+    kind, including any added later (the binding kinds come from the digest's own lists).
+  - "Change it differently" and "Drop it" carry the instructor's words to the assistant, owed until taken up.
+  - Words are owed per answer, so a later answer to the same or a re-asked question is never lost, and they are listed
+    once per question, with what the instructor wrote in the words box. Interrupt and M5 answers show their words in
+    the apply output.
 
 ## v1.0.5 (2026-11-07)
 

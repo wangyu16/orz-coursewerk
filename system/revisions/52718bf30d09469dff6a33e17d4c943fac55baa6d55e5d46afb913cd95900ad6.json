@@ -1,0 +1,509 @@
+{
+  "schemaVersion": 1,
+  "planId": "52718bf30d09469dff6a33e17d4c943fac55baa6d55e5d46afb913cd95900ad6",
+  "baseRef": "main",
+  "baseTip": "75e808f2a9649de609ad9bac69400f102f172f6d",
+  "baseCommit": "75e808f2a9649de609ad9bac69400f102f172f6d",
+  "reviewedHead": "8b49155f72f7fb86a12f65720efb279897038cf7",
+  "changed": [
+    "CHANGELOG.md",
+    "README.md",
+    "alembic-job/CLAUDE.md",
+    "scripts/alembic_needs.mjs",
+    "scripts/coursewerk.mjs",
+    "scripts/lib/core/alembic_needs.mjs",
+    "scripts/lib/core/digest.mjs",
+    "scripts/lib/core/needs_wording.mjs",
+    "scripts/lib/core/obligations.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/alembic-needs-wording.test.mjs",
+    "tests/alembic-needs.test.mjs",
+    "tests/needs-wording.audit.test.mjs",
+    "tests/needs-wording.audit2.test.mjs",
+    "tests/needs-wording.audit3.test.mjs",
+    "tests/needs-wording.audit4.test.mjs",
+    "tests/needs-wording.audit5.test.mjs",
+    "tests/needs-wording.audit6.test.mjs",
+    "tests/redteam-r4-confidence.test.mjs"
+  ],
+  "requiredReview": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "VERSION",
+    "alembic-job/CLAUDE.md",
+    "docs/coherence-index.md",
+    "format-contracts/deliverables.md",
+    "package.json",
+    "scripts/alembic_needs.mjs",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/coursewerk.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/core/alembic_needs.mjs",
+    "scripts/lib/core/digest.mjs",
+    "scripts/lib/core/needs_wording.mjs",
+    "scripts/lib/core/obligations.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/revision_impact.mjs",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "system/REQUIREMENTS.json",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/alembic-needs-wording.test.mjs",
+    "tests/alembic-needs.test.mjs",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/needs-wording.audit.test.mjs",
+    "tests/needs-wording.audit2.test.mjs",
+    "tests/needs-wording.audit3.test.mjs",
+    "tests/needs-wording.audit4.test.mjs",
+    "tests/needs-wording.audit5.test.mjs",
+    "tests/needs-wording.audit6.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/redteam-r4-confidence.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site.test.mjs"
+  ],
+  "reviewed": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "VERSION",
+    "alembic-job/CLAUDE.md",
+    "docs/coherence-index.md",
+    "format-contracts/deliverables.md",
+    "package.json",
+    "scripts/alembic_needs.mjs",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/coursewerk.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/core/alembic_needs.mjs",
+    "scripts/lib/core/digest.mjs",
+    "scripts/lib/core/needs_wording.mjs",
+    "scripts/lib/core/obligations.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/revision_impact.mjs",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "system/REQUIREMENTS.json",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/alembic-needs-wording.test.mjs",
+    "tests/alembic-needs.test.mjs",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/needs-wording.audit.test.mjs",
+    "tests/needs-wording.audit2.test.mjs",
+    "tests/needs-wording.audit3.test.mjs",
+    "tests/needs-wording.audit4.test.mjs",
+    "tests/needs-wording.audit5.test.mjs",
+    "tests/needs-wording.audit6.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/redteam-r4-confidence.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site.test.mjs"
+  ],
+  "impactedClaims": [
+    "claim.accessibility.floor",
+    "claim.authorship.accountable",
+    "claim.carriers.honest-portability",
+    "claim.carriers.three-shapes",
+    "claim.coherence.anchors",
+    "claim.coherence.claims",
+    "claim.coherence.index-fresh",
+    "claim.coherence.prerequisites",
+    "claim.coherence.revisions",
+    "claim.control.coverage",
+    "claim.control.overrides",
+    "claim.format.contracts",
+    "claim.git.visible-edits",
+    "claim.language.editorial",
+    "claim.media.decision",
+    "claim.provenance.complete",
+    "claim.release.fail-closed",
+    "claim.release.measured-vs-declared",
+    "claim.review.blind-bundle",
+    "claim.review.key-facts",
+    "claim.revision.propagation",
+    "claim.rights.verified",
+    "claim.source.comparison",
+    "claim.trust.consistency",
+    "claim.trust.immutable",
+    "claim.website.published",
+    "claim.website.showcase"
+  ],
+  "testResults": [
+    {
+      "path": "tests/anchors.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/assurance.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-2.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-3.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-4.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/blind_bundle.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/carriers.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-control.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-revision.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-semantic.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/classify.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/coherence-claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/escalation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/evidence-tools.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/fingerprint.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/immutable.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/index-freshness.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/integration-study-pairs.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/key-fact-bindings.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/overrides.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate-cli.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/qa.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/range.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/reviews.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/semantic-index-artifact.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/site.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/spine.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/terms.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/units.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/unverifiable_quotation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/usage-e2e.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/wiring.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/alembic-needs.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/alembic-needs-wording.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/needs-wording.audit.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/needs-wording.audit2.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/needs-wording.audit3.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/needs-wording.audit4.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/needs-wording.audit5.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/needs-wording.audit6.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/job-release.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/verdict-path.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/d49-decisions.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r1-coherence.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r1-confidence.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r1-control.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r2-coherence.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r2-confidence.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r2-control.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r3-coherence.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r3-confidence.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r3-control.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r4-coherence.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r4-confidence-k2.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r4-confidence.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r4-control.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r5-reader-view.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r5-readers.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r5-trust.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r5-visible.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r6-instructor.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r6-readers.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r6-records.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r6-reviews.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r6-visible.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r7-exact.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r7-follow.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r7-judged.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r7-logged.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/redteam-r7-order.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "D-133 closed-loop round 6 fixes on needs-wording (audit of 8b49155: 1 HIGH, 3 MEDIUM, 2 LOW). HIGH-1 (the class): one shared guard, bindingGuard, precedes every digest choice in apply: for every unit it touches (the entry units, the units it binds, those seen names) the indexed contentHash (what claimAuthorship and the index holders read), the live unitHash (what confirmUnits and adoptInstructorText read) and seen must agree (an absent unit: neither files nor index hold it), else the answer is skipped and asked again; BINDING_KINDS is derived from digest.mjs CONFIRMS, ADOPTS and CLAIMS; a new test exercises every binding kind with an unindexed one-word edit (asked again, nothing bound) and, once indexed, records it. MEDIUM-2: Change it differently and Drop it are recorded as said answers, owed until taken up, with their words. MEDIUM-3 and LOW-5: owed words and taken-up are per said answer (log seq; taken-up payload.answers; round 4-5 records with keys are read as taking up the said answers before them), so a later answer on a re-asked or second hand-in question stays owed and can be taken up. MEDIUM-6: the words box travels with the said answer (apply output words, owedWords answers[].words). LOW-4: owedWords is grouped by changeset and question. Interrupt and M5 answers carry answer and words in the apply output. Earlier probes updated to the round-6 contract: audit1 MEDIUM-4 (Change it differently is now recorded as said), audit4 MEDIUM-3 (saidOwed keyed per answer). Probes adopted unchanged as tests/needs-wording.audit6.test.mjs, registered for req.host.alembic-needs-wording and req.host.alembic-needs-apply. CHANGELOG Unreleased and alembic-job/CLAUDE.md updated; VERSION unchanged. Reviewed every required item. Tests, the full suite once (74 files: the 36 required plus alembic-needs, alembic-needs-wording, needs-wording audits 1-6, job-release, verdict-path, d49-decisions and all 27 red-team suites): 969 passed, 1 failed: redteam-r1-coherence F9 (not a required test) failed with package-changed-during-run, the gate guard against the package changing during a run, on a publish/pack path this change does not touch; re-run alone it passes 15/15 on this branch and 15/15 on 8b49155, so it is a timing flake, not a regression. COURSEWERK_FRAMES=installed, concurrency 2, one test process under the shared lock.",
+  "generatedIndexHash": "15bdb32500be4ec4f5f1b98e0b4915ba9a9bf5ae461229a09a11c8f25a6bb0e8",
+  "acceptedAt": "2026-11-10T06:54:06.708Z"
+}

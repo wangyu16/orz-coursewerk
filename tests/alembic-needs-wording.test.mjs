@@ -239,3 +239,44 @@ test("[req.host.alembic-needs-apply] an answer binds the passage as it was asked
   const q2 = r2.handin.digest.questions.find((x) => x.id.startsWith("d."));
   assert.deepEqual(applyChanges(p2.root, { answers: [answer(r2.handin, q2.id, "Confirm", { words: "Confirmed." })] }).recorded.map((x) => x.outcome), ["answered"]);
 });
+
+test("[req.host.alembic-needs-apply] the binding guard: every binding kind acts only when the indexed, live and shown text agree (round 6, HIGH-1)", async (t) => {
+  const { BINDING_KINDS } = await import("../scripts/lib/core/digest.mjs");
+  const { DIGEST_CHOICES } = await import("../scripts/lib/core/alembic_needs.mjs");
+  const { loadUnits } = await import("../scripts/lib/core/obligations.mjs");
+  const T0 = "Some textbooks quote the industrial operating temperature as about 400 degrees Celsius.";
+  const T1 = "Some textbooks quote the industrial operating temperature as about 450 degrees Celsius.";
+  const ANCHOR = "but it also slows the rate.";
+  const evidenceOf = (kind, id) => ({
+    "exercise-data-confirm": { type: "judgment", note: "the values here read as invented exercise data — confirm them?", quote: "about 450 degrees Celsius" },
+    "confirmation-stale": { type: "judgment", note: "changed since you confirmed it", quote: T1 },
+    "answer-still-correct": { type: "judgment", note: "its question changed — is the answer still correct?" },
+    "fact-disputed": { type: "conflict", claimKey: `ck-${id}`, claimText: T1, claim: 1, quotes: [], conflicts: [{ claimed: "450 degrees", source: "400 degrees" }] },
+    "instructor-edit-unasked": { type: "judgment", note: "Your text was changed without your answer. Keep the edit, or have it reverted?", quote: "400", now: "450", instructorText: id, before: T0, after: T1 },
+    "unit-unknown-authorship": { type: "judgment", note: `${SG2}: 1 passage(s) changed outside an agent session — yours (accept as mine)?` },
+  })[kind];
+  assert.deepEqual([...BINDING_KINDS].sort(), Object.keys(DIGEST_CHOICES).filter((k) => BINDING_KINDS.has(k)).sort(), "every binding kind has its one-click choices");
+  for (const kind of BINDING_KINDS) {
+    const p = copy(t);
+    // a passage, indexed (outside a session), then a one-word edit NOT yet indexed: same id, live text T1, indexed T0
+    const f0 = path.join(p.root, SG2); fs.writeFileSync(f0, fs.readFileSync(f0, "utf8").replace(ANCHOR, `${ANCHOR}\n\n${T0}`));
+    indexAndStamp(p.root, liveReader(p.root), {});
+    const id = loadUnits(p.root, liveReader(p.root)).find((u) => u.text === T0).id;
+    fs.writeFileSync(f0, fs.readFileSync(f0, "utf8").replace(T0, T1));
+    const f = makeFinding({ module: kind === "unit-unknown-authorship" ? "skeleton" : "ms8-verdicts", kind, units: [id], statusClass: "question", route: "digest", basis: "b", evidence: evidenceOf(kind, id) });
+    const r = await exportNeeds(p.root, { changesetId: `guard-${kind}`.slice(0, 64), gate: { findings: [f] } });
+    const q = r.handin.digest.questions.find((x) => x.id.startsWith("d."));
+    assert.ok(q?.choices?.length, `${kind}: offered with choices (${JSON.stringify(q)})`);
+    const before = parseLog(readLogText(p.root)).length;
+    const a = applyChanges(p.root, { answers: [answer(r.handin, q.id, q.choices[0], { words: "Yes." })] });
+    assert.deepEqual(a.recorded, [], `${kind}: "${q.choices[0]}" acted on text the index does not hold as shown`);
+    assert.match(a.skipped[0]?.reason || "", /asked again/, kind);
+    assert.ok(!parseLog(readLogText(p.root)).slice(before).some((x) => ["answer", "confirmation", "authorship-confirmation"].includes(x.type)), `${kind}: nothing bound`);
+    // indexed as it reads: the same choice, asked again, is recorded
+    indexAndStamp(p.root, liveReader(p.root), {});
+    const r2 = await exportNeeds(p.root, { changesetId: `guard2-${kind}`.slice(0, 64), gate: { findings: [f] } });
+    const q2 = r2.handin.digest.questions.find((x) => x.id.startsWith("d."));
+    const b = applyChanges(p.root, { answers: [answer(r2.handin, q2.id, q2.choices[0], { words: "Yes.", item: `again-${kind}` })] }); // Alembic gives the re-asked question a new item
+    assert.equal(b.recorded.length, 1, `${kind}: recorded once the passage is indexed as shown (${JSON.stringify(b)})`);
+  }
+});

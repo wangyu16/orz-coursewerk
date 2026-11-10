@@ -39,27 +39,39 @@ export function answeredBases(root) {
   const text = readLogText(root);
   const out = new Map();
   if (verifyLog(text).length) return out;
-  const records = parseLog(text), taken = answeringKeys(records);
+  const records = parseLog(text), { answering } = takenUpOf(records);
   // words the instructor answered in through Alembic ("said: …") answer the question only once the agent has recorded
-  // what it did with them (D-133 audit round 4): until then the finding stays open, owed to the agent (saidOwed)
-  for (const r of records) if (r.type === "answer" && r.party?.role === "instructor") for (const a of r.payload?.answers || []) if (!LATER.test(a.choice) && (!SAID.test(a.choice) || taken.has(`${a.finding}|${a.basis}`))) out.set(`${a.finding}|${a.basis}`, { choice: a.choice, seq: r.seq });
+  // what it did with THAT answer (D-133 audit rounds 4, 6): until then the finding stays open, owed to the agent
+  for (const r of records) if (r.type === "answer" && r.party?.role === "instructor") for (const a of r.payload?.answers || []) if (!LATER.test(a.choice) && (!SAID.test(a.choice) || answering.has(r.seq))) out.set(`${a.finding}|${a.basis}`, { choice: a.choice, seq: r.seq });
   return out;
 }
 /** An answer in the instructor's own words, through Alembic (alembic_needs.mjs): never a yes to anything. */
 export const SAID = /^said: /;
-const takenUp = (records) => records.filter((r) => r.type === "revision" && r.party?.role === "agent" && r.payload?.event === "said-taken-up");
-const takenUpKeys = (records) => new Set(takenUp(records).flatMap((r) => r.payload.keys || []));
-// a question that confirms, claims or adopts is answered only by the instructor's choice: words taken up on it leave it to
-// be asked again (round 5, MEDIUM-5)
-const answeringKeys = (records) => new Set(takenUp(records).filter((r) => !r.payload.binding).flatMap((r) => r.payload.keys || []));
-/** The instructor's words the agent owes action on: "finding|basis" → { words, seq, entry }. */
+/**
+ * What the agent has taken up, per said ANSWER (its log seq; round 6, MEDIUM-3, LOW-5): `taken` — every answer taken up;
+ * `answering` — those whose taking-up answers the question (a question that confirms, claims or adopts is answered only by
+ * the instructor's choice: words taken up on it leave it to be asked again, round 5). A taken-up record of rounds 4–5
+ * named finding|basis keys: it takes up the said answers with those keys logged before it.
+ */
+function takenUpOf(records) {
+  const taken = new Set(), answering = new Set();
+  const said = records.filter((r) => r.type === "answer" && r.party?.role === "instructor" && (r.payload?.answers || []).some((a) => SAID.test(a.choice)));
+  for (const t of records.filter((r) => r.type === "revision" && r.party?.role === "agent" && r.payload?.event === "said-taken-up")) {
+    const seqs = Array.isArray(t.payload.answers) ? t.payload.answers
+      : said.filter((r) => r.seq < t.seq && r.payload.answers.some((a) => SAID.test(a.choice) && (t.payload.keys || []).includes(`${a.finding}|${a.basis}`))).map((r) => r.seq);
+    for (const q of seqs) { taken.add(q); if (!t.payload.binding) answering.add(q); }
+  }
+  return { taken, answering };
+}
+/** The instructor's words the agent owes action on, one per said answer: seq → { words, instructorWords, seq, entry, keys }. */
 export function saidOwed(root) {
   const text = readLogText(root), out = new Map();
   if (verifyLog(text).length) return out;
-  const records = parseLog(text), taken = takenUpKeys(records);
-  for (const r of records) if (r.type === "answer" && r.party?.role === "instructor") for (const a of r.payload?.answers || []) {
-    const k = `${a.finding}|${a.basis}`;
-    if (SAID.test(a.choice) && !taken.has(k)) out.set(k, { words: a.choice.replace(SAID, ""), seq: r.seq, entry: a.entry ?? null });
+  const records = parseLog(text), { taken } = takenUpOf(records);
+  for (const r of records) if (r.type === "answer" && r.party?.role === "instructor" && !taken.has(r.seq)) for (const a of r.payload?.answers || []) {
+    if (!SAID.test(a.choice)) continue;
+    const o = out.get(r.seq) || { words: a.choice.replace(SAID, ""), instructorWords: r.payload.instructorWords ?? null, seq: r.seq, entry: a.entry ?? null, keys: [] };
+    o.keys.push(`${a.finding}|${a.basis}`); out.set(r.seq, o);
   }
   return out;
 }
@@ -82,7 +94,7 @@ export function buildDigest(root, findings, unitInfo, { cap = DEFAULT_CAP, corre
   const answered = answeredBases(root);
   const isOpen = (f) => !["resolved", "answered"].includes(f.status) && !isAnswered(answered, f, hash);
   // a question the instructor answered in words is the agent's until it records what it did: not asked again meanwhile
-  const owed = saidOwed(root), owedFor = (f) => owed.has(`${answerKeyOf(f)}|${basisOf(f, hash)}`);
+  const owedKeys = new Set([...saidOwed(root).values()].flatMap((o) => o.keys)), owedFor = (f) => owedKeys.has(`${answerKeyOf(f)}|${basisOf(f, hash)}`);
   const asked = findings.filter((f) => f.statusClass === "question" && f.route === "digest" && isOpen(f) && !owedFor(f));
   const interrupts = findings.filter((f) => f.route === "interrupt" && isOpen(f));
   const clusters = new Map();
@@ -144,6 +156,9 @@ const CONFIRMS = { "exercise-data-confirm": { re: /^\s*confirm/i, what: "fact" }
   "confirmation-stale": { re: /^\s*confirm/i, what: "fact" } }; // a confirmation of other text (R6-K04): confirmed again as it reads now
 const ADOPTS = { "instructor-edit-unasked": /^\s*keep/i };
 const CLAIMS = { "unit-unknown-authorship": /^\s*accept as mine/i }; // an "accept as mine" answer records the instructor's authorship
+/** The kinds whose answer confirms, adopts or claims what units hold — the acts a binding guard must precede
+ *  (alembic_needs.mjs bindingGuard). Derived from the lists above, so a new binding kind is guarded by construction. */
+export const BINDING_KINDS = Object.freeze(new Set([...Object.keys(CONFIRMS), ...Object.keys(ADOPTS), ...Object.keys(CLAIMS)]));
 
 /**
  * `overrules`: [{ unit, links: [node id] }] — the instructor overrules a blind link review's standing "no" or "passing"

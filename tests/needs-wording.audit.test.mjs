@@ -104,7 +104,8 @@ test("audit MEDIUM-4: the instructor can still ask for a different change than t
   const a = applyChanges(root, { answers: [{ item: "i-1", changesetId: "audit-other", question: q.id, answer: "Change it differently", words: "Neither: say 'its stoichiometric coefficient'.", by: { id: "u-1", name: "Yu Wang" }, at: "2026-11-08T12:00:00.000Z" }] });
   assert.deepEqual(a.skipped, [], "a different change is recorded as such, as on main");
   const rec = parseLog(readLogText(root)).filter((x) => x.type === "answer").at(-1);
-  assert.equal(rec.payload.answers[0].choice, "Change it differently"); assert.equal(rec.payload.instructorWords, "Neither: say 'its stoichiometric coefficient'.");
+  // round 6 (MEDIUM-2): an act-on-it choice is recorded like words ("said: …"), owed to the agent with the words box
+  assert.equal(rec.payload.answers[0].choice, "said: Change it differently"); assert.equal(rec.payload.instructorWords, "Neither: say 'its stoichiometric coefficient'.");
   assert.ok(!/^\s*apply/i.test(rec.payload.answers[0].choice), "not the reviewer's suggestion");
 });
 

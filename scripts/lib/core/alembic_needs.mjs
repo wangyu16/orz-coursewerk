@@ -23,7 +23,7 @@ import { liveReader, manifestChapters, manifestUnits } from "./package_reader.mj
 import { approvalStatus, recordApproval } from "./approvals.mjs";
 import { approvalPrecondition } from "./spine_review.mjs";
 import { chapterStates, unitInfoOf } from "./workflow.mjs";
-import { SAID, saidOwed, answerDigest, answeredBases, answerKeyOf, basisOf, buildDigest, deliverDigest, DEFAULT_CAP, isAnswered } from "./digest.mjs";
+import { BINDING_KINDS, SAID, saidOwed, answerDigest, answeredBases, answerKeyOf, basisOf, buildDigest, deliverDigest, DEFAULT_CAP, isAnswered } from "./digest.mjs";
 import { currentVersion } from "./versions.mjs";
 import { COURSE_MAP, nodeIndex, parseSpine, spinePaths } from "./spine.mjs";
 import { loggedDigestCap } from "../records/config.mjs";
@@ -130,7 +130,7 @@ export function digestQuestion(e, deliverableOf = new Map(), ctx = {}) {
   let tooLong = "";
   if (choices && !offFits) {
     // a kind whose answer confirms, claims or adopts (round 4, MEDIUM-2): its own choices stay, never pre-chosen — the
-    // answer is checked against the passage as asked (askedAsNow), and the words it removed are in the assistant's record
+    // answer is checked against the passage as asked (bindingGuard), and the words it removed are in the assistant's record
     if (BINDING_KINDS.has(e.kind)) tooLong = "The words this question is about are too long to show here in full; they are kept in the assistant's record. Your answer applies to the text exactly as it was when asked; if it has changed, you are asked again.";
     else if (off.some((x) => x.suggestion) && !off.some((x) => !x.suggestion)) {
       choices = choices.filter((x) => !/^apply\b/i.test(x));
@@ -311,7 +311,11 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
 }
 
 /** The kinds whose answer confirms, claims or adopts what units hold (digest.mjs CONFIRMS, CLAIMS, ADOPTS). */
-const BINDING_KINDS = new Set(["exercise-data-confirm", "confirmation-stale", "answer-still-correct", "fact-disputed", "instructor-edit-unasked", "unit-unknown-authorship"]);
+// the kinds whose answer confirms, adopts or claims what units hold: digest.mjs's own lists (CONFIRMS, ADOPTS, CLAIMS)
+// (round 6: derived, never a hand copy)
+/** Choices that ask the agent to act on the instructor's words: recorded like words ("said: …"), owed until taken up
+ *  (round 6, MEDIUM-2). */
+const ACT_CHOICES = new Set(["Change it differently", "Drop it"]);
 /** What the record keeps of a question: a digest entry with the content hash of each unit as asked (`seen`, HIGH-2), and
  *  its evidence bounded (apply reads its key, kind, units and bases, never its evidence: MEDIUM-4). */
 function boundRef(ref, ctx) {
@@ -321,15 +325,29 @@ function boundRef(ref, ctx) {
   // round 4 (HIGH-1): the hash of each bound unit's LIVE text (unitHash), or "absent" for a unit no file holds now
   return { ...ref, entry: { ...e, evidence }, seen: Object.fromEntries(boundUnits(e, ctx).map((u) => [u, ctx.live.get(u) ?? "absent"])) };
 }
-/** Does every unit the answer binds read now as it did when asked? Checked against the live text (loadUnits, what the
- *  binding acts read), never the sidecar, so an edit made in Alembic before the next index is caught (round 4, HIGH-1).
- *  Fail-safe: no `seen` (a hand-in before round 3), a bound unit `seen` does not name (LOW-4), or a hash that is not
- *  there to compare, is asked again; only an explicit "absent" that is still absent passes. */
-function askedAsNow(q, e, ctx) {
-  const seen = q.seen;
-  if (!seen || typeof seen !== "object") return false;
-  if (!boundUnits(e, ctx).every((u) => Object.hasOwn(seen, u)) || !(e.units || []).every((u) => Object.hasOwn(seen, u))) return false;
-  return Object.entries(seen).every(([u, h]) => (h === "absent" ? !ctx.live.has(u) : typeof h === "string" && h.length > 0 && ctx.live.get(u) === h));
+/**
+ * THE BINDING GUARD (D-133 audit rounds 3–6): a digest choice runs its act (confirm, keep, adopt, claim, revert, apply)
+ * only when, for every unit it touches, the indexed text (the sidecar's contentHash: what claimAuthorship and the index's
+ * holders read), the live text (loadUnits: what confirmUnits and adoptInstructorText read) and the text the question
+ * showed (`seen`) are the same. The binding acts read different representations of a passage; this one rule makes them
+ * agree, so no act binds words the question did not show. Every digest choice passes through it; a new binding kind is
+ * guarded by construction. Fail-safe: no `seen`, a touched unit `seen` does not name, an unindexed or unread unit, or any
+ * mismatch → false (asked again). A unit recorded "absent" passes only while neither the files nor the index hold it.
+ * Returns { ok, why }.
+ */
+export function bindingGuard(root, reader, q, e) {
+  const seen = q?.seen;
+  if (!seen || typeof seen !== "object") return { ok: false, why: "asked before the passage check" };
+  const ctx = needsContext(root, reader), indexed = new Map([...unitInfoOf(root, reader)].map(([k, v]) => [k, v.contentHash]));
+  const touched = [...new Set([...(e.units || []), ...boundUnits(e, ctx), ...Object.keys(seen)])];
+  for (const u of touched) {
+    if (!Object.hasOwn(seen, u)) return { ok: false, why: `${u} was not shown` };
+    const h = seen[u];
+    if (h === "absent") { if (ctx.live.has(u) || indexed.has(u)) return { ok: false, why: `${u} exists again` }; continue; }
+    if (typeof h !== "string" || !h || ctx.live.get(u) !== h) return { ok: false, why: `${u} changed since it was asked` };
+    if (indexed.get(u) !== h) return { ok: false, why: `${u} is not indexed as it reads` };
+  }
+  return { ok: true };
 }
 
 /**
@@ -345,21 +363,26 @@ export function takenUp(root, { changesetId, question, note }, party) {
   // a question that confirms, claims or adopts stays the instructor's to answer by a choice: taking up the words does
   // not answer it, and it is asked again (round 5, MEDIUM-5); an unknown kind is treated so (fail-safe)
   const binding = mine.some((o) => !o.kind || BINDING_KINDS.has(o.kind));
-  return appendLogRecord(root, { type: "revision", party, payload: { event: "said-taken-up", keys: mine.map((o) => o.key), changesetId, question, note: String(note).trim(), words: mine.map((o) => o.words), ...(binding ? { binding: true } : {}) } });
+  return appendLogRecord(root, { type: "revision", party, payload: { event: "said-taken-up", answers: mine.flatMap((o) => o.answers.map((x) => x.seq)), changesetId, question, note: String(note).trim(), words: mine.flatMap((o) => o.answers.map((x) => x.answer)), ...(binding ? { binding: true } : {}) } });
 }
 
-/** The instructor's words still owed to the agent: [{ changesetId, question, words, kind, key }] — each said answer
- *  matched to the host-answer marker apply wrote right after it (round 5, MEDIUM-3, LOW-4). */
+/** The instructor's words still owed to the agent, one entry per question (changeset and question; round 6, LOW-4):
+ *  [{ changesetId, question, kind, answers: [{ seq, answer, words }] }] — each said answer (the answer box) with the words
+ *  box (round 6, MEDIUM-6), matched to the host-answer marker apply wrote right after it. */
 export function owedWords(root) {
   const owed = saidOwed(root);
   if (!owed.size) return [];
   const marks = markers(readLogText(root)).filter((m) => m.payload.outcome === "said");
-  const out = [];
-  for (const [key, o] of owed) {
-    const m = marks.find((x) => x.seq > o.seq && x.payload.answer === o.words);
-    out.push({ changesetId: m?.payload.changesetId ?? null, question: m?.payload.question ?? null, words: o.words, kind: m?.payload.kind ?? null, key });
+  const groups = new Map();
+  for (const o of owed.values()) {
+    const m = marks.find((x) => x.seq > o.seq);
+    const k = `${m?.payload.changesetId ?? null}|${m?.payload.question ?? null}`;
+    const g = groups.get(k) || { changesetId: m?.payload.changesetId ?? null, question: m?.payload.question ?? null, kind: m?.payload.kind ?? null, answers: [] };
+    g.answers.push({ seq: o.seq, answer: o.words, ...(o.instructorWords && o.instructorWords !== o.words ? { words: o.instructorWords } : {}) });
+    g.words = o.words; // the latest answer on the question (every one is in `answers`)
+    groups.set(k, g);
   }
-  return out;
+  return [...groups.values()];
 }
 
 /**
@@ -390,6 +413,8 @@ export function applyChanges(root, changes) {
       if (q.kind === "interrupt") {
         seq = appendLogRecord(root, { type: "answer", party, payload: { answers: [{ finding: q.finding, basis: q.basis, choice: answer, entry: `interrupt:${q.finding}` }], acceptAll: false, instructorWords: words || answer } }).seq;
         outcome = "answered";
+        // the instructor's answer to an interrupt or the agent's own M5 question, for the agent to read (round 6)
+        said = { answer, ...(words && words !== answer ? { words } : {}) };
       } else if (q.kind === "approval") {
         // P1 (round 2): only the exact answers Coursewerk asked for; anything else is asked again
         if (answer !== "Approve" && answer !== "Not yet") { skip(`"${line(answer, 60)}" is neither Approve nor Not yet: it is asked again`); continue; }
@@ -426,8 +451,12 @@ export function applyChanges(root, changes) {
         // then owed to the agent, which acts on the words and records it (takenUp), and is not asked again (round 4)
         let choice = answer;
         if (!q.choices) choice = /^\s*later\s*\.?\s*$/i.test(answer) ? "Later" : `said: ${answer}`;
+        // a choice that asks the agent to act ("Change it differently", "Drop it") carries the instructor's words to it:
+        // recorded like words, owed until taken up (round 6, MEDIUM-2)
+        else if (ACT_CHOICES.has(answer)) choice = `said: ${answer}`;
         // HIGH-2 (rounds 3, 4): a choice binds the passage as it was asked, read live; one that changed is asked again
-        if (!SAID.test(choice) && choice !== "Later" && !askedAsNow(q, e, needsContext(root, reader))) {
+        // the binding guard (round 6, HIGH-1): every choice that acts on text, for every kind
+        if (!SAID.test(choice) && choice !== "Later" && !bindingGuard(root, reader, q, e).ok) {
           // reported once (round 5, LOW-6): the marker makes a later apply of the same answer "already recorded"
           appendLogRecord(root, { type: "contact", party: { role: "harness", name: "alembic-needs" }, payload: {
             moment: "host-answer", host: "alembic", item: a.item, changesetId: a.changesetId, question: a.question, answer, outcome: "asked again",
@@ -437,7 +466,7 @@ export function applyChanges(root, changes) {
         }
         answerDigest(root, { entries: [e] }, { answers: { [e.key]: choice }, instructorWords: words || answer, reader }, party);
         outcome = SAID.test(choice) ? "said" : choice === "Later" || /^\s*later\b/i.test(choice) ? "deferred" : "answered";
-        if (SAID.test(choice)) said = { said: answer, owed: `act on these words, then record it: node scripts/alembic_needs.mjs taken-up --root <pkg> --changeset ${a.changesetId} --question ${a.question} --note "<what you did>" --model <id>` };
+        if (SAID.test(choice)) said = { said: answer, ...(words && words !== answer ? { words } : {}), owed: `act on these words, then record it: node scripts/alembic_needs.mjs taken-up --root <pkg> --changeset ${a.changesetId} --question ${a.question} --note "<what you did>" --model <id>` };
       } else { skip(`unknown question kind ${q.kind}`); continue; }
     } catch (err) { skip(err.message); continue; }
     // the answer's Alembic provenance, after it: never recorded twice

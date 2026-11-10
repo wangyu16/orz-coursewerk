@@ -41,7 +41,7 @@
       "id": "repo:alembic-job/CLAUDE.md",
       "path": "alembic-job/CLAUDE.md",
       "type": "repository-support",
-      "hash": "3fa5414ca69c61caf41886ebaf717fa7cc4e19aede544208e20d21d6b92e3e63"
+      "hash": "a62e227ac393816678694176475d70246e6c7c14a68616933cb61e815a360abc"
     },
     {
       "id": "repo:bootstrap/init.sh",
@@ -53,7 +53,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "5f197de5c9ccb9a62dd622bb35e71e65b51a800cfde74d552b271c2729f35679"
+      "hash": "267a736fed8fd35aa924762709e2a8fc1d3114e85ccfcf309afd1a3b656ef55d"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -227,7 +227,7 @@
       "id": "repo:scripts/alembic_needs.mjs",
       "path": "scripts/alembic_needs.mjs",
       "type": "executable",
-      "hash": "bddd468f086d0ca71b6d415ead168baaf230d50ec97cfd10495929c2848f17bb"
+      "hash": "2b0836e317181e96b25e4440719b2b72ab2e89ccc67d6a910b24f54979807ba4"
     },
     {
       "id": "repo:scripts/assemble_blind_bundle.mjs",
@@ -287,7 +287,7 @@
       "id": "repo:scripts/coursewerk.mjs",
       "path": "scripts/coursewerk.mjs",
       "type": "executable",
-      "hash": "b69f11638d5702f5401f7c94083a1cb2e69715d4bd0cf831c1b2d33c1a55e677"
+      "hash": "96718859488bac1cf1de496c142fb33a8a4188d83b5dab518fc8566f40859949"
     },
     {
       "id": "repo:scripts/data/license-texts.json",
@@ -431,7 +431,7 @@
       "id": "repo:scripts/lib/core/alembic_needs.mjs",
       "path": "scripts/lib/core/alembic_needs.mjs",
       "type": "kernel",
-      "hash": "9b8db8e9f100b4d20da048da61fa353e957b836448ced86697a89e8249c03219"
+      "hash": "ba695db2d8c87ef34e5a4cdd70bb30e0f19319c74b07163cf1e13deb26be32e1"
     },
     {
       "id": "repo:scripts/lib/core/approvals.mjs",
@@ -485,7 +485,7 @@
       "id": "repo:scripts/lib/core/digest.mjs",
       "path": "scripts/lib/core/digest.mjs",
       "type": "kernel",
-      "hash": "d35896f37e3ef85224162f24a5277c413230c51db7a4cad52dbc04d0aef39f91"
+      "hash": "5b54d62c23f5e9c2fd2ab8d47084b9bc29223660c57d07b658b9472e4d2de0b2"
     },
     {
       "id": "repo:scripts/lib/core/history.mjs",
@@ -1391,7 +1391,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "aadca3c07e81ab9f482457df57bd69992d56911d237d3889939e49fee2d919df"
+      "hash": "1c780a46178ed44f309c1a348068823ec6c32173311d1dadbb0edbd2dea33023"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1583,7 +1583,7 @@
       "id": "repo:tests/alembic-needs-wording.test.mjs",
       "path": "tests/alembic-needs-wording.test.mjs",
       "type": "test",
-      "hash": "30b5547b1a50ac76af4bdbe3a3500062848aa53ceed5fa92fe17ca100009a334"
+      "hash": "390b4e467a50de0db256b0426df87edc5ac05ca6735ff0432b2637a034fbe155"
     },
     {
       "id": "repo:tests/alembic-needs.test.mjs",
@@ -2057,7 +2057,7 @@
       "id": "repo:tests/needs-wording.audit.test.mjs",
       "path": "tests/needs-wording.audit.test.mjs",
       "type": "test",
-      "hash": "55552c3b651e24044ec89449e8d997353390d106ccdda384e84b4433e8e222cc"
+      "hash": "0f1417c5b958f44f3a65e1706d77cc1a79dad9ab8853ac241414f921792e49e6"
     },
     {
       "id": "repo:tests/needs-wording.audit2.test.mjs",
@@ -2075,13 +2075,19 @@
       "id": "repo:tests/needs-wording.audit4.test.mjs",
       "path": "tests/needs-wording.audit4.test.mjs",
       "type": "test",
-      "hash": "797708576306931cf16a8846e887675d18111fdc71e1a88ee0c73f52767a5766"
+      "hash": "65857a2940681536f4a898f722e7054930463a6a7ef2670ddd5fe256910d1145"
     },
     {
       "id": "repo:tests/needs-wording.audit5.test.mjs",
       "path": "tests/needs-wording.audit5.test.mjs",
       "type": "test",
       "hash": "b2d2a7c3d5a0c1e1fc75d18485737a8ae24cf1afac7c5f2493d9600b468c7b12"
+    },
+    {
+      "id": "repo:tests/needs-wording.audit6.test.mjs",
+      "path": "tests/needs-wording.audit6.test.mjs",
+      "type": "test",
+      "hash": "2dcaab6269e1014b9056b06e3a3dbf770ad74ba4c826a8ff74689a4d8b4fd333"
     },
     {
       "id": "repo:tests/overrides.test.mjs",

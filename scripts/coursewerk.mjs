@@ -88,7 +88,7 @@ try {
       lastPublish: pub ? { seq: pub.seq, chapters: pub.chapters.map((c) => c.chapter), stillCurrent: pub.current } : null,
       ...(g.carriedOver?.labels.length ? { carriedOver: { label: CARRIED_LABEL, baselines: g.carriedOver.labels, units: g.carriedOver.units, plans: g.carriedOver.plans, notes: g.carriedOver.notes } } : {}),
       // the instructor's words, answered in Alembic, that the agent still owes action on (alembic_needs.mjs taken-up)
-      ...(owed.length ? { owedWords: owed.map(({ changesetId, question, words }) => ({ changesetId, question, words })) } : {}) });
+      ...(owed.length ? { owedWords: owed.map(({ changesetId, question, answers }) => ({ changesetId, question, answers })) } : {}) });
     process.exit(0);
   }
   if (cmd === "assemble" || cmd === "back-to-draft") {
