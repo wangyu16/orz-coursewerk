@@ -56,21 +56,38 @@ export const SAID = /^said: /;
 function takenUpOf(records) {
   const taken = new Set(), answering = new Set();
   const said = records.filter((r) => r.type === "answer" && r.party?.role === "instructor" && (r.payload?.answers || []).some((a) => SAID.test(a.choice)));
+  const marks = hostMarkers(records);
   for (const t of records.filter((r) => r.type === "revision" && r.party?.role === "agent" && r.payload?.event === "said-taken-up")) {
-    const seqs = Array.isArray(t.payload.answers) ? t.payload.answers
+    const old = !Array.isArray(t.payload.answers);
+    const seqs = !old ? t.payload.answers
       : said.filter((r) => r.seq < t.seq && r.payload.answers.some((a) => SAID.test(a.choice) && (t.payload.keys || []).includes(`${a.finding}|${a.basis}`))).map((r) => r.seq);
-    for (const q of seqs) { taken.add(q); if (!t.payload.binding) answering.add(q); }
+    for (const q of seqs) {
+      // a round-4 record carried no `binding` flag: its kind is read from the answer's marker (round 7, LOW-5); an
+      // unknown kind is taken as binding (fail-safe: asked again rather than closed by words)
+      const binding = t.payload.binding ?? (old ? (() => { const k = markerOf(marks, q)?.payload.kind; return !k || BINDING_KINDS.has(k); })() : false);
+      taken.add(q); if (!binding) answering.add(q);
+    }
   }
   return { taken, answering };
 }
-/** The instructor's words the agent owes action on, one per said answer: seq → { words, instructorWords, seq, entry, keys }. */
+/** Alembic's host-answer markers (alembic_needs.mjs), and the one that follows an answer record: the marker naming it
+ *  (`owes`), else the first said marker after it. */
+const hostMarkers = (records) => records.filter((r) => r.type === "contact" && r.party?.role === "harness" && r.payload?.moment === "host-answer");
+const markerOf = (marks, seq) => marks.find((m) => m.payload.owes === seq) || marks.find((m) => m.seq > seq && m.payload.outcome === "said");
+/**
+ * What the agent owes the instructor, one entry per answer: seq → { words, instructorWords, seq, entry, keys }. An answer in
+ * words ("said: …"), and an answer Alembic marked as work for the agent (a host-answer marker `owes: <seq>`: "Apply the
+ * suggestion" where no Coursewerk reader does the work, "Change it" on a disputed fact, an answer to an interrupt or to the
+ * agent's own question; round 7) — each until the agent records taking it up.
+ */
 export function saidOwed(root) {
   const text = readLogText(root), out = new Map();
   if (verifyLog(text).length) return out;
   const records = parseLog(text), { taken } = takenUpOf(records);
+  const owes = new Set(hostMarkers(records).map((m) => m.payload.owes).filter((x) => Number.isInteger(x)));
   for (const r of records) if (r.type === "answer" && r.party?.role === "instructor" && !taken.has(r.seq)) for (const a of r.payload?.answers || []) {
-    if (!SAID.test(a.choice)) continue;
-    const o = out.get(r.seq) || { words: a.choice.replace(SAID, ""), instructorWords: r.payload.instructorWords ?? null, seq: r.seq, entry: a.entry ?? null, keys: [] };
+    if (!SAID.test(a.choice) && !owes.has(r.seq)) continue;
+    const o = out.get(r.seq) || { words: String(a.choice).replace(SAID, ""), instructorWords: r.payload.instructorWords ?? null, seq: r.seq, entry: a.entry ?? null, keys: [] };
     o.keys.push(`${a.finding}|${a.basis}`); out.set(r.seq, o);
   }
   return out;

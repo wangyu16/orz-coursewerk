@@ -86,6 +86,16 @@
   - Words are owed per answer, so a later answer to the same or a re-asked question is never lost, and they are listed
     once per question, with what the instructor wrote in the words box. Interrupt and M5 answers show their words in
     the apply output.
+  After a seventh audit:
+  - **One question, one finding, for a choice (a per-construct limit).** An answer binds every finding of its entry,
+    while the question shows one; so a choice that acts (Apply, Change it differently, Keep it, Drop it, Confirm, Accept
+    as mine, Keep / Revert, Change it) is offered only for an entry of a single finding. An entry that clusters several
+    is answered in words, which go to the assistant; a choice an earlier hand-in offered on one is read as words.
+  - Work the instructor asks for is tracked: "Apply the suggestion" where no Coursewerk check does the work (a concern,
+    a plan line, detail in the plan), "Change it" on a disputed fact, and answers to interrupts and the assistant's own
+    questions are owed to the assistant, with the instructor's words, until it records taking them up. Every recorded
+    answer returns what the instructor chose and wrote.
+  - An answer whose act is refused is logged once; an old taken-up record reads its question's kind from the answer.
 
 ## v1.0.5 (2026-11-07)
 

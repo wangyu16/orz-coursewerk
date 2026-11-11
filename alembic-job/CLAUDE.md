@@ -48,7 +48,12 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
 
    An answer the instructor gave in their own words, not by a choice, or by a choice that asks you to act ("Change it
    differently", "Drop it"), comes back with outcome `said`, the answer (`said`) and anything they wrote in the words box
-   (`words`). An answer to an interrupt or to your own question comes back with its `answer` and `words` too. Words never confirm, keep or apply anything. They are yours to act on in this job: make the change they
+   (`words`). An answer to an interrupt or to your own question comes back with its `answer` and `words` too.
+   Some choices are also work for you, and come back with `owed`: "Apply the suggestion" on a reviewer's concern, a plan
+   line or detail in the plan, "Change it" on a disputed fact, and any answer to an interrupt or to your own question.
+   Do the work, then record it with `taken-up` as below. A question that comes up in several places takes words only:
+   if the instructor's words settle each place differently, ask about each one on its own (an M5 question, or the next
+   export once you have resolved some). Words never confirm, keep or apply anything. They are yours to act on in this job: make the change they
    ask for, or explain why not in a message, and bring a decision only they can make back as a question. Then record
    what you did, so the question closes:
 

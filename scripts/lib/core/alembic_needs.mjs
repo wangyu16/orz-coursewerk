@@ -126,7 +126,10 @@ export function digestQuestion(e, deliverableOf = new Map(), ctx = {}) {
   const head = [text.length > LIMITS.text ? text : "", ...off.map((x) => x.text)].filter(Boolean).join("\n");
   const offFits = head.length <= LIMITS.detail - 400, shown = [head, ...on].filter(Boolean).join("\n");
   const allFits = offFits && shown.length <= LIMITS.detail - 200;
-  let choices = worded.unseen ? null : DIGEST_CHOICES[e.kind] || worded.choices || null;
+  // a per-construct limit (round 7, the owner's standing preference over case-by-case hardening): a choice that acts is
+  // offered only for an entry of ONE finding — an answer binds every finding of its entry, and the question shows one
+  const many = manyFindings(e);
+  let choices = worded.unseen || many ? null : DIGEST_CHOICES[e.kind] || worded.choices || null;
   let tooLong = "";
   if (choices && !offFits) {
     // a kind whose answer confirms, claims or adopts (round 4, MEDIUM-2): its own choices stay, never pre-chosen — the
@@ -149,7 +152,8 @@ export function digestQuestion(e, deliverableOf = new Map(), ctx = {}) {
       : offFits ? [head, worded.unseen ? "The passage could not be read here. Answer in your own words: they go to the assistant, which takes them up; nothing is confirmed or kept from words alone." : "The whole passage is too long to show here: the page (the link) holds the exact text, and your answer applies to it as it reads there. If it changes before your answer is recorded, you are asked again."].filter(Boolean).join("\n")
       : [tooLong || "The text this answer would adopt is too long to show here: answer in your own words, and the assistant takes it up.", shorten(head, LIMITS.detail - 600)].join("\n"),
     worded.detail,
-    e.count > 1 ? `This comes up in ${e.count} places${places.length ? ` (${places.join(", ")})` : ""}; one answer settles them all.` : "",
+    many ? `This comes up in ${e.count || (e.findings || []).length} places${places.length ? ` (${places.join(", ")})` : ""}. Answer in your own words: they go to the assistant, which can ask about each place on its own.`
+      : e.count > 1 ? `This comes up in ${e.count} places${places.length ? ` (${places.join(", ")})` : ""}; one answer settles them all.` : "",
     // the recommendation's own words whenever they say more than the choice pre-chosen (MEDIUM-F)
     !recommended || rec.toLowerCase() !== recommended.toLowerCase() ? recommendationLine(e, c) : "",
     e.deferredBefore ? "You chose Later last time." : "",
@@ -316,6 +320,11 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
 /** Choices that ask the agent to act on the instructor's words: recorded like words ("said: …"), owed until taken up
  *  (round 6, MEDIUM-2). */
 const ACT_CHOICES = new Set(["Change it differently", "Drop it"]);
+/** An entry clustering several findings (round 7): its answer would bind every one; it takes words only. */
+const manyFindings = (e) => (e?.findings?.length || 1) > 1;
+/** A choice recorded as it is (a Coursewerk reader acts on it) that is also work for the agent: owed, with the
+ *  instructor's words, until taken up (round 7, MEDIUM-2, MEDIUM-3). */
+const owedChoice = (kind, choice) => (/^apply\b/i.test(choice) && ["knowledge-concern", "spine-review-concern", "detail-in-spine"].includes(kind)) || (kind === "fact-disputed" && choice === "Change it");
 /** What the record keeps of a question: a digest entry with the content hash of each unit as asked (`seen`, HIGH-2), and
  *  its evidence bounded (apply reads its key, kind, units and bases, never its evidence: MEDIUM-4). */
 function boundRef(ref, ctx) {
@@ -372,10 +381,10 @@ export function takenUp(root, { changesetId, question, note }, party) {
 export function owedWords(root) {
   const owed = saidOwed(root);
   if (!owed.size) return [];
-  const marks = markers(readLogText(root)).filter((m) => m.payload.outcome === "said");
+  const marks = markers(readLogText(root));
   const groups = new Map();
   for (const o of owed.values()) {
-    const m = marks.find((x) => x.seq > o.seq);
+    const m = marks.find((x) => x.payload.owes === o.seq) || marks.find((x) => x.seq > o.seq && x.payload.outcome === "said");
     const k = `${m?.payload.changesetId ?? null}|${m?.payload.question ?? null}`;
     const g = groups.get(k) || { changesetId: m?.payload.changesetId ?? null, question: m?.payload.question ?? null, kind: m?.payload.kind ?? null, answers: [] };
     g.answers.push({ seq: o.seq, answer: o.words, ...(o.instructorWords && o.instructorWords !== o.words ? { words: o.instructorWords } : {}) });
@@ -406,7 +415,7 @@ export function applyChanges(root, changes) {
     if (q.choices && !q.choices.includes(answer)) { skip(`"${line(answer, 60)}" is not one of the choices`); continue; }
     if (q.words === "required" && !words && !(q.kind === "approval" && answer === "Not yet")) { skip("the instructor's words are required and were not given"); continue; }
     const party = { role: "instructor", name };
-    let said = null;
+    let said = null, owes = null;
     const reader = liveReader(root);
     let outcome, seq = null;
     try {
@@ -414,7 +423,9 @@ export function applyChanges(root, changes) {
         seq = appendLogRecord(root, { type: "answer", party, payload: { answers: [{ finding: q.finding, basis: q.basis, choice: answer, entry: `interrupt:${q.finding}` }], acceptAll: false, instructorWords: words || answer } }).seq;
         outcome = "answered";
         // the instructor's answer to an interrupt or the agent's own M5 question, for the agent to read (round 6)
-        said = { answer, ...(words && words !== answer ? { words } : {}) };
+        // owed until taken up (round 7, MEDIUM-4): a job that stops after apply does not lose it
+        owes = seq;
+        said = { answer, ...(words && words !== answer ? { words } : {}), owed: `act on it, then record it: node scripts/alembic_needs.mjs taken-up --root <pkg> --changeset ${a.changesetId} --question ${a.question} --note "<what you did>" --model <id>` };
       } else if (q.kind === "approval") {
         // P1 (round 2): only the exact answers Coursewerk asked for; anything else is asked again
         if (answer !== "Approve" && answer !== "Not yet") { skip(`"${line(answer, 60)}" is neither Approve nor Not yet: it is asked again`); continue; }
@@ -454,6 +465,8 @@ export function applyChanges(root, changes) {
         // a choice that asks the agent to act ("Change it differently", "Drop it") carries the instructor's words to it:
         // recorded like words, owed until taken up (round 6, MEDIUM-2)
         else if (ACT_CHOICES.has(answer)) choice = `said: ${answer}`;
+        // a choice on an entry of several findings (an earlier hand-in offered it) is read as words (round 7)
+        else if (manyFindings(e) && !/^\s*later\b/i.test(answer)) choice = `said: ${answer}`;
         // HIGH-2 (rounds 3, 4): a choice binds the passage as it was asked, read live; one that changed is asked again
         // the binding guard (round 6, HIGH-1): every choice that acts on text, for every kind
         if (!SAID.test(choice) && choice !== "Later" && !bindingGuard(root, reader, q, e).ok) {
@@ -464,15 +477,31 @@ export function applyChanges(root, changes) {
           done.add(a.item);
           skip("the passage changed since it was asked (or the question predates that check): it is asked again"); continue;
         }
-        answerDigest(root, { entries: [e] }, { answers: { [e.key]: choice }, instructorWords: words || answer, reader }, party);
+        const before = parseLog(readLogText(root)).length;
+        try { answerDigest(root, { entries: [e] }, { answers: { [e.key]: choice }, instructorWords: words || answer, reader }, party); }
+        catch (err) {
+          // the act refused (claimAuthorship, confirmUnits …): marked once, so a later apply of the same answer does not
+          // log it again (round 7, LOW-6)
+          if (parseLog(readLogText(root)).length > before) {
+            appendLogRecord(root, { type: "contact", party: { role: "harness", name: "alembic-needs" }, payload: {
+              moment: "host-answer", host: "alembic", item: a.item, changesetId: a.changesetId, question: a.question, answer, outcome: "refused", reason: String(err.message).slice(0, 300),
+              by: { id: a.by?.id ?? null, name: a.by?.name ?? null }, at: a.at ?? null } });
+            done.add(a.item);
+          }
+          throw err;
+        }
         outcome = SAID.test(choice) ? "said" : choice === "Later" || /^\s*later\b/i.test(choice) ? "deferred" : "answered";
-        if (SAID.test(choice)) said = { said: answer, ...(words && words !== answer ? { words } : {}), owed: `act on these words, then record it: node scripts/alembic_needs.mjs taken-up --root <pkg> --changeset ${a.changesetId} --question ${a.question} --note "<what you did>" --model <id>` };
+        const cmd = `act on it, then record it: node scripts/alembic_needs.mjs taken-up --root <pkg> --changeset ${a.changesetId} --question ${a.question} --note "<what you did>" --model <id>`;
+        if (owedChoice(e.kind, choice)) owes = parseLog(readLogText(root)).filter((r) => r.type === "answer" && r.party?.role === "instructor").at(-1)?.seq ?? null;
+        // every recorded digest answer comes back with what the instructor chose and wrote (round 7, MEDIUM-2)
+        said = SAID.test(choice) ? { said: answer, ...(words && words !== answer ? { words } : {}), owed: cmd }
+          : { answer, ...(words && words !== answer ? { words } : {}), ...(owes ? { owed: cmd } : {}) };
       } else { skip(`unknown question kind ${q.kind}`); continue; }
     } catch (err) { skip(err.message); continue; }
     // the answer's Alembic provenance, after it: never recorded twice
     appendLogRecord(root, { type: "contact", party: { role: "harness", name: "alembic-needs" }, payload: {
       moment: "host-answer", host: "alembic", item: a.item, changesetId: a.changesetId, question: a.question, answer, outcome,
-      ...(q.kind === "digest" ? { kind: q.entry?.kind } : {}), by: { id: a.by?.id ?? null, name: a.by?.name ?? null }, at: a.at ?? null, ...(a.via ? { via: a.via } : {}), ...(seq ? { recorded: seq } : {}) } });
+      ...(q.kind === "digest" ? { kind: q.entry?.kind } : q.kind === "interrupt" ? { kind: "interrupt" } : {}), ...(owes ? { owes } : {}), by: { id: a.by?.id ?? null, name: a.by?.name ?? null }, at: a.at ?? null, ...(a.via ? { via: a.via } : {}), ...(seq ? { recorded: seq } : {}) } });
     done.add(a.item);
     recorded.push({ question: a.question, item: a.item, outcome, ...(seq ? { seq } : {}), ...(said || {}) });
   }
