@@ -233,9 +233,18 @@ export function placeOf(rel, ctx = {}) {
   if (rel === "concepts/course.md") return "the course map";
   const slug = slugOf(rel), title = ctx.titles?.get?.(slug) || words(slug);
   for (const [dir, name] of PARTS) if (String(rel).startsWith(dir)) return `the ${name} for “${title}”`;
-  if (/^(?:inputs\/|sources\/|.*\/sources\/)/.test(String(rel))) return `the source “${slug}”`;
+  if (/^(?:inputs\/|sources\/|.*\/sources\/)/.test(String(rel))) return sourceName(slug, ctx);
   if (/^private\//.test(String(rel))) return `“${slug}” (in the assistant's records)`;
   return `the page “${ctx.titles?.get?.(rel) || words(slug)}”`;
+}
+/** A source as the instructor knows it: its title in the course's sources (FOUNDATION.json), else its id in words
+ *  (audit round 9, LOW-6: never the file stem). */
+const sourceName = (id, ctx = {}) => `the source “${ctx.sources?.get?.(id) || words(id)}”`;
+const NODE_KINDS = { objective: "objective", concept: "concept", misconception: "misconception", guide: "assessment-guide entry", term: "key term", prereq: "prerequisite" };
+/** A plan-node id the plan does not hold now (removed, or not yet written), said by what it is (round 9, LOW-6). */
+function nodeFallback(id, ctx = {}) {
+  const [kind, scope, ...rest] = String(id).split("."), title = scope === "course" ? "the course map" : ctx.titles?.get?.(scope) ? `“${ctx.titles.get(scope)}”` : "";
+  return `the ${NODE_KINDS[kind] || "point"} “${words(rest.join(" "))}”${title ? ` of ${title}` : ""}, which the plan does not hold now`;
 }
 /** "the passage beginning “…”" (or the question, the answer) for a unit the context knows. */
 function passageOf(id, ctx) {
@@ -315,7 +324,14 @@ export function forInstructor(text, ctx = {}, { from = "harness" } = {}) {
   // file name such as "fig-2.png" stays as written (LOW-M)
   t = t.replace(new RegExp(`(${FILE.source})(?:,? (?:at |on )?lines? (\\d+)(?:\\s*[–-]\\s*\\d+)?)?`, "gi"), (m, file) => (harness || file.includes("/") ? placeOf(file, ctx) : m));
   t = t.replace(UNIT, (id) => passageOf(id, ctx) || "this passage");
-  t = t.replace(NODE, (id) => { const n = ctx.nodes?.get?.(id); return n ? `“${shorten(plainText(n.text || n.title || ""), 80)}”` : "a point in the plan"; });
+  t = t.replace(NODE, (id) => { const n = ctx.nodes?.get?.(id); return n ? `“${shorten(plainText(n.text || n.title || ""), 80)}”` : nodeFallback(id, ctx); });
+  // a source by its title (round 9, LOW-6): "source <id>:" (a harness note), "the source “<id>”", or a known id itself
+  t = t.replace(/\b(?:the )?source “([^”]+)”/gi, (m, id) => (ctx.sources?.has?.(id) ? (/^[A-Z]/.test(m) ? capital(sourceName(id, ctx)) : sourceName(id, ctx)) : m));
+  if (harness) t = t.replace(/\b(?:the )?source ([a-z0-9][a-z0-9._-]*[a-z0-9])(?=:|\s|$)/gi, (m, id) => (ctx.sources?.has?.(id) || /[-\d]/.test(id) ? (/^[A-Z]/.test(m) ? capital(sourceName(id, ctx)) : sourceName(id, ctx)) : m));
+  for (const id of ctx.sources?.keys?.() || []) if (/[-\d]/.test(id)) t = t.replace(new RegExp(`(?<![\\w/.“-])${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w/”-])`, "g"), `“${ctx.sources.get(id)}”`);
+  // the rights records' own words, as an instructor says them
+  if (harness) t = t.replace(/\b(?:no )?captured rights evidence\b/gi, (m) => (/^no /i.test(m) ? "no saved proof of its licence" : "saved proof of its licence"))
+    .replace(/\brights evidence\b/gi, "proof of its licence").replace(/\bno rights receipt\b/gi, "no record that its licence was checked").replace(/\brights receipt\b/gi, "record of the licence check").replace(/\bpreflight receipt\b/gi, "record of its licence check");
   // a chapter's slug (le-chatelier) as its title; only a hyphenated slug, so a plain word of the text is never taken
   for (const [slug, title] of ctx.titles || []) if (slug.includes("-")) t = t.replace(new RegExp(`(?<![\\w/.-])${slug.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w/-])`, "g"), `“${title}”`);
   if (harness) {
@@ -387,7 +403,13 @@ export function wordEntry(e, ctx = {}) {
       else shown.push({ text: `${units.length > 1 ? `Passage ${i + 1}` : "The whole passage"}: “${plainText(t)}”`, page: true });
     });
   };
-  const out = (o) => ({ ...o, shown, unseen });
+  // a passage the finding names that the text no longer holds (re-segmented or removed since): nothing an answer could
+  // act on is there, for any kind, so no choice is offered and the question says so (audit round 9, MEDIUM-1)
+  // (a removal of the instructor's text is about a passage that is gone: its question shows the removed words, and the
+  // binding guard checks they are still gone)
+  const removal = e.kind === "instructor-edit-unasked" && ev.now === "" && ev.after === "";
+  const gone = !removal && ctx.units instanceof Map && (e.units || []).some((u) => !ctx.units.has(u));
+  const out = (o) => (gone ? { ...o, choices: undefined, shown, unseen: true, gone: true } : { ...o, shown, unseen });
   const fi = (s) => forInstructor(s, ctx), rv = (s) => sentence(lightText(s));
   const sugg = (n = 160) => (ev.suggestion ? offPage("The suggestion in full", ev.suggestion, n, lightText, true) : "");
   switch (e.kind) {

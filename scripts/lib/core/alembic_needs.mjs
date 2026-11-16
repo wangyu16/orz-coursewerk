@@ -55,6 +55,8 @@ export function handinProblems(h) {
   const out = [], q = h?.digest?.questions;
   if (!CHANGESET_ID.test(String(h?.changesetId ?? ""))) out.push("changesetId must be 8–64 of A-Za-z0-9_-");
   if (!Array.isArray(q)) return [...out, "digest.questions must be a list"];
+  // how many more questions will follow (round 9, LOW-5): additive, Alembic's parseDigest reads only questions
+  if (h.digest.remaining !== undefined && !(Number.isInteger(h.digest.remaining) && h.digest.remaining >= 0)) out.push("digest.remaining must be a whole number");
   if (q.length > LIMITS.questions) out.push(`more than ${LIMITS.questions} questions`);
   const ids = new Set();
   const oneLine = (s, n) => typeof s === "string" && s.trim() && !/[\r\n]/.test(s) && !/[\u0000-\u0008\u000b-\u001f\u007f]/.test(s) && s.length <= n;
@@ -148,10 +150,10 @@ export function digestQuestion(e, deliverableOf = new Map(), ctx = {}) {
   const ev = e.evidence || {};
   // at most five chapters named, then how many more (a course-wide cluster named every chapter)
   const allPlaces = [...new Set((e.chapters || []).filter((x) => x !== "package").map((x) => `“${c.titles?.get?.(x) || x}”`))];
-  const places = allPlaces.length > 5 ? [...allPlaces.slice(0, 5), `and ${allPlaces.length - 5} more chapters`] : allPlaces;
+  const places = allPlaces.length > 5 ? [...allPlaces.slice(0, 5), `and ${allPlaces.length - 5} more chapter${allPlaces.length - 5 === 1 ? "" : "s"}`] : allPlaces;
   const detail = [
-    allFits ? [shown, worded.unseen ? UNSEEN : ""].filter(Boolean).join("\n")
-      : offFits ? [head, worded.unseen ? UNSEEN : "The whole passage is too long to show here: the page (the link) holds the exact text, and your answer applies to it as it reads there. If it changes before your answer is recorded, you are asked again."].filter(Boolean).join("\n")
+    allFits ? [shown, worded.unseen ? (worded.gone ? GONE : UNSEEN) : ""].filter(Boolean).join("\n")
+      : offFits ? [head, worded.unseen ? (worded.gone ? GONE : UNSEEN) : "The whole passage is too long to show here: the page (the link) holds the exact text, and your answer applies to it as it reads there. If it changes before your answer is recorded, you are asked again."].filter(Boolean).join("\n")
       : [tooLong || "The text this answer would adopt is too long to show here: answer in your own words, and the assistant takes it up.", shorten(head, LIMITS.detail - 600)].join("\n"),
     worded.detail,
     many ? `This comes up in ${e.count || (e.findings || []).length} places${places.length ? ` (${places.join(", ")})` : ""}. Answer in your own words: they go to the assistant.`
@@ -159,7 +161,7 @@ export function digestQuestion(e, deliverableOf = new Map(), ctx = {}) {
     // the recommendation's own words whenever they say more than the choice pre-chosen (MEDIUM-F)
     !recommended || rec.toLowerCase() !== recommended.toLowerCase() ? recommendationLine(e, c) : "",
     choices?.includes("Change it differently") ? "To change it differently, say how in your words." : "",
-    e.deferredBefore ? "You chose Later last time." : "",
+    e.laterBefore ? "You chose Later last time." : e.deferredBefore ? "This waited from an earlier digest." : "",
   ].filter(Boolean).join("\n");
   return {
     // the id hashes the entry's bases too: another finding under the same key is another question (round 8, MEDIUM-2)
@@ -173,6 +175,7 @@ export function digestQuestion(e, deliverableOf = new Map(), ctx = {}) {
     words: choices && !oneClick(e.kind, choices) ? "required" : "optional",
   };
 }
+const GONE = "A passage this is about is no longer in the text as it stands (it was changed or removed since), so nothing can be applied or kept from here. Answer in your own words if it still matters: they go to the assistant.";
 const UNSEEN = "The passage could not be read here. Answer in your own words: they go to the assistant, which takes them up; nothing is confirmed or kept from words alone.";
 /** The choices that are a whole answer by themselves (owner 2026-11-16): never Coursewerk's own (DIGEST_CHOICES: a
  *  confirmation, keeping as written, adopting or claiming text), never a binding kind. "Change it differently" rides
@@ -188,6 +191,9 @@ export function needsContext(root, reader, chapters = manifestChapters(reader)) 
   const titles = new Map();
   try { for (const c of manifestUnits(JSON.parse(reader.text("alembic.json")))) if (c.title) titles.set(c.slug, String(c.title)); } catch { /* no titles: slugs read as words */ }
   let nodes = new Map(); try { nodes = nodeIndex(parseSpine(reader, chapters)); } catch { nodes = new Map(); }
+  // the course's sources by id, with the titles the instructor knows them by (round 9, LOW-6)
+  const sources = new Map();
+  try { for (const x of JSON.parse(reader.text("private/coursewerk/FOUNDATION.json") || fs.readFileSync(recordFile(root, "private/coursewerk/FOUNDATION.json"), "utf8"))?.sources || []) if (x?.id) sources.set(String(x.id), String(x.title || x.id)); } catch { /* no sources: ids read as words */ }
   // the units as they read NOW (loadUnits re-segments the files: what confirmUnits, claimAuthorship and
   // adoptInstructorText bind), never the sidecar as last indexed (D-133 audit round 4, HIGH-1)
   const units = new Map(), deliverableOf = new Map(), live = new Map(), adopts = new Map();
@@ -207,7 +213,7 @@ export function needsContext(root, reader, chapters = manifestChapters(reader)) 
       adopts.set(ref, [...new Set([...(adopts.get(ref) || []), ...ids])].sort());
     }
   } catch { /* no register: a unit adopts itself */ }
-  return { titles, nodes, units, deliverableOf, live, adopts };
+  return { titles, nodes, sources, units, deliverableOf, live, adopts };
 }
 /** The units an answer to this entry binds: an unasked edit's "keep" adopts every holder of the text (adopts). */
 export const boundUnits = (e, ctx) => [...new Set((e.units || []).flatMap((u) => (e.kind === "instructor-edit-unasked" ? [u, ...(ctx.adopts?.get?.(u) || [])] : [u])))];
@@ -228,6 +234,8 @@ function assistantPart(text, ...more) {
   return part;
 }
 
+/** One answer of one Alembic item: the item, the hand-in and the question (audit round 9, HIGH-1). */
+const answerKey = (x) => `${x?.item ?? null}|${x?.changesetId ?? null}|${x?.question ?? null}`;
 const markers = (logText) => parseLog(logText).filter((r) => r.type === "contact" && r.party?.role === "harness" && r.payload?.moment === "host-answer" && r.payload?.host === "alembic");
 function readNeeds(root) { try { return JSON.parse(fs.readFileSync(recordFile(root, NEEDS_FILE), "utf8")); } catch { return { schemaVersion: 1, handins: [] }; } }
 
@@ -303,21 +311,36 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
       ref: { kind: "correction", correction: c.id }, assistant: { kind: "correction", unit: c.unit, ...assistantPart(`A correction was made in ${c.deliverable} (${c.unit}):\n${c.diff}${src ? `\nSource (${src.source})` : ""}`) } });
   }
 
-  // 4. the checkpoint digest, within the instructor's digest cap and what is left of the 20
-  const room = Math.max(0, LIMITS.questions - items.length);
-  const d = buildDigest(root, gate.findings, info, { cap: Math.min(Number(loggedDigestCap(logText) || DEFAULT_CAP), room), corrections: [] });
+  // 4. the checkpoint digest, within the instructor's digest cap and what is left of the 20. The cap counts QUESTIONS, after
+  // a cluster is split into one question per finding (audit round 9, MEDIUM-2): every cluster is ranked (buildDigest's
+  // order: deferred first, then by size), split, and the questions are taken round robin, one per cluster in turn, so a
+  // cluster of hundreds of findings never takes every slot from the other kinds.
+  const room = Math.max(0, LIMITS.questions - items.length), cap = Math.min(Number(loggedDigestCap(logText) || DEFAULT_CAP), room);
+  const all = buildDigest(root, gate.findings, info, { cap: Infinity, corrections: [] });
   let prev = null; try { prev = JSON.parse(fs.readFileSync(recordFile(root, DIGEST_FILE), "utf8")); } catch { prev = null; }
-  for (const e of d.entries) { const p = prev?.entries?.find((x) => x.key === e.key && String(x.recommendedBy || "").startsWith("agent")); if (p) { e.recommendation = p.recommendation; e.recommendedBy = p.recommendedBy; } }
+  for (const e of all.entries) { const p = prev?.entries?.find((x) => x.key === e.key && String(x.recommendedBy || "").startsWith("agent")); if (p) { e.recommendation = p.recommendation; e.recommendedBy = p.recommendedBy; } }
   // an entry clustering several findings of a kind a choice acts on is handed in as one question per finding (its own
   // passage, choices and bases; round 8, HIGH-1): a choice acts on exactly the one finding it shows, and every such
   // question can be settled. A cluster stays one question, in words, only for kinds no choice acts on.
-  const entries = d.entries.flatMap((e) => (manyFindings(e) ? splitEntry(e, gate.findings, hash, ctx) : [e]));
-  for (const e of entries) items.push({ question: digestQuestion(e, deliverableOf, ctx), ref: { kind: "digest", entry: e },
+  const byId = new Map(gate.findings.map((f) => [f.id, f]));
+  const groups = all.entries.map((e) => (manyFindings(e) ? splitEntry(e, byId, hash, ctx) : [e]));
+  const queue = [];
+  for (let i = 0, more = true; more; i++) { more = false; for (const g of groups) if (i < g.length) { queue.push(g[i]); more = true; } }
+  const taken = queue.slice(0, cap), takenKeys = new Set(taken.map((e) => e.cluster ?? e.key));
+  const leftKeys = new Set(queue.slice(cap).map((e) => e.cluster ?? e.key));
+  // the digest as recorded and delivered: the clusters with a question in this hand-in; the rest (and what is left of a
+  // cluster handed in part) is deferred and goes first next time
+  const d = { ...all, entries: all.entries.filter((e) => takenKeys.has(e.key)),
+    deferred: { count: all.entries.filter((e) => !takenKeys.has(e.key)).length, questions: queue.length - taken.length,
+      findings: queue.slice(cap).reduce((n, e) => n + (e.findings || []).length, 0), keys: all.entries.filter((e) => leftKeys.has(e.key)).map((e) => e.key) } };
+  for (const e of taken) items.push({ question: digestQuestion(e, deliverableOf, ctx), ref: { kind: "digest", entry: e },
     // bounded (round 2, LOW-K): the entry itself (in ref) keeps every unit
     assistant: { kind: e.kind, module: e.module, units: (e.units || []).slice(0, 20), ...((e.units || []).length > 20 ? { unitCount: e.units.length } : {}), ...assistantPart(String(e.question ?? ""), e.evidence?.rule, e.recommendation, e.evidence?.file && e.evidence?.line ? `${e.evidence.file} line ${e.evidence.line}` : "") } });
 
-  const shown = items.slice(0, LIMITS.questions), left = items.length - shown.length + d.deferred.count;
-  const handin = { changesetId, digest: { questions: shown.map((x) => x.question) } };
+  // what is left is counted in questions: those past the 20, and the digest's own past the cap (audit round 9, LOW-5);
+  // the hand-in carries it (digest.remaining, additive) so Alembic can say how many more will follow
+  const shown = items.slice(0, LIMITS.questions), left = items.length - shown.length + d.deferred.questions;
+  const handin = { changesetId, digest: { questions: shown.map((x) => x.question), remaining: left } };
   const problems = handinProblems(handin);
   if (problems.length) throw new Error(`the hand-in would break Alembic's limits: ${problems.slice(0, 3).join("; ")}`);
 
@@ -345,16 +368,20 @@ const manyFindings = (e) => (e?.findings?.length || 1) > 1;
  * A digest entry's findings, one entry each, when its kind has choices (DIGEST_CHOICES, or the wording's): the entry as
  * buildDigest makes it for one finding, keyed by the cluster key and the finding id (stable across exports).
  */
-function splitEntry(e, findings, hash, ctx) {
-  const mine = (e.findings || []).map((id) => findings.find((f) => f.id === id)).filter(Boolean);
+function splitEntry(e, byId, hash, ctx) {
+  const mine = (e.findings || []).map((id) => byId.get(id)).filter(Boolean);
   if (mine.length !== (e.findings || []).length) return [e];
-  const one = (f) => ({ ...e, key: `${e.key}#${f.id}`, count: 1, units: [...(f.units || [])].sort(),
+  const later = new Set(e.laterFindings || []);
+  const one = (f) => ({ ...e, key: `${e.key}#${f.id}`, cluster: e.key, count: 1, units: [...(f.units || [])].sort(),
     question: f.evidence?.note || f.evidence?.what || f.evidence?.rule || f.kind, evidence: f.evidence,
     recommendation: f.recommendation ?? (f.evidence?.suggestion ? `revise: ${f.evidence.suggestion}` : null),
     recommendedBy: f.recommendation != null ? "check" : f.evidence?.suggestion ? "reviewer" : null,
+    // a Later is per question once split (round 9, LOW-2): marked, and first, only where the instructor chose it
+    deferredBefore: !!(e.laterBefore || later.has(f.id)), laterBefore: !!(e.laterBefore || later.has(f.id)), laterFindings: undefined,
     findings: [f.id], bases: [{ finding: answerKeyOf(f), basis: basisOf(f, hash), ...(f.evidence?.claimKey ? { claimKey: f.evidence.claimKey, ...(f.evidence.claimText ? { claimText: f.evidence.claimText, units: f.units } : {}) } : {}) }] });
-  const singles = mine.map(one);
-  return DIGEST_CHOICES[e.kind] || wordEntry(singles[0], ctx).choices ? singles : [e];
+  const singles = mine.map(one).sort((a, b) => b.laterBefore - a.laterBefore);
+  // split when ANY finding has choices (round 9, LOW-3): the wording's choices depend on each finding (a suggestion)
+  return DIGEST_CHOICES[e.kind] || singles.some((x) => wordEntry(x, ctx).choices) ? singles : [e];
 }
 /** A choice recorded as it is (a Coursewerk reader acts on it) that is also work for the agent: owed, with the
  *  instructor's words, until taken up (round 7, MEDIUM-2, MEDIUM-3). */
@@ -368,6 +395,10 @@ function boundRef(ref, ctx) {
   // round 4 (HIGH-1): the hash of each bound unit's LIVE text (unitHash), or "absent" for a unit no file holds now
   return { ...ref, entry: { ...e, evidence }, seen: Object.fromEntries(boundUnits(e, ctx).map((u) => [u, ctx.live.get(u) ?? "absent"])) };
 }
+/** What the binding guard compares, read once: the package's units as they read now (needsContext) and as indexed. */
+export function bindingContext(root, reader) {
+  return { ctx: needsContext(root, reader), indexed: new Map([...unitInfoOf(root, reader)].map(([k, v]) => [k, v.contentHash])) };
+}
 /**
  * THE BINDING GUARD (D-133 audit rounds 3–6): a digest choice runs its act (confirm, keep, adopt, claim, revert, apply)
  * only when, for every unit it touches, the indexed text (the sidecar's contentHash: what claimAuthorship and the index's
@@ -378,10 +409,10 @@ function boundRef(ref, ctx) {
  * mismatch → false (asked again). A unit recorded "absent" passes only while neither the files nor the index hold it.
  * Returns { ok, why }.
  */
-export function bindingGuard(root, reader, q, e) {
+export function bindingGuard(root, reader, q, e, bc = null) {
   const seen = q?.seen;
   if (!seen || typeof seen !== "object") return { ok: false, why: "asked before the passage check" };
-  const ctx = needsContext(root, reader), indexed = new Map([...unitInfoOf(root, reader)].map(([k, v]) => [k, v.contentHash]));
+  const { ctx, indexed } = bc || bindingContext(root, reader);
   const touched = [...new Set([...(e.units || []), ...boundUnits(e, ctx), ...Object.keys(seen)])];
   for (const u of touched) {
     if (!Object.hasOwn(seen, u)) return { ok: false, why: `${u} was not shown` };
@@ -435,19 +466,28 @@ export function owedWords(root) {
  */
 export function applyChanges(root, changes) {
   const answers = [...(Array.isArray(changes?.answers) ? changes.answers : [])].sort((a, b) => String(a?.at).localeCompare(String(b?.at)));
-  const needs = readNeeds(root), done = new Set(markers(readLogText(root)).map((r) => r.payload.item));
+  // an answer is one question's answer in one Alembic item: Alembic gives every answer of a digest the digest's own item
+  // (agent-endpoint.ts changes), so the item alone would take every answer after the first as already recorded (audit
+  // round 9, HIGH-1). Markers written before keep item, changeset and question, so they key the same way.
+  const needs = readNeeds(root), done = new Set(markers(readLogText(root)).map((r) => answerKey(r.payload)));
   const recorded = [], skipped = []; let ignored = 0;
+  // the binding guard's context, built once per apply run (audit round 9, LOW-8): an apply records answers and never
+  // changes a unit's text, so what the guard compares is the same for every answer of the run
+  let guardCtx = null;
   for (const a of answers) {
     const q = needs.handins?.find((h) => h.changesetId === a?.changesetId)?.questions?.[a?.question];
     if (!q) { ignored++; continue; }
     const skip = (reason) => skipped.push({ question: a.question, item: a.item ?? null, reason });
-    if (a.item == null || done.has(a.item)) { skip(a.item == null ? "the answer has no item id" : "already recorded"); continue; }
+    if (a.item == null || done.has(answerKey(a))) { skip(a.item == null ? "the answer has no item id" : "already recorded"); continue; }
     const name = String(a.by?.name || a.by?.id || "").trim();
     if (!name) { skip("the answer does not say who gave it"); continue; }
     const answer = String(a.answer ?? "").trim(), words = hasVisibleWords(a.words) ? String(a.words).trim() : null;
     if (!answer) { skip("the answer is empty"); continue; }
     if (q.choices && !q.choices.includes(answer)) { skip(`"${line(answer, 60)}" is not one of the choices`); continue; }
     if (q.words === "required" && !words && !(q.kind === "approval" && answer === "Not yet")) { skip("the instructor's words are required and were not given"); continue; }
+    // a choice that confirms, keeps as written, adopts or claims takes the instructor's words whatever the record says
+    // (Coursewerk's own choices, and every binding kind; only Later is one click there: audit round 9, LOW-1)
+    if (q.kind === "digest" && !words && answer !== "Later" && (DIGEST_CHOICES[q.entry?.kind] || BINDING_KINDS.has(q.entry?.kind) || !q.entry?.kind) && q.choices) { skip("the instructor's words are required and were not given"); continue; }
     const party = { role: "instructor", name };
     let said = null, owes = null;
     const reader = liveReader(root);
@@ -502,7 +542,7 @@ export function applyChanges(root, changes) {
           appendLogRecord(root, { type: "contact", party: { role: "harness", name: "alembic-needs" }, payload: {
             moment: "host-answer", host: "alembic", item: a.item, changesetId: a.changesetId, question: a.question, answer, outcome: "asked again",
             by: { id: a.by?.id ?? null, name: a.by?.name ?? null }, at: a.at ?? null } });
-          done.add(a.item);
+          done.add(answerKey(a));
           skip("“Change it differently” needs the instructor's words on how: it is asked again"); continue;
         }
         // a choice that asks the agent to act ("Change it differently", "Drop it") carries the instructor's words to it:
@@ -512,12 +552,12 @@ export function applyChanges(root, changes) {
         else if (manyFindings(e) && !/^\s*later\b/i.test(answer)) choice = `said: ${answer}`;
         // HIGH-2 (rounds 3, 4): a choice binds the passage as it was asked, read live; one that changed is asked again
         // the binding guard (round 6, HIGH-1): every choice that acts on text, for every kind
-        if (!SAID.test(choice) && choice !== "Later" && !bindingGuard(root, reader, q, e).ok) {
+        if (!SAID.test(choice) && choice !== "Later" && !bindingGuard(root, reader, q, e, (guardCtx ||= bindingContext(root, reader))).ok) {
           // reported once (round 5, LOW-6): the marker makes a later apply of the same answer "already recorded"
           appendLogRecord(root, { type: "contact", party: { role: "harness", name: "alembic-needs" }, payload: {
             moment: "host-answer", host: "alembic", item: a.item, changesetId: a.changesetId, question: a.question, answer, outcome: "asked again",
             by: { id: a.by?.id ?? null, name: a.by?.name ?? null }, at: a.at ?? null } });
-          done.add(a.item);
+          done.add(answerKey(a));
           skip("the passage changed since it was asked (or the question predates that check): it is asked again"); continue;
         }
         const before = parseLog(readLogText(root)).length;
@@ -529,7 +569,7 @@ export function applyChanges(root, changes) {
             appendLogRecord(root, { type: "contact", party: { role: "harness", name: "alembic-needs" }, payload: {
               moment: "host-answer", host: "alembic", item: a.item, changesetId: a.changesetId, question: a.question, answer, outcome: "refused", reason: String(err.message).slice(0, 300),
               by: { id: a.by?.id ?? null, name: a.by?.name ?? null }, at: a.at ?? null } });
-            done.add(a.item);
+            done.add(answerKey(a));
           }
           throw err;
         }
@@ -545,7 +585,7 @@ export function applyChanges(root, changes) {
     appendLogRecord(root, { type: "contact", party: { role: "harness", name: "alembic-needs" }, payload: {
       moment: "host-answer", host: "alembic", item: a.item, changesetId: a.changesetId, question: a.question, answer, outcome,
       ...(q.kind === "digest" ? { kind: q.entry?.kind } : q.kind === "interrupt" ? { kind: "interrupt" } : {}), ...(owes ? { owes } : {}), by: { id: a.by?.id ?? null, name: a.by?.name ?? null }, at: a.at ?? null, ...(a.via ? { via: a.via } : {}), ...(seq ? { recorded: seq } : {}) } });
-    done.add(a.item);
+    done.add(answerKey(a));
     recorded.push({ question: a.question, item: a.item, outcome, ...(seq ? { seq } : {}), ...(said || {}) });
   }
   // every word still owed to the agent, from this job's answers or an earlier one's (round 5, MEDIUM-3)

@@ -122,14 +122,20 @@ export function buildDigest(root, findings, unitInfo, { cap = DEFAULT_CAP, corre
     const ch = chapterOfFinding(f, deliverable); for (const x of [].concat(ch || "package")) c.chapters.add(x);
     clusters.set(k, c);
   }
-  const prev = new Set([...(readState(root).deferred || []), ...laterKeys(root)]);
+  const later = laterKeys(root), prev = new Set([...(readState(root).deferred || []), ...later]);
+  // a Later on one finding of a cluster handed in finding by finding (alembic_needs.mjs splitEntry: key#finding id) defers
+  // that finding: its cluster goes first, and it is marked (audit round 9, LOW-2)
+  const laterOf = (c) => c.findings.filter((f) => later.has(`${c.key}#${f.id}`)).map((f) => f.id);
+  const owedBefore = (c) => prev.has(c.key) || laterOf(c).length > 0;
   const ranked = [...clusters.values()].sort((a, b) =>
-    (prev.has(b.key) - prev.has(a.key)) || (b.findings.length - a.findings.length) || (b.units.size - a.units.size) || a.key.localeCompare(b.key));
+    (owedBefore(b) - owedBefore(a)) || (b.findings.length - a.findings.length) || (b.units.size - a.units.size) || a.key.localeCompare(b.key));
   const shown = ranked.slice(0, cap), deferred = ranked.slice(cap);
   const entry = (c) => ({
     key: c.key, module: c.module, kind: c.kind, count: c.findings.length, chapters: [...c.chapters].sort(), units: [...c.units].sort(),
     question: c.findings[0].evidence?.note || c.findings[0].evidence?.what || c.findings[0].evidence?.rule || c.kind,
-    evidence: c.findings[0].evidence, deferredBefore: prev.has(c.key),
+    evidence: c.findings[0].evidence, deferredBefore: owedBefore(c),
+    // what the instructor deferred with Later (the cluster, or some of its findings), apart from the digest's overflow
+    ...(later.has(c.key) ? { laterBefore: true } : {}), ...(laterOf(c).length ? { laterFindings: laterOf(c) } : {}),
     // a recommendation always shows where it came from: the check, or a concern's own suggested revision
     recommendation: c.findings[0].recommendation ?? (c.findings[0].evidence?.suggestion ? `revise: ${c.findings[0].evidence.suggestion}` : null),
     recommendedBy: c.findings[0].recommendation != null ? "check" : c.findings[0].evidence?.suggestion ? "reviewer" : null,

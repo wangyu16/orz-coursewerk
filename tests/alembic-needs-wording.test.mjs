@@ -158,7 +158,7 @@ test("[req.host.alembic-needs-wording] every kind of question reads as the instr
   // 4. places as the instructor sees them, content as it reads
   assert.match(one("knowledge-concern", (q) => q.choices).text, /^In the study guide for “Chemical Equilibrium”, “the equilibrium constant K_c of Objective 18\.5a is \(\[NH₃\]²\)\/\(\[N₂\]\[H₂\]³\)” may be wrong — The exponent on H2 must be the coefficient 3\. Suggestion: “K_c = \(\[NH₃\]²\)\/\(\[N₂\]\[H₂\]³\), with each concentration at equilibrium”\.$/);
   assert.match(one("spine-review-concern").text, /^In the course map, the line “Objective 18\.5a Relate ΔG° to K” may be wrong — The relation is ΔG° = −RT ln K, so the sign matters\. Suggestion: change it to “Relate ΔG° = −RT ln K”\.$/);
-  assert.match(one("M5").text, /^A change to the plan: the course map lists Objective 18\.5a under the wrong chapter: move it to “Le Chatelier.s Principle” \(a point in the plan\)\?$/);
+  assert.match(one("M5").text, /^A change to the plan: the course map lists Objective 18\.5a under the wrong chapter: move it to “Le Chatelier.s Principle” \(the objective “Predict shift” of “Le Chatelier.s Principle”, which the plan does not hold now\)\?$/); // audit9 LOW-6
   assert.match(one("correction").text, /^In the study guide for “Le Chatelier's Principle”, the assistant corrected “.*ΔH = −75 kJ mol⁻¹.*” to “.*ΔH = −92\.4 kJ mol⁻¹.*”, because a source contradicted it\. Keep the correction, or undo it\?$/);
   assert.match(one("exercise-data-confirm").text, /the values “\[N₂\] = 0\.50 M” read as made-up exercise data/);
   assert.match(one("unit-unknown-authorship").text, /^In the study guide for “Chemical Equilibrium”, 2 passages were changed outside the assistant's work \(the first is the passage beginning “For a balanced reversible reaction/);
@@ -339,7 +339,7 @@ test("[req.host.alembic-needs-wording] the teacher-reviewer's symptoms (General 
   const r = await exportNeeds(p.root, { changesetId: "symptoms-001", gate: { findings: [offGone, ...tagged] } });
   const gone = r.handin.digest.questions.find((q) => q.text.includes("no longer in the text"));
   assert.match(gone.text, /^In the course, a passage that is no longer in the text as it stands: a reviewer found/);
-  assert.equal(gone.choices, undefined, "no Keep / Drop on a passage the question cannot show"); assert.match(gone.detail, /could not be read here/);
+  assert.equal(gone.choices, undefined, "no Keep / Drop on a passage the question cannot show"); assert.match(gone.detail, /no longer in the text as it stands/); // audit9 MEDIUM-1
   const many = r.handin.digest.questions.find((q) => /Objective 15\.1b/.test(q.text));
   assert.match(many.detail, /^This comes up in 6 places \(“Chemical Equilibrium”, “Le Chatelier's Principle”\)\. Answer in your own words/);
   for (const q of r.handin.digest.questions) assert.deepEqual(harnessTraces([q.text, q.detail || ""].join("\n")), [], q.text);

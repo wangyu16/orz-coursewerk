@@ -107,6 +107,22 @@
   - From a teacher-reviewer's reading of General Chemistry: a passage the text no longer holds is said so ("a passage
     that is no longer in the text as it stands") and offers no Keep / Drop; a question in many chapters names five and
     says how many more; a note naming its own place says it once.
+  After a ninth audit:
+  - **Fix (also in v1.0.5): every answer of a digest is recorded.** Alembic gives every answer of one digest the same
+    item id; `alembic_needs.mjs apply` took the item alone as "already recorded", so only the first answer of each digest
+    was recorded and the rest were skipped. An answer is now one question of one item in one hand-in. Nothing to migrate:
+    the skipped answers were never recorded, so the next apply records them while Alembic still returns them, and an
+    export meanwhile asks them again.
+  - The instructor's digest size counts questions, after a cluster is split place by place, and the questions are taken
+    one per cluster in turn, so a cluster of hundreds never takes every place from the other kinds. What is left is
+    counted in questions, and the hand-in says it (`digest.remaining`, additive) so Alembic can say how many more follow.
+  - A passage the text no longer holds offers no choice for any kind (a reviewer's suggestion could still be applied).
+  - Confirm, Keep as written, Keep on an edit, Still correct and Accept as mine always need the instructor's words,
+    whatever the record of the question says.
+  - "Later" on one place of a split cluster brings that place back first, marked; a cluster is split when any of its
+    places has choices; "and 1 more chapter"; a source is named by its title, and the rights words are plain; a
+    plan point the plan no longer holds is said by what it is.
+  - Apply reads the package once per run for its passage check (it read it once per answer, about a second each).
 
 ## v1.0.5 (2026-11-07)
 

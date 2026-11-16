@@ -108,7 +108,9 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
    ```
 
    - The export collects interrupts, plans ready for approval, corrections to keep or undo, and the checkpoint
-     digest, at most 20 questions; it says how many wait for next time. It writes the questions to the hidden file
+     digest, at most 20 questions (the digest part within the instructor's digest size, counted in questions); it
+     says how many wait for next time, and the hand-in carries that number as `digest.remaining` (how many more
+     questions will follow; additive: Alembic may show it, and reads only `digest.questions` otherwise). It writes the questions to the hidden file
      `work/.alembic-needs.json`, and the record of what was asked to `private/coursewerk/digest/alembic-needs.json`,
      which the push carries. It makes a new changeset id unless you give one (`--changeset <id>`); an id already handed in is refused.
    - The questions are worded for the instructor: places as they see them, content as it reads, no file paths, line
