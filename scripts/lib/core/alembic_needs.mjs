@@ -197,7 +197,9 @@ export function needsContext(root, reader, chapters = manifestChapters(reader)) 
   // the units as they read NOW (loadUnits re-segments the files: what confirmUnits, claimAuthorship and
   // adoptInstructorText bind), never the sidecar as last indexed (D-133 audit round 4, HIGH-1)
   const units = new Map(), deliverableOf = new Map(), live = new Map(), adopts = new Map();
-  let all = []; try { all = loadUnits(root, reader); } catch { all = []; }
+  // whether the units could be read at all (audit round 10, L-4): only then is a passage the finding names and the text
+  // does not hold "gone"; otherwise it is "could not be read here"
+  let all = [], unitsRead = false; try { all = loadUnits(root, reader); unitsRead = all.length > 0; } catch { all = []; }
   for (const u of all) {
     units.set(u.id, { deliverable: u.locator?.deliverable, form: u.form, text: u.text });
     deliverableOf.set(u.id, u.locator?.deliverable); live.set(u.id, unitHash(u.text));
@@ -213,7 +215,7 @@ export function needsContext(root, reader, chapters = manifestChapters(reader)) 
       adopts.set(ref, [...new Set([...(adopts.get(ref) || []), ...ids])].sort());
     }
   } catch { /* no register: a unit adopts itself */ }
-  return { titles, nodes, sources, units, deliverableOf, live, adopts };
+  return { titles, nodes, sources, units, unitsRead, deliverableOf, live, adopts };
 }
 /** The units an answer to this entry binds: an unasked edit's "keep" adopts every holder of the text (adopts). */
 export const boundUnits = (e, ctx) => [...new Set((e.units || []).flatMap((u) => (e.kind === "instructor-edit-unasked" ? [u, ...(ctx.adopts?.get?.(u) || [])] : [u])))];
@@ -395,7 +397,7 @@ function boundRef(ref, ctx) {
   // round 4 (HIGH-1): the hash of each bound unit's LIVE text (unitHash), or "absent" for a unit no file holds now
   return { ...ref, entry: { ...e, evidence }, seen: Object.fromEntries(boundUnits(e, ctx).map((u) => [u, ctx.live.get(u) ?? "absent"])) };
 }
-/** What the binding guard compares, read once: the package's units as they read now (needsContext) and as indexed. */
+/** What the binding guard compares, read together: the package's units as they read now (needsContext) and as indexed. */
 export function bindingContext(root, reader) {
   return { ctx: needsContext(root, reader), indexed: new Map([...unitInfoOf(root, reader)].map(([k, v]) => [k, v.contentHash])) };
 }
@@ -471,8 +473,9 @@ export function applyChanges(root, changes) {
   // round 9, HIGH-1). Markers written before keep item, changeset and question, so they key the same way.
   const needs = readNeeds(root), done = new Set(markers(readLogText(root)).map((r) => answerKey(r.payload)));
   const recorded = [], skipped = []; let ignored = 0;
-  // the binding guard's context, built once per apply run (audit round 9, LOW-8): an apply records answers and never
-  // changes a unit's text, so what the guard compares is the same for every answer of the run
+  // the binding guard's context, read once and read again after any answer that changes what it compares (audit round
+  // 10, M-1): an Undo rewrites a unit's text, and an answer that adopts, claims or confirms changes the index or the
+  // register, so a later answer of the same run is checked against the package as it then stands
   let guardCtx = null;
   for (const a of answers) {
     const q = needs.handins?.find((h) => h.changesetId === a?.changesetId)?.questions?.[a?.question];
@@ -522,6 +525,7 @@ export function applyChanges(root, changes) {
         if (answer === "Undo") {
           if (!words) { skip("an undo records why the text stands: the instructor's words are required"); continue; }
           revertCorrection(root, reader, q.correction, { note: words }, party);
+          guardCtx = null; // the text changed: the guard reads it again (M-1)
           outcome = "undone";
         } else {
           // kept: shown and answered, as `coursewerk.mjs digest --deliver` marks a correction shown
@@ -561,6 +565,8 @@ export function applyChanges(root, changes) {
           skip("the passage changed since it was asked (or the question predates that check): it is asked again"); continue;
         }
         const before = parseLog(readLogText(root)).length;
+        // an answer that acts (not said, not Later) may adopt, claim or confirm: the guard reads the package again (M-1)
+        if (!SAID.test(choice) && choice !== "Later") guardCtx = null;
         try { answerDigest(root, { entries: [e] }, { answers: { [e.key]: choice }, instructorWords: words || answer, reader }, party); }
         catch (err) {
           // the act refused (claimAuthorship, confirmUnits …): marked once, so a later apply of the same answer does not

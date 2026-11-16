@@ -53,7 +53,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "aaed893a55f0ee12037f50add71a56ddc0243e52c733e208f93da1d480f694da"
+      "hash": "d0d9af394a5588b99f693567da0fbefe0a2ed1e8dd6f20b71feb5bf140fa4094"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -431,7 +431,7 @@
       "id": "repo:scripts/lib/core/alembic_needs.mjs",
       "path": "scripts/lib/core/alembic_needs.mjs",
       "type": "kernel",
-      "hash": "c703360af7e1cdadc54053ca335fdaffa20b6c93fa9cd45999c313276bd7eca3"
+      "hash": "438b2c28c8894ae107801171ee7016209519de2309af6f278e1dd6665d4f77a0"
     },
     {
       "id": "repo:scripts/lib/core/approvals.mjs",
@@ -485,7 +485,7 @@
       "id": "repo:scripts/lib/core/digest.mjs",
       "path": "scripts/lib/core/digest.mjs",
       "type": "kernel",
-      "hash": "534980566ebf106c4ea256b3c2d8e2f5e09db6b61832b5f92c3ab08c8c886145"
+      "hash": "16138ce75447142e405584d19997e2a2bd23f903de44e677fdeb9732fd5c4d82"
     },
     {
       "id": "repo:scripts/lib/core/history.mjs",
@@ -527,7 +527,7 @@
       "id": "repo:scripts/lib/core/needs_wording.mjs",
       "path": "scripts/lib/core/needs_wording.mjs",
       "type": "kernel",
-      "hash": "ec9331ebb1aeb41286ad0a94a2b17718fe35373c63173c6a970ff46a02319261"
+      "hash": "04db2f5b932ca1e4edf379fe7f2d23398d7b82571c0dfd277c14a93cada4b5f5"
     },
     {
       "id": "repo:scripts/lib/core/notations.mjs",
@@ -1391,7 +1391,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "2190c037526cc3529f4f5f075a275e6018be42458cb56546358caa1bd10e7d3f"
+      "hash": "da263b99b7fc4589203a301965f4791649b3bf22712625e4d4901b87ded9bb87"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -2058,6 +2058,12 @@
       "path": "tests/needs-wording.audit.test.mjs",
       "type": "test",
       "hash": "9fc38ad23d18cafdd7fcb8cd0b7e2706bb8d5cdcc98938c69f38c76997866279"
+    },
+    {
+      "id": "repo:tests/needs-wording.audit10.test.mjs",
+      "path": "tests/needs-wording.audit10.test.mjs",
+      "type": "test",
+      "hash": "f5d22057d7e369cc56a9c257e0c3687381162580cb6c083730bbb81bb419438d"
     },
     {
       "id": "repo:tests/needs-wording.audit2.test.mjs",

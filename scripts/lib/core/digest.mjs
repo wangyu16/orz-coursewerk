@@ -135,7 +135,8 @@ export function buildDigest(root, findings, unitInfo, { cap = DEFAULT_CAP, corre
     question: c.findings[0].evidence?.note || c.findings[0].evidence?.what || c.findings[0].evidence?.rule || c.kind,
     evidence: c.findings[0].evidence, deferredBefore: owedBefore(c),
     // what the instructor deferred with Later (the cluster, or some of its findings), apart from the digest's overflow
-    ...(later.has(c.key) ? { laterBefore: true } : {}), ...(laterOf(c).length ? { laterFindings: laterOf(c) } : {}),
+    // a Later on every finding the cluster still holds (it shrank since) is a Later on the cluster (round 10, L-5)
+    ...(later.has(c.key) || (laterOf(c).length && laterOf(c).length === c.findings.length) ? { laterBefore: true } : {}), ...(laterOf(c).length ? { laterFindings: laterOf(c) } : {}),
     // a recommendation always shows where it came from: the check, or a concern's own suggested revision
     recommendation: c.findings[0].recommendation ?? (c.findings[0].evidence?.suggestion ? `revise: ${c.findings[0].evidence.suggestion}` : null),
     recommendedBy: c.findings[0].recommendation != null ? "check" : c.findings[0].evidence?.suggestion ? "reviewer" : null,

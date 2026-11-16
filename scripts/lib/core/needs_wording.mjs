@@ -260,7 +260,7 @@ function where(units = [], ctx = {}, file = null) {
   const rel = (id && ctx.units.get(id).deliverable) || units.map((u) => ctx.deliverableOf?.get?.(u)).find(Boolean) || file;
   // a passage the finding names but the text no longer holds (re-segmented or removed since) is said so, never "it"
   // with nothing before it (D-133, a teacher-reviewer's reading of General Chemistry, 2026-11-16)
-  const gone = !id && units.length && ctx.units ? "a passage that is no longer in the text as it stands" : "";
+  const gone = !id && units.length && ctx.units && ctx.unitsRead !== false ? "a passage that is no longer in the text as it stands" : "";
   return { place: placeOf(rel, ctx), passage: id ? passageOf(id, ctx) : gone, rel };
 }
 const inPlace = (w) => (w.place ? `In ${w.place}` : "In the course");
@@ -328,12 +328,13 @@ export function forInstructor(text, ctx = {}, { from = "harness" } = {}) {
   // a source by its title (round 9, LOW-6): "source <id>:" (a harness note), "the source “<id>”", or a known id itself
   t = t.replace(/\b(?:the )?source “([^”]+)”/gi, (m, id) => (ctx.sources?.has?.(id) ? (/^[A-Z]/.test(m) ? capital(sourceName(id, ctx)) : sourceName(id, ctx)) : m));
   if (harness) t = t.replace(/\b(?:the )?source ([a-z0-9][a-z0-9._-]*[a-z0-9])(?=:|\s|$)/gi, (m, id) => (ctx.sources?.has?.(id) || /[-\d]/.test(id) ? (/^[A-Z]/.test(m) ? capital(sourceName(id, ctx)) : sourceName(id, ctx)) : m));
-  for (const id of ctx.sources?.keys?.() || []) if (/[-\d]/.test(id)) t = t.replace(new RegExp(`(?<![\\w/.“-])${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w/”-])`, "g"), `“${ctx.sources.get(id)}”`);
-  // the rights records' own words, as an instructor says them
-  if (harness) t = t.replace(/\b(?:no )?captured rights evidence\b/gi, (m) => (/^no /i.test(m) ? "no saved proof of its licence" : "saved proof of its licence"))
+  // function replacers (round 10, L-2): a title's "$&" or "$$" is its own text, never a replacement pattern
+  for (const id of ctx.sources?.keys?.() || []) if (/[-\d]/.test(id)) t = t.replace(new RegExp(`(?<![\\w/.“-])${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w/”-])`, "g"), () => `“${ctx.sources.get(id)}”`);
+  // the rights records' own words, as an instructor says them; the matched first letter keeps its case (round 10, L-3)
+  if (harness) t = t.replace(/\b(?:no )?captured rights evidence\b/gi, (m) => (/^no /i.test(m) ? `${m[0]}o saved proof of its licence` : `${m[0] === "C" ? "S" : "s"}aved proof of its licence`))
     .replace(/\brights evidence\b/gi, "proof of its licence").replace(/\bno rights receipt\b/gi, "no record that its licence was checked").replace(/\brights receipt\b/gi, "record of the licence check").replace(/\bpreflight receipt\b/gi, "record of its licence check");
   // a chapter's slug (le-chatelier) as its title; only a hyphenated slug, so a plain word of the text is never taken
-  for (const [slug, title] of ctx.titles || []) if (slug.includes("-")) t = t.replace(new RegExp(`(?<![\\w/.-])${slug.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w/-])`, "g"), `“${title}”`);
+  for (const [slug, title] of ctx.titles || []) if (slug.includes("-")) t = t.replace(new RegExp(`(?<![\\w/.-])${slug.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w/-])`, "g"), () => `“${title}”`);
   if (harness) {
     t = t.replace(DECISION, "").replace(/\b(?:the )?spine'?s?\b/gi, (m) => (/^the/i.test(m) ? `${m[0]}he plan` : m[0] === "S" ? "Plan" : "plan")).replace(/,? (?:at |on )?lines? \d+(?:\s*[–-]\s*\d+)?/gi, "");
     t = plainText(t.replace(/\$(?=\s|$)/g, "")); // a stray dollar left by a cut quote
@@ -408,7 +409,8 @@ export function wordEntry(e, ctx = {}) {
   // (a removal of the instructor's text is about a passage that is gone: its question shows the removed words, and the
   // binding guard checks they are still gone)
   const removal = e.kind === "instructor-edit-unasked" && ev.now === "" && ev.after === "";
-  const gone = !removal && ctx.units instanceof Map && (e.units || []).some((u) => !ctx.units.has(u));
+  // only when the units were read (audit round 10, L-4): a package that could not be read here is UNSEEN, not gone
+  const gone = !removal && ctx.units instanceof Map && ctx.unitsRead !== false && (e.units || []).some((u) => !ctx.units.has(u));
   const out = (o) => (gone ? { ...o, choices: undefined, shown, unseen: true, gone: true } : { ...o, shown, unseen });
   const fi = (s) => forInstructor(s, ctx), rv = (s) => sentence(lightText(s));
   const sugg = (n = 160) => (ev.suggestion ? offPage("The suggestion in full", ev.suggestion, n, lightText, true) : "");

@@ -108,11 +108,12 @@
     that is no longer in the text as it stands") and offers no Keep / Drop; a question in many chapters names five and
     says how many more; a note naming its own place says it once.
   After a ninth audit:
-  - **Fix (also in v1.0.5): every answer of a digest is recorded.** Alembic gives every answer of one digest the same
-    item id; `alembic_needs.mjs apply` took the item alone as "already recorded", so only the first answer of each digest
-    was recorded and the rest were skipped. An answer is now one question of one item in one hand-in. Nothing to migrate:
-    the skipped answers were never recorded, so the next apply records them while Alembic still returns them, and an
-    export meanwhile asks them again.
+  - **Fix: every answer of a digest is recorded.** Alembic gives every answer of one digest the same item id;
+    `alembic_needs.mjs apply` took the item alone as "already recorded", so only the first answer of each digest was
+    recorded and the rest were skipped. The bug is in v1.0.5, and no released version contains the fix yet. An answer is
+    now one question of one item in one hand-in. Nothing to migrate: the answers v1.0.5 skipped were never recorded, so
+    their questions are asked again (Alembic's catch-up returns only the current session's digests, and a v1.0.5
+    hand-in carries no passage hashes, `seen`, so a choice that acts on text is asked again even if still returned).
   - The instructor's digest size counts questions, after a cluster is split place by place, and the questions are taken
     one per cluster in turn, so a cluster of hundreds never takes every place from the other kinds. What is left is
     counted in questions, and the hand-in says it (`digest.remaining`, additive) so Alembic can say how many more follow.
@@ -122,7 +123,13 @@
   - "Later" on one place of a split cluster brings that place back first, marked; a cluster is split when any of its
     places has choices; "and 1 more chapter"; a source is named by its title, and the rights words are plain; a
     plan point the plan no longer holds is said by what it is.
-  - Apply reads the package once per run for its passage check (it read it once per answer, about a second each).
+  - Apply reads the package for its passage check once, and again after any answer that changes what the check reads
+    (an Undo, or an answer that adopts, claims or confirms), so a later answer of the same run about changed text is
+    asked again (tenth audit).
+  After a tenth audit:
+  - Titles holding `$` are shown as written; "Captured rights evidence" at the start of a sentence stays capitalised; a
+    package whose passages could not be read says so ("could not be read here") instead of calling them gone; a cluster
+    whose every remaining place the instructor put off says "You chose Later last time".
 
 ## v1.0.5 (2026-11-07)
 
