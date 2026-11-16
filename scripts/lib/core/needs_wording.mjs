@@ -249,7 +249,10 @@ function passageOf(id, ctx) {
 function where(units = [], ctx = {}, file = null) {
   const id = units.find((u) => ctx.units?.get?.(u));
   const rel = (id && ctx.units.get(id).deliverable) || units.map((u) => ctx.deliverableOf?.get?.(u)).find(Boolean) || file;
-  return { place: placeOf(rel, ctx), passage: id ? passageOf(id, ctx) : "", rel };
+  // a passage the finding names but the text no longer holds (re-segmented or removed since) is said so, never "it"
+  // with nothing before it (D-133, a teacher-reviewer's reading of General Chemistry, 2026-11-16)
+  const gone = !id && units.length && ctx.units ? "a passage that is no longer in the text as it stands" : "";
+  return { place: placeOf(rel, ctx), passage: id ? passageOf(id, ctx) : gone, rel };
 }
 const inPlace = (w) => (w.place ? `In ${w.place}` : "In the course");
 
@@ -454,6 +457,7 @@ export function wordEntry(e, ctx = {}) {
     case "off-spine": {
       const t = ctx.units?.get?.((e.units || [])[0])?.text;
       if (t && t.trim()) shown.push({ text: `The passage: “${plainText(t)}”`, page: true });
+      else unseen = true; // Keep it / Drop it on a passage the question cannot show: answered in words instead
       return out({ text: `${at}: a reviewer found that it teaches nothing in the chapter's approved plan. Keep it (the plan may need it), or drop it?`,
         detail: /Reviews of this same text disagree/.test(note) ? "Two reviews of this text disagree; the one that found it off the plan stands until the text changes or you answer." : "", choices: ["Keep it", "Drop it", "Later"] });
     }
@@ -476,7 +480,9 @@ export function wordEntry(e, ctx = {}) {
     default: {
       // the agent's own critique of the plan is the agent's words; any other kind is a harness note
       const body = sentence(e.module === "spine-critique" ? forInstructor(note, ctx, { from: "agent" }) : fi(note));
-      return out({ text: w.place && !body.toLowerCase().includes(w.place.toLowerCase()) ? `${at}: ${body}` : capital(body), detail: "" });
+      // the note may name the place itself (with typographic quotes): said once
+      const same = (x) => x.toLowerCase().replace(/[‘’]/g, "'");
+      return out({ text: w.place && !same(body).includes(same(w.place)) ? `${at}: ${body}` : capital(body), detail: "" });
     }
   }
 }

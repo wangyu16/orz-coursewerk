@@ -96,6 +96,17 @@
     questions are owed to the assistant, with the instructor's words, until it records taking them up. Every recorded
     answer returns what the instructor chose and wrote.
   - An answer whose act is refused is logged once; an old taken-up record reads its question's kind from the answer.
+  After an eighth audit, and the owner's decisions of 2026-11-16:
+  - **A finding that comes up in several places is asked place by place** when its kind has choices (one question per
+    finding, with its own passage and choices), so each can be settled from Alembic; only a kind no choice acts on stays
+    one question in words. A question's id hashes its findings too, and an export under a changeset id already handed
+    in is refused (Alembic keeps the first hand-in under an id).
+  - **One click** (owner): "Apply the suggestion", "Keep it", "Drop it" and "Later" are the instructor's whole answer;
+    the words box is optional and the choice is recorded as their words. A confirmation, "Keep as written", "Keep" on an
+    edit and "Accept as mine" still need their words. "Change it differently" without words is asked again.
+  - From a teacher-reviewer's reading of General Chemistry: a passage the text no longer holds is said so ("a passage
+    that is no longer in the text as it stands") and offers no Keep / Drop; a question in many chapters names five and
+    says how many more; a note naming its own place says it once.
 
 ## v1.0.5 (2026-11-07)
 

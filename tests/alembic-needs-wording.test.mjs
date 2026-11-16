@@ -20,7 +20,7 @@ import { replayVerifier } from "../scripts/lib/verify/dispatch.mjs";
 import { fsInputReader, pinnedTexts } from "../scripts/lib/verify/references.mjs";
 import { applyCorrection, verifySemi } from "../scripts/lib/verify/verdicts.mjs";
 import { pinDeclared as pinReference } from "./helpers/destinations.mjs";
-import { applyChanges, exportNeeds, handinProblems, NEEDS_FILE } from "../scripts/lib/core/alembic_needs.mjs";
+import { applyChanges, exportNeeds, handinProblems, NEEDS_FILE, ONE_CLICK } from "../scripts/lib/core/alembic_needs.mjs";
 import { forInstructor, harnessTraces, MOVE_CHOICES, plainText, SUGGESTION_CHOICES, wordEntry } from "../scripts/lib/core/needs_wording.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -176,7 +176,12 @@ test("[req.host.alembic-needs-wording] every kind of question reads as the instr
   assert.deepEqual(fact.choices, ["Keep", "Revert", "Later"]); assert.equal(fact.recommended, "Revert");
   assert.deepEqual(one("fact-disputed").choices, ["Keep as written", "Change it", "Later"]);
   assert.equal(one("knowledge-concern", (q) => q.choices).recommended, undefined, "a reviewer's suggestion is never pre-chosen for the instructor's text");
-  for (const q of qs.filter((x) => x.choices && x.id.startsWith("d."))) assert.equal(q.words, "required", "a digest choice still records the instructor's words");
+  // one-click (owner 2026-11-16, D-133 (b)): Apply / Keep it / Drop it / Later are the answer by themselves; a
+  // confirmation, keeping as written, adopting or claiming text (Coursewerk's own choices) still records their words
+  for (const q of qs.filter((x) => x.choices && x.id.startsWith("d."))) {
+    const own = q.choices.some((c) => !ONE_CLICK.has(c));
+    assert.equal(q.words, own ? "required" : "optional", `${q.choices.join(" / ")}: ${own ? "a confirmation or claim records the instructor's words" : "one click"}`);
+  }
 
   // 6. an answer means what it meant: "Apply the suggestion" is Coursewerk's acceptance (ms8 reads /^apply/), "Later" defers
   const cl = one("clarification-proposed"), ds = one("detail-in-spine"), kc = one("knowledge-concern", (q) => q.choices);
@@ -279,4 +284,63 @@ test("[req.host.alembic-needs-apply] the binding guard: every binding kind acts 
     const b = applyChanges(p.root, { answers: [answer(r2.handin, q2.id, q2.choices[0], { words: "Yes.", item: `again-${kind}` })] }); // Alembic gives the re-asked question a new item
     assert.equal(b.recorded.length, 1, `${kind}: recorded once the passage is indexed as shown (${JSON.stringify(b)})`);
   }
+});
+
+test("[req.host.alembic-needs-apply] a cluster of a kind with choices is handed in one question per finding: two exercise passages are both confirmed by job 2 (round 8, HIGH-1)", async (t) => {
+  const p = copy(t);
+  const ex = (id, unit) => makeFinding({ module: "ms8-verdicts", kind: "exercise-data-confirm", units: [unit], statusClass: "question", route: "digest", basis: "b", recommendation: "confirm",
+    evidence: { type: "judgment", note: `${unit}: the values here read as invented exercise data, which no source can show — confirm them as teaching hypotheticals?`, quote: "0.25 M" } });
+  const F = [ex(U1, U1), ex(U3, U3)].map((f, i) => ({ ...f, id: `f-split-${i}` }));
+  const confirmed = () => new Set(parseLog(readLogText(p.root)).filter((x) => x.type === "answer").flatMap((x) => x.payload.answers).filter((a) => /^confirm/i.test(a.choice)).map((a) => a.finding));
+  for (let job = 1; job <= 5; job++) {
+    const r = await exportNeeds(p.root, { changesetId: `split-job-000${job}`, gate: { findings: F } });
+    const qs = r.handin.digest.questions.filter((q) => q.id.startsWith("d."));
+    if (job === 1) {
+      assert.equal(qs.length, 2, "one question per passage");
+      for (const q of qs) assert.deepEqual(q.choices, ["Confirm", "Later"], "each with its own choices");
+      assert.notEqual(qs[0].id, qs[1].id);
+    }
+    applyChanges(p.root, { answers: qs.map((q) => answer(r.handin, q.id, q.choices ? "Confirm" : "Yes, confirm them.", { words: "Yes, made-up values." })) });
+    if (confirmed().has("f-split-0") && confirmed().has("f-split-1")) { assert.ok(job <= 2, `confirmed by job ${job}`); return; }
+  }
+  assert.fail("not both confirmed within five jobs");
+});
+
+test("[req.host.alembic-needs-wording] one click: Apply / Keep it / Drop it / Later need no typing; Change it differently without words is asked again; confirmations and authorship still take words (owner 2026-11-16)", async (t) => {
+  const p = copy(t);
+  const kc = F("ms8-verdicts", "knowledge-concern", [U1], { type: "judgment", note: "The exponent must be 3.", quote: "raised to the power 2", suggestion: "raised to the power 3" });
+  const off = F("ms9-alignment", "off-spine", [U3], { type: "judgment", note: `${U3} teaches nothing in the chapter's approved plan: keep it (the spine may need it) or drop it?` });
+  const own = F("skeleton", "unit-unknown-authorship", [U1], { type: "judgment", note: "study-guide/chemical-equilibrium.md: 1 passage(s) changed outside an agent session — yours (accept as mine), someone else's (name them), or revert?" }, { recommendation: "accept as mine" });
+  const ex = F("ms8-verdicts", "exercise-data-confirm", [U3], { type: "judgment", note: `${U3}: the values here read as invented exercise data, which no source can show — confirm them as teaching hypotheticals?`, quote: "0.25 M" }, { recommendation: "confirm" });
+  const r = await exportNeeds(p.root, { changesetId: "oneclick-0001", gate: { findings: [kc, off, own, ex] } });
+  const qs = r.handin.digest.questions, of = (kind) => qs.find((q) => needs(p).handins.at(-1).questions[q.id].entry?.kind === kind);
+  assert.equal(of("knowledge-concern").words, "optional"); assert.match(of("knowledge-concern").detail, /To change it differently, say how in your words\./);
+  assert.equal(of("off-spine").words, "optional");
+  assert.equal(of("unit-unknown-authorship").words, "required", "authorship is never one click");
+  assert.equal(of("exercise-data-confirm").words, "required", "a confirmation is never one click");
+  const a = applyChanges(p.root, { answers: [answer(r.handin, of("knowledge-concern").id, "Change it differently"), answer(r.handin, of("off-spine").id, "Keep it"), answer(r.handin, of("unit-unknown-authorship").id, "Accept as mine")] });
+  assert.deepEqual(a.recorded.map((x) => [x.question, x.outcome]), [[of("off-spine").id, "answered"]], "Keep it is recorded with no words");
+  const rec = parseLog(readLogText(p.root)).filter((x) => x.type === "answer").at(-1);
+  assert.equal(rec.payload.answers[0].choice, "Keep it"); assert.equal(rec.payload.instructorWords, "Keep it", "the choice itself is the recorded answer");
+  assert.match(a.skipped.find((x) => x.question === of("knowledge-concern").id).reason, /needs the instructor's words/);
+  assert.match(a.skipped.find((x) => x.question === of("unit-unknown-authorship").id).reason, /words are required/);
+  // asked again next time, and marked once
+  const again = applyChanges(p.root, { answers: [answer(r.handin, of("knowledge-concern").id, "Change it differently")] });
+  assert.equal(again.skipped[0].reason, "already recorded");
+  const r2 = await exportNeeds(p.root, { changesetId: "oneclick-0002", gate: { findings: [kc, off, own, ex] } });
+  assert.ok(r2.handin.digest.questions.some((q) => q.text.includes("may be wrong")), "the concern is asked again");
+});
+
+test("[req.host.alembic-needs-wording] the teacher-reviewer's symptoms (General Chemistry, v1.0.5) read as the instructor's", async (t) => {
+  const p = copy(t);
+  const GONE = "u-study-guide-intermolecular-forces-11-1-intermolecular-forcesattrs-bl-14";
+  const offGone = F("ms9-alignment", "off-spine", [GONE], { type: "judgment", note: `${GONE} teaches nothing in the chapter's approved plan: keep it (the spine may need it) or drop it?` });
+  const tagged = [0, 1].flatMap((i) => [0, 1, 2].map((n) => F("ms7-consistency", "value-mismatch", [i ? U3 : U1], { type: "rule", note: `concepts/course.md, line ${60 + n + 10 * i} gives {{sp[info] Objective 15.1b}} a value the study guide does not (D48)` })));
+  const r = await exportNeeds(p.root, { changesetId: "symptoms-001", gate: { findings: [offGone, ...tagged] } });
+  const gone = r.handin.digest.questions.find((q) => q.text.includes("no longer in the text"));
+  assert.match(gone.text, /^In the course, a passage that is no longer in the text as it stands: a reviewer found/);
+  assert.equal(gone.choices, undefined, "no Keep / Drop on a passage the question cannot show"); assert.match(gone.detail, /could not be read here/);
+  const many = r.handin.digest.questions.find((q) => /Objective 15\.1b/.test(q.text));
+  assert.match(many.detail, /^This comes up in 6 places \(“Chemical Equilibrium”, “Le Chatelier's Principle”\)\. Answer in your own words/);
+  for (const q of r.handin.digest.questions) assert.deepEqual(harnessTraces([q.text, q.detail || ""].join("\n")), [], q.text);
 });

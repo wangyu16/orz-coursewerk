@@ -146,27 +146,39 @@ export function digestQuestion(e, deliverableOf = new Map(), ctx = {}) {
   // answer about text the question could not show in full (round 3)
   const recommended = allFits && choices && rec ? choices.find((x) => isChoice(rec, x) && !/^(?:apply|accept as mine)\b/i.test(x)) : undefined;
   const ev = e.evidence || {};
-  const places = [...new Set((e.chapters || []).filter((x) => x !== "package").map((x) => `“${c.titles?.get?.(x) || x}”`))];
+  // at most five chapters named, then how many more (a course-wide cluster named every chapter)
+  const allPlaces = [...new Set((e.chapters || []).filter((x) => x !== "package").map((x) => `“${c.titles?.get?.(x) || x}”`))];
+  const places = allPlaces.length > 5 ? [...allPlaces.slice(0, 5), `and ${allPlaces.length - 5} more chapters`] : allPlaces;
   const detail = [
-    allFits ? shown
-      : offFits ? [head, worded.unseen ? "The passage could not be read here. Answer in your own words: they go to the assistant, which takes them up; nothing is confirmed or kept from words alone." : "The whole passage is too long to show here: the page (the link) holds the exact text, and your answer applies to it as it reads there. If it changes before your answer is recorded, you are asked again."].filter(Boolean).join("\n")
+    allFits ? [shown, worded.unseen ? UNSEEN : ""].filter(Boolean).join("\n")
+      : offFits ? [head, worded.unseen ? UNSEEN : "The whole passage is too long to show here: the page (the link) holds the exact text, and your answer applies to it as it reads there. If it changes before your answer is recorded, you are asked again."].filter(Boolean).join("\n")
       : [tooLong || "The text this answer would adopt is too long to show here: answer in your own words, and the assistant takes it up.", shorten(head, LIMITS.detail - 600)].join("\n"),
     worded.detail,
-    many ? `This comes up in ${e.count || (e.findings || []).length} places${places.length ? ` (${places.join(", ")})` : ""}. Answer in your own words: they go to the assistant, which can ask about each place on its own.`
+    many ? `This comes up in ${e.count || (e.findings || []).length} places${places.length ? ` (${places.join(", ")})` : ""}. Answer in your own words: they go to the assistant.`
       : e.count > 1 ? `This comes up in ${e.count} places${places.length ? ` (${places.join(", ")})` : ""}; one answer settles them all.` : "",
     // the recommendation's own words whenever they say more than the choice pre-chosen (MEDIUM-F)
     !recommended || rec.toLowerCase() !== recommended.toLowerCase() ? recommendationLine(e, c) : "",
+    choices?.includes("Change it differently") ? "To change it differently, say how in your words." : "",
     e.deferredBefore ? "You chose Later last time." : "",
   ].filter(Boolean).join("\n");
   return {
-    id: qid("d", e.key), text: line(text, LIMITS.text),
+    // the id hashes the entry's bases too: another finding under the same key is another question (round 8, MEDIUM-2)
+    id: qid("d", `${e.key}|${(e.bases || []).map((b) => `${b.finding}|${b.basis}`).join(",")}`), text: line(text, LIMITS.text),
     ...(choices ? { choices, ...(recommended ? { recommended } : {}) } : {}),
     ...(detail ? { detail: block(detail, LIMITS.detail) } : {}),
     refs: refsOf((e.units || []).map((u) => c.deliverableOf.get(u)).concat(ev.file || [])),
-    // an answer quotes the instructor's words (answerDigest); a free-text answer is itself their words
-    words: choices ? "required" : "optional",
+    // the instructor's words: required for a choice that confirms, keeps as written, adopts or claims (Coursewerk's
+    // own choices: rights and authorship among them); a one-click choice (Apply the suggestion, Keep it, Drop it,
+    // Later) is itself the recorded answer, words optional (owner 2026-11-16, D-133 (b)); free text is itself words
+    words: choices && !oneClick(e.kind, choices) ? "required" : "optional",
   };
 }
+const UNSEEN = "The passage could not be read here. Answer in your own words: they go to the assistant, which takes them up; nothing is confirmed or kept from words alone.";
+/** The choices that are a whole answer by themselves (owner 2026-11-16): never Coursewerk's own (DIGEST_CHOICES: a
+ *  confirmation, keeping as written, adopting or claiming text), never a binding kind. "Change it differently" rides
+ *  along; without words apply asks it again. */
+export const ONE_CLICK = Object.freeze(new Set(["Apply the suggestion", "Change it differently", "Keep it", "Drop it", "Later"]));
+const oneClick = (kind, choices) => !DIGEST_CHOICES[kind] && !BINDING_KINDS.has(kind) && choices.every((x) => ONE_CLICK.has(x));
 
 /**
  * What the wording reads (D-133): chapter titles, the plan's nodes (id → its words) and each unit's place, form and
@@ -227,6 +239,9 @@ function readNeeds(root) { try { return JSON.parse(fs.readFileSync(recordFile(ro
  */
 export async function exportNeeds(root, { changesetId, model = null, gate = null, inputsDir = null, at = new Date().toISOString() } = {}) {
   if (!CHANGESET_ID.test(String(changesetId ?? ""))) throw new Error("the changeset id must be 8–64 of A-Za-z0-9_-");
+  // Alembic keeps the FIRST hand-in under a changeset id: a second export under it would bind the answers to questions
+  // the instructor never saw (round 8, MEDIUM-2)
+  if ((readNeeds(root).handins || []).some((h) => h.changesetId === changesetId)) throw new Error(`changeset ${changesetId} was already handed in: export under a new id (leave out --changeset to get one)`);
   const reader = liveReader(root), chapters = manifestChapters(reader), logText = readLogText(root);
   if (!gate) { const { runGate } = await import("../skeleton/full_gate.mjs"); gate = runGate(root, { inputsDir }); }
   const info = unitInfoOf(root, reader);
@@ -293,7 +308,11 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
   const d = buildDigest(root, gate.findings, info, { cap: Math.min(Number(loggedDigestCap(logText) || DEFAULT_CAP), room), corrections: [] });
   let prev = null; try { prev = JSON.parse(fs.readFileSync(recordFile(root, DIGEST_FILE), "utf8")); } catch { prev = null; }
   for (const e of d.entries) { const p = prev?.entries?.find((x) => x.key === e.key && String(x.recommendedBy || "").startsWith("agent")); if (p) { e.recommendation = p.recommendation; e.recommendedBy = p.recommendedBy; } }
-  for (const e of d.entries) items.push({ question: digestQuestion(e, deliverableOf, ctx), ref: { kind: "digest", entry: e },
+  // an entry clustering several findings of a kind a choice acts on is handed in as one question per finding (its own
+  // passage, choices and bases; round 8, HIGH-1): a choice acts on exactly the one finding it shows, and every such
+  // question can be settled. A cluster stays one question, in words, only for kinds no choice acts on.
+  const entries = d.entries.flatMap((e) => (manyFindings(e) ? splitEntry(e, gate.findings, hash, ctx) : [e]));
+  for (const e of entries) items.push({ question: digestQuestion(e, deliverableOf, ctx), ref: { kind: "digest", entry: e },
     // bounded (round 2, LOW-K): the entry itself (in ref) keeps every unit
     assistant: { kind: e.kind, module: e.module, units: (e.units || []).slice(0, 20), ...((e.units || []).length > 20 ? { unitCount: e.units.length } : {}), ...assistantPart(String(e.question ?? ""), e.evidence?.rule, e.recommendation, e.evidence?.file && e.evidence?.line ? `${e.evidence.file} line ${e.evidence.line}` : "") } });
 
@@ -322,6 +341,21 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
 const ACT_CHOICES = new Set(["Change it differently", "Drop it"]);
 /** An entry clustering several findings (round 7): its answer would bind every one; it takes words only. */
 const manyFindings = (e) => (e?.findings?.length || 1) > 1;
+/**
+ * A digest entry's findings, one entry each, when its kind has choices (DIGEST_CHOICES, or the wording's): the entry as
+ * buildDigest makes it for one finding, keyed by the cluster key and the finding id (stable across exports).
+ */
+function splitEntry(e, findings, hash, ctx) {
+  const mine = (e.findings || []).map((id) => findings.find((f) => f.id === id)).filter(Boolean);
+  if (mine.length !== (e.findings || []).length) return [e];
+  const one = (f) => ({ ...e, key: `${e.key}#${f.id}`, count: 1, units: [...(f.units || [])].sort(),
+    question: f.evidence?.note || f.evidence?.what || f.evidence?.rule || f.kind, evidence: f.evidence,
+    recommendation: f.recommendation ?? (f.evidence?.suggestion ? `revise: ${f.evidence.suggestion}` : null),
+    recommendedBy: f.recommendation != null ? "check" : f.evidence?.suggestion ? "reviewer" : null,
+    findings: [f.id], bases: [{ finding: answerKeyOf(f), basis: basisOf(f, hash), ...(f.evidence?.claimKey ? { claimKey: f.evidence.claimKey, ...(f.evidence.claimText ? { claimText: f.evidence.claimText, units: f.units } : {}) } : {}) }] });
+  const singles = mine.map(one);
+  return DIGEST_CHOICES[e.kind] || wordEntry(singles[0], ctx).choices ? singles : [e];
+}
 /** A choice recorded as it is (a Coursewerk reader acts on it) that is also work for the agent: owed, with the
  *  instructor's words, until taken up (round 7, MEDIUM-2, MEDIUM-3). */
 const owedChoice = (kind, choice) => (/^apply\b/i.test(choice) && ["knowledge-concern", "spine-review-concern", "detail-in-spine"].includes(kind)) || (kind === "fact-disputed" && choice === "Change it");
@@ -462,6 +496,15 @@ export function applyChanges(root, changes) {
         // then owed to the agent, which acts on the words and records it (takenUp), and is not asked again (round 4)
         let choice = answer;
         if (!q.choices) choice = /^\s*later\s*\.?\s*$/i.test(answer) ? "Later" : `said: ${answer}`;
+        // "Change it differently" says how only in the instructor's words: without them it is asked again, marked once
+        // (one-click answers, owner 2026-11-16)
+        else if (answer === "Change it differently" && !words) {
+          appendLogRecord(root, { type: "contact", party: { role: "harness", name: "alembic-needs" }, payload: {
+            moment: "host-answer", host: "alembic", item: a.item, changesetId: a.changesetId, question: a.question, answer, outcome: "asked again",
+            by: { id: a.by?.id ?? null, name: a.by?.name ?? null }, at: a.at ?? null } });
+          done.add(a.item);
+          skip("“Change it differently” needs the instructor's words on how: it is asked again"); continue;
+        }
         // a choice that asks the agent to act ("Change it differently", "Drop it") carries the instructor's words to it:
         // recorded like words, owed until taken up (round 6, MEDIUM-2)
         else if (ACT_CHOICES.has(answer)) choice = `said: ${answer}`;

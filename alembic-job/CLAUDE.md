@@ -49,11 +49,13 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
    An answer the instructor gave in their own words, not by a choice, or by a choice that asks you to act ("Change it
    differently", "Drop it"), comes back with outcome `said`, the answer (`said`) and anything they wrote in the words box
    (`words`). An answer to an interrupt or to your own question comes back with its `answer` and `words` too.
+   "Apply the suggestion", "Keep it", "Drop it" and "Later" are one click: the choice itself is the instructor's recorded
+   answer, and the words box is optional. A confirmation, "Keep as written", "Keep" on an edit and "Accept as mine" still
+   need their words; so does "Change it differently", which is asked again when it comes without them.
    Some choices are also work for you, and come back with `owed`: "Apply the suggestion" on a reviewer's concern, a plan
    line or detail in the plan, "Change it" on a disputed fact, and any answer to an interrupt or to your own question.
-   Do the work, then record it with `taken-up` as below. A question that comes up in several places takes words only:
-   if the instructor's words settle each place differently, ask about each one on its own (an M5 question, or the next
-   export once you have resolved some). Words never confirm, keep or apply anything. They are yours to act on in this job: make the change they
+   Do the work, then record it with `taken-up` as below. A finding that comes up in several places is asked
+   about place by place when a choice can settle it; only a kind no choice acts on comes as one question in words. Words never confirm, keep or apply anything. They are yours to act on in this job: make the change they
    ask for, or explain why not in a message, and bring a decision only they can make back as a question. Then record
    what you did, so the question closes:
 
@@ -108,7 +110,7 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
    - The export collects interrupts, plans ready for approval, corrections to keep or undo, and the checkpoint
      digest, at most 20 questions; it says how many wait for next time. It writes the questions to the hidden file
      `work/.alembic-needs.json`, and the record of what was asked to `private/coursewerk/digest/alembic-needs.json`,
-     which the push carries. It makes a new changeset id unless you give one (`--changeset <id>`).
+     which the push carries. It makes a new changeset id unless you give one (`--changeset <id>`); an id already handed in is refused.
    - The questions are worded for the instructor: places as they see them, content as it reads, no file paths, line
      numbers or harness codes. When you need the harness's own wording (the file and line, the unit and plan-node ids,
      the decision codes), read the question's `assistant` entry in `private/coursewerk/digest/alembic-needs.json`.

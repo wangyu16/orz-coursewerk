@@ -100,7 +100,9 @@ test("audit MEDIUM-4: the instructor can still ask for a different change than t
   const r = await exportNeeds(root, { changesetId: "audit-other", gate: { findings: [f] } });
   const q = r.handin.digest.questions.find((x) => x.id.startsWith("d."));
   // adopted fix (round 1): a "Change it differently" choice, the instructor's words required, saying which change
-  assert.ok(q.choices.includes("Change it differently"), JSON.stringify(q.choices)); assert.equal(q.words, "required");
+  assert.ok(q.choices.includes("Change it differently"), JSON.stringify(q.choices));
+  // owner 2026-11-16 (one click): the words box is optional on the question; "Change it differently" without words is asked again
+  assert.equal(q.words, "optional");
   const a = applyChanges(root, { answers: [{ item: "i-1", changesetId: "audit-other", question: q.id, answer: "Change it differently", words: "Neither: say 'its stoichiometric coefficient'.", by: { id: "u-1", name: "Yu Wang" }, at: "2026-11-08T12:00:00.000Z" }] });
   assert.deepEqual(a.skipped, [], "a different change is recorded as such, as on main");
   const rec = parseLog(readLogText(root)).filter((x) => x.type === "answer").at(-1);

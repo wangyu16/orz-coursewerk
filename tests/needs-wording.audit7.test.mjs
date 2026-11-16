@@ -40,6 +40,20 @@ function asOffered(root, changesetId, id, choices) {
   fs.writeFileSync(f, JSON.stringify(rec));
 }
 
+/** Round 8 hands a cluster in one question per finding; a hand-in made before it kept ONE entry for the cluster. This
+ *  folds the first question's entry into such a cluster (every finding and basis) with the choices `choices` offered,
+ *  and returns the question as it was shown (the first finding's text only). */
+function asCluster(root, changesetId, ids, choices) {
+  const f = recordFile(root, NEEDS_FILE), rec = JSON.parse(fs.readFileSync(f, "utf8")), h = rec.handins.find((x) => x.changesetId === changesetId);
+  const qs = ids.map((id) => h.questions[id]), first = qs[0];
+  first.entry = { ...first.entry, count: qs.length, findings: qs.flatMap((x) => x.entry.findings), bases: qs.flatMap((x) => x.entry.bases), units: [...new Set(qs.flatMap((x) => x.entry.units))].sort() };
+  first.seen = Object.assign({}, ...qs.map((x) => x.seen));
+  for (const id of ids.slice(1)) delete h.questions[id];
+  Object.assign(first, { choices, words: "required" });
+  fs.writeFileSync(f, JSON.stringify(rec));
+  return { id: ids[0], text: "", detail: "" };
+}
+
 // ---- HIGH-1: one "Apply the suggestion" accepts every clustered suggestion, while the question shows only the first ----
 // buildDigest clusters findings by rootCause (digest.mjs:28-33: module|kind|the first 80 characters of the note, quotes and
 // numbers folded) and an answer binds EVERY finding of the entry (e.bases, digest.mjs:179). wordEntry (needs_wording.mjs:
@@ -62,11 +76,12 @@ test("[req.host.alembic-needs-apply] audit7 HIGH-1: \"Apply the suggestion\" nev
   const fa = mk("f-audit7-cla", P1, t1.slice(0, 60), S1), fb = mk("f-audit7-clb", P2, t2.slice(0, 60), S2);
   const r = await exportNeeds(c.root, { changesetId: "audit7-clus-0001", gate: { findings: [fa, fb] } });
   const qs = digestQ(r);
-  assert.equal(qs.length, 1, "precondition: one entry for both findings");
-  const q = qs[0];
-  // adopted fix (round 7, a per-construct limit): an entry of several findings offers no choice; the answer is words
-  assert.equal(q.choices, undefined, `a cluster offers no one-click choice (${JSON.stringify(q.choices)})`);
-  asOffered(c.root, "audit7-clus-0001", q.id, ["Apply the suggestion", "Change it differently", "Keep it", "Later"]); // as an earlier hand-in offered it
+  // round 8 (HIGH-1): the cluster is handed in one question per finding, each showing its own suggestion
+  assert.equal(qs.length, 2, "one question per finding");
+  assert.ok(qs.some((x) => `${x.text}\n${x.detail || ""}`.includes("retracted")), "S2 is shown in its own question");
+  // adopted fix (round 7, a per-construct limit): an entry of several findings, as a hand-in before round 8 made it,
+  // with the choices a hand-in before round 7 offered, reads a choice as words
+  const q = asCluster(c.root, "audit7-clus-0001", qs.map((x) => x.id), ["Apply the suggestion", "Change it differently", "Keep it", "Later"]);
   const shownS2 = `${q.text}\n${q.detail || ""}`.includes("retracted");
   const a = applyChanges(c.root, { answers: [answer("audit7-clus-0001", q.id, "i-1", "Apply the suggestion", "Yes, apply it.")] });
   const applied = c.log().filter((x) => x.type === "answer").flatMap((x) => x.payload.answers).filter((x) => /^\s*apply/i.test(x.choice)).map((x) => x.finding);
@@ -211,10 +226,8 @@ test("[req.host.alembic-needs-apply] audit7 MEDIUM-7: \"Keep it\" on an off-plan
   const off = (id, u) => ({ ...finding(id, "off-spine", [u], { type: "judgment", note: `${u} teaches nothing in the chapter's approved plan: keep it (the spine may need it) or drop it?` }), module: "ms9-alignment" });
   const r = await exportNeeds(c.root, { changesetId: "audit7-off-0001", gate: { findings: [off("f-audit7-off1", P1), off("f-audit7-off2", P2)] } });
   const qs = digestQ(r);
-  assert.equal(qs.length, 1, "precondition: one entry for both");
-  const q = qs[0];
-  assert.equal(q.choices, undefined, `a cluster offers no one-click choice (${JSON.stringify(q.choices)})`);
-  asOffered(c.root, "audit7-off-0001", q.id, ["Keep it", "Drop it", "Later"]); // as an earlier hand-in offered it
+  assert.equal(qs.length, 2, "round 8: one question per passage");
+  const q = asCluster(c.root, "audit7-off-0001", qs.map((x) => x.id), ["Keep it", "Drop it", "Later"]); // as an earlier hand-in offered it
   const shownP2 = `${q.text}\n${q.detail || ""}`.includes(t2.slice(30, 90));
   applyChanges(c.root, { answers: [answer("audit7-off-0001", q.id, "i-1", "Keep it", "Keep it.")] });
   const kept = c.log().filter((x) => x.type === "answer").flatMap((x) => x.payload.answers).filter((x) => x.choice === "Keep it").map((x) => x.finding);
