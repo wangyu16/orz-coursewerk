@@ -3681,7 +3681,7 @@
       "tiers": [
         "T1"
       ],
-      "statement": "Records under Alembic, step A (design note 2026-10-31; site-type contract §5 records): site_export maps the working record onto an Alembic site without changing the package — private/coursewerk/ (the decision log byte for byte; verification records as append-only monthly .jsonl parts in dispatch order, each under the 4 MB per-file cap) and provenance/coursewerk/CHECKED.json (each page's path as the site holds it, the sha256 of the text checked, its open defects/obligations/questions; the spine approvals; the accountable authors and AI-assistance disclosure; no prompt, passage or source text) and ATTRIBUTION.md with the site's deck paths; the decision log in parts of at most 4 MB (LOG.jsonl, LOG.2.jsonl, …; owner 2026-11-02), cut at line ends so a later export only appends and the parts joined in order are the log byte for byte; it reports any breach of the records budget.",
+      "statement": "Records under Alembic, step A (design note 2026-10-31; site-type contract §5 records): site_export maps the working record onto an Alembic site without changing the package — private/coursewerk/ (the decision log byte for byte; verification records as append-only monthly .jsonl parts in dispatch order, each under the 4 MB per-file cap) and provenance/coursewerk/CHECKED.json (each page's path as the site holds it, the sha256 of the text checked, its open defects/obligations/questions; the spine approvals; the accountable authors and AI-assistance disclosure; no prompt, passage or source text) and ATTRIBUTION.md with the site's deck paths; the decision log in parts of at most 4 MB (LOG.jsonl, LOG.2.jsonl, …; owner 2026-11-02), cut at line ends so a later export only appends and the parts joined in order are the log byte for byte; it reports any breach of the records budget, which is Alembic's (FC-16 §4, O4): 200 record files per change, 4 MB per file, 200 MB per site (RECORD_LIMITS; 50 MB per site before 2026-11-17).",
       "source": "GenChem re-evaluation 2026-10-31; owner's go-ahead 2026-10-31",
       "status": "closed",
       "evidence": {
@@ -4090,6 +4090,36 @@
       }
     },
     {
+      "id": "req.sitetype.edits-blocks",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Concurrent edits combined by block (family SITE-TYPE-CONTRACT §5 draft 15, edits \"blocks\", additive; Alembic's schema accepts it): the slides document, the slides unit folder and the README (About this course) say edits \"blocks\" (slides one block per slide, Markdown per ## section, as orz-markdown splits them); the study guide and practice (and their unit folders) stay \"sections\"; the concept map, assessment guide and course map stay \"keep-both\". Every declared document says how its edits combine, and a paged document, if one is declared, says \"blocks\". The definition's version is 1.0.0-dev.2 (a changed definition is a new version: Alembic vendors it by checksum).",
+      "source": "family SITE-TYPE-CONTRACT draft 15 (2026-11-14); owner 2026-11-17 (batch approved: \"all three as recommended\")",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/site-type-assets.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.host.fc16-pointer",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "COMPATIBILITY.md points to the family's FC-16 v1 (the Coursewerk ↔ Alembic hosting contract, orz-family docs/FC-16-v1.md) as the contract Coursewerk implements, states it as the pinned contract (changed only through FC-16 §9; where the two differ, FC-16 wins), and states Coursewerk's half in brief; what it states (the site type version, the 200 MB records budget, the tools it names) matches the code.",
+      "source": "FC-16 v1 §11 O9; owner 2026-11-17 (batch approved: \"all three as recommended\")",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/compatibility-fc16.test.mjs"
+        ]
+      }
+    },
+    {
       "id": "req.units.framing-frame",
       "phase": "P11",
       "tiers": [
@@ -4137,6 +4167,36 @@
           "tests/records-check.test.mjs",
           "tests/records-compact.audit.test.mjs",
           "tests/records-compact.audit2.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.records.chain-check-bound",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "records_check also verifies the review records the decision log binds (FC-16 O5): with --records (checkRecords { records: true }), against a log that verifies, every verification record reads whole (expandDispatch: its shared prompt parts present and the ones named) and is the record a logged harness dispatch vouches for (dispatchLogEntry: dispatch, unit, bundleHash, responseHash and, where logged, recordHash); every logged dispatch keeps its record; every file in a folder under verification/ is the prompt part its name says (readPart) — the gate's ms8 dispatch-unlogged / dispatch-record-missing rules, so a returned course with a rewritten, removed or planted record, or an altered or stray part, is refused at once. Either layout: one file per record, or Alembic's monthly .jsonl parts whose {\"file\",\"record\"} lines must be written exactly as Coursewerk writes them (a line it did not write, a part not ending at a line end, or one record held twice differently is a problem). The output adds records {records, parts, sharedParts, logged} (null when the log does not verify); at most 50 problems are listed, then counted. It reads only; without --records the check and its output are unchanged.",
+      "source": "FC-16 v1 §11 O5; owner 2026-11-17 (batch approved: \"all three as recommended\")",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/records-check-bound.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "req.host.alembic-transfer",
+      "phase": "P11",
+      "tiers": [
+        "T1"
+      ],
+      "statement": "Send to / take from Alembic on a computer (FC-16 O7; Alembic Door E): scripts/alembic_transfer.mjs send --root <folder> [--out <dir>] [--host <origin>] writes, outside the folder and without changing it, the zip Alembic takes — a folder imported from a hand-out (.coursewerk-host.json imported) is handed back in a temporary copy (site_host handbackSite, append-only; host record handed-back), a package made on the computer has its records cut into Alembic's site layout (site_export exportSite), a folder already in site layout goes as it is; .git, node_modules, the assembled carriers and system files are left out; SHA256SUMS lists every other file. records_check with --records must pass on exactly what goes, else no zip is made; a hand-out note that is damaged, a hand-out worked on without import, a writer holding the log, no decision log, or an output inside the folder is refused in plain words. It prints the zip, the page to open (bring-back: <host>/workspace/<course from .alembic/handout.json>/course#on-my-computer; bring-in: <host>/workspace) and what to choose there; Alembic's size limits are reported, never enforced. take prints the course's page (from --course, the hand-out note or alembic.json packageId) and the steps after the download (site_import first). The host is --host, else COURSEWERK_ALEMBIC_URL, else https://alembic.orz.how (an https origin, or http on localhost). Coursewerk holds no credentials and uploads nothing: sending stays the instructor's act.",
+      "source": "FC-16 v1 §11 O7; owner 2026-11-17 (batch approved: \"all three as recommended\")",
+      "status": "closed",
+      "evidence": {
+        "T1": [
+          "tests/alembic-transfer.test.mjs"
         ]
       }
     }

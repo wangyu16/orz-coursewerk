@@ -20,7 +20,9 @@ import { spinePaths, COURSE_MAP } from "./spine.mjs";
 import { parseLog, readLogText } from "../records/log.mjs";
 import { RECORDS, PUBLIC_RECORDS } from "../records/paths.mjs";
 
-export const RECORD_LIMITS = Object.freeze({ filesPerChange: 200, bytesPerFile: 4 * 1024 * 1024, bytesPerSite: 50 * 1024 * 1024 });
+// The records budget is Alembic's (FC-16 §4, O4; SITE-TYPE-CONTRACT §5): 200 record files per change, 4 MB per file,
+// 200 MB of records per site (Alembic since the owner's 2026-11-07 decision; Coursewerk followed in 2026-11).
+export const RECORD_LIMITS = Object.freeze({ filesPerChange: 200, bytesPerFile: 4 * 1024 * 1024, bytesPerSite: 200 * 1024 * 1024 });
 export const ROLL_BYTES = 3.5 * 1024 * 1024; // a part (log or verification) stays well under the 4 MB a record file may hold
 const sha256 = (b) => crypto.createHash("sha256").update(b).digest("hex");
 
@@ -108,7 +110,7 @@ export function checkedRecord(root, gateResult, { at = new Date().toISOString() 
 /**
  * Export a package's records for an Alembic site into `outDir` (private/coursewerk/…, provenance/coursewerk/…).
  * Returns { files: [{ path, bytes, sha256 }], problems: [string] } — problems name any breach of the contract's records
- * budget (a file over 4 MB, more than 50 MB in all). Writes nothing into the package.
+ * budget (a file over 4 MB, more than 200 MB in all). Writes nothing into the package.
  */
 export function exportSite(root, outDir, { gateResult, at } = {}) {
   const files = [], problems = [];
@@ -128,6 +130,6 @@ export function exportSite(root, outDir, { gateResult, at } = {}) {
   if (attribution != null) put(`${PUBLIC_RECORDS}/ATTRIBUTION.md`, attribution.replace(/\bslides\/([a-z0-9-]+)\.md\b/g, (m, s) => `slides/${s}.slides.md`));
   for (const rel of walk(path.join(root, PUBLIC_RECORDS)).filter((r) => r !== "ATTRIBUTION.md" && r !== "CHECKED.json")) put(`${PUBLIC_RECORDS}/${rel}`, fs.readFileSync(path.join(root, PUBLIC_RECORDS, rel)));
   const total = files.reduce((a, f) => a + f.bytes, 0);
-  if (total > RECORD_LIMITS.bytesPerSite) problems.push(`the records total ${total} bytes, over the 50 MB a site may hold`);
+  if (total > RECORD_LIMITS.bytesPerSite) problems.push(`the records total ${total} bytes, over the 200 MB a site may hold`);
   return { files, total, problems, changes: Math.ceil(files.length / RECORD_LIMITS.filesPerChange) };
 }

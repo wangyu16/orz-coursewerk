@@ -1,7 +1,7 @@
 {
   "schema": "alembic.site-type/1",
   "type": "oer-course",
-  "version": "1.0.0-dev.1",
+  "version": "1.0.0-dev.2",
   "names": { "site": "course", "unit": "chapter", "units": "chapters" },
   "units": { "first": "Introduction" },
   "documents": [
@@ -13,7 +13,7 @@
       "starter": "starters/study-guide.md", "group": "material", "edits": "sections" },
     { "id": "slides", "scope": "unit", "label": "Slides",
       "path": "slides/{unit}.slides.md", "format": "slides",
-      "starter": "starters/slides.slides.md", "group": "material" },
+      "starter": "starters/slides.slides.md", "group": "material", "edits": "blocks" },
     { "id": "assessment-guide", "scope": "unit", "label": "Assessment guide",
       "path": "assessment-support/{unit}.md", "format": "md", "required": true,
       "starter": "starters/assessment-guide.md", "group": "plan", "edits": "keep-both", "website": false },
@@ -25,11 +25,11 @@
       "starter": "starters/course-map.md", "website": false },
     { "id": "readme", "scope": "site", "label": "About this course",
       "path": "README.md", "format": "md", "group": "course", "who": "lead",
-      "required": true, "starter": "starters/README.md" }
+      "required": true, "starter": "starters/README.md", "edits": "blocks" }
   ],
   "unitFolders": [
     { "path": "study-guide/chapters/{unit}/", "group": "material", "edits": "sections" },
-    { "path": "slides/chapters/{unit}/", "group": "material" },
+    { "path": "slides/chapters/{unit}/", "group": "material", "edits": "blocks" },
     { "path": "practice/chapters/{unit}/", "group": "material", "edits": "sections" }
   ],
   "groups": [

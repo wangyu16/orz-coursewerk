@@ -3,7 +3,7 @@
 // record; verification records as monthly .jsonl) and provenance/coursewerk/{CHECKED.json, ATTRIBUTION.md}.
 //   node scripts/site_export.mjs --root <package> --out <dir> [--inputs <source corpus>] [--no-checked]
 // The package is not changed. CHECKED.json comes from a gate run (skipped with --no-checked). Exit 1 when the export
-// breaks the contract's records budget (a file over 4 MB, over 50 MB in all).
+// breaks the contract's records budget (a file over 4 MB, over 200 MB in all).
 import path from "node:path";
 import { exportSite } from "./lib/core/site_export.mjs";
 import { runGate } from "./lib/skeleton/full_gate.mjs";

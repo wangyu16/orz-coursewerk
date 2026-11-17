@@ -72,6 +72,14 @@ byte for byte and in order with only new records after them: a record changed, d
 log, a gap in the parts or an unreadable input is a problem, never an empty log; a log with no records is refused,
 alone or under `--extends` (an empty earlier log may still be continued by a log that has records). It reads only. `log` gives the joined
 log's `parts`, `bytes`, `sha256`, `records` and `head` (the last record's hash).
+With `--records` (req.records.chain-check-bound; FC-16 O5) it also checks the review records the log binds, as the gate
+does, against a log that verifies: every verification record reads whole (with the prompt parts it shares) and is the
+record its logged dispatch vouches for (bundle, answer and, for records logged since red-team round 1, the whole record
+by `recordHash`); every logged dispatch keeps its record; every file in a folder under `verification/` is the prompt part
+its name says. Either layout: one file per record, or Alembic's monthly `.jsonl` parts of `{"file","record"}` lines
+written exactly as Coursewerk writes them. A record rewritten, removed or planted, a part altered or stray, or a line
+Coursewerk did not write is a problem (at most 50 are listed, then counted). The output adds `records`: `{records,
+parts, sharedParts, logged}` (`null` when the log does not verify). Without `--records` nothing changes.
 
 **Folder → repo is decided by the top-level folder and is total.** `study-guide/ slides/ practice/
 concepts/ assessment-support/ assets/ provenance/` are **public** (shared with the world);

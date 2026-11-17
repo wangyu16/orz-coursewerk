@@ -39,3 +39,16 @@ test("the definition offers one update task to the owner and deputy (req.sitetyp
   assert.match(t.instruction, /Never approve a plan/);
   assert.match(t.instruction, /never change what a sentence says/);
 });
+
+test("concurrent edits are combined by block where Alembic can (req.sitetype.edits-blocks; SITE-TYPE-CONTRACT §5 draft 15)", () => {
+  const edits = Object.fromEntries(def.documents.map((d) => [d.id, d.edits ?? "whole"]));
+  // slides by slide and the README by section (orz-markdown's blocks); study guide and practice by `##` section; the
+  // plans never combined
+  assert.deepEqual(edits, { "concept-map": "keep-both", "study-guide": "sections", slides: "blocks", "assessment-guide": "keep-both", practice: "sections", "course-map": "keep-both", readme: "blocks" });
+  assert.deepEqual(Object.fromEntries(def.unitFolders.map((f) => [f.path, f.edits])), {
+    "study-guide/chapters/{unit}/": "sections", "slides/chapters/{unit}/": "blocks", "practice/chapters/{unit}/": "sections" });
+  // nothing is left on the default (`whole`), and a paged document, if one is declared, is combined by block too
+  for (const d of def.documents) assert.ok(d.edits, `${d.id} says how edits combine`);
+  for (const d of def.documents.filter((x) => x.format === "paged")) assert.equal(d.edits, "blocks", d.id);
+  assert.equal(def.version, "1.0.0-dev.2", "a changed definition is a new version (Alembic vendors it by checksum)");
+});

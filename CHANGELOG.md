@@ -1,5 +1,36 @@
 # Coursewerk changelog
 
+## Unreleased
+
+FC-16 batch (owner 2026-11-17: "all three as recommended"; family FC-16 v1 §11 O4, O5, O7, O9; SITE-TYPE-CONTRACT
+draft 15).
+
+- **Records budget per site: 200 MB** (FC-16 O4, family STATUS D-146). The budget is Alembic's, and Alembic has allowed
+  200 MB since 2026-11-07; `site_export`'s `RECORD_LIMITS.bytesPerSite` moves from 50 MB to 200 MB. 200 files per change
+  and 4 MB per file are unchanged. `req.records.site-export`.
+- **`records_check.mjs --records`: the review records the log binds** (FC-16 O5). Additive mode: besides the chain, it
+  checks every verification record against the decision log as the gate does (ms8 dispatch-unlogged /
+  dispatch-record-missing) — each record reads whole with its shared prompt parts and is the one its logged dispatch
+  vouches for, each logged dispatch keeps its record, and nothing else sits in the verification folders — in either
+  layout (Alembic's monthly `.jsonl` parts included). A returned course with a rewritten, removed or planted record, or
+  an altered part, is refused at once, not at its next gate run. The output adds `records`. Without `--records` nothing
+  changes; Alembic adds the flag to its hand-back and bring-in check when it is ready. `req.records.chain-check-bound`.
+- **Send to / take from Alembic** (FC-16 O7). `scripts/alembic_transfer.mjs send --root <folder>` makes the zip
+  Alembic's "Bring in a course from my computer" (a new course) or "Bring it back" (a folder Alembic handed out) takes:
+  an imported hand-out is handed back in a copy (append-only, as `site_handback`), a package's records are cut into
+  Alembic's layout, carriers and `.git` are left out, `SHA256SUMS` lists every file; `records_check --records` must pass
+  on exactly what goes. The folder itself is never changed. It prints the page to open (the course's "On my computer"
+  panel, from the folder's hand-out note) and what to choose there. `take` prints where to download a course and the
+  steps after. Coursewerk holds no credentials and uploads nothing: sending stays the instructor's act.
+  `req.host.alembic-transfer`.
+- **Site type definition 1.0.0-dev.2: slides and the README combine edits by block** (SITE-TYPE-CONTRACT draft 15,
+  edits `blocks`). Two people changing different slides of a deck, or different sections of the README, at once now
+  both keep their changes; before, the whole document was one block. The study guide and practice stay `sections`, the
+  plans `keep-both`. Alembic vendors the definition by checksum, so it takes this version when it next vendors it.
+  `req.sitetype.edits-blocks`.
+- **`COMPATIBILITY.md` points to FC-16 v1**, the family's Coursewerk ↔ Alembic hosting contract, as the pinned
+  contract, with Coursewerk's half in brief (FC-16 O9). `req.host.fc16-pointer`.
+
 ## v1.0.6 (2026-11-17)
 
 - **"Needs you" questions read as the instructor's** (owner 2026-11-03, family STATUS D-133). The questions

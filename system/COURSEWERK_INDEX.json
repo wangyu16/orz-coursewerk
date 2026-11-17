@@ -53,7 +53,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "b2f03ca2a632d98a427f9adbcc1e348691262c9fa9aa94f1fbb5211b5d036511"
+      "hash": "9a761119ce3d297334b52579f8d200a05562e023e03f55b2b7512e910529aaf8"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -65,7 +65,7 @@
       "id": "repo:COMPATIBILITY.md",
       "path": "COMPATIBILITY.md",
       "type": "agent-constitution",
-      "hash": "0f110e01f4bfe5784c7575fcddc9cf053f2992891486b7d128fdda2960141182"
+      "hash": "a3a4f6bcb29e8933c13b314099971fcf8effae4dfbd0c8ef81261e1025d12356"
     },
     {
       "id": "repo:docs/assembling-carriers.md",
@@ -167,7 +167,7 @@
       "id": "repo:format-contracts/deliverables.md",
       "path": "format-contracts/deliverables.md",
       "type": "documentation",
-      "hash": "0b38326fa21c8a3b547c936e47a1b2e15382d0ad05b2f69e719f80c5ab19ff2c"
+      "hash": "f8dae11fcaeceac3001f042bf52e665013f0d93d11df5ca5fc1cedc020428b27"
     },
     {
       "id": "repo:GEMINI.md",
@@ -203,13 +203,13 @@
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "36dafaa4db6b7dc3826ca93d3303f0f4d68d0443659fa75cd7578ddb5bebbf12"
+      "hash": "1ea73df10ae63c4ffade4f2fa45f93c5dd62f11fe0610f8467caab6633d9ed60"
     },
     {
       "id": "repo:README.md",
       "path": "README.md",
       "type": "product-claim",
-      "hash": "f09fa74637704034a9be59e8c956a9192cd0153710750b28541e3a347279581d"
+      "hash": "df1b0afdd984ed1739ee30812061182877e0339e3f1697f784b86d65a56568cc"
     },
     {
       "id": "repo:scripts/accept_coursewerk_revision.mjs",
@@ -228,6 +228,12 @@
       "path": "scripts/alembic_needs.mjs",
       "type": "executable",
       "hash": "2b0836e317181e96b25e4440719b2b72ab2e89ccc67d6a910b24f54979807ba4"
+    },
+    {
+      "id": "repo:scripts/alembic_transfer.mjs",
+      "path": "scripts/alembic_transfer.mjs",
+      "type": "executable",
+      "hash": "aa1281fab625267e9f81df1fb3df304a080b0e0fe7281648f874a71460592b13"
     },
     {
       "id": "repo:scripts/assemble_blind_bundle.mjs",
@@ -434,6 +440,12 @@
       "hash": "438b2c28c8894ae107801171ee7016209519de2309af6f278e1dd6665d4f77a0"
     },
     {
+      "id": "repo:scripts/lib/core/alembic_transfer.mjs",
+      "path": "scripts/lib/core/alembic_transfer.mjs",
+      "type": "kernel",
+      "hash": "2b219ba5a5235f4b317b1bb5d9c9a3fa220bc05c74d94fc5c2830c122b2fba1c"
+    },
+    {
       "id": "repo:scripts/lib/core/approvals.mjs",
       "path": "scripts/lib/core/approvals.mjs",
       "type": "kernel",
@@ -605,7 +617,7 @@
       "id": "repo:scripts/lib/core/site_export.mjs",
       "path": "scripts/lib/core/site_export.mjs",
       "type": "kernel",
-      "hash": "7fb29feb0ce6026a0d9c5020329d6a27577672aea58bc62982e9cd047b68f6e1"
+      "hash": "c1a0455dc6615e4077236415ed213151b6d1b8cc2d30b8ed03e3266c866ba028"
     },
     {
       "id": "repo:scripts/lib/core/site_host.mjs",
@@ -791,7 +803,7 @@
       "id": "repo:scripts/lib/records/records_check.mjs",
       "path": "scripts/lib/records/records_check.mjs",
       "type": "kernel",
-      "hash": "b202fc6ab4e8a4ca09b7125fc08bc8eb65d4d40ad26708297f1d3dd53551f129"
+      "hash": "bb88b4ed4d18296986dd88f8786e62c74feb359826e183d3a4cd35a01d098bb4"
     },
     {
       "id": "repo:scripts/lib/records/registry.mjs",
@@ -1109,7 +1121,7 @@
       "id": "repo:scripts/records_check.mjs",
       "path": "scripts/records_check.mjs",
       "type": "executable",
-      "hash": "52e994a3b6eaa620a25cbc7da41993801395ed314e2f0916482a932c484c1067"
+      "hash": "d361c55c5c5846ef314cb015023ffd1ad2e67ab99f8cd95d361aee0fd8e07070"
     },
     {
       "id": "repo:scripts/records_move.mjs",
@@ -1133,7 +1145,7 @@
       "id": "repo:scripts/site_export.mjs",
       "path": "scripts/site_export.mjs",
       "type": "executable",
-      "hash": "b495bbc01bda2145f66b5edde6588dc1b99be595ff33eb11b13cfc591fae6171"
+      "hash": "2b842ca21c2b571e39d6c9725c64576dd069ef326f84ad143b92cfc66fc37bac"
     },
     {
       "id": "repo:scripts/site_handback.mjs",
@@ -1223,7 +1235,7 @@
       "id": "repo:site-type/site-type.json",
       "path": "site-type/site-type.json",
       "type": "repository-support",
-      "hash": "c285381e66371cf13bd99d3155ed78b0af341b41f8da5b835b1443bb3ed4ddbc"
+      "hash": "e1056107dc67af8e28fe1aef3340365b4c0550eb6aee616c9ad87596ebf734b3"
     },
     {
       "id": "repo:site-type/starters/assessment-guide.md",
@@ -1391,7 +1403,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "da263b99b7fc4589203a301965f4791649b3bf22712625e4d4901b87ded9bb87"
+      "hash": "c0e0c1e9c034e4532f68c0b3b714639720cc45bd378cd73a224aa35202fcd469"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1592,6 +1604,12 @@
       "hash": "ed8f48c7b45b95fef5304e6ba9276b4443bf93209841825cd5137d3b637574f0"
     },
     {
+      "id": "repo:tests/alembic-transfer.test.mjs",
+      "path": "tests/alembic-transfer.test.mjs",
+      "type": "test",
+      "hash": "9118627469df03ba7cc412128c963b5e8345ada04db2de31a15468ca14189a75"
+    },
+    {
       "id": "repo:tests/alignment.test.mjs",
       "path": "tests/alignment.test.mjs",
       "type": "test",
@@ -1698,6 +1716,12 @@
       "path": "tests/coherence-claims.test.mjs",
       "type": "test",
       "hash": "e55a7c9642123a0459df3db80ef4a6ebf8b9f08ed7539d6ff369e93ae4fbb5dc"
+    },
+    {
+      "id": "repo:tests/compatibility-fc16.test.mjs",
+      "path": "tests/compatibility-fc16.test.mjs",
+      "type": "test",
+      "hash": "720fc7e26238fce6cf4ef0be6acb073dfb16bb693bb901a9cba1176cda41d5d5"
     },
     {
       "id": "repo:tests/consistency.test.mjs",
@@ -2144,6 +2168,12 @@
       "hash": "a80f70832a5f2c8a75c90c550b95e39313c39d355289d2290d69ef8c47390bc0"
     },
     {
+      "id": "repo:tests/records-check-bound.test.mjs",
+      "path": "tests/records-check-bound.test.mjs",
+      "type": "test",
+      "hash": "7694eb856954ae949e437f0b58c9f86cabed9219675e244ddcfd354c14450437"
+    },
+    {
       "id": "repo:tests/records-check.test.mjs",
       "path": "tests/records-check.test.mjs",
       "type": "test",
@@ -2387,7 +2417,7 @@
       "id": "repo:tests/site-export.test.mjs",
       "path": "tests/site-export.test.mjs",
       "type": "test",
-      "hash": "cd873b434524171a0a835c76119d744cbc1a7f395436f0a366344162ed2937e8"
+      "hash": "b5224dba0edeb4bff9742437389b86e94bfa4e7f5b350c9c6734648e33037507"
     },
     {
       "id": "repo:tests/site-import.test.mjs",
@@ -2399,7 +2429,7 @@
       "id": "repo:tests/site-type-assets.test.mjs",
       "path": "tests/site-type-assets.test.mjs",
       "type": "test",
-      "hash": "8f4de0441e61e827ac464616c68ac953940236ed83ce7f05a4922e9afb62fd31"
+      "hash": "70e25a4fd5fc7206019eb5bc098e95760b253b5b4ab8befe1647f006906386ed"
     },
     {
       "id": "repo:tests/site.test.mjs",
@@ -4819,7 +4849,23 @@
         "status": "closed"
       },
       {
+        "id": "req.host.alembic-transfer",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.host.alembic-units",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.host.fc16-pointer",
         "phase": "P11",
         "tiers": [
           "T1"
@@ -5232,6 +5278,14 @@
         "status": "closed"
       },
       {
+        "id": "req.records.chain-check-bound",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
         "id": "req.records.checked-record",
         "phase": "P11",
         "tiers": [
@@ -5556,6 +5610,14 @@
       },
       {
         "id": "req.sitetype.assets",
+        "phase": "P11",
+        "tiers": [
+          "T1"
+        ],
+        "status": "closed"
+      },
+      {
+        "id": "req.sitetype.edits-blocks",
         "phase": "P11",
         "tiers": [
           "T1"

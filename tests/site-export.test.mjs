@@ -93,3 +93,8 @@ test("[req.records.site-export] the decision log goes in parts under the cap; jo
   assert.ok(later[names.at(-1)].startsWith(parts[names.at(-1)]), "the last part only grows");
   assert.deepEqual(logParts(""), {});
 });
+
+test("[req.records.site-export] the records budget is Alembic's: 200 files per change, 4 MB per file, 200 MB per site (FC-16 O4)", () => {
+  assert.deepEqual({ ...RECORD_LIMITS }, { filesPerChange: 200, bytesPerFile: 4 * 1024 * 1024, bytesPerSite: 200 * 1024 * 1024 });
+  assert.ok(Object.isFrozen(RECORD_LIMITS));
+});
