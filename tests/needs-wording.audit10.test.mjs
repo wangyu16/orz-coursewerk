@@ -124,10 +124,10 @@ test("[req.host.alembic-needs-export] audit10 L-5: Later on every place a cluste
 });
 
 // ---- L-1: the CHANGELOG said the skipped v1.0.5 answers were "recorded by the next apply" -----------------------------
-test("[req.host.alembic-needs-apply] audit10 L-1: the CHANGELOG says answers v1.0.5 skipped are asked again, and no release has the fix", () => {
+test("[req.host.alembic-needs-apply] audit10 L-1: the CHANGELOG says answers v1.0.5 skipped are asked again, and v1.0.6 has the fix", () => {
   const log = fs.readFileSync(path.join(HERE, "..", "CHANGELOG.md"), "utf8");
-  const unreleased = log.split(/\n## v/)[0];
+  const unreleased = log.split(/\n## v1\.0\.5 /)[0];
   assert.doesNotMatch(unreleased, /the next apply records them/);
-  assert.match(unreleased, /no released version contains the fix yet/);
+  assert.match(unreleased, /The bug is in v1\.0\.5; v1\.0\.6 fixes it\./);
   assert.match(unreleased, /their questions are asked again/);
 });

@@ -53,7 +53,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "d0d9af394a5588b99f693567da0fbefe0a2ed1e8dd6f20b71feb5bf140fa4094"
+      "hash": "b2f03ca2a632d98a427f9adbcc1e348691262c9fa9aa94f1fbb5211b5d036511"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -2063,7 +2063,7 @@
       "id": "repo:tests/needs-wording.audit10.test.mjs",
       "path": "tests/needs-wording.audit10.test.mjs",
       "type": "test",
-      "hash": "f5d22057d7e369cc56a9c257e0c3687381162580cb6c083730bbb81bb419438d"
+      "hash": "393dd32f607aa39dabf1c718be2c36555c4cc98e90537e8a866cd0e26456781d"
     },
     {
       "id": "repo:tests/needs-wording.audit2.test.mjs",
@@ -2525,7 +2525,7 @@
       "id": "repo:VERSION",
       "path": "VERSION",
       "type": "release-metadata",
-      "hash": "688de25e1482a1543834e8e389c20aac2fa34fd6abdb28138a00847c8d49f1a0"
+      "hash": "349638c59d94d5497f53b57165b90f37b6d73bf5afaa7a51f789a92544dcab1e"
     }
   ],
   "relationships": [

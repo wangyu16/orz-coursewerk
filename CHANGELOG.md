@@ -1,6 +1,6 @@
 # Coursewerk changelog
 
-## Unreleased
+## v1.0.6 (2026-11-17)
 
 - **"Needs you" questions read as the instructor's** (owner 2026-11-03, family STATUS D-133). The questions
   `alembic_needs.mjs export` hands to Alembic were written for the harness: file and line ("concepts/course.md, line
@@ -110,7 +110,7 @@
   After a ninth audit:
   - **Fix: every answer of a digest is recorded.** Alembic gives every answer of one digest the same item id;
     `alembic_needs.mjs apply` took the item alone as "already recorded", so only the first answer of each digest was
-    recorded and the rest were skipped. The bug is in v1.0.5, and no released version contains the fix yet. An answer is
+    recorded and the rest were skipped. The bug is in v1.0.5; v1.0.6 fixes it. An answer is
     now one question of one item in one hand-in. Nothing to migrate: the answers v1.0.5 skipped were never recorded, so
     their questions are asked again (Alembic's catch-up returns only the current session's digests, and a v1.0.5
     hand-in carries no passage hashes, `seen`, so a choice that acts on text is asked again even if still returned).
