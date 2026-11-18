@@ -1,6 +1,6 @@
 # Coursewerk changelog
 
-## Unreleased
+## v1.0.7 (2026-11-17)
 
 FC-16 batch (owner 2026-11-17: "all three as recommended"; family FC-16 v1 §11 O4, O5, O7, O9; SITE-TYPE-CONTRACT
 draft 15).
