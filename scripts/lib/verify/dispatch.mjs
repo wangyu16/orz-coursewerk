@@ -407,8 +407,21 @@ export const recordHashOf = (record) => sha256(canonicalJson(record));
  */
 export function dispatchLogEntry(record, logRecords) {
   if (!record || sha256(record.bundle?.prompt ?? "") !== record.bundle?.bundleHash || sha256(record.answer?.raw ?? "") !== record.answer?.responseHash) return null;
-  return (logRecords || []).find((l) => l.type === "dispatch" && l.party?.role === "harness" && l.payload?.dispatch === record.dispatch && l.payload?.unit === record.unit && l.payload?.bundleHash === record.bundle.bundleHash && l.payload?.responseHash === record.answer.responseHash
+  return (dispatchIndex(logRecords).get(record.dispatch) || []).find((l) => l.type === "dispatch" && l.party?.role === "harness" && l.payload?.dispatch === record.dispatch && l.payload?.unit === record.unit && l.payload?.bundleHash === record.bundle.bundleHash && l.payload?.responseHash === record.answer.responseHash
     && (l.payload?.recordHash == null || l.payload.recordHash === recordHashOf(record))) || null;
+}
+
+/** The log's dispatch entries by payload.dispatch, in log order: built once per log array (re-built if it grew), so
+ *  vouching for every record of a course is linear in the log, not records × log (audit L2). */
+const DISPATCH_INDEX = new WeakMap();
+function dispatchIndex(logRecords) {
+  const log = logRecords || [];
+  const hit = DISPATCH_INDEX.get(log);
+  if (hit && hit.length === log.length) return hit.index;
+  const index = new Map();
+  for (const l of log) if (l?.type === "dispatch" && l.payload?.dispatch != null) { const k = l.payload.dispatch; if (!index.has(k)) index.set(k, []); index.get(k).push(l); }
+  if (typeof log === "object") DISPATCH_INDEX.set(log, { length: log.length, index });
+  return index;
 }
 
 /**

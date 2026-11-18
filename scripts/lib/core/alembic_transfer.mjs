@@ -13,13 +13,19 @@
 // What the zip holds is the folder in Alembic's site layout (site_export / site_host):
 //   - a folder imported from a hand-out (.coursewerk-host.json "imported") is handed back in the copy (site_host
 //     handbackSite: append-only against what Alembic holds), so Alembic's return check finds state "handed-back";
-//   - a package made on the computer (a new course; no hand-out note) has its records cut as Alembic holds them: the
-//     decision log in parts, the verification records in monthly .jsonl parts (site_export exportSite);
-//   - a folder already in site layout goes as it is.
+//   - otherwise only what is not yet in Alembic's layout is converted in the copy, and everything else goes as it is:
+//       a decision log part over ROLL_BYTES is cut (site_export logParts on the joined log: a part Coursewerk cut stays
+//       byte for byte), and review records held one file per record are wrapped onto the monthly .jsonl parts
+//       (site_export verificationLines: the parts the folder holds are carried byte for byte, new lines appended);
+//   - a chapter deck written as slides/<ch>.md goes as slides/<ch>.slides.md, the name Alembic gives a chapter's deck
+//     (site_export sitePath; else Alembic files it as a loose page, not the chapter's slides); ATTRIBUTION.md's deck
+//     paths follow, and each rename is reported.
 // Then records_check (the chain and the review records the log binds: --records) must pass on the copy, exactly as
 // Alembic will run it; SHA256SUMS lists every file, so Alembic's bring-in can tell a file changed on the way.
-// Left out: .git, node_modules, the assembled carriers (.md.html, .slides.html, .paged.html: Alembic assembles its own)
-// and system files (.DS_Store, Thumbs.db, desktop.ini). The size limits are Alembic's: they are reported, never enforced.
+// Left out: .git, node_modules, the assembled carriers (.md.html, .slides.html, .paged.html: Alembic assembles its own),
+// system files (.DS_Store, Thumbs.db, desktop.ini, __MACOSX) and every hidden file or folder (a name starting with ".",
+// such as .env, .claude/, .vscode/, .gitignore) except Alembic's hand-out note (.alembic/handout.json) and Coursewerk's
+// host record (.coursewerk-host.json). The size limits are Alembic's: they are reported, never enforced.
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -27,18 +33,21 @@ import crypto from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { RECORDS, PUBLIC_RECORDS } from "../records/paths.mjs";
 import { HOST_FILE, readHostRecord } from "../records/host.mjs";
-import { checkRecords } from "../records/records_check.mjs";
+import { checkRecords, readJoinedLog } from "../records/records_check.mjs";
 import { handbackSite } from "./site_host.mjs";
-import { exportSite } from "./site_export.mjs";
+import { ROLL_BYTES, logParts, verificationLines } from "./site_export.mjs";
 import { isCarrierPath } from "../contract.mjs";
 
 export const ALEMBIC_HOST = "https://alembic.orz.how";
 /** Alembic's hand-out note inside a folder it handed to a computer: { alembic: "handout", course, handout, title, at }. */
 export const HANDOUT_NOTE = ".alembic/handout.json";
 const PACKAGE_ID = /^[a-z0-9-]{1,200}$/;
-// Alembic's limits at the time of writing (Alembic owns them; reported as warnings only): course-zip.ts, handout.ts
-const LIMITS = { zipBytes: 100 * 1024 * 1024, unpackedBytes: 200 * 1024 * 1024, bringInFiles: 5000, bringBackFiles: 20000, pageBytes: 4 * 1024 * 1024 };
+// Alembic's limits at the time of writing (Alembic owns them; reported as warnings only): course-zip.ts, handout.ts,
+// course-import.ts (a file at most MAX_UPLOAD_BYTES, 4,000,000 bytes; a record file on a hand-back, largeRecords, 16 MB)
+const LIMITS = { zipBytes: 100 * 1024 * 1024, unpackedBytes: 200 * 1024 * 1024, bringInFiles: 5000, bringBackFiles: 20000, pageBytes: 4_000_000, bringBackRecordBytes: 16 * 1024 * 1024 };
 const SKIP_NAMES = new Set([".git", "node_modules", ".DS_Store", "Thumbs.db", "desktop.ini", "__MACOSX"]);
+/** The only hidden paths that go: Alembic's hand-out note and Coursewerk's host record (and the folder holding the note). */
+const KEEP_HIDDEN = new Set([HANDOUT_NOTE, HOST_FILE]);
 const MB = (n) => `${(n / 1024 / 1024).toFixed(1)} MB`;
 const posix = (p) => p.split(path.sep).join("/");
 
@@ -66,26 +75,37 @@ export function handoutNote(root) {
 /** A course's page on Alembic, at its "On my computer" panel. */
 export const coursePage = (host, course) => `${host}/workspace/${course}/course#on-my-computer`;
 
-function filesOf(dir, base = dir) {
+/** The files that go, sorted (posix paths). `hidden` collects the hidden paths left out (outermost only). */
+function filesOf(dir, base = dir, hidden = []) {
   return fs.readdirSync(dir, { withFileTypes: true }).filter((e) => !SKIP_NAMES.has(e.name)).sort((a, b) => (a.name < b.name ? -1 : 1)).flatMap((e) => {
     const full = path.join(dir, e.name), rel = posix(path.relative(base, full));
+    // a hidden path (any part of it starting with "."): only the two kept files, and the folder holding the note
+    if (rel.split("/").some((seg) => seg.startsWith(".")) && !KEEP_HIDDEN.has(rel) && !(e.isDirectory() && [...KEEP_HIDDEN].some((k) => k.startsWith(`${rel}/`)))) { hidden.push(rel); return []; }
     if (e.isSymbolicLink()) throw new Error(`${rel} is a link: Alembic refuses a zip holding links; replace it with the file itself`);
-    if (e.isDirectory()) return filesOf(full, base);
+    if (e.isDirectory()) return filesOf(full, base, hidden);
     return e.isFile() ? [rel] : [];
   });
 }
 
-/** Does the folder hold its review records as a package does (one file per record, or a log past one part)? */
-function packageLayout(root) {
-  const vdir = path.join(root, RECORDS, "verification");
-  const ver = fs.existsSync(vdir) && fs.readdirSync(vdir, { withFileTypes: true }).some((e) => e.isDirectory() || e.name.endsWith(".json"));
-  const log = path.join(root, RECORDS, "LOG.jsonl");
-  return ver || (fs.existsSync(log) && fs.statSync(log).size > 3.5 * 1024 * 1024);
+const VER = `${RECORDS}/verification`;
+const LOG_PART = /^LOG(?:\.\d+)?\.jsonl$/;
+/** What of the folder's records is not yet as Alembic holds them: { log } a decision log part over ROLL_BYTES (to be
+ *  cut); { verification } a review record held as its own file, or a folder under verification/ (to be wrapped onto the
+ *  monthly .jsonl parts). Neither: the records go as they are. */
+function conversionNeeds(root) {
+  const vdir = path.join(root, VER), priv = path.join(root, RECORDS);
+  const verification = fs.existsSync(vdir) && fs.statSync(vdir).isDirectory() && fs.readdirSync(vdir, { withFileTypes: true }).some((e) => !e.name.startsWith(".") && (e.isDirectory() || e.name.endsWith(".json")));
+  const log = fs.existsSync(priv) && fs.readdirSync(priv).some((n) => LOG_PART.test(n) && fs.statSync(path.join(priv, n)).size > ROLL_BYTES);
+  return { log, verification };
 }
+const escapeRe = (x) => x.replace(/[.*+?^$()|[\]\\{}]/g, "\\$&");
+/** A chapter deck under its old name (slides/<ch>.md) when the folder has no slides/<ch>.slides.md: the name it goes as. */
+const deckRename = (rel, has) => (/^slides\/[^/]+(?<!\.slides)\.md$/.test(rel) && !has(rel.replace(/\.md$/, ".slides.md")) ? rel.replace(/\.md$/, ".slides.md") : null);
 
 /**
  * Prepare `root` for Alembic: the zip (in `out`, default the folder's parent) and the page where the instructor sends it.
- * Returns { zip, bytes, files, mode: "bring-back" | "bring-in", course, link, records, warnings }. Throws, writing no
+ * Returns { zip, bytes, files, mode: "bring-back" | "bring-in", course, link, records, handedBack, renamed: [{ from, to }],
+ * warnings }. Throws, writing no
  * zip, when the folder cannot be sent as it is (the reason in plain words).
  */
 export function prepareSend(root, { out = null, host = undefined, name = null } = {}) {
@@ -102,33 +122,51 @@ export function prepareSend(root, { out = null, host = undefined, name = null } 
   const host0 = readHostRecord(root);
   if (host0?.error) throw new Error(`${host0.error}: download the folder again from the course's page and import it again`);
   const imported = host0?.state === "imported";
-  if (!imported && note && packageLayout(root))
+  const needs = conversionNeeds(root);
+  if (!imported && note && (needs.log || needs.verification))
     throw new Error(`this folder came from Alembic but its records are not as Alembic handed them out, and it was never imported (no ${HOST_FILE}): Coursewerk cannot tell what Alembic holds. Download the folder again, run site_import.mjs on it, and redo the work there`);
+  const mode = note ? "bring-back" : "bring-in";
 
   const work = fs.mkdtempSync(path.join(os.tmpdir(), "coursewerk-send-"));
   try {
     const staged = path.join(work, "course");
     const warnings = [];
-    // the copy: everything but what never goes (and the carriers, which Alembic assembles itself)
-    const all = filesOf(root);
+    // the copy: everything but what never goes (the carriers, which Alembic assembles itself; hidden files)
+    const hidden = [];
+    const all = filesOf(root, root, hidden);
     const carriers = all.filter((f) => isCarrierPath(f));
     if (carriers.length) warnings.push(`${carriers.length} assembled file(s) left out (${carriers.slice(0, 3).join(", ")}${carriers.length > 3 ? ", …" : ""}): Alembic assembles its own`);
-    const convert = !imported && packageLayout(root);
+    if (hidden.length) warnings.push(`${hidden.length} hidden file(s) or folder(s) left out (${hidden.slice(0, 5).join(", ")}${hidden.length > 5 ? ", …" : ""}): a course sends no hidden files but Alembic's hand-out note and Coursewerk's host record`);
+    // records not yet as Alembic holds them are converted below (not in a hand-back: handbackSite does it against the host record)
+    const cutLog = !imported && needs.log, wrapVer = !imported && needs.verification;
+    const has = new Set(all), renamed = [];
     for (const f of all) {
       if (isCarrierPath(f)) continue;
-      // a package's records are written below by exportSite, as Alembic holds them
-      if (convert && (f.startsWith(`${RECORDS}/`) || f.startsWith(`${PUBLIC_RECORDS}/`)) && f !== `${PUBLIC_RECORDS}/CHECKED.json`) continue;
-      const dest = path.join(staged, f);
+      if (cutLog && f.startsWith(`${RECORDS}/`) && !f.slice(RECORDS.length + 1).includes("/") && LOG_PART.test(f.slice(RECORDS.length + 1))) continue;
+      if (wrapVer && f.startsWith(`${VER}/`)) continue;
+      const to = deckRename(f, (x) => has.has(x));
+      if (to) renamed.push({ from: f, to });
+      const dest = path.join(staged, to || f);
       fs.mkdirSync(path.dirname(dest), { recursive: true });
       fs.copyFileSync(path.join(root, f), dest);
     }
     fs.mkdirSync(staged, { recursive: true });
-    if (imported) { try { handbackSite(staged); } catch (e) { throw new Error(`this folder cannot be handed back, so no zip was made: ${e.message}`); } }
-    else if (convert) {
-      const r = exportSite(root, staged);
-      // (CHECKED.json, built at publish, was copied as it is: exportSite rebuilds it only from a gate run)
-      for (const p of r.problems) warnings.push(p);
+    const write = (rel, data) => { const dest = path.join(staged, rel); fs.mkdirSync(path.dirname(dest), { recursive: true }); fs.writeFileSync(dest, data); };
+    if (cutLog) {
+      const joined = readJoinedLog(root);
+      if (joined.problems.length) throw new Error(`the decision log cannot be read, so no zip was made:\n  - ${joined.problems.join("\n  - ")}`);
+      for (const [rel, text] of Object.entries(logParts(joined.text))) write(`${RECORDS}/${rel}`, text);
     }
+    if (wrapVer) for (const [rel, text] of Object.entries(verificationLines(root))) write(`${RECORDS}/${rel}`, text);
+    // the decks renamed in the copy: the attribution names them as they go (as site_export does)
+    const attribution = path.join(staged, PUBLIC_RECORDS, "ATTRIBUTION.md");
+    if (renamed.length && fs.existsSync(attribution)) {
+      let text = fs.readFileSync(attribution, "utf8");
+      for (const { from, to } of renamed) text = text.replace(new RegExp("(?<![\\w./-])" + escapeRe(from) + "(?![\\w.])", "g"), to);
+      fs.writeFileSync(attribution, text);
+    }
+    if (renamed.length) warnings.push(`${renamed.length} deck(s) go under the name Alembic gives a chapter's deck: ${renamed.map((r) => `${r.from} as ${r.to}`).join(", ")}. To rename them in this folder too: git mv each one, then node scripts/records_paths.mjs --root <folder>`);
+    if (imported) { try { handbackSite(staged); } catch (e) { throw new Error(`this folder cannot be handed back, so no zip was made: ${e.message}`); } }
     // the check Alembic runs, on exactly what goes: the log's chain and the review records it binds
     const check = checkRecords(staged, { records: true });
     if (!check.ok) throw new Error(`the records check refuses this course, so no zip was made:\n  - ${check.problems.join("\n  - ")}`);
@@ -137,9 +175,15 @@ export function prepareSend(root, { out = null, host = undefined, name = null } 
     fs.rmSync(path.join(staged, "SHA256SUMS"), { force: true });
     const files = filesOf(staged);
     let unpacked = 0;
-    const sums = files.map((f) => { const b = fs.readFileSync(path.join(staged, f)); unpacked += b.length; if (b.length > LIMITS.pageBytes && !f.startsWith(`${RECORDS}/`) && !f.startsWith(`${PUBLIC_RECORDS}/`)) warnings.push(`${f} is ${MB(b.length)}: Alembic leaves out a file over 4 MB`); return `${crypto.createHash("sha256").update(b).digest("hex")}  ./${f}\n`; }).join("");
+    // a record file may be larger on a hand-back (16 MB) than on a bring-in (4 MB, as any file)
+    const recordMost = mode === "bring-back" ? LIMITS.bringBackRecordBytes : LIMITS.pageBytes;
+    const sums = files.map((f) => {
+      const b = fs.readFileSync(path.join(staged, f)); unpacked += b.length;
+      const record = f.startsWith(`${RECORDS}/`) || f.startsWith(`${PUBLIC_RECORDS}/`);
+      if (b.length > (record ? recordMost : LIMITS.pageBytes)) warnings.push(`${f} is ${MB(b.length)}: Alembic leaves out a ${record ? "record " : ""}file over ${record && mode === "bring-back" ? "16" : "4"} MB`);
+      return `${crypto.createHash("sha256").update(b).digest("hex")}  ./${f}\n`;
+    }).join("");
     fs.writeFileSync(path.join(staged, "SHA256SUMS"), sums);
-    const mode = note ? "bring-back" : "bring-in";
     if (mode === "bring-in" && host0) warnings.push(`this folder came from Alembic (${HOST_FILE}) but holds no hand-out note (${HANDOUT_NOTE}): bringing it in makes a new course beside the one it came from`);
     const most = mode === "bring-in" ? LIMITS.bringInFiles : LIMITS.bringBackFiles;
     if (files.length + 1 > most) warnings.push(`${files.length + 1} files: Alembic takes at most ${most} at once`);
@@ -156,7 +200,7 @@ export function prepareSend(root, { out = null, host = undefined, name = null } 
       zip, bytes, files: files.length + 1, mode, course: note?.course ?? null,
       link: note ? coursePage(origin, note.course) : `${origin}/workspace`,
       records: { log: check.log.records, reviews: check.records.records, logged: check.records.logged },
-      handedBack: imported, warnings,
+      handedBack: imported, renamed, warnings,
     };
   } finally { fs.rmSync(work, { recursive: true, force: true }); }
 }

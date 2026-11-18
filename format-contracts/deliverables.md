@@ -75,9 +75,11 @@ log's `parts`, `bytes`, `sha256`, `records` and `head` (the last record's hash).
 With `--records` (req.records.chain-check-bound; FC-16 O5) it also checks the review records the log binds, as the gate
 does, against a log that verifies: every verification record reads whole (with the prompt parts it shares) and is the
 record its logged dispatch vouches for (bundle, answer and, for records logged since red-team round 1, the whole record
-by `recordHash`); every logged dispatch keeps its record; every file in a folder under `verification/` is the prompt part
-its name says. Either layout: one file per record, or Alembic's monthly `.jsonl` parts of `{"file","record"}` lines
-written exactly as Coursewerk writes them. A record rewritten, removed or planted, a part altered or stray, or a line
+by `recordHash`), filed under that dispatch (`verification/<dispatch>.json`, or a line whose `"file"` is
+`<dispatch>.json`); every logged dispatch keeps its record; every file in a folder under `verification/` is the prompt
+part its name says, and every file at the top of `verification/` is a `.json` record or a `.jsonl` part. Either layout: one file per record, or Alembic's monthly `.jsonl` parts of `{"file","record"}` lines
+written exactly as Coursewerk writes them. A record rewritten, removed, planted or filed under another name, a part
+altered or stray, a top-level file of another kind, or a line
 Coursewerk did not write is a problem (at most 50 are listed, then counted). The output adds `records`: `{records,
 parts, sharedParts, logged}` (`null` when the log does not verify). Without `--records` nothing changes.
 

@@ -14,8 +14,10 @@
 // With `records: true` (records_check.mjs --records; FC-16 O5) it also checks the review records the log binds, as the
 // gate does (ms8 dispatch-unlogged / dispatch-record-missing), so a returned course with a rewritten record is refused
 // at once rather than at its next gate run: every verification record reads whole (its shared prompt parts present and
-// the ones named) and is the record a logged dispatch vouches for; every logged dispatch keeps its record; every file in
-// a folder under verification/ is a prompt part its name says. Either layout: one file per record (a package), or
+// the ones named), is the record a logged dispatch vouches for, and is filed under that dispatch (verification/
+// <dispatch>.json, or a wrapped line whose "file" is <dispatch>.json); every logged dispatch keeps its record; every file
+// in a folder under verification/ is a prompt part its name says; a file at the top of verification/ is a .json record
+// or a .jsonl part. Either layout: one file per record (a package), or
 // Alembic's monthly .jsonl parts of wrapped records ({"file","record"} lines, site_export verificationLines).
 import fs from "node:fs";
 import path from "node:path";
@@ -100,6 +102,8 @@ function verificationFiles(root) {
   });
   for (const rel of walk(dir)) {
     if (!rel.includes("/") && rel.endsWith(".jsonl")) { jsonl.push(rel); continue; }
+    // at the top of verification/ only review records (.json) and Alembic's monthly parts of them (.jsonl)
+    if (!rel.includes("/") && !rel.endsWith(".json")) { problems.push(`${VERIFICATION_DIR}/${rel} is neither a review record (.json) nor a part of them (.jsonl)`); continue; }
     files.set(`${VERIFICATION_DIR}/${rel}`, fs.readFileSync(path.join(dir, rel), "utf8"));
   }
   for (const rel of jsonl) {
@@ -135,6 +139,8 @@ export function checkReviewRecords(root, log) {
       let record;
       try { record = expandDispatch(JSON.parse(files.get(rel)), readText); } catch (e) { problems.push(`${rel} cannot be read whole: ${e instanceof SyntaxError ? "it is not JSON" : e.message}`); named.add(rel); continue; }
       if (!dispatchLogEntry(record, dispatchEntries)) { problems.push(`${rel} is not the record the decision log binds: it was changed after it was logged, or never logged`); named.add(rel); continue; }
+      // a record is filed under its own dispatch (verification/<dispatch>.json; a wrapped line's "file" likewise)
+      if (rel !== `${VERIFICATION_DIR}/${record.dispatch}.json`) { problems.push(`${rel} holds the record of review ${record.dispatch}, which is filed as ${VERIFICATION_DIR}/${record.dispatch}.json`); continue; }
       if (typeof record.dispatch === "string") readable.add(record.dispatch);
     } else if (rel.slice(VERIFICATION_DIR.length + 1).includes("/")) {
       // a file in a folder under verification/ is a shared prompt part, the one its name says, or nothing the harness wrote

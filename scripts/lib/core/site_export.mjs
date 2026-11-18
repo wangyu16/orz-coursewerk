@@ -38,11 +38,23 @@ export const recordWhen = (rec, file) => String(rec?.at || rec?.createdAt || rec
 export const monthOf = (when) => /^\d{4}-\d{2}/.exec(when)?.[0] || "undated";
 
 /** The verification records as monthly lines: { "verification/2026-10.jsonl": "…\n" }. A record's month is that of its
- *  own time field (at/createdAt/dispatchedAt), else of the file's modification time; lines in dispatch order. */
+ *  own time field (at/createdAt/dispatchedAt), else of the file's modification time; lines in dispatch order.
+ *  A folder already (partly) in site layout keeps what it holds: every monthly .jsonl part at the top of verification/
+ *  is carried byte for byte, and the records held one file per record are appended after them (a record a part already
+ *  holds, the same, is not repeated, nor a shared prompt part it holds by name): into the month's last part while it holds them, then new numbered parts. */
 export function verificationLines(root) {
-  const dir = path.join(root, RECORDS, "verification"), out = {}, parts = {};
+  const dir = path.join(root, RECORDS, "verification"), out = {}, parts = {}, held = new Set(), heldFiles = new Set();
+  const all = walk(dir);
+  for (const rel of all.filter((f) => !f.includes("/") && f.endsWith(".jsonl"))) {
+    const content = fs.readFileSync(path.join(dir, rel), "utf8");
+    out[`verification/${rel}`] = content;
+    for (const line of content.split(/(?<=\n)/)) if (line) { held.add(line.endsWith("\n") ? line : line + "\n"); try { heldFiles.add(JSON.parse(line).file); } catch { /* records_check names a line it cannot read */ } }
+    // the month's last part (2026-10.jsonl, 2026-10.2.jsonl, …) is where new lines go
+    const m = /^(.+?)(?:\.(\d+))?\.jsonl$/.exec(rel), n = m[2] ? Number(m[2]) : 1;
+    if (!parts[m[1]] || parts[m[1]].n < n) parts[m[1]] = { n, bytes: Buffer.byteLength(content) };
+  }
   // in the order the dispatches were made (their own `at`, then the file name), so a later export only appends lines
-  const recs = walk(dir).filter((f) => f.endsWith(".json")).map((rel) => {
+  const recs = all.filter((f) => f.endsWith(".json")).map((rel) => {
     const raw = fs.readFileSync(path.join(dir, rel), "utf8");
     let rec; try { rec = JSON.parse(raw); } catch { rec = { unreadable: raw.length }; }
     return { rel, rec, when: recordWhen(rec, path.join(dir, rel)) };
@@ -50,6 +62,8 @@ export function verificationLines(root) {
   for (const { rel, rec, when } of recs) {
     const month = monthOf(when);
     const line = JSON.stringify({ file: rel, record: rec }) + "\n";
+    // held already: the same line, or a shared prompt part of that name (named by its text's sha256, so the same text)
+    if (held.has(line) || (rel.startsWith("parts/") && heldFiles.has(rel))) continue;
     // a month rolls into numbered parts below the per-file cap (2026-10.jsonl, 2026-10.2.jsonl, …); still append-only:
     // new lines only ever go into the last part
     const part = (parts[month] ||= { n: 1, bytes: 0 });
@@ -58,6 +72,16 @@ export function verificationLines(root) {
     out[key] = (out[key] || "") + line; part.bytes += Buffer.byteLength(line);
   }
   return out;
+}
+
+const LOG_PART = /^LOG(?:\.(\d+))?\.jsonl$/;
+/** The decision log of a folder in either layout: LOG.jsonl, or Alembic's parts LOG.jsonl, LOG.2.jsonl, … joined in
+ *  order (records_check readJoinedLog checks the parts; this only reads them). */
+export function joinedLogText(root) {
+  const dir = path.join(root, RECORDS);
+  if (!fs.existsSync(dir)) return "";
+  return fs.readdirSync(dir).map((name) => ({ name, m: LOG_PART.exec(name) })).filter((x) => x.m)
+    .sort((a, b) => Number(a.m[1] || 1) - Number(b.m[1] || 1)).map((x) => fs.readFileSync(path.join(dir, x.name), "utf8")).join("");
 }
 
 /** The decision log as the site holds it (owner 2026-11-02: a .jsonl log in parts of at most 4 MB): the package's one
@@ -122,8 +146,8 @@ export function exportSite(root, outDir, { gateResult, at } = {}) {
   // the records already sit at the site's places (records layout); the export copies them, the verification records
   // consolidated, and builds CHECKED.json
   const priv = path.join(root, RECORDS);
-  for (const rel of walk(priv).filter((r) => !r.startsWith("verification/") && !r.endsWith(".lock") && r !== "LOG.jsonl")) put(`${RECORDS}/${rel}`, fs.readFileSync(path.join(priv, rel)));
-  for (const [rel, text] of Object.entries(logParts(readLogText(root)))) put(`${RECORDS}/${rel}`, text);
+  for (const rel of walk(priv).filter((r) => !r.startsWith("verification/") && !r.endsWith(".lock") && !LOG_PART.test(r))) put(`${RECORDS}/${rel}`, fs.readFileSync(path.join(priv, rel)));
+  for (const [rel, text] of Object.entries(logParts(joinedLogText(root)))) put(`${RECORDS}/${rel}`, text);
   for (const [rel, text] of Object.entries(verificationLines(root))) put(`${RECORDS}/${rel}`, text);
   if (gateResult) put(`${PUBLIC_RECORDS}/CHECKED.json`, JSON.stringify(checkedRecord(root, gateResult, { at }), null, 2) + "\n");
   const reader = liveReader(root), attribution = reader.text(`${PUBLIC_RECORDS}/ATTRIBUTION.md`);

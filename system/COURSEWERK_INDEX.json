@@ -53,7 +53,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "9a761119ce3d297334b52579f8d200a05562e023e03f55b2b7512e910529aaf8"
+      "hash": "f633e53cc36948cd54577aad7fbe430d73ed796073d27c0be192e1738fa74052"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -167,7 +167,7 @@
       "id": "repo:format-contracts/deliverables.md",
       "path": "format-contracts/deliverables.md",
       "type": "documentation",
-      "hash": "f8dae11fcaeceac3001f042bf52e665013f0d93d11df5ca5fc1cedc020428b27"
+      "hash": "0e96990e8a321519220c4ca7acecfa83ec65eb171aa419d36509359f2b0389a2"
     },
     {
       "id": "repo:GEMINI.md",
@@ -203,7 +203,7 @@
       "id": "repo:PROCEDURE.md",
       "path": "PROCEDURE.md",
       "type": "agent-constitution",
-      "hash": "1ea73df10ae63c4ffade4f2fa45f93c5dd62f11fe0610f8467caab6633d9ed60"
+      "hash": "d2cc7c11700569e929070192cb263abe644d2ca911d1188e368226c012cedce9"
     },
     {
       "id": "repo:README.md",
@@ -443,7 +443,7 @@
       "id": "repo:scripts/lib/core/alembic_transfer.mjs",
       "path": "scripts/lib/core/alembic_transfer.mjs",
       "type": "kernel",
-      "hash": "2b219ba5a5235f4b317b1bb5d9c9a3fa220bc05c74d94fc5c2830c122b2fba1c"
+      "hash": "e008c1dd4a4f337991ac28c07b14eb8e39fc5934e112e2787f3c71905c802095"
     },
     {
       "id": "repo:scripts/lib/core/approvals.mjs",
@@ -617,7 +617,7 @@
       "id": "repo:scripts/lib/core/site_export.mjs",
       "path": "scripts/lib/core/site_export.mjs",
       "type": "kernel",
-      "hash": "c1a0455dc6615e4077236415ed213151b6d1b8cc2d30b8ed03e3266c866ba028"
+      "hash": "619cb4c1fe680b104925df86446ae5ef7c9192e2e876d1dfbbdc07ca1bb01586"
     },
     {
       "id": "repo:scripts/lib/core/site_host.mjs",
@@ -803,7 +803,7 @@
       "id": "repo:scripts/lib/records/records_check.mjs",
       "path": "scripts/lib/records/records_check.mjs",
       "type": "kernel",
-      "hash": "bb88b4ed4d18296986dd88f8786e62c74feb359826e183d3a4cd35a01d098bb4"
+      "hash": "bd765cc896cffcee90923cf772aabb7d1e4e900fc806f5f75a85b19ca34934d9"
     },
     {
       "id": "repo:scripts/lib/records/registry.mjs",
@@ -959,7 +959,7 @@
       "id": "repo:scripts/lib/verify/dispatch.mjs",
       "path": "scripts/lib/verify/dispatch.mjs",
       "type": "kernel",
-      "hash": "f51228120a7def58e3cbcba918a470b470071410002cfc8d110a90f7a7cc7699"
+      "hash": "4fae1ca074982ae13435b4cf715e6badedd70f1241540ef8b82b9cab8daee663"
     },
     {
       "id": "repo:scripts/lib/verify/mechanical.mjs",
@@ -1403,7 +1403,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "c0e0c1e9c034e4532f68c0b3b714639720cc45bd378cd73a224aa35202fcd469"
+      "hash": "c5401ddd3ab27aa3508bef127496c1b2044701b4e6b5375e23ac9e2d7dee720a"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1602,6 +1602,12 @@
       "path": "tests/alembic-needs.test.mjs",
       "type": "test",
       "hash": "ed8f48c7b45b95fef5304e6ba9276b4443bf93209841825cd5137d3b637574f0"
+    },
+    {
+      "id": "repo:tests/alembic-transfer.audit.test.mjs",
+      "path": "tests/alembic-transfer.audit.test.mjs",
+      "type": "test",
+      "hash": "1a7e765e82de5843713a2acad4906789050727dad68d1725df8d90902e5bbc8b"
     },
     {
       "id": "repo:tests/alembic-transfer.test.mjs",
@@ -2166,6 +2172,12 @@
       "path": "tests/range.test.mjs",
       "type": "test",
       "hash": "a80f70832a5f2c8a75c90c550b95e39313c39d355289d2290d69ef8c47390bc0"
+    },
+    {
+      "id": "repo:tests/records-check-bound.audit.test.mjs",
+      "path": "tests/records-check-bound.audit.test.mjs",
+      "type": "test",
+      "hash": "230c027dfaa28ffc5e255977ea4f66a290d9ca5e5377924e368f89ac7655d300"
     },
     {
       "id": "repo:tests/records-check-bound.test.mjs",

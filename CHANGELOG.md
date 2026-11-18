@@ -8,18 +8,33 @@ draft 15).
 - **Records budget per site: 200 MB** (FC-16 O4, family STATUS D-146). The budget is Alembic's, and Alembic has allowed
   200 MB since 2026-11-07; `site_export`'s `RECORD_LIMITS.bytesPerSite` moves from 50 MB to 200 MB. 200 files per change
   and 4 MB per file are unchanged. `req.records.site-export`.
+- **`site_export` keeps the review parts a folder already holds.** On a folder already (partly) in Alembic's layout, the
+  monthly `.jsonl` parts are carried byte for byte and one-file records appended after them; before, every `.jsonl` part
+  was dropped. The decision log is read whole from its parts, too. `req.records.site-export`.
 - **`records_check.mjs --records`: the review records the log binds** (FC-16 O5). Additive mode: besides the chain, it
   checks every verification record against the decision log as the gate does (ms8 dispatch-unlogged /
-  dispatch-record-missing) — each record reads whole with its shared prompt parts and is the one its logged dispatch
-  vouches for, each logged dispatch keeps its record, and nothing else sits in the verification folders — in either
-  layout (Alembic's monthly `.jsonl` parts included). A returned course with a rewritten, removed or planted record, or
+  dispatch-record-missing) — each record reads whole with its shared prompt parts, is the one its logged dispatch
+  vouches for and is filed under that dispatch (`verification/<dispatch>.json`, or a `.jsonl` line whose `"file"` is
+  `<dispatch>.json`); each logged dispatch keeps its record; every file in a folder under `verification/` is the shared
+  prompt part its name says; and every file at the top of `verification/` is a `.json` record or a `.jsonl` part — in
+  either layout (Alembic's monthly `.jsonl` parts included). The log's dispatch entries are indexed once, so checking a
+  course's records is linear in the log (General Chemistry, 5,299 records: about 4.0 s → 2.5 s). A returned course with a rewritten, removed or planted record, or
   an altered part, is refused at once, not at its next gate run. The output adds `records`. Without `--records` nothing
   changes; Alembic adds the flag to its hand-back and bring-in check when it is ready. `req.records.chain-check-bound`.
 - **Send to / take from Alembic** (FC-16 O7). `scripts/alembic_transfer.mjs send --root <folder>` makes the zip
   Alembic's "Bring in a course from my computer" (a new course) or "Bring it back" (a folder Alembic handed out) takes:
-  an imported hand-out is handed back in a copy (append-only, as `site_handback`), a package's records are cut into
-  Alembic's layout, carriers and `.git` are left out, `SHA256SUMS` lists every file; `records_check --records` must pass
-  on exactly what goes. The folder itself is never changed. It prints the page to open (the course's "On my computer"
+  an imported hand-out is handed back in a copy (append-only, as `site_handback`); otherwise only what is not yet in
+  Alembic's layout is converted in the copy (a decision log part over 3.5 MB is cut into parts; review records held one
+  file per record are appended to the monthly `.jsonl` parts, the parts the folder holds going byte for byte) and the
+  rest goes as it is. A deck written as `slides/<chapter>.md` goes as `slides/<chapter>.slides.md`, the name Alembic
+  gives a chapter's deck (else Alembic files it as a loose page, not the chapter's slides), with `ATTRIBUTION.md`
+  following; a note names each rename. Left out: `.git`, `node_modules`, the assembled carriers (`.md.html`,
+  `.slides.html`, `.paged.html`), system files (`.DS_Store`, `Thumbs.db`, `desktop.ini`, `__MACOSX`) and every hidden
+  file or folder (`.env`, `.claude/`, `.vscode/`, `.gitignore`, …) except Alembic's hand-out note
+  (`.alembic/handout.json`) and Coursewerk's host record (`.coursewerk-host.json`); a note names the hidden ones.
+  `SHA256SUMS` lists every file that goes; `records_check --records` must pass on exactly that. Alembic's size limits
+  are reported (a file over 4,000,000 bytes; a record file over that on a bring-in, over 16 MB on a bring-back). The
+  folder itself is never changed. It prints the page to open (the course's "On my computer"
   panel, from the folder's hand-out note) and what to choose there. `take` prints where to download a course and the
   steps after. Coursewerk holds no credentials and uploads nothing: sending stays the instructor's act.
   `req.host.alembic-transfer`.
