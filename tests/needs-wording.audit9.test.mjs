@@ -1,4 +1,4 @@
-// [req.host.alembic-needs-apply] [req.host.alembic-needs-export] [req.host.alembic-needs-wording] Closed-loop audit, round 9,
+// [req.host.alembic-needs-grouped] [req.host.alembic-needs-apply] [req.host.alembic-needs-export] [req.host.alembic-needs-wording] Closed-loop audit, round 9,
 // of D-133 (needs-wording 0fca6cb). Each test names one finding (severity in its name) and FAILS on 0fca6cb. The answers use
 // Alembic's REAL shape: every answer of one digest carries the digest's needs-you row id as `item`
 // (Alembic apps/web/src/lib/agent-endpoint.ts: `{ item: d.id, changesetId, question, … }` per question of the row;
@@ -48,29 +48,32 @@ const exercise = (id, unit) => makeFinding({ module: "ms8-verdicts", kind: "exer
 // ---- HIGH-1: `done` was keyed on the item alone; Alembic gives every answer of a digest the same item ------------------
 test("[req.host.alembic-needs-apply] audit9 HIGH-1: every answer of one digest (one Alembic item) is recorded", async (t) => {
   const c = course(t);
-  const F = [offSpine("h1a", P1), offSpine("h1b", P2), offSpine("h1c", U3)];
+  // a kind that is never grouped (a confirmation, words required; grouped findings 2026-11-17): one question per finding
+  const F = [exercise("h1a", P1), exercise("h1b", P2), exercise("h1c", U3)];
   const qs = dq(await exportNeeds(c.root, { changesetId: "audit9-h1-0001", gate: { findings: F } }));
   assert.equal(qs.length, 3, "precondition: one question per finding");
-  const a = applyChanges(c.root, { answers: qs.map((q) => row("audit9-h1-0001", q.id, "Keep it")) });
+  const W = { words: "They are teaching examples." };
+  const a = applyChanges(c.root, { answers: qs.map((q) => row("audit9-h1-0001", q.id, "Confirm", W)) });
   assert.equal(a.recorded.length, 3, `all three answers are recorded: skipped ${JSON.stringify(a.skipped)}`);
   assert.deepEqual(a.skipped, []);
   // the same changes read again: nothing twice
-  const again = applyChanges(c.root, { answers: qs.map((q) => row("audit9-h1-0001", q.id, "Keep it")) });
+  const again = applyChanges(c.root, { answers: qs.map((q) => row("audit9-h1-0001", q.id, "Confirm", W)) });
   assert.equal(again.recorded.length, 0); assert.deepEqual(again.skipped.map((s) => s.reason), ["already recorded", "already recorded", "already recorded"]);
 });
 
 test("[req.host.alembic-needs-apply] audit9 HIGH-1: a digest answered in part, then caught up, records each answer once", async (t) => {
   const c = course(t);
-  const F = [offSpine("h1p", P1), offSpine("h1q", P2), offSpine("h1r", U3)];
+  const F = [exercise("h1p", P1), exercise("h1q", P2), exercise("h1r", U3)];
+  const W = { words: "They are teaching examples." };
   const qs = dq(await exportNeeds(c.root, { changesetId: "audit9-h1-0002", gate: { findings: F } }));
   // the instructor answered one question; a job read it (exactly what 0fca6cb's apply recorded on testing)
-  assert.equal(applyChanges(c.root, { answers: [row("audit9-h1-0002", qs[0].id, "Keep it")] }).recorded.length, 1);
+  assert.equal(applyChanges(c.root, { answers: [row("audit9-h1-0002", qs[0].id, "Confirm", W)] }).recorded.length, 1);
   // a re-export before the rest arrives re-asks only the unrecorded ones (a record written under the old keying is the
   // same: its one marker names the first answer, the others were never recorded)
   const re = dq(await exportNeeds(c.root, { changesetId: "audit9-h1-0003", gate: { findings: F } }));
   assert.deepEqual(re.map((q) => q.id).sort(), [qs[1].id, qs[2].id].sort(), "the unanswered two are asked again, the answered one is not");
   // later the instructor answers the rest of the first digest; Alembic returns every answer of the row
-  const all = applyChanges(c.root, { answers: qs.map((q, i) => row("audit9-h1-0002", q.id, "Keep it", { at: `2026-11-16T10:0${i}:00Z` })) });
+  const all = applyChanges(c.root, { answers: qs.map((q, i) => row("audit9-h1-0002", q.id, "Confirm", { ...W, at: `2026-11-16T10:0${i}:00Z` })) });
   assert.equal(all.recorded.length, 2, `the two later answers are recorded: ${JSON.stringify(all.skipped)}`);
   assert.deepEqual(all.skipped.map((s) => s.reason), ["already recorded"]);
   assert.equal(instr(c.log()).length, 3);
@@ -104,7 +107,7 @@ test("[req.host.alembic-needs-wording] audit9 MEDIUM-1: a gone passage offers no
 test("[req.host.alembic-needs-export] audit9 MEDIUM-2: the instructor's cap counts questions after the split", async (t) => {
   const c = course(t);
   appendLogRecord(c.root, { type: "steering", party: { role: "instructor", name: "Yu" }, payload: { event: "digest-cap", cap: 3, instructorWords: "Three at a time." } });
-  const F = Array.from({ length: 8 }, (_, i) => offSpine(`m2-${i}`, [P1, P2, U3][i % 3]));
+  const F = Array.from({ length: 8 }, (_, i) => exercise(`m2-${i}`, [P1, P2, U3][i % 3])); // never grouped: one question each
   const r = await exportNeeds(c.root, { changesetId: "audit9-m2-0001", gate: { findings: F } });
   assert.equal(dq(r).length, 3, "three questions, as the instructor set");
   assert.equal(r.left, 5, "the other five wait");
@@ -112,7 +115,7 @@ test("[req.host.alembic-needs-export] audit9 MEDIUM-2: the instructor's cap coun
 
 test("[req.host.alembic-needs-export] audit9 MEDIUM-2: a large cluster shares the digest with the other kinds (round robin)", async (t) => {
   const c = course(t);
-  const big = Array.from({ length: 30 }, (_, i) => offSpine(`m2s-${i}`, [P1, P2][i % 2]));
+  const big = Array.from({ length: 30 }, (_, i) => exercise(`m2s-${i}`, [P1, P2][i % 2]));
   const r = await exportNeeds(c.root, { changesetId: "audit9-m2-0002", gate: { findings: [...big, kc("m2-kc", P1), amb("m2-amb", P2)] } });
   const q = rec(c.root), kinds = dq(r).map((x) => q[x.id].entry.kind);
   assert.ok(kinds.includes("knowledge-concern") && kinds.includes("ambiguous-answer"), `the other kinds get a turn: ${JSON.stringify(kinds)}`);
@@ -136,9 +139,9 @@ test("[req.host.alembic-needs-apply] audit9 LOW-1: Confirm without words is refu
 // ---- LOW-2: Later on a split question was keyed key#finding, which buildDigest never read -----------------------------------
 test("[req.host.alembic-needs-export] audit9 LOW-2: Later on one finding of a split cluster comes back first, marked", async (t) => {
   const c = course(t);
-  const F = [offSpine("l2a", P1), offSpine("l2b", P2), offSpine("l2c", U3)];
+  const F = [exercise("l2a", P1), exercise("l2b", P2), exercise("l2c", U3)];
   const qs = dq(await exportNeeds(c.root, { changesetId: "audit9-l2-0001", gate: { findings: F } }));
-  applyChanges(c.root, { answers: [row("audit9-l2-0001", qs[2].id, "Later")] });
+  assert.equal(applyChanges(c.root, { answers: [row("audit9-l2-0001", qs[2].id, "Later", { words: "Not now." })] }).recorded[0]?.outcome, "deferred");
   const again = dq(await exportNeeds(c.root, { changesetId: "audit9-l2-0002", gate: { findings: F } }));
   assert.equal(again[0].id, qs[2].id, "the deferred one goes first");
   assert.match(again[0].detail || "", /Later last time/);
@@ -165,8 +168,8 @@ test("[req.host.alembic-needs-wording] audit9 LOW-4: one more chapter is singula
 test("[req.host.alembic-needs-export] audit9 LOW-5: the hand-in says how many more questions will follow", async (t) => {
   const c = course(t);
   appendLogRecord(c.root, { type: "steering", party: { role: "instructor", name: "Yu" }, payload: { event: "digest-cap", cap: 2, instructorWords: "Two." } });
-  // a cluster of 4 off-spine findings and a cluster no choice acts on (2 findings, one question in words)
-  const F = [...Array.from({ length: 4 }, (_, i) => offSpine(`l5-${i}`, [P1, P2][i % 2])), amb("l5-a1", P1), amb("l5-a2", P2)];
+  // a cluster of 4 exercise-data findings (never grouped) and a cluster no choice acts on (2 findings, one question in words)
+  const F = [...Array.from({ length: 4 }, (_, i) => exercise(`l5-${i}`, [P1, P2][i % 2])), amb("l5-a1", P1), amb("l5-a2", P2)];
   const r = await exportNeeds(c.root, { changesetId: "audit9-l5-0001", gate: { findings: F } });
   assert.equal(dq(r).length, 2);
   assert.equal(r.left, 3, "4 + 1 questions in all, 2 shown");

@@ -1,4 +1,4 @@
-// [req.host.alembic-needs-apply] [req.host.alembic-needs-wording] Closed-loop audit, round 7, of D-133 (needs-wording d5d4b14 on main 75e808f):
+// [req.host.alembic-needs-grouped] [req.host.alembic-needs-apply] [req.host.alembic-needs-wording] Closed-loop audit, round 7, of D-133 (needs-wording d5d4b14 on main 75e808f):
 // the single binding guard, owed words per answer, liveness over several jobs, and a fresh pass. Each finding test FAILS on
 // d5d4b14 and names one finding (severity in its name). Only public functions and the real C2 package are used; nothing
 // here changes implementation. Adopted with the round's fixes: HIGH-1 and MEDIUM-7 follow the per-construct limit asked
@@ -54,6 +54,18 @@ function asCluster(root, changesetId, ids, choices) {
   return { id: ids[0], text: "", detail: "" };
 }
 
+/** Each finding exported on its own, the questions then kept under one hand-in `cs` (what a hand-in of round 8 held for a
+ *  split cluster; grouped findings, 2026-11-17, hand the same cluster in as one grouped question). Returns the ids. */
+async function singlesInOne(root, cs, findings) {
+  const ids = [];
+  for (const [i, f] of findings.entries()) ids.push(digestQ(await exportNeeds(root, { changesetId: `${cs}-${i}`, gate: { findings: [f] } }))[0].id);
+  const file = recordFile(root, NEEDS_FILE), rec = JSON.parse(fs.readFileSync(file, "utf8"));
+  const parts = findings.map((_, i) => rec.handins.find((h) => h.changesetId === `${cs}-${i}`));
+  rec.handins = [...rec.handins.filter((h) => !parts.includes(h)), { changesetId: cs, at: parts[0].at, questions: Object.assign({}, ...parts.map((x) => x.questions)) }];
+  fs.writeFileSync(file, JSON.stringify(rec));
+  return ids;
+}
+
 // ---- HIGH-1: one "Apply the suggestion" accepts every clustered suggestion, while the question shows only the first ----
 // buildDigest clusters findings by rootCause (digest.mjs:28-33: module|kind|the first 80 characters of the note, quotes and
 // numbers folded) and an answer binds EVERY finding of the entry (e.bases, digest.mjs:179). wordEntry (needs_wording.mjs:
@@ -74,11 +86,13 @@ test("[req.host.alembic-needs-apply] audit7 HIGH-1: \"Apply the suggestion\" nev
   const S2 = "The principle is named for Henry Le Chatelier, who wrote it down in 1884 and in 1901 retracted it.";
   const mk = (id, unit, quote, s) => finding(id, "clarification-proposed", [unit], { type: "judgment", note: `Clarify: "${quote}" → "${s}". ${problem}`, quote, suggestion: s }, { module: "ms8-verdicts", recommendation: "apply" });
   const fa = mk("f-audit7-cla", P1, t1.slice(0, 60), S1), fb = mk("f-audit7-clb", P2, t2.slice(0, 60), S2);
-  const r = await exportNeeds(c.root, { changesetId: "audit7-clus-0001", gate: { findings: [fa, fb] } });
-  const qs = digestQ(r);
-  // round 8 (HIGH-1): the cluster is handed in one question per finding, each showing its own suggestion
-  assert.equal(qs.length, 2, "one question per finding");
-  assert.ok(qs.some((x) => `${x.text}\n${x.detail || ""}`.includes("retracted")), "S2 is shown in its own question");
+  const r = await exportNeeds(c.root, { changesetId: "audit7-clus-0000", gate: { findings: [fa, fb] } });
+  // grouped findings (2026-11-17): the cluster is ONE grouped question; each listed place shows its own suggestion
+  const g = r.handin.digest.questions.filter((x) => x.group);
+  assert.equal(g.length, 1, "one grouped question");
+  assert.ok(g[0].group.places.some((p) => `${p.text}\n${p.detail || ""}`.includes("retracted")), "S2 is shown with its own place");
+  // round 8 (HIGH-1): the cluster as a hand-in of round 8 held it, one question per finding
+  const qs = (await singlesInOne(c.root, "audit7-clus-0001", [fa, fb])).map((id) => ({ id }));
   // adopted fix (round 7, a per-construct limit): an entry of several findings, as a hand-in before round 8 made it,
   // with the choices a hand-in before round 7 offered, reads a choice as words
   const q = asCluster(c.root, "audit7-clus-0001", qs.map((x) => x.id), ["Apply the suggestion", "Change it differently", "Keep it", "Later"]);
@@ -224,8 +238,11 @@ test("[req.host.alembic-needs-apply] audit7 MEDIUM-7: \"Keep it\" on an off-plan
   const c = course(t);
   const t2 = c.units().find((u) => u.id === P2).text;
   const off = (id, u) => ({ ...finding(id, "off-spine", [u], { type: "judgment", note: `${u} teaches nothing in the chapter's approved plan: keep it (the spine may need it) or drop it?` }), module: "ms9-alignment" });
-  const r = await exportNeeds(c.root, { changesetId: "audit7-off-0001", gate: { findings: [off("f-audit7-off1", P1), off("f-audit7-off2", P2)] } });
-  const qs = digestQ(r);
+  const r = await exportNeeds(c.root, { changesetId: "audit7-off-0000", gate: { findings: [off("f-audit7-off1", P1), off("f-audit7-off2", P2)] } });
+  // grouped findings (2026-11-17): one grouped question listing both passages
+  const g = r.handin.digest.questions.filter((x) => x.group);
+  assert.equal(g.length, 1); assert.equal(g[0].group.places.length, 2);
+  const qs = (await singlesInOne(c.root, "audit7-off-0001", [off("f-audit7-off1", P1), off("f-audit7-off2", P2)])).map((id) => ({ id }));
   assert.equal(qs.length, 2, "round 8: one question per passage");
   const q = asCluster(c.root, "audit7-off-0001", qs.map((x) => x.id), ["Keep it", "Drop it", "Later"]); // as an earlier hand-in offered it
   const shownP2 = `${q.text}\n${q.detail || ""}`.includes(t2.slice(30, 90));

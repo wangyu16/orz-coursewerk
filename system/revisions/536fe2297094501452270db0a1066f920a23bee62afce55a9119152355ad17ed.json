@@ -1,0 +1,326 @@
+{
+  "schemaVersion": 1,
+  "planId": "536fe2297094501452270db0a1066f920a23bee62afce55a9119152355ad17ed",
+  "baseRef": "main",
+  "baseTip": "5f4ee03afd3ff0dde451f6e4bf12c6314919276f",
+  "baseCommit": "5f4ee03afd3ff0dde451f6e4bf12c6314919276f",
+  "reviewedHead": "5f4ee03afd3ff0dde451f6e4bf12c6314919276f",
+  "changed": [
+    "CHANGELOG.md",
+    "alembic-job/CLAUDE.md",
+    "scripts/lib/core/alembic_needs.mjs",
+    "system/REQUIREMENTS.json",
+    "tests/alembic-needs-grouped.test.mjs",
+    "tests/needs-wording.audit10.test.mjs",
+    "tests/needs-wording.audit7.test.mjs",
+    "tests/needs-wording.audit9.test.mjs"
+  ],
+  "requiredReview": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "VERSION",
+    "alembic-job/CLAUDE.md",
+    "docs/coherence-index.md",
+    "format-contracts/deliverables.md",
+    "package.json",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/core/alembic_needs.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/revision_impact.mjs",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "system/REQUIREMENTS.json",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/alembic-needs-grouped.test.mjs",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/needs-wording.audit10.test.mjs",
+    "tests/needs-wording.audit7.test.mjs",
+    "tests/needs-wording.audit9.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site.test.mjs"
+  ],
+  "reviewed": [
+    ".github/workflows/pages.yml",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "FEATURES.md",
+    "PROCEDURE.md",
+    "README.md",
+    "VERSION",
+    "alembic-job/CLAUDE.md",
+    "docs/coherence-index.md",
+    "format-contracts/deliverables.md",
+    "package.json",
+    "scripts/attest_visual_review.mjs",
+    "scripts/bind_key_fact_review.mjs",
+    "scripts/build_carriers.mjs",
+    "scripts/capture_media_evidence.mjs",
+    "scripts/capture_rights_evidence.mjs",
+    "scripts/check_assurance.mjs",
+    "scripts/check_oer.mjs",
+    "scripts/data/license-texts.json",
+    "scripts/generate_attribution.mjs",
+    "scripts/index_components.mjs",
+    "scripts/lib/assurance.mjs",
+    "scripts/lib/coherence.mjs",
+    "scripts/lib/contract.mjs",
+    "scripts/lib/core/alembic_needs.mjs",
+    "scripts/lib/key_fact_review.mjs",
+    "scripts/lib/rights_preflight.mjs",
+    "scripts/lib/source_record.mjs",
+    "scripts/lib/visual_review.mjs",
+    "scripts/pack.mjs",
+    "scripts/prepare_source_corpus.mjs",
+    "scripts/prepare_wikipedia_topic.mjs",
+    "scripts/revision_impact.mjs",
+    "site/assets/orz.svg",
+    "site/assets/showcase-plate-tectonics-course.png",
+    "site/assets/showcase-plate-tectonics-slides.png",
+    "site/assets/showcase-plate-tectonics-study-guide.png",
+    "site/index.html",
+    "site/styles.css",
+    "skills/oer-qa/SKILL.md",
+    "system/CLAIMS.json",
+    "system/QUALITY_PROFILES.json",
+    "system/REQUIREMENTS.json",
+    "templates/foundation.personal.example.json",
+    "templates/foundation.public-oer.example.json",
+    "templates/foundation.restricted.example.json",
+    "templates/key-fact-review.example.json",
+    "templates/media-plan.example.json",
+    "templates/provenance.example.json",
+    "templates/source-corpus.example.json",
+    "templates/source-record.example.json",
+    "templates/visual-review.example.json",
+    "tests/alembic-needs-grouped.test.mjs",
+    "tests/assurance.test.mjs",
+    "tests/carriers.test.mjs",
+    "tests/evidence-tools.test.mjs",
+    "tests/needs-wording.audit10.test.mjs",
+    "tests/needs-wording.audit7.test.mjs",
+    "tests/needs-wording.audit9.test.mjs",
+    "tests/qa.test.mjs",
+    "tests/reviews.test.mjs",
+    "tests/site.test.mjs"
+  ],
+  "impactedClaims": [
+    "claim.accessibility.floor",
+    "claim.authorship.accountable",
+    "claim.carriers.honest-portability",
+    "claim.carriers.three-shapes",
+    "claim.coherence.anchors",
+    "claim.coherence.claims",
+    "claim.coherence.index-fresh",
+    "claim.coherence.prerequisites",
+    "claim.coherence.revisions",
+    "claim.control.coverage",
+    "claim.control.overrides",
+    "claim.format.contracts",
+    "claim.git.visible-edits",
+    "claim.language.editorial",
+    "claim.media.decision",
+    "claim.provenance.complete",
+    "claim.release.fail-closed",
+    "claim.release.measured-vs-declared",
+    "claim.review.blind-bundle",
+    "claim.review.key-facts",
+    "claim.revision.propagation",
+    "claim.rights.verified",
+    "claim.source.comparison",
+    "claim.trust.consistency",
+    "claim.trust.immutable",
+    "claim.website.published",
+    "claim.website.showcase"
+  ],
+  "testResults": [
+    {
+      "path": "tests/anchors.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/assurance.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-2.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-3.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/audit-round-4.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/blind_bundle.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/carriers.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-control.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-revision.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/check-oer-semantic.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/classify.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/coherence-claims.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/consistency.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/escalation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/evidence-tools.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/fingerprint.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/immutable.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/index-freshness.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/integration-study-pairs.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/key-fact-bindings.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/overrides.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate-cli.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/propagate.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/qa.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/range.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/reviews.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/semantic-index-artifact.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/site.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/spine.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/terms.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/units.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/unverifiable_quotation.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/usage-e2e.test.mjs",
+      "status": "passed"
+    },
+    {
+      "path": "tests/wiring.test.mjs",
+      "status": "passed"
+    }
+  ],
+  "attestation": "Grouped findings (owner 2026-11-17; family FC-16 v1 §3). alembic_needs.mjs export: the places of a split cluster whose own questions offer the same one-click choices (oneClick: never Coursewerk's own choices or a binding kind) are one grouped question with group {v:1, places (<=25, each its own question's D-133 wording, its off-page suggestion and reviewer words as detail, its page as ref), more}; choices without Change it differently; recommended only when every place recommends the same; counts as one in the cap, the 20 and digest.remaining; <=500 places per question, <=2000 per hand-in; handinProblems checks the group shape. The needs record keeps every place (finding, units, bases, seen). apply: exceptions for listed places only, one of the choices; each place through bindingGuard as asked before anything is recorded; one answer record per choice keyed cluster#finding (Later per place); markers carry group/places/owes; changed places asked again alone (marker alone) and never grouped again; Drop it and Apply on concerns owed once per question. Binding kinds (confirmations, keep as written, keep on an edit, authorship) and rights stay one question per place. Tests: new tests/alembic-needs-grouped.test.mjs (11); audit7/9/10 tests moved to never-grouped kinds or the grouped shape where they tested the per-place split of one-click kinds (same intent). Docs: alembic-job/CLAUDE.md, CHANGELOG, REQUIREMENTS (req.host.alembic-needs-grouped; export statement). Full suite 1321/1321 under lockf --test-concurrency=2.",
+  "generatedIndexHash": "957e37aa1bee6dae41e78e860b09c7125fdc85b52812c9a7b55e68a4b58e8a4b",
+  "acceptedAt": "2026-11-18T07:52:04.050Z"
+}

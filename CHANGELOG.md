@@ -1,5 +1,22 @@
 # Coursewerk changelog
 
+## Unreleased (branch `grouped-findings`)
+
+- **Grouped findings in Alembic's Needs you** (owner 2026-11-17; family FC-16 v1 §3). A finding that comes up in many
+  places (General Chemistry: 496 lines of detail in a course plan) reaches the instructor as ONE grouped question, not
+  one question per place trickling in up to 20 per job. It lists its places as the instructor sees them (the place and
+  the passage beginning; each place's suggestion in full with it), at most 25, then how many more; its choice (Apply
+  the suggestion / Keep it / Drop it / Later, as fit the kind; never "Change it differently", which takes words for one
+  place) applies to every place, the unlisted ones too; the answer may name exceptions for single listed places.
+  The hand-in adds `group: {v: 1, places, more}` to such a question, and the answer `exceptions` (additive: an Alembic
+  that does not know `group` drops it, shows the question with its choices, and the answer applies to all). A grouped
+  question counts as one in the 20, in the instructor's digest size and in `digest.remaining`; at most 500 places per
+  question and 2,000 per hand-in (the rest wait). `apply` records the answer place by place, one answer record per
+  choice, each place through the binding guard as asked; a place changed since is asked again on its own and never
+  grouped again; Later is per place; Drop it and Apply on a concern are owed to the agent once per question.
+  Confirmations, keep as written, keep on an edit, rights and authorship (words required) are never grouped.
+  `req.host.alembic-needs-grouped`.
+
 ## v1.0.7 (2026-11-17)
 
 FC-16 batch (owner 2026-11-17: "all three as recommended"; family FC-16 v1 §11 O4, O5, O7, O9; SITE-TYPE-CONTRACT

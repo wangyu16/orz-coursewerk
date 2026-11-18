@@ -1,4 +1,4 @@
-// [req.host.alembic-needs-apply] [req.host.alembic-needs-export] [req.host.alembic-needs-wording] Closed-loop audit, round 10,
+// [req.host.alembic-needs-grouped] [req.host.alembic-needs-apply] [req.host.alembic-needs-export] [req.host.alembic-needs-wording] Closed-loop audit, round 10,
 // of D-133/D-147 (needs-wording ffe662f). Each test names one finding (severity in its name) and FAILS on ffe662f. Answers use
 // Alembic's real shape: every answer of one digest carries the digest's needs-you row id as `item`.
 import { test } from "node:test";
@@ -114,9 +114,12 @@ test("[req.host.alembic-needs-export] audit10 L-5: Later on every place a cluste
   const c = course(t);
   const F = [offSpine("l5a", P1), offSpine("l5b", P2)];
   const q1 = (await exportNeeds(c.root, { changesetId: "audit10-l5-0001", gate: { findings: F } })).handin.digest.questions;
-  assert.equal(q1.length, 2, "precondition: one question per place");
-  const a = applyChanges(c.root, { answers: [row("audit10-l5-0001", q1[0].id, "Later"), row("audit10-l5-0001", q1[1].id, "Keep it", { at: "2026-11-16T10:00:01Z" })] });
-  assert.deepEqual(a.recorded.map((x) => x.outcome), ["deferred", "answered"]);
+  // grouped findings (2026-11-17): one grouped question; Keep it for all, Later as the exception for the first place
+  assert.equal(q1.length, 1, "precondition: one grouped question");
+  assert.equal(q1[0].group.places.length, 2);
+  const a = applyChanges(c.root, { answers: [{ ...row("audit10-l5-0001", q1[0].id, "Keep it"), exceptions: { p1: "Later" } }] });
+  assert.equal(a.recorded[0]?.outcome, "answered in part", JSON.stringify(a));
+  assert.deepEqual(a.recorded[0].group.choices, { Later: 1, "Keep it": 1 });
   const q2 = (await exportNeeds(c.root, { changesetId: "audit10-l5-0002", gate: { findings: F } })).handin.digest.questions;
   assert.equal(q2.length, 1);
   assert.match(q2[0].detail, /You chose Later last time\./);

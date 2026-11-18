@@ -54,8 +54,14 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
    need their words; so does "Change it differently", which is asked again when it comes without them.
    Some choices are also work for you, and come back with `owed`: "Apply the suggestion" on a reviewer's concern, a plan
    line or detail in the plan, "Change it" on a disputed fact, and any answer to an interrupt or to your own question.
-   Do the work, then record it with `taken-up` as below. A finding that comes up in several places is asked
-   about place by place when a choice can settle it; only a kind no choice acts on comes as one question in words. Words never confirm, keep or apply anything. They are yours to act on in this job: make the change they
+   Do the work, then record it with `taken-up` as below. A finding that comes up in several places, of a kind whose
+   choices are one click (Apply the suggestion, Keep it, Drop it, Later), comes as ONE grouped question: it lists its
+   places (25 at most, then how many more), its choice applies to every place, and the instructor may choose another
+   answer for single listed places (`exceptions`). `apply` records it place by place: each place's choice goes through
+   the same check as a question of one place, and a place whose text changed since is asked again on its own (outcome
+   `answered in part`, with `group: {places, choices, askedAgain}`); work it owes you is owed once, on the question. A
+   confirmation, rights and authorship are never grouped: they are asked place by place, with their words. A kind no
+   choice acts on comes as one question in words. Words never confirm, keep or apply anything. They are yours to act on in this job: make the change they
    ask for, or explain why not in a message, and bring a decision only they can make back as a question. Then record
    what you did, so the question closes:
 
@@ -110,7 +116,11 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
    - The export collects interrupts, plans ready for approval, corrections to keep or undo, and the checkpoint
      digest, at most 20 questions (the digest part within the instructor's digest size, counted in questions); it
      says how many wait for next time, and the hand-in carries that number as `digest.remaining` (how many more
-     questions will follow; additive: Alembic may show it, and reads only `digest.questions` otherwise). It writes the questions to the hidden file
+     questions will follow; additive: Alembic may show it, and reads only `digest.questions` otherwise). A grouped
+     question counts as one, and carries `group: {v: 1, places: [{id, text, detail?, ref?}], more}` (family FC-16 v1
+     §3; additive and versioned: an Alembic that does not know it drops it, shows the question with its choices for all,
+     and the answer then applies to every place). Its answer may come back with `exceptions: {<place id>: <choice>}`.
+     The export's `grouped` says how many grouped questions it made. It writes the questions to the hidden file
      `work/.alembic-needs.json`, and the record of what was asked to `private/coursewerk/digest/alembic-needs.json`,
      which the push carries. It makes a new changeset id unless you give one (`--changeset <id>`); an id already handed in is refused.
    - The questions are worded for the instructor: places as they see them, content as it reads, no file paths, line
