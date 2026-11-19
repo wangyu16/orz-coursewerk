@@ -9,7 +9,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { appendLogRecord, parseLog, readLogText } from "../scripts/lib/records/log.mjs";
-import { applyChanges, exportNeeds, GROUP_LIMITS, handinProblems, NEEDS_FILE, owedWords, takenUp } from "../scripts/lib/core/alembic_needs.mjs";
+import { applyChanges, exportNeeds, GROUP_LIMITS, groupRecordPlaces, handinProblems, NEEDS_FILE, owedWords, takenUp } from "../scripts/lib/core/alembic_needs.mjs";
 import { liveReader } from "../scripts/lib/core/package_reader.mjs";
 import { loadUnits } from "../scripts/lib/core/obligations.mjs";
 import { makeFinding } from "../scripts/lib/records/findings.mjs";
@@ -77,9 +77,10 @@ test("[req.host.alembic-needs-grouped] many places of one finding are ONE groupe
   // the record keeps every place, as asked
   const kept = rec(c.root)[q.id];
   assert.equal(kept.kind, "digest-group");
-  assert.equal(kept.places.length, 30);
-  assert.ok(kept.places.every((p) => p.finding && p.bases.length === 1 && Object.keys(p.seen).length === 1));
-  assert.equal(kept.places.filter((p) => p.listed).length, 25);
+  const kp = groupRecordPlaces(kept);
+  assert.equal(kp.length, 30);
+  assert.ok(kp.every((p) => p.finding && p.bases.length === 1 && Object.keys(p.seen).length === 1));
+  assert.equal(kp.filter((p) => p.listed).length, 25);
   assert.equal(r.counts.grouped, 1);
   assert.equal(r.left, 0);
 });
@@ -123,7 +124,7 @@ test("[req.host.alembic-needs-grouped] exceptions for single places: Drop it goe
   assert.deepEqual(a.recorded[0].group.choices, { "Keep it": 4, "Drop it": 1, Later: 1 });
   assert.deepEqual(a.recorded[0].exceptions, { p2: "Drop it", p3: "Later" }, "an exception equal to the answer is no exception");
   assert.match(a.recorded[0].owed, /taken-up/);
-  const kept = rec(c.root)[q.id], byPlace = new Map(kept.places.map((p) => [p.id, p.finding]));
+  const kept = rec(c.root)[q.id], byPlace = new Map(groupRecordPlaces(kept).map((p) => [p.id, p.finding]));
   const choiceOf = new Map(instr(c.log()).flatMap((r) => r.payload.answers).map((x) => [x.finding, x.choice]));
   assert.equal(choiceOf.get(byPlace.get("p2")), "said: Drop it");
   assert.equal(choiceOf.get(byPlace.get("p3")), "Later");
@@ -137,7 +138,7 @@ test("[req.host.alembic-needs-grouped] exceptions for single places: Drop it goe
   const again = (await exportNeeds(c.root, { changesetId: "grouped-0006", gate: { findings: F } })).handin.digest.questions;
   assert.equal(again.length, 1);
   assert.match(again[0].detail, /Later last time/);
-  assert.equal(rec(c.root)[again[0].id].entry?.findings?.[0] ?? rec(c.root)[again[0].id].places?.[0]?.finding, byPlace.get("p3"));
+  assert.equal(rec(c.root)[again[0].id].entry?.findings?.[0] ?? groupRecordPlaces(rec(c.root)[again[0].id])[0]?.finding, byPlace.get("p3"));
 });
 
 test("[req.host.alembic-needs-grouped] a place changed since it was asked is asked again on its own; the rest are recorded", async (t) => {

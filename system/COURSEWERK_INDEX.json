@@ -41,7 +41,7 @@
       "id": "repo:alembic-job/CLAUDE.md",
       "path": "alembic-job/CLAUDE.md",
       "type": "repository-support",
-      "hash": "f0c0944f56fb37bd8556e846055870cc1a156ec53eeb7c9305aa5aa458de3829"
+      "hash": "ca19605a2a55fb244bc132bddd6fd5b57fc7aafbeb973078e30f80a71f95d864"
     },
     {
       "id": "repo:bootstrap/init.sh",
@@ -53,7 +53,7 @@
       "id": "repo:CHANGELOG.md",
       "path": "CHANGELOG.md",
       "type": "release-metadata",
-      "hash": "7f0d645a7d7f7c8d389012c32bc4c041f983327afc26c98d44c16ad5c975b3f0"
+      "hash": "76a98cd61ab287cd982dbb1fd6e20cec46920134efab4bd3e5a48bcd3a3a4e6d"
     },
     {
       "id": "repo:CLAUDE.md",
@@ -437,7 +437,7 @@
       "id": "repo:scripts/lib/core/alembic_needs.mjs",
       "path": "scripts/lib/core/alembic_needs.mjs",
       "type": "kernel",
-      "hash": "8e2c569b26cd8dbf26e040d3ddb9bc46a6b4a8b9267fd3dc3c5825654515c3a6"
+      "hash": "b36ba9aa60fa8e8faac1a916648dda9ae547240255d87c7f168b260eff423456"
     },
     {
       "id": "repo:scripts/lib/core/alembic_transfer.mjs",
@@ -1403,7 +1403,7 @@
       "id": "repo:system/REQUIREMENTS.json",
       "path": "system/REQUIREMENTS.json",
       "type": "system-governance",
-      "hash": "f1a8b5a47d9b6cd92e0063f6b5c820124492bf0465f3a41e82165d81450d8023"
+      "hash": "0c8944c114894947548ffc1f5d8eac15286f6613b1b450b9715065f1671a90d4"
     },
     {
       "id": "repo:system/rounds/P1-records.md",
@@ -1592,10 +1592,16 @@
       "hash": "2c7afd5d5423364c1a414bc0c73b1c0d905af8aa851f257c4a2a6436bac43552"
     },
     {
+      "id": "repo:tests/alembic-needs-grouped.audit1.test.mjs",
+      "path": "tests/alembic-needs-grouped.audit1.test.mjs",
+      "type": "test",
+      "hash": "17d653e1541dd4eb898dad17839dd89b54c91a2d4d368836097c1d5a5577ff0b"
+    },
+    {
       "id": "repo:tests/alembic-needs-grouped.test.mjs",
       "path": "tests/alembic-needs-grouped.test.mjs",
       "type": "test",
-      "hash": "fe53f66eb709d44a5b8e49fd97381b413c5254421d14f3670a233ea7fad0f523"
+      "hash": "fa391a1adcdcce7895d5eac0f1436a662cb8b44ca4bf3e6a61b8787710fecdc5"
     },
     {
       "id": "repo:tests/alembic-needs-wording.test.mjs",

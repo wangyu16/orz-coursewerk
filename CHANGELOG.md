@@ -16,6 +16,24 @@
   grouped again; Later is per place; Drop it and Apply on a concern are owed to the agent once per question.
   Confirmations, keep as written, keep on an edit, rights and authorship (words required) are never grouped.
   `req.host.alembic-needs-grouped`.
+- **Grouped findings, audit fixes** (2026-11-19; family FC-16 v1 §3, STATUS D-151).
+  - A group offering "Apply the suggestion" lists every place it applies to (at most 25, `more` 0); the rest go into
+    further grouped questions, so Apply never takes a suggestion the instructor did not see. `apply` never takes Apply
+    on a place its question did not list (asked again on its own). Groups without Apply may still count places in `more`.
+  - A place is grouped only when its suggestion and the reviewer's words fit a place's detail (1000) in full; otherwise
+    it stays a question of its own, which shows it whole (or offers no Apply when too long).
+  - The detail says "where the places are listed, you can choose another answer for single places" (true on a host
+    without the list); the first places in words are the line `group.fallback` names, which a host that shows the list
+    leaves out.
+  - `apply` reads a grouped question only while its record holds a one-click kind; otherwise nothing is recorded.
+  - The needs record keeps a grouped question's places compactly (the units once, with the hashes seen; per place its
+    finding and unit indexes; bases only when not the plain one): 2,000 places in under 200 KB, so a big hand-in no longer
+    pushes older ones out. An answer to a hand-in the record no longer keeps is reported to the agent once, as asked
+    again (it was ignored silently), and its id is never handed in again.
+  - A place whose passage is gone comes back as a question in words; a place the instructor put off with Later is never
+    folded into it, and is marked "You chose Later last time". A grouped question says it for "all" or "some" of its
+    places as they were.
+  `req.host.alembic-needs-grouped`.
 
 ## v1.0.7 (2026-11-17)
 

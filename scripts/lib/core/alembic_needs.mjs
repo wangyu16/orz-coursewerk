@@ -22,7 +22,7 @@ import { hasVisibleWords } from "../records/words.mjs";
 import { liveReader, manifestChapters, manifestUnits } from "./package_reader.mjs";
 import { approvalStatus, recordApproval } from "./approvals.mjs";
 import { approvalPrecondition } from "./spine_review.mjs";
-import { chapterStates, unitInfoOf } from "./workflow.mjs";
+import { chapterOfFinding, chapterStates, unitInfoOf } from "./workflow.mjs";
 import { BINDING_KINDS, SAID, saidOwed, answerDigest, answeredBases, answerKeyOf, basisOf, buildDigest, deliverDigest, DEFAULT_CAP, isAnswered } from "./digest.mjs";
 import { currentVersion } from "./versions.mjs";
 import { COURSE_MAP, nodeIndex, parseSpine, spinePaths } from "./spine.mjs";
@@ -45,6 +45,8 @@ export const CHANGESET_ID = /^[A-Za-z0-9_-]{8,64}$/;
 export const NEEDS_FILE = "private/coursewerk/digest/alembic-needs.json";
 const DIGEST_FILE = "private/coursewerk/digest/current.json";
 const KEEP_HANDINS = 50;
+/** The ids of hand-ins the record no longer keeps, remembered so an answer to one is reported (L-4). */
+const KEEP_DROPPED = 1000;
 const NEEDS_BYTES = 3 * 1024 * 1024;
 
 /** A course path as Alembic's normalizePath takes it (package-contract contract-v3.ts): NFC, no leading slash, backslash,
@@ -83,7 +85,8 @@ export function handinProblems(h) {
   });
   return out;
 }
-/** A grouped question's `group` as FC-16 v1 §3 shapes it: { v: 1, places: [{ id, text, detail?, ref? }] (1–25), more }. */
+/** A grouped question's `group` as FC-16 v1 §3 shapes it: { v: 1, places: [{ id, text, detail?, ref? }] (1–25), more,
+ *  fallback? }. */
 function groupProblems(g, x, at, oneLine) {
   const out = [];
   if (!g || typeof g !== "object" || Array.isArray(g)) return [`${at}: group must be an object`];
@@ -101,7 +104,9 @@ function groupProblems(g, x, at, oneLine) {
     if (p?.ref !== undefined && !coursePath(p.ref)) out.push(`${pat}: ref must be a course path`);
     for (const k of Object.keys(p || {})) if (!["id", "text", "detail", "ref"].includes(k)) out.push(`${pat}: unknown field ${k}`);
   });
-  for (const k of Object.keys(g)) if (!["v", "places", "more"].includes(k)) out.push(`${at}: group: unknown field ${k}`);
+  // the first places in words, for a host that does not show the list: a line of the detail (audit 2026-11-19, L-1)
+  if (g.fallback !== undefined && (!oneLine(g.fallback, LIMITS.detail) || !String(x.detail ?? "").split("\n").includes(g.fallback))) out.push(`${at}: group.fallback must be one line of the detail`);
+  for (const k of Object.keys(g)) if (!["v", "places", "more", "fallback"].includes(k)) out.push(`${at}: group: unknown field ${k}`);
   return out;
 }
 
@@ -187,7 +192,7 @@ export function digestQuestion(e, deliverableOf = new Map(), ctx = {}) {
     // the recommendation's own words whenever they say more than the choice pre-chosen (MEDIUM-F)
     !recommended || rec.toLowerCase() !== recommended.toLowerCase() ? recommendationLine(e, c) : "",
     choices?.includes("Change it differently") ? "To change it differently, say how in your words." : "",
-    e.laterBefore ? "You chose Later last time." : e.deferredBefore ? "This waited from an earlier digest." : "",
+    e.laterBefore ? "You chose Later last time." : e.laterFindings?.length ? "You chose Later last time for some of these places." : e.deferredBefore ? "This waited from an earlier digest." : "",
   ].filter(Boolean).join("\n");
   return {
     // the id hashes the entry's bases too: another finding under the same key is another question (round 8, MEDIUM-2)
@@ -277,7 +282,8 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
   if (!CHANGESET_ID.test(String(changesetId ?? ""))) throw new Error("the changeset id must be 8–64 of A-Za-z0-9_-");
   // Alembic keeps the FIRST hand-in under a changeset id: a second export under it would bind the answers to questions
   // the instructor never saw (round 8, MEDIUM-2)
-  if ((readNeeds(root).handins || []).some((h) => h.changesetId === changesetId)) throw new Error(`changeset ${changesetId} was already handed in: export under a new id (leave out --changeset to get one)`);
+  const prior = readNeeds(root);
+  if ((prior.handins || []).some((h) => h.changesetId === changesetId) || (prior.dropped || []).includes(changesetId)) throw new Error(`changeset ${changesetId} was already handed in: export under a new id (leave out --changeset to get one)`);
   const reader = liveReader(root), chapters = manifestChapters(reader), logText = readLogText(root);
   if (!gate) { const { runGate } = await import("../skeleton/full_gate.mjs"); gate = runGate(root, { inputsDir }); }
   const info = unitInfoOf(root, reader);
@@ -385,9 +391,13 @@ export async function exportNeeds(root, { changesetId, model = null, gate = null
   if (problems.length) throw new Error(`the hand-in would break Alembic's limits: ${problems.slice(0, 3).join("; ")}`);
 
   const needs = readNeeds(root);
-  needs.handins = [...(needs.handins || []).filter((h) => h.changesetId !== changesetId), { changesetId, at, questions: Object.fromEntries(shown.map((x) => [x.question.id, { ...boundRef(x.ref, ctx), choices: x.question.choices || null, words: x.question.words, ...(x.assistant ? { assistant: x.assistant } : {}) }])) }].slice(-KEEP_HANDINS);
+  const all50 = [...(needs.handins || []).filter((h) => h.changesetId !== changesetId), { changesetId, at, questions: Object.fromEntries(shown.map((x) => [x.question.id, { ...boundRef(x.ref, ctx), choices: x.question.choices || null, words: x.question.words, ...(x.assistant ? { assistant: x.assistant } : {}) }])) }];
+  needs.handins = all50.slice(-KEEP_HANDINS);
+  // the hand-ins pushed out are remembered by id (audit 2026-11-19, L-4): an answer to one is reported, never ignored
+  const out = all50.slice(0, -KEEP_HANDINS).map((h) => h.changesetId);
   // within Alembic's 4 MB a record file may hold: the oldest hand-ins go first, never the one just made (MEDIUM-4)
-  while (needs.handins.length > 1 && Buffer.byteLength(JSON.stringify(needs), "utf8") > NEEDS_BYTES) needs.handins.shift();
+  while (needs.handins.length > 1 && Buffer.byteLength(JSON.stringify(needs), "utf8") > NEEDS_BYTES) out.push(needs.handins.shift().changesetId);
+  if (out.length) needs.dropped = [...(needs.dropped || []), ...out].slice(-KEEP_DROPPED);
   fs.mkdirSync(recordFile(root, "private/coursewerk/digest"), { recursive: true });
   fs.writeFileSync(recordFile(root, NEEDS_FILE), JSON.stringify(needs) + "\n");
   fs.writeFileSync(recordFile(root, DIGEST_FILE), JSON.stringify({ at, ...d }, null, 2) + "\n");
@@ -421,7 +431,18 @@ function splitEntry(e, byId, hash, ctx) {
     findings: [f.id], bases: [{ finding: answerKeyOf(f), basis: basisOf(f, hash), ...(f.evidence?.claimKey ? { claimKey: f.evidence.claimKey, ...(f.evidence.claimText ? { claimText: f.evidence.claimText, units: f.units } : {}) } : {}) }] });
   const singles = mine.map(one).sort((a, b) => b.laterBefore - a.laterBefore);
   // split when ANY finding has choices (round 9, LOW-3): the wording's choices depend on each finding (a suggestion)
-  return DIGEST_CHOICES[e.kind] || singles.some((x) => wordEntry(x, ctx).choices) ? singles : [e];
+  if (DIGEST_CHOICES[e.kind] || singles.some((x) => wordEntry(x, ctx).choices)) return singles;
+  // one question in words (no place has choices: every passage gone or unread). A place the instructor put off with Later
+  // is never folded into it (audit 2026-11-19, L-5): it comes back as its own question, marked "You chose Later last
+  // time"; the others share the words question, which says nothing of a Later it never had
+  const lat = mine.filter((f) => later.has(f.id)), rest = mine.filter((f) => !later.has(f.id));
+  if (e.laterBefore || !lat.length || !rest.length) return [e];
+  const deliverableOf = ctx.deliverableOf || new Map();
+  const restEntry = rest.length === 1 ? one(rest[0]) : { ...e, cluster: e.key, count: rest.length, findings: rest.map((f) => f.id),
+    units: [...new Set(rest.flatMap((f) => f.units || []))].sort(),
+    chapters: [...new Set(rest.flatMap((f) => [].concat(chapterOfFinding(f, deliverableOf) || "package")))].sort(),
+    bases: (e.bases || []).filter((_, i) => !later.has(e.findings[i])), laterBefore: false, laterFindings: undefined };
+  return [...lat.map(one), restEntry];
 }
 
 // ---- grouped findings (owner 2026-11-17; family FC-16 v1 §3) --------------------------------------------------------
@@ -442,8 +463,21 @@ function askedAgainAlone(logText) {
   return out;
 }
 /**
+ * What a place shows of what its own choice adopts, on no page, in full (its own question shows it first: HIGH-1): its
+ * line when that is past a place's 500, its suggestion, and the reviewer's own words about it.
+ */
+function placeDetailOf(s, ctx) {
+  const w = wordEntry(s, ctx), text = String(w.text).replace(/\s+/g, " ").trim();
+  const own = String(w.detail || "").split("\n").filter((x) => /^The reviewer: /.test(x));
+  return [text.length > GROUP_LIMITS.placeText ? text : "", ...(w.shown || []).filter((x) => !x.page).map((x) => x.text), ...own].filter(Boolean).join("\n");
+}
+/** A choice that acts on each place's own content the place shows (its suggestion): its group lists every place (M-1). */
+const actsOnShown = (choices) => choices.some((c) => /^apply\b/i.test(c));
+/**
  * A split cluster's places as grouped questions where they can be: the places with the same one-click choices (two or
- * more) are one grouped item each 500 places; the rest stay single. Grouped items first, then the singles.
+ * more) are one grouped item each 500 places, each 25 when Apply is offered (every place it applies to is listed, `more`
+ * 0: audit 2026-11-19, M-1); a place whose detail would not fit a place's 1000 in full stays a question of its own (its
+ * own question shows it, or offers no Apply: M-2). Grouped items first, then the singles.
  */
 function groupPlaces(singles, e, deliverableOf, ctx, alone) {
   if (singles.length < 2 || singles[0] === e) return singles;
@@ -452,18 +486,21 @@ function groupPlaces(singles, e, deliverableOf, ctx, alone) {
     const q = digestQuestion(s, deliverableOf, ctx);
     const ok = q.choices && oneClick(s.kind, q.choices) && !alone.has(s.findings[0]) && groupChoices(q.choices).length >= LIMITS.minChoices;
     if (!ok) { rest.push(s); continue; }
+    const detail = placeDetailOf(s, ctx);
+    if (detail.length > GROUP_LIMITS.placeDetail) { rest.push(s); continue; }
     const sig = groupChoices(q.choices).join("|");
     if (!buckets.has(sig)) buckets.set(sig, []);
-    buckets.get(sig).push({ s, q });
+    buckets.get(sig).push({ s, q, detail });
   }
   const grouped = [];
   for (const [sig, list] of buckets) {
-    if (list.length < 2) { rest.push(...list.map((x) => x.s)); continue; }
-    for (let i = 0; i < list.length; i += GROUP_LIMITS.perQuestion) {
-      const part = list.slice(i, i + GROUP_LIMITS.perQuestion);
+    const size = actsOnShown(sig.split("|")) ? GROUP_LIMITS.places : GROUP_LIMITS.perQuestion;
+    for (let i = 0; i < list.length; i += size) {
+      const part = list.slice(i, i + size);
+      if (part.length < 2) { rest.push(...part.map((x) => x.s)); continue; }
       grouped.push({ grouped: true, key: `${e.key}#group:${sig}:${i}`, cluster: e.key, kind: e.kind, module: e.module, chapters: e.chapters,
-        choices: sig.split("|"), singles: part.map((x) => x.s), questions: part.map((x) => x.q), findings: part.map((x) => x.s.findings[0]),
-        laterBefore: part.some((x) => x.s.laterBefore) });
+        choices: sig.split("|"), singles: part.map((x) => x.s), questions: part.map((x) => x.q), details: part.map((x) => x.detail), findings: part.map((x) => x.s.findings[0]),
+        later: part.filter((x) => x.s.laterBefore).length, laterBefore: part.some((x) => x.s.laterBefore) });
     }
   }
   return [...grouped, ...rest.sort((a, b) => b.laterBefore - a.laterBefore)];
@@ -489,39 +526,74 @@ function groupedItem(g, ctx) {
   const n = g.singles.length, listed = g.questions.slice(0, GROUP_LIMITS.places), more = n - listed.length;
   const recs = g.questions.map((q) => q.recommended);
   const recommended = recs.every((r) => r && r === recs[0]) && g.choices.includes(recs[0]) ? recs[0] : undefined;
+  // what this place's own choice adopts, on no page (a suggestion in full) and the reviewer's own words about it: whole,
+  // since groupPlaces groups a place only when it fits (M-2)
   const places = listed.map((q, i) => {
-    // what this place's own choice adopts, on no page (a suggestion in full): its own question shows it first (HIGH-1)
-    // and the reviewer's own words about this place, when they say more than the place's line
-    const w = wordEntry(g.singles[i], ctx), own = String(w.detail || "").split("\n").filter((x) => /^The reviewer: /.test(x));
-    const off = [...(w.shown || []).filter((x) => !x.page).map((x) => x.text), ...own].join("\n");
+    const off = g.details?.[i] ?? placeDetailOf(g.singles[i], ctx);
     return { id: `p${i + 1}`, text: line(q.text, GROUP_LIMITS.placeText), ...(off ? { detail: block(off, GROUP_LIMITS.placeDetail) } : {}), ...(q.refs?.[0] ? { ref: q.refs[0] } : {}) };
   });
   const lead = (GROUP_TEXT[g.kind] || ((k) => `The same question comes up in ${k} places.`))(n);
   const allChapters = [...new Set((g.chapters || []).filter((x) => x !== "package").map((x) => `“${ctx.titles?.get?.(x) || x}”`))];
   const chapters = allChapters.length > 5 ? [...allChapters.slice(0, 5), `and ${allChapters.length - 5} more chapter${allChapters.length - 5 === 1 ? "" : "s"}`] : allChapters;
-  const detail = [
-    `This comes up in ${n} places${chapters.length ? ` (${chapters.join(", ")})` : ""}. Your answer applies to every one of them${more ? `, the ${more} not listed here too` : ""}; you can choose another answer for single places. Each place is checked against its text as it was when asked: a place that has changed since is asked again on its own.`,
-    // for a host that does not show the list (an older Alembic drops `group`), the first places in words
-    `The first places: ${listed.slice(0, 3).map((q) => shorten(q.text, 240)).join(" · ")}${n > 3 ? ` · and ${n - 3} more` : ""}`,
-    g.choices.some((c) => /^apply\b/i.test(c)) ? "Apply the suggestion takes each place's own suggestion." : "",
+  // for a host that does not show the list (an older Alembic drops `group`), the first places in words: a line of the
+  // detail that `group.fallback` names, so a host that shows the list leaves it out (audit 2026-11-19, L-1)
+  const fallback = line(`The first places: ${listed.slice(0, 3).map((q) => shorten(q.text, 240)).join(" · ")}${n > 3 ? ` · and ${n - 3} more` : ""}`, 1000);
+  const later = g.later ?? g.singles.filter((s) => s.laterBefore).length;
+  const main = [
+    // true on every host (L-1): where the places are listed, another answer can be chosen for one of them
+    `This comes up in ${n} places${chapters.length ? ` (${chapters.join(", ")})` : ""}. Your answer applies to every one of them${more ? `, the ${more} not listed here too` : ""}. Where the places are listed, you can choose another answer for single places. Each place is checked against its text as it was when asked: a place that has changed since is asked again on its own.`,
+    actsOnShown(g.choices) ? "Apply the suggestion takes each place's own suggestion." : "",
     GROUP_DETAIL[g.kind] || "",
-    g.laterBefore ? "You chose Later last time for some of these places." : "",
+    later ? `You chose Later last time for ${later === n ? "all" : "some"} of these places.` : "",
   ].filter(Boolean).join("\n");
+  const detail = `${block(main, LIMITS.detail - fallback.length - 1)}\n${fallback}`;
   const question = {
     id: qid("g", `${g.cluster}|${g.singles.map((s) => s.bases.map((b) => `${b.finding}|${b.basis}`).join(",")).join(";")}`),
     text: line(`${lead} Your answer applies to all ${n}.`, LIMITS.text),
     choices: g.choices, ...(recommended ? { recommended } : {}),
-    detail: block(detail, LIMITS.detail),
+    detail,
     refs: refsOf(g.singles.flatMap((s) => (s.units || []).map((u) => ctx.deliverableOf?.get?.(u)))),
     words: "optional",
-    group: { v: 1, places, more },
+    group: { v: 1, places, more, fallback },
   };
-  const ref = { kind: "digest-group", cluster: g.cluster, entryKind: g.kind, module: g.module,
-    // every place, listed or not, as asked: its single entry (what answerDigest records) and the text it was asked on
-    places: g.singles.map((s, i) => ({ id: `p${i + 1}`, ...(i < GROUP_LIMITS.places ? { listed: true } : {}), finding: s.findings[0], units: s.units || [], bases: s.bases,
-      seen: Object.fromEntries(boundUnits(s, ctx).map((u) => [u, ctx.live.get(u) ?? "absent"])) })) };
+  const ref = { kind: "digest-group", cluster: g.cluster, entryKind: g.kind, module: g.module, listed: listed.length, ...compactPlaces(g.singles, ctx) };
   return { question, ref, assistant: { kind: g.kind, module: g.module, grouped: n, units: [...new Set(g.singles.flatMap((s) => s.units || []))].slice(0, 20),
     ...assistantPart(`${n} places, one grouped question: ${String(g.singles[0].question ?? "")}`, g.singles[0].evidence?.rule) } };
+}
+/**
+ * Every place of a grouped question as asked, kept compactly (audit 2026-11-19, L-4: a hand-in of 2,000 places must not
+ * push older hand-ins out of the record): the units once (`units`), with the hash of each as the question showed it
+ * (`seen`, as boundRef keeps it: the live unitHash, or "absent"); per place its finding (`f`), its units and the units its
+ * answer binds as indexes into them (`u`, `b` when other), and its bases only when they are not the one basis the
+ * finding has at the text seen (`bases`). groupRecordPlaces reads it back.
+ */
+function compactPlaces(singles, ctx) {
+  const units = [...new Set(singles.flatMap((s) => [...(s.units || []), ...boundUnits(s, ctx)]))], ix = new Map(units.map((u, i) => [u, i]));
+  const seen = units.map((u) => ctx.live.get(u) ?? "absent");
+  const places = singles.map((s) => {
+    const own = s.units || [], bound = boundUnits(s, ctx), f = s.findings[0];
+    const p = { f, u: own.map((u) => ix.get(u)) };
+    if (bound.join("\n") !== own.join("\n")) p.b = bound.map((u) => ix.get(u));
+    const b0 = s.bases?.[0];
+    const plain = s.bases?.length === 1 && Object.keys(b0).length === 2 && b0.finding === f && b0.basis === placeBasis(f, own, (u) => seen[ix.get(u)]);
+    if (!plain) p.bases = s.bases;
+    return p;
+  });
+  return { units, seen, places };
+}
+/** A place's basis at the text seen (digest.mjs basisOf, the finding's units in its own order). */
+const placeBasis = (f, units, hashOf) => sha256(canonicalJson([f, units.map((u) => hashOf(u) || null)]));
+/** A grouped record's places as apply reads them: [{ id, listed, finding, units, bases, seen }] (either shape). */
+export function groupRecordPlaces(q) {
+  const units = Array.isArray(q?.units) ? q.units : [], seen = Array.isArray(q?.seen) ? q.seen : [];
+  const listed = Number.isInteger(q?.listed) ? q.listed : null;
+  return (Array.isArray(q?.places) ? q.places : []).map((p, i) => {
+    const id = p?.id ?? `p${i + 1}`, isListed = listed === null ? !!p?.listed : i < listed;
+    if (p?.seen) return { ...p, id, listed: isListed }; // as first written (one object per place)
+    const own = (Array.isArray(p?.u) ? p.u : []).map((k) => units[k]), bound = (Array.isArray(p?.b) ? p.b : p?.u || []).map((k) => units[k]);
+    const s = Object.fromEntries([...new Set([...own, ...bound])].map((u) => [u, seen[units.indexOf(u)]]));
+    return { id, listed: isListed, finding: p?.f, units: own, bases: p?.bases ?? [{ finding: p?.f, basis: placeBasis(p?.f, own, (u) => s[u]) }], seen: s };
+  });
 }
 /**
  * A grouped answer, applied place by place (FC-16 v1 §3): each place takes the answer, or its exception (a listed place,
@@ -531,8 +603,11 @@ function groupedItem(g, ctx) {
  * Returns { outcome, summary, said? } or { skip }.
  */
 function applyGroup(root, reader, q, a, answer, words, party, bc) {
-  const places = Array.isArray(q.places) ? q.places : [];
+  const places = groupRecordPlaces(q);
   if (!places.length || !Array.isArray(q.choices)) return { skip: "the grouped question names no places" };
+  // only a one-click kind is ever grouped: a record that holds another (a kind that confirms, keeps as written, adopts or
+  // claims, or a choice that is not one click) is read as nothing (audit 2026-11-19, L-2)
+  if (typeof q.entryKind !== "string" || BINDING_KINDS.has(q.entryKind) || !oneClick(q.entryKind, q.choices)) return { skip: "the grouped question is not of a one-click kind: nothing is recorded, and it is asked again" };
   const raw = a.exceptions ?? null;
   if (raw !== null && (typeof raw !== "object" || Array.isArray(raw))) return { skip: "the exceptions are not places with answers: it is asked again" };
   const ex = new Map();
@@ -546,6 +621,8 @@ function applyGroup(root, reader, q, a, answer, words, party, bc) {
   const alone = [], byChoice = new Map();
   for (const p of places) {
     const asked = ex.get(p.id) ?? answer, choice = meaning(asked), e = placeEntry(q, p);
+    // Apply takes a place's own suggestion: never on a place the question did not show (M-1; asked again on its own)
+    if (/^apply\b/i.test(asked) && !p.listed) { alone.push(p.finding); continue; }
     // the binding guard, per place, against the text as it was asked (every place before anything is recorded)
     if (!SAID.test(choice) && choice !== "Later" && !bindingGuard(root, reader, { seen: p.seen }, e, bc).ok) { alone.push(p.finding); continue; }
     if (!byChoice.has(asked)) byChoice.set(asked, []);
@@ -670,8 +747,20 @@ export function applyChanges(root, changes) {
   let guardCtx = null;
   for (const a of answers) {
     const q = needs.handins?.find((h) => h.changesetId === a?.changesetId)?.questions?.[a?.question];
-    if (!q) { ignored++; continue; }
-    const skip = (reason) => skipped.push({ question: a.question, item: a.item ?? null, reason });
+    const skip = (reason) => skipped.push({ question: a?.question, item: a?.item ?? null, reason });
+    if (!q) {
+      // an answer to a hand-in newer ones pushed out of the record (audit 2026-11-19, L-4): what it answers is still open
+      // and is asked again; the agent is told, once (a marker), never left to guess why nothing happened
+      if (a?.item != null && (needs.dropped || []).includes(a.changesetId)) {
+        if (done.has(answerKey(a))) { skip("already recorded"); continue; }
+        appendLogRecord(root, { type: "contact", party: { role: "harness", name: "alembic-needs" }, payload: {
+          moment: "host-answer", host: "alembic", item: a.item, changesetId: a.changesetId, question: a.question, answer: String(a.answer ?? "").slice(0, 1000), outcome: "asked again",
+          by: { id: a.by?.id ?? null, name: a.by?.name ?? null }, at: a.at ?? null } });
+        done.add(answerKey(a));
+        skip("the hand-in this answers is no longer in the needs record (newer hand-ins pushed it out): what it answers is asked again");
+      } else ignored++;
+      continue;
+    }
     if (a.item == null || done.has(answerKey(a))) { skip(a.item == null ? "the answer has no item id" : "already recorded"); continue; }
     const name = String(a.by?.name || a.by?.id || "").trim();
     if (!name) { skip("the answer does not say who gave it"); continue; }

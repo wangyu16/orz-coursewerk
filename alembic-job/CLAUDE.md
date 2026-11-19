@@ -44,7 +44,8 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
 
    It records each answer to a question Coursewerk asked, in the instructor's name and words, and only once. It
    prints what it recorded and what it skipped, and why (for example, a plan that changed since it was asked, or an
-   approval without the instructor's words). Never record an instructor's act any other way in a job.
+   approval without the instructor's words, or an answer to a hand-in so old the record no longer keeps it: what it
+   answered is asked again). Never record an instructor's act any other way in a job.
 
    An answer the instructor gave in their own words, not by a choice, or by a choice that asks you to act ("Change it
    differently", "Drop it"), comes back with outcome `said`, the answer (`said`) and anything they wrote in the words box
@@ -56,9 +57,11 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
    line or detail in the plan, "Change it" on a disputed fact, and any answer to an interrupt or to your own question.
    Do the work, then record it with `taken-up` as below. A finding that comes up in several places, of a kind whose
    choices are one click (Apply the suggestion, Keep it, Drop it, Later), comes as ONE grouped question: it lists its
-   places (25 at most, then how many more), its choice applies to every place, and the instructor may choose another
-   answer for single listed places (`exceptions`). `apply` records it place by place: each place's choice goes through
-   the same check as a question of one place, and a place whose text changed since is asked again on its own (outcome
+   places (25 at most, then how many more; a question offering "Apply the suggestion" lists every place it applies
+   to), its choice applies to every place, and the instructor may choose another answer for single listed places
+   (`exceptions`). `apply` records it place by place: each place's choice goes through
+   the same check as a question of one place, and a place whose text changed since is asked again on its own (in
+   words when its passage is gone; outcome
    `answered in part`, with `group: {places, choices, askedAgain}`); work it owes you is owed once, on the question. A
    confirmation, rights and authorship are never grouped: they are asked place by place, with their words. A kind no
    choice acts on comes as one question in words. Words never confirm, keep or apply anything. They are yours to act on in this job: make the change they
@@ -117,7 +120,7 @@ For everything else (what Coursewerk promises, whose acts are whose, the rules t
      digest, at most 20 questions (the digest part within the instructor's digest size, counted in questions); it
      says how many wait for next time, and the hand-in carries that number as `digest.remaining` (how many more
      questions will follow; additive: Alembic may show it, and reads only `digest.questions` otherwise). A grouped
-     question counts as one, and carries `group: {v: 1, places: [{id, text, detail?, ref?}], more}` (family FC-16 v1
+     question counts as one, and carries `group: {v: 1, places: [{id, text, detail?, ref?}], more, fallback}` (family FC-16 v1
      §3; additive and versioned: an Alembic that does not know it drops it, shows the question with its choices for all,
      and the answer then applies to every place). Its answer may come back with `exceptions: {<place id>: <choice>}`.
      The export's `grouped` says how many grouped questions it made. It writes the questions to the hidden file
