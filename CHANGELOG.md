@@ -1,6 +1,6 @@
 # Coursewerk changelog
 
-## Unreleased (branch `grouped-findings`)
+## v1.0.8 (2026-11-20)
 
 - **Grouped findings in Alembic's Needs you** (owner 2026-11-17; family FC-16 v1 §3). A finding that comes up in many
   places (General Chemistry: 496 lines of detail in a course plan) reaches the instructor as ONE grouped question, not
